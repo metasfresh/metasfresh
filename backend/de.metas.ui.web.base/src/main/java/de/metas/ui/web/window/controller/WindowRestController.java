@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,9 +31,9 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
-import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -88,14 +88,16 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -124,6 +126,7 @@ import java.util.function.Predicate;
 @Tag(name = "WindowRestController")
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
+@RequiredArgsConstructor
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
@@ -135,42 +138,19 @@ public class WindowRestController
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(DebugRestController.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-	private final UserSession userSession;
-	private final DocumentCollection documentCollection;
-	private final DocumentChangeLogService documentChangeLogService;
-	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
-	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
-	private final ProcessRestController processRestController;
-	private final DocumentWebsocketPublisher websocketPublisher;
-	private final CommentsService commentsService;
-	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-	private final ADReferenceService adReferenceService;
-
-	public WindowRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final DocumentCollection documentCollection,
-			@NonNull final DocumentChangeLogService documentChangeLogService,
-			@NonNull final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
-			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
-			@NonNull final ProcessRestController processRestController,
-			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService,
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository,
-			@NonNull final ADReferenceService adReferenceService)
-	{
-		this.userSession = userSession;
-		this.documentCollection = documentCollection;
-		this.documentChangeLogService = documentChangeLogService;
-		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
-		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
-		this.processRestController = processRestController;
-		this.websocketPublisher = websocketPublisher;
-		this.commentsService = commentsService;
-		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
-		this.adReferenceService = adReferenceService;
-	}
+	@NonNull private final UserSession userSession;
+	@NonNull private final DocumentCollection documentCollection;
+	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
+	@NonNull private final DocumentChangeLogService documentChangeLogService;
+	@NonNull private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	@NonNull private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
+	@NonNull private final ProcessRestController processRestController;
+	@NonNull private final DocumentWebsocketPublisher websocketPublisher;
+	@NonNull private final CommentsService commentsService;
+	@NonNull private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	@NonNull private final ADReferenceService adReferenceService;
 
 	private JSONOptionsBuilder newJSONOptions()
 	{
@@ -750,40 +730,21 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	private JSONZoomInto getDocumentFieldZoomInto(
-			final DocumentPath documentPath,
-			final String fieldName)
+	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
-		final JSONDocumentPath jsonZoomIntoDocumentPath;
 		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> getDocumentFieldZoomInto(document, fieldName));
-		if (zoomIntoInfo == null)
-		{
-			throw new EntityNotFoundException("ZoomInto not supported")
-					.setParameter("documentPath", documentPath)
-					.setParameter("fieldName", fieldName);
-		}
-		else if (!zoomIntoInfo.isRecordIdPresent())
-		{
-			final WindowId windowId = documentCollection.getWindowId(zoomIntoInfo);
-			jsonZoomIntoDocumentPath = JSONDocumentPath.newWindowRecord(windowId);
-		}
-		else
-		{
-			final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomIntoInfo);
-			jsonZoomIntoDocumentPath = JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath);
-		}
+		final DocumentPath zoomIntoDocumentPath = documentZoomIntoService.getDocumentPath(zoomIntoInfo);
 
 		return JSONZoomInto.builder()
-				.documentPath(jsonZoomIntoDocumentPath)
+				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
 				.build();
 	}
 
-	private DocumentZoomIntoInfo getDocumentFieldZoomInto(
-			@NonNull final Document document,
-			@NonNull final String fieldName)
+	@NonNull
+	private DocumentZoomIntoInfo getDocumentFieldZoomInto(@NonNull final Document document, @NonNull final String fieldName)
 	{
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentFieldDescriptor singleKeyFieldDescriptor = entityDescriptor.getSingleIdFieldOrNull();

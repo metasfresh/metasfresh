@@ -358,4 +358,11 @@ public interface IOrderBL extends ISingletonService
 	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
+	void setWeightFromLines(@NonNull I_C_Order order);
+
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

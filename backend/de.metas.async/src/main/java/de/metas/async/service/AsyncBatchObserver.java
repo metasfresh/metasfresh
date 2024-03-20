@@ -218,6 +218,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
+
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 

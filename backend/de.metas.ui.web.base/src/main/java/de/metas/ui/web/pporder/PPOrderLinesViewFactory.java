@@ -120,9 +120,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 	@Override
 	public IView filterView(
-			final IView view,
-			final JSONFilterViewRequest filterViewRequest,
-			final Supplier<IViewsRepository> viewsRepo)
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest,
+			@NonNull final Supplier<IViewsRepository> viewsRepo)
 	{
 		throw new AdempiereException("View does not support filtering")
 				.setParameter("view", view)

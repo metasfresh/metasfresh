@@ -31,7 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test
@@ -175,6 +175,7 @@ class PickingJob_Scenarios_Test
 											.actualPickedHUId(vhu1)
 											.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
 											.build()))
+									   .productId(productId)
 							.build());
 		}
 

@@ -30,6 +30,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -39,9 +40,12 @@ import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -66,6 +70,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -165,7 +170,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final List<I_PP_Order_BOMLine> lines = getLines();
 		if (lines.isEmpty())
 		{
-			throw new LiberoException("@NoLines@");
+			throw new LiberoException(LiberoException.MSG_NoLines);
 		}
 
 		//
@@ -177,10 +182,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			{
 				if (line.getM_Warehouse_ID() != getM_Warehouse_ID())
 				{
-					throw new LiberoException("@CannotChangeDocType@"
+					throw new LiberoException(TranslatableStrings.parse("@CannotChangeDocType@"
 													  + "\n@PP_Order_BOMLine_ID@: " + line
 													  + "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
-													  + "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
+							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID()));
 				}
 			}
 		}
@@ -369,7 +374,15 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Validate BOM Lines before closing them
 		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		getLines().forEach(ppOrderBOMLineBL::validateBeforeClose);
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Optional<Quantity> roundingToScaleQty = ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(getPP_Order_ID()));
+
+		getLines().forEach(line -> ppOrderBOMLineBL.validateBeforeClose(line,
+																		roundingToScaleQty.flatMap(scaleQtyRound -> uomConversionBL
+																				.convertQtyTo(scaleQtyRound, UomId.ofRepoId(line.getC_UOM_ID())))
+																				.orElse(null)));
 
 		//
 		// Create usage variances
@@ -385,7 +398,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Close all the activity do not reported
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		ppOrderBL.closeAllActivities(orderId);
 

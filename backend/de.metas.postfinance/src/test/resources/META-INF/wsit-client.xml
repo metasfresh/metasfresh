@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  name="mainclientconfig">
+    <import location="B2BService.xml" namespace="http://ch.swisspost.ebill.b2bservice"/>
+</wsdl:definitions>

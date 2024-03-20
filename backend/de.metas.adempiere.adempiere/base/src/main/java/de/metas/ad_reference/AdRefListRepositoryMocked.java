@@ -19,7 +19,7 @@ public class AdRefListRepositoryMocked implements AdRefListRepository
 		this.autoCreateOnDemand = autoCreateOnDemand;
 	}
 
-	public void put(@NonNull ADRefList adRefList)
+	public void put(@NonNull final ADRefList adRefList)
 	{
 		map.put(adRefList.getReferenceId(), adRefList);
 	}

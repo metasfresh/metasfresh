@@ -834,8 +834,10 @@
         <xsd:sequence>
             <xsd:element minOccurs="0" name="BestBeforeDate" type="xsd:date"/>
             <xsd:element minOccurs="0" name="LotNumber" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="QtyCU" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerTU" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="QtyCUsPerLU" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerLU_InInvoiceUOM" type="xsd:decimal"/>
+            <xsd:element minOccurs="0" name="QtyCUsPerTU_InInvoiceUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="QtyTU" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="EDI_DesadvLine_ID" type="EDI_Exp_DesadvLineType"/>
             <xsd:element minOccurs="0" name="GTIN_TU_PackingMaterial" type="xsd:string"/>

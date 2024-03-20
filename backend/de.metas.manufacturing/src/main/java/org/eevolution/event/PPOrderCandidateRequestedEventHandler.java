@@ -41,7 +41,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.service.PPOrderCandidateCreateRequest;
+import org.eevolution.productioncandidate.service.PPOrderCandidateCreateUpdateRequest;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -98,7 +98,7 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 		final String traceId = ppOrderCandidateRequestedEvent.getEventDescriptor().getTraceId();
 		final boolean isSimulated = ppOrderCandidateRequestedEvent.getPpOrderCandidate().isSimulated();
 
-		return ppOrderCandidateService.createCandidate(PPOrderCandidateCreateRequest.builder()
+		return ppOrderCandidateService.createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
 															   .clientAndOrgId(ppOrderData.getClientAndOrgId())
 															   .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
 															   .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())

@@ -40,7 +40,6 @@ import de.metas.vertical.creditscore.base.spi.service.TransactionResultService;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import org.apache.commons.lang3.StringUtils;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
@@ -52,14 +51,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class CS_Transaction_Result_ManualOverride extends JavaProcess implements IProcessPrecondition
 {
-	final private TransactionResultService transactionResultService = Adempiere.getBean(TransactionResultService.class);
+	final private TransactionResultService transactionResultService = SpringContextHolder.instance.getBean(TransactionResultService.class);
 
 	@Param(mandatory = true, parameterName = CreditPassConstants.PROCESS_RESULT_OVERRIDE_PARAM)
 	private String resultOverride;
 
 	@Override protected String doIt() throws Exception
 	{
-		I_CS_Transaction_Result transactionResult = getProcessInfo().getRecord(I_CS_Transaction_Result.class);
+		final I_CS_Transaction_Result transactionResult = getProcessInfo().getRecord(I_CS_Transaction_Result.class);
 		transactionResult.setResponseCodeOverride(resultOverride);
 		transactionResult.setResponseCodeEffective(resultOverride);
 
@@ -77,8 +76,7 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 			else
 			{
 				order.setCreditpassFlag(true);
-				final ADReferenceService adReferenceService = ADReferenceService.get();
-				final String paymentRuleName = adReferenceService.retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
+				final String paymentRuleName = ADReferenceService.get().retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, transactionResult.getPaymentRule());
 				final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
 				order.setCreditpassStatus(message.translate(Env.getAD_Language()));
 			}
@@ -96,7 +94,8 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 				&& StringUtils.equals(order.getPaymentRule(), transactionResult.getPaymentRule());
 	}
 
-	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
@@ -109,7 +108,7 @@ public class CS_Transaction_Result_ManualOverride extends JavaProcess implements
 		}
 
 		final I_CS_Transaction_Result result = context.getSelectedModel(I_CS_Transaction_Result.class);
-		if (ResultCode.fromName(result.getResponseCode()) != ResultCode.M)
+		if (result == null || ResultCode.fromName(result.getResponseCode()) != ResultCode.M)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Result cannot be overridden because result code is not manual");
 		}

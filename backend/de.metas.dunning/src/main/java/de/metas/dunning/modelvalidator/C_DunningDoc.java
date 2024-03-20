@@ -46,7 +46,7 @@ public class C_DunningDoc
 	}
 
 	/**
-	 * Updates <code>C_DunningDoc.BPartnerAddress</code> when the the <code>C_BPartner_Location_ID</code> column is changed.
+	 * Updates <code>C_DunningDoc.BPartnerAddress</code> when the <code>C_BPartner_Location_ID</code> column is changed.
 	 * Task 07359
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

@@ -24,6 +24,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.DB;
@@ -320,8 +321,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 		MMovementLineConfirm[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		boolean difference = false;
 		for (int i = 0; i < lines.length; i++)

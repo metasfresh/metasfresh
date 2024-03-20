@@ -1,8 +1,6 @@
 package de.metas.workflow.rest_api.controller.v2.ws;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
@@ -13,16 +11,14 @@ import de.metas.workflow.rest_api.controller.v2.json.JsonWorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.SynchronizedMutable;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
-import java.util.Set;
 
 class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocketProducer.ProduceEventsOnPollSupport
 {
@@ -33,25 +29,25 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocket
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
 
+	@NonNull private final WorkflowLaunchersQuery queryTemplate;
 	@NonNull private final MobileApplicationId applicationId;
 	@NonNull private final UserId userId;
-	@Nullable private final GlobalQRCode filterByQRCode;
-	@Nullable private final ImmutableSet<WorkflowLaunchersFacetId> facetIds;
+	// @Nullable private final GlobalQRCode filterByQRCode;
+	// @Nullable private final ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 
 	private final SynchronizedMutable<WorkflowLaunchersList> lastResultHolder = SynchronizedMutable.of(null);
 
-	WorkflowLaunchersWebSocketProducer(
+	@Builder
+	private WorkflowLaunchersWebSocketProducer(
 			final @NonNull WorkflowRestAPIService workflowRestAPIService,
-			final @NonNull MobileApplicationId applicationId,
-			final @NonNull UserId userId,
-			final @Nullable GlobalQRCode filterByQRCode,
-			final @Nullable Set<WorkflowLaunchersFacetId> facetIds)
+			final @NonNull WorkflowLaunchersQuery query)
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
-		this.applicationId = applicationId;
-		this.userId = userId;
-		this.filterByQRCode = filterByQRCode;
-		this.facetIds = facetIds != null && !facetIds.isEmpty() ? ImmutableSet.copyOf(facetIds) : null;
+		this.queryTemplate = query;
+		this.applicationId = query.getApplicationId();
+		this.userId = query.getUserId();
+		// this.filterByQRCode = filterByQRCode;
+		// this.facetIds = facetIds != null && !facetIds.isEmpty() ? ImmutableSet.copyOf(facetIds) : null;
 	}
 
 	@Override
@@ -94,15 +90,8 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocket
 
 	private WorkflowLaunchersList computeNewResult()
 	{
-		return workflowRestAPIService.getLaunchers(
-				WorkflowLaunchersQuery.builder()
-						.applicationId(applicationId)
-						.userId(userId)
-						.filterByQRCode(filterByQRCode)
-						.facetIds(facetIds)
-						.maxStaleAccepted(getMaxStaleAccepted())
-						.build()
-		);
+		final WorkflowLaunchersQuery query = queryTemplate.withMaxStaleAccepted(getMaxStaleAccepted());
+		return workflowRestAPIService.getLaunchers(query);
 	}
 
 	private Duration getMaxStaleAccepted()

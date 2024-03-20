@@ -30,16 +30,15 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.workflow.WFState;
 import de.metas.workflow.WorkflowId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TrxRunnableAdapter;
 
 import javax.annotation.Nullable;
@@ -52,10 +51,10 @@ public class WorkflowExecutor
 {
 	private static final AdMessageKey MSG_DocumentStatusChanged = AdMessageKey.of("DocumentStatusChangedNotification");
 
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final WFProcessRepository wfProcessRepository;
+	@NonNull private final WorkflowExecutionSupportingServicesFacade services = SpringContextHolder.instance.getBean(WorkflowExecutionSupportingServicesFacade.class);
+	@NonNull private final WFProcessRepository wfProcessRepository;
 
-	private final WorkflowExecutionContext context;
+	@NonNull private final WorkflowExecutionContext context;
 
 	@Builder
 	private WorkflowExecutor(
@@ -63,13 +62,14 @@ public class WorkflowExecutor
 			@NonNull final TableRecordReference documentRef,
 			@NonNull final UserId userId)
 	{
+		this.wfProcessRepository = services.getWfProcessRepository();
+
 		this.context = WorkflowExecutionContext.builder()
+				.services(services)
 				.clientId(clientId)
 				.documentRef(documentRef)
 				.userId(userId)
 				.build();
-
-		wfProcessRepository = context.getWfProcessRepository();
 	}
 
 	public WorkflowExecutionResult start(@NonNull WorkflowId workflowId)
@@ -92,7 +92,7 @@ public class WorkflowExecutor
 		// Start a new process
 		final WFProcess wfProcess = new WFProcess(context, workflowId);
 		final Mutable<Throwable> exceptionHolder = new Mutable<>();
-		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
@@ -198,7 +198,7 @@ public class WorkflowExecutor
 
 	private void abort(@NonNull final WFProcess wfProcess)
 	{
-		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
@@ -246,7 +246,7 @@ public class WorkflowExecutor
 
 	private void resume(@NonNull final WFProcess wfProcess)
 	{
-		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)

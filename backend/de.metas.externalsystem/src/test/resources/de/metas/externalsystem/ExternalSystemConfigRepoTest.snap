@@ -212,11 +212,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "childConfig": {
         "id": 100002,
         "parentId": 100001,
-        "pluFileConfigs": [ ],
         "pluFileExportAuditEnabled": false,
         "productBaseFolderName": "productBaseFolderName",
-        "productMappingEmpty": true,
-        "productMappings": [ ],
         "tcpHost": "tcpHost",
         "tcpPort": 8080,
         "value": "testLeichMehlValue"
@@ -235,11 +232,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
   {
     "id": 100002,
     "parentId": 100001,
-    "pluFileConfigs": [ ],
     "pluFileExportAuditEnabled": false,
     "productBaseFolderName": "productBaseFolderName",
-    "productMappingEmpty": true,
-    "productMappings": [ ],
     "tcpHost": "tcpHost",
     "tcpPort": 8080,
     "value": "testLeichMehlValue"
@@ -254,11 +248,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
-      "pluFileConfigs": [ ],
       "pluFileExportAuditEnabled": false,
       "productBaseFolderName": "productBaseFolderName",
-      "productMappingEmpty": true,
-      "productMappings": [ ],
       "tcpHost": "tcpHost",
       "tcpPort": 8080,
       "value": "testLeichMehlValue"
@@ -960,11 +951,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
     "childConfig": {
       "id": 100002,
       "parentId": 100001,
-      "pluFileConfigs": [ ],
       "pluFileExportAuditEnabled": false,
       "productBaseFolderName": "productBaseFolderName",
-      "productMappingEmpty": true,
-      "productMappings": [ ],
       "tcpHost": "tcpHost",
       "tcpPort": 8080,
       "value": "LeichMehl"
@@ -1010,50 +998,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
     "name": "name",
     "orgId": 0,
     "type": "Other",
-    "writeAudit": true
-  }
-]
-
-
-de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
-  {
-    "active": true,
-    "auditFileFolder": "auditFileFolder",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "pluFileConfigs": [
-        {
-          "id": 100004,
-          "leichMehlConfigId": 100002,
-          "replaceRegExp": "replacePattern",
-          "replacement": "replacement",
-          "replacementSource": "PPOrder",
-          "targetFieldName": "targetFileName",
-          "targetFieldType": "Date"
-        }
-      ],
-      "pluFileExportAuditEnabled": false,
-      "productBaseFolderName": "productBaseFolderName",
-      "productMappingEmpty": false,
-      "productMappings": [
-        {
-          "bPartnerId": 3,
-          "id": 100003,
-          "pluFile": "plufile",
-          "productCategoryId": 2,
-          "productId": 1,
-          "seqNo": 10
-        }
-      ],
-      "tcpHost": "tcpHost",
-      "tcpPort": 8080,
-      "value": "LeichMehl"
-    },
-    "id": 100001,
-    "name": "name",
-    "orgId": 0,
-    "type": "LeichUndMehl",
     "writeAudit": true
   }
 ]

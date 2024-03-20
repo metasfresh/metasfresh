@@ -83,7 +83,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -92,7 +92,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Type.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -148,7 +148,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setModularContractHandlerType (@Nullable String ModularContractHandlerType);
+	void setModularContractHandlerType (@Nullable java.lang.String ModularContractHandlerType);
 
 	/**
 	 * Get Modular Contract Handler Type.
@@ -157,7 +157,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getModularContractHandlerType();
+	@Nullable java.lang.String getModularContractHandlerType();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
 	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";
@@ -169,7 +169,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -178,7 +178,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Type.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -216,7 +216,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
@@ -226,7 +226,7 @@ public interface I_ModCntr_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getValue();
+	java.lang.String getValue();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_Value = new ModelColumn<>(I_ModCntr_Type.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

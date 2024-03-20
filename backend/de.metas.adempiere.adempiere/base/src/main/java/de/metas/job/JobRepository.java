@@ -36,7 +36,6 @@ import org.compiere.model.I_C_Job;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 class JobRepository
@@ -49,8 +48,6 @@ class JobRepository
 
 	@NonNull
 	public Job getById(@NonNull final JobId jobId) {return getMap().getById(jobId);}
-
-	public Optional<Job> getCTO(@NonNull final ClientId clientId) {return getMap().getCTO(clientId);}
 
 	private JobMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
 
@@ -90,14 +87,6 @@ class JobRepository
 				throw new AdempiereException("No Job found for " + id);
 			}
 			return job;
-		}
-
-		public Optional<Job> getCTO(@NonNull final ClientId clientId)
-		{
-			return byId.values()
-					.stream()
-					.filter(job -> job.isCTO() && ClientId.equals(job.getClientId(), clientId))
-					.findFirst();
 		}
 	}
 }

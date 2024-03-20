@@ -23,14 +23,15 @@
 package de.metas.cucumber.stepdefs.bank;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.dataImport.C_DataImport_StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_DataImport;
 
@@ -39,7 +40,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Bank_StepDef
 {
@@ -72,6 +73,7 @@ public class C_Bank_StepDef
 		final String routingNo = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_RoutingNo);
 		final String swiftCode = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_SwiftCode);
 		final String dataImportIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Bank.COLUMNNAME_C_DataImport_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final boolean isImportAsSingleSummaryLine  = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_Bank.COLUMNNAME_IsImportAsSingleSummaryLine, false);
 
 		final I_C_DataImport dataImportRecord = dataImportTable.get(dataImportIdentifier);
 		assertThat(dataImportRecord).isNotNull();
@@ -89,6 +91,7 @@ public class C_Bank_StepDef
 		bankRecord.setName(name);
 		bankRecord.setRoutingNo(routingNo);
 		bankRecord.setSwiftCode(swiftCode);
+		bankRecord.setIsImportAsSingleSummaryLine(isImportAsSingleSummaryLine);
 
 		saveRecord(bankRecord);
 

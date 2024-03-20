@@ -7,6 +7,7 @@ import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
 import { useHistory } from 'react-router-dom';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 
 const PickStepButton = ({
   applicationId,
@@ -19,6 +20,8 @@ const PickStepButton = ({
   uom,
   qtyToPick,
   pickFrom,
+  catchWeightUOM,
+  disabled,
 }) => {
   const history = useHistory();
   const handleClick = () => {
@@ -27,13 +30,20 @@ const PickStepButton = ({
 
   const isAlternative = !!altStepId;
   const completeStatus = computePickFromStatus(pickFrom);
+  const catchWeight =
+    catchWeightUOM != null && catchWeightUOM === pickFrom.pickedCatchWeight?.uomSymbol
+      ? pickFrom.pickedCatchWeight.qty
+      : undefined;
+  const catchWeightCaption = catchWeight && formatQtyToHumanReadableStr({ qty: catchWeight, uom: catchWeightUOM });
+  const captionToUse = catchWeightCaption || pickFrom.locatorName;
 
   return (
     <>
       <ButtonWithIndicator
-        caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
+        caption={(isAlternative ? 'ALT:' : '') + captionToUse}
         completeStatus={completeStatus}
         onClick={handleClick}
+        disabled={disabled}
       >
         <ButtonQuantityProp
           qtyCurrent={pickFrom.qtyPicked}
@@ -51,6 +61,7 @@ const PickStepButton = ({
           stepId={stepId}
           pickFromAlternatives={pickFromAlternatives}
           uom={uom}
+          disabled={disabled}
         />
       )}
     </>
@@ -68,6 +79,8 @@ PickStepButton.propTypes = {
   altStepId: PropTypes.string,
   pickFromAlternatives: PropTypes.object,
   uom: PropTypes.string.isRequired,
+  catchWeightUOM: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default PickStepButton;

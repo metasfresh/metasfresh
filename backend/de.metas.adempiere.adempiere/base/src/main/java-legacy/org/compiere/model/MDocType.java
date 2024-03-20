@@ -91,7 +91,7 @@ public class MDocType extends X_C_DocType
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(C_DocType_ID);
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getRecordById(C_DocType_ID);
 		return LegacyAdapters.convertToPO(docType);
 	} 	//	get
 

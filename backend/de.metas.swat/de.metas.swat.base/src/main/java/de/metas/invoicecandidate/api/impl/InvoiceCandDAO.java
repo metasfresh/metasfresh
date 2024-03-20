@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -73,6 +72,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -799,7 +799,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final int count = icQuery
 				.insertDirectlyInto(I_C_Invoice_Candidate_Recompute.class)
 				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
-				.mapColumn(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Async_Batch_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Async_Batch_ID)
 				.mapColumnToConstant(I_C_Invoice_Candidate_Recompute.COLUMNNAME_ChunkUUID, chunkUUID)
 				// NOTE: not setting the AD_PInstance_ID to null, because:
 				// 1. null is the default
@@ -810,27 +809,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		logger.info("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
 
-		// collect the different C_Async_Batch_IDs (including null) of the ICs that we just created recompute-records for
-		final List<Integer> asyncBatchIDs = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_ChunkUUID, chunkUUID)
-				.create()
-				.listDistinct(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Async_Batch_ID, Integer.class);
-
 		//
 		// Schedule an update for invalidated invoice candidates
 		if (count > 0)
 		{
-			// create an equ
-			for (final Integer asyncBatchIdInt : asyncBatchIDs)
-			{
-				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNone(asyncBatchIdInt);
 				final InvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(
 						icQuery.getCtx(),
-						icQuery.getTrxName(),
-						AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId));
-				logger.info("Scheduling ICs with AsyncBatchId={} for update.", asyncBatchIdInt);
+						icQuery.getTrxName());
 				invoiceCandScheduler.scheduleForUpdate(request);
-			}
 		}
 		
 		return count;
@@ -1225,10 +1211,35 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
+		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
+		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
+
+		// apply the invoiceCandidateIdsSelection to our queryBuilder
+		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
+		{
+			@Override
+			public void empty()
+			{
+				queryBuilder.filter(ConstantQueryFilter.of(false));
+			}
+
+			@Override
+			public void fixedSet(@NonNull final ImmutableSet<InvoiceCandidateId> ids)
+			{
+				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, ids);
+			}
+
+			@Override
+			public void selectionId(@NonNull final PInstanceId selectionId)
+			{
+				queryBuilder.setOnlySelection(selectionId);
+			}
+		});
+
+		return queryBuilder
 				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();

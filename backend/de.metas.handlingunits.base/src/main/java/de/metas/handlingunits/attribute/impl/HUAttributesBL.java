@@ -8,15 +8,22 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
+import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -56,6 +63,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
@@ -297,4 +305,61 @@ public class HUAttributesBL implements IHUAttributesBL
 				.orElse(null);
 	}
 
+	public void transferAttributesForSingleProductHUs(
+			@NonNull final I_M_HU huFrom,
+			@NonNull final I_M_HU huTo)
+	{
+		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
+
+		executor.run(huContext -> {
+
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(huFrom);
+			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(huTo);
+
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(huTo);
+
+			final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
+					.getSingleHUProductStorage(huTo);
+
+			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
+					.setProductId(productStorage.getProductId())
+					.setQuantity(productStorage.getQty())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(huAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom)
+					.create();
+
+			trxAttributesBuilder.transferAttributes(request);
+		});
+	}
+
+	@Override
+	public void updateHUAttribute(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exist or it is inactive; -> do nothing", attributeCode.getCode());
+			return;
+		}
+
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+
+		huTrxBL.createHUContextProcessorExecutor().run(huContext -> {
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+
+			if (attributeStorage.hasAttribute(attribute))
+			{
+				attributeStorage.setValue(attribute, attributeValue);
+			}
+
+			attributeStorage.saveChangesIfNeeded();
+		});
+	}
 }

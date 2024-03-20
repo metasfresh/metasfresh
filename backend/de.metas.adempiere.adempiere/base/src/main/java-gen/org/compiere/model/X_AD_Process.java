@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1946797104L;
+	private static final long serialVersionUID = -1170939088L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -234,6 +234,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
+	@Override
+	public void setDoNotQuoteRows (final boolean DoNotQuoteRows)
+	{
+		set_Value (COLUMNNAME_DoNotQuoteRows, DoNotQuoteRows);
+	}
+
+	@Override
+	public boolean isDoNotQuoteRows() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_DoNotQuoteRows);
+	}
+
 	/** 
 	 * EntityType AD_Reference_ID=389
 	 * Reference name: _EntityTypeNew
@@ -249,6 +261,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getEntityType() 
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
+	}
+
+	@Override
+	public void setFilenamePattern (final @Nullable java.lang.String FilenamePattern)
+	{
+		set_Value (COLUMNNAME_FilenamePattern, FilenamePattern);
+	}
+
+	@Override
+	public java.lang.String getFilenamePattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilenamePattern);
 	}
 
 	@Override
@@ -306,10 +330,23 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isFormatExcelFile()
+	public boolean isFormatExcelFile() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
 	}
+
+	@Override
+	public void setIsLogWarning (final boolean IsLogWarning)
+	{
+		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
+	}
+
+	@Override
+	public boolean isLogWarning() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
 	@Override
 	public void setIsNotifyUserAfterExecution (final boolean IsNotifyUserAfterExecution)
 	{
@@ -377,7 +414,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isUpdateExportDate()
+	public boolean isUpdateExportDate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
 	}
@@ -555,6 +592,41 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return get_ValueAsString(COLUMNNAME_SQLStatement);
 	}
 
+	/** 
+	 * StoreProcessResultFileOn AD_Reference_ID=541841
+	 * Reference name: AD_Process_StoreProcessResultFileOn
+	 */
+	public static final int STOREPROCESSRESULTFILEON_AD_Reference_ID=541841;
+	/** Server = S */
+	public static final String STOREPROCESSRESULTFILEON_Server = "S";
+	/** Browser = D */
+	public static final String STOREPROCESSRESULTFILEON_Browser = "D";
+	/** Both = B */
+	public static final String STOREPROCESSRESULTFILEON_Both = "B";
+	@Override
+	public void setStoreProcessResultFileOn (final java.lang.String StoreProcessResultFileOn)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFileOn, StoreProcessResultFileOn);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFileOn() 
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFileOn);
+	}
+
+	@Override
+	public void setStoreProcessResultFilePath (final @Nullable java.lang.String StoreProcessResultFilePath)
+	{
+		set_Value (COLUMNNAME_StoreProcessResultFilePath, StoreProcessResultFilePath);
+	}
+
+	@Override
+	public java.lang.String getStoreProcessResultFilePath() 
+	{
+		return get_ValueAsString(COLUMNNAME_StoreProcessResultFilePath);
+	}
+
 	@Override
 	public void setTechnicalNote (final @Nullable java.lang.String TechnicalNote)
 	{
@@ -619,17 +691,4 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
-
-	@Override
-	public void setIsLogWarning (final boolean IsLogWarning)
-	{
-		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
-	}
-
-	@Override
-	public boolean isLogWarning()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
-	}
-
 }

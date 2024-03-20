@@ -2,13 +2,11 @@ package de.metas.calendar.plan_optimizer.persistance;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
+import de.metas.calendar.plan_optimizer.domain.StepAllocation;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.calendar.util.CalendarDateRange;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlanEditor;
@@ -16,6 +14,8 @@ import de.metas.project.workorder.calendar.WOProjectSimulationService;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
+import de.metas.resource.HumanResourceTestGroupService;
 import de.metas.resource.ResourceService;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -36,19 +36,22 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 	private final WOProjectSimulationService woProjectSimulationService;
 	private final WOProjectConflictService woProjectConflictService;
 	private final ResourceService resourceService;
+	private final HumanResourceTestGroupService humanResourceTestGroupService;
 
 	public DatabasePlanLoaderAndSaver(
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final WOProjectService woProjectService,
 			@NonNull final WOProjectSimulationService woProjectSimulationService,
 			@NonNull final WOProjectConflictService woProjectConflictService,
-			@NonNull final ResourceService resourceService)
+			@NonNull final ResourceService resourceService,
+			@NonNull final HumanResourceTestGroupService humanResourceTestGroupService)
 	{
 		this.orgDAO = orgDAO;
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationService = woProjectSimulationService;
 		this.woProjectConflictService = woProjectConflictService;
 		this.resourceService = resourceService;
+		this.humanResourceTestGroupService = humanResourceTestGroupService;
 	}
 
 	@Override
@@ -59,6 +62,7 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 				.woProjectService(woProjectService)
 				.woProjectSimulationService(woProjectSimulationService)
 				.resourceService(resourceService)
+				.humanResourceTestGroupService(humanResourceTestGroupService)
 				.simulationId(simulationId)
 				.build()
 				.load();
@@ -72,7 +76,7 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 
 		final ImmutableSet<ProjectId> projectIds = solution.getStepsList()
 				.stream()
-				.map(Step::getProjectId)
+				.map(StepAllocation::getProjectId)
 				.collect(ImmutableSet.toImmutableSet());
 		if (projectIds.isEmpty())
 		{
@@ -89,30 +93,35 @@ public class DatabasePlanLoaderAndSaver implements PlanLoaderAndSaver
 				.currentSimulationPlan(woProjectSimulationService.getSimulationPlanById(simulationId))
 				.build();
 
-		for (final Step optaPlannerStep : solution.getStepsList())
+		for (final StepAllocation step : solution.getStepsList())
 		{
-			if (optaPlannerStep.getStartDate() == null || optaPlannerStep.getEndDate() == null)
+			if (step.getStartDate() == null || step.getEndDate() == null)
 			{
-				logger.warn("Skip updating from {} because start/end date is not set", optaPlannerStep);
+				logger.warn("Skip updating from {} because start/end date is not set", step);
 				continue;
 			}
 
-			final CalendarDateRange dateRange = CalendarDateRange.builder()
-					.startDate(optaPlannerStep.getStartDate().atZone(timeZone).toInstant())
-					.endDate(optaPlannerStep.getEndDate().atZone(timeZone).toInstant())
-					.build();
-
-			editor.changeResourceDateRange(
-					optaPlannerStep.getId().getWoProjectResourceId(),
-					dateRange,
-					optaPlannerStep.getId().getWoProjectStepId());
+			if (step.getResourceScheduledRange() != null)
+			{
+				editor.changeResourceDateRange(
+						step.getId().getMachineWOProjectResourceId(),
+						step.getResourceScheduledRange().toCalendarDateRange(timeZone),
+						step.getId().getWoProjectStepId());
+			}
+			if (step.getHumanResourceScheduledRange() != null)
+			{
+				editor.changeResourceDateRange(
+						step.getId().getHumanWOProjectResourceId(),
+						step.getHumanResourceScheduledRange().toCalendarDateRange(timeZone),
+						step.getId().getWoProjectStepId());
+			}
 		}
 
 		runInCtx(clientId, orgId, () -> {
 			final WOProjectSimulationPlan newSimulationPlan = editor.toNewSimulationPlan();
 			woProjectSimulationService.savePlan(newSimulationPlan);
 
-			final ImmutableSet<ResourceId> affectedResourceIds = editor.getAffectedResourceIds();
+			final ImmutableSet<ResourceIdAndType> affectedResourceIds = editor.getAffectedResourceIds();
 			if (!affectedResourceIds.isEmpty())
 			{
 				woProjectConflictService.checkSimulationConflicts(newSimulationPlan, affectedResourceIds);

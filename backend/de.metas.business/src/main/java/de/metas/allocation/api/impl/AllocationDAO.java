@@ -171,13 +171,13 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Client_ID, invoiceClientAndOrgId.getClientId())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, invoiceClientAndOrgId.getOrgId()) // consider only invoice's organization
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
-				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
-				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, paymentDirection.isReceipt())
-				.addEqualsFilter(I_C_Payment.COLUMN_IsAutoAllocateAvailableAmt, true)
-				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, false)
-				.orderBy(I_C_Payment.COLUMN_DateTrx)
-				.orderBy(I_C_Payment.COLUMN_C_Payment_ID)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, paymentDirection.isReceipt())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAutoAllocateAvailableAmt, true)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
+				.orderBy(I_C_Payment.COLUMNNAME_DateTrx)
+				.orderBy(I_C_Payment.COLUMNNAME_C_Payment_ID)
 				.create()
 				.list(I_C_Payment.class);
 	}

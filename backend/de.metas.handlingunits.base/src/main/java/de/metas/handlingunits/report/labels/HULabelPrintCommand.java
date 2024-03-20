@@ -7,7 +7,6 @@ import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.process.AdProcessId;
@@ -33,6 +32,7 @@ class HULabelPrintCommand
 	private final HULabelConfigService huLabelConfigService;
 	private final IMHUProcessDAO huProcessDAO;
 	private final HUQRCodesService huQRCodesService;
+	private final HULabelService huLabelService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull final HULabelPrintRequest request;
@@ -42,11 +42,13 @@ class HULabelPrintCommand
 			final @NonNull HULabelConfigService huLabelConfigService,
 			final @NonNull IMHUProcessDAO huProcessDAO,
 			final @NonNull HUQRCodesService huQRCodesService,
+			final @NonNull HULabelService huLabelService,
 			final @NonNull HULabelPrintRequest request)
 	{
 		this.huLabelConfigService = huLabelConfigService;
 		this.huProcessDAO = huProcessDAO;
 		this.huQRCodesService = huQRCodesService;
+		this.huLabelService = huLabelService;
 
 		this.request = request;
 	}
@@ -78,30 +80,15 @@ class HULabelPrintCommand
 
 	private void printBatchNow(final BatchToPrint batchToPrint)
 	{
-		if (batchToPrint.getHus().isEmpty())
-		{
-			return;
-		}
+		final HULabelDirectPrintRequest directPrintRequest = HULabelDirectPrintRequest.builder()
+				.hus(batchToPrint.getHus())
+				.printFormatProcessId(batchToPrint.getPrintInstructions().getPrintFormatProcessId())
+				.onlyOneHUPerPrint(batchToPrint.getPrintInstructions().isOnlyOneHUPerPrint())
+				.printCopies(batchToPrint.getPrintInstructions().getCopies())
+				.build();
 
-		final PrintInstructions printInstructions = batchToPrint.getPrintInstructions();
-		final AdProcessId printFormatProcessId = printInstructions.getPrintFormatProcessId();
-		final HUReportExecutor printExecutor = HUReportExecutor.newInstance()
-				.printPreview(false)
-				.numberOfCopies(printInstructions.getCopies());
-
-		if (printInstructions.isOnlyOneHUPerPrint())
-		{
-			for (final HUToReport hu : batchToPrint.getHus())
-			{
-				printExecutor.executeNow(printFormatProcessId, ImmutableList.of(hu));
-			}
-		}
-		else
-		{
-			printExecutor.executeNow(printFormatProcessId, batchToPrint.getHus());
-		}
+		huLabelService.printNow(directPrintRequest);
 	}
-
 	//
 	//
 	//

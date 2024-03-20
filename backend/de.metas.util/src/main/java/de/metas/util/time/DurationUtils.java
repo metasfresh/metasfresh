@@ -100,7 +100,7 @@ public class DurationUtils
 		return (int)toLong(duration, unit);
 	}
 
-	private static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	public static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
 	{
 		if (unit == ChronoUnit.SECONDS)
 		{

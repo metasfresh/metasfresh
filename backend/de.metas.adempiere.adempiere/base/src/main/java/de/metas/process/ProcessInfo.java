@@ -46,6 +46,7 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -58,6 +59,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -78,6 +82,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -85,7 +91,10 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -134,6 +143,8 @@ public final class ProcessInfo implements Serializable
 		adWindowId = builder.getAdWindowId();
 
 		title = builder.getTitle();
+
+		reportResultDataTarget = builder.getReportResultDataTarget();
 
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
@@ -188,10 +199,8 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Title of the Process/Report
 	 */
-	@Getter
-	private final String title;
-	@Getter
-	private final AdProcessId adProcessId;
+	@Getter private final String title;
+	@Getter private final AdProcessId adProcessId;
 
 	/**
 	 * Table ID if the Process
@@ -280,11 +289,16 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
+	@NonNull private final ReportResultDataTarget reportResultDataTarget;
+
 	/**
 	 * Process result
 	 */
 	@Getter
 	private final ProcessExecutionResult result;
+
+	private static final String PARA_IsAlsoSendToBrowser = "IsAlsoSendToBrowser";
+	private static final String PARA_PRINTER_OPTS_IsAlsoSendToBrowser = "PRINTER_OPTS_IsAlsoSendToBrowser";
 
 	@Override
 	public String toString()
@@ -776,6 +790,26 @@ public final class ProcessInfo implements Serializable
 		return _processClassInfo;
 	}
 
+	public ReportResultDataTarget getReportResultDataTarget()
+	{
+		return reportResultDataTarget.forwardingToUserBrowser(isAlsoSendToBrowser());
+	}
+
+	private OptionalBoolean isAlsoSendToBrowser()
+	{
+		final IRangeAwareParams params = getParameterAsIParams();
+		if (params.hasParameter(PARA_PRINTER_OPTS_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_PRINTER_OPTS_IsAlsoSendToBrowser));
+		}
+		if (params.hasParameter(PARA_IsAlsoSendToBrowser))
+		{
+			return OptionalBoolean.ofBoolean(params.getParameterAsBool(PARA_IsAlsoSendToBrowser));
+		}
+
+		return OptionalBoolean.UNKNOWN;
+	}
+
 	@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 	public static final class ProcessInfoBuilder
 	{
@@ -789,6 +823,7 @@ public final class ProcessInfo implements Serializable
 		 */
 		public static final List<String> WINDOW_CTXNAMES_TO_COPY = ImmutableList.of("AD_Language", "C_BPartner_ID");
 		private static final String SYSCONFIG_UseLoginLanguageForDraftDocuments = "de.metas.report.jasper.OrgLanguageForDraftDocuments";
+		private static final String SYSCONFIG_DefaultStoringFileServerPath = "de.metas.process.DefaultStoringFileServerPath";
 
 		private PInstanceId pInstanceId;
 		private transient I_AD_PInstance _adPInstance;
@@ -799,6 +834,7 @@ public final class ProcessInfo implements Serializable
 		private RoleId _adRoleId;
 		private AdWindowId _adWindowId = null;
 		private String title = null;
+
 		private Optional<String> classname;
 		private Boolean refreshAllAfterExecution;
 
@@ -1096,6 +1132,39 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		@NonNull
+		private ReportResultDataTarget getReportResultDataTarget()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			if (process == null)
+			{
+				return ReportResultDataTarget.ForwardToUserBrowser;
+			}
+
+			final ReportResultDataTargetType targetType = ReportResultDataTargetType.optionalOfNullableCode(process.getStoreProcessResultFileOn()).orElse(ReportResultDataTargetType.ForwardToUserBrowser);
+
+			Path serverTargetDirectory = null;
+			if (targetType.isSaveToServerDirectory())
+			{
+				serverTargetDirectory = StringUtils.trimBlankToOptional(process.getStoreProcessResultFilePath())
+						.or(ProcessInfoBuilder::getDefaultStoringFileServerPath)
+						.map(Paths::get)
+						.orElse(null);
+			}
+
+			return ReportResultDataTarget.builder()
+					.targetType(targetType)
+					.serverTargetDirectory(serverTargetDirectory)
+					.targetFilename(getReportTargetFilename().orElse(null))
+					.build();
+		}
+
+		private static Optional<String> getDefaultStoringFileServerPath()
+		{
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			return StringUtils.trimBlankToOptional(sysConfigBL.getValue(SYSCONFIG_DefaultStoringFileServerPath));
+		}
+
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
 			final PInstanceId adPInstanceId = getPInstanceId();
@@ -1264,6 +1333,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
+						.doNotQuoteRows(process.isDoNotQuoteRows())
 						.build();
 			}
 		}
@@ -1276,13 +1346,37 @@ public final class ProcessInfo implements Serializable
 				return Optional.empty();
 			}
 
-			final String reportTemplate = adProcess.getJasperReport();
-			if (reportTemplate == null || Check.isEmpty(reportTemplate, true))
+			return StringUtils.trimBlankToOptional(adProcess.getJasperReport());
+		}
+
+		private Optional<String> getReportTargetFilename()
+		{
+			final I_AD_Process adProcess = getAD_ProcessOrNull();
+			if(adProcess == null)
 			{
 				return Optional.empty();
 			}
 
-			return Optional.of(reportTemplate.trim());
+			final String reportFilenamePatternStr = StringUtils.trimBlankToNull(adProcess.getFilenamePattern());
+			if(reportFilenamePatternStr == null)
+			{
+				return Optional.empty();
+			}
+
+			final IStringExpression reportFilenamePattern = StringExpressionCompiler.instance.compile(reportFilenamePatternStr);
+
+			// !! Please keep this in sync with the description of AD_Element_ID=582878 (ColumnName=FilenamePattern)
+			final Evaluatee evalCtx = Evaluatees.mapBuilder()
+					.put("AD_PInstance_ID", pInstanceId != null ? String.valueOf(pInstanceId.getRepoId()) : "")
+					.put("AD_Process_ID", String.valueOf(adProcess.getAD_Process_ID()))
+					.put("AD_Process.Value", adProcess.getValue())
+					.put("AD_Process.Name", getTitle())
+					.put("Date", DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS").withZone(SystemTime.zoneId()).format(SystemTime.asInstant()))
+					.build();
+
+			String reportFilename = reportFilenamePattern.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+			reportFilename = FileUtil.stripIllegalCharacters(reportFilename);
+			return Optional.of(reportFilename);
 		}
 
 		private boolean isReportApplySecuritySettings()
@@ -1669,18 +1763,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}

@@ -79,4 +79,6 @@ public class Role
 	boolean webuiRole;
 
 	UserId updatedBy;
+
+	public boolean isSystem() {return id.isSystem();}
 }

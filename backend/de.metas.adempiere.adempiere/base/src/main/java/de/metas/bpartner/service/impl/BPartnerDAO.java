@@ -207,6 +207,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return load(bpartnerId.getRepoId(), modelClass);
 	}
 
+	@Override
 	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
 		if (bpartnerIds.isEmpty())
@@ -597,6 +598,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(final Set<BPartnerLocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_BPartner_Location.class);
 	}
 
 	@Override
@@ -1372,11 +1384,15 @@ public class BPartnerDAO implements IBPartnerDAO
 		switch (type)
 		{
 			case BILL_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsBillTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsBillTo;
 			case SHIP_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsShipTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsShipTo;
 			case REMIT_TO:
-				return I_C_BP_Relation.COLUMNNAME_IsRemitTo;
+				return I_C_BPartner_Location.COLUMNNAME_IsRemitTo;
+			case SHIP_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsShipToDefault;
+			case BILL_TO_DEFAULT:
+				return I_C_BPartner_Location.COLUMNNAME_IsBillToDefault;
 			default:
 				Check.fail("Unexpected type={}", type);
 				return null;
@@ -1523,6 +1539,12 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartnerIds;
 	}
 
+	@NonNull
+	public Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull final GLNQuery query)
+	{
+		return glnsLoadingCache.getSingleBPartnerLocationId(query);
+	}
+	
 	private static GLNQuery toGLNQuery(@NonNull final BPartnerQuery query)
 	{
 		return GLNQuery.builder()
@@ -1537,7 +1559,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{

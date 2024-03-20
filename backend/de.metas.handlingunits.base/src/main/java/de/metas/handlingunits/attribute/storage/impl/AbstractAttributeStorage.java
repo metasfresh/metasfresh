@@ -38,6 +38,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeSourceDocument;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -1281,6 +1283,27 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		listeners.onAttributeStorageDisposed(this);
 	}
 
+	@Nullable
+	@Override
+	public AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
+	{
+		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeCode);
+		if (attribute == null)
+		{
+			return null;
+		}
+
+		final String value = getValueAsStringOrNull(attributeCode);
+		if (value == null)
+		{
+			return null;
+		}
+
+		return Optional.ofNullable(attributesBL.retrieveAttributeValueOrNull(attribute, value))
+				.map(AttributeListValue::getId)
+				.orElse(null);
+	}
+
 	@ToString
 	private static final class IndexedAttributeValues
 	{
@@ -1364,9 +1387,17 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return attributesById.containsKey(attributeId);
 		}
 
-		public Collection<I_M_Attribute> getAttributes()
+		/**
+		 * @return this storage's attributes in the order in which they were added to the storage {@link de.metas.handlingunits.attribute.impl.HUAttributesBySeqNoComparator}.
+		 */
+		public ImmutableList<I_M_Attribute> getAttributes()
 		{
-			return attributesByCode.values();
+			final ImmutableList.Builder<I_M_Attribute> result = ImmutableList.builder();
+			for(final IAttributeValue attributeValue:attributeValues)
+			{
+				result.add(attributeValue.getM_Attribute());
+			}
+			return result.build();
 		}
 
 		public I_M_Attribute getAttributeOrNull(final AttributeId attributeId)

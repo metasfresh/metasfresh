@@ -36,6 +36,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.cache.CCache;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -248,7 +249,7 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
-	public void save(I_C_Queue_Element element)
+	public void save(final I_C_Queue_Element element)
 	{
 		InterfaceWrapperHelper.save(element);
 	}
@@ -442,5 +443,29 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		return lockManager.addNotLockedClause(updateQuery)
 				.updateDirectly(updater);
+	}
+
+	private final CCache<String, QueuePackageProcessorId> classname2QueuePackageProcessorId = CCache
+			.<String, QueuePackageProcessorId>builder()
+			.tableName(I_C_Queue_PackageProcessor.Table_Name)
+			.build(); // we will only ever have a handful of processors, so there is nothing much to worry about wrt cache-size
+
+	@Nullable
+	@Override
+	public QueuePackageProcessorId retrieveQueuePackageProcessorIdFor(@NonNull final String classname)
+	{
+		return classname2QueuePackageProcessorId.getOrLoad(classname, AbstractQueueDAO::retrieveQueuePackageProcessorIdFor0);
+	}
+
+	@Nullable
+	private static QueuePackageProcessorId retrieveQueuePackageProcessorIdFor0(@NonNull final String classname)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_Classname, classname)
+				.create()
+				.firstId(QueuePackageProcessorId::ofRepoIdOrNull);
 	}
 }

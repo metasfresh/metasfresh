@@ -57,6 +57,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -92,7 +93,7 @@ import java.util.Properties;
 public class CanonicalXSDGenerator
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(CanonicalXSDGenerator.class);
+	private static final Logger logger = LogManager.getLogger(CanonicalXSDGenerator.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ADReferenceService adReferenceService = ADReferenceService.get();
 
@@ -114,7 +115,9 @@ public class CanonicalXSDGenerator
 	public static String JAXB_AttributeSuffix = "Attr";
 	public static String JAXB_Version = "2.0";
 
+	@Nullable
 	private Document document = null;
+	@Nullable
 	private Element rootElement = null;
 
 	private final List<Element> complexTypes = new ArrayList<>();
@@ -160,8 +163,7 @@ public class CanonicalXSDGenerator
 			throw new RuntimeException(e.getLocalizedMessage(), e);
 		}
 
-		final Document result = documentBuilder.newDocument();
-		return result;
+		return documentBuilder.newDocument();
 	}
 
 	public void addEXPFormat(final I_EXP_Format format)
@@ -494,7 +496,7 @@ public class CanonicalXSDGenerator
 		}
 	}
 
-	private Element createXSDAttribute(final Element parent, final String name, final String type, final String fixed)
+	private Element createXSDAttribute(@Nullable final Element parent, final String name, @Nullable final String type, @Nullable final String fixed)
 	{
 		final Element e = document.createElement("xsd:attribute");
 		if (type != null)
@@ -572,7 +574,7 @@ public class CanonicalXSDGenerator
 	 * </ul>
 	 *
 	 */
-	private static final String mkAsciiOnly(final String input)
+	private static String mkAsciiOnly(final String input)
 	{
 		Check.assume(input != null, "Input string is not null");
 
@@ -805,7 +807,7 @@ public class CanonicalXSDGenerator
 	 * @param defaultDisplayType
 	 * @return
 	 */
-	private final int getDisplayType(final I_EXP_FormatLine line, final int defaultDisplayType)
+	private int getDisplayType(final I_EXP_FormatLine line, final int defaultDisplayType)
 	{
 		if (line.getAD_Reference_Override_ID() > 0)
 		{

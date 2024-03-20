@@ -1,13 +1,13 @@
 import { quickActionsRequest, topActionsRequest } from '../api';
 import {
   DELETE_QUICK_ACTIONS,
-  DELETE_TOP_ACTIONS,
+  TOP_ACTIONS_DELETE,
   FETCH_QUICK_ACTIONS,
   FETCH_QUICK_ACTIONS_FAILURE,
   FETCH_QUICK_ACTIONS_SUCCESS,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_SUCCESS,
 } from '../constants/ActionTypes';
 
 import { getQuickActionsId, getQuickActions } from '../reducers/actionsHandler';
@@ -254,9 +254,10 @@ export function deleteQuickActions(windowId, viewId) {
  * @method deleteTopActions
  * @summary Deletes tab's actions
  */
-export function deleteTopActions() {
+export function deleteTopActions({ windowId, tabId, docId }) {
   return {
-    type: DELETE_TOP_ACTIONS,
+    type: TOP_ACTIONS_DELETE,
+    payload: { windowId, tabId, docId },
   };
 }
 
@@ -268,24 +269,26 @@ export function deleteTopActions() {
  * @param {string} docId
  * @param {string} tabId
  */
-export function fetchTopActions(windowId, docId, tabId) {
+export function fetchTopActions({ windowId, tabId, docId }) {
   return (dispatch) => {
     dispatch({
-      type: FETCH_TOP_ACTIONS,
+      type: TOP_ACTIONS_LOADING,
+      payload: { windowId, tabId, docId },
     });
 
     return topActionsRequest(windowId, docId, tabId)
       .then((response) => {
         dispatch({
-          type: FETCH_TOP_ACTIONS_SUCCESS,
-          payload: response.data.actions,
+          type: TOP_ACTIONS_SUCCESS,
+          payload: { windowId, tabId, docId, actions: response.data.actions },
         });
 
         return Promise.resolve(response.data.actions);
       })
       .catch((e) => {
         dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
+          type: TOP_ACTIONS_FAILURE,
+          payload: { windowId, tabId, docId },
         });
 
         return Promise.reject(e);

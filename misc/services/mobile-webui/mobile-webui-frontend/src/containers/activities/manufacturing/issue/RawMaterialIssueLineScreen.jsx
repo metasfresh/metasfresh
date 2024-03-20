@@ -13,7 +13,7 @@ import {
 } from '../../../../routes/manufacturing_issue';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
-import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 const RawMaterialIssueLineScreen = () => {
@@ -71,7 +71,7 @@ const RawMaterialIssueLineScreen = () => {
           return (
             <ButtonWithIndicator
               key={stepItem.id}
-              caption={stepItem.locatorName + ' - ' + toQRCodeDisplayable(stepItem.huQRCode)}
+              caption={stepItem.locatorName + ' - ' + (toQRCodeDisplayable(stepItem.huQRCode) ?? '')}
               completeStatus={stepItem.completeStatus}
               onClick={() => onStepButtonClick({ stepId: stepItem.id })}
             >

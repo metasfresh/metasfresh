@@ -38,6 +38,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,7 +136,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
-	void validateBeforeClose(I_PP_Order_BOMLine line);
+	void validateBeforeClose(I_PP_Order_BOMLine line, @Nullable Quantity roundToScale);
 
 	void close(I_PP_Order_BOMLine line);
 

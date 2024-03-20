@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.material.cockpit;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.QtyDemandQtySupply;
@@ -93,7 +94,7 @@ public class MaterialCockpitRowsLoader
 	public List<MaterialCockpitRow> getMaterialCockpitRows(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final LocalDate date,
-			final boolean includePerPlantDetailRows)
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		final List<I_MD_Cockpit> cockpitRecords = materialCockpitFilters
 				.createQuery(filters)
@@ -103,14 +104,24 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
+		final List<QtyDemandQtySupply> quantitiesRecords;
+		if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
+		{
+			quantitiesRecords = getQtyRecords(cockpitRecords, stockRecords);
+		}
+		else
+		{
+			quantitiesRecords = ImmutableList.of();
+		}
+
 		final MaterialCockpitRowFactory.CreateRowsRequest request = MaterialCockpitRowFactory.CreateRowsRequest
 				.builder()
 				.date(date)
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
-				.quantitiesRecords(getQtyRecords(cockpitRecords, stockRecords))
-				.includePerPlantDetailRows(includePerPlantDetailRows)
+				.quantitiesRecords(quantitiesRecords)
+				.detailsRowAggregation(detailsRowAggregation)
 				.build();
 		return materialCockpitRowFactory.createRows(request);
 	}

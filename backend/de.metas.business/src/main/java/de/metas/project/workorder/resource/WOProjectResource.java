@@ -25,7 +25,6 @@ package de.metas.project.workorder.resource;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProjectResourceId;
 import de.metas.project.workorder.step.WOProjectStepId;
@@ -59,7 +58,7 @@ public class WOProjectResource
 	CalendarDateRange dateRange;
 
 	@NonNull
-	ResourceId resourceId;
+	ResourceIdAndType resourceIdAndType;
 
 	@Nullable
 	Boolean isActive;
@@ -94,7 +93,7 @@ public class WOProjectResource
 			@NonNull final WOProjectResourceId woProjectResourceId,
 			@NonNull final WOProjectStepId woProjectStepId,
 			@Nullable final CalendarDateRange dateRange,
-			@NonNull final ResourceId resourceId,
+			@NonNull final ResourceIdAndType resourceIdAndType,
 			@NonNull final Duration duration,
 			@NonNull final WFDurationUnit durationUnit,
 			final boolean isActive,
@@ -114,7 +113,7 @@ public class WOProjectResource
 		this.woProjectResourceId = woProjectResourceId;
 		this.woProjectStepId = woProjectStepId;
 		this.dateRange = dateRange;
-		this.resourceId = resourceId;
+		this.resourceIdAndType = resourceIdAndType;
 		this.duration = duration;
 		this.durationUnit = durationUnit;
 		this.isActive = isActive;
@@ -147,14 +146,14 @@ public class WOProjectResource
 	{
 		return woProjectResourceId.getProjectId();
 	}
-	
+
 	@NonNull
 	public Optional<Instant> getStartDate()
 	{
 		return Optional.ofNullable(dateRange)
 				.map(CalendarDateRange::getStartDate);
 	}
-	
+
 	@NonNull
 	public Optional<Instant> getEndDate()
 	{

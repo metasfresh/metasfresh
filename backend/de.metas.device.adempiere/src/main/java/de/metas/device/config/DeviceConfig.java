@@ -91,6 +91,15 @@ public final class DeviceConfig
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
 	}
 
+	public Optional<String> getDeviceConfigParamValue(@NonNull final String parameterName)
+	{
+		return deviceConfigParams.keySet()
+				.stream()
+				.filter(paramKey -> paramKey.contains(parameterName))
+				.findFirst()
+				.map(deviceConfigParams::get);
+	}
+
 	public static final class Builder
 	{
 		private final String deviceName;

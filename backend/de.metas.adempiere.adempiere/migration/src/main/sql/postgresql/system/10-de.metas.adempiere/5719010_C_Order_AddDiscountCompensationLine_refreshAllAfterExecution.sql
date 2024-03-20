@@ -1,0 +1,4 @@
+-- 2024-03-11T14:45:57.303Z
+UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2024-03-11 16:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540934
+;
+

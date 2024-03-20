@@ -176,7 +176,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 		// Lines
 		BigDecimal total = BigDecimal.ZERO;

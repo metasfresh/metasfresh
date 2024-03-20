@@ -13,6 +13,17 @@ export const unboxAxiosResponse = (axiosResponse) => {
   }
 };
 
-export const toQueryString = (query) => {
-  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+export const toQueryString = (queryParams) => {
+  return queryString.stringify(queryParams, { arrayFormat: 'comma', skipNull: true });
 };
+
+export const toUrlQueryParams = (queryParams) => {
+  const queryParamsStr = toQueryString(queryParams);
+  return queryParamsStr ? `?${queryParamsStr}` : '';
+};
+
+export const toUrl = (path, queryParams) => {
+  return `${path}${toUrlQueryParams(queryParams)}`;
+};
+
+export const isNullOrUndefined = (arg) => arg === null || arg === undefined;

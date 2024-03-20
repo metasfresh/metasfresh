@@ -24,19 +24,25 @@ package de.metas.common.rest_api.v2.attachment;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @Builder
 @JsonDeserialize(builder = JsonExternalReferenceTarget.JsonExternalReferenceTargetBuilder.class)
 public class JsonExternalReferenceTarget
 {
+	@Schema(requiredMode= REQUIRED)
 	@NonNull
 	@JsonProperty("externalReferenceType")
 	String externalReferenceType;
 
+	@Schema(requiredMode= REQUIRED)
 	@NonNull
 	@JsonProperty("externalReferenceIdentifier")
 	String externalReferenceIdentifier;

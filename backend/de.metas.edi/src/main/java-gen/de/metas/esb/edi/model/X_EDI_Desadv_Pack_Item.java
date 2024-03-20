@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EDI_Desadv_Pack_Item
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_EDI_Desadv_Pack_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1977760987L;
+	private static final long serialVersionUID = -354804449L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack_Item (final Properties ctx, final int EDI_Desadv_Pack_Item_ID, @Nullable final String trxName)
@@ -48,15 +48,42 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
-	public I_EDI_Desadv_Pack getEDI_Desadv_Pack()
+	public de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine()
 	{
-		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack.class);
+		return get_ValueAsPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	}
 
 	@Override
-	public void setEDI_Desadv_Pack(final I_EDI_Desadv_Pack EDI_Desadv_Pack)
+	public void setEDI_DesadvLine(final de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine)
 	{
-		set_ValueFromPO(COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack.class, EDI_Desadv_Pack);
+		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class, EDI_DesadvLine);
+	}
+
+	@Override
+	public void setEDI_DesadvLine_ID (final int EDI_DesadvLine_ID)
+	{
+		if (EDI_DesadvLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, EDI_DesadvLine_ID);
+	}
+
+	@Override
+	public int getEDI_DesadvLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EDI_DesadvLine_ID);
+	}
+
+	@Override
+	public de.metas.esb.edi.model.I_EDI_Desadv_Pack getEDI_Desadv_Pack()
+	{
+		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_Pack_ID, de.metas.esb.edi.model.I_EDI_Desadv_Pack.class);
+	}
+
+	@Override
+	public void setEDI_Desadv_Pack(final de.metas.esb.edi.model.I_EDI_Desadv_Pack EDI_Desadv_Pack)
+	{
+		set_ValueFromPO(COLUMNNAME_EDI_Desadv_Pack_ID, de.metas.esb.edi.model.I_EDI_Desadv_Pack.class, EDI_Desadv_Pack);
 	}
 
 	@Override
@@ -90,52 +117,25 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
-	public I_EDI_DesadvLine getEDI_DesadvLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_EDI_DesadvLine_ID, I_EDI_DesadvLine.class);
-	}
-
-	@Override
-	public void setEDI_DesadvLine(final I_EDI_DesadvLine EDI_DesadvLine)
-	{
-		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, I_EDI_DesadvLine.class, EDI_DesadvLine);
-	}
-
-	@Override
-	public void setEDI_DesadvLine_ID (final int EDI_DesadvLine_ID)
-	{
-		if (EDI_DesadvLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, EDI_DesadvLine_ID);
-	}
-
-	@Override
-	public int getEDI_DesadvLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_EDI_DesadvLine_ID);
-	}
-
-	@Override
-	public void setGTIN_TU_PackingMaterial (final @Nullable String GTIN_TU_PackingMaterial)
+	public void setGTIN_TU_PackingMaterial (final @Nullable java.lang.String GTIN_TU_PackingMaterial)
 	{
 		set_Value (COLUMNNAME_GTIN_TU_PackingMaterial, GTIN_TU_PackingMaterial);
 	}
 
 	@Override
-	public String getGTIN_TU_PackingMaterial()
+	public java.lang.String getGTIN_TU_PackingMaterial() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_TU_PackingMaterial);
 	}
 
 	@Override
-	public void setLotNumber (final @Nullable String LotNumber)
+	public void setLotNumber (final @Nullable java.lang.String LotNumber)
 	{
 		set_Value (COLUMNNAME_LotNumber, LotNumber);
 	}
 
 	@Override
-	public String getLotNumber()
+	public java.lang.String getLotNumber() 
 	{
 		return get_ValueAsString(COLUMNNAME_LotNumber);
 	}
@@ -156,12 +156,12 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_TU_Text (final @Nullable String M_HU_PackagingCode_TU_Text)
+	public void setM_HU_PackagingCode_TU_Text (final @Nullable java.lang.String M_HU_PackagingCode_TU_Text)
 	{
 		throw new IllegalArgumentException ("M_HU_PackagingCode_TU_Text is virtual column");	}
 
 	@Override
-	public String getM_HU_PackagingCode_TU_Text()
+	public java.lang.String getM_HU_PackagingCode_TU_Text() 
 	{
 		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_TU_Text);
 	}
@@ -234,19 +234,6 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	}
 
 	@Override
-	public void setQtyCU (final @Nullable BigDecimal QtyCU)
-	{
-		set_Value (COLUMNNAME_QtyCU, QtyCU);
-	}
-
-	@Override
-	public BigDecimal getQtyCU() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setQtyCUsPerLU (final @Nullable BigDecimal QtyCUsPerLU)
 	{
 		set_Value (COLUMNNAME_QtyCUsPerLU, QtyCUsPerLU);
@@ -256,6 +243,45 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	public BigDecimal getQtyCUsPerLU() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerLU);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyCUsPerLU_InInvoiceUOM (final @Nullable BigDecimal QtyCUsPerLU_InInvoiceUOM)
+	{
+		set_Value (COLUMNNAME_QtyCUsPerLU_InInvoiceUOM, QtyCUsPerLU_InInvoiceUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyCUsPerLU_InInvoiceUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerLU_InInvoiceUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyCUsPerTU (final @Nullable BigDecimal QtyCUsPerTU)
+	{
+		set_Value (COLUMNNAME_QtyCUsPerTU, QtyCUsPerTU);
+	}
+
+	@Override
+	public BigDecimal getQtyCUsPerTU() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerTU);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyCUsPerTU_InInvoiceUOM (final @Nullable BigDecimal QtyCUsPerTU_InInvoiceUOM)
+	{
+		set_Value (COLUMNNAME_QtyCUsPerTU_InInvoiceUOM, QtyCUsPerTU_InInvoiceUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyCUsPerTU_InInvoiceUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerTU_InInvoiceUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

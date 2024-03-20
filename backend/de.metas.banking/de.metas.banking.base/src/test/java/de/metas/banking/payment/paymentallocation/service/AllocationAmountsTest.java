@@ -8,7 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -94,8 +95,8 @@ public class AllocationAmountsTest
 		public void differentCurrencies()
 		{
 			final AllocationAmountsBuilder builder = AllocationAmounts.builder()
-					.discountAmt(Money.of(1, CurrencyId.ofRepoId(1)))
-					.invoiceProcessingFee(Money.of(2, CurrencyId.ofRepoId(2)));
+					.discountAmt(Money.of(1, CurrencyId.EUR))
+					.invoiceProcessingFee(Money.of(2, CurrencyId.USD));
 
 			assertThatThrownBy(builder::build)
 					.isInstanceOf(AdempiereException.class)

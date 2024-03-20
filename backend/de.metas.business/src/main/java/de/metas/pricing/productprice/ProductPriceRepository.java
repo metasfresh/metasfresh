@@ -154,4 +154,11 @@ public class ProductPriceRepository
 				.firstOnlyNotNull(I_M_ProductPrice.class);
 	}
 
+
+	@NonNull
+	public <T extends I_M_ProductPrice> T getRecordById(@NonNull final ProductPriceId productPriceId, @NonNull final Class<T> productPriceClass)
+	{
+
+		return InterfaceWrapperHelper.load(productPriceId, productPriceClass);
+	}
 }

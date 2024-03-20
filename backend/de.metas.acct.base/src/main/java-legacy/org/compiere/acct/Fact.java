@@ -182,6 +182,8 @@ public final class Fact
 		return getAcctSchema().getId();
 	}
 
+	public CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
+
 	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
 		return getAcctSchema().getSchemaElements();

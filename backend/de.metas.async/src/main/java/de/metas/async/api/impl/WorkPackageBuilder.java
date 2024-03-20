@@ -26,7 +26,6 @@ import org.slf4j.MDC.MDCCloseable;
 import javax.annotation.Nullable;
 import java.util.LinkedHashSet;
 import java.util.Properties;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
@@ -72,10 +71,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	private String _trxName = ITrx.TRXNAME_None;
 	private boolean _trxNameBound = false;
 	private final LinkedHashSet<TableRecordReference> elements = new LinkedHashSet<>();
-	/** Locker used to lock enqueued elements */
+	/**
+	 * Locker used to lock enqueued elements
+	 */
 	private ILockCommand _elementsLocker = null;
-	/** Lock aquired when enqueued elements were locked */
-	private Future<ILock> _futureElementsLock;
 
 	// Status
 	private final AtomicBoolean built = new AtomicBoolean(false);
@@ -93,7 +92,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	@Override
 	public I_C_Queue_WorkPackage buildAndEnqueue()
 	{
-		// Add parameter "ElementsLockOwner" if we are are locking
+		// Add parameter "ElementsLockOwner" if we are locking
 		final ILockCommand elementsLocker = getElementsLockerOrNull();
 		if (elementsLocker != null)
 		{
@@ -240,12 +239,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@Override
-	public Future<ILock> getElementsLock()
-	{
-		return _futureElementsLock;
-	}
-
-	@Override
 	public void discard()
 	{
 		assertNotBuilt();
@@ -300,7 +293,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	}
 
 	@NonNull
-	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final  ILockCommand elementsLocker)
+	private I_C_Queue_WorkPackage enqueue(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final ILockCommand elementsLocker)
 	{
 		final IWorkPackageQueue workPackageQueue = getWorkpackageQueue();
 
@@ -308,11 +301,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 		final String originalWorkPackageTrxName = getTrxName(workPackage);
 
-		try (final IAutoCloseable temporary = () -> setTrxName(workPackage, originalWorkPackageTrxName))
+		try (final IAutoCloseable ignored = () -> setTrxName(workPackage, originalWorkPackageTrxName))
 		{
 			// Fact: the workpackage trxName is used when creating the workpackage and its elements.
-			// Therefore we temporarily set it to be our _trxName.
-			// Otherways, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
+			// Therefore, we temporarily set it to be our _trxName.
+			// Otherwise, if the current trx fails, the workpackage will have been created, but not have been flagged as "ReadyForProcessing" (which sucks).
 			setTrxName(workPackage, _trxName);
 
 			@SuppressWarnings("deprecation") // Suppressing the warning, because *this class* is the workpackage builder to be used
@@ -320,7 +313,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 					workPackage,
 					workPackagePriority);
 
-			try (final MDCCloseable workpackageRecordMDC = TableRecordMDC.putTableRecordReference(workpackage))
+			try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(workpackage))
 			{
 				// Set the Async batch if provided
 				// TODO: optimize this and set everything in one shot and then save it.
@@ -347,7 +340,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 				// Lock enqueued workpackage elements
 				if (elementsLocker != null)
 				{
-					_futureElementsLock = elementsLocker.acquireBeforeTrxCommit(_trxName);
+					final ILock lock = elementsLocker.acquire();
+					lock.unlockAllAfterTrxRollback();
 				}
 
 				//

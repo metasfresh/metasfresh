@@ -28,8 +28,10 @@
         <IPA_SSCC18>000000000000000062</IPA_SSCC18>
         <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
         <EDI_Exp_Desadv_Pack_Item>
-            <QtyCU>10</QtyCU>
+            <QtyCUsPerTU>10</QtyCUsPerTU>
             <QtyCUsPerLU>90</QtyCUsPerLU>
+            <QtyCUsPerLU_InInvoiceUOM>22.5</QtyCUsPerLU_InInvoiceUOM>
+            <QtyCUsPerTU_InInvoiceUOM>2.5</QtyCUsPerTU_InInvoiceUOM>
             <QtyTU>9</QtyTU>
             <EDI_DesadvLine_ID>
                 <C_UOM_ID>

@@ -1,7 +1,6 @@
 package de.metas.printing.spi.impl;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -23,6 +22,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +39,7 @@ import java.util.Properties;
  */
 public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 {
-	public static final transient DocumentPrintingQueueHandler instance = new DocumentPrintingQueueHandler();
+	public static final DocumentPrintingQueueHandler instance = new DocumentPrintingQueueHandler();
 
 	private static final Logger logger = LogManager.getLogger(DocumentPrintingQueueHandler.class);
 
@@ -58,14 +58,14 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive archive)
 	{
 		logger.debug("C_Printing_Queue={}; AD_Archive {} has [AD_Table_ID={}, Record_ID={}, C_BPartner_ID={}];",
-				new Object[] { queueItem, archive, archive.getAD_Table_ID(), archive.getRecord_ID(), archive.getC_BPartner_ID() });
+					 queueItem, archive, archive.getAD_Table_ID(), archive.getRecord_ID(), archive.getC_BPartner_ID());
 
 		//
 		// try to set the C_BPartner_ID for our queueItem
 		if (archive.getC_BPartner_ID() > 0 && queueItem.getC_BPartner_ID()<=0)
 		{
 			logger.debug("Setting column of C_Printing_Queue {} from AD_Archive {}: [C_BPartner_ID={}]",
-					new Object[] { queueItem, archive, archive.getC_BPartner_ID() });
+						 queueItem, archive, archive.getC_BPartner_ID());
 			queueItem.setC_BPartner_ID(archive.getC_BPartner_ID()); // may be overridden further down.
 		}
 
@@ -84,20 +84,15 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			if (bpartnerID.isPresent())
 			{
 				logger.debug("Setting column of C_Printing_Queue {} from PO {} that is referenced by AD_Archive {}: [C_BPartner_ID={}]",
-						new Object[] { queueItem, archiveRefencedModel, archive, bpartnerID });
+							 queueItem, archiveRefencedModel, archive, bpartnerID);
 				queueItem.setC_BPartner_ID(bpartnerID.get()); // may be overridden further down.
 			}
 		}
 
-		// special stuff wrt special document type
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IDocument document = docActionBL.getDocumentOrNull(archiveRefencedModel);
-		if (document != null)
-		{
-			logger.debug("Setting column of C_Printing_Queue {} from DocAction-PO {} that is referenced by AD_Archive {}: [AD_User_ID={}]",
-					new Object[] { queueItem, archiveRefencedModel, archive, document.getDoc_User_ID() });
-			queueItem.setAD_User_ID(document.getDoc_User_ID()); // in the docs i saw (C_Order, C_Invoice) this is the ID of our sales rep, which is fine AFAIS
-		}
+		// Do not set AD_User_ID to document.getDoc_User_ID() !
+		// C_Printing_Queue.AD_User_ID is the ID of the user *for which we print* and for whom the printer mapping has to be looked up.
+		// If user A wants to print a shipment, we shall use the printer mapping of user A (or her current workplace).
+		// And not the config of e.g. the shipment's customer's sales rep.
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueItem);
 		final int doctypeID = Services.get(IDocumentBL.class).getC_DocType_ID(ctx, archive.getAD_Table_ID(), archive.getRecord_ID());
@@ -123,7 +118,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	/**
 	 * Sets the ItemName for each document that we process
 	 */
-	private void handleItemName(final I_C_Printing_Queue queueItem, Object archiveRerencedModel)
+	private void handleItemName(final I_C_Printing_Queue queueItem, final Object archiveRerencedModel)
 	{
 		// Handles operations specific for invoices.
 		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
@@ -168,17 +163,18 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		// currently, don't use M_InOut.MovementDate because it might be a different date and the user want's to filter by
 		final List<I_M_ShipmentSchedule> schedules = schedAllocDAO.retrieveSchedulesForInOut(inout);
 
-		final ZonedDateTime deliveryDateToset = computeMaxDeliveryDateFromScheds(schedules);
+		final ZonedDateTime deliveryDateToset = computeMaxDeliveryDateFromSchedsOrNull(schedules);
 		if (deliveryDateToset != null)
 		{
 			queueItem.setDeliveryDate(TimeUtil.asTimestamp(deliveryDateToset));
 		}
 
 		logger.debug("Setting columns of C_Printing_Queue {} from M_InOut {}: [C_BPartner_ID={}, C_BPartner_Location_ID={}, DeliveryDate={}]",
-				new Object[] { queueItem, inout, inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID(), deliveryDateToset });
+					 queueItem, inout, inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID(), deliveryDateToset);
 	}
 
-	private ZonedDateTime computeMaxDeliveryDateFromScheds(final List<I_M_ShipmentSchedule> schedules)
+	@Nullable
+	private ZonedDateTime computeMaxDeliveryDateFromSchedsOrNull(final List<I_M_ShipmentSchedule> schedules)
 	{
 		// Services
 		final IShipmentScheduleEffectiveBL schedEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -215,16 +211,6 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner partner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
-
-		final int documentCopies = partner.getDocumentCopies();
-		if (documentCopies > 0)
-		{
-			// updating to the partner's preference
-			queueItem.setCopies(documentCopies);
-		}
-
 		logger.debug(
 				"Setting columns of C_Printing_Queue {} from C_Invoice {}: [Bill_BPartner_ID={}, Bill_Location_ID={}, C_BPartner_ID={}, C_BPartner_Location_ID={}, Copies={}]",
 				queueItem, invoice, invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(), invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID(), queueItem.getCopies());
@@ -245,7 +231,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	 * Allays returns <code>true</code>.
 	 */
 	@Override
-	public boolean isApplyHandler(I_C_Printing_Queue queue_IGNORED, I_AD_Archive printout_IGNORED)
+	public boolean isApplyHandler(final I_C_Printing_Queue queue_IGNORED, final I_AD_Archive printout_IGNORED)
 	{
 		return true;
 	}

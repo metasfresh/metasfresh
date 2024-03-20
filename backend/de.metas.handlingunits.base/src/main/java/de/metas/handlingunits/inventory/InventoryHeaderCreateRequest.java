@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inventory;
 
 import de.metas.document.DocTypeId;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
@@ -57,4 +58,6 @@ public class InventoryHeaderCreateRequest
 
 	@Nullable
 	String poReference;
+
+	@Nullable PickingJobId pickingJobId;
 }

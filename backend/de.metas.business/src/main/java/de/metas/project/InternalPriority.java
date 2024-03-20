@@ -80,4 +80,8 @@ public enum InternalPriority implements ReferenceListAwareEnum
 	{
 		return intValue < other.intValue;
 	}
+
+	public int toIntUrgentToMinor() {return intValue;}
+
+	public int toIntMinorToUrgent() {return MINOR.intValue - toIntUrgentToMinor() + 1;}
 }

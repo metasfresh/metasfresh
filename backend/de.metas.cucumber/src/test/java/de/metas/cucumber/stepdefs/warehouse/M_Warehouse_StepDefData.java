@@ -23,7 +23,11 @@
 package de.metas.cucumber.stepdefs.warehouse;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
+
+import java.util.Optional;
 
 public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
 {
@@ -31,4 +35,16 @@ public class M_Warehouse_StepDefData extends StepDefData<I_M_Warehouse>
 	{
 		super(I_M_Warehouse.class);
 	}
+
+	public WarehouseId getId(final StepDefDataIdentifier identifier)
+	{
+		final I_M_Warehouse model = get(identifier);
+		return WarehouseId.ofRepoId(model.getM_Warehouse_ID());
+	}
+
+	public Optional<WarehouseId> getIdIfExists(final StepDefDataIdentifier identifier)
+	{
+		return getOptional(identifier).map(model -> WarehouseId.ofRepoId(model.getM_Warehouse_ID()));
+	}
+
 }

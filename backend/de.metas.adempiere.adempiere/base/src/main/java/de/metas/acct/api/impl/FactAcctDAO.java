@@ -3,6 +3,7 @@ package de.metas.acct.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
@@ -26,6 +27,7 @@ import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -38,9 +40,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class FactAcctDAO implements IFactAcctDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 
 	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
 
@@ -400,5 +403,16 @@ public class FactAcctDAO implements IFactAcctDAO
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OI_TrxType, openItemTrxInfo.getTrxType().getCode())
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_OpenItemKey, openItemTrxInfo.getKey().getAsString())
 				.execute();
+	}
+
+	@Override
+	public List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull final AcctSchemaId acctSchemaId, @NonNull final Instant dateAcctFrom, @NonNull final Instant dateAcctTo)
+	{
+		return queryBL
+				.createQueryBuilder(I_Fact_Acct.class)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateAcctFrom, dateAcctTo)
+				.create()
+				.listDistinct(I_Fact_Acct.COLUMNNAME_Account_ID, ElementValueId.class);
 	}
 }

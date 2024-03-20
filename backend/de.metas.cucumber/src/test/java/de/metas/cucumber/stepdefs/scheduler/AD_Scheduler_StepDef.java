@@ -69,4 +69,24 @@ public class AD_Scheduler_StepDef
 													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.ENABLE)
 													 .build());
 	}
+
+	@And("AD_Scheduler for classname {string} is ran once")
+	public void runOnceNow_AD_Scheduler_for_className(@NonNull final String className)
+	{
+		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(className);
+
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + className);
+
+		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
+				.schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
+				.clientId(Env.getClientId())
+				.schedulerAction(SchedulerAction.RESTART)
+				.build());
+
+		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
+				.schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
+				.clientId(Env.getClientId())
+				.schedulerAction(SchedulerAction.RUN_ONCE)
+				.build());
+	}
 }

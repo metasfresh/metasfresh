@@ -3,6 +3,7 @@ package de.metas.order;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -86,6 +87,8 @@ public interface IOrderDAO extends ISingletonService
 
 	List<I_C_OrderLine> retrieveOrderLinesByOrderIds(Set<OrderId> orderIds);
 
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLinesByOrderIds(Set<OrderId> orderIds, Class<T> type);
+
 	List<I_C_OrderLine> retrieveOrderLinesByIds(Set<OrderLineId> orderLineIds);
 
 	/**
@@ -155,4 +158,6 @@ public interface IOrderDAO extends ISingletonService
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(OrderLineId orderLineId);
 
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

@@ -108,8 +108,21 @@ public class MoneyTest
 		final String json = objectMapper.writeValueAsString(money);
 		System.out.println("Serialized " + money + " to " + json);
 
-		final Money moneyDeserialized = objectMapper.readValue(json, money.getClass());
+		final Money moneyDeserialized = objectMapper.readValue(json, Money.class);
 		assertThat(moneyDeserialized).isEqualTo(money);
+	}
+
+	@Test
+	public void test_isLessThan()
+	{
+		final Money money_1EUR = Money.of(1, EUR);
+		final Money money_2EUR = Money.of(2, EUR);
+		final Money money_2CHF = Money.of(2, CHF);
+
+		assertThat(money_1EUR.isLessThan(money_2EUR)).isTrue();
+		assertThat(money_2EUR.isLessThan(money_2EUR)).isFalse();
+		assertThat(money_2EUR.isLessThan(money_1EUR)).isFalse();
+		assertThatThrownBy(() -> money_1EUR.isLessThan(money_2CHF)).isNotNull();
 	}
 
 	@Test
@@ -121,9 +134,7 @@ public class MoneyTest
 
 		assertThat(money_1EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
 		assertThat(money_2EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
-
 		assertThat(money_2EUR.isLessThanOrEqualTo(money_1EUR)).isFalse();
-
 		assertThatThrownBy(() -> money_1EUR.isLessThanOrEqualTo(money_2CHF)).isNotNull();
 	}
 

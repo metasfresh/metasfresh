@@ -1,8 +1,11 @@
 package de.metas.order.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -57,9 +60,15 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 	@Override
 	protected String doIt()
 	{
-		groupsRepo.prepareNewGroup()
-				.groupTemplate(createNewGroupTemplate())
-				.createGroup(getSelectedOrderLineIds());
+		try (final OrderGroupRepository.OrderIdsToRenumber orderIdsToRenumber = groupsRepo.delayOrderLinesRenumbering())
+		{
+			final Group group = groupsRepo.prepareNewGroup()
+					.groupTemplate(createNewGroupTemplate())
+					.createGroup(getSelectedOrderLineIds());
+
+			final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroupId(group.getGroupId());
+			orderIdsToRenumber.addOrderId(orderId);
+		}
 
 		return MSG_OK;
 	}

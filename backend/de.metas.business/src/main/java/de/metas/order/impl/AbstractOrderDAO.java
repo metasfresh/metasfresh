@@ -233,17 +233,23 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
+		return retrieveOrderLinesByOrderIds(orderIds, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds, Class<T> type)
+	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+		return queryBL.createQueryBuilder(type)
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.create()
-				.listImmutable(I_C_OrderLine.class);
+				.listImmutable(type);
 	}
 
 	@Override
@@ -549,5 +555,16 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.filter(orderFilter)
 				.create()
 				.iterateAndStream();
+	}
+
+	@NonNull
+	public List<OrderId> getUnprocessedIdsBy(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Processed, false)
+				.create()
+				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderId.class);
 	}
 }

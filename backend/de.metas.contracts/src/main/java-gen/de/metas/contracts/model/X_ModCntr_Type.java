@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -426858056L;
+	private static final long serialVersionUID = -525264008L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -35,13 +35,13 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	}
 
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription() 
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -104,38 +104,40 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular = "ShippingNotificationForPurchase_Modular";
 	/** ShippingNotificationForSales_Modular = ShippingNotificationForSales_Modular */
 	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular = "ShippingNotificationForSales_Modular";
+	/** ImportLog = ImportLog */
+	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog = "ImportLog";
 	@Override
-	public void setModularContractHandlerType (final @Nullable String ModularContractHandlerType)
+	public void setModularContractHandlerType (final @Nullable java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);
 	}
 
 	@Override
-	public String getModularContractHandlerType() 
+	public java.lang.String getModularContractHandlerType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ModularContractHandlerType);
 	}
 
 	@Override
-	public void setName (final String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public String getName() 
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setValue (final String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
 	@Override
-	public String getValue() 
+	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

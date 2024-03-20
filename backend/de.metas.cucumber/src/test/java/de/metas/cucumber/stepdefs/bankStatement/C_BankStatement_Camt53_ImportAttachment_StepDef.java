@@ -62,16 +62,17 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 
 		final ImmutableList<String> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
 
-		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service
-				.importBankToCustomerStatement(ImportBankStatementRequest
-													   .builder()
-													   .camt53File(AttachmentEntryDataResource.builder()
-																		   .source(fileContent.getBytes())
-																		   .filename("does_not_matter.xml")
-																		   .build())
-													   .isMatchAmounts(true)
-													   .bankStatementImportFileId(BankStatementImportFileId.ofRepoId(importFileRecord.getC_BankStatement_Import_File_ID()))
-													   .build());
+		final ImportBankStatementRequest importBankStatementRequest = ImportBankStatementRequest
+				.builder()
+				.camt53File(AttachmentEntryDataResource.builder()
+									.source(fileContent.getBytes())
+									.filename("does_not_matter.xml")
+									.build())
+				.isMatchAmounts(true)
+				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(importFileRecord.getC_BankStatement_Import_File_ID()))
+				.build();
+		
+		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(importBankStatementRequest);
 		assertThat(bankStatementIds).isNotEmpty();
 		assertThat(bankStatementIdentifiers.size()).isEqualTo(bankStatementIds.size());
 

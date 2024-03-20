@@ -1484,7 +1484,7 @@ public final class Env
 	 * @param tableName   table to be translated
 	 * @return true if base language and table not translated
 	 */
-	public static boolean isBaseLanguage(final String AD_Language, final String tableName)
+	public static boolean isBaseLanguage(@Nullable final String AD_Language, final String tableName)
 	{
 		/*
 		 * if (isBaseTranslation(tableName)) return Language.isBaseLanguage (AD_Language); else // No AD Table if (!isMultiLingualDocument(s_ctx)) // Base Context return true; // access base table

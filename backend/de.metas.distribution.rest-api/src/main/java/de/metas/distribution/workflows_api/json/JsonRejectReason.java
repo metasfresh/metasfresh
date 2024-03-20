@@ -15,7 +15,7 @@ public class JsonRejectReason
 	@NonNull String key;
 	@NonNull String caption;
 
-	public static JsonRejectReason of(@NonNull ADRefListItem item, @NonNull JsonOpts jsonOpts)
+	public static JsonRejectReason of(@NonNull final ADRefListItem item, @NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
 				.key(item.getValue())

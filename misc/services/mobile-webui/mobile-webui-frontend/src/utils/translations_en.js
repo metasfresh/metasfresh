@@ -5,8 +5,18 @@ const translations = {
     network: {
       noResponse: 'Connection error',
     },
+    qrCode: {
+      invalid: 'Invalid QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Retry...',
   },
   general: {
+    Yes: 'Yes',
+    No: 'No',
+    OK: 'OK',
+    DocumentNo: 'Document No',
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
@@ -18,18 +28,33 @@ const translations = {
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
     CatchWeight: 'Weight',
+    Qty: 'Qty',
+    BestBeforeDate: 'Best Before',
+    LotNo: 'Lot',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
+    okText: 'OK',
+    closeText: 'Close',
+    clearText: 'Clear',
+    reOpenText: 'Re-open',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
+    noHUFound: 'No HU found!',
     filter: {
       showResults: 'Show results (%(count)s)',
       clearFilters: 'Clear filters',
     },
+    workplace: 'Workplace',
+    workstation: 'Workstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Switch to...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Password',
+    },
   },
   logout: 'Logout',
   mobileui: {
@@ -46,12 +71,18 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Scan workplace...',
+      scanWorkstationPlaceholder: 'Scan workstation...',
     },
   },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Scanned code is invalid',
+    },
+    huManager: {
+      missingTargetQrCode: 'The target QR Code must be scanned first!',
+      scanLuOrLocator: 'Scan LU or Locator',
     },
     picking: {
       PickingLine: 'Picking Line',
@@ -65,6 +96,14 @@ const translations = {
       unPickBtn: 'Unpick',
       target: 'To Pick',
       picked: 'Picked',
+      switchToManualInput: 'Manually',
+      switchToQrCodeInput: 'Scan QR',
+      skip: 'Skip',
+      scanTargetHU: 'Scan target HU',
+      qrcode: {
+        missingQty: 'The scanned QR, has no qty information!',
+        differentUOM: 'The scanned QR UOM does not match the target!',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -93,6 +132,8 @@ const translations = {
         packing: 'Packing',
         qtyTUs: 'TUs',
         print: 'Print',
+        numberOfHUs: 'HUs',
+        numberOfCopies: 'Copies',
       },
       issues: {
         target: 'To issue',
@@ -101,6 +142,9 @@ const translations = {
         qtyToIssueRemaining: 'Qty to Issue',
         qtyIssued: 'Qty Issued',
         qtyRejected: 'Qty Rejected',
+        addToFunnel: 'Add to funnel',
+        noQtyEnteredCannotAddToStorage: 'No qty entered! There is nothing to be added to temporary storage!',
+        cannotAddToStorageDueTo: 'Cannot add to temporary storage due to: ',
         step: {
           name: 'Issue HU',
         },

@@ -27,6 +27,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -92,6 +93,24 @@ public class NumberUtils
 				throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int", numberFormatException);
 			}
 		}
+	}
+
+	public static BigDecimal roundToBigDecimal(@NonNull final BigDecimal argToRound, @NonNull final BigDecimal roundingArg) {
+		BigDecimal actualRoundingArg = roundingArg;
+		BigDecimal actualArgToRound = argToRound;
+		BigDecimal decimalAdjustments = BigDecimal.ONE;
+		if (roundingArg.scale() > 0 || argToRound.scale() > 0)
+		{
+			final int scaleToConsider = Integer.max(roundingArg.scale(), argToRound.scale());
+			decimalAdjustments = new BigDecimal(String.valueOf(Math.pow(10, scaleToConsider)));
+			actualRoundingArg = roundingArg.multiply(decimalAdjustments);
+			actualArgToRound = argToRound.multiply(decimalAdjustments);
+		}
+
+		return actualArgToRound
+				.divide(actualRoundingArg, 0, RoundingMode.HALF_UP)
+				.multiply(actualRoundingArg)
+				.divide(decimalAdjustments, argToRound.scale(), RoundingMode.HALF_UP);
 	}
 
 	@Nullable

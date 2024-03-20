@@ -36,23 +36,12 @@ import javax.annotation.Nullable;
 @Builder
 public class WFResponsible
 {
-	@NonNull
-	WFResponsibleId id;
-
-	@NonNull
-	WFResponsibleType type;
-
-	@NonNull
-	String name;
-
-	@Nullable
-	UserId userId;
-
-	@Nullable
-	RoleId roleId;
-
-	@Nullable
-	OrgId orgId;
+	@NonNull WFResponsibleId id;
+	@NonNull WFResponsibleType type;
+	@NonNull String name;
+	@Nullable UserId userId;
+	@Nullable RoleId roleId;
+	@Nullable OrgId orgId;
 
 	public boolean isInvoker() {return userId == null && roleId == null;}
 
@@ -62,5 +51,9 @@ public class WFResponsible
 
 	public boolean isOrganization() {return type == WFResponsibleType.Organization && orgId != null;}
 
+	@NonNull
+	public UserId getUserIdNotNull() {return Check.assumeNotNull(userId, "Expected an user based responsible: {}", this);}
+
+	@NonNull
 	public RoleId getRoleIdNotNull() {return Check.assumeNotNull(roleId, "Expected a role based responsible: {}", this);}
 }

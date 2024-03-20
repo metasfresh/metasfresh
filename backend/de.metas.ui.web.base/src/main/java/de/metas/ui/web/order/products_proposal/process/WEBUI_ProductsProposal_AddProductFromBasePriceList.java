@@ -103,6 +103,7 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 		final ProductsProposalRowAddRequest.ProductsProposalRowAddRequestBuilder productsProposalRowAddRequestBuilder = ProductsProposalRowAddRequest.builder()
 				.product(row.getProduct())
 				.asiDescription(row.getAsiDescription())
+				.asiId(row.getAsiId())
 				.priceListPrice(currentProductProposalPrice.getUserEnteredPrice())
 				.lastShipmentDays(row.getLastShipmentDays())
 				.copiedFromProductPriceId(row.getProductPriceId())

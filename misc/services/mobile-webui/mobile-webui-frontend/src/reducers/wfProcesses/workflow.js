@@ -2,7 +2,7 @@ import { original } from 'immer';
 
 import * as workflowTypes from '../../constants/WorkflowActionTypes';
 import * as launcherTypes from '../../constants/LaunchersActionTypes';
-import { mergeWFProcessToState } from './utils';
+import { mergeWFProcessToState, updateUserEditable } from './utils';
 
 export const workflowReducer = ({ draftState, action }) => {
   switch (action.type) {
@@ -23,6 +23,17 @@ export const workflowReducer = ({ draftState, action }) => {
         fromWFProcess,
       });
 
+      return draftState;
+    }
+
+    case workflowTypes.SET_ACTIVITY_PROCESSING: {
+      const { wfProcessId, activityId, processing } = action.payload;
+      const draftWFProcess = draftState[wfProcessId];
+      const draftActivity = draftWFProcess.activities[activityId];
+
+      draftActivity.dataStored.processing = !!processing;
+
+      updateUserEditable({ draftWFProcess });
       return draftState;
     }
 

@@ -18,6 +18,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
@@ -51,8 +52,8 @@ import java.util.Set;
 public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	// FIXME: hardcoded AD_Window_IDs
-	public static final int CustomerReturns_Window_ID = 540323; // Return from customers - Leergut Rücknahme
-	public static final int VendorReturns_Window_ID = 540322; // Return to vendor - Leergut Rückgabe
+	public static final AdWindowId CustomerReturns_Window_ID = AdWindowId.ofRepoId(540323); // Return from customers - Leergut Rücknahme
+	public static final AdWindowId VendorReturns_Window_ID = AdWindowId.ofRepoId(540322); // Return to vendor - Leergut Rückgabe
 
 	@NonNull final LookupDescriptorProviders lookupDescriptorProviders;
 
@@ -66,8 +67,8 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 	public Set<MatchingKey> getMatchingKeys()
 	{
 		return ImmutableSet.<MatchingKey>builder()
-				.add(MatchingKey.includedDocument(DocumentType.Window, CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
-				.add(MatchingKey.includedDocument(DocumentType.Window, VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
+				.add(MatchingKey.includedTab(CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
+				.add(MatchingKey.includedTab(VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
 				.build();
 	}
 

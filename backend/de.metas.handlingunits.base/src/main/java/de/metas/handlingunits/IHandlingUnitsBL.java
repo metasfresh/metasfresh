@@ -70,6 +70,7 @@ import org.compiere.model.I_M_Transaction;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -280,6 +281,15 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@NonNull
 	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
 
+	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
+	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull I_M_HU_PI huPI,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId);
+
+	void reactivateDestroyedHU(@NonNull I_M_HU hu,@NonNull IContextAware contextProvider);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -438,6 +448,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
 
+	HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull I_M_HU hu);
+
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
 
@@ -460,6 +472,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
 
+	I_M_HU_PI getPI(@NonNull HuPackingInstructionsVersionId piVersionId);
+
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
 
@@ -478,6 +492,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
+
+	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
 
 	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
@@ -592,7 +609,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
-	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
+	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 

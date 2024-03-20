@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 305709531L;
+	private static final long serialVersionUID = -852883066L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -254,6 +254,17 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public int getWOPlannedResourceDurationHours() 
 	{
 		return get_ValueAsInt(COLUMNNAME_WOPlannedResourceDurationHours);
+	}
+
+	@Override
+	public void setWO_Step_ExternalId (final @Nullable java.lang.String WO_Step_ExternalId)
+	{
+		throw new IllegalArgumentException ("WO_Step_ExternalId is virtual column");	}
+
+	@Override
+	public java.lang.String getWO_Step_ExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_WO_Step_ExternalId);
 	}
 
 	/** 

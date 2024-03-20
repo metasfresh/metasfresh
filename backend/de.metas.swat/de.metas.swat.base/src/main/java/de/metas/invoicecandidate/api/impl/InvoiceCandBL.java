@@ -31,7 +31,6 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -50,6 +49,7 @@ import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.common.util.TryAndWaitUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -76,7 +76,6 @@ import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
-import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -164,11 +163,13 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
@@ -1788,7 +1789,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 						// task 08927
-						note = "@C_DocType_ID@=" + docTypeDAO.getById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
+						note = "@C_DocType_ID@=" + docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName() + ", @IsCreditedInvoiceReinvoicable@=" + creditMemoReinvoicable;
 						if (creditMemoReinvoicable)
 						{
 							qtysInvoiced = StockQtyAndUOMQtys
@@ -2545,7 +2546,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	@Override
 	@NonNull
-	public Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	public Set<InvoiceCandidateId> reverseAndReturnInvoiceCandIds(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		// first make sure that payments have the flag auto-allocate set
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -2584,10 +2585,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// update invalids
-		invoiceCandBL.updateInvalid()
-				.setContext(ctx, trxName)
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands))
-				.update();
+		final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection = InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands);
+		ensureICsAreUpdated(invoiceCandidateIdsSelection);
 
 		for (final I_C_Invoice_Candidate ic : invoiceCands)
 		{
@@ -2613,6 +2612,51 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public void ensureICsAreUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
+			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+			updateInvalid()
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
+					.setTaggedWithAnyTag()
+					.setOnlyInvoiceCandidateIds(invoiceCandidateIdsSelection)
+					.update();
+		}
+		else
+		{
+			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
+			waitForInvoiceCandidatesUpdated(invoiceCandidateIdsSelection);
+		}
+	}
+
+	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
+		try
+		{
+			TryAndWaitUtil.tryAndWait(
+					3600 /*let's wait a full hour*/,
+					1000 /*check once a second*/,
+					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
+					null);
+		}
+		catch (final InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("InvoiceCandidateIdsSelection (ICs-selection)", invoiceCandidateIdsSelection);
+		}
+		finally
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}",invoiceCandidateIdsSelection);
+		}
+	}
+	
+	
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
 	@Override
 	public @NonNull InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable final String extraWhereClause)
@@ -2644,23 +2688,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					return ic;
 				})
 				.collect(Collectors.toSet());
-	}
-
-	@Override
-	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
-
-		if (invoiceCandidate.isProcessed())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
-																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
-			return;
-		}
-
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
-		invoiceCandDAO.save(invoiceCandidate);
 	}
 
 	@Override

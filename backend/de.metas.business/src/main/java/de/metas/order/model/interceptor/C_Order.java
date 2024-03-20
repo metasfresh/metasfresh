@@ -37,6 +37,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letters.model.MADBoilerPlate;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -99,6 +101,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 @Callout(I_C_Order.class)
 public class C_Order
 {
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
+	
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -113,18 +120,12 @@ public class C_Order
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
 	private final ProjectService projectService;
-
-	@VisibleForTesting
-	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
-	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
@@ -823,5 +824,22 @@ public class C_Order
 								.markAsUserValidationError();
 					}
 				});
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_DescriptionBottom_BoilerPlate_ID)
+	public void onBoilerPlateChangeCallout(@NonNull final I_C_Order order)
+	{
+		updateDescriptionBottomFromBoilerPlateIfSet(order);
+	}
+
+	private void updateDescriptionBottomFromBoilerPlateIfSet(@NonNull final I_C_Order order)
+	{
+		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(order.getDescriptionBottom_BoilerPlate_ID());
+		if (boilerPlateId != null)
+		{
+			final MADBoilerPlate boilerPlate = Check.assumeNotNull(MADBoilerPlate.get(Env.getCtx(), boilerPlateId.getRepoId()), "No Boilerplate found for {}", boilerPlateId);
+			final MADBoilerPlate.BoilerPlateContext evalCtx = MADBoilerPlate.createEditorContextFromObject(order);
+			order.setDescriptionBottom(boilerPlate.getTextSnippetParsed(evalCtx));
+		}
 	}
 }

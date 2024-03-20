@@ -162,7 +162,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 * <b>Important:</b> this method is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
 	 *
 	 * @return an empty map. Overwrite as required
-	 * task https://github.com/metasfresh/metasfresh/issues/409
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/409">https://github.com/metasfresh/metasfresh/issues/409</a>
 	 */
 	protected Map<String, Object> extractParametersFromItem(final ItemType item)
 	{
@@ -193,7 +193,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	@Nullable
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
-	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
+	protected Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
 	{
 		return Optional.empty();
 	}
@@ -282,7 +282,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		private Collector(
 				final Properties ctx,
 				final boolean createOneWorkpackagePerModel,
-				final UserId userIdInCharge,
+				@Nullable final UserId userIdInCharge,
 				final boolean createOneWorkpackagePerAsyncBatch)
 		{
 			this.ctx = ctx;

@@ -82,7 +82,7 @@ import lombok.NonNull;
  */
 /* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
 	@Getter
 	private final DocumentId instanceId;

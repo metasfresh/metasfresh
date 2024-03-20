@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 877247377L;
+	private static final long serialVersionUID = 596320848L;
 
     /** Standard Constructor */
     public X_AD_MailConfig (final Properties ctx, final int AD_MailConfig_ID, @Nullable final String trxName)
@@ -133,6 +133,8 @@ public class X_AD_MailConfig extends org.compiere.model.PO implements I_AD_MailC
 	public static final String CUSTOMTYPE_OrgCompiereUtilLogin = "L";
 	/** InvoiceRejection = InvRej */
 	public static final String CUSTOMTYPE_InvoiceRejection = "InvRej";
+	/** MassDunning = DUN */
+	public static final String CUSTOMTYPE_MassDunning = "DUN";
 	@Override
 	public void setCustomType (final @Nullable java.lang.String CustomType)
 	{

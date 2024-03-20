@@ -251,8 +251,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		MMovementLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		//	Confirmation

@@ -34,7 +34,7 @@
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2022-12-12+02:00</BestBeforeDate>
             <LotNumber>Lot-Number</LotNumber>
-            <QtyCU>10</QtyCU>
+            <QtyCUsPerTU>10</QtyCUsPerTU>
             <QtyCUsPerLU>30</QtyCUsPerLU>
             <QtyTU>3</QtyTU>
             <EDI_DesadvLine_ID>

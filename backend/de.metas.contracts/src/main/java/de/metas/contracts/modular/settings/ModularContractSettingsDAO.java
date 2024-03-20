@@ -97,7 +97,7 @@ public class ModularContractSettingsDAO
 	}
 
 	@NonNull
-	private ModularContractSettings getById(@NonNull final ModularContractSettingsId contractSettingsId)
+	private ModularContractSettings loadById(@NonNull final ModularContractSettingsId contractSettingsId)
 	{
 		final List<I_ModCntr_Module> moduleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
@@ -184,7 +184,7 @@ public class ModularContractSettingsDAO
 			return null;
 		}
 
-		return id2ModularContractSettings.getOrLoad(settingsId, this::getById);
+		return id2ModularContractSettings.getOrLoad(settingsId, this::loadById);
 	}
 
 	@NonNull
@@ -213,7 +213,12 @@ public class ModularContractSettingsDAO
 			return null;
 		}
 
-		return id2ModularContractSettings.getOrLoad(settingsId, this::getById);
+		return id2ModularContractSettings.getOrLoad(settingsId, this::loadById);
+	}
+
+	public ModularContractSettings getById(@NonNull final ModularContractSettingsId settingsId)
+	{
+		return id2ModularContractSettings.getOrLoad(settingsId, this::loadById);
 	}
 
 	@Nullable

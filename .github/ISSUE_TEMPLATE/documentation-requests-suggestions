@@ -1,0 +1,9 @@
+---
+name: Documentation request/suggestion => Doc Repository
+about: Please use the template provided at https://github.com/metasfresh/metasfresh-documentation/issues/new/choose
+title: ''
+labels: ''
+assignees: ''
+---
+
+## Please use the [documentation request template](https://github.com/metasfresh/metasfresh-documentation/issues/new?template=documentation-request.md) in the [metasfresh documentation repository](https://github.com/metasfresh/metasfresh-documentation/issues) to create a parent issue for your me03. Do not create another issue in the metasfresh repository in addition to the doc request in order to keep the number of related issues to a minimum. Simply [go to the doc repo](https://github.com/metasfresh/metasfresh-documentation/issues) now and close this template without saving. Thank you.

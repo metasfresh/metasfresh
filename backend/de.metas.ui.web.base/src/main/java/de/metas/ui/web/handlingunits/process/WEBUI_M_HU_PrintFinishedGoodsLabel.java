@@ -23,6 +23,7 @@ import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.report.HUReportAwareViewRowAsHUToReport;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,7 +123,7 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 	@NonNull
 	private HUToReport getHuToReport()
 	{
-		return getSingleSelectedRow().getAsHUToReport();
+		return HUReportAwareViewRowAsHUToReport.of(getSingleSelectedRow());
 	}
 
 	private ReportResult printLabel()

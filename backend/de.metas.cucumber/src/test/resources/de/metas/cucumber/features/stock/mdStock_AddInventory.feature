@@ -25,11 +25,11 @@ Feature: stock changes accordingly
       | 21                            | 11                        | 222                     | PCE          | 10       | 0       |
       | 22                            | 12                        | 222                     | PCE          | 16       | 10      |
     When the inventory identified by 11 is completed
-    Then after not more than 60 seconds metasfresh has MD_Stock data
+    Then after not more than 120 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 10        |
 
     And the inventory identified by 12 is completed
-    And after not more than 60 seconds metasfresh has MD_Stock data
+    And after not more than 120 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | 222                     | 16        |

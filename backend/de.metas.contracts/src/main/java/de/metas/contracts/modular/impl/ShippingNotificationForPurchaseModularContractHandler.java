@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.impl;
 
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
@@ -30,12 +31,16 @@ import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -52,6 +57,8 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IM
 	@NonNull
 	private final ModularContractLogService contractLogService;
 
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@Override
 	public @NonNull Class<I_M_Shipping_NotificationLine> getType()
 	{
@@ -61,7 +68,11 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IM
 	@Override
 	public boolean applies(final @NonNull I_M_Shipping_NotificationLine model)
 	{
-		return true;
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(model.getC_Order_ID()));
+
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(order.getHarvesting_Year_ID(), order.getC_Harvesting_Calendar_ID());
+
+		return yearAndCalendarId != null;
 	}
 
 	@Override

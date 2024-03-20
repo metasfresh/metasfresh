@@ -3,6 +3,7 @@ package de.metas.handlingunits.shipmentschedule.async;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -99,6 +100,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		}
 
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		final ForexContractRef forexContractRef = JsonObjectMapperHolder.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef), ForexContractRef.class);
 		final DeliveryPlanningId deliveryPlanningId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.class);
 		final InOutId b2bReceiptId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, InOutId.class);
@@ -128,8 +130,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
-
 		Loggables.addLog("Generated: {}", result);
+
+		if (isCloseShipmentSchedules)
+		{
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = shipmentSchedulesWithHU.stream().map(ShipmentScheduleWithHU::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
+			shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds);
+		}
+
 		return Result.SUCCESS;
 	}
 

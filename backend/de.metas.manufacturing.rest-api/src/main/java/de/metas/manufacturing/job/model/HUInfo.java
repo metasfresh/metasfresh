@@ -7,11 +7,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class HUInfo
 {
 	@NonNull HuId id;
-	@NonNull HUQRCode barcode;
 	@NonNull Quantity huCapacity;
+	@Nullable HUQRCode barcode;
 }

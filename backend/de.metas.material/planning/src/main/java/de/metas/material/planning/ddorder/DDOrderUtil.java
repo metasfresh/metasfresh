@@ -1,10 +1,14 @@
 package de.metas.material.planning.ddorder;
 
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -12,16 +16,10 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.material.planning.exception.MrpException;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Properties;
 
 @UtilityClass
 public class DDOrderUtil
@@ -61,7 +59,7 @@ public class DDOrderUtil
 	 * @return
 	 */
 	public int calculateDurationDays(
-			@Nullable final I_PP_Product_Planning productPlanningData,
+			@Nullable final ProductPlanning productPlanningData,
 			@Nullable final I_DD_NetworkDistributionLine networkLine)
 	{
 		//
@@ -69,7 +67,7 @@ public class DDOrderUtil
 		final int leadtimeDays;
 		if (productPlanningData != null)
 		{
-			leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
+			leadtimeDays = productPlanningData.getLeadTimeDays();
 			Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
 		}
 		else
@@ -95,7 +93,7 @@ public class DDOrderUtil
 		}
 		else if (productPlanningData != null)
 		{
-			transferTime = productPlanningData.getTransfertTime().intValueExact();
+			transferTime = productPlanningData.getTransferTimeDays();
 			Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
 		}
 		else

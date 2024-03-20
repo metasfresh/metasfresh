@@ -12,6 +12,7 @@ const ConfirmButton = ({
   userInstructions,
   isUserEditable,
   isDangerousAction,
+  isProcessing,
   completeStatus,
   onUserConfirmed,
 }) => {
@@ -43,6 +44,7 @@ const ConfirmButton = ({
         completeStatus={completeStatus}
         disabled={!isUserEditable || isDialogDisplayed}
         isDanger={isDangerousAction}
+        typeFASIconName={isProcessing ? 'fa-spinner fa-spin' : null}
         onClick={() => setDialogDisplayed(true)}
       />
     </>
@@ -63,6 +65,7 @@ ConfirmButton.propTypes = {
   userInstructions: PropTypes.string,
   isUserEditable: PropTypes.bool,
   isDangerousAction: PropTypes.bool,
+  isProcessing: PropTypes.bool,
   completeStatus: PropTypes.string,
   //
   onUserConfirmed: PropTypes.func.isRequired,

@@ -31,6 +31,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -252,7 +253,13 @@ public final class NumberUtils
 		{
 			try
 			{
-				final BigDecimal bd = new BigDecimal(value.toString().trim());
+				final String valueStr = StringUtils.trimBlankToNull(value.toString());
+				if (valueStr == null)
+				{
+					return defaultValue;
+				}
+
+				final BigDecimal bd = new BigDecimal(valueStr);
 				return bd.intValue();
 			}
 			catch (final NumberFormatException e)
@@ -326,4 +333,30 @@ public final class NumberUtils
 		//noinspection NumberEquality
 		return (value1 == value2) || (value1 != null && value1.compareTo(value2) == 0);
 	}
+
+	@SafeVarargs
+	public static int firstNonZero(final Supplier<Integer>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return 0;
+		}
+
+		for (final Supplier<Integer> supplier : suppliers)
+		{
+			if (supplier == null)
+			{
+				continue;
+			}
+
+			final Integer value = supplier.get();
+			if (value != null && value != 0)
+			{
+				return value;
+			}
+		}
+
+		return 0;
+	}
+
 }

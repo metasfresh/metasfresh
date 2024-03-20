@@ -67,7 +67,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="html">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PaymentCond} + " " + $F{p_cond}]]></textFieldExpression>
 			</textField>
@@ -83,7 +83,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="html">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PaymentRule} + " " + $F{p_term}]]></textFieldExpression>
 			</textField>
@@ -100,7 +100,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="html">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
 			</textField>
@@ -116,7 +116,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="html">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxnote}]]></textFieldExpression>
 			</textField>
@@ -132,7 +132,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="none">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Hinweis Zollrecht Art. 55 ZV: „Falls die Waren zu Beginn der Bewirtschaftungsphase noch auf Handelsstufe " +
 "vorhanden sind, ist für die entsprechende Menge über den gesicherten Internetzugang der Eidg. Zollverwaltung " +
@@ -146,7 +146,7 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="12" width="485" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Remarque: „Quiconque dispose encore, dans le circuit de commercialisation, de produits agricoles au sens " +
 "de l'art. 7 de l'ordonnance du 7 décembre 1998 sur l'importation et l'exportation de légumes, de fruits et de " +

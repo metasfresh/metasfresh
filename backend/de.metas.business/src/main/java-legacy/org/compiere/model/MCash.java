@@ -417,8 +417,7 @@ public class MCash extends X_C_Cash implements IDocument
 		MCashLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		// Add up Amounts
 		BigDecimal difference = BigDecimal.ZERO;

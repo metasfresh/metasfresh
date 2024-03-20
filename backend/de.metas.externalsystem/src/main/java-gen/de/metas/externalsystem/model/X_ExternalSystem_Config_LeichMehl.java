@@ -1,30 +1,30 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_LeichMehl
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO implements I_ExternalSystem_Config_LeichMehl, org.compiere.model.I_Persistent 
+public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO implements I_ExternalSystem_Config_LeichMehl, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -2067529988L;
+	private static final long serialVersionUID = -541687683L;
 
-    /** Standard Constructor */
-    public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final int ExternalSystem_Config_LeichMehl_ID, @Nullable final String trxName)
-    {
-      super (ctx, ExternalSystem_Config_LeichMehl_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final int ExternalSystem_Config_LeichMehl_ID, @Nullable final String trxName)
+	{
+		super (ctx, ExternalSystem_Config_LeichMehl_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_ExternalSystem_Config_LeichMehl (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -49,14 +49,14 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	@Override
 	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
 	{
-		if (ExternalSystem_Config_ID < 1) 
+		if (ExternalSystem_Config_ID < 1)
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_ID() 
+	public int getExternalSystem_Config_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
@@ -64,14 +64,14 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	@Override
 	public void setExternalSystem_Config_LeichMehl_ID (final int ExternalSystem_Config_LeichMehl_ID)
 	{
-		if (ExternalSystem_Config_LeichMehl_ID < 1) 
+		if (ExternalSystem_Config_LeichMehl_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, ExternalSystem_Config_LeichMehl_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_LeichMehl_ID() 
+	public int getExternalSystem_Config_LeichMehl_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_LeichMehl_ID);
 	}
@@ -83,7 +83,7 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public java.lang.String getExternalSystemValue() 
+	public java.lang.String getExternalSystemValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
@@ -95,7 +95,7 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public boolean isPluFileExportAuditEnabled() 
+	public boolean isPluFileExportAuditEnabled()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPluFileExportAuditEnabled);
 	}
@@ -107,19 +107,19 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public java.lang.String getProduct_BaseFolderName() 
+	public java.lang.String getProduct_BaseFolderName()
 	{
 		return get_ValueAsString(COLUMNNAME_Product_BaseFolderName);
 	}
 
 	@Override
-	public void setTCP_Host (final @Nullable java.lang.String TCP_Host)
+	public void setTCP_Host (final java.lang.String TCP_Host)
 	{
 		set_Value (COLUMNNAME_TCP_Host, TCP_Host);
 	}
 
 	@Override
-	public java.lang.String getTCP_Host() 
+	public java.lang.String getTCP_Host()
 	{
 		return get_ValueAsString(COLUMNNAME_TCP_Host);
 	}
@@ -131,7 +131,7 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public int getTCP_PortNumber() 
+	public int getTCP_PortNumber()
 	{
 		return get_ValueAsInt(COLUMNNAME_TCP_PortNumber);
 	}

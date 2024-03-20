@@ -731,7 +731,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
 		final I_C_DocType dt = docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
 				: null;
 		final String docTypeName = dt != null ? dt.getName() : null;
 		return Joiner.on(" ").skipNulls().join(docTypeName, getDocumentNo());
@@ -835,7 +835,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MInvoiceLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// No Cash Book

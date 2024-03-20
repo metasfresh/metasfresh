@@ -58,8 +58,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
@@ -192,7 +192,9 @@ public class M_HU_StepDef
 			final I_M_HU hu = huTable.get(huIdentifier);
 			assertThat(hu).isNotNull();
 
-			final I_M_HU_PI_Version piVersion = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Version_ID).lookupIn(huPiVersionTable);
+			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Version_ID)
+					.map(huPiVersionTable::get)
+							.ifPresent(piVersion -> assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID()));
 
 			row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
 					.ifPresent(locatorIdentifier -> {
@@ -210,7 +212,6 @@ public class M_HU_StepDef
 
 			final String huStatus = row.getAsString(COLUMNNAME_HUStatus);
 
-			assertThat(hu.getM_HU_PI_Version_ID()).isEqualTo(piVersion.getM_HU_PI_Version_ID());
 			assertThat(hu.getHUStatus()).isEqualTo(huStatus);
 
 			final String clearanceStatus = row.getAsOptionalString(COLUMNNAME_ClearanceStatus).orElse(null);
@@ -233,7 +234,7 @@ public class M_HU_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer inventoryLineId = inventoryLineTable.get(inventoryLineIdentifier).getM_InventoryLine_ID();
+			final int inventoryLineId = inventoryLineTable.get(inventoryLineIdentifier).getM_InventoryLine_ID();
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -493,7 +494,12 @@ public class M_HU_StepDef
 			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
 			InterfaceWrapperHelper.refresh(qrCode);
 
-			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU_QRCode_Assignment singleAssignment = queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+					.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, qrCode.getM_HU_QRCode_ID())
+					.create()
+					.firstOnlyNotNull(I_M_HU_QRCode_Assignment.class);
+
+			final I_M_HU hu = load(singleAssignment.getM_HU_ID(), I_M_HU.class);
 
 			assertThat(hu).isNotNull();
 

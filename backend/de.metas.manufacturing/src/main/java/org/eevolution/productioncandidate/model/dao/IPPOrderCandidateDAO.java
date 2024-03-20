@@ -27,6 +27,7 @@ import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
@@ -35,11 +36,14 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import java.util.Iterator;
+import java.util.Set;
 
 public interface IPPOrderCandidateDAO extends ISingletonService
 {
 	@NonNull
 	I_PP_Order_Candidate getById(@NonNull final PPOrderCandidateId ppOrderCandidateId);
+
+	@NonNull ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull Set<PPOrderCandidateId> ppOrderCandidateIds);
 
 	void save(@NonNull final I_PP_Order_Candidate candidateRecord);
 
@@ -59,10 +63,16 @@ public interface IPPOrderCandidateDAO extends ISingletonService
 	@NonNull
 	ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId);
 
+	@NonNull ImmutableList<I_PP_Order_Candidate> getByOrderId(@NonNull PPOrderId ppOrderId);
+
 	@NonNull
 	ImmutableList<I_PP_Order_Candidate> getByProductBOMId(@NonNull final ProductBOMId productBOMId);
 
 	void deletePPOrderCandidates(@NonNull final DeletePPOrderCandidatesQuery deletePPOrderCandidatesQuery);
 
 	void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate);
+
+	void closeCandidate(@NonNull PPOrderCandidateId ppOrderCandidateId);
+
+	void deleteLines(@NonNull PPOrderCandidateId ppOrderCandidateId);
 }

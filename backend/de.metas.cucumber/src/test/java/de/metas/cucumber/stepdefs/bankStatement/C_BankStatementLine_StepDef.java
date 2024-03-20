@@ -111,15 +111,14 @@ public class C_BankStatementLine_StepDef
 		final int line = DataTableUtil.extractIntForColumnName(row, I_C_BankStatementLine.COLUMNNAME_Line);
 
 		final I_C_BankStatementLine bankStatementLineRecord = getBankStatementLineRecord(bankStatementRecord, line);
-
 		final String bankStatementLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		bankStatementLineTable.putOrReplace(bankStatementLineIdentifier, bankStatementLineRecord);
 	}
 
 	private void validateBankStatementLine(@NonNull final Map<String, String> row)
 	{
-		final String bankStatementLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BankStatementLine bankStatementLineRecord = bankStatementLineTable.get(bankStatementLineIdentifier);
+		final String bslIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatementLine.COLUMNNAME_C_BankStatementLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BankStatementLine bankStatementLineRecord = bankStatementLineTable.get(bslIdentifier);
 		final SoftAssertions softly = new SoftAssertions();
 
 		softly.assertThat(bankStatementLineRecord).isNotNull();
@@ -130,13 +129,13 @@ public class C_BankStatementLine_StepDef
 		final LocalDate valutaDate = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_ValutaDate);
 		if (valutaDate != null)
 		{
-			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getValutaDate(), zoneId)).isEqualTo(valutaDate);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getValutaDate(), zoneId)).as("C_BankStatementLine_ID.Identifier=%s - ValutaDate", bslIdentifier).isEqualTo(valutaDate);
 		}
 
 		final LocalDate dateAcct = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_DateAcct);
 		if (dateAcct != null)
 		{
-			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getDateAcct(), zoneId)).isEqualTo(dateAcct);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getDateAcct(), zoneId)).as("C_BankStatementLine_ID.Identifier=%s - DateAcct", bslIdentifier).isEqualTo(dateAcct);
 		}
 
 		final String currencyIsoCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Currency_ID + "." + "ISO_Code");
@@ -144,58 +143,58 @@ public class C_BankStatementLine_StepDef
 		{
 			final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyIsoCode);
 			final Currency currency = currencyDAO.getByCurrencyCode(currencyCode);
-			softly.assertThat(bankStatementLineRecord.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
+			softly.assertThat(bankStatementLineRecord.getC_Currency_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Currency_ID", bslIdentifier).isEqualTo(currency.getId().getRepoId());
 		}
 
 		final BigDecimal trxAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_TrxAmt);
 		if (trxAmt != null)
 		{
-			softly.assertThat(bankStatementLineRecord.getTrxAmt()).isEqualByComparingTo(trxAmt);
+			softly.assertThat(bankStatementLineRecord.getTrxAmt()).as("C_BankStatementLine_ID.Identifier=%s - TrxAmt", bslIdentifier).isEqualByComparingTo(trxAmt);
 		}
 
 		final BigDecimal stmtAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_StmtAmt);
 		if (stmtAmt != null)
 		{
-			softly.assertThat(bankStatementLineRecord.getStmtAmt()).isEqualByComparingTo(stmtAmt);
+			softly.assertThat(bankStatementLineRecord.getStmtAmt()).as("C_BankStatementLine_ID.Identifier=%s - StmtAmt", bslIdentifier).isEqualByComparingTo(stmtAmt);
 		}
 
 		final LocalDate statementLineDate = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_StatementLineDate);
 		if (statementLineDate != null)
 		{
-			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getStatementLineDate(), zoneId)).isEqualTo(statementLineDate);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getStatementLineDate(), zoneId)).as("C_BankStatementLine_ID.Identifier=%s - StatementLineDate", bslIdentifier).isEqualTo(statementLineDate);
 		}
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bPartnerIdentifier))
 		{
 			final I_C_BPartner bPartnerRecord = partnerTable.get(bPartnerIdentifier);
-			softly.assertThat(bPartnerRecord).isNotNull();
+			softly.assertThat(bPartnerRecord).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner record for identifier=%s", bslIdentifier, bPartnerIdentifier).isNotNull();
 
-			softly.assertThat(bankStatementLineRecord.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			softly.assertThat(bankStatementLineRecord.getC_BPartner_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_BPartner_ID for identifier=%s", bslIdentifier, bPartnerIdentifier).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		}
 
 		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(invoiceIdentifier))
 		{
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-			softly.assertThat(invoiceRecord).isNotNull();
+			softly.assertThat(invoiceRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice record %s for identifier=%s ", bslIdentifier, invoiceRecord,invoiceIdentifier).isNotNull();
 
-			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
+			softly.assertThat(bankStatementLineRecord.getC_Invoice_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Invoice_ID for identifier=%s", bslIdentifier, invoiceIdentifier).isEqualTo(invoiceRecord.getC_Invoice_ID());
 		}
 
 		final boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_Processed, false);
-		softly.assertThat(bankStatementLineRecord.isProcessed()).isEqualTo(isProcessed);
+		softly.assertThat(bankStatementLineRecord.isProcessed()).as("C_BankStatementLine_ID.Identifier=%s - Processed", bslIdentifier).isEqualTo(isProcessed);
 
 		final boolean isReconciled = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_IsReconciled, false);
-		softly.assertThat(bankStatementLineRecord.isReconciled()).isEqualTo(isReconciled);
+		softly.assertThat(bankStatementLineRecord.isReconciled()).as("C_BankStatementLine_ID.Identifier=%s - IsReconciled", bslIdentifier).isEqualTo(isReconciled);
 
 		final String paymentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(paymentIdentifier))
 		{
 			final I_C_Payment paymentRecord = paymentTable.get(paymentIdentifier);
-			softly.assertThat(paymentRecord).isNotNull();
+			softly.assertThat(paymentRecord).as("C_BankStatementLine_ID.Identifier=%s - C_Payment record for identifier=%s", bslIdentifier, paymentIdentifier).isNotNull();
 
-			softly.assertThat(bankStatementLineRecord.getC_Payment_ID()).isEqualTo(paymentRecord.getC_Payment_ID());
+			softly.assertThat(bankStatementLineRecord.getC_Payment_ID()).as("C_BankStatementLine_ID.Identifier=%s - C_Payment_ID for identifier=%s", bslIdentifier, paymentIdentifier).isEqualTo(paymentRecord.getC_Payment_ID());
 		}
 
 		softly.assertAll();

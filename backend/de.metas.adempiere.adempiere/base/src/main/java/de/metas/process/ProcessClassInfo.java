@@ -299,7 +299,7 @@ public final class ProcessClassInfo
 	}
 
 	@VisibleForTesting
-	ProcessClassInfo(@NonNull final Class<?> processClass)
+	public ProcessClassInfo(@NonNull final Class<?> processClass)
 	{
 		classname = processClass.getName();
 

@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_AttributeSetInstance;
 
 /**
@@ -34,4 +36,11 @@ public class M_AttributeSetInstance_StepDefData extends StepDefData<I_M_Attribut
 	{
 		super(I_M_AttributeSetInstance.class);
 	}
+
+	public AttributeSetInstanceId getId(final StepDefDataIdentifier identifier)
+	{
+		final I_M_AttributeSetInstance record = get(identifier);
+		return AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID());
+	}
+
 }

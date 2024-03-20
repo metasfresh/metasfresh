@@ -24,13 +24,12 @@ package de.metas.material.planning.pporder;
 
 import de.metas.material.planning.IMaterialDemandMatcher;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -39,9 +38,9 @@ public class PPOrderCandidateDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
 	{
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		final ProductPlanning productPlanning = mrpContext.getProductPlanning();
 
-		final boolean manufactured = StringUtils.toBoolean(productPlanning.getIsManufactured());
+		final boolean manufactured = productPlanning.isManufactured();
 		final boolean pickingOrder = productPlanning.isPickingOrder(); // basically, picking orders are different beast.
 		if (manufactured && !pickingOrder)
 		{

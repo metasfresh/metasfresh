@@ -1,9 +1,8 @@
 package de.metas.location.interceptor;
 
-import de.metas.location.CountryService;
+import de.metas.location.AddressDisplaySequence;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADTableName;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
@@ -15,7 +14,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
@@ -34,12 +32,12 @@ import java.util.Properties;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +47,6 @@ import java.util.Properties;
 @Component
 public class C_Country
 {
-	private final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
 	private final AdTableId c_countryTableId = Services.get(IADTableDAO.class).retrieveAdTableId(I_C_Country.Table_Name);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
@@ -103,10 +100,16 @@ public class C_Country
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_Country.COLUMNNAME_DisplaySequence, I_C_Country.COLUMNNAME_DisplaySequenceLocal})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Country.COLUMNNAME_DisplaySequence, I_C_Country.COLUMNNAME_DisplaySequenceLocal })
 	public void onChangeCountryDisplaySequence(@NonNull final I_C_Country country)
 	{
-		countryService.assertCountryValidDisplaySequence(country);
+		assertValidDisplaySequences(country);
+	}
+
+	public void assertValidDisplaySequences(@NonNull final I_C_Country country)
+	{
+		AddressDisplaySequence.ofNullable(country.getDisplaySequence()).assertValid();
+		AddressDisplaySequence.ofNullable(country.getDisplaySequenceLocal()).assertValid();
 	}
 
 	private void setCountryAttributeName(@NonNull final I_C_Country country)

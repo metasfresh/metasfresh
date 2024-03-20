@@ -89,56 +89,59 @@ public class PrintingClientPDFFileStorer
 				document.open();
 				for (final JsonPrintingSegment segment : path2Segments.get(path))
 				{
-					final byte[] data = Base64.getDecoder().decode(printingData.getBase64Data());
-					final PdfReader reader;
-					try
+					for (int i = 0; i < segment.getCopies(); i++)
 					{
-						reader = new PdfReader(data);
-					}
-					catch (final IOException e)
-					{
-						throw new PrintingException("IOException in PDFReader", e);
-					}
-
-					final int archivePageNums = reader.getNumberOfPages();
-
-					int pageFrom = segment.getPageFrom();
-					if (pageFrom <= 0)
-					{
-						// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-						pageFrom = 1;
-					}
-
-					int pageTo = segment.getPageTo();
-					if (pageTo > archivePageNums)
-					{
-						// shall not happen at this point
-						pageTo = archivePageNums;
-					}
-
-					if (pageFrom > pageTo)
-					{
-						// shall not happen at this point
-						return;
-					}
-
-					for (int page = pageFrom; page <= pageTo; page++)
-					{
+						final byte[] data = Base64.getDecoder().decode(printingData.getBase64Data());
+						final PdfReader reader;
 						try
 						{
-							pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
-							pdfCopy.freeReader(reader);
-						}
-						catch (final BadPdfFormatException e)
-						{
-							throw new PrintingException("BadPdfFormatException " + segment + " (Page: " + page + ")", e);
+							reader = new PdfReader(data);
 						}
 						catch (final IOException e)
 						{
-							throw new PrintingException("IOException in PdfReader", e);
+							throw new PrintingException("IOException in PDFReader", e);
 						}
+
+						final int archivePageNums = reader.getNumberOfPages();
+
+						int pageFrom = segment.getPageFrom();
+						if (pageFrom <= 0)
+						{
+							// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+							pageFrom = 1;
+						}
+
+						int pageTo = segment.getPageTo();
+						if (pageTo > archivePageNums)
+						{
+							// shall not happen at this point
+							pageTo = archivePageNums;
+						}
+
+						if (pageFrom > pageTo)
+						{
+							// shall not happen at this point
+							return;
+						}
+
+						for (int page = pageFrom; page <= pageTo; page++)
+						{
+							try
+							{
+								pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+								pdfCopy.freeReader(reader);
+							}
+							catch (final BadPdfFormatException e)
+							{
+								throw new PrintingException("BadPdfFormatException " + segment + " (Page: " + page + ")", e);
+							}
+							catch (final IOException e)
+							{
+								throw new PrintingException("IOException in PdfReader", e);
+							}
+						}
+						reader.close();
 					}
-					reader.close();
 					document.close();
 
 					try
@@ -192,7 +195,8 @@ public class PrintingClientPDFFileStorer
 					{
 						path = Paths.get(baseDirectory,
 										 FileUtil.stripIllegalCharacters(printer.getName()),
-										 FileUtil.stripIllegalCharacters(tray.getNumber() + "-" + tray.getName()));
+										 FileUtil.stripIllegalCharacters(tray.getName())) // don't use the number for the path, because we want to control it entirely with the tray name
+						;
 						break;
 					}
 				}

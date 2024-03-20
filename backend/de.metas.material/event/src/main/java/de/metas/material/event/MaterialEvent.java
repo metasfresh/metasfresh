@@ -13,6 +13,7 @@ import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
+import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
@@ -52,7 +53,7 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
 
 		@JsonSubTypes.Type(name = AttributesChangedEvent.TYPE, value = AttributesChangedEvent.class),
@@ -76,6 +77,7 @@ import de.metas.material.event.transactions.TransactionDeletedEvent;
 		@JsonSubTypes.Type(name = PPOrderCandidateRequestedEvent.TYPE, value = PPOrderCandidateRequestedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCandidateUpdatedEvent.TYPE, value = PPOrderCandidateUpdatedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCandidateCreatedEvent.TYPE, value = PPOrderCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = PPOrderCandidateDeletedEvent.TYPE, value = PPOrderCandidateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = PurchaseCandidateAdvisedEvent.TYPE, value = PurchaseCandidateAdvisedEvent.class),
 		@JsonSubTypes.Type(name = PurchaseCandidateCreatedEvent.TYPE, value = PurchaseCandidateCreatedEvent.class),

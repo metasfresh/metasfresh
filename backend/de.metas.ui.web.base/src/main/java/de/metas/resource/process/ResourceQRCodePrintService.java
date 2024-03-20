@@ -37,20 +37,10 @@ public class ResourceQRCodePrintService
 	{
 		final ImmutableList<PrintableQRCode> printableQRCodes = resourceService.getResourcesByIds(resourceIds)
 				.stream()
-				.map(ResourceQRCodePrintService::toQRCode)
+				.map(ResourceQRCode::ofResource)
 				.map(ResourceQRCode::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
 
 		return globalQRCodeService.createPDF(printableQRCodes);
 	}
-
-	private static ResourceQRCode toQRCode(final Resource resource)
-	{
-		return ResourceQRCode.builder()
-				.resourceId(resource.getResourceId())
-				.resourceType(resource.getManufacturingResourceType())
-				.caption(resource.getName().getDefaultValue())
-				.build();
-	}
-
 }

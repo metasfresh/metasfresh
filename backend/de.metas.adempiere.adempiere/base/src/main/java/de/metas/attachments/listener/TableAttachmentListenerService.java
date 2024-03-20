@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -53,7 +53,7 @@ public class TableAttachmentListenerService
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
-	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final TableAttachmentListenerRepository tableAttachmentListenerRepository;
 
 	public TableAttachmentListenerService(@NonNull final TableAttachmentListenerRepository tableAttachmentListenerRepository)
@@ -70,8 +70,8 @@ public class TableAttachmentListenerService
 			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
 			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
 
-			ImmutableList.Builder<AttachmentListenerActionResult> results=ImmutableList.builder();
-			for(final AttachmentListenerSettings setting : settings)
+			ImmutableList.Builder<AttachmentListenerActionResult> results = ImmutableList.builder();
+			for (final AttachmentListenerSettings setting : settings)
 			{
 				final AttachmentListenerActionResult result = invokeListener(setting, tableRecordReference, attachmentEntry);
 				results.add(result);
@@ -119,7 +119,7 @@ public class TableAttachmentListenerService
 	 * Notifies the user about the process finalizing work if {@link AttachmentListenerSettings#isSendNotification()}
 	 *
 	 * @param attachmentListenerSettings data from {@link I_AD_Table_AttachmentListener}
-	 * @param tableRecordReference reference of the table
+	 * @param tableRecordReference       reference of the table
 	 */
 	@VisibleForTesting
 	void notifyUser(
@@ -129,7 +129,7 @@ public class TableAttachmentListenerService
 	{
 		if (attachmentListenerSettings.isSendNotification())
 		{
-			final AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
+			final AdMessageKey adMessageContent = msgBL.getAdMessageKeyById(attachmentListenerSettings.getAdMessageId()).orElse(null);
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.contentADMessage(adMessageContent != null ? adMessageContent : null)
@@ -164,6 +164,6 @@ public class TableAttachmentListenerService
 	@NonNull
 	private AdMessageKey retrieveFailureMessage(@NonNull final AttachmentListenerSettings listenerSettings)
 	{
-		return adMessageDAO.retrieveValueById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
+		return msgBL.getAdMessageKeyById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
 	}
 }

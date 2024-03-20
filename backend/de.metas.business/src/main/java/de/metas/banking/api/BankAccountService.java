@@ -90,6 +90,12 @@ public class BankAccountService
 		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
 	}
 
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankAccountId bankAccountId)
+	{
+		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
+		return bankRepo.isImportAsSingleSummaryLine(bankId);
+	}
+
 	@NonNull
 	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
 	{
@@ -104,6 +110,7 @@ public class BankAccountService
 		return bankAccountDAO.getBankAccountId(bankId, accountNo);
 	}
 
+	@NonNull
 	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
 	{
 		return bankAccountDAO.getBankAccountIdByIBAN(iban);

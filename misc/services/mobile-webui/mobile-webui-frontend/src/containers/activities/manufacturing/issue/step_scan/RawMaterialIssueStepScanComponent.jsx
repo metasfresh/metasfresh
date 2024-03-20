@@ -6,14 +6,15 @@ import { toastError } from '../../../../../utils/toast';
 import { updateManufacturingIssue } from '../../../../../actions/ManufacturingActions';
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
   getActivityById,
+  getNonIssuedStepByHuIdFromActivity,
   getStepByIdFromActivity,
-  getStepByQRCodeFromActivity,
+  getNonIssuedStepByQRCodeFromActivity,
 } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
@@ -30,8 +31,14 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const eligibleBarcode =
     stepId != null ? toQRCodeString(getStepByIdFromActivity(activity, lineId, stepId).huQRCode) : null;
 
-  const resolveScannedBarcode = (scannedBarcode) => {
-    const step = getStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+  const resolveScannedBarcode = (scannedBarcode, huId) => {
+    let step;
+    if (huId) {
+      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, huId);
+    } else {
+      step = getNonIssuedStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+    }
+
     if (!step) {
       throw trl('activities.picking.notEligibleHUBarcode');
     }
@@ -107,6 +114,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleBarcode}
       resolveScannedBarcode={resolveScannedBarcode}
+      useHUScanner={true}
       //
       // userInfo={userInfo}
       // qtyTarget={qtyToIssueTarget}

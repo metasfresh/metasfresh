@@ -94,7 +94,7 @@ public class AD_Org_StepDef
 					.create()
 					.firstOnlyOrNull(I_AD_Org.class);
 
-			assertThat(orgRecord).isNotNull();
+			assertThat(orgRecord).as("AD_Org for identifier=%S", orgCode).isNotNull();
 
 			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			orgTable.putOrReplace(orgIdentifier, orgRecord);

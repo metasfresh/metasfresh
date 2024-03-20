@@ -1,13 +1,24 @@
 import * as huManagerApp from './huManager';
+import * as scanAnythingApp from './scanAnything';
+import * as workplaceManagerApp from './workplaceManager';
+import * as workstationManagerApp from './workstationManager';
 
 const registeredApplications = {};
 
-const registerApplication = ({ applicationId, routes, messages, startApplication, reduxReducer }) => {
+const registerApplication = ({
+  applicationId,
+  routes,
+  messages,
+  startApplication,
+  startApplicationByQRCode,
+  reduxReducer,
+}) => {
   registeredApplications[applicationId] = {
     applicationId,
     routes,
     messages,
     startApplication,
+    startApplicationByQRCode,
     reduxReducer,
   };
 
@@ -17,6 +28,9 @@ const registerApplication = ({ applicationId, routes, messages, startApplication
 
 export const getApplicationStartFunction = (applicationId) => {
   return registeredApplications[applicationId]?.startApplication;
+};
+export const getApplicationStartByQRCodeFunction = (applicationId) => {
+  return registeredApplications[applicationId]?.startApplicationByQRCode;
 };
 
 export const getApplicationRoutes = () => {
@@ -66,3 +80,6 @@ export const getApplicationReduxReducers = () => {
 //
 
 registerApplication(huManagerApp.applicationDescriptor);
+registerApplication(scanAnythingApp.applicationDescriptor);
+registerApplication(workplaceManagerApp.applicationDescriptor);
+registerApplication(workstationManagerApp.applicationDescriptor);

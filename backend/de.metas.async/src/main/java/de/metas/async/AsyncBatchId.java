@@ -9,6 +9,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import java.util.function.Supplier;
+
 /*
  * #%L
  * de.metas.async
@@ -44,6 +46,7 @@ public class AsyncBatchId implements RepoIdAware
 		return new AsyncBatchId(repoId);
 	}
 
+	@Nullable
 	public static AsyncBatchId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AsyncBatchId(repoId) : null;
@@ -55,6 +58,12 @@ public class AsyncBatchId implements RepoIdAware
 		return repoId > 0 ? new AsyncBatchId(repoId) : NONE_ASYNC_BATCH_ID;
 	}
 
+	@NonNull
+	public static AsyncBatchId ofRepoIdOr(final int repoId, @NonNull final Supplier<AsyncBatchId>supplier)
+	{
+		return repoId > 0 ? new AsyncBatchId(repoId) : supplier.get();
+	}
+	
 	public static int toRepoId(@Nullable final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchId != null ? asyncBatchId.getRepoId() : -1;

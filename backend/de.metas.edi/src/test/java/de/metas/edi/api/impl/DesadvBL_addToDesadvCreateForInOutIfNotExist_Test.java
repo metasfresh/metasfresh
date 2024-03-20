@@ -65,14 +65,13 @@ import java.util.Properties;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
-import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerTU;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -242,7 +241,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("2.500"), new BigDecimal("17.000"))//
@@ -282,10 +281,10 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
-						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */) //
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.000")/* CUperLU - rounded to ceiling */) //
 				);
 	}
 
@@ -312,7 +311,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("5"), new BigDecimal("50")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("5"), new BigDecimal("34")) //
@@ -343,7 +342,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
@@ -369,7 +368,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
 		assertThat(ssccItemRecords)
-				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
 						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("5"), new BigDecimal("49")),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("5"), new BigDecimal("35")) //

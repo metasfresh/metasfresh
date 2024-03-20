@@ -34,6 +34,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "11 null",
+        "qtyCountFixed": "11 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -54,6 +56,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 2,
+        "qtyBookFixed": "1 null",
+        "qtyCountFixed": "1 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -74,6 +78,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "2 null",
+        "qtyCountFixed": "2 null",
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],
@@ -119,6 +125,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "11 null",
+        "qtyCountFixed": "11 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -146,6 +154,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "4 null",
+        "qtyCountFixed": "4 null",
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],
@@ -183,6 +193,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "10 null",
+        "qtyCountFixed": "10 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -202,6 +214,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "1 null",
+        "qtyCountFixed": "1 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -221,6 +235,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 2,
+        "qtyBookFixed": "1 null",
+        "qtyCountFixed": "1 null",
         "storageAttributesKey": "10§&§11"
       },
       {
@@ -240,6 +256,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "locatorId": "1000000_1000000",
         "orgId": 5,
         "productId": 40,
+        "qtyBookFixed": "2 null",
+        "qtyCountFixed": "2 null",
         "storageAttributesKey": "10§&§11§&§12"
       }
     ],

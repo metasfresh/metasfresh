@@ -9,6 +9,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.letter.BoilerPlateId;
+import de.metas.letter.BoilerPlateWithLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -73,16 +75,20 @@ public class DocTypeDAO implements IDocTypeDAO
 			.tableName(I_C_DocBaseType_Counter.Table_Name)
 			.build();
 
+	private final CCache<DocTypeId, DocType> docTypesById = CCache.<DocTypeId, DocType>builder()
+			.tableName(I_C_DocType.Table_Name)
+			.build();
+
 	@Override
 	@NonNull
-	public I_C_DocType getById(final int docTypeId)
+	public I_C_DocType getRecordById(final int docTypeId)
 	{
-		return getById(DocTypeId.ofRepoId(docTypeId));
+		return getRecordById(DocTypeId.ofRepoId(docTypeId));
 	}
 
 	@Override
 	@NonNull
-	public I_C_DocType getById(@NonNull final DocTypeId docTypeId)
+	public I_C_DocType getRecordById(@NonNull final DocTypeId docTypeId)
 	{
 		// NOTE: we assume the C_DocType is cached on table level (i.e. see org.adempiere.model.validator.AdempiereBaseValidator.setupCaching(IModelCacheService))
 		final I_C_DocType docTypeRecord = InterfaceWrapperHelper.loadOutOfTrx(docTypeId, I_C_DocType.class);
@@ -337,14 +343,14 @@ public class DocTypeDAO implements IDocTypeDAO
 	@Override
 	public DocBaseType getDocBaseTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docTypeRecord = getById(docTypeId);
+		final I_C_DocType docTypeRecord = getRecordById(docTypeId);
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType docTypeRecord = getById(docTypeId);
+		final I_C_DocType docTypeRecord = getRecordById(docTypeId);
 		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 	}
 
@@ -382,5 +388,20 @@ public class DocTypeDAO implements IDocTypeDAO
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_C_DocType_Invoicing_Pool_ID, docTypeInvoicingPoolId)
 				.create()
 				.listIds(DocTypeId::ofRepoId);
+	}
+
+	@Override
+	public DocType getById(final DocTypeId id)
+	{
+		return docTypesById.getOrLoad(id, docTypeId -> fromDB(getRecordById(docTypeId)));
+	}
+
+	private static DocType fromDB(final I_C_DocType docType)
+	{
+		return DocType.builder()
+				.id(DocTypeId.ofRepoId(docType.getC_DocType_ID()))
+				.notification(BoilerPlateId.ofRepoIdOrNull(docType.getAD_BoilerPlate_ID()))
+				.massGenerateNotification(BoilerPlateWithLineId.ofRepoIdsOrNull(docType.getMass_Generate_Boilerplate_ID(), docType.getMass_Generate_Line_Boilerplate_ID()))
+				.build();
 	}
 }

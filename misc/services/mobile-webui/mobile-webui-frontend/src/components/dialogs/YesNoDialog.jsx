@@ -17,10 +17,10 @@ const YesNoDialog = ({ promptQuestion, userInstructions, onYes, onNo }) => {
           <UserInstructions text={userInstructions} />
 
           <div className="buttons is-centered">
-            <button className="button is-danger" onClick={onYes}>
+            <button className="button is-success" onClick={onYes}>
               {trl('activities.confirmButton.default.yes')}
             </button>
-            <button className="button is-success" onClick={onNo}>
+            <button className="button is-danger" onClick={onNo}>
               {trl('activities.confirmButton.default.no')}
             </button>
           </div>

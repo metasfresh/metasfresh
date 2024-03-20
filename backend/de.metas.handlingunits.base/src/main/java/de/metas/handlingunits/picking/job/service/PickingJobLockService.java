@@ -32,6 +32,11 @@ public class PickingJobLockService
 
 	public void unlockShipmentSchedules(@NonNull final PickingJob pickingJob)
 	{
+		if (pickingJob.getLockedBy() == null)
+		{
+			return;
+		}
+
 		unlockShipmentSchedules(pickingJob.getShipmentScheduleIds(), pickingJob.getLockedBy());
 	}
 

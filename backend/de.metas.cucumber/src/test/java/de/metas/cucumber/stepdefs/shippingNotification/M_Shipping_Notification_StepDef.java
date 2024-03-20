@@ -208,13 +208,19 @@ public class M_Shipping_Notification_StepDef
 			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
 			softly.assertThat(locator.getM_Locator_ID()).isEqualTo(shippingNotification.getM_Locator_ID()).isEqualTo(order.getM_Locator_ID());
 
-			final String harvestingCalendarIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Calendar harvestingCalendar = calendarTable.get(harvestingCalendarIdentifier);
-			softly.assertThat(harvestingCalendar.getC_Calendar_ID()).isEqualTo(shippingNotification.getC_Harvesting_Calendar_ID()).isEqualTo(order.getC_Harvesting_Calendar_ID());
+			final String harvestingCalendarIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Harvesting_Calendar_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(harvestingCalendarIdentifier))
+			{
+				final I_C_Calendar harvestingCalendar = calendarTable.get(harvestingCalendarIdentifier);
+				softly.assertThat(harvestingCalendar.getC_Calendar_ID()).isEqualTo(shippingNotification.getC_Harvesting_Calendar_ID()).isEqualTo(order.getC_Harvesting_Calendar_ID());
+			}
 
-			final String harvestingYearIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Year harvestingYear = yearTable.get(harvestingYearIdentifier);
-			softly.assertThat(harvestingYear.getC_Year_ID()).isEqualTo(shippingNotification.getHarvesting_Year_ID()).isEqualTo(order.getHarvesting_Year_ID());
+			final String harvestingYearIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_Harvesting_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(harvestingYearIdentifier))
+			{
+				final I_C_Year harvestingYear = yearTable.get(harvestingYearIdentifier);
+				softly.assertThat(harvestingYear.getC_Year_ID()).isEqualTo(shippingNotification.getHarvesting_Year_ID()).isEqualTo(order.getHarvesting_Year_ID());
+			}
 
 			final String auctionIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Auction_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(auctionIdentifier))

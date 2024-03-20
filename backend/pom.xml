@@ -69,6 +69,7 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
+        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 
@@ -143,6 +144,8 @@
         <module>de.metas.payment.sepa</module>
         <module>de.metas.payment.paypal</module>
         <module>de.metas.payment.revolut</module>
+
+        <module>de.metas.postfinance</module>
 
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>

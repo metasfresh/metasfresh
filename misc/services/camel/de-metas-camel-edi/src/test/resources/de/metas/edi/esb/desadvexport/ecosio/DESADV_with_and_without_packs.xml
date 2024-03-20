@@ -56,8 +56,10 @@
         <EDI_Exp_Desadv_Pack_Item>
             <EDI_Desadv_Pack_ID>1000005</EDI_Desadv_Pack_ID>
             <EDI_DesadvLine_ID>1000003</EDI_DesadvLine_ID>
-            <QtyCU>10</QtyCU>
+            <QtyCUsPerTU>10</QtyCUsPerTU>
             <QtyCUsPerLU>90</QtyCUsPerLU>
+            <QtyCUsPerLU_InInvoiceUOM>22.5</QtyCUsPerLU_InInvoiceUOM>
+            <QtyCUsPerTU_InInvoiceUOM>2.5</QtyCUsPerTU_InInvoiceUOM>
             <QtyTU>9</QtyTU>
             <EDI_DesadvLine_ID>
                 <EDI_DesadvLine_ID>1000003</EDI_DesadvLine_ID>

@@ -24,8 +24,11 @@ package de.metas.document.refid.api;
 
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.document.refid.api.impl.ReferenceNoId;
+import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
@@ -74,6 +77,8 @@ public interface IReferenceNoDAO extends ISingletonService
 
 	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(I_C_ReferenceNo referenceNo);
 
+	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(ReferenceNoId referenceNoId);
+
 	/**
 	 * Retrieves all <code>C_ReferenceNo</code> records that have the given <code>type</code> and are associated with the given doc/model object via <code>C_ReferenceNo_Doc</code>. Note that one
 	 * doc/model can generally have multiple <code>C_ReferenceNo</code> of the same type.
@@ -96,4 +101,7 @@ public interface IReferenceNoDAO extends ISingletonService
 	 * @throws org.adempiere.model.InterfaceWrapperHelper.MissingTableNameException if no table name can't be found for the given class
 	 */
 	<T> List<T> retrieveAssociatedRecords(Object model, Class<? extends IReferenceNoGenerator> generatorClazz, Class<T> clazz);
+
+	@NonNull
+	Optional<ReferenceNoId> getReferenceNoId(@NonNull String referenceNo, @NonNull I_C_ReferenceNo_Type invoiceReferenceNoType);
 }

@@ -67,4 +67,11 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 	{
 		return getShipmentScheduleDetail().getReservedQuantity().negate();
 	}
+
+	@Override
+	@NonNull
+	public BigDecimal getOrderedQuantityDelta()
+	{
+		return getShipmentScheduleDetail().getOrderedQuantity().negate();
+	}
 }

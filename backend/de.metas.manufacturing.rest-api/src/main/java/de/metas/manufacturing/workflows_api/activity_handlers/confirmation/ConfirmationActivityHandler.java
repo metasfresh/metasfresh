@@ -3,6 +3,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.confirmation;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
@@ -49,7 +50,7 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 
 		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
 
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 		job.assertUserReporting();
 
 		final ManufacturingJob changedJob = manufacturingJobService.withActivityCompleted(job, jobActivityId);

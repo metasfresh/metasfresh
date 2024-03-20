@@ -72,6 +72,20 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return of(TableRecordReference.of(tableName, recordId));
 	}
 
+	public static <T extends RepoIdAware> TableRecordReferenceSet of(final String tableName, final Collection<T> recordIds)
+	{
+		if (recordIds.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final ImmutableSet<TableRecordReference> recordRefs = recordIds.stream()
+				.map(recordId -> TableRecordReference.of(tableName, recordId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return of(recordRefs);
+	}
+
 	public static Collector<TableRecordReference, ?, TableRecordReferenceSet> collect()
 	{
 		final Supplier<Set<TableRecordReference>> supplier = LinkedHashSet::new;
@@ -95,10 +109,13 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	}
 
 	@Override
+	@NonNull
 	public Iterator<TableRecordReference> iterator()
 	{
 		return recordRefs.iterator();
 	}
+
+	public Stream<TableRecordReference> stream() {return recordRefs.stream();}
 
 	public TableRecordReferenceSet filter(@NonNull final Predicate<TableRecordReference> filter)
 	{

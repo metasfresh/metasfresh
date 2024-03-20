@@ -100,6 +100,7 @@ public class BankRepository
 				// ESR:
 				.esrPostBank(record.isESR_PostBank())
 				//
+				.importAsSingleSummaryLine(record.isImportAsSingleSummaryLine())
 				.build();
 	}
 
@@ -160,6 +161,8 @@ public class BankRepository
 				bank::getDataImportConfigId,
 				this::retrieveDefaultBankDataImportConfigId);
 	}
+
+	public boolean isImportAsSingleSummaryLine(@NonNull final BankId bankId)	{ return getById(bankId).isImportAsSingleSummaryLine(); 	}
 
 	@NonNull
 	public Set<BankId> retrieveBankIdsByName(@NonNull final String bankName)

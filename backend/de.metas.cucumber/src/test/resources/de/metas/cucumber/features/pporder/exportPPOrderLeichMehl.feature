@@ -33,12 +33,18 @@ Feature: Export PP_Order to LeichMehl config
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type | ExternalSystemValue      | ExternalSystem_Config_LeichMehl_ID.Identifier | TCP_PortNumber | TCP_Host      | Product_BaseFolderName |
       | leichMehlConfig_27062022            | LM   | leichMehlConfig_27062022 | leichMehlConfig                               | 123            | doesNotMatter | ProductBaseFolderName  |
-    And metasfresh contains ExternalSystem_Config_LeichMehl_ProductMapping:
-      | ExternalSystem_Config_LeichMehl_ID.Identifier | SeqNo | PLU_File    | OPT.M_Product_ID.Identifier  | OPT.M_Product_Category_ID.Identifier |
-      | leichMehlConfig                               | 10    | pluFilename | manufacturedProduct_27062022 | standard_category                    |
+
+    And metasfresh contains LeichMehl_PluFile_ConfigGroup:
+      | LeichMehl_PluFile_ConfigGroup_ID.Identifier | Name           |
+      | leichMehlPLuFileConfigGroup_1               | PluConfigGroup |
+
     And metasfresh contains LeichMehl_PluFile_Config:
-      | ExternalSystem_Config_LeichMehl_ID.Identifier | TargetFieldName | TargetFieldType | Replacement          | ReplaceRegExp | ReplacementSource |
-      | leichMehlConfig                               | TestField-01    | numberField     | @JsonPath=productNo@ | .*            | Product           |
+      | LeichMehl_PluFile_Config_ID.Identifier | LeichMehl_PluFile_ConfigGroup_ID.Identifier | TargetFieldName | TargetFieldType | Replacement           | ReplaceRegExp | ReplacementSource |
+      | leichMehlPLuFileConfig_1               | leichMehlPLuFileConfigGroup_1               | TestField-01    | numberField     | @JsonPath=/productNo@ | .*            | Product           |
+
+    And metasfresh contains ExternalSystem_Config_LeichMehl_ProductMapping:
+      | ExternalSystem_Config_LeichMehl_ProductMapping_ID.Identifier | LeichMehl_PluFile_ConfigGroup_ID.Identifier | PLU_File    | M_Product_ID.Identifier      |
+      | leichMehlProductMapping_1                                    | leichMehlPLuFileConfigGroup_1               | pluFilename | manufacturedProduct_27062022 |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -48,5 +54,5 @@ Feature: Export PP_Order to LeichMehl config
 
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.PP_Order_ID.Identifier | TCP_PortNumber | TCP_Host      | Product_BaseFolderName | IsPluFileExportAuditEnabled | ConfigMappings.pluFile | ConfigMappings.M_Product_ID.Identifier | PluFileConfig                                                                                                                                                                    |
-      | leichMehlConfig_27062022            | ppOrder                    | 123            | doesNotMatter | ProductBaseFolderName  | false                       | pluFilename            | manufacturedProduct_27062022           | {"pluFileConfigs":[{"targetFieldName":"TestField-01","targetFieldType":"NumberField","replacePattern":".*","replacement":"@JsonPath=productNo@","replacementSource":"Product"}]} |
+      | leichMehlConfig_27062022            | ppOrder                    | 123            | doesNotMatter | ProductBaseFolderName  | false                       | pluFilename            | manufacturedProduct_27062022           | {"pluFileConfigs":[{"targetFieldName":"TestField-01","targetFieldType":"NumberField","replacePattern":".*","replacement":"@JsonPath=/productNo@","replacementSource":"Product"}]} |
 

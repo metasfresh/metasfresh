@@ -122,9 +122,9 @@ public class WEBUI_M_HU_Transform
 	private I_M_HU p_M_LU_HU;
 
 	//
-	protected static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal p_QtyCU;
+	protected static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU)
+	private BigDecimal p_QtyCUsPerTU;
 
 	//
 	protected static final String PARAM_QtyTU = "QtyTU";
@@ -216,7 +216,7 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
+	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCUsPerTU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
 	 * For any other parameter, it returns {@link IProcessDefaultParametersProvider#DEFAULT_VALUE_NOTAVAILABLE}.
 	 */
 	@Override
@@ -255,7 +255,7 @@ public class WEBUI_M_HU_Transform
 				.huPIItem(p_M_HU_PI_Item)
 				.tuHU(p_M_TU_HU)
 				.luHU(p_M_LU_HU)
-				.qtyCU(p_QtyCU)
+				.qtyCU(p_QtyCUsPerTU)
 				.qtyTU(p_QtyTU)
 				.huPlanningReceiptOwnerPM_TU(ActionType.valueOf(p_Action).equals(ActionType.TU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_TU)
 				.huPlanningReceiptOwnerPM_LU(ActionType.valueOf(p_Action).equals(ActionType.LU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_LU)
@@ -411,7 +411,7 @@ public class WEBUI_M_HU_Transform
 			final BigDecimal realCUQty = getSingleSelectedRow().getQtyCU();
 
 			p_M_HU_PI_Item_Product = packingItemOptional.get();
-			p_QtyCU = realCUQty.min(packingItemOptional.get().getQty());
+			p_QtyCUsPerTU = realCUQty.min(packingItemOptional.get().getQty());
 		}
 	}
 

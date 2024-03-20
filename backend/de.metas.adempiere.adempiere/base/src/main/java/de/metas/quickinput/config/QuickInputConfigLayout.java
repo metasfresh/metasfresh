@@ -1,8 +1,10 @@
 package de.metas.quickinput.config;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -12,6 +14,9 @@ import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Set;
 
 @EqualsAndHashCode
@@ -29,6 +34,60 @@ public class QuickInputConfigLayout
 		this.fieldsByFieldName = Maps.uniqueIndex(this.fields, Field::getFieldName);
 		this.fieldNamesInOrder = this.fields.stream().map(Field::getFieldName).collect(ImmutableList.toImmutableList());
 	}
+
+	public static Optional<QuickInputConfigLayout> parse(@Nullable final String layoutStringParam)
+	{
+		final String layoutStringNorm = StringUtils.trimBlankToNull(layoutStringParam);
+
+		if (layoutStringNorm == null || "-".equals(layoutStringNorm))
+		{
+			return Optional.empty();
+		}
+
+		final ArrayList<Field> fields = new ArrayList<>();
+		for (final String fieldLayoutString : Splitter.on(",").splitToList(layoutStringNorm))
+		{
+			final String fieldLayoutStringNorm = StringUtils.trimBlankToNull(fieldLayoutString);
+			if (fieldLayoutStringNorm == null)
+			{
+				throw new AdempiereException("Empty field name not allowed");
+			}
+
+			final String fieldName;
+			final boolean mandatory;
+			if (fieldLayoutStringNorm.endsWith("?"))
+			{
+				mandatory = false;
+				fieldName = fieldLayoutStringNorm.substring(0, fieldLayoutStringNorm.length() - 1);
+			}
+			else
+			{
+				mandatory = true;
+				fieldName = fieldLayoutStringNorm;
+			}
+
+			if (fieldName.isEmpty())
+			{
+				throw new AdempiereException("Empty field name not allowed");
+			}
+
+			fields.add(QuickInputConfigLayout.Field.builder()
+					.fieldName(fieldName)
+					.mandatory(mandatory)
+					.build());
+		}
+
+		if (fields.isEmpty())
+		{
+			throw new AdempiereException("No fields");
+		}
+
+		return Optional.of(
+				QuickInputConfigLayout.builder()
+						.fields(ImmutableList.copyOf(fields))
+						.build());
+	}
+
 
 	public void assertFieldExistsAndIsMandatory(final String fieldName)
 	{

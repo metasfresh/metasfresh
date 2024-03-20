@@ -2,9 +2,9 @@ package de.metas.workflow.rest_api.controller.v2.ws;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocumentNoFilter;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.security.UserAuthToken;
-import de.metas.user.UserId;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.UserAuthTokenService;
@@ -12,17 +12,16 @@ import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.producers.WebSocketProducer;
 import de.metas.websocket.producers.WebSocketProducerFactory;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URLDecoder;
 
@@ -38,6 +37,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	private static final String TOPIC_PARAM_applicationId = "applicationId";
 	private static final String TOPIC_PARAM_facetIds = "facetIds";
 	private static final String TOPIC_PARAM_qrCode = "qrCode";
+	private static final String TOPIC_PARAM_documentNo = "documentNo";
 
 	@Override
 	public String getTopicNamePrefix() {return TOPIC_PREFIX;}
@@ -45,26 +45,13 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	@Override
 	public WebSocketProducer createProducer(@NonNull final WebsocketTopicName topicName)
 	{
-		final TopicInfo topicInfo = parseTopicInfo(topicName);
-
-		return new WorkflowLaunchersWebSocketProducer(
-				workflowRestAPIService,
-				topicInfo.getApplicationId(),
-				topicInfo.getUserId(),
-				topicInfo.getFilterByQRCode(),
-				topicInfo.getFacetIds());
+		return WorkflowLaunchersWebSocketProducer.builder()
+				.workflowRestAPIService(workflowRestAPIService)
+				.query(parseWorkflowLaunchersQuery(topicName))
+				.build();
 	}
 
-	@Value(staticConstructor = "of")
-	private static class TopicInfo
-	{
-		@NonNull UserId userId;
-		@NonNull MobileApplicationId applicationId;
-		@Nullable GlobalQRCode filterByQRCode;
-		@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
-	}
-
-	private TopicInfo parseTopicInfo(@NonNull final WebsocketTopicName topicName)
+	private WorkflowLaunchersQuery parseWorkflowLaunchersQuery(@NonNull final WebsocketTopicName topicName)
 	{
 		if (!topicName.startsWith(TOPIC_PREFIX))
 		{
@@ -83,9 +70,16 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 			final GlobalQRCode filterByQRCode = StringUtils.trimBlankToOptional(queryParams.getFirst(TOPIC_PARAM_qrCode))
 					.map(GlobalQRCode::ofString)
 					.orElse(null);
+			final DocumentNoFilter filterByDocumentNo = DocumentNoFilter.ofNullableString(queryParams.getFirst(TOPIC_PARAM_documentNo));
 			final ImmutableSet<WorkflowLaunchersFacetId> facetIds = extractFacetIdsFromQueryParams(queryParams);
 
-			return TopicInfo.of(token.getUserId(), applicationId, filterByQRCode, facetIds);
+			return WorkflowLaunchersQuery.builder()
+					.applicationId(applicationId)
+					.userId(token.getUserId())
+					.filterByQRCode(filterByQRCode)
+					.filterByDocumentNo(filterByDocumentNo)
+					.facetIds(facetIds)
+					.build();
 		}
 		catch (Exception ex)
 		{

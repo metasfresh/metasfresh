@@ -45,14 +45,9 @@ public class S_ResourceType
 		this.resourceService = resourceService;
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = {
-			I_S_ResourceType.COLUMNNAME_IsTimeSlot,
-			I_S_ResourceType.COLUMNNAME_TimeSlotStart,
-			I_S_ResourceType.COLUMNNAME_TimeSlotEnd
-	})
-	public void validateStartEndDate(final I_S_ResourceType resourceType)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_S_ResourceType.COLUMNNAME_IsTimeSlot, I_S_ResourceType.COLUMNNAME_TimeSlotStart, I_S_ResourceType.COLUMNNAME_TimeSlotEnd })
+	public void validateTimeSlot(final I_S_ResourceType resourceType)
 	{
 		if (!resourceType.isTimeSlot())
 		{

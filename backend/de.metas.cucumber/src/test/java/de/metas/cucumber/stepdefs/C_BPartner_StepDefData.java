@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
+import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 
 /**
@@ -32,5 +34,10 @@ public class C_BPartner_StepDefData extends StepDefData<I_C_BPartner>
 	public C_BPartner_StepDefData()
 	{
 		super(I_C_BPartner.class);
+	}
+
+	public BPartnerId getId(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return BPartnerId.ofRepoId(get(identifier).getC_BPartner_ID());
 	}
 }

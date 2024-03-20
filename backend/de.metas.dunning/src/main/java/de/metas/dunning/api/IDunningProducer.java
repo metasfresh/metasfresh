@@ -23,11 +23,14 @@ package de.metas.dunning.api;
  */
 
 
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningAggregator;
+
+import java.util.Collection;
 
 /**
  * Dunning producer is responsible for taking {@link I_C_Dunning_Candidate}s and generate several {@link I_C_DunningDoc} s with {@link I_C_DunningDoc_Line}s.
@@ -76,4 +79,6 @@ public interface IDunningProducer
 	 * that are currently in queue, if any).
 	 */
 	void finish();
+
+	Collection<DunningDocId> getCreatedDunningDocIds();
 }

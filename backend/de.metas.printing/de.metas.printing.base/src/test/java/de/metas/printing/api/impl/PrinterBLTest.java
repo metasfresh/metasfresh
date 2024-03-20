@@ -33,9 +33,13 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -65,6 +69,9 @@ public class PrinterBLTest extends AbstractPrintingTest
 		AdempiereTestHelper.get().init();
 		printerBL = new PrinterBL();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, CTX_USER_ID);
+
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		SpringContextHolder.registerJUnitBean(workplaceService);
 	}
 
 	@Test

@@ -438,6 +438,46 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
+	 * Set unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_ID (int HandOver_Location_ID);
+
+	/**
+	 * Get unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_ID();
+
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+
+	/**
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Partner_ID();
+
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -996,6 +1036,27 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyToDeliver = new ModelColumn<>(I_M_Packageable_V.class, "QtyToDeliver", null);
 	String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
+
+	/**
+	 * Set Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSetup_Place_No (int Setup_Place_No);
+
+	/**
+	 * Get Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSetup_Place_No();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_Setup_Place_No = new ModelColumn<>(I_M_Packageable_V.class, "Setup_Place_No", null);
+	String COLUMNNAME_Setup_Place_No = "Setup_Place_No";
 
 	/**
 	 * Set Best Before Policy.

@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service.produce;
 
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -33,7 +34,6 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
@@ -52,7 +52,7 @@ public class PPOrderProducerFromCandidate
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
-	private final Map<ProductPlanningId, I_PP_Product_Planning> productPlanningCache;
+	private final Map<ProductPlanningId, ProductPlanning> productPlanningCache;
 	private final boolean createEachPPOrderInOwnTrx;
 
 	@Builder
@@ -144,7 +144,10 @@ public class PPOrderProducerFromCandidate
 
 							final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
-							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty(), ppOrderCandidateProcessRequest.isAutoProcessCandidatesAfterProduction());
+							createPPOrderAllocations(ppOrder,
+													 allocator.getPpOrderCand2AllocatedQty(),
+													 ppOrderCandidateProcessRequest.isAutoProcessCandidatesAfterProduction(),
+													 ppOrderCandidateProcessRequest.isAutoCloseCandidatesAfterProduction());
 
 							ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
@@ -160,12 +163,20 @@ public class PPOrderProducerFromCandidate
 	private void createPPOrderAllocations(
 			@NonNull final I_PP_Order ppOrder,
 			@NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate,
-			final boolean autoProcessCandidatesAfterProduction)
+			final boolean autoProcessCandidatesAfterProduction,
+			final boolean autoCloseCandidatesAfterProduction)
 	{
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
+			if (autoCloseCandidatesAfterProduction)
+			{
+				ppOrderCandidatesDAO.closeCandidate(candidateId);
+			}
+			else
+			{
+				markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
+			}
 		});
 	}
 

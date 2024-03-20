@@ -1,13 +1,13 @@
 package de.metas.ui.web.window.model;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.util.Trace;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -32,100 +32,69 @@ import java.util.Objects;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DocumentValidStatus
 {
-	public static final DocumentValidStatus documentInitiallyInvalid()
+	public static DocumentValidStatus documentInitiallyInvalid()
 	{
 		return STATE_InitialInvalid;
 	}
 
-	public static final DocumentValidStatus fieldInitiallyInvalid()
+	public static DocumentValidStatus fieldInitiallyInvalid()
 	{
 		return STATE_InitialInvalid;
 	}
 
-	public static final DocumentValidStatus documentValid()
+	public static DocumentValidStatus documentValid()
 	{
 		return STATE_Valid;
 	}
 
-	public static final DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
+	public static DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, fieldName, isInitialValue);
+		return new DocumentValidStatus(true, null, null, fieldName, isInitialValue);
 	}
 
-	public static final DocumentValidStatus invalidIncludedDocument()
+	public static DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
 	{
-		return STATE_InvalidIncludedDocument;
+		return new DocumentValidStatus(false, FillMandatoryException.buildMessage(fieldName), null, fieldName, isInitialValue);
 	}
 
-	public static final DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
+	public static DocumentValidStatus invalid(@NonNull final Exception error)
 	{
-		return new DocumentValidStatus(VALID_No, "Mandatory field " + fieldName + " not filled", STACKTRACE_Null, fieldName, isInitialValue);
+		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null);
 	}
 
-	public static final DocumentValidStatus invalid(@NonNull final Throwable error)
-	{
-		return new DocumentValidStatus(VALID_No, error.getLocalizedMessage(), Trace.toOneLineStackTraceString(error.getStackTrace()), FIELDNAME_Null, INITIALVALUE_Unknown);
-	}
+	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE);
+	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null, null, null, null);
 
-	private static final boolean VALID_Yes = true;
-	private static final boolean VALID_No = false;
-	private static final Boolean INITIALVALUE_Yes = Boolean.TRUE;
-	@SuppressWarnings("unused")
-	private static final Boolean INITIALVALUE_No = Boolean.FALSE;
-	private static final Boolean INITIALVALUE_Unknown = null;
-	private static final String REASON_Null = null;
-	private static final String STACKTRACE_Null = null;
-	private static final String FIELDNAME_Null = null;
+	@Getter private final boolean valid;
+	@Nullable @Getter private final Boolean initialValue;
+	@Nullable @Getter private final ITranslatableString reason;
+	@Nullable @Getter private final Exception exception;
+	@Nullable @Getter private final String fieldName;
 
-	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(VALID_No, "not validated yet", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Yes);
-	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
-	private static final DocumentValidStatus STATE_InvalidIncludedDocument = new DocumentValidStatus(VALID_No, "child invalid", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
+	private transient Integer _hashcode; // lazy
+	private transient String _toString; // lazy
 
-	@JsonProperty("valid")
-	@Getter
-	private final boolean valid;
-
-	@JsonProperty("initialValue")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean initialValue;
-
-	@JsonProperty("reason")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Getter
-	private final String reason;
-
-	@JsonProperty("stackTrace")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Getter
-	private final String notValidStackTrace;
-
-	@JsonProperty("fieldName")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String fieldName;
-
-	private transient Integer _hashcode;
-	private transient String _toString;
-
-	private DocumentValidStatus(final boolean valid,
-			final String reason,
-			final String notValidStackTrace,
-			final String fieldName,
-			final Boolean isInitialValue)
+	private DocumentValidStatus(
+			final boolean valid,
+			@Nullable final ITranslatableString reason,
+			@Nullable final Exception exception,
+			@Nullable final String fieldName,
+			@Nullable final Boolean isInitialValue)
 	{
 		this.valid = valid;
 		this.initialValue = isInitialValue;
 		this.reason = reason;
-		this.notValidStackTrace = notValidStackTrace;
+		this.exception = exception;
 		this.fieldName = fieldName;
 	}
 
 	@Override
 	public String toString()
 	{
-		if (_toString == null)
+		String toString = this._toString;
+		if (toString == null)
 		{
 			final StringBuilder sb = new StringBuilder();
 
@@ -136,24 +105,25 @@ public final class DocumentValidStatus
 				sb.append("-Initial");
 			}
 
-			if (reason != null && !reason.isEmpty())
+			if (!TranslatableStrings.isBlank(reason))
 			{
 				sb.append("('").append(reason).append("')");
 			}
 
-			_toString = sb.toString();
+			toString = this._toString = sb.toString();
 		}
-		return _toString;
+		return toString;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		if (_hashcode == null)
+		Integer hashcode = this._hashcode;
+		if (hashcode == null)
 		{
-			_hashcode = Objects.hash(valid, initialValue, reason, fieldName);
+			hashcode = this._hashcode = Objects.hash(valid, initialValue, reason, fieldName);
 		}
-		return _hashcode;
+		return hashcode;
 	}
 
 	@Override
@@ -180,4 +150,22 @@ public final class DocumentValidStatus
 	{
 		return this == STATE_InitialInvalid;
 	}
+
+	public void throwIfInvalid()
+	{
+		if (isValid())
+		{
+			return;
+		}
+
+		if (exception != null)
+		{
+			throw AdempiereException.wrapIfNeeded(exception);
+		}
+		else
+		{
+			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Invalid"));
+		}
+	}
+
 }

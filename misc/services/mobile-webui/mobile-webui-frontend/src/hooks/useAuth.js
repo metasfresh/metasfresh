@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-import { loginRequest, logoutRequest } from '../api/login';
+import { loginByQrCode, loginRequest, logoutRequest } from '../api/login';
 import { COOKIE_EXPIRATION } from '../constants/Cookie';
 import { setToken, clearToken } from '../actions/TokenActions';
 import { setLanguage } from '../utils/translations';
@@ -56,7 +56,7 @@ function createAuthObject() {
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });
     }
 
-    await dispatch(setToken(token));
+    dispatch(setToken(token));
     Cookies.set('Token', token, { expires: COOKIE_EXPIRATION });
 
     axios.defaults.headers.common['Authorization'] = token;
@@ -67,11 +67,27 @@ function createAuthObject() {
 
   const login = (username, password) => {
     return loginRequest(username, password)
-      .then(({ error, token, language }) => {
+      .then(async ({ error, token, language }) => {
         if (error) {
           return Promise.reject(error);
         } else {
-          loginByToken({ token, language });
+          await loginByToken({ token, language });
+          return Promise.resolve();
+        }
+      })
+      .catch((error) => {
+        console.error('login error: ', error);
+        return Promise.reject(error);
+      });
+  };
+
+  const qrLogin = (qrCode) => {
+    return loginByQrCode(qrCode)
+      .then(async ({ error, token, language }) => {
+        if (error) {
+          return Promise.reject(error);
+        } else {
+          await loginByToken({ token, language });
           return Promise.resolve();
         }
       })
@@ -106,5 +122,6 @@ function createAuthObject() {
     login,
     loginByToken,
     logout,
+    qrLogin,
   };
 }

@@ -23,7 +23,7 @@ import java.util.Properties;
 public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
+	private static final Logger logger = LogManager.getLogger(HUDisplayNameBuilder.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	// Options
@@ -113,7 +113,7 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		return displayName;
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		if (_hu != null)
 		{

@@ -1,21 +1,22 @@
 package de.metas.pricing.conditions;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -27,12 +28,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,11 +43,14 @@ import lombok.Value;
 @Value
 public class PricingConditions
 {
-	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal> comparing(b -> b.getMatchCriteria().getBreakValue())
+	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE = Comparator.<PricingConditionsBreak, BigDecimal>comparing(b -> b.getMatchCriteria().getBreakValue())
 			.thenComparing(PricingConditionsBreak::getSeqNo);
 	private static final Comparator<PricingConditionsBreak> SORT_BY_BREAK_VALUE_DESC = SORT_BY_BREAK_VALUE.reversed();
 
 	PricingConditionsId id;
+
+	boolean active;
+	@NonNull Instant validFrom;
 
 	PricingConditionsDiscountType discountType;
 
@@ -61,6 +65,8 @@ public class PricingConditions
 	@Builder
 	private PricingConditions(
 			PricingConditionsId id,
+			@Nullable Boolean active,
+			@NonNull Instant validFrom,
 			PricingConditionsDiscountType discountType,
 			boolean bpartnerFlatDiscount,
 			Percent flatDiscount,
@@ -69,6 +75,8 @@ public class PricingConditions
 			List<PricingConditionsBreak> breaks)
 	{
 		this.id = id;
+		this.active = active != null && active;
+		this.validFrom = validFrom;
 		this.discountType = discountType;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.flatDiscount = flatDiscount;
@@ -84,7 +92,7 @@ public class PricingConditions
 
 	/**
 	 * Pick the first break that applies based on product, category and attribute instance
-	 * 
+	 *
 	 * @return schema break or null
 	 */
 	public PricingConditionsBreak pickApplyingBreak(final @NonNull PricingConditionsBreakQuery query)

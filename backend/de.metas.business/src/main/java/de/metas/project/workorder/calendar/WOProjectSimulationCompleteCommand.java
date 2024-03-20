@@ -3,9 +3,9 @@ package de.metas.project.workorder.calendar;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanId;
-import de.metas.product.ResourceId;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceSimulation;
@@ -49,7 +49,7 @@ class WOProjectSimulationCompleteCommand
 		final ImmutableMap<WOProjectResourceId, WOProjectResourceSimulation> projectResourceSimulationsToApply = Maps.uniqueIndex(simulationPlan.getProjectResources(), WOProjectResourceSimulation::getProjectResourceId);
 
 		final HashMap<WOProjectResourceId, WOProjectResourceSimulation> projectResourceSimulationsApplied = new HashMap<>();
-		final HashSet<ResourceId> affectedResourceIds = new HashSet<>();
+		final HashSet<ResourceIdAndType> affectedResourceIds = new HashSet<>();
 
 		woProjectService.updateProjectResourcesByIds(
 				projectResourceSimulationsToApply.keySet(),
@@ -66,7 +66,7 @@ class WOProjectSimulationCompleteCommand
 					final WOProjectResourceSimulation appliedSimulation = simulation.markingAsApplied(projectResource.getDateRange());
 					projectResourceSimulationsApplied.put(appliedSimulation.getProjectResourceId(), appliedSimulation);
 
-					affectedResourceIds.add(projectResource.getResourceId());
+					affectedResourceIds.add(projectResource.getResourceIdAndType());
 
 					return changedProjectResource;
 				});

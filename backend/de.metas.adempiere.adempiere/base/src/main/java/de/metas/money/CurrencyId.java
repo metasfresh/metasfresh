@@ -38,10 +38,29 @@ import java.util.function.Function;
 @Value
 public class CurrencyId implements RepoIdAware
 {
+	public static final CurrencyId USD = new CurrencyId(100);
+	public static final CurrencyId EUR = new CurrencyId(102);
+	public static final CurrencyId CHF = new CurrencyId(318);
+
 	@JsonCreator
 	public static CurrencyId ofRepoId(final int repoId)
 	{
-		return new CurrencyId(repoId);
+		if (repoId == USD.repoId)
+		{
+			return USD;
+		}
+		else if (repoId == EUR.repoId)
+		{
+			return EUR;
+		}
+		else if (repoId == CHF.repoId)
+		{
+			return CHF;
+		}
+		else
+		{
+			return new CurrencyId(repoId);
+		}
 	}
 
 	@Nullable

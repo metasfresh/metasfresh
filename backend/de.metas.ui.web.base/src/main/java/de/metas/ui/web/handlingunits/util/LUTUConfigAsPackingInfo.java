@@ -82,7 +82,7 @@ class LUTUConfigAsPackingInfo implements IHUPackingInfo
 	@Override
 	public BigDecimal getQtyCUsPerTU()
 	{
-		return lutuConfig.getQtyCU();
+		return lutuConfig.getQtyCUsPerTU();
 	}
 
 	@Override

@@ -70,4 +70,32 @@ class NumberUtilsTest
 		}
 
 	}
+
+	@Nested
+	class roundToBigDecimal
+	{
+		@Test
+		void givenIntegerNumberRoundToFractionalNumber_returnTheSameNumber()
+		{
+			assertThat(NumberUtils.roundToBigDecimal(BigDecimal.TEN, new BigDecimal("0.658"))).isEqualTo(BigDecimal.TEN);
+		}
+
+		@Test
+		void given102RoundTo5_return100()
+		{
+			assertThat(NumberUtils.roundToBigDecimal(new BigDecimal("102"), new BigDecimal("5"))).isEqualTo(new BigDecimal("100"));
+		}
+
+		@Test
+		void given103RoundTo5_return105()
+		{
+			assertThat(NumberUtils.roundToBigDecimal(new BigDecimal("103"), new BigDecimal("5"))).isEqualTo(new BigDecimal("105"));
+		}
+
+		@Test
+		void given10Dot3RoundTo0Dot5_return10Dot5()
+		{
+			assertThat(NumberUtils.roundToBigDecimal(new BigDecimal("10.3"), new BigDecimal("0.5"))).isEqualTo(new BigDecimal("10.5"));
+		}
+	}
 }

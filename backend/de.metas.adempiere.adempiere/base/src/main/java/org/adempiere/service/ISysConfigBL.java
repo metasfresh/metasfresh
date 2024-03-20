@@ -9,16 +9,25 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
 	@Nullable
-	String getValue(String name, String defaultValue);
+	String getValue(String name, @Nullable String defaultValue);
 
 	@Nullable
 	String getValue(String name);
 
+	@NonNull
+	default Optional<String> getValueOptional(final String name)
+	{
+		return Optional.ofNullable(getValue(name));
+	}
+
 	int getIntValue(String name, int defaultValue);
+
+	int getPositiveIntValue(String name, int defaultValue);
 
 	/**
 	 * Get system configuration property of type boolean

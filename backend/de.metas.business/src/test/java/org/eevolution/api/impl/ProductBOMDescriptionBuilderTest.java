@@ -16,6 +16,7 @@ import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_BOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -24,7 +25,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -150,6 +151,7 @@ public class ProductBOMDescriptionBuilderTest
 			bom.setBOMUse(BOMUse.Manufacturing.getCode());
 			bom.setPP_Product_BOMVersions_ID(versions.getPP_Product_BOMVersions_ID());
 			bom.setValidFrom(SystemTime.asTimestamp());
+			bom.setDocStatus(X_PP_Product_BOM.DOCSTATUS_Completed);
 			saveRecord(bom);
 		}
 

@@ -19,6 +19,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -108,20 +109,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "3. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
@@ -134,6 +128,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -147,6 +145,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -350,6 +349,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -439,20 +439,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "6. After ABORT - PickingJob": {
         "docStatus": "Voided",
@@ -465,6 +458,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -478,6 +475,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -689,6 +687,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -778,20 +777,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
@@ -804,6 +796,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -817,6 +813,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -1028,6 +1025,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -1117,20 +1115,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "2. After WFProcess started - PickingJob": {
         "docStatus": "Drafted",
@@ -1143,6 +1134,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -1156,6 +1151,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -1359,6 +1355,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -1452,20 +1449,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "5. After pick - PickingJob": {
         "docStatus": "Drafted",
@@ -1478,6 +1468,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -1491,6 +1485,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "DONE",
@@ -1739,6 +1734,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -1832,20 +1828,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "8. After Complete - PickingJob": {
         "docStatus": "Completed",
@@ -1858,6 +1847,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -1871,6 +1864,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "DONE",
@@ -2127,6 +2121,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -2216,20 +2211,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "10. After pick 2 - JsonWFProcess": {
         "activities": [
@@ -2253,6 +2241,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -2342,20 +2331,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "11. After pick 2 - PickingJob": {
         "docStatus": "Drafted",
@@ -2368,6 +2350,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -2381,6 +2367,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "DONE",
@@ -2623,6 +2610,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -2712,20 +2700,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "14. After Complete - PickingJob": {
         "docStatus": "Completed",
@@ -2738,6 +2719,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -2751,6 +2736,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "DONE",
@@ -2982,6 +2968,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -2995,6 +2985,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -3203,6 +3194,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -3292,20 +3284,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "5. After Scan PickingSlot - PickingJob": {
         "docStatus": "Drafted",
@@ -3318,6 +3303,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -3331,6 +3320,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -3542,6 +3532,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -3631,20 +3622,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "8. After pick 1 - PickingJob": {
         "docStatus": "Drafted",
@@ -3657,6 +3641,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -3670,6 +3658,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "IN_PROGRESS",
@@ -3904,6 +3893,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -3993,20 +3983,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "10. After unpick - JsonWFProcess": {
         "activities": [
@@ -4030,6 +4013,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -4119,20 +4103,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "11. After unpick - PickingJob": {
         "docStatus": "Drafted",
@@ -4145,6 +4122,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -4158,6 +4139,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -4361,6 +4343,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -4450,20 +4433,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "14. After ABORT - PickingJob": {
         "docStatus": "Voided",
@@ -4476,6 +4452,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -4489,6 +4469,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -4683,6 +4664,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -4696,6 +4681,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -4904,6 +4890,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -4993,20 +4980,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": true
       },
       "5. After Scan PickingSlot - PickingJob": {
         "docStatus": "Drafted",
@@ -5019,6 +4999,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -5032,6 +5016,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "NOT_STARTED",
@@ -5243,6 +5228,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                 {
                   "allowPickingAnyHU": false,
                   "caption": "P1",
+                  "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
                   "qtyToPick": 100.000,
@@ -5332,20 +5318,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
               "value": "salesOrder01"
             },
             {
-              "caption": "C_BPartner_Customer_ID",
+              "caption": "Customer",
               "value": "BPartner1"
-            },
-            {
-              "caption": "PreparationDate",
-              "value": "09.11.2021, 08:58:52"
-            },
-            {
-              "caption": "DeliveryToAddress",
-              "value": "deliveryRenderedAddress"
             }
           ]
         },
-        "id": "picking-1000000"
+        "id": "picking-1000000",
+        "isAllowAbort": false
       },
       "8. After pick 1 - PickingJob": {
         "docStatus": "Drafted",
@@ -5358,6 +5337,10 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           },
           "deliveryDate": "2021-11-09T08:58:52Z",
           "deliveryRenderedAddress": "deliveryRenderedAddress",
+          "handoverLocationId": {
+            "bpartnerId": 1000000,
+            "repoId": 1000000
+          },
           "isAllowPickingAnyHU": false,
           "isPickingReviewRequired": false,
           "lockedBy": 1234,
@@ -5371,6 +5354,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "lines": [
           {
             "id": 1000000,
+            "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
             "progress": "IN_PROGRESS",

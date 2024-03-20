@@ -56,7 +56,9 @@ public class MacAddressGenerator implements IComponentGenerator
 			AttributeConstants.RouterMAC3,
 			AttributeConstants.RouterMAC4,
 			AttributeConstants.RouterMAC5,
-			AttributeConstants.RouterMAC6
+			AttributeConstants.RouterMAC6,
+			AttributeConstants.RouterMAC7,
+			AttributeConstants.RouterMAC8
 	);
 
 	private final IDocumentNoBuilderFactory documentNoBuilder;

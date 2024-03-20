@@ -67,4 +67,8 @@ public interface IHUStorageFactory
 
 	boolean isSingleProductWithQtyEqualsTo(I_M_HU hu, ProductId productId, Quantity qty);
 
+	boolean isSingleProductStorageMatching(@NonNull I_M_HU hu, @NonNull ProductId productId);
+
+	@NonNull
+	IHUProductStorage getSingleHUProductStorage(@NonNull I_M_HU hu);
 }

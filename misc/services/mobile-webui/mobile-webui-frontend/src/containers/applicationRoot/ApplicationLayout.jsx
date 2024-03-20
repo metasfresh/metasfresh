@@ -38,7 +38,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   return (
     <div className="app-container">
       <div className="app-header">
-        <div className="columns is-mobile is-size-3">
+        <div className="columns is-mobile">
           <div className="column is-2 app-icon">
             <span className="icon">
               <i className={applicationInfo.iconClassNames} />
@@ -57,7 +57,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-footer">
         <div className="columns is-mobile">
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.goBack()}>
+            <button className="button is-fullwidth" onClick={() => history.goBack()}>
               <span className="icon">
                 <i className="fas fa-chevron-left" />
               </span>
@@ -65,7 +65,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </button>
           </div>
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.push('/')}>
+            <button className="button is-fullwidth" onClick={() => history.push('/')}>
               <span className="icon">
                 <i className="fas fa-home" />
               </span>

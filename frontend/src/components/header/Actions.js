@@ -27,7 +27,6 @@ class Actions extends Component {
   async componentDidMount() {
     const { windowType, entity, docId, notfound, activeTab, selected } =
       this.props;
-    const requests = [this.requestActions()];
 
     if (!windowType || docId === 'notfound' || notfound) {
       this.setState({
@@ -45,6 +44,7 @@ class Actions extends Component {
       return;
     }
 
+    const requests = [this.requestActions()];
     if (activeTab && selected.length) {
       requests.push(this.requestRowActions());
     }

@@ -63,6 +63,8 @@ import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -290,7 +292,9 @@ public class M_Product_StepDef
 
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
-		final String productName = tableRow.get("Name");
+		String productName = tableRow.get("Name");
+		productName = productName.replace("@Date@", Instant.now().toString());
+
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
 		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
@@ -350,6 +354,12 @@ public class M_Product_StepDef
 		if (Check.isNotBlank(description))
 		{
 			productRecord.setDescription(description);
+		}
+
+		final BigDecimal weight = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_Weight);
+		if (weight != null)
+		{
+			productRecord.setWeight(weight);
 		}
 
 		final boolean isSold = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_Product.COLUMNNAME_IsSold, true);

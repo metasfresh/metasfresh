@@ -30,6 +30,7 @@ import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRe
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import de.metas.common.rest_api.v1.remittanceadvice.RemittanceAdviceType;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -61,6 +62,8 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -394,6 +397,8 @@ class CreateRemittanceAdviceServiceTest
 	@Test
 	void createRemittanceAdviceRequestOutboundType()
 	{
+		SystemTime.setFixedTimeSource(LocalDate.parse("2023-12-05").atTime(1,2).atZone(ZoneId.of("UTC-8")));
+
 		final JsonRemittanceAdviceLine line = createJsonRemittanceAdviceLineBuilder()
 				.invoiceIdentifier(INVOICE_IDENTIFIER)
 				.remittedAmount(BigDecimal.valueOf(REMITTED_AMOUNT))
@@ -454,7 +459,7 @@ class CreateRemittanceAdviceServiceTest
 
 		assertThat(c_remittanceAdvice.getDocumentNo()).isEqualTo(CREATED_DOCUMENT_NB);
 		assertThat(c_remittanceAdvice.getExternalDocumentNo()).isEqualTo(DOCUMENT_NB);
-		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).isBeforeOrEqualTo(Instant.now()); // if the test runs really fast, i can be equal
+		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).as("DateDoc").isEqualTo(SystemTime.asInstant());
 		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getSendAt())).isEqualTo(Instant.parse(SEND_DATE));
 
 		assertThat(c_remittanceAdvice.getC_DocType_ID()).isEqualTo(docTypeRMADV.getC_DocType_ID());

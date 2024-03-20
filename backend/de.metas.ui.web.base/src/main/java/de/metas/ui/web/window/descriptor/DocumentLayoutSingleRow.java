@@ -11,7 +11,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,11 +51,12 @@ public class DocumentLayoutSingleRow
 		return new Builder();
 	}
 
-	private final WindowId windowId;
-	private final ITranslatableString caption;
-	private final ITranslatableString description;
+	@NonNull private final WindowId windowId;
+	@NonNull private final ITranslatableString caption;
+	@NonNull private final ITranslatableString description;
+	@Getter @Nullable private final NotFoundMessages notFoundMessages;
 
-	private final List<DocumentLayoutSectionDescriptor> sections;
+	@NonNull private final List<DocumentLayoutSectionDescriptor> sections;
 	private transient List<DocumentLayoutElementDescriptor> _elements = null;
 
 	private DocumentLayoutSingleRow(final Builder builder)
@@ -62,6 +66,7 @@ public class DocumentLayoutSingleRow
 
 		caption = TranslatableStrings.nullToEmpty(builder.caption);
 		description = TranslatableStrings.nullToEmpty(builder.description);
+		notFoundMessages = builder.notFoundMessages;
 		sections = ImmutableList.copyOf(builder.buildSections());
 	}
 
@@ -121,6 +126,7 @@ public class DocumentLayoutSingleRow
 		public WindowId windowId;
 		private ITranslatableString caption;
 		private ITranslatableString description;
+		private NotFoundMessages notFoundMessages;
 
 		private final ArrayList<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
 
@@ -168,6 +174,12 @@ public class DocumentLayoutSingleRow
 		public Builder setDescription(final ITranslatableString description)
 		{
 			this.description = description;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
 			return this;
 		}
 

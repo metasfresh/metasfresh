@@ -101,7 +101,8 @@ public class SyncInventoryQtyToHUsCommand
 		for (final InventoryLine inventoryLine : inventory.getLines())
 		{
 			final Quantity qtyDiff = inventoryLine.getMovementQty();
-			if (qtyDiff.signum() == 0)
+			if (qtyDiff.signum() == 0
+					|| (inventoryLine.getQtyBookFixed().signum() < 0 && inventoryLine.getQtyCountFixed().signum() == 0))
 			{
 				continue;
 			}
@@ -208,7 +209,9 @@ public class SyncInventoryQtyToHUsCommand
 
 		final InventoryLine resultInventoryLine = inventoryLine.withInventoryLineHUs(resultInventoryLineHUs);
 
-		if (!Objects.equals(inventoryLine, resultInventoryLine))
+		if (!Objects.equals(inventoryLine, resultInventoryLine)
+				&& inventoryLine.getQtyCountFixed().equals(resultInventoryLine.getQtyCount()) // do not adjust quantity in inventory line
+		)
 		{
 			inventoryRepository.saveInventoryLine(resultInventoryLine, inventory.getId());
 		}

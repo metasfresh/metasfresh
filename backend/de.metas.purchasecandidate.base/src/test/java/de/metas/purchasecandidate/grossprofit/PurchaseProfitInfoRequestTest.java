@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,6 +16,8 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -56,7 +59,9 @@ public class PurchaseProfitInfoRequestTest
 				.vendorProductNo("vendorProductNo")
 				.product(ProductAndCategoryAndManufacturerId.of(30, 40, 50))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(60))
-				.pricingConditions(PricingConditions.builder().build())
+				.pricingConditions(PricingConditions.builder()
+										   .validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
+										   .build())
 				.build();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);

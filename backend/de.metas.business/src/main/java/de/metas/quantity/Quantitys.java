@@ -14,6 +14,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -48,6 +49,12 @@ import java.math.BigDecimal;
 @UtilityClass
 public class Quantitys
 {
+	public Quantity create(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
+	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		return Quantity.of(qty, uomDao.getByX12DE355(x12DE355));
+	}
+
 	public Quantity create(@NonNull final String qty, @NonNull final UomId uomId)
 	{
 		return create(new BigDecimal(qty), uomId);

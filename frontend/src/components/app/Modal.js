@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
-import { openFile, processNewRecord } from '../../actions/GenericActions';
+import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
@@ -14,6 +14,7 @@ import {
   fetchChangeLog,
   fireUpdateData,
   patch,
+  printDocument,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
 
@@ -484,24 +485,21 @@ class Modal extends Component {
   handlePrinting = () => {
     const { windowId, modalViewDocumentIds, dataId, printingOptions } =
       this.props;
-    const docNo = modalViewDocumentIds[0];
-    const docId = dataId;
-    const { options } = printingOptions;
+    const documentId = dataId;
+    const documentNo = modalViewDocumentIds[0] ?? documentId;
 
-    let extraParams = '';
-    options.map((item) => {
-      extraParams += `${item.internalName}=${item.value}&`;
-    });
-    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
+    const options = printingOptions.options.reduce((acc, item) => {
+      acc[item.internalName] = item.value;
+      return acc;
+    }, {});
 
-    openFile(
-      'window',
+    printDocument({
       windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`,
-      extraParams
-    );
+      documentId,
+      documentNo,
+      options,
+    });
+
     this.handleClose();
   };
 
@@ -579,18 +577,18 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
+      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const isNotSaved =
-      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -712,7 +710,14 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator {...{ isNotSaved, indicator }} />
+          <Indicator
+            indicator={indicator}
+            isDocumentNotSaved={
+              staticModalType === 'printing' ? false : isDocumentNotSaved
+            }
+            error={saveStatus?.error ? saveStatus?.reason : ''}
+            exception={saveStatus?.error ? saveStatus?.exception : null}
+          />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -866,10 +871,11 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.any,
+  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  modalSaveStatus: PropTypes.any,
+  saveStatus: PropTypes.object,
+  modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,

@@ -72,6 +72,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsLineId.class)
 			.skip(de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId.class)
 			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
+			.skip(de.metas.letter.BoilerPlateWithLineId.class)
 			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			.skip(de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId.class)

@@ -11,6 +11,8 @@ public enum WFProcessStatus
 	COMPLETED,
 	;
 
+	public boolean isNotStarted() {return NOT_STARTED.equals(this);}
+
 	public static WFProcessStatus computeFromActivityStatuses(@NonNull final ImmutableSet<WFActivityStatus> activityStatuses)
 	{
 		if (activityStatuses.isEmpty())

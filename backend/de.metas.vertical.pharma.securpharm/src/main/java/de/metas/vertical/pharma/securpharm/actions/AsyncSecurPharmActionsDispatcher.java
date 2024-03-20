@@ -1,17 +1,16 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.stereotype.Component;
-
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import lombok.NonNull;
 import lombok.ToString;
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /*
  * #%L

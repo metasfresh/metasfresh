@@ -1,22 +1,20 @@
 package de.metas.calendar.plan_optimizer;
 
+import ai.timefold.solver.core.api.score.buildin.bendable.BendableScore;
+import ai.timefold.solver.core.api.solver.SolutionManager;
+import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.SolverFactory;
 import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
 import de.metas.calendar.plan_optimizer.domain.Plan;
-import de.metas.calendar.plan_optimizer.domain.Step;
 import de.metas.calendar.plan_optimizer.persistance.PlanLoaderAndSaver;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
-import org.optaplanner.core.api.score.buildin.bendable.BendableScore;
-import org.optaplanner.core.api.solver.SolutionManager;
-import org.optaplanner.core.api.solver.Solver;
-import org.optaplanner.core.api.solver.SolverFactory;
 import org.slf4j.Logger;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
@@ -137,15 +135,14 @@ class SimulationOptimizerTask implements Runnable
 	public void run()
 	{
 		// FIXME debugging
-		LogManager.setLoggerLevel("org.drools", Level.INFO);
-		LogManager.setLoggerLevel("org.optaplanner", Level.INFO);
+		LogManager.setLoggerLevel("ai.timefold", Level.INFO);
 
 		simulationOptimizerStatusDispatcher.notifyStarted(simulationId);
 
 		final Plan problem = planLoaderAndSaver.getPlan(simulationId);
 		logger.info("problem: {}", problem);
 
-		prepareProblem(problem);
+		problem.prepareProblem();
 		logger.info("problem prepared: {}", problem);
 
 		final Solver<Plan> solver = createSolver();
@@ -157,16 +154,6 @@ class SimulationOptimizerTask implements Runnable
 		solution.setTimeSpent(stopwatch.elapsed());
 
 		onSolutionFound(solution);
-	}
-
-	private static void prepareProblem(final Plan plan)
-	{
-		final ArrayList<Step> stepsList = plan.getStepsList();
-		for (int i = 0, lastIndex = stepsList.size() - 1; i <= lastIndex; i++)
-		{
-			final Step step = stepsList.get(i);
-			step.checkProblemFactsValid().assertTrue();
-		}
 	}
 
 	private void onSolutionFound(final Plan solution)

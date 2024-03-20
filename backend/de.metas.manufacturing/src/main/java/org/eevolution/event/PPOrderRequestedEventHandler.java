@@ -87,6 +87,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 												  .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
 												  .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
 												  .plantId(ppOrderData.getPlantId())
+												  .workstationId(ppOrderData.getWorkstationId())
 												  .warehouseId(ppOrderData.getWarehouseId())
 												  //
 												  .productId(productId)

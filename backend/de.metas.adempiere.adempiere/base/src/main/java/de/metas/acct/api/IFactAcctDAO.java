@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.util.ISingletonService;
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.document.engine.IDocument;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,9 +38,18 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Stream;
+import java.time.Instant;
+import java.util.List;
+import java.util.Properties;
 
 public interface IFactAcctDAO extends ISingletonService
 {
+	String DB_SCHEMA = "de_metas_acct";
+	/**
+	 * Function used to calculate ending balance for a given {@link I_Fact_Acct} line.
+	 */
+	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
+
 	I_Fact_Acct getById(int factAcctId);
 
 	void save(I_Fact_Acct factAcct);
@@ -71,6 +83,8 @@ public interface IFactAcctDAO extends ISingletonService
 	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29">task</a>
 	 */
 	void updateDocStatusForDocument(IDocument document);
+
+	List<ElementValueId> retrieveAccountsForTimeFrame(@NonNull AcctSchemaId acctSchemaId, @NonNull Instant dateAcctFrom, @NonNull Instant dateAcctTo);
 
 	/**
 	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.

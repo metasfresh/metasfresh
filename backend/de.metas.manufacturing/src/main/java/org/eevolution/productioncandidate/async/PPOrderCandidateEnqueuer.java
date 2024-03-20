@@ -48,6 +48,7 @@ public class PPOrderCandidateEnqueuer
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
 	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
 	public static final String WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "autoProcessCandidatesAfterProduction";
+	public static final String WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION = "autoCloseCandidatesAfterProduction";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -86,6 +87,7 @@ public class PPOrderCandidateEnqueuer
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
 				.parameter(WP_COMPLETE_DOC_PARAM, enqueuePPOrderCandidateRequest.getIsCompleteDocOverride())
 				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoProcessCandidatesAfterProduction())
+				.parameter(WP_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoCloseCandidatesAfterProduction())
 				.setElementsLocker(elementsLocker)
 				.buildAndEnqueue();
 

@@ -36,6 +36,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.servicerepair</groupId>
 			<artifactId>de.metas.servicerepair.webui</artifactId>
 			<version>${metasfresh.version}</version>
@@ -57,6 +63,12 @@
 		<dependency>
 			<groupId>de.metas.deliveryplanning</groupId>
 			<artifactId>de.metas.deliveryplanning.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.webui</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

@@ -6,11 +6,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.conflicts.CalendarConflictEventsDispatcher;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
-import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
 import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.resource.ResourceIdAndType;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.project.workorder.resource.WOProjectResourceRepository;
@@ -37,7 +37,7 @@ class WOProjectConflictsCheckerCommand
 	@NonNull private final CalendarConflictEventsDispatcher eventsDispatcher;
 
 	// params:
-	@NonNull private final ImmutableSet<ResourceId> resourceIds;
+	@NonNull private final ImmutableSet<ResourceIdAndType> resourceIds;
 	@Nullable private final WOProjectSimulationPlan onlySimulation;
 	@Nullable private final SimulationPlanId excludeSimulationId;
 
@@ -50,7 +50,7 @@ class WOProjectConflictsCheckerCommand
 			@NonNull final WOProjectResourceRepository woProjectResourceRepository,
 			@NonNull final CalendarConflictEventsDispatcher eventsDispatcher,
 			//
-			@NonNull final Collection<ResourceId> resourceIds,
+			@NonNull final Collection<ResourceIdAndType> resourceIds,
 			@Nullable final WOProjectSimulationPlan onlySimulation,
 			@Nullable final SimulationPlanId excludeSimulationId)
 	{
@@ -145,10 +145,10 @@ class WOProjectConflictsCheckerCommand
 		{
 			Optional.ofNullable(simulation)
 					.map(simulationPlan -> simulationPlan.getProjectResourceByIdOrNull(projectResource.getWoProjectResourceId()))
-					.map(projectResourceSimulation -> toResourceAllocation(projectResource.getResourceId(),
-																		   projectResourceSimulation.applyOn(projectResource),
-																		   simulation.getSimulationPlanId()))
-					.orElseGet(() -> toResourceAllocation(projectResource.getResourceId(), projectResource, null))
+					.map(projectResourceSimulation -> toResourceAllocation(projectResource.getResourceIdAndType(),
+							projectResourceSimulation.applyOn(projectResource),
+							simulation.getSimulationPlanId()))
+					.orElseGet(() -> toResourceAllocation(projectResource.getResourceIdAndType(), projectResource, null))
 					.ifPresent(result::add);
 		}
 
@@ -158,7 +158,7 @@ class WOProjectConflictsCheckerCommand
 	}
 
 	private static Optional<ResourceAllocation> toResourceAllocation(
-			@NonNull final ResourceId resourceId,
+			@NonNull final ResourceIdAndType resourceId,
 			@NonNull final WOProjectResource projectResource,
 			@Nullable final SimulationPlanId appliedSimulationId)
 	{

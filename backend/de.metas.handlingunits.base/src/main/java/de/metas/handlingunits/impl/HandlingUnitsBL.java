@@ -54,6 +54,8 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -85,10 +87,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -105,14 +108,17 @@ import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -829,6 +835,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(piVersionId);
 	}
 
+	@Override
+	public HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull final I_M_HU hu)
+	{
+		final HuPackingInstructionsVersionId huPackingInstructionsVersionId = Optional.ofNullable(getEffectivePIVersion(hu))
+				.map(I_M_HU_PI_Version::getM_HU_PI_Version_ID)
+				.map(HuPackingInstructionsVersionId::ofRepoId)
+				.orElse(HuPackingInstructionsVersionId.VIRTUAL);
+
+		return getPackingInstructionsId(huPackingInstructionsVersionId);
+	}
+
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -913,9 +930,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
+		return getPI(piVersionId);
+	}
+
+	@Override
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsVersionId piVersionId)
+	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
 	}
+
 
 	@NonNull
 	@Override
@@ -976,6 +1000,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		return getIncludedPI(parentPIItem);
+	}
+
+	@Nullable
+	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
+	{
+		return getEffectivePI(getById(huId));
 	}
 
 	@Override
@@ -1051,15 +1081,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
+	public AttributesKey getAttributesKeyForInventory(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
-		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
+		final Predicate<I_M_Attribute> nonWeightRelatedAttr =
+				attribute -> !Weightables.isWeightRelatedAttribute(AttributeCode.ofString(attribute.getValue()));
+		final ImmutableAttributeSet requestedAttributeSet = ImmutableAttributeSet.createSubSet(attributeStorage, nonWeightRelatedAttr);
 
 		return AttributesKeys
-				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
+				.createAttributesKeyFromAttributeSet(requestedAttributeSet)
 				.orElse(AttributesKey.NONE);
 	}
 
@@ -1221,4 +1253,46 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 		return IHandlingUnitsBL.extractLocatorId(hu);
 	}
+
+	@Override
+	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
+	{
+		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
+	}
+
+	@Override
+	public void reactivateDestroyedHU(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider)
+	{
+		if (!isDestroyed(hu))
+		{
+			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu);
+			return;
+		}
+		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		final boolean allStoragesAreEmpty = getStorageFactory().getStorage(hu).isEmpty();
+
+		if (allStoragesAreEmpty)
+		{
+			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+			huAttributes.setSaveOnChange(true);
+
+			final IWeightable huWeight = Weightables.wrap(huAttributes);
+			huWeight.setWeightNet(BigDecimal.ZERO);
+		}
+
+		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		hu.setIsActive(true);
+		handlingUnitsRepo.saveHU(hu);
+	}
+
 }

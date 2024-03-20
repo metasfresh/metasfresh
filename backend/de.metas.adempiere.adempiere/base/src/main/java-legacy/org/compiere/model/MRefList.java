@@ -51,14 +51,14 @@ public class MRefList extends X_AD_Ref_List
 	@Deprecated
 	public static String getListDescription(Properties ctx, String ListName, String Value)
 	{
-		String AD_Language = Env.getAD_Language(ctx);
-		String key = AD_Language + "_" + ListName + "_" + Value;
+		final String AD_Language = Env.getAD_Language(ctx);
+		final String key = AD_Language + "_" + ListName + "_" + Value;
 		String retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
 
-		boolean isBaseLanguage = Env.isBaseLanguage(AD_Language, "AD_Ref_List");
-		String sql = isBaseLanguage ?
+		final boolean isBaseLanguage = Env.isBaseLanguage(AD_Language, "AD_Ref_List");
+		final String sql = isBaseLanguage ?
 				"SELECT a.Description FROM AD_Ref_List a, AD_Reference b"
 						+ " WHERE b.Name=? AND a.Value=?"
 						+ " AND a.AD_Reference_ID = b.AD_Reference_ID"
@@ -83,7 +83,7 @@ public class MRefList extends X_AD_Ref_List
 			pstmt.close();
 			pstmt = null;
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			s_log.error(sql + " -- " + key, ex);
 		}
@@ -114,7 +114,7 @@ public class MRefList extends X_AD_Ref_List
 	 */
 	private static final CCache<String, String> s_cache = new CCache<String, String>(Table_Name, 20);
 
-	public MRefList(Properties ctx, int AD_Ref_List_ID, String trxName)
+	public MRefList(final Properties ctx, final int AD_Ref_List_ID, final String trxName)
 	{
 		super(ctx, AD_Ref_List_ID, trxName);
 		if (is_new())
@@ -127,7 +127,7 @@ public class MRefList extends X_AD_Ref_List
 		}
 	}    //	MRef_List
 
-	public MRefList(Properties ctx, ResultSet rs, String trxName)
+	public MRefList(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}    //	MRef_List
@@ -144,7 +144,7 @@ public class MRefList extends X_AD_Ref_List
 	}    //	toString
 
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// metas: 02827: begin
 		if (Check.isEmpty(getValueName(), true))

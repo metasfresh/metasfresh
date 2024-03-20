@@ -209,28 +209,10 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function attachmentsRequest(entity, docType, docId) {
-  return axios.get(
-    `${config.API_URL}/${entity}/${docType}/${docId}/attachments`
-  );
-}
-
 export function processNewRecord(entity, docType, docId) {
   return axios.get(
     `${config.API_URL}/${entity}/${docType}/${docId}/processNewRecord`
   );
-}
-
-export function openFile(entity, docType, docId, fileType, fileId, options) {
-  let filenameNorm = fileId.replace(/[/\\?%*:|"<>]/g, '-');
-  filenameNorm = encodeURIComponent(filenameNorm);
-
-  let url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${filenameNorm}`;
-  if (options) {
-    url += '?' + options;
-  }
-
-  window.open(url, '_blank');
 }
 
 export function getRequest() {

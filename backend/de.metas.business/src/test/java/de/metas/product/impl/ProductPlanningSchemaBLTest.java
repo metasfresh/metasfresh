@@ -22,24 +22,7 @@
 
 package de.metas.product.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_DD_NetworkDistribution;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.Before;
-import org.junit.Test;
-
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -48,18 +31,37 @@ import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchema;
 import de.metas.product.ProductPlanningSchemaSelector;
-import de.metas.product.model.X_M_Product_PlanningSchema;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.eevolution.model.I_DD_NetworkDistribution;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class ProductPlanningSchemaBLTest
 {
-	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1);
 
-	@Before
-	public void init()
+	private ProductPlanningSchemaBL productPlanningSchemaBL;
+	private ProductPlanningSchemaDAO productPlanningSchemaDAO;
+
+	@BeforeEach
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		this.productPlanningSchemaBL = (ProductPlanningSchemaBL)Services.get(IProductPlanningSchemaBL.class);
+		this.productPlanningSchemaDAO = productPlanningSchemaBL.productPlanningSchemaDAO;
 	}
 
 	@Test
@@ -73,16 +75,15 @@ public class ProductPlanningSchemaBLTest
 
 		final ProductPlanningSchema schema1 = createSchema(warehouseId, distributionNetworkId, selector);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final I_PP_Product_Planning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
 
-		assertThat(distributionNetworkId.getRepoId()).isEqualTo(productPlanning.getDD_NetworkDistribution_ID());
-		assertThat(productId1.getRepoId()).isEqualTo(productPlanning.getM_Product_ID());
-		assertThat(schema1.getId().getRepoId()).isEqualTo(productPlanning.getM_Product_PlanningSchema_ID());
-
+		assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId);
+		assertThat(productPlanning.getProductId()).isEqualTo(productId1);
+		assertThat(productPlanning.getProductPlanningSchemaId()).isEqualTo(schema1.getId());
 	}
 
 	@Test
@@ -99,43 +100,43 @@ public class ProductPlanningSchemaBLTest
 		final DistributionNetworkId distributionNetworkId2 = createNetworkDistribution("NwDist2");
 		final ProductPlanningSchema schema2 = createSchema(warehouseId2, distributionNetworkId2, selector);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
-		assertThat(defaultProductPlanningsForAllProducts).size().isEqualTo(2);
+		assertThat(defaultProductPlanningsForAllProducts).hasSize(2);
 
 		assertThat(defaultProductPlanningsForAllProducts).allSatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getM_Product_ID()).isEqualTo(productId1.getRepoId());
+					assertThat(productPlanning.getProductId()).isEqualTo(productId1);
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getM_Warehouse_ID()).isEqualTo(warehouseId1.getRepoId());
+					assertThat(productPlanning.getWarehouseId()).isEqualTo(warehouseId1);
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getM_Warehouse_ID()).isEqualTo(warehouseId2.getRepoId());
+					assertThat(productPlanning.getWarehouseId()).isEqualTo(warehouseId2);
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema1.getId().getRepoId());
+					assertThat(productPlanning.getProductPlanningSchemaId()).isEqualTo(schema1.getId());
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getM_Product_PlanningSchema_ID()).isEqualTo(schema2.getId().getRepoId());
+					assertThat(productPlanning.getProductPlanningSchemaId()).isEqualTo(schema2.getId());
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getDD_NetworkDistribution_ID()).isEqualTo(distributionNetworkId1.getRepoId());
+					assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId1);
 				});
 
 		assertThat(defaultProductPlanningsForAllProducts).anySatisfy(
 				productPlanning -> {
-					assertThat(productPlanning.getDD_NetworkDistribution_ID()).isEqualTo(distributionNetworkId2.getRepoId());
+					assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId2);
 				});
 
 	}
@@ -178,12 +179,18 @@ public class ProductPlanningSchemaBLTest
 
 		final ProductPlanningSchema schema3 = createSchema(warehouseId2, distributionNetworkId2, selector, orgId);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isEqualTo(1)
 				.returnToIterable()
-				.extracting("M_Product_ID", "M_Warehouse_ID", "AD_Org_ID", "M_Product_PlanningSchema_ID", "DD_NetworkDistribution_ID")
-				.containsExactly(tuple(productId1.getRepoId(), warehouseId2.getRepoId(), orgId.getRepoId(), schema3.getId().getRepoId(), distributionNetworkId2.getRepoId()));
+				.extracting(
+						ProductPlanning::getProductId,
+						ProductPlanning::getWarehouseId,
+						ProductPlanning::getOrgId,
+						ProductPlanning::getProductPlanningSchemaId,
+						ProductPlanning::getDistributionNetworkId
+				)
+				.containsExactly(tuple(productId1, warehouseId2, orgId, schema3.getId(), distributionNetworkId2));
 	}
 
 	@Test
@@ -227,14 +234,19 @@ public class ProductPlanningSchemaBLTest
 
 		final ProductPlanningSchema schema3 = createSchema(warehouseId2, distributionNetworkId2, selector, this.defaultOrgId);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isEqualTo(2)
 				.returnToIterable()
-				.extracting("M_Product_ID", "M_Warehouse_ID", "AD_Org_ID", "M_Product_PlanningSchema_ID", "DD_NetworkDistribution_ID")
+				.extracting(
+						ProductPlanning::getProductId,
+						ProductPlanning::getWarehouseId,
+						ProductPlanning::getOrgId,
+						ProductPlanning::getProductPlanningSchemaId,
+						ProductPlanning::getDistributionNetworkId)
 				.containsExactlyInAnyOrder(
-						tuple(productId1.getRepoId(), warehouseId1.getRepoId(), orgId.getRepoId(), schema1.getId().getRepoId(), distributionNetworkId1.getRepoId()),
-						tuple(productId1.getRepoId(), warehouseId2.getRepoId(), orgId.getRepoId(), schema2.getId().getRepoId(), distributionNetworkId2.getRepoId()));
+						tuple(productId1, warehouseId1, orgId, schema1.getId(), distributionNetworkId1),
+						tuple(productId1, warehouseId2, orgId, schema2.getId(), distributionNetworkId2));
 	}
 
 	@Test
@@ -247,17 +259,16 @@ public class ProductPlanningSchemaBLTest
 		final DistributionNetworkId distributionNetworkId = createNetworkDistribution("NwDist1");
 		final ProductPlanningSchema schema1 = createSchema(warehouseId1, distributionNetworkId, selector);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final I_PP_Product_Planning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
 
-		assertThat(distributionNetworkId.getRepoId()).isEqualTo(productPlanning.getDD_NetworkDistribution_ID());
-		assertThat(productId1.getRepoId()).isEqualTo(productPlanning.getM_Product_ID());
-		assertThat(schema1.getId().getRepoId()).isEqualTo(productPlanning.getM_Product_PlanningSchema_ID());
-		assertThat(productPlanning.getOnMaterialReceiptWithDestWarehouse()).isEqualTo(X_M_Product_PlanningSchema.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateDistributionOrder);
-
+		assertThat(productPlanning.getDistributionNetworkId()).isEqualTo(distributionNetworkId);
+		assertThat(productPlanning.getProductId()).isEqualTo(productId1);
+		assertThat(productPlanning.getProductPlanningSchemaId()).isEqualTo(schema1.getId());
+		assertThat(productPlanning.getOnMaterialReceiptWithDestWarehouse()).isEqualTo(OnMaterialReceiptWithDestWarehouse.CREATE_DISTRIBUTION_ORDER);
 	}
 
 	@Test
@@ -277,16 +288,16 @@ public class ProductPlanningSchemaBLTest
 		schema1 = schema1.toBuilder()
 				.distributionNetworkId(distributionNetworkId2)
 				.build();
-		ProductPlanningSchemaDAO.save(schema1);
+		productPlanningSchemaDAO.save(schema1);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).size().isOne();
 
-		final I_PP_Product_Planning productPlanning = defaultProductPlanningsForAllProducts.get(0);
-		assertThat(distributionNetworkId2.getRepoId()).isEqualTo(productPlanning.getDD_NetworkDistribution_ID());
-		assertThat(productId1.getRepoId()).isEqualTo(productPlanning.getM_Product_ID());
-		assertThat(schema1.getId().getRepoId()).isEqualTo(productPlanning.getM_Product_PlanningSchema_ID());
+		final ProductPlanning productPlanning = defaultProductPlanningsForAllProducts.get(0);
+		assertThat(distributionNetworkId2).isEqualTo(productPlanning.getDistributionNetworkId());
+		assertThat(productId1).isEqualTo(productPlanning.getProductId());
+		assertThat(schema1.getId()).isEqualTo(productPlanning.getProductPlanningSchemaId());
 
 	}
 
@@ -305,7 +316,7 @@ public class ProductPlanningSchemaBLTest
 
 		setProductSelector(productId1, null);
 
-		final List<I_PP_Product_Planning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
+		final List<ProductPlanning> defaultProductPlanningsForAllProducts = productPlanningSchemaBL.createOrUpdateDefaultProductPlanningsForSchemaId(schema1.getId());
 
 		assertThat(defaultProductPlanningsForAllProducts).isEmpty();
 
@@ -338,10 +349,10 @@ public class ProductPlanningSchemaBLTest
 				.orgId(orgId)
 				.build();
 
-		ProductPlanningSchemaDAO.save(schema);
+		productPlanningSchemaDAO.save(schema);
 
 		// NOTE: to indirectly test it, we are loading it again and returning instead of just return it directly
-		return ProductPlanningSchemaDAO.getById(schema.getId());
+		return productPlanningSchemaDAO.getById(schema.getId());
 	}
 
 	private ProductPlanningSchema createSchema(
@@ -357,10 +368,10 @@ public class ProductPlanningSchemaBLTest
 				.onMaterialReceiptWithDestWarehouse(OnMaterialReceiptWithDestWarehouse.CREATE_DISTRIBUTION_ORDER)
 				.build();
 
-		ProductPlanningSchemaDAO.save(schema);
+		productPlanningSchemaDAO.save(schema);
 
 		// NOTE: to indirectly test it, we are loading it again and returning instead of just return it directly
-		return ProductPlanningSchemaDAO.getById(schema.getId());
+		return productPlanningSchemaDAO.getById(schema.getId());
 	}
 
 	private ProductId createProduct(

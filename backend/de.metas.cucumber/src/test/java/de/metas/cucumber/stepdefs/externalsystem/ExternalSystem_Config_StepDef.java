@@ -22,28 +22,22 @@
 
 package de.metas.cucumber.stepdefs.externalsystem;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
-import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
-import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -61,8 +55,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.model.I_AD_UserGroup;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -76,6 +68,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
@@ -95,8 +88,6 @@ public class ExternalSystem_Config_StepDef
 	private final ExternalSystem_Config_StepDefData configTable;
 	private final AD_UserGroup_StepDefData userGroupTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
-	private final M_Product_StepDefData productTable;
-	private final M_Product_Category_StepDefData productCategoryTable;
 
 	private final TestContext testContext;
 
@@ -104,15 +95,11 @@ public class ExternalSystem_Config_StepDef
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_Product_Category_StepDefData productCategoryTable,
 			@NonNull final TestContext testContext)
 	{
 		this.configTable = configTable;
 		this.leichMehlConfigTable = leichMehlConfigTable;
 		this.userGroupTable = userGroupTable;
-		this.productTable = productTable;
-		this.productCategoryTable = productCategoryTable;
 		this.testContext = testContext;
 	}
 
@@ -223,50 +210,6 @@ public class ExternalSystem_Config_StepDef
 		}
 	}
 
-	@And("metasfresh contains ExternalSystem_Config_LeichMehl_ProductMapping:")
-	public void add_ExternalSystem_Config_LeichMehl_ProductMapping(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
-					+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_ExternalSystem_Config_LeichMehl leichMehlConfig = leichMehlConfigTable.get(leichMehlConfigIdentifier);
-
-			final I_ExternalSystem_Config_LeichMehl_ProductMapping productMapping = CoalesceUtil
-					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
-											   .addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, leichMehlConfig.getExternalSystem_Config_LeichMehl_ID())
-											   .create()
-											   .firstOnly(I_ExternalSystem_Config_LeichMehl_ProductMapping.class),
-									   () -> InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class));
-
-			assertThat(productMapping).isNotNull();
-
-			productMapping.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-
-			final int seqNo = DataTableUtil.extractIntForColumnName(row, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_SeqNo);
-			productMapping.setSeqNo(seqNo);
-
-			final String pluFile = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_PLU_File);
-			productMapping.setPLU_File(pluFile);
-
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productIdentifier))
-			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				productMapping.setM_Product_ID(product.getM_Product_ID());
-			}
-
-			final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product_Category.COLUMNNAME_M_Product_Category_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(productCategoryIdentifier))
-			{
-				final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
-				productMapping.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-			}
-
-			InterfaceWrapperHelper.saveRecord(productMapping);
-		}
-	}
-
 	@And("update ExternalSystem_Config")
 	public void update_ExternalSystem_Config(@NonNull final DataTable dataTable)
 	{
@@ -299,47 +242,6 @@ public class ExternalSystem_Config_StepDef
 			{
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
-		}
-	}
-
-	@And("metasfresh contains LeichMehl_PluFile_Config:")
-	public void add_LeichMehl_PluFile_Config(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
-					+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-			final I_ExternalSystem_Config_LeichMehl leichMehlConfig = leichMehlConfigTable.get(leichMehlConfigIdentifier);
-
-			final I_LeichMehl_PluFile_Config pluFileConfig = CoalesceUtil
-					.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_LeichMehl_PluFile_Config.class)
-											   .addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, leichMehlConfig.getExternalSystem_Config_LeichMehl_ID())
-											   .create()
-											   .firstOnly(I_LeichMehl_PluFile_Config.class),
-									   () -> InterfaceWrapperHelper.newInstance(I_LeichMehl_PluFile_Config.class));
-
-			assertThat(pluFileConfig).isNotNull();
-
-			pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
-
-			final String targetFieldName = DataTableUtil.extractStringForColumnName(row, I_LeichMehl_PluFile_Config.COLUMNNAME_TargetFieldName);
-			pluFileConfig.setTargetFieldName(targetFieldName);
-
-			final String targetFieldType = DataTableUtil.extractStringForColumnName(row, I_LeichMehl_PluFile_Config.COLUMNNAME_TargetFieldType);
-			pluFileConfig.setTargetFieldType(targetFieldType);
-
-			final String replacement = DataTableUtil.extractStringForColumnName(row, I_LeichMehl_PluFile_Config.COLUMNNAME_Replacement);
-			pluFileConfig.setReplacement(replacement);
-
-			final String replacementRegexp = DataTableUtil.extractStringForColumnName(row, I_LeichMehl_PluFile_Config.COLUMNNAME_ReplaceRegExp);
-			pluFileConfig.setReplaceRegExp(replacementRegexp);
-
-			final String replacementSourceValue = DataTableUtil.extractStringForColumnName(row, I_LeichMehl_PluFile_Config.COLUMNNAME_ReplacementSource);
-			final ReplacementSource replacementSource = ReplacementSource.valueOf(replacementSourceValue);
-			pluFileConfig.setReplacementSource(replacementSource.getCode());
-
-			InterfaceWrapperHelper.saveRecord(pluFileConfig);
 		}
 	}
 
@@ -408,6 +310,14 @@ public class ExternalSystem_Config_StepDef
 			final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getId().getRepoId(), I_ExternalSystem_Config.class);
 			configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
+			if (externalSystemType.equals(LeichUndMehl))
+			{
+				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getChildConfig().getId(), I_ExternalSystem_Config_LeichMehl.class);
+
+				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
+						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
+			}
 			return;
 		}
 

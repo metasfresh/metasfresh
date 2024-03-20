@@ -109,7 +109,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="56" y="153" width="255" height="127" uuid="9bca65ae-bbbf-4b7f-b38c-c0248684989d">
+				<reportElement key="subreport-6" x="37" y="153" width="255" height="127" uuid="9bca65ae-bbbf-4b7f-b38c-c0248684989d">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>

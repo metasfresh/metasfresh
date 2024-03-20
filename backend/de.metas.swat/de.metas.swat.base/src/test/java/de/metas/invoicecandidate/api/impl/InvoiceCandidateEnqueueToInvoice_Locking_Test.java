@@ -42,6 +42,7 @@ import de.metas.letter.BoilerPlateRepository;
 import de.metas.money.MoneyService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.user.UserGroupRepository;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,6 +72,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new UserNotificationsConfigService());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
 		SpringContextHolder.registerJUnitBean(MatchInvoiceService.newInstanceForUnitTesting());

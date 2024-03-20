@@ -1,44 +1,5 @@
 package de.metas.document.refid.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableName;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.document.refid
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -47,6 +8,23 @@ import de.metas.document.refid.spi.IReferenceNoGenerator;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableName;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 {
@@ -176,16 +154,21 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 	@Override
 	public final List<I_C_ReferenceNo_Doc> retrieveDocAssignments(@NonNull final I_C_ReferenceNo referenceNo)
 	{
-		final List<I_C_ReferenceNo_Doc> result = Services
+		return retrieveDocAssignments(ReferenceNoId.ofRepoId(referenceNo.getC_ReferenceNo_ID()));
+	}
+
+	@Override
+	public final List<I_C_ReferenceNo_Doc> retrieveDocAssignments(@NonNull final ReferenceNoId referenceNoId)
+	{
+		return Services
 				.get(IQueryBL.class)
 				.createQueryBuilder(I_C_ReferenceNo_Doc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNo.getC_ReferenceNo_ID())
+				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID, referenceNoId)
 				.orderBy(I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_Doc_ID)
 				.create()
 				.setRequiredAccess(Access.READ)
 				.list();
-		return result;
 	}
 
 	@Override
@@ -231,6 +214,23 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 		save(assignment);
 
 		return assignment;
+	}
+
+	@Override
+	@NonNull
+	public Optional<ReferenceNoId> getReferenceNoId(
+			@NonNull final String referenceNo,
+			@NonNull final I_C_ReferenceNo_Type invoiceReferenceNoType)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_ReferenceNo.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_ReferenceNo, referenceNo)
+				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID, invoiceReferenceNoType.getC_ReferenceNo_Type_ID())
+				.create()
+				.firstOnlyOptional(I_C_ReferenceNo.class)    // there is a UC on C_ReferenceNo_Type_ID and ReferenceNo
+				.map(I_C_ReferenceNo::getC_ReferenceNo_ID)
+				.map(ReferenceNoId::ofRepoId);
 	}
 
 }

@@ -24,10 +24,12 @@ package de.metas.workflow.rest_api.model.facets;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -37,7 +39,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode
 public final class WorkflowLaunchersFacetId
 {
-	@NonNull private final WorkflowLaunchersFacetGroupId groupId;
+	@NonNull @Getter private final WorkflowLaunchersFacetGroupId groupId;
 	@NonNull private final String value;
 
 	static final String SEPARATOR = "_";
@@ -108,4 +110,10 @@ public final class WorkflowLaunchersFacetId
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type) {return RepoIdAwares.ofObject(value, type);}
 
 	public LocalDate getAsLocalDate() {return LocalDate.parse(value);}
+
+	@NonNull
+	public <T> T deserializeTo(@NonNull final Class<T> targetClass)
+	{
+		return JSONObjectMapper.forClass(targetClass).readValue(value);
+	}
 }

@@ -26,6 +26,7 @@ import {
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { fetchTopActions } from '../actions/Actions';
 
 import history from '../services/History';
 
@@ -72,14 +73,16 @@ class MasterWindowContainer extends PureComponent {
   }
 
   async onWebsocketEvent(event) {
-    const { includedTabsInfo, stale } = event;
+    const { includedTabsInfo, stale, activeTabStaled } = event;
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
+    //console.log('onWebsocketEvent', { event, activeTab });
 
+    //
     // Document header got staled
     if (stale) {
       const { params, fireUpdateData } = this.props;
@@ -90,22 +93,20 @@ class MasterWindowContainer extends PureComponent {
       });
     }
 
+    //
     // Active included tab got staled
-    if (activeTab) {
-      // Full tab got staled
-      if (activeTab.stale) {
-        this.refreshActiveTab();
-      }
-      // Some included rows got staled
-      else {
-        // if `staleRowIds` is empty, we'll just query for all rows and update what changed
-        // This can happen when adding a new product via the `Add new` modal.
-        const { staleRowIds } = activeTab;
-
-        await this.getTabRows(activeTab.tabId, staleRowIds).then((res) => {
+    if (activeTabStaled || activeTab?.stale) {
+      this.refreshActiveTab();
+    }
+    // Some included rows got staled
+    else if (activeTab) {
+      // if `staleRowIds` is empty, we'll just query for all rows and update what changed
+      // This can happen when adding a new product via the `Add new` modal.
+      await this.getTabRows(activeTab.tabId, activeTab.staleRowIds).then(
+        (res) => {
           this.mergeDataIntoIncludedTab(res);
-        });
-      }
+        }
+      );
     }
   }
 
@@ -179,8 +180,13 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+    const activeTab = master.layout.activeTab;
+    if (!activeTab) {
+      console.log('No active activeTab found', { master });
+      return false;
+    }
 
-    return tabId === master.layout.activeTab;
+    return tabId === activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {
@@ -235,6 +241,7 @@ class MasterWindowContainer extends PureComponent {
       params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
+      fetchTopActions,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -258,6 +265,8 @@ class MasterWindowContainer extends PureComponent {
         );
       })
       .catch((error) => error);
+
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {
@@ -373,6 +382,7 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
   updateLastBackPage: PropTypes.func.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -403,6 +413,7 @@ export default connect(mapStateToProps, {
   deleteTable,
   updateTabLayout,
   updateLastBackPage,
+  fetchTopActions,
 })(MasterWindowContainer);
 
 //
@@ -414,8 +425,6 @@ const isLayoutLoaded = (layout) => {
 };
 
 const getFieldFromLayout = (layout, fieldName) => {
-  console.log('getFieldFromLayout', { layout, fieldName });
-
   for (const section of layout.sections ?? []) {
     // console.log('section', section);
 

@@ -173,6 +173,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.banking</groupId>
@@ -493,7 +500,15 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
-                
+
+        <dependency>
+            <groupId>de.metas.postfinance</groupId>
+            <artifactId>de.metas.postfinance</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.serviceprovider</groupId>
             <artifactId>de.metas.serviceprovider.base</artifactId>
@@ -559,6 +574,13 @@
         <dependency>
             <groupId>de.metas.swat</groupId>
             <artifactId>de.metas.swat.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.swat</groupId>
+            <artifactId>de.metas.swat.webui</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

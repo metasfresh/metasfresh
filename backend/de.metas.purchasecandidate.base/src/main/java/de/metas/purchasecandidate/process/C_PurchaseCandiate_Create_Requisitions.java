@@ -1,20 +1,8 @@
-package de.metas.purchasecandidate.process;
-
-import com.google.common.collect.ImmutableSet;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
-import de.metas.util.Services;
-import org.compiere.model.X_C_DocType;
-
 /*
  * #%L
  * de.metas.purchasecandidate.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +19,18 @@ import org.compiere.model.X_C_DocType;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.purchasecandidate.process;
+
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
+import de.metas.util.Services;
+import org.compiere.model.X_C_DocType;
 
 public class C_PurchaseCandiate_Create_Requisitions
 		extends C_PurchaseCandiate_Create_PurchaseOrders

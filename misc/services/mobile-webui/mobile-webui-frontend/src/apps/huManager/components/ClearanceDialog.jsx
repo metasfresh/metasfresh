@@ -60,10 +60,10 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
               </tbody>
             </table>
             <div className="buttons is-centered">
-              <button className="button is-danger" onClick={onDialogYes}>
+              <button className="button is-success" onClick={onDialogYes}>
                 {trl('activities.picking.confirmDone')}
               </button>
-              <button className="button is-success" onClick={onCloseDialog}>
+              <button className="button is-danger" onClick={onCloseDialog}>
                 {trl('general.cancelText')}
               </button>
             </div>

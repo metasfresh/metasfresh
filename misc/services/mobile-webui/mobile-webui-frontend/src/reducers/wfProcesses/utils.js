@@ -17,10 +17,16 @@ export const updateUserEditable = ({ draftWFProcess }) => {
     ? current(draftWFProcess.activityIdsInOrder)
     : draftWFProcess.activityIdsInOrder;
 
+  const isWFProcessing = activityIdsInOrder.some(
+    (activityId) => !!draftWFProcess.activities[activityId]?.dataStored?.processing
+  );
+
   activityIdsInOrder.forEach((activityId) => {
     const currentActivity = draftWFProcess.activities[activityId];
 
-    if (currentActivity.dataStored.isAlwaysAvailableToUser) {
+    if (isWFProcessing) {
+      currentActivity.dataStored.isUserEditable = false;
+    } else if (currentActivity.dataStored.isAlwaysAvailableToUser) {
       currentActivity.dataStored.isUserEditable = true;
       // NOTE: activities which are always available to user shall be always editable
       // They are out of the normal flow when talking about making a previous activity readonly because current activity is completed.
@@ -88,6 +94,7 @@ const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) =>
 
 export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   draftWFProcess.headerProperties = fromWFProcess.headerProperties;
+  draftWFProcess.isAllowAbort = !!fromWFProcess.isAllowAbort;
 
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};

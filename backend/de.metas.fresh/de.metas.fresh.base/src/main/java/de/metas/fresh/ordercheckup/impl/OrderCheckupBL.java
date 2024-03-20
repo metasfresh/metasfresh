@@ -29,14 +29,19 @@ import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.OrgId;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceService;
@@ -55,18 +60,17 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
- *
  * @author ts
- * @implNote Task http://dewiki908/mediawiki/index.php/09028_Produktionsauftrag-Bestellkontrolle_automatisch_ausdrucken_%28106402701484%29
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/09028_Produktionsauftrag-Bestellkontrolle_automatisch_ausdrucken_%28106402701484%29">task</a>
  */
 public class OrderCheckupBL implements IOrderCheckupBL
 {
@@ -74,6 +78,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 	public static final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	final IOrderCheckupDAO orderCheckupDAO = Services.get(IOrderCheckupDAO.class);
+	final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -91,9 +96,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 	private static final String SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.FailIfOrderWarehouseHasNoPlant";
 
-	private static final String MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = "de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant";
-
-	private static final int BARCODE_ORDERCHECHUP_PROCESS_ID= 540814; // hardcoded ordercheckup_with_barcode/report.jasper
+	private static final AdMessageKey MSG_ORDER_WAREHOUSE_HAS_NO_PLANT = AdMessageKey.of("de.metas.fresh.ordercheckup.OrderWarehouseHasNoPlant");
 
 	@Override
 	public void generateReportsIfEligible(@NonNull final I_C_Order order)
@@ -108,7 +111,6 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// Void all previous reports, because we will generate them again.
 		voidReports(order);
 
-
 		//
 		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
@@ -117,7 +119,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		{
 			//
 			// Retrieve the product data planning which defines how the order line product will be manufactured
-			final I_PP_Product_Planning mfgProductPlanning = orderCheckupDAO.retrieveProductPlanningOrNull(orderLine);
+			final ProductPlanning mfgProductPlanning = getMfgProductPlanning(orderLine).orElse(null);
 			if (mfgProductPlanning == null)
 			{
 				logger.info("Skip order line because no manufacturing product planning was found for it: {}", orderLine);
@@ -126,18 +128,16 @@ public class OrderCheckupBL implements IOrderCheckupBL
 
 			//
 			// Retrieve the manufacturing workflow
-			if (mfgProductPlanning.getAD_Workflow_ID() <= 0)
+			if (mfgProductPlanning.getWorkflowId() == null)
 			{
 				logger.info("Skip order line because no manufacturing workflow was found for it: {}", orderLine);
 				continue;
 			}
 
-			final ResourceId plantId = ResourceId.ofRepoId(mfgProductPlanning.getS_Resource_ID());
-			
-			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(mfgProductPlanning.getAD_Workflow_ID());
-			final PPRouting routing = routingId != null
-					? Services.get(IPPRoutingRepository.class).getById(routingId)
-					: null;
+			final ResourceId plantId = mfgProductPlanning.getPlantId();
+
+			final PPRoutingId routingId = mfgProductPlanning.getWorkflowId();
+			final PPRouting routing = Services.get(IPPRoutingRepository.class).getById(routingId);
 
 			//
 			// Add order line to per Manufacturing warehouse report
@@ -148,7 +148,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
 				if (reportBuilder == null)
 				{
-					final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(mfgProductPlanning.getM_Warehouse_ID());
+					final WarehouseId warehouseId = mfgProductPlanning.getWarehouseId();
 					reportBuilder = OrderCheckupBuilder.newBuilder()
 							.setC_Order(order)
 							.setDocumentType(documentType)
@@ -186,7 +186,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 								new Object[] {
 										warehouse.getValue() + " - " + warehouse.getName(),
 										SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT }))
-												.throwOrLogWarning(throwIt, logger);
+						.throwOrLogWarning(throwIt, logger);
 			}
 			else
 			{
@@ -212,6 +212,13 @@ public class OrderCheckupBL implements IOrderCheckupBL
 				reportBuilder.build();
 			}
 		}
+	}
+
+	private Optional<ProductPlanning> getMfgProductPlanning(final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoIdOrAny(orderLine.getAD_Org_ID());
+		return productPlanningDAO.retrieveManufacturingOrTradingPlanning(productId, orgId);
 	}
 
 	@Override
@@ -252,7 +259,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 					order.getC_Order_ID());
 			return false; // nothing to do
 		}
-		
+
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(orderBL.getBPartner(order), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{

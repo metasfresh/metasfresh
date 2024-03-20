@@ -11,6 +11,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_InvoiceRejection;
+import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_MassDunning;
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin;
 
 /*
@@ -35,13 +36,14 @@ import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
  * #L%
  */
 
+@Getter
 @AllArgsConstructor
 public enum EMailCustomType implements ReferenceListAwareEnum
 {
 	OrgCompiereUtilLogin(CUSTOMTYPE_OrgCompiereUtilLogin),
-	InvoiceRejection(CUSTOMTYPE_InvoiceRejection);
+	InvoiceRejection(CUSTOMTYPE_InvoiceRejection),
+	MassDunning(CUSTOMTYPE_MassDunning);
 
-	@Getter
 	private final String code;
 
 	private static final ImmutableMap<String, EMailCustomType> typesByCode = ReferenceListAwareEnums.indexByCode(values());

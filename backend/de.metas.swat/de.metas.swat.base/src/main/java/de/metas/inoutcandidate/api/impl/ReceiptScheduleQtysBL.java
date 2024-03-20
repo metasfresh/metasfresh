@@ -22,9 +22,6 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -36,6 +33,9 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
 
 public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 {
@@ -216,7 +216,8 @@ public class ReceiptScheduleQtysBL implements IReceiptScheduleQtysBL
 		BigDecimal qtyToMove = qtyOrdered.subtract(qtyMoved);
 
 		// In case there is an over-delivery we don't want our QtyToMove to be negative but ZERO
-		if (qtyToMove.signum() <= 0)
+		// qtyOrdered is not updated if receiptSchedule row is closed (isProcessed == true)
+		if (qtyToMove.signum() <= 0 || rs.isProcessed())
 		{
 			qtyToMove = BigDecimal.ZERO;
 		}

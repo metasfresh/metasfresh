@@ -24,6 +24,8 @@ package de.metas.picking.rest_api;
 
 import de.metas.Profiles;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
+import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
+import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -63,4 +65,17 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/closeLine")
+	public JsonWFProcess closeLine(@RequestBody @NonNull JsonPickingLineCloseRequest request)
+	{
+		final WFProcess wfProcess = pickingMobileApplication.closeLine(request, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PostMapping("/openLine")
+	public JsonWFProcess openLine(@RequestBody @NonNull JsonPickingLineOpenRequest request)
+	{
+		final WFProcess wfProcess = pickingMobileApplication.openLine(request, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
 }

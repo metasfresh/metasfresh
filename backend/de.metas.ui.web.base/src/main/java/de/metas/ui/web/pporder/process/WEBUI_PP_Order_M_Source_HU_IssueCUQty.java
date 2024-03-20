@@ -67,15 +67,15 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 
-	private static final String PARAM_QtyCU = "QtyCU";
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
 
 	private static final String PARAM_IsShowAllParams = "IsShowAllParams";
 
 	/**
 	 * Qty CU to be issued
 	 */
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal qtyCU;
+	@Param(parameterName = PARAM_QtyCUsPerTU)
+	private BigDecimal qtyCUsPerTU;
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -124,7 +124,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 				.collect(ImmutableList.toImmutableList());
 
 		final Quantity qty = isSingleSelectedRow()
-				? Quantity.of(qtyCU, row.getUom())
+				? Quantity.of(qtyCUsPerTU, row.getUom())
 				: computeQtyToIssue(row);
 
 		final HUsToNewCUsRequest request = HUsToNewCUsRequest
@@ -159,7 +159,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QtyCU.equals(parameter.getColumnName()) && isSingleSelectedRow())
+		if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()) && isSingleSelectedRow())
 		{
 			return computeQtyToIssue(getSingleSelectedRow());
 		}

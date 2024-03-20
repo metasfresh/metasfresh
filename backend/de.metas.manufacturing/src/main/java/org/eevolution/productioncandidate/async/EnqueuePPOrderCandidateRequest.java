@@ -44,6 +44,8 @@ public class EnqueuePPOrderCandidateRequest
 	Boolean isCompleteDocOverride;
 
 	boolean autoProcessCandidatesAfterProduction;
+	
+	boolean autoCloseCandidatesAfterProduction;
 
 	@NonNull
 	public static EnqueuePPOrderCandidateRequest of(@NonNull final PInstanceId pInstanceId, @NonNull final Properties ctx)

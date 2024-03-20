@@ -9,7 +9,7 @@ import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
-import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 import { useLineHeaderEntriesRefresh } from './RawMaterialIssueLineScreen';

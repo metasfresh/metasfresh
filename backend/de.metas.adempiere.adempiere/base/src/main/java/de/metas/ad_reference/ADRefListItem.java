@@ -1,6 +1,7 @@
 package de.metas.ad_reference;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.util.ColorId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,4 +18,6 @@ public class ADRefListItem
 	@Nullable String valueName;
 	@NonNull ITranslatableString name;
 	@Nullable ITranslatableString description;
+	@Nullable
+	ColorId colorId;
 }

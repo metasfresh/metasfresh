@@ -70,9 +70,9 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	private final HuId2SourceHUsService sourceHUsRepository = SpringContextHolder.instance.getBean(HuId2SourceHUsService.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	private static final String PARAM_QTY_CU = "QtyCU";
-	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
-	private BigDecimal qtyCU;
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
+	private BigDecimal qtyCUsPerTU;
 
 	private static final String PARAM_M_Product_ID = "M_Product_ID";
 	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
@@ -118,7 +118,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 			final List<ProductId> productIds = getProductIds();
 			return !productIds.isEmpty() ? productIds.get(0) : null;
 		}
-		if (PARAM_QTY_CU.equals(parameter.getColumnName()))
+		if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
 		{
 			final List<ProductId> productIds = getProductIds();
 			final ProductId productId = !productIds.isEmpty() ? productIds.get(0) : null;
@@ -156,7 +156,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		{
 			if (productId != null)
 			{
-				qtyCU = getHUStorageQty(productId).toBigDecimal();
+				qtyCUsPerTU = getHUStorageQty(productId).toBigDecimal();
 			}
 		}
 	}
@@ -168,14 +168,14 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		{
 			throw new FillMandatoryException(PARAM_M_Product_ID);
 		}
-		if (qtyCU == null || qtyCU.signum() <= 0)
+		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QTY_CU);
+			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
 
 		final HuId huId = getSelectedHUId();
 
-		final Quantity qtyToRemove = Quantity.of(qtyCU, getHUStorageQty(productId).getUOM());
+		final Quantity qtyToRemove = Quantity.of(qtyCUsPerTU, getHUStorageQty(productId).getUOM());
 
 		pickingCandidateService.removeQtyFromHU(RemoveQtyFromHURequest.builder()
 				.qtyToRemove(qtyToRemove)

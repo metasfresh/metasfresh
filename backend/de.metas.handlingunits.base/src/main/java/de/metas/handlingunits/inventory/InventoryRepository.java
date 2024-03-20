@@ -18,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
@@ -43,7 +44,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -241,13 +242,18 @@ public class InventoryRepository
 
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLineRecord.getM_Locator_ID());
 
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
+
 		final InventoryLineBuilder lineBuilder = InventoryLine.builder()
 				.id(extractInventoryLineIdOrNull(inventoryLineRecord))
 				.orgId(OrgId.ofRepoId(inventoryLineRecord.getAD_Org_ID()))
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
+				.qtyCountFixed(Quantity.of(inventoryLineRecord.getQtyCount(), uom))
+				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
+
 
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);
@@ -671,6 +677,7 @@ public class InventoryRepository
 		inventoryRecord.setDocAction(IDocument.ACTION_Complete);
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
 		inventoryRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		inventoryRecord.setM_Picking_Job_ID(PickingJobId.toRepoId(request.getPickingJobId()));
 
 		inventoryRecord.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 		inventoryRecord.setDescription(StringUtils.trimBlankToNull(request.getDescription()));

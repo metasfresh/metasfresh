@@ -43,7 +43,9 @@ import java.time.Instant;
 public class ManufacturingOrderQuery
 {
 	boolean onlyCompleted;
+	@NonNull @Singular ImmutableSet<ResourceId> onlyPlantOrWorkstationIds;
 	@NonNull @Singular ImmutableSet<ResourceId> onlyPlantIds;
+	@NonNull @Singular ImmutableSet<ResourceId> onlyWorkstationIds;
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Instant datePromisedDay;
@@ -58,7 +60,8 @@ public class ManufacturingOrderQuery
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 	@NonNull @Singular ImmutableList<SortingOption> sortingOptions;
 
-	public enum SortingOption {
+	public enum SortingOption
+	{
 		SEQ_NO
 	}
 }

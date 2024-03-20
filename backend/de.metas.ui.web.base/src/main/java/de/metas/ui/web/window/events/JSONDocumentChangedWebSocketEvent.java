@@ -1,21 +1,11 @@
 package de.metas.ui.web.window.events;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.metas.websocket.WebsocketEndpointAware;
-import de.metas.websocket.WebsocketTopicName;
+import de.metas.common.util.time.SystemTime;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -23,9 +13,16 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.websocket.WebsocketEndpointAware;
+import de.metas.websocket.WebsocketTopicName;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Objects;
 
 /*
  * #%L
@@ -51,11 +48,10 @@ import lombok.ToString;
 
 /**
  * Document changed websocket event.
- *
+ * <p>
  * Event sent by backend when a document was changed.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @EqualsAndHashCode
@@ -73,7 +69,9 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	@JsonProperty("id")
 	private final DocumentId id;
 
-	/** Event's timestamp. */
+	/**
+	 * Event's timestamp.
+	 */
 	@JsonProperty("timestamp")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String timestamp;
@@ -82,10 +80,16 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean stale;
 
-	/** {@link JSONIncludedTabInfo}s indexed by tabId */
+	/**
+	 * {@link JSONIncludedTabInfo}s indexed by tabId
+	 */
 	@JsonProperty("includedTabsInfo")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private Map<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
+	private HashMap<String, JSONIncludedTabInfo> includedTabsInfoByTabId;
+
+	@JsonProperty("activeTabStaled")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean activeTabStaled;
 
 	private JSONDocumentChangedWebSocketEvent(
 			@NonNull final WindowId windowId,
@@ -110,6 +114,8 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 			includedTabsInfoByTabId = new HashMap<>();
 			from.includedTabsInfoByTabId.forEach((key, tabInfo) -> includedTabsInfoByTabId.put(key, tabInfo.copy()));
 		}
+
+		activeTabStaled = from.activeTabStaled;
 	}
 
 	public JSONDocumentChangedWebSocketEvent copy()
@@ -117,12 +123,19 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		return new JSONDocumentChangedWebSocketEvent(this);
 	}
 
-	void markRootDocumentAsStaled()
+	JSONDocumentChangedWebSocketEvent markRootDocumentAsStaled()
 	{
 		stale = Boolean.TRUE;
+		return this;
 	}
 
-	private Map<String, JSONIncludedTabInfo> getIncludedTabsInfo()
+	JSONDocumentChangedWebSocketEvent markActiveTabStaled()
+	{
+		activeTabStaled = Boolean.TRUE;
+		return this;
+	}
+
+	private HashMap<String, JSONIncludedTabInfo> getIncludedTabsInfo()
 	{
 		if (includedTabsInfoByTabId == null)
 		{
@@ -185,5 +198,10 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		}
 
 		from.getIncludedTabsInfo().values().forEach(this::addIncludedTabInfo);
+
+		if (from.activeTabStaled != null && from.activeTabStaled)
+		{
+			activeTabStaled = from.activeTabStaled;
+		}
 	}
 }

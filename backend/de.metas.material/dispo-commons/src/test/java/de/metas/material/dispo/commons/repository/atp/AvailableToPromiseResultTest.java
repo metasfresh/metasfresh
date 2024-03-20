@@ -2,10 +2,10 @@ package de.metas.material.dispo.commons.repository.atp;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.commons.attributes.AttributesKeyMatcher;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
-import de.metas.material.commons.attributes.ExcludeAttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyMatcher;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.ExcludeAttributesKeyMatcher;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;

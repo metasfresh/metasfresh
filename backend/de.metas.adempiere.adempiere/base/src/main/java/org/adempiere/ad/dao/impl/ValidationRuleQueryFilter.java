@@ -2,6 +2,7 @@ package org.adempiere.ad.dao.impl;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -12,7 +13,9 @@ import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import java.util.Collections;
@@ -39,6 +42,13 @@ public class ValidationRuleQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.adValRuleId = adValRuleId;
 		this.evaluatee = InterfaceWrapperHelper.getEvaluatee(model);
+	}
+
+	public ValidationRuleQueryFilter(@NonNull final String tableName, @NonNull final AdValRuleId adValRuleId)
+	{
+		this.tableName = tableName;
+		this.adValRuleId = adValRuleId;
+		this.evaluatee = Evaluatees.ofCtx(Env.getCtx());
 	}
 
 	@Override

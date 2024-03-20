@@ -335,7 +335,7 @@ public class MOrderLine extends X_C_OrderLine
 		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(this).getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = getParent().isSOTrx();
-		final Timestamp taxDate = getDateOrdered();
+		final Timestamp taxDate = getDatePromised();
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(getC_VAT_Code_ID());
 		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
 				.fromCountryId(countryFromId)

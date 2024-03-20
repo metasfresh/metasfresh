@@ -321,8 +321,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 		MInOutLineConfirm[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		//	Set dispute if not fully confirmed
 		boolean difference = false;

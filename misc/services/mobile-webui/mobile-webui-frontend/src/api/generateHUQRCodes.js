@@ -2,13 +2,20 @@ import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
 
-export const postGenerateHUQRCodes = ({ wfProcessId, finishedGoodsReceiveLineId, tuPackingInstructionsId, qtyTUs }) => {
+export const postGenerateHUQRCodes = ({
+  wfProcessId,
+  finishedGoodsReceiveLineId,
+  huPackingInstructionsId,
+  numberOfHUs,
+  numberOfCopies,
+}) => {
   return axios
     .post(`${apiBasePath}/manufacturing/generateHUQRCodes`, {
       wfProcessId,
       finishedGoodsReceiveLineId,
-      tuPackingInstructionsId,
-      qtyTUs,
+      huPackingInstructionsId,
+      numberOfHUs,
+      numberOfCopies,
     })
     .then((response) => unboxAxiosResponse(response));
 };

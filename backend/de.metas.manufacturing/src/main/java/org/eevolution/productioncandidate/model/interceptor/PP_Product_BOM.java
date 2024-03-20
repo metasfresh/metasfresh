@@ -35,6 +35,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
@@ -57,7 +58,7 @@ public class PP_Product_BOM
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onComplete(@NonNull final I_PP_Product_BOM productBOMRecord)
 	{
-		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord, DocStatus.Completed);
+		final Optional<I_PP_Product_BOM> previousBOMVersion = productBOMDAO.getPreviousVersion(productBOMRecord, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes(), DocStatus.Completed);
 
 		if (!previousBOMVersion.isPresent())
 		{

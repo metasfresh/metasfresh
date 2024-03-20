@@ -230,8 +230,8 @@ Feature: EDI_cctop_invoic_v export format
       | e_d_1                        | ep_1                        | routingKey                   |
 
     And EDI_Exp_Desadv_Pack of the following EDI_Exp_Desadv is validated
-      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
-      | e_d_1                        | 10                                 | 100                                      | 10                                 |
+      | EDI_Exp_Desadv_ID.Identifier | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerTU | OPT.EDI_Exp_Desadv_Pack_Item.QtyCUsPerLU | OPT.EDI_Exp_Desadv_Pack_Item.QtyTU |
+      | e_d_1                        | 10                                       | 100                                      | 10                                 |
 
      #  Test Kunde 1
     And the following c_bpartner is changed

@@ -23,7 +23,6 @@ package org.eevolution.model.validator;
  */
 
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -31,8 +30,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
@@ -130,16 +127,10 @@ public class PP_Product_BOMLine
 		return true;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, skipIfCopying=true)
-	public void updateProductLowestLevelCode(final I_PP_Product_BOMLine bomLine)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, skipIfCopying = true)
+	public void checkingBOMCycle(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		final I_M_Product product = Services.get(IProductBL.class).getById(productId);
-		final int lowLevel = Services.get(IProductBOMBL.class).calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-
-		product.setLowLevel(lowLevel); // update lowlevel
-		InterfaceWrapperHelper.save(product);
-
-		// TODO: if product's low level changed, we need to update the low level from all bom components where this product is in bom header.
+		Services.get(IProductBOMBL.class).checkCycles(productId);
 	}
 }

@@ -1,8 +1,8 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
-import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyQueryHelper;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;

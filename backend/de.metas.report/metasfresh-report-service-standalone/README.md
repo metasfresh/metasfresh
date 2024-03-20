@@ -5,7 +5,7 @@
 3. Adjust path to compiled *.jasper files in DB or WebUI Org-Info
 
 ```sql
-UPDATE ad_orginfo 
-SET reportprefix = 'file:///C:/work-metas/metasfresh/backend/de/metas/fresh/jasperreports/' 
+UPDATE ad_orginfo
+SET reportprefix = 'file:///C:/work-metas/metasfresh/backend/de.metas.fresh/de.metas.fresh.base/src/main/jasperreports/'
 WHERE TRUE;
 ```

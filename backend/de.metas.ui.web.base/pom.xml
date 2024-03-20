@@ -125,6 +125,12 @@
             <version>${metasfresh.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.postfinance</groupId>
+            <artifactId>de.metas.postfinance</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>

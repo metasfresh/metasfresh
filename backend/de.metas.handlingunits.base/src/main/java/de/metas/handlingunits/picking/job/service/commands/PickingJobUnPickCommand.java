@@ -2,6 +2,9 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import de.metas.handlingunits.movement.HUIdAndQRCode;
+import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -13,6 +16,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingJobStepUnpickInfo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -26,14 +31,23 @@ import java.util.stream.Stream;
 
 public class PickingJobUnPickCommand
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final PickingJobRepository pickingJobRepository;
-	@NonNull private final PickingCandidateService pickingCandidateService;
+	@NonNull
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull
+	private final PickingJobRepository pickingJobRepository;
+	@NonNull
+	private final PickingCandidateService pickingCandidateService;
+	@NonNull
+	private final HUQRCodesService huQRCodesService;
 
 	//
 	// Params
-	@NonNull private final PickingJob initialPickingJob;
-	@NonNull private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
+	@NonNull
+	private final PickingJob initialPickingJob;
+	@NonNull
+	private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
+	@Nullable
+	private final HUQRCode unpickToHU;
 
 	//
 	// State
@@ -43,15 +57,20 @@ public class PickingJobUnPickCommand
 	private PickingJobUnPickCommand(
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingCandidateService pickingCandidateService,
+			final @NonNull HUQRCodesService huQRCodesService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @Nullable PickingJobStepId onlyPickingJobStepId,
-			final @Nullable PickingJobStepPickFromKey onlyPickFromKey)
+			final @Nullable PickingJobStepPickFromKey onlyPickFromKey,
+			final @Nullable HUQRCode unpickToHU)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
+		this.huQRCodesService = huQRCodesService;
 
 		this.initialPickingJob = pickingJob;
+
+		this.unpickToHU = unpickToHU;
 
 		final Stream<StepUnpickInstructions> unpickInstructionsStream;
 		if (onlyPickingJobStepId != null)
@@ -118,11 +137,10 @@ public class PickingJobUnPickCommand
 			changedStep = unpickStep(changedStep, pickFromKey);
 		}
 
-		if(changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
+		if (changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
 		{
 			return null;
 		}
-
 
 		return changedStep;
 	}
@@ -145,9 +163,32 @@ public class PickingJobUnPickCommand
 			unprocessedPickingCandidates.add(unprocessedPickingCandidate);
 		}
 
+		moveToTargetHU(pickedTo.getActualPickedHUs());
+
 		return step.reduceWithUnpickEvent(
 				pickFromKey,
 				PickingJobStepUnpickInfo.builder().build());
+	}
+
+	private void moveToTargetHU(@NonNull final ImmutableList<PickingJobStepPickedToHU> pickedToHUs)
+	{
+		if (unpickToHU == null)
+		{
+			return;
+		}
+
+		final ImmutableList<MoveHURequestItem> requestItems = pickedToHUs.stream()
+				.map(PickingJobStepPickedToHU::getActualPickedHUId)
+				.map(HUIdAndQRCode::ofHuId)
+				.map(MoveHURequestItem::ofHUIdAndQRCode)
+				.collect(ImmutableList.toImmutableList());
+
+		MoveHUCommand.builder()
+				.huQRCodesService(huQRCodesService)
+				.requestItems(requestItems)
+				.targetQRCode(unpickToHU.toGlobalQRCode())
+				.build()
+				.execute();
 	}
 
 	//

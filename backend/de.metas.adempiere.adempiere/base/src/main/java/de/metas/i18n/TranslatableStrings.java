@@ -8,8 +8,10 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -245,6 +247,15 @@ public class TranslatableStrings
 		return NumberTranslatableString.of(valueInt);
 	}
 
+	public ITranslatableString quantity(final BigDecimal valueBD, final String uom)
+	{
+		return TranslatableStrings.builder()
+				.append(NumberTranslatableString.of(valueBD, DisplayType.Quantity))
+				.append(" ")
+				.append(uom)
+				.build();
+	}
+
 	public DateTimeTranslatableString date(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDate(date);
@@ -283,7 +294,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
+			return ImmutableTranslatableString.ofMap(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
 		}
 	}
 
@@ -295,7 +306,7 @@ public class TranslatableStrings
 		}
 		else
 		{
-			return new ImmutableTranslatableString(trlMap, defaultValue);
+			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
 		}
 	}
 
@@ -395,6 +406,11 @@ public class TranslatableStrings
 		return builder.build();
 	}
 
+	public static boolean isPossibleTranslatableString(final String text)
+	{
+		return text != null && text.indexOf('@') >= 0;
+	}
+
 	public static ITranslatableString adElementOrMessage(@NonNull final String columnName)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -410,6 +426,11 @@ public class TranslatableStrings
 	public static ITranslatableString adRefList(final int adReferenceId, @NonNull final String value)
 	{
 		return adRefList(ReferenceId.ofRepoId(adReferenceId), value);
+	}
+
+	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final ReferenceListAwareEnum value)
+	{
+		return adRefList(adReferenceId, value.getCode());
 	}
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)

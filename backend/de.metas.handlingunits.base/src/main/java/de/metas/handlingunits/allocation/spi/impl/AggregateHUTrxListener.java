@@ -22,16 +22,6 @@ package de.metas.handlingunits.allocation.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -50,6 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -57,6 +48,16 @@ import de.metas.uom.UOMPrecision;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This listener plays an important role for aggregate HUs.
@@ -76,6 +77,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 	 * Makes sure the {@link #afterLoad(IHUContext, List)} is not called recurrently.
 	 */
 	private final ThreadLocal<Boolean> withinMethod = new ThreadLocal<>();
+	private final HUQRCodesService huqrCodesService;
 
 	/**
 	 * Creates a key used to put and get the CU quantity per HA item.
@@ -97,6 +99,7 @@ public class AggregateHUTrxListener implements IHUTrxListener
 
 	private AggregateHUTrxListener()
 	{
+		this.huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	}
 
 	/**
@@ -219,6 +222,11 @@ public class AggregateHUTrxListener implements IHUTrxListener
 						Quantity.of(qtyToSplit, trx.getQuantity().getUOM()),
 						huContext.getDate());
 				loader.load(request);
+
+				final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(item);
+				if (includedHUs.size() == 1) {
+					huqrCodesService.propagateQrForSplitHUs(includedHUs.get(0), destination.getCreatedHUs());
+				}
 			}
 		}
 

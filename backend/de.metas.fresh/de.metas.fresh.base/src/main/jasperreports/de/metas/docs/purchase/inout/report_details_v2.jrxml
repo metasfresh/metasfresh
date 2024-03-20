@@ -22,20 +22,51 @@
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details ($P{c_order_id} , $P{ad_language} );]]>
 	</queryString>
-	<field name="attributes" class="java.lang.String"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="huqty" class="java.math.BigDecimal"/>
-	<field name="huname" class="java.lang.String"/>
-	<field name="movementqty" class="java.math.BigDecimal"/>
-	<field name="uomsymbol" class="java.lang.String"/>
-	<field name="stdprecision" class="java.math.BigDecimal"/>
-	<field name="qualitydiscountpercent" class="java.math.BigDecimal"/>
-	<field name="qualitynote" class="java.lang.String"/>
-	<field name="isindispute" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
-	<field name="bp_product_no" class="java.lang.String"/>
-	<field name="bp_product_name" class="java.lang.String"/>
-	<field name="line" class="java.math.BigDecimal"/>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="huqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
+	</field>
+	<field name="huname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="huname"/>
+	</field>
+	<field name="movementqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="movementqty"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="stdprecision" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
+	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
+	<field name="qualitydiscountpercent" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qualitydiscountpercent"/>
+	</field>
+	<field name="qualitynote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="qualitynote"/>
+	</field>
+	<field name="isindispute" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isindispute"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="bp_product_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
+	</field>
+	<field name="bp_product_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bp_product_name"/>
+	</field>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
 	<variable name="qtyToInvoice" class="java.lang.String"/>
 	<variable name="showAttributes" class="java.lang.Integer" calculation="Count">
 		<variableExpression><![CDATA[$F{attributes}!=null ? "showAttr":null]]></variableExpression>
@@ -53,14 +84,14 @@
 			<textField>
 				<reportElement key="textField-19" x="503" y="11" width="70" height="12" forecolor="#000000" uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="409" y="0" width="40" height="12" forecolor="#000000" uuid="bcf49517-5066-429e-a6dc-64c97a459ab0"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
@@ -71,14 +102,14 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-20" x="427" y="0" width="74" height="23" forecolor="#000000" uuid="4a06f254-2d43-4b5a-8875-443684dfe832"/>
 				<textElement textAlignment="Right" markup="styled">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
@@ -87,7 +118,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
@@ -97,14 +128,14 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="59" y="0" width="138" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
@@ -113,7 +144,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 			</textField>
@@ -123,7 +154,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>
@@ -258,10 +289,9 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="362" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 3 )]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -273,37 +303,7 @@
 					<font fontName="SansSerif" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="362" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 2 )]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="362" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
-					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() != 2 && $F{stdprecision}.intValue() != 3 )]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{movementqty}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<textField>
 				<reportElement x="36" y="0" width="22" height="12" uuid="c8255ebd-b675-451d-a325-bae6abe327b0">

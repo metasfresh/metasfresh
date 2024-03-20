@@ -45,4 +45,8 @@ public class JsonPrintingSegment
 
 	@JsonProperty("pageTo")
 	int pageTo;
+
+	@JsonProperty("copies")
+	@Builder.Default
+	int copies = 1;
 }

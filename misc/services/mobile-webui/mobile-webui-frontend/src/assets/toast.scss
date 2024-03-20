@@ -1,0 +1,19 @@
+.toastContainer {
+  background: #FF0000;
+  transition: opacity 50ms ease-in-out;
+  border-radius: 1em;
+  color: white;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+}
+
+.toastSuccessContainer {
+  background: $indicator-green;
+  transition: opacity 50ms ease-in-out;
+  border-radius: 1em;
+  color: white;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+}

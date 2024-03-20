@@ -70,13 +70,23 @@ public class GroupCompensationLineCreateRequestFactory
 			percentage = Percent.ZERO;
 		}
 
+		final BigDecimal qtyEntered;
+		if (GroupCompensationAmtType.PriceAndQty.equals(amtType))
+		{
+			qtyEntered = BigDecimal.ONE;
+		}
+		else
+		{
+			qtyEntered = BigDecimal.ZERO;
+		}
+
 		return GroupCompensationLineCreateRequest.builder()
 				.productId(productId)
 				.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
 				.type(type)
 				.amtType(amtType)
 				.percentage(percentage)
-				.qtyEntered(BigDecimal.ZERO)
+				.qtyEntered(qtyEntered)
 				.price(BigDecimal.ZERO)
 				.groupTemplateLineId(templateLine.getId())
 				.build();

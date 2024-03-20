@@ -57,6 +57,7 @@ public class PickingJobLine
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
+	boolean isManuallyClosed;
 
 	// computed values
 	@NonNull PickingJobProgress progress;
@@ -70,7 +71,8 @@ public class PickingJobLine
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
-			@NonNull final ImmutableList<PickingJobStep> steps)
+			@NonNull final ImmutableList<PickingJobStep> steps,
+			final boolean isManuallyClosed)
 	{
 		this.id = id;
 		this.productId = productId;
@@ -80,12 +82,18 @@ public class PickingJobLine
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.catchUomId = catchUomId;
 		this.steps = steps;
+		this.isManuallyClosed = isManuallyClosed;
 
-		this.progress = computeProgress(steps);
+		this.progress = computeProgress(steps, isManuallyClosed);
 	}
 
-	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps)
+	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
 	{
+		if (isManuallyClosed)
+		{
+			return PickingJobProgress.DONE;
+		}
+
 		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream().map(PickingJobStep::getProgress).collect(ImmutableSet.toImmutableSet());
 		return PickingJobProgress.reduce(stepProgresses);
 	}
@@ -157,6 +165,12 @@ public class PickingJobLine
 						.add(newStep)
 						.build())
 				.build();
+	}
 
+	public PickingJobLine withManuallyClosed(final boolean isManuallyClosed)
+	{
+		return this.isManuallyClosed != isManuallyClosed
+				? toBuilder().isManuallyClosed(isManuallyClosed).build()
+				: this;
 	}
 }

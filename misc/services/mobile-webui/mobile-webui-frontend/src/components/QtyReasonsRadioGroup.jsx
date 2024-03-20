@@ -16,7 +16,7 @@ const QtyReasonsRadioGroup = ({ reasons, selectedReason, disabled, onReasonSelec
     <div className="control">
       {reasons.map((reason, idx) => (
         <div key={idx} className="columns is-mobile">
-          <div className="column is-full">
+          <div className="column">
             <label className="radio">
               <input
                 className="mr-2"

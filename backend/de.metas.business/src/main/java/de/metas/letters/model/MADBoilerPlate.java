@@ -32,6 +32,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
@@ -121,7 +122,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			return bp;
 		}
-		bp = new MADBoilerPlate(ctx, AD_BoilerPlate_ID, null);
+
+		bp = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.load(AD_BoilerPlate_ID, I_AD_BoilerPlate.class));
 		if (bp.getAD_BoilerPlate_ID() != AD_BoilerPlate_ID)
 		{
 			bp = null;
@@ -750,6 +752,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 												get_TrxName());
 		for (final String refName : parseNeededReferences())
 		{
+			final int Ref_BoilerPlate_ID = MADBoilerPlate.getIdByName(getCtx(), refName, get_TrxName());
+			if (Ref_BoilerPlate_ID <= 0)
+			{
+				log.warn("BoilerPlate entry '" + refName + "' does not exist");
+				continue;
+			}
+			
 			final MADBoilerPlateRef ref = new MADBoilerPlateRef(this, refName);
 			ref.saveEx();
 		}

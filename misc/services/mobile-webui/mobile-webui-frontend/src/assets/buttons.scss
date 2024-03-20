@@ -72,6 +72,17 @@
   height: 4em !important;
 }
 
+.button.large {
+  height: 4em !important;
+}
+
+.button.normal-white-space {
+  overflow: hidden !important;
+  span {
+    white-space: normal !important;
+    max-height: 4em;
+  }
+}
 
 .indicator-red, .indicator-yellow, .indicator-green {
   display: inline-block;
@@ -107,4 +118,9 @@
 .complete-btn {
   width: 100%;
   font-size: 1.5rem;
+}
+@media only screen and (max-width: $small-screen-width) {
+  .complete-btn {
+    font-size: 1rem;
+  }
 }

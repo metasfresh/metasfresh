@@ -5,8 +5,18 @@ const translations = {
     network: {
       noResponse: 'Verbindung Fehler',
     },
+    qrCode: {
+      invalid: 'Ungültiger QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
   },
   general: {
+    Yes: 'Ja',
+    No: 'Nein',
+    OK: 'OK',
+    DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
@@ -16,20 +26,35 @@ const translations = {
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
-    QtyRejected: 'Menge verworfen',
+    QtyRejected: 'verworfen',
     CatchWeight: 'Gewicht',
+    Qty: 'Qty',
+    BestBeforeDate: 'MHD',
+    LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    okText: 'OK',
+    closeText: 'Schließen',
+    clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    noHUFound: 'Kein HU gefunden!',
     filter: {
       showResults: 'Ergebnisse anzeigen (%(count)s)',
       clearFilters: 'Filter löschen',
     },
+    workplace: 'Arbeitsplatz',
+    workstation: 'Arbeitsstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Wechseln zu...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Passwort',
+    },
   },
   logout: 'Abmelden',
   mobileui: {
@@ -46,12 +71,18 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
+      scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
     },
   },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
+    },
+    huManager: {
+      missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
+      scanLuOrLocator: 'Scannen LU oder Lagerort',
     },
     picking: {
       PickingLine: 'Pick Zeile',
@@ -65,6 +96,14 @@ const translations = {
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
+      switchToManualInput: 'Manuell',
+      switchToQrCodeInput: 'QR scannen',
+      skip: 'Überspringen',
+      scanTargetHU: 'Ziel HU scannen',
+      qrcode: {
+        missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
+        differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+      },
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -93,6 +132,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',
@@ -101,6 +142,9 @@ const translations = {
         qtyToIssueRemaining: 'noch offen',
         qtyIssued: 'Menge Ist',
         qtyRejected: 'Menge verworfen',
+        addToFunnel: 'Trichterwechsel',
+        noQtyEnteredCannotAddToStorage: 'Keine Menge eingegeben! Es ist nichts in den Zwischenspeicher zu legen!',
+        cannotAddToStorageDueTo: 'Kann nicht zum temporären Speicher hinzugefügt werden aufgrund von: ',
         step: {
           name: 'HU einfüllen',
         },

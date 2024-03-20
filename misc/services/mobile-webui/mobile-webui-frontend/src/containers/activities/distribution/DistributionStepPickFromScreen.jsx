@@ -14,7 +14,7 @@ import { updateDistributionPickFrom } from '../../../actions/DistributionActions
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
 
 const DistributionStepPickFromScreen = () => {
   const {

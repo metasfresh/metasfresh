@@ -50,6 +50,7 @@ public class JsonPickingJobLine
 	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean allowPickingAnyHU;
+	boolean manuallyClosed;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -67,7 +68,8 @@ public class JsonPickingJobLine
 				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
 				.steps(line.getSteps()
 						.stream()
-						.map(step -> JsonPickingJobStep.of(step, jsonOpts))
-						.collect(ImmutableList.toImmutableList()));
+						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
+						.collect(ImmutableList.toImmutableList()))
+				.manuallyClosed(line.isManuallyClosed());
 	}
 }

@@ -441,4 +441,45 @@ public interface I_M_Picking_Job
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+
+	/**
+	 * Set Handover Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandover_Location_ID (int Handover_Location_ID);
+
+	/**
+	 * Get Handover Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandover_Location_ID();
+
+	String COLUMNNAME_Handover_Location_ID = "Handover_Location_ID";
+
+	/**
+	 * Set Handover Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandover_Partner_ID (int Handover_Partner_ID);
+
+	/**
+	 * Get Handover Partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandover_Partner_ID();
+
+	String COLUMNNAME_Handover_Partner_ID = "Handover_Partner_ID";
 }

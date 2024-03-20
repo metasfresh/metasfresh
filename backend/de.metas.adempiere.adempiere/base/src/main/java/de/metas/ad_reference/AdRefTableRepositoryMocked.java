@@ -10,7 +10,7 @@ public class AdRefTableRepositoryMocked implements AdRefTableRepository
 {
 	private final HashMap<ReferenceId, ADRefTable> map = new HashMap<>();
 
-	public void put(@NonNull ReferenceId referenceId, @NonNull ADRefTable adRefTable)
+	public void put(@NonNull final ReferenceId referenceId, @NonNull final ADRefTable adRefTable)
 	{
 		map.put(referenceId, adRefTable);
 	}

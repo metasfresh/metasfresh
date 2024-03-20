@@ -38,24 +38,25 @@ import java.util.List;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @Schema(description = "Contains a product external identifier and the actual bom formula to insert.")
 public class JsonBOMCreateRequest
 {
-	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode= REQUIRED)
 	String productIdentifier;
 
-	@Schema(description = "Corresponding to `PP_Product_BOM.C_UOM_ID`", required = true)
+	@Schema(description = "Corresponding to `PP_Product_BOM.C_UOM_ID`", requiredMode= REQUIRED)
 	String uomCode;
 
-	@Schema(description = "Corresponding to `PP_Product_BOM.Name`", required = true)
+	@Schema(description = "Corresponding to `PP_Product_BOM.Name`", requiredMode= REQUIRED)
 	String name;
 
-	@Schema(description = "Corresponding to `PP_Product_BOM.isActive`")
+	@Schema(description = "Corresponding to `PP_Product_BOM.isActive`", requiredMode= REQUIRED)
 	Boolean isActive;
 
-	@Schema(description = "Corresponding to `PP_Product_BOM.validFrom")
+	@Schema(description = "Corresponding to `PP_Product_BOM.validFrom", requiredMode= REQUIRED)
 	Instant validFrom;
 
 	@Schema(description = "Corresponding to `M_AttributeSetInstance`")
@@ -64,7 +65,7 @@ public class JsonBOMCreateRequest
 	@Schema(description = "Corresponding to `PP_Product_BOM.S_PreferredResource_ID`")
 	String resourceCode;
 
-	@Schema(required = true)
+	@Schema(requiredMode= REQUIRED)
 	List<JsonCreateBOMLine> bomLines;
 
 	@Builder

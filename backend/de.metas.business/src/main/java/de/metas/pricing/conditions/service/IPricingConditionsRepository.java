@@ -40,5 +40,4 @@ public interface IPricingConditionsRepository extends ISingletonService
 	boolean isSingleProductId(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
 	ProductId retrieveUniqueProductIdForSelectionOrNull(IQueryFilter<I_M_DiscountSchemaBreak> selectionFilter);
-
 }

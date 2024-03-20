@@ -43,12 +43,24 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	private final String defaultValue;
 
 	@lombok.Builder
-	ImmutableTranslatableString(
+	private ImmutableTranslatableString(
 			@Nullable @Singular final Map<String, String> trls,
 			@Nullable final String defaultValue)
 	{
 		this.trlMap = normalizeTrlsMap(trls);
 		this.defaultValue = defaultValue == null ? "" : defaultValue;
+	}
+
+	public static ImmutableTranslatableString ofMap(
+			@Nullable final Map<String, String> trls,
+			@Nullable final String defaultValue)
+	{
+		return new ImmutableTranslatableString(trls, defaultValue);
+	}
+
+	public static ImmutableTranslatableString ofDefaultValue(@Nullable final String defaultValue)
+	{
+		return ofMap(null, defaultValue);
 	}
 
 	private static ImmutableMap<String, String> normalizeTrlsMap(@Nullable final Map<String, String> trls)

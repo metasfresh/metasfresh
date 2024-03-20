@@ -41,6 +41,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -62,6 +63,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Component
 public class C_Invoice // 03771
 {
+	public static final String SYSCONFIG_EXPORT_DATA_ENQUEUE = "de.metas.invoice.export.C_Invoice_CreateExportData.Enqueue";
+	
 	private final PaymentReservationService paymentReservationService;
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -74,7 +77,8 @@ public class C_Invoice // 03771
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	
 	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
@@ -136,7 +140,11 @@ public class C_Invoice // 03771
 		captureMoneyIfNeeded(invoice);
 		ensureUOMsAreNotNull(invoice);
 
-		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+		final boolean enqueueForPossibleExport = sysConfigBL.getBooleanValue(SYSCONFIG_EXPORT_DATA_ENQUEUE, true, invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
+		if(enqueueForPossibleExport)
+		{
+			C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+		}
 	}
 
 	private void autoAllocateAvailablePayments(final I_C_Invoice invoice)

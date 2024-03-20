@@ -1,20 +1,28 @@
 package de.metas.handlingunits.trace;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.OptionalInt;
-
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
+import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
+import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
+import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
+import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
@@ -22,18 +30,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
-import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
-import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
-import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.OptionalInt;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -80,6 +85,10 @@ public class HUTransformTracingTests
 	@Before
 	public void init()
 	{
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+
 		testsBase = new HUTransformTestsBase();
 
 		// with this, we can avoid having to start the spring context

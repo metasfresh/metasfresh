@@ -126,7 +126,7 @@ public class CalloutPayment extends CalloutEngine
 				BigDecimal payAmt = InvoiceOpen.subtract(DiscountAmt);
 
 				final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-				final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocType_ID());
+				final I_C_DocType invoiceDocType = docTypeDAO.getRecordById(invoice.getC_DocType_ID());
 
 				if (X_C_DocType.DOCBASETYPE_APCreditMemo.equals(invoiceDocType.getDocBaseType())
 						|| X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(invoiceDocType.getDocBaseType()))

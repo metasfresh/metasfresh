@@ -10,11 +10,13 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.IMutable;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,14 +50,19 @@ public class RemoveHUFromPickingSlotCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final HuId huId;
+	private final PickingSlotId pickingSlotId;
 
 	@Builder
 	private RemoveHUFromPickingSlotCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId huId)
+			@Nullable final HuId huId,
+			@Nullable final PickingSlotId pickingSlotId)
 	{
+		Check.assume(huId != null || pickingSlotId != null, "At least one of HuId or PickingSlot must be set");
+
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.huId = huId;
+		this.pickingSlotId = pickingSlotId;
 	}
 
 	public void perform()
@@ -84,7 +91,6 @@ public class RemoveHUFromPickingSlotCommand
 
 	private List<PickingCandidate> retrievePickingCandidates(@NonNull final ImmutableSet<HuId> huIds)
 	{
-		return pickingCandidateRepository.getByHUIds(huIds);
+		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(huIds, pickingSlotId);
 	}
-
 }

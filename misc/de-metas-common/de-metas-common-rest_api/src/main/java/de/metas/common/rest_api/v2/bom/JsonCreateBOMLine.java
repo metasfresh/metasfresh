@@ -35,15 +35,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @Schema
 public class JsonCreateBOMLine
 {
-	@Schema(description = PRODUCT_IDENTIFIER_DOC, required = true)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode= REQUIRED)
 	String productIdentifier;
 
-	@Schema(description = "Corresponding to 'PP_Product_BOMLine.QtyBom' and 'PP_Product_BOMLine.C_UOM_ID' ", required = true)
+	@Schema(description = "Corresponding to 'PP_Product_BOMLine.QtyBom' and 'PP_Product_BOMLine.C_UOM_ID' ", requiredMode= REQUIRED)
 	JsonQuantity qtyBom;
 
 	@Schema(description = "Corresponding to 'PP_Product_BOMLine.Line")
@@ -71,7 +72,7 @@ public class JsonCreateBOMLine
 			@JsonProperty("qtyBom") @NonNull final JsonQuantity qtyBom,
 			@JsonProperty("line") @Nullable final Integer line,
 			@JsonProperty("isQtyPercentage") @Nullable final Boolean isQtyPercentage,
-			@JsonProperty("scrap") final BigDecimal scrap,
+			@JsonProperty("scrap") @Nullable final BigDecimal scrap,
 			@JsonProperty("issueMethod") @Nullable final String issueMethod,
 			@JsonProperty("help") @Nullable final String help,
 			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance)

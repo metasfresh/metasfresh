@@ -6,10 +6,6 @@ FROM maven:3.8.4-eclipse-temurin-17 as junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 
-RUN echo $SKIP_MIGRATION_SCRIPTS_TEST
-
-ARG SKIP_MIGRATION_SCRIPTS_TEST=false
-
 RUN apt-get update && apt-get install -y locales mmv && rm -rf /var/lib/apt/lists/* && localedef -i de_DE -c -f UTF-8 -A /usr/share/locale/locale.alias de_DE.UTF-8
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin

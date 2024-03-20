@@ -29,11 +29,11 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -106,9 +106,8 @@ public class ManufacturingJobLoaderAndSaver
 		ppOrders.put(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), ppOrder);
 	}
 
-	public void addToCache(List<PPOrderIssueSchedule> schedules)
+	public void addToCache(@NonNull final PPOrderId ppOrderId, @NonNull final List<PPOrderIssueSchedule> schedules)
 	{
-		final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(schedules, PPOrderIssueSchedule::getPpOrderId);
 		final ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> schedulesByBOMLineId = Multimaps.index(schedules, PPOrderIssueSchedule::getPpOrderBOMLineId);
 		issueSchedules.put(ppOrderId, schedulesByBOMLineId);
 	}
@@ -213,11 +212,13 @@ public class ManufacturingJobLoaderAndSaver
 						.sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
 						.map(this::toRawMaterialsIssueStep)
 						.collect(ImmutableList.toImmutableList()))
+				.seqNo(orderBOMLine.getLine())
 				.build();
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
 	{
+		final String locatorCaption = supportingServices.getLocatorName(schedule.getIssueFromLocatorId());
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
 				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
@@ -226,14 +227,18 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-						.id(schedule.getIssueFromLocatorId())
-						.caption(supportingServices.getLocatorName(schedule.getIssueFromLocatorId()))
-						.build())
+										  .id(schedule.getIssueFromLocatorId())
+										  .caption(locatorCaption)
+										  .qrCode(LocatorQRCode.builder()
+														  .locatorId(schedule.getIssueFromLocatorId())
+														  .caption(locatorCaption)
+														  .build())
+										  .build())
 				.issueFromHU(HUInfo.builder()
-						.id(schedule.getIssueFromHUId())
-						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
-						.huCapacity(getHUCapacity(schedule))
-						.build())
+									 .id(schedule.getIssueFromHUId())
+									 .huCapacity(getHUCapacity(schedule))
+									 .barcode(supportingServices.getQRCodeByHuIdIfExists(schedule.getIssueFromHUId()))
+									 .build())
 				.issued(schedule.getIssued())
 				.build();
 	}

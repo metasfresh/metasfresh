@@ -222,7 +222,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 		if (!hasLines())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// TODO: Add up Amounts

@@ -296,6 +296,11 @@ public class UserSession
 		return getData().getOrgId();
 	}
 
+	public String getOrgName()
+	{
+		return getData().getOrgName();
+	}
+
 	public String getAD_Language()
 	{
 		return getData().getAdLanguage();
@@ -434,7 +439,7 @@ public class UserSession
 		return oldDefaultBoilerPlate;
 	}
 
-	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld (final @Nullable ConditionsId defaultFlatrateConditionsId)
+	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld(final @Nullable ConditionsId defaultFlatrateConditionsId)
 	{
 		final InternalUserSessionData data = getData();
 		final ConditionsId oldDefaultFlatrateConditionsId = data.getDefaultFlatrateConditionsId();

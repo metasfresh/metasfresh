@@ -7,6 +7,7 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -14,7 +15,6 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -70,7 +70,7 @@ public class DDOrderAdvisedEventCreator
 			return ImmutableList.of();
 		}
 
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
+		final ProductPlanning productPlanningData = mrpContext.getProductPlanning(); // won't be null; if there was no productPlanningData, we wouldn't be here.
 		final BigDecimal requiredQty = supplyRequiredDescriptor.getMaterialDescriptor().getQuantity();
 		if(!productPlanningData.isLotForLot() && requiredQty.signum() <= 0)
 		{
@@ -120,7 +120,6 @@ public class DDOrderAdvisedEventCreator
 		final List<DDOrder> ddOrders = ddOrderPojoSupplier
 				.supplyPojos(
 						SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptorToUse, mrpContext));
-
 
 		for (final DDOrder ddOrder : ddOrders)
 		{

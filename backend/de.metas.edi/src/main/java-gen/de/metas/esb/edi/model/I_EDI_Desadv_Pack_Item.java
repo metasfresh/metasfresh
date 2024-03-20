@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.esb.edi.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for EDI_Desadv_Pack_Item
  *  @author metasfresh (generated) 
@@ -121,52 +98,6 @@ public interface I_EDI_Desadv_Pack_Item
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set EDI_Desadv_Pack.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEDI_Desadv_Pack_ID (int EDI_Desadv_Pack_ID);
-
-	/**
-	 * Get EDI_Desadv_Pack.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getEDI_Desadv_Pack_ID();
-
-	I_EDI_Desadv_Pack getEDI_Desadv_Pack();
-
-	void setEDI_Desadv_Pack(I_EDI_Desadv_Pack EDI_Desadv_Pack);
-
-	ModelColumn<I_EDI_Desadv_Pack_Item, I_EDI_Desadv_Pack> COLUMN_EDI_Desadv_Pack_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_Desadv_Pack_ID", I_EDI_Desadv_Pack.class);
-	String COLUMNNAME_EDI_Desadv_Pack_ID = "EDI_Desadv_Pack_ID";
-
-	/**
-	 * Set EDI_Desadv_Pack_Item.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEDI_Desadv_Pack_Item_ID (int EDI_Desadv_Pack_Item_ID);
-
-	/**
-	 * Get EDI_Desadv_Pack_Item.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getEDI_Desadv_Pack_Item_ID();
-
-	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_EDI_Desadv_Pack_Item_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_Desadv_Pack_Item_ID", null);
-	String COLUMNNAME_EDI_Desadv_Pack_Item_ID = "EDI_Desadv_Pack_Item_ID";
-
-	/**
 	 * Set DESADV Line.
 	 *
 	 * <br>Type: TableDir
@@ -184,12 +115,58 @@ public interface I_EDI_Desadv_Pack_Item
 	 */
 	int getEDI_DesadvLine_ID();
 
-	I_EDI_DesadvLine getEDI_DesadvLine();
+	de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine();
 
-	void setEDI_DesadvLine(I_EDI_DesadvLine EDI_DesadvLine);
+	void setEDI_DesadvLine(de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine);
 
-	ModelColumn<I_EDI_Desadv_Pack_Item, I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_DesadvLine_ID", I_EDI_DesadvLine.class);
+	ModelColumn<I_EDI_Desadv_Pack_Item, de.metas.esb.edi.model.I_EDI_DesadvLine> COLUMN_EDI_DesadvLine_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_DesadvLine_ID", de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	String COLUMNNAME_EDI_DesadvLine_ID = "EDI_DesadvLine_ID";
+
+	/**
+	 * Set EDI_Desadv_Pack.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEDI_Desadv_Pack_ID (int EDI_Desadv_Pack_ID);
+
+	/**
+	 * Get EDI_Desadv_Pack.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getEDI_Desadv_Pack_ID();
+
+	de.metas.esb.edi.model.I_EDI_Desadv_Pack getEDI_Desadv_Pack();
+
+	void setEDI_Desadv_Pack(de.metas.esb.edi.model.I_EDI_Desadv_Pack EDI_Desadv_Pack);
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, de.metas.esb.edi.model.I_EDI_Desadv_Pack> COLUMN_EDI_Desadv_Pack_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_Desadv_Pack_ID", de.metas.esb.edi.model.I_EDI_Desadv_Pack.class);
+	String COLUMNNAME_EDI_Desadv_Pack_ID = "EDI_Desadv_Pack_ID";
+
+	/**
+	 * Set Pack Item.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEDI_Desadv_Pack_Item_ID (int EDI_Desadv_Pack_Item_ID);
+
+	/**
+	 * Get Pack Item.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getEDI_Desadv_Pack_Item_ID();
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_EDI_Desadv_Pack_Item_ID = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "EDI_Desadv_Pack_Item_ID", null);
+	String COLUMNNAME_EDI_Desadv_Pack_Item_ID = "EDI_Desadv_Pack_Item_ID";
 
 	/**
 	 * Set TU packaging-GTIN.
@@ -199,7 +176,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGTIN_TU_PackingMaterial (@Nullable String GTIN_TU_PackingMaterial);
+	void setGTIN_TU_PackingMaterial (@Nullable java.lang.String GTIN_TU_PackingMaterial);
 
 	/**
 	 * Get TU packaging-GTIN.
@@ -209,7 +186,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGTIN_TU_PackingMaterial();
+	@Nullable java.lang.String getGTIN_TU_PackingMaterial();
 
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_GTIN_TU_PackingMaterial = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "GTIN_TU_PackingMaterial", null);
 	String COLUMNNAME_GTIN_TU_PackingMaterial = "GTIN_TU_PackingMaterial";
@@ -244,7 +221,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLotNumber (@Nullable String LotNumber);
+	void setLotNumber (@Nullable java.lang.String LotNumber);
 
 	/**
 	 * Get Lot number.
@@ -253,7 +230,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getLotNumber();
+	@Nullable java.lang.String getLotNumber();
 
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_LotNumber = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "LotNumber", null);
 	String COLUMNNAME_LotNumber = "LotNumber";
@@ -288,7 +265,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setM_HU_PackagingCode_TU_Text (@Nullable String M_HU_PackagingCode_TU_Text);
+	void setM_HU_PackagingCode_TU_Text (@Nullable java.lang.String M_HU_PackagingCode_TU_Text);
 
 	/**
 	 * Get M_HU_PackagingCode_TU_Text.
@@ -297,7 +274,7 @@ public interface I_EDI_Desadv_Pack_Item
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	@Nullable String getM_HU_PackagingCode_TU_Text();
+	@Nullable java.lang.String getM_HU_PackagingCode_TU_Text();
 
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_M_HU_PackagingCode_TU_Text = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "M_HU_PackagingCode_TU_Text", null);
 	String COLUMNNAME_M_HU_PackagingCode_TU_Text = "M_HU_PackagingCode_TU_Text";
@@ -378,29 +355,6 @@ public interface I_EDI_Desadv_Pack_Item
 	String COLUMNNAME_MovementQty = "MovementQty";
 
 	/**
-	 * Set Qty CU per TU.
-	 * Number of CUs per package (usually TU)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyCU (@Nullable BigDecimal QtyCU);
-
-	/**
-	 * Get Qty CU per TU.
-	 * Number of CUs per package (usually TU)
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyCU();
-
-	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_QtyCU = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "QtyCU", null);
-	String COLUMNNAME_QtyCU = "QtyCU";
-
-	/**
 	 * Set Menge CU/LU.
 	 *
 	 * <br>Type: Quantity
@@ -420,6 +374,73 @@ public interface I_EDI_Desadv_Pack_Item
 
 	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_QtyCUsPerLU = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "QtyCUsPerLU", null);
 	String COLUMNNAME_QtyCUsPerLU = "QtyCUsPerLU";
+
+	/**
+	 * Set Qty CU per LU  (pricing-UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCUsPerLU_InInvoiceUOM (@Nullable BigDecimal QtyCUsPerLU_InInvoiceUOM);
+
+	/**
+	 * Get Qty CU per LU  (pricing-UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyCUsPerLU_InInvoiceUOM();
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_QtyCUsPerLU_InInvoiceUOM = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "QtyCUsPerLU_InInvoiceUOM", null);
+	String COLUMNNAME_QtyCUsPerLU_InInvoiceUOM = "QtyCUsPerLU_InInvoiceUOM";
+
+	/**
+	 * Set Qty CU per TU.
+	 * Number of CUs per package (usually TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCUsPerTU (@Nullable BigDecimal QtyCUsPerTU);
+
+	/**
+	 * Get Qty CU per TU.
+	 * Number of CUs per package (usually TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyCUsPerTU();
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_QtyCUsPerTU = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "QtyCUsPerTU", null);
+	String COLUMNNAME_QtyCUsPerTU = "QtyCUsPerTU";
+
+	/**
+	 * Set Qty CU per TU  (pricing-UOM).
+	 * Number of CUs per package (usually TU) in pricing-UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCUsPerTU_InInvoiceUOM (@Nullable BigDecimal QtyCUsPerTU_InInvoiceUOM);
+
+	/**
+	 * Get Qty CU per TU  (pricing-UOM).
+	 * Number of CUs per package (usually TU) in pricing-UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyCUsPerTU_InInvoiceUOM();
+
+	ModelColumn<I_EDI_Desadv_Pack_Item, Object> COLUMN_QtyCUsPerTU_InInvoiceUOM = new ModelColumn<>(I_EDI_Desadv_Pack_Item.class, "QtyCUsPerTU_InInvoiceUOM", null);
+	String COLUMNNAME_QtyCUsPerTU_InInvoiceUOM = "QtyCUsPerTU_InInvoiceUOM";
 
 	/**
 	 * Set Packaging capacity.

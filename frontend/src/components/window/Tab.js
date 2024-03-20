@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
 import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
@@ -14,24 +14,30 @@ const Tab = ({
   docId,
   queryOnActivate,
   orderBy,
-  fetchTab,
 }) => {
+  const dispatch = useDispatch();
   useEffect(() => {
-    if (docId && queryOnActivate) {
+    let fetchTabRequest = null;
+    if (docId && queryOnActivate && onChange) {
       const query = toOrderBysCommaSeparatedString(orderBy);
 
+      fetchTabRequest = dispatch(fetchTab({ tabId, windowId, docId, query }));
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query }).then((res) => {
+        fetchTabRequest.then((res) => {
           if (res.length) {
-            onChange && onChange();
+            onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query }).then(() => {
-          onChange && onChange();
+        fetchTabRequest.then(() => {
+          onChange();
         });
       }
     }
+
+    return () => {
+      fetchTabRequest?.cancel?.();
+    };
   }, [
     docId,
     queryOnActivate,
@@ -54,10 +60,6 @@ Tab.propTypes = {
   docId: PropTypes.string,
   queryOnActivate: PropTypes.bool,
   orderBy: PropTypes.array,
-  fetchTab: PropTypes.func.isRequired,
 };
 
-export { Tab };
-export default connect(null, {
-  fetchTab,
-})(Tab);
+export default Tab;

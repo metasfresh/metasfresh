@@ -481,4 +481,5 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		return attributeInstance.getValue();
 	}
+
 }

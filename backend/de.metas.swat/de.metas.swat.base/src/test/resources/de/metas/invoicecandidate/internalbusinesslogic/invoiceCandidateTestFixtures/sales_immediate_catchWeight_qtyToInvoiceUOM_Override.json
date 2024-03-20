@@ -1,0 +1,104 @@
+{
+  "id": 10,
+  "soTrx": "SALES",
+  "product": {
+    "id": 300000,
+    "stocked": true
+  },
+  "uomId": 110000,
+  "orderedData": {
+    "qty": {
+      "qty": "60",
+      "uomId": 110000,
+      "sourceQty": "60",
+      "sourceUomId": 110000
+    },
+    "qtyInStockUom": {
+      "qty": "15",
+      "uomId": 100000,
+      "sourceQty": "15",
+      "sourceUomId": 100000
+    }
+  },
+  "deliveredData": {
+    "shipmentData": {
+      "productId": 300000,
+      "qtyInStockUom": {
+        "qty": "15",
+        "uomId": 100000
+      },
+      "qtyNominal": {
+        "qty": "60",
+        "uomId": 110000
+      },
+      "qtyCatch": {
+        "qty": "62",
+        "uomId": 110000
+      },
+      "deliveredQtyItems": [
+        {
+          "qtyInStockUom": {
+            "qty": "10",
+            "uomId": 100000
+          },
+          "qtyNominal": {
+            "qty": "40",
+            "uomId": 110000
+          },
+          "qtyCatch": {
+            "qty": "43",
+            "uomId": 110000
+          },
+          "qtyOverride": null
+        },
+        {
+          "qtyInStockUom": {
+            "qty": "5",
+            "uomId": 100000
+          },
+          "qtyNominal": {
+            "qty": "20",
+            "uomId": 110000
+          },
+          "qtyCatch": {
+            "qty": "19",
+            "uomId": 110000
+          },
+          "qtyOverride": null
+        }
+      ]
+    }
+  },
+  "pickedData": {
+    "productId": 300000,
+    "qtyPicked": {
+      "qty": "0",
+      "uomId": 100000
+    },
+    "qtyPickedInUOM": {
+      "qty": "0",
+      "uomId": 110000
+    }
+  },
+  "invoicedData": {
+    "qtys": {
+      "productId": 300000,
+      "stockQty": {
+        "qty": "0",
+        "uomId": 100000
+      },
+      "uomQty": {
+        "qty": "0",
+        "uomId": 110000
+      }
+    },
+    "netAmount": {
+      "value": 0,
+      "currencyId": 200000
+    }
+  },
+  "invoicableQtyBasedOn": "CatchWeight",
+  "invoiceRule": "Immediate",
+  "qualityDiscountOverride": null,
+  "qtyToInvoiceOverrideInUom": "46.879"
+}

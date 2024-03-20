@@ -62,7 +62,7 @@ class PrintingDataTest
 		final PrintPackageBL printPackageBL = new PrintPackageBL(
 				new PrintingDataFactory(
 						new HardwarePrinterRepository(),
-		 				new ArchiveFileNameService()));
+						new ArchiveFileNameService()));
 		Services.registerService(IPrintPackageBL.class, printPackageBL);
 	}
 
@@ -92,16 +92,16 @@ class PrintingDataTest
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(401))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
-						.initialPageFrom(1)
-						.initialPageTo(100)
-						.printer(printer).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(401))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+								 .initialPageFrom(1)
+								 .initialPageTo(100)
+								 .printer(printer).build())
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
-						.lastPages(1)
-						.printer(printer).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(402))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
+								 .lastPages(1)
+								 .printer(printer).build())
 				.build();
 
 		// then
@@ -146,26 +146,27 @@ class PrintingDataTest
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
 				.data(binaryPdfData)
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(401))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
-						.initialPageFrom(1)
-						.initialPageTo(3)
-						.printer(printer)
-						.trayId(tray1Id).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(401))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+								 .initialPageFrom(1)
+								 .initialPageTo(3)
+								 .printer(printer)
+								 .trayId(tray1Id).build())
 				.segment(PrintingSegment.builder()
-						.printerRoutingId(PrinterRoutingId.ofRepoId(402))
-						.routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
-						.lastPages(2)
-						.printer(printer)
-						.trayId(tray2Id).build())
+								 .printerRoutingId(PrinterRoutingId.ofRepoId(402))
+								 .routingType(I_AD_PrinterRouting.ROUTINGTYPE_LastPages)
+								 .lastPages(2)
+								 .printer(printer)
+								 .copies(2)
+								 .trayId(tray2Id).build())
 				.build();
 
 		// then
 		assertThat(printingData.getNumberOfPages()).isEqualTo(3);
-		assertThat(printingData.getSegments()).extracting("printerRoutingId.repoId", "pageFrom", "pageTo")
+		assertThat(printingData.getSegments()).extracting("printerRoutingId.repoId", "pageFrom", "pageTo", "copies")
 				// the segment we first added has to be discarded, because the "LastPages" one takes precedence and there are no paged left to cover for the first segment
 				.containsExactly(
-						tuple(401, 1, 1),
-						tuple(402, 2, 3));
+						tuple(401, 1, 1, 1),
+						tuple(402, 2, 3, 2));
 	}
 }

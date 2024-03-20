@@ -89,7 +89,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	public static final String FILTER_Any = "%";
 	private static final String FILTER_Any_SQL = "'%'";
 
-	public static final CtxName PARAM_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
+	public static final CtxName PARAM_AD_Language = CtxNames.parseNotNull(Env.CTXNAME_AD_Language);
 	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
 	public static final CtxName PARAM_OrgAccessSql = CtxNames.parse("OrgAccessSql");
@@ -592,7 +592,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			putValue(PARAM_FilterSql, convertFilterToSql(filter));
 			putValue(PARAM_FilterSqlWithoutWildcards, convertFilterToSqlWithoutWildcards(filter));
 			putValue(SqlForFetchingLookups.PARAM_Offset, offset);
-			putValue(SqlForFetchingLookups.PARAM_Limit, limit);
+			putValue(SqlForFetchingLookups.PARAM_Limit, Math.max(limit, 0));
 
 			return this;
 		}
@@ -673,7 +673,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			{
 				if (failIfNotFound)
 				{
-					throw new ExpressionEvaluationException("@NotFound@: " + variableName);
+					throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + variableName);
 				}
 			}
 			else

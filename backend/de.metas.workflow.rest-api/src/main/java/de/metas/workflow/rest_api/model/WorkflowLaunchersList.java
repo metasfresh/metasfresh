@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -16,11 +17,14 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import static de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
+
 @EqualsAndHashCode
 @ToString
 public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
+	@Getter @NonNull private final ImmutableList<OrderBy> orderByFields;
 	@Getter @Nullable private final PrintableQRCode filterByQRCode;
 
 	@Getter
@@ -29,10 +33,12 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	@Builder
 	private WorkflowLaunchersList(
 			@NonNull final ImmutableList<WorkflowLauncher> launchers,
+			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
 			@Nullable final PrintableQRCode filterByQRCode,
 			@NonNull final Instant timestamp)
 	{
 		this.launchers = launchers;
+		this.orderByFields = orderByFields;
 		this.filterByQRCode = filterByQRCode;
 		this.timestamp = timestamp;
 	}

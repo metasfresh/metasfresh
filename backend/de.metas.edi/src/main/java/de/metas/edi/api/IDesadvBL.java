@@ -99,4 +99,9 @@ public interface IDesadvBL extends ISingletonService
 	 * Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold.
 	 */
 	ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList<I_EDI_Desadv> desadvRecords);
+
+	/**
+	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
+	 */
+	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
 }

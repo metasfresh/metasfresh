@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -75,8 +76,10 @@ class PricingConditionsTestUtils
 	{
 		final I_M_DiscountSchema schema = newInstance(I_M_DiscountSchema.class);
 		schema.setBreakValueType(X_M_DiscountSchema.BREAKVALUETYPE_Quantity);
+		schema.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		save(schema);
 		return schema;
+
 	}
 
 	public static I_M_DiscountSchemaBreak createBreak(final I_M_DiscountSchema schema, final int seqNo)

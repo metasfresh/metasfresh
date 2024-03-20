@@ -34,13 +34,14 @@ import javax.annotation.Nullable;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @Builder(toBuilder = true)
 @Schema(description = "Contains an external id and the actual product to insert or update. The response will contain the given external id.")
 public class JsonRequestProductUpsertItem
 {
-	@Schema(description = PRODUCT_IDENTIFIER_DOC)
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode = REQUIRED)
 	@NonNull
 	String productIdentifier;
 
@@ -59,7 +60,7 @@ public class JsonRequestProductUpsertItem
 	@Nullable
 	Boolean isReadOnlyInMetasfresh;
 
-	@Schema
+	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode = REQUIRED)
 	@NonNull
 	JsonRequestProduct requestProduct;
 

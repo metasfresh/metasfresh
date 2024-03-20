@@ -8,7 +8,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -57,13 +56,13 @@ public interface IMaterialPlanningContext extends IContextAware
 	void setAttributeSetInstanceId(@NonNull AttributeSetInstanceId attributeSetInstanceId);
 	//@formatter:on
 
-	I_PP_Product_Planning getProductPlanning();
+	ProductPlanning getProductPlanning();
 
-	void setProductPlanning(I_PP_Product_Planning productPlanningRecord);
+	void setProductPlanning(ProductPlanning productPlanningRecord);
 
 	void assertContextConsistent();
 
-	I_PP_Product_Planning getPpOrderProductPlanning();
+	ProductPlanning getPpOrderProductPlanning();
 
-	void setPpOrderProductPlanning(@Nullable I_PP_Product_Planning ppOrderProductPlanning);
+	void setPpOrderProductPlanning(@Nullable ProductPlanning ppOrderProductPlanning);
 }
