@@ -12,10 +12,10 @@ export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activity
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
 
-export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, qrCode }) =>
-  toUrl({
-    urlBase: getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`,
-    queryParams: { qrCode },
+export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, qrCode, next }) =>
+  toUrl(getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`, {
+    qrCode,
+    next,
   });
 
 export const pickingStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) =>

@@ -13,17 +13,15 @@ export const unboxAxiosResponse = (axiosResponse) => {
   }
 };
 
-export const toQueryString = (query) => {
-  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+export const toQueryString = (queryParams) => {
+  return queryString.stringify(queryParams, { arrayFormat: 'comma', skipNull: true });
 };
 
-export const toUrl = ({ urlBase, queryParams }) => {
-  let url = urlBase;
+export const toUrlQueryParams = (queryParams) => {
+  const queryParamsStr = toQueryString(queryParams);
+  return queryParamsStr ? `?${queryParamsStr}` : '';
+};
 
-  const queryParamsStr = queryParams ? toQueryString(queryParams) : null;
-  if (queryParamsStr) {
-    url += '?' + queryParamsStr;
-  }
-
-  return url;
+export const toUrl = (path, queryParams) => {
+  return `${path}${toUrlQueryParams(queryParams)}`;
 };
