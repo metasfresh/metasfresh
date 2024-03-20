@@ -49,6 +49,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -79,6 +80,7 @@ import java.util.Optional;
 
 public class PickingJobPickCommand
 {
+	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -584,7 +586,8 @@ public class PickingJobPickCommand
 		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
 		if (pickFromHUS.isEmpty())
 		{
-			throw new AdempiereException("HU cannot be picked!");
+			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG)
+					.markAsUserValidationError();
 		}
 	}
 
