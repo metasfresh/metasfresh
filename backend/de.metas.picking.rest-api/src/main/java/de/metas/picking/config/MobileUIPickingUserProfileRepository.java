@@ -73,6 +73,7 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.onlyBPartnerIds(onlyBPartnerIds)
+				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))

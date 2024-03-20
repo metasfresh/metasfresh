@@ -127,7 +127,7 @@ public class PickFromHUsSupplier
 	private ImmutableSet<HuId> getVHUIdsAlreadyReserved(@NonNull final PickFromHUsGetRequest request)
 	{
 		return request.getReservationRef()
-				.flatMap(huReservationService::getByDocumentRef)
+				.flatMap(reservationRef -> huReservationService.getByDocumentRef(reservationRef, request.getOnlyHuIds()))
 				.map(HUReservation::getVhuIds)
 				.orElseGet(ImmutableSet::of);
 	}
@@ -160,6 +160,11 @@ public class PickFromHUsSupplier
 			// TODO: shall we consider only storage relevant attributes?
 			vhuQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(request.getPartnerId(), request.getProductId(), attributeSet);
 			vhuQuery.allowSqlWhenFilteringAttributes(huReservationService.isAllowSqlWhenFilteringHUAttributes());
+		}
+
+		if (request.getOnlyHuIds() != null)
+		{
+			vhuQuery.addOnlyHUIds(request.getOnlyHuIds());
 		}
 
 		final ImmutableSet<HuId> result = vhuQuery.listIds();

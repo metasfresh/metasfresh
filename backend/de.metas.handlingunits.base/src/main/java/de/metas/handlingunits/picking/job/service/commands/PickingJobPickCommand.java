@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -37,13 +38,20 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -67,6 +75,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PickingJobPickCommand
 {
@@ -78,12 +87,14 @@ public class PickingJobPickCommand
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-
+	@NonNull private final HUReservationService huReservationService;
 	//
 	// Params
 	@NonNull private final PickingJobLineId lineId;
@@ -113,6 +124,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
+			final @NonNull HUReservationService huReservationService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId pickingJobLineId,
@@ -137,6 +149,7 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 		this.huQRCodesService = huQRCodesService;
+		this.huReservationService = huReservationService;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
@@ -220,6 +233,8 @@ public class PickingJobPickCommand
 
 	private void executeInTrx()
 	{
+		validatePickedHU();
+
 		createStepIfNeeded();
 
 		final ImmutableList<PickedToHU> pickedHUs = createAndProcessPickingCandidate();
@@ -551,6 +566,59 @@ public class PickingJobPickCommand
 					.setParameter("LMQRCode", pickFromHUQRCode)
 					.setParameter("catchWeightBD", catchWeightBD);
 		}
+	}
+
+	private void validatePickedHU()
+	{
+		final HuId huIdToBePicked = getHuIdToBePicked();
+		final I_M_HU hu = handlingUnitsDAO.getById(huIdToBePicked);
+
+		final boolean isDestroyed = handlingUnitsBL.isDestroyed(hu);
+		if (isDestroyed)
+		{
+			return;
+		}
+
+		final PickFromHUsSupplier pickFromHUsSupplier = PickFromHUsSupplier.builder()
+				.huReservationService(huReservationService)
+				.build();
+
+		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(hu));
+		if (pickFromHUS.isEmpty())
+		{
+			throw new AdempiereException("HU cannot be picked!");
+		}
+	}
+
+	@NonNull
+	private HuId getHuIdToBePicked()
+	{
+		if (stepId != null)
+		{
+			final PickingJobStep step = pickingJob.getStepById(stepId);
+			step.getPickFrom(stepPickFromKey).assertNotPicked();
+			final PickingJobStepPickFrom pickFrom = step.getPickFrom(stepPickFromKey);
+			return pickFrom.getPickFromHUId();
+		}
+		return huQRCodesService.getHuIdByQRCode(getPickFromHUQRCode());
+	}
+
+	@NonNull
+	private PickFromHUsGetRequest getPickFromHUValidateRequest(@NonNull final I_M_HU hu)
+	{
+		final Packageable packageable = packagingDAO.getByShipmentScheduleId(getShipmentScheduleId());
+
+		return PickFromHUsGetRequest.builder()
+				.pickFromLocatorId(warehouseBL.getLocatorIdByRepoId(hu.getM_Locator_ID()))
+				.partnerId(packageable.getCustomerId())
+				.productId(packageable.getProductId())
+				.asiId(packageable.getAsiId())
+				.bestBeforePolicy(packageable.getBestBeforePolicy()
+										  .orElseGet(() -> bPartnerBL.getBestBeforePolicy(packageable.getCustomerId())))
+				.reservationRef(Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId))
+				.enforceMandatoryAttributesOnPicking(true)
+				.onlyHuIds(ImmutableSet.of(HuId.ofRepoId(hu.getM_HU_ID())))
+				.build();
 	}
 
 	//

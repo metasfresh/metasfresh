@@ -337,13 +337,16 @@
 		private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 		{
 			final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
-					.map(json -> fromJson(json, pickingJob))
+					.map(json -> fromJson(json, pickingJob, mobileUIPickingUserProfileRepository.getProfile()))
 					.collect(ImmutableList.toImmutableList());
 
 			return pickingJobRestService.processStepEvents(pickingJob, events);
 		}
 
-		private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
+		private static PickingJobStepEvent fromJson(
+				@NonNull final JsonPickingStepEvent json,
+				@NonNull final PickingJob pickingJob,
+				@NonNull final MobileUIPickingUserProfile pickingUserProfile)
 		{
 			final IHUQRCode qrCode = HUQRCodesService.toHUQRCode(json.getHuQRCode());
 
@@ -362,7 +365,7 @@
 					.huQRCode(qrCode)
 					.qtyPicked(json.getQtyPicked())
 					.isPickWholeTU(json.isPickWholeTU())
-					.checkIfAlreadyPacked(json.getCheckIfAlreadyPacked() != null ? json.getCheckIfAlreadyPacked() : true)
+					.checkIfAlreadyPacked(isCheckIfAlreadyPacked(json, pickingUserProfile))
 					.qtyRejected(json.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 					.catchWeight(json.getCatchWeight())
@@ -374,6 +377,17 @@
 							.map(HUQRCode::fromGlobalQRCodeJsonString)
 							.orElse(null))
 					.build();
+		}
+
+		private static boolean isCheckIfAlreadyPacked(
+				@NonNull final JsonPickingStepEvent json,
+				@NonNull final MobileUIPickingUserProfile pickingUserProfile)
+		{
+			if (pickingUserProfile.isAlwaysSplitHUsEnabled())
+			{
+				return false;
+			}
+			return json.getCheckIfAlreadyPacked() == null || json.getCheckIfAlreadyPacked();
 		}
 
 		private static void assertPickingActivityType(
