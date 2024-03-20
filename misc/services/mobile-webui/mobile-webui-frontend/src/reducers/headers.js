@@ -1,5 +1,8 @@
 import * as types from '../constants/HeaderActionTypes';
+import { shallowEqual, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 
+const DEFAULT_homeIconClassName = 'fas fa-home';
 export const initialState = {
   entries: [
     {
@@ -7,6 +10,8 @@ export const initialState = {
       hidden: true,
       values: [],
       userInstructions: null,
+      isHomeStop: true,
+      homeIconClassName: DEFAULT_homeIconClassName,
     },
   ],
 };
@@ -15,7 +20,7 @@ const launchersUrlRegExp = /\/\w+\/launchers/gi;
 
 const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 
-const getHeaderEntries = (state) => state.headers.entries;
+const getHeaderEntries = (state) => state.headers.entries ?? [];
 
 export const getEntryItemsFromState = (state) => {
   const headersEntries = getHeaderEntries(state);
@@ -52,12 +57,42 @@ export const getUserInstructionsFromHeaders = (state) => {
   return state.headers.entries.reduce((acc, entry) => (entry.userInstructions ? entry.userInstructions : acc), null);
 };
 
+export const useHomeLocation = () => {
+  const { url: currentLocation } = useRouteMatch();
+  return useSelector((state) => getHomeLocation({ state, currentLocation }), shallowEqual);
+};
+
+const getHomeLocation = ({ state, currentLocation }) => {
+  const headersEntries = getHeaderEntries(state);
+  //console.log('getHomeLocation', { headersEntries, currentLocation });
+
+  for (let i = headersEntries.length - 1; i >= 0; i--) {
+    const entry = headersEntries[i];
+
+    if (entry.location === currentLocation) {
+      continue;
+    }
+
+    if (entry.isHomeStop) {
+      //console.log('getHomeLocation - returning', { entry });
+      return {
+        location: entry.location,
+        iconClassName: entry.homeIconClassName ?? DEFAULT_homeIconClassName,
+      };
+    }
+  }
+
+  // shall not happen because we shall get to first element which is set by initialState
+  //console.log('getHomeLocation - returning default');
+  return { location: '/', iconClassName: DEFAULT_homeIconClassName };
+};
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, caption, values, userInstructions } = payload;
+      const { location, caption, values, userInstructions, isHomeStop, homeIconClassName } = payload;
 
       // if there are no header values, there's no reason to block space
       const hidden = !values.length;
@@ -68,7 +103,7 @@ export default function reducer(state = initialState, action) {
       let newEntries = state.entries.map((entry) => {
         if (entry.location === location) {
           existingEntryUpdated = true;
-          return { ...entry, caption, values, userInstructions, hidden };
+          return { ...entry, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
         } else {
           return entry;
         }
@@ -81,7 +116,7 @@ export default function reducer(state = initialState, action) {
           inclusive: false,
         });
       } else {
-        const newEntry = { location, caption, values, userInstructions, hidden };
+        const newEntry = { location, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
         newEntries.push(newEntry);
         // console.log('added newEntry: ', newEntry);
       }

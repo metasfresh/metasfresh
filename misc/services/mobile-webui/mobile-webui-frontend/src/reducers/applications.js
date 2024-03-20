@@ -1,5 +1,6 @@
 import * as types from '../constants/ApplicationsActionTypes';
 import { shallowEqual, useSelector } from 'react-redux';
+import { useRouteMatch } from 'react-router-dom';
 
 const initialState = {
   availableApplications: {},
@@ -15,7 +16,10 @@ export const getApplicationInfoById = ({ state, applicationId }) => {
 };
 
 export const useApplicationInfo = ({ applicationId }) => {
-  return useSelector((state) => getApplicationInfoById({ state, applicationId }), shallowEqual);
+  const routerMatch = useRouteMatch();
+  const applicationIdEffective = applicationId ? applicationId : routerMatch.params.applicationId;
+
+  return useSelector((state) => getApplicationInfoById({ state, applicationId: applicationIdEffective }), shallowEqual);
 };
 
 export default function applications(state = initialState, action) {
