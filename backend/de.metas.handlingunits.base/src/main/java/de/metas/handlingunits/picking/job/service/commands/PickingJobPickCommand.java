@@ -609,6 +609,10 @@ public class PickingJobPickCommand
 	{
 		final Packageable packageable = packagingDAO.getByShipmentScheduleId(getShipmentScheduleId());
 
+		final Optional<HUReservationDocRef> reservationDocRef = stepId != null
+				? Optional.of(HUReservationDocRef.ofPickingJobStepId(stepId))
+				: Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId);
+
 		return PickFromHUsGetRequest.builder()
 				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
 				.partnerId(packageable.getCustomerId())
@@ -616,7 +620,7 @@ public class PickingJobPickCommand
 				.asiId(packageable.getAsiId())
 				.bestBeforePolicy(packageable.getBestBeforePolicy()
 										  .orElseGet(() -> bPartnerBL.getBestBeforePolicy(packageable.getCustomerId())))
-				.reservationRef(Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId))
+				.reservationRef(reservationDocRef)
 				.enforceMandatoryAttributesOnPicking(true)
 				.onlyHuIds(ImmutableSet.of(huId))
 				.build();
