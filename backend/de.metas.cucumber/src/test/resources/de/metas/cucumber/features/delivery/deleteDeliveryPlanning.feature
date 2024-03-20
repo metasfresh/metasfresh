@@ -86,6 +86,6 @@ Feature: Delete delivery planning
       | M_ShippingPackage_ID.Identifier | M_Package_ID.Identifier | M_ShipperTransportation_ID.Identifier | C_BPartner_Location_ID.Identifier | ActualLoadQty | OPT.C_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.C_OrderLine_ID.Identifier |
       | shippingPackageDelete           | packageDelete           | deliveryInstructionDelete             | customerLocation                  | 0             | customer                     | product                     | orderLineDelete               |
     And delete M_Delivery_Planning:
-      | M_Delivery_Planning_ID.Identifier | OPT.ErrorMessage                                                 |
-      | deliveryPlanningDelete_1          | Line can not be deleted as it is referenced to another document. |
-      | deliveryPlanningDelete_2          |                                                                  |
+      | M_Delivery_Planning_ID.Identifier | OPT.ErrorCode                                                   |
+      | deliveryPlanningDelete_1          | de.metas.deliveryplanning.M_Delivery_Planning_AlreadyReferenced |
+      | deliveryPlanningDelete_2          |                                                                 |
