@@ -11,7 +11,7 @@ export const getAvailableApplicationsArray = (state) => {
   return availableApplicationsById ? Object.values(availableApplicationsById) : [];
 };
 
-export const getApplicationInfoById = ({ state, applicationId }) => {
+const getApplicationInfoById = ({ state, applicationId }) => {
   return state.applications?.availableApplications?.[applicationId];
 };
 
