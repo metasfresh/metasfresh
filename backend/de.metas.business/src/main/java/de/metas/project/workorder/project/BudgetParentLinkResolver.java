@@ -23,6 +23,7 @@
 package de.metas.project.workorder.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectQuery;
@@ -46,15 +47,18 @@ public class BudgetParentLinkResolver
 	@NonNull ISysConfigBL sysConfigBL;
 	@NonNull BudgetProjectRepository budgetProjectRepository;
 	@NonNull String woProjectReferenceExt;
+	@NonNull OrgId orgId;
 
 	public BudgetParentLinkResolver(
 			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final BudgetProjectRepository budgetProjectRepository,
-			@NonNull final String woProjectReferenceExt)
+			@NonNull final String woProjectReferenceExt,
+			@NonNull final OrgId orgId)
 	{
 		this.sysConfigBL = sysConfigBL;
 		this.budgetProjectRepository = budgetProjectRepository;
 		this.woProjectReferenceExt = woProjectReferenceExt;
+		this.orgId = orgId;
 	}
 
 	public Optional<ProjectId> resolve()
@@ -112,7 +116,7 @@ public class BudgetParentLinkResolver
 	@NonNull
 	private List<ProjectId> getMatchingBudgetProjects(@NonNull final String externalIdPattern)
 	{
-		return budgetProjectRepository.getBy(buildBudgetQueryForPattern(externalIdPattern))
+		return budgetProjectRepository.getBy(getBudgetQueryForPattern(externalIdPattern))
 				.stream()
 				.filter(budgetProject -> budgetProject.getExternalId() != null)
 				.filter(budgetProject -> woProjectReferenceExt.contains(budgetProject.getExternalId().getValue() + BUDGET_PARENT_EXTERNAL_ID_ENCLOSING_MARKER))
@@ -121,9 +125,10 @@ public class BudgetParentLinkResolver
 	}
 
 	@NonNull
-	private static BudgetProjectQuery buildBudgetQueryForPattern(@NonNull final String externalIdPattern)
+	private BudgetProjectQuery getBudgetQueryForPattern(@NonNull final String externalIdPattern)
 	{
 		return BudgetProjectQuery.builder()
+				.orgId(orgId)
 				.externalIdPattern(externalIdPattern)
 				.build();
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.project.workorder.interceptor;
 
+import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
@@ -96,6 +97,7 @@ public class C_Project
 				.budgetProjectRepository(budgetProjectRepository)
 				.sysConfigBL(sysConfigBL)
 				.woProjectReferenceExt(woProjectToBeUpdated.getC_Project_Reference_Ext())
+				.orgId(OrgId.ofRepoId(woProjectToBeUpdated.getAD_Org_ID()))
 				.build()
 				.resolve()
 				.map(ProjectId::getRepoId)
