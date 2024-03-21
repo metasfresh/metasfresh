@@ -48,7 +48,7 @@ public class ProcessInstanceResult
 				.instanceId(instanceId);
 	}
 
-	DocumentId instanceId;
+	@NonNull DocumentId instanceId;
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;

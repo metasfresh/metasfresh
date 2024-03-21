@@ -281,7 +281,7 @@ export function sortTab(scope, tabId, field, asc) {
   };
 }
 
-export function updateDataProperty(property, value, scope) {
+function updateDataProperty(property, value, scope) {
   return {
     type: UPDATE_DATA_PROPERTY,
     property,
@@ -444,7 +444,7 @@ export function updateTabLayout(windowId, tabId) {
   };
 }
 
-export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
+function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
   return (dispatch) => {
     dispatch({ type: INIT_WINDOW });
 
