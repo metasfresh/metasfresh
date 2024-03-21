@@ -51,9 +51,11 @@ const PickLineScreen = () => {
 
   const dispatch = useDispatch();
   const onClose = () => {
-    closePickingJobLine({ wfProcessId, lineId }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-    });
+    closePickingJobLine({ wfProcessId, lineId })
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+      })
+      .then(() => history.go(-1)); // go back to Picking Job
   };
 
   const onReOpen = () => {
