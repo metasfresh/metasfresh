@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inout;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -87,7 +88,7 @@ public class ShipmentScheduleQtyExternalPropertyStorage implements IShipmentSche
 		else
 		{
 			// Reserved qty shall always be in VHUs, no need for picking BOM.
-			return huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+			return huReservationRepository.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId), ImmutableSet.of())
 					.map(huRes -> toShipmentScheduleAvailableStockDetail(huRes, sched))
 					.orElse(ImmutableList.of());
 		}
