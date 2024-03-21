@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
@@ -68,6 +69,7 @@ public class PickingJobService
 	@NonNull private final IShipmentService shipmentService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUReservationService huReservationService;
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -312,6 +314,8 @@ public class PickingJobService
 						.pickingCandidateService(pickingCandidateService)
 						.huQRCodesService(huQRCodesService)
 						.inventoryService(inventoryService)
+						.huReservationService(huReservationService)
+						.pickingConfigRepo(pickingConfigRepo)
 						//
 						.pickingJob(pickingJob)
 						.pickingJobLineId(event.getPickingLineId())
