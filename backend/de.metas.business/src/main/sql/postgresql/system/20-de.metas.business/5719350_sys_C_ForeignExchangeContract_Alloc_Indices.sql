@@ -1,0 +1,3 @@
+
+CREATE INDEX if not exists C_ForeignExchangeContract_Alloc_C_Order_ID ON C_ForeignExchangeContract_Alloc (C_Order_ID);
+CREATE INDEX if not exists C_ForeignExchangeContract_Alloc_C_ForeignExchangeContract_ID ON C_ForeignExchangeContract_Alloc (C_ForeignExchangeContract_ID);
