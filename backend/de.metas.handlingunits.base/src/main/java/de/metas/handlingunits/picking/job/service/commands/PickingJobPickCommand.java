@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.IOrderDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -79,6 +81,8 @@ public class PickingJobPickCommand
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
+
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -126,9 +130,9 @@ public class PickingJobPickCommand
 			final boolean isPickWholeTU,
 			final @Nullable Boolean checkIfAlreadyPacked,
 			final boolean createInventoryForMissingQty,
-			boolean isSetBestBeforeDate,
+			final boolean isSetBestBeforeDate,
 			final @Nullable LocalDate bestBeforeDate,
-			boolean isSetLotNo,
+			final boolean isSetLotNo,
 			final @Nullable String lotNo)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -245,6 +249,7 @@ public class PickingJobPickCommand
 		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
 		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
 		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
+		final PackToSpec packToSpec = PackToSpec.ofTUPackingInstructionsId(HUPIItemProductId.ofRepoIdOrNone(orderDAO.getOrderLineById(line.getSalesOrderAndLineId()).getM_HU_PI_Item_Product_ID()));
 
 		pickingJob = pickingJob.withNewStep(
 				PickingJob.AddStepRequest.builder()
@@ -260,7 +265,7 @@ public class PickingJobPickCommand
 								.id(pickFromHUId)
 								.qrCode(pickFromHUQRCode)
 								.build())
-						.packToSpec(PackToSpec.VIRTUAL)
+						.packToSpec(packToSpec)
 						.build()
 		);
 
