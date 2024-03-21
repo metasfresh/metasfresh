@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -56,6 +57,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -98,6 +100,8 @@ public class PickingJobPickCommand
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
+
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -271,6 +275,7 @@ public class PickingJobPickCommand
 		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
 		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
 		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
+		final PackToSpec packToSpec = PackToSpec.ofTUPackingInstructionsId(HUPIItemProductId.ofRepoIdOrNone(orderDAO.getOrderLineById(line.getSalesOrderAndLineId()).getM_HU_PI_Item_Product_ID()));
 
 		pickingJob = pickingJob.withNewStep(
 				PickingJob.AddStepRequest.builder()
@@ -286,7 +291,7 @@ public class PickingJobPickCommand
 								.id(pickFromHUId)
 								.qrCode(pickFromHUQRCode)
 								.build())
-						.packToSpec(PackToSpec.VIRTUAL)
+						.packToSpec(packToSpec)
 						.build()
 		);
 
