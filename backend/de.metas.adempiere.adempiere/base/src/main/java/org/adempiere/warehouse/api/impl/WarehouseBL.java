@@ -37,10 +37,13 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.Warehouse;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -51,8 +54,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WarehouseBL implements IWarehouseBL
 {
@@ -231,7 +232,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
-
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -257,7 +257,7 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		warehouse.setC_Location_ID(locationId.getRepoId());
 
-		save(warehouse);
+		InterfaceWrapperHelper.save(warehouse);
 	}
 
 	@NonNull
@@ -266,5 +266,31 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@NonNull
+	public Optional<WarehouseId> getOptionalIdByValue(@NonNull final String value)
+	{
+		return warehouseDAO.getOptionalIdByValue(value);
+	}
+
+	@NonNull
+	public Warehouse getByIdNotNull(@NonNull final WarehouseId id)
+	{
+		return warehouseDAO.getOptionalById(id)
+				.orElseThrow(() -> new AdempiereException("No warehouse found for ID !")
+						.appendParametersToMessage()
+						.setParameter("WarehouseId", id));
+	}
+
+	public void save(@NonNull final Warehouse warehouse)
+	{
+		warehouseDAO.save(warehouse);
+	}
+
+	@NonNull
+	public Warehouse createWarehouse(@NonNull final CreateWarehouseRequest request)
+	{
+		return warehouseDAO.createWarehouse(request);
 	}
 }

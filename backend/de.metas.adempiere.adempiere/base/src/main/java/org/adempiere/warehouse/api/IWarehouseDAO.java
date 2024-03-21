@@ -12,11 +12,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -205,4 +205,16 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
 }
