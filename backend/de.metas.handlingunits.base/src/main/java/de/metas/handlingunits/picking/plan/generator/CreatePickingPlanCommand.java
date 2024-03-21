@@ -139,7 +139,7 @@ public class CreatePickingPlanCommand
 				.build();
 	}
 
-	public static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
+	private static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
 	{
 		return AllocablePackageable.builder()
 				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
@@ -154,10 +154,7 @@ public class CreatePickingPlanCommand
 	}
 
 	@NonNull
-	public static PickFromHUsGetRequest getPickFromHUsGetRequest(
-			@NonNull final AllocablePackageable packageable,
-			@NonNull final IWarehouseBL warehouseBL,
-			@NonNull final IBPartnerBL partnerBL)
+	private PickFromHUsGetRequest getPickFromHUsGetRequest(@NonNull final AllocablePackageable packageable)
 	{
 		return PickFromHUsGetRequest.builder()
 				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
@@ -165,7 +162,7 @@ public class CreatePickingPlanCommand
 				.productId(packageable.getProductId())
 				.asiId(packageable.getAsiId())
 				.bestBeforePolicy(packageable.getBestBeforePolicy()
-										  .orElseGet(() -> partnerBL.getBestBeforePolicy(packageable.getCustomerId())))
+										  .orElseGet(() -> bpartnersService.getBestBeforePolicy(packageable.getCustomerId())))
 				.reservationRef(packageable.getReservationRef())
 				.enforceMandatoryAttributesOnPicking(true)
 				.build();
@@ -290,8 +287,7 @@ public class CreatePickingPlanCommand
 			return ImmutableList.of();
 		}
 
-		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUsGetRequest(
-				packageable, warehouseBL, bpartnersService));
+		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUsGetRequest(packageable));
 
 		return husEligibleToPick.stream()
 				.map(pickFromHU -> createZeroQtyLineFromHU(packageable, pickFromHU))

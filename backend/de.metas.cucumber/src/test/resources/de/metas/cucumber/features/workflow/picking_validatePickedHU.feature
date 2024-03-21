@@ -264,3 +264,57 @@ Feature: Picking workflow - validate picked HU
       | M_HU_Storage_ID.Identifier            | M_HU_ID.Identifier   | M_Product_ID.Identifier | Qty |
       | second_pickingProductHU_Storage_17663 | second_splitHU_17663 | picking_product_17663   | 10  |
     # END
+
+  @from:cucumber
+  Scenario: Pick more than specified on shipment schedule in 2 sessions => success
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | IsAlwaysSplitHUsEnabled |
+      | Y                   | Y                       |
+    And create JsonWFProcessStartRequest for picking and store it in context as request payload:
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
+      | salesOrder_17663      | pickingCustomer_17663    | pickingCustomer_17663Location     |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract picking step and main HU picking candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
+      | wf1                        | a1                          | line1                  |
+    And generate QR Codes for HUs
+      | M_HU_ID.Identifier     | HUQRCode.Identifier |
+      | pickingProductHU_17663 | huToPickQR          |
+    And create JsonPickingEventsList and store it in context as request payload:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
+      | wf1                        | a1                          | line1                  | huToPickQR          | 10        |
+    And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
+    And M_HU are validated:
+      | M_HU_ID.Identifier     | HUStatus | IsActive |
+      | pickingProductHU_17663 | D        | N        |
+    And validate M_HU_Storage:
+      | M_HU_Storage_ID.Identifier     | M_HU_ID.Identifier     | M_Product_ID.Identifier | Qty |
+      | pickingProductHU_Storage_17663 | pickingProductHU_17663 | picking_product_17663   | 0   |
+    And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule pickingShipmentSchedule can be located in specified order
+      | M_ShipmentSchedule_QtyPicked_ID.Identifier |
+      | pickingShipmentSchedule_QtyPicked_17663    |
+    And load M_HU as splitHU_17663 from M_ShipmentSchedule_QtyPicked identified by pickingShipmentSchedule_QtyPicked_17663
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | splitHU_17663      | S        | Y        |
+    And validate M_HU_Storage:
+      | M_HU_Storage_ID.Identifier             | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | splitHU_pickingProductHU_Storage_17663 | splitHU_17663      | picking_product_17663   | 10  |
+
+    # BEGIN: pick 5 pieces from the same source HU
+    And create JsonPickingEventsList and store it in context as request payload:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | HUQRCode.Identifier | QtyPicked |
+      | wf1                        | a1                          | line1                  | huToPickQR          | 5         |
+    And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
+    And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule pickingShipmentSchedule can be located in specified order
+      | M_ShipmentSchedule_QtyPicked_ID.Identifier     |
+      | pickingShipmentSchedule_QtyPicked_17663        |
+      | second_pickingShipmentSchedule_QtyPicked_17663 |
+    And load M_HU as second_splitHU_17663 from M_ShipmentSchedule_QtyPicked identified by second_pickingShipmentSchedule_QtyPicked_17663
+    And M_HU are validated:
+      | M_HU_ID.Identifier   | HUStatus | IsActive |
+      | second_splitHU_17663 | S        | Y        |
+    And validate M_HU_Storage:
+      | M_HU_Storage_ID.Identifier                    | M_HU_ID.Identifier   | M_Product_ID.Identifier | Qty |
+      | second_splitHU_pickingProductHU_Storage_17663 | second_splitHU_17663 | picking_product_17663   | 5   |
+    # END
