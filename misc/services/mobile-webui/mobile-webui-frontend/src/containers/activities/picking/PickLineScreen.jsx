@@ -114,7 +114,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-const useHeaderUpdate = ({ url, caption, uom, qtyToPick, qtyPicked }) => {
+export const useHeaderUpdate = ({ url, caption, uom, qtyToPick, qtyPicked }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
