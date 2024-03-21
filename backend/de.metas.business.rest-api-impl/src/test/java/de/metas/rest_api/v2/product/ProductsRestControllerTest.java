@@ -38,11 +38,17 @@ import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.rest_api.v2.pricing.PriceListRestService;
+import de.metas.rest_api.v2.pricing.ProductPriceRestService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -117,7 +123,18 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+
+		final @NonNull ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
+		final @NonNull ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
+		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
+
+		 final PriceListVersionRepository priceListVersionRepository = new PriceListVersionRepository();
+		final PriceListRestService priceListService = new PriceListRestService(externalReferenceRestControllerService, priceListVersionRepository);
+
+
+		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService, productPriceRepository, priceListService);
+
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, productPriceRestService, productTaxCategoryService);
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

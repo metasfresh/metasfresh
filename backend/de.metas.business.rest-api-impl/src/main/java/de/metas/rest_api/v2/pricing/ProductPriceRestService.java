@@ -356,7 +356,7 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
-	private TaxCategoryId getTaxCategoryId(@NonNull final TaxCategory taxCategory)
+	public TaxCategoryId getTaxCategoryId(@NonNull final TaxCategory taxCategory)
 	{
 		return taxBL.getTaxCategoryIdByInternalName(taxCategory.getInternalName())
 				.orElseThrow(() -> new AdempiereException("No TaxCategory record found for the given TaxCategory type!")

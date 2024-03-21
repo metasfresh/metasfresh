@@ -65,6 +65,7 @@ public class JsonRequestUtil
 		jsonRequestProduct.setProductCategoryIdentifier("test");
 		jsonRequestProduct.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		jsonRequestProduct.setBpartnerProductItems(Collections.singletonList(getJsonRequestBPartnerProductUpsert()));
+		//jsonRequestProduct.setProductTaxCategories(Collections.singletonList(getJsonRequestProductTaxCategoryUpsert()));
 
 		return jsonRequestProduct;
 	}
@@ -84,4 +85,22 @@ public class JsonRequestUtil
 				.productIdentifier("test")
 				.build();
 	}
+
+
+	// public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
+	// {
+	// 	final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = new JsonRequestProductTaxCategoryUpsert();
+	//
+	//
+	// 	jsonRequestProductTaxCategoryUpsert.setTaxCategory(TaxCategory.NORMAL);
+	//
+	// 	jsonRequestProductTaxCategoryUpsert.setCountryCode("DE");
+	//
+	// 	final Instant validFrom =Instant.parse("2019-11-22T00:00:00Z");
+	//
+	// 	jsonRequestProductTaxCategoryUpsert.setValidFrom(validFrom);
+	//
+	//
+	// 	return jsonRequestProductTaxCategoryUpsert;
+	// }
 }

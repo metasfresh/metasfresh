@@ -31,17 +31,36 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product_TaxCategory;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.sql.Time;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ProductTaxCategoryRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	private static ProductTaxCategory ofRecord(@NonNull final I_M_Product_TaxCategory productTaxCategory)
+	{
+		return ProductTaxCategory.builder()
+				.productTaxCategoryId(ProductTaxCategoryId.ofRepoId(productTaxCategory.getM_Product_TaxCategory_ID()))
+				.productId(ProductId.ofRepoId(productTaxCategory.getM_Product_ID()))
+				.taxCategoryId(TaxCategoryId.ofRepoId(productTaxCategory.getC_TaxCategory_ID()))
+				.validFrom(TimeUtil.asInstantNonNull(productTaxCategory.getValidFrom()))
+				.countryId(CountryId.ofRepoIdOrNull(productTaxCategory.getC_Country_ID()))
+				.build();
+	}
 
 	@NonNull
 	public Optional<TaxCategoryId> getTaxCategoryId(@NonNull final LookupTaxCategoryRequest lookupTaxCategoryRequest)
@@ -92,15 +111,59 @@ public class ProductTaxCategoryRepository
 		return taxCategoryCountryFilter;
 	}
 
-	@NonNull
-	private static ProductTaxCategory ofRecord(@NonNull final I_M_Product_TaxCategory productTaxCategory)
+	@Nullable
+	public ProductTaxCategory findProductTaxCategory(@NonNull final ProductId productId, @NonNull final TaxCategoryId taxCategoryId, @NonNull final CountryId countryId)
 	{
-		return ProductTaxCategory.builder()
-				.productTaxCategoryId(ProductTaxCategoryId.ofRepoId(productTaxCategory.getM_Product_TaxCategory_ID()))
-				.productId(ProductId.ofRepoId(productTaxCategory.getM_Product_ID()))
-				.taxCategoryId(TaxCategoryId.ofRepoId(productTaxCategory.getC_TaxCategory_ID()))
-				.validFrom(TimeUtil.asInstantNonNull(productTaxCategory.getValidFrom()))
-				.countryId(CountryId.ofRepoIdOrNull(productTaxCategory.getC_Country_ID()))
-				.build();
+		final Optional<I_M_Product_TaxCategory> mProductTaxCategory = retrieveMProductTaxCategory(productId, taxCategoryId, countryId);
+		return mProductTaxCategory.map(ProductTaxCategoryRepository::ofRecord).orElse(null);
+	}
+
+	@Nullable
+	private Optional<I_M_Product_TaxCategory> retrieveMProductTaxCategory(@NonNull final ProductId productId, @NonNull final TaxCategoryId taxCategoryId, @NonNull final CountryId countryId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Product_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product_TaxCategory.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Product_TaxCategory.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
+				.addEqualsFilter(I_M_Product_TaxCategory.COLUMNNAME_C_Country_ID, countryId)
+				.create()
+				.firstOptional(I_M_Product_TaxCategory.class);
+
+	}
+
+	public void updateProductTaxCategory(@NonNull final ProductTaxCategory request)
+	{
+		final I_M_Product_TaxCategory record = toProductTaxCategory(request);
+		saveRecord(record);
+	}
+
+	@NonNull
+	private I_M_Product_TaxCategory toProductTaxCategory(@NonNull final ProductTaxCategory productTaxCategory)
+	{
+		final I_M_Product_TaxCategory record = retrieveMProductTaxCategory(productTaxCategory.getProductId(),
+																		   productTaxCategory.getTaxCategoryId(),
+																		   productTaxCategory.getCountryId())
+				.orElseThrow(() -> new AdempiereException("No Product Tax Category record found for "
+																  + productTaxCategory.getProductId() + " " + productTaxCategory.getTaxCategoryId()));
+
+		record.setValidFrom(TimeUtil.asTimestamp(productTaxCategory.getValidFrom()));
+
+		return record;
+	}
+
+	public ProductTaxCategory createProductTaxCategory(final CreateProductTaxCategoryRequest request)
+	{
+		final I_M_Product_TaxCategory productTaxCategoryRecord = newInstance(I_M_Product_TaxCategory.class);
+
+		productTaxCategoryRecord.setM_Product_ID(request.getProductId().getRepoId());
+		productTaxCategoryRecord.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		productTaxCategoryRecord.setC_Country_ID(CountryId.toRepoId(request.getCountryId()));
+		productTaxCategoryRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
+
+
+		saveRecord(productTaxCategoryRecord);
+
+		return ofRecord(productTaxCategoryRecord);
 	}
 }
