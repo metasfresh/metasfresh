@@ -22,21 +22,20 @@ package de.metas.dunning.spi.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.impl.PlainDunningContext;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.impl.DunnableDocBuilder;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import org.compiere.model.I_C_Invoice;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 public class BaseDunnableSourceTest extends DunningTestBase
 {
@@ -158,7 +157,6 @@ public class BaseDunnableSourceTest extends DunningTestBase
 
 	private DunnableDocBuilder mkDunnableDocBuilder()
 	{
-		final Date defaultDueDate = TimeUtil.getDay(new Date());
 		return new DunnableDocBuilder()
 				.setTableName(I_C_Invoice.Table_Name)
 				.setRecord_ID(1)
@@ -167,6 +165,6 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(BigDecimal.ZERO)
 				.setOpenAmt(BigDecimal.ZERO)
-				.setDueDate(defaultDueDate);
+				.setDueDate(LocalDateAndOrgId.now(OrgId.MAIN));
 	}
 }

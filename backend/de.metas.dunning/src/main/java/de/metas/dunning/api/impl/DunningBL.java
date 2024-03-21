@@ -21,6 +21,7 @@ import de.metas.dunning.spi.IDunningConfigurator;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
 import de.metas.logging.LogManager;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -117,7 +118,7 @@ public class DunningBL implements IDunningBL
 	public IDunningContext createDunningContext(
 			final Properties ctx,
 			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
+			final LocalDateAndOrgId dunningDate,
 			final String trxName,
 			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
 	{
@@ -130,14 +131,13 @@ public class DunningBL implements IDunningBL
 	public IDunningContext createDunningContext(
 			final Properties ctx,
 			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
+			final LocalDateAndOrgId dunningDate,
 			final ITrxRunConfig trxRunnerConfig,
 			final String trxName,
 			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
 	{
 		final IDunningConfig config = getDunningConfig();
-		final IDunningContext context = new DunningContext(ctx, config, dunningLevel, dunningDate, trxRunnerConfig, trxName, recomputeDunningCandidatesQuery);
-		return context;
+		return new DunningContext(ctx, config, dunningLevel, dunningDate, trxRunnerConfig, trxName, recomputeDunningCandidatesQuery);
 	}
 
 	@Override

@@ -24,10 +24,10 @@ package de.metas.dunning.api;
 
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import javax.annotation.Nullable;
-import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -48,7 +48,8 @@ public interface IDunningContext
 
 	IDunningConfig getDunningConfig();
 
-	Date getDunningDate();
+	@Nullable
+	LocalDateAndOrgId getDunningDate();
 
 	@Nullable
 	RecomputeDunningCandidatesQuery getRecomputeDunningCandidatesQuery();

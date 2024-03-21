@@ -25,12 +25,11 @@ package de.metas.dunning.api.impl;
 import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -42,7 +41,7 @@ public class DunningContext extends AbstractDunningContext
 {
 	private final IDunningConfig dunningConfig;
 	private final Properties ctx;
-	private final Date dunningDate;
+	private final LocalDateAndOrgId dunningDate;
 	private final I_C_DunningLevel dunningLevel;
 
 	private final String trxName;
@@ -55,7 +54,7 @@ public class DunningContext extends AbstractDunningContext
 			final Properties ctx,
 			final IDunningConfig config,
 			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
+			final LocalDateAndOrgId dunningDate,
 			final ITrxRunConfig trxRunnerConfig,
 			final String trxName,
 			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
@@ -68,7 +67,7 @@ public class DunningContext extends AbstractDunningContext
 		this.dunningConfig = config;
 		this.ctx = ctx;
 		this.dunningLevel = dunningLevel;
-		this.dunningDate = dunningDate == null ? null : TimeUtil.trunc(dunningDate, TimeUtil.TRUNC_DAY);
+		this.dunningDate = dunningDate;
 		this.trxName = trxName;
 		this.trxRunnerConfig = trxRunnerConfig;
 		this.recomputeDunningCandidatesQuery = recomputeDunningCandidatesQuery;
@@ -131,13 +130,10 @@ public class DunningContext extends AbstractDunningContext
 	}
 
 	@Override
-	public Date getDunningDate()
+	@Nullable
+	public LocalDateAndOrgId getDunningDate()
 	{
-		if (dunningDate == null)
-		{
-			return dunningDate;
-		}
-		return (Date)dunningDate.clone();
+		return dunningDate;
 	}
 
 	@Nullable

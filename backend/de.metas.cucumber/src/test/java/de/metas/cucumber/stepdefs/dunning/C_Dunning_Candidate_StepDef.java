@@ -31,6 +31,9 @@ import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -50,7 +53,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 
-import java.sql.Timestamp;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -63,6 +65,7 @@ public class C_Dunning_Candidate_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_Dunning_Candidate_StepDefData dunningCandidateTable;
 	private final C_DunningLevel_StepDefData dunningLevelTable;
@@ -93,7 +96,8 @@ public class C_Dunning_Candidate_StepDef
 
 			final Boolean isFullUpdate = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsFullUpdate", false);
 
-			final Timestamp dunningDate = DataTableUtil.extractDateTimestampForColumnName(row, "DunningDate");
+			final OrgId orgId = OrgId.ofRepoId(dunningLevelRecord.getAD_Org_ID());
+			final LocalDateAndOrgId dunningDate = LocalDateAndOrgId.ofTimestamp(DataTableUtil.extractDateTimestampForColumnName(row, "DunningDate"), orgId, orgDAO::getTimeZone);
 
 			trxManager.runInNewTrx(() ->
 								   {
