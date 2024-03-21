@@ -71,7 +71,7 @@ class SerializeDeserializeTest
 		String jsonString = "{\n"
 				+ "  \"systemName\": \"Github\",\n"
 				+ "  \"items\": [\n"
-				+ "    { \"id\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
+				+ "    { \"externalReference\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
 				+ "  ]\n"
 				+ "}";
 
@@ -101,7 +101,7 @@ class SerializeDeserializeTest
 		final String jsonString = "{\n"
 				+ "  \"systemName\": \"Github\",\n"
 				+ "  \"items\": [\n"
-				+ "    { \"lookupItem\": { \"id\": \"existingId\", \"type\": \"IssueID\" }, \"metasfreshId\": 43 }\n"
+				+ "    { \"lookupItem\": { \"externalReference\": \"existingId\", \"type\": \"IssueID\" }, \"metasfreshId\": 43 }\n"
 				+ "  ]\n"
 				+ "}";
 

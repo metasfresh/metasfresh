@@ -34,7 +34,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
@@ -56,55 +55,60 @@ public class JsonExternalReferenceItem
 		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null, null);
 	}
 
-	@ApiModelProperty(required = true, value = "Object used to lookup the item to update. If no existing record is found, one is created.")
+	@ApiModelProperty(required = true, value = "Object used to lookup the item to update. If no existing record is found, one is created. When creating a new record, the properties from the lookup-item are preferred to their counterparts from this object")
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
-	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created.")
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
 	@ApiModelProperty(hidden = true)
-	private boolean externalReferenceSet;
-	
-	@ApiModelProperty(value = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean externalReferenceSet;
+
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created - either here or in the `lookupItem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
 	@ApiModelProperty(hidden = true)
-	private boolean metasfreshIdSet;
-	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean metasfreshIdSet;
+
 	@ApiModelProperty(value = "Translates to `S_ExternalReference.Version`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String version;
 
 	@ApiModelProperty(hidden = true)
-	private boolean versionSet;
-	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean versionSet;
+
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
 	@ApiModelProperty(hidden = true)
-	private boolean externalReferenceUrlSet;
-	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean externalReferenceUrlSet;
+
 	@ApiModelProperty(value = "Translates to `S_ExternalReference.ExternalSystem`. Mandatory if a new record is created.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonExternalSystemName systemName;
 
 	@ApiModelProperty(hidden = true)
-	private boolean systemNameSet;
-	
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean systemNameSet;
+
 	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference_ID`. Ignored in upserts, only filled by metasfresh in lookups")
 	@Nullable
 	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalReferenceId;
-	
+
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceItem(

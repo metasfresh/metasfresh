@@ -237,22 +237,22 @@ public class ExternalReferenceRestControllerService
 		{
 			final ExternalReference.ExternalReferenceBuilder builder = existingReference.toBuilder();
 			final String newReference = jsonItemToSyncFrom.getExternalReference();
-			if (jsonItemToSyncFrom.isExternalReferenceSet() && EmptyUtil.isNotBlank(newReference))
+			if (jsonItemToSyncFrom.getExternalReferenceSet() !=null && jsonItemToSyncFrom.getExternalReferenceSet() && EmptyUtil.isNotBlank(newReference))
 			{
 				builder.externalReference(newReference);
 			}
 			final String newVersion = jsonItemToSyncFrom.getVersion();
-			if (jsonItemToSyncFrom.isVersionSet())
+			if (jsonItemToSyncFrom.getVersionSet() != null && jsonItemToSyncFrom.getVersionSet())
 			{
 				builder.version(newVersion);
 			}
 			final String referenceUrl = jsonItemToSyncFrom.getExternalReferenceUrl();
-			if (jsonItemToSyncFrom.isExternalReferenceUrlSet())
+			if (jsonItemToSyncFrom.getExternalReferenceUrlSet() != null && jsonItemToSyncFrom.getExternalReferenceUrlSet())
 			{
 				builder.externalReferenceUrl(referenceUrl);
 			}
 			final int recordId = JsonMetasfreshId.toValueInt(jsonItemToSyncFrom.getMetasfreshId());
-			if (jsonItemToSyncFrom.isMetasfreshIdSet() && recordId > 0)
+			if (jsonItemToSyncFrom.getMetasfreshIdSet() != null && jsonItemToSyncFrom.getMetasfreshIdSet() && recordId > 0)
 			{
 				builder.recordId(recordId);
 			}
@@ -305,24 +305,28 @@ public class ExternalReferenceRestControllerService
 	@NonNull
 	private ExternalReference mapJsonToExternalReference(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
 	{
-		final JsonMetasfreshId metasfreshId = request.getExternalReferenceItem().getMetasfreshId();
+		// metasfreshId and externalReference are mandatory
+		// if we are here, we don't want to update, but insert a new S_ExternalReferenceRecord.
+		// we don't want to try to lookup "A" and then insert "B", so we prefer the lookup-values for our new reference if provided
+		final JsonMetasfreshId metasfreshId = CoalesceUtil.coalesce(request.getExternalReferenceItem().getLookupItem().getMetasfreshId(),
+																	request.getExternalReferenceItem().getMetasfreshId());
 		if (metasfreshId == null)
 		{
 			throw new MissingPropertyException("metasfreshId", request.getExternalReferenceItem());
 		}
-
-		final String externalReference = request.getExternalReferenceItem().getExternalReference();
-		if(EmptyUtil.isBlank(externalReference))
+		final String externalReference = CoalesceUtil.firstNotBlank(request.getExternalReferenceItem().getLookupItem().getExternalReference(),
+																	request.getExternalReferenceItem().getExternalReference());
+		if (EmptyUtil.isBlank(externalReference))
 		{
 			throw new MissingPropertyException("externalReference", request.getExternalReferenceItem());
 		}
-		
+
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
 				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
-		
+
 		return ExternalReference.builder()
 				.orgId(orgId)
 				.externalSystem(externalSystem)
