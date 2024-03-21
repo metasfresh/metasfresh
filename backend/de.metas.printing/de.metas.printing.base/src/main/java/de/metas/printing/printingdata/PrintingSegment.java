@@ -81,6 +81,12 @@ public class PrintingSegment
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
 	}
 
+	@NonNull
+	public PrintingSegment copy()
+	{
+		return new PrintingSegment(initialPageFrom, initialPageTo, lastPages, routingType, printerRoutingId, printer, trayId);
+	}
+	
 	public void setPageFrom(final int pageFrom)
 	{
 		this.pageFrom = pageFrom;
