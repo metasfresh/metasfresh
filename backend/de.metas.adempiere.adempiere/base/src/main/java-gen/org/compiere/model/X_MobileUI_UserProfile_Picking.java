@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for MobileUI_UserProfile_Picking
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2054600983L;
+	private static final long serialVersionUID = -393056167L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -69,6 +69,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isAllowPickingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public void setIsAlwaysSplitHUsEnabled (final boolean IsAlwaysSplitHUsEnabled)
+	{
+		set_Value (COLUMNNAME_IsAlwaysSplitHUsEnabled, IsAlwaysSplitHUsEnabled);
+	}
+
+	@Override
+	public boolean isAlwaysSplitHUsEnabled() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysSplitHUsEnabled);
 	}
 
 	@Override

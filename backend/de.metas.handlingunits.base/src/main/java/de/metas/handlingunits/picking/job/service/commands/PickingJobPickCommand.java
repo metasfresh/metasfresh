@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -25,6 +26,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -37,13 +39,22 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -67,9 +78,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PickingJobPickCommand
 {
+	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -78,12 +91,15 @@ public class PickingJobPickCommand
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
+	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	//
 	// Params
 	@NonNull private final PickingJobLineId lineId;
@@ -113,6 +129,8 @@ public class PickingJobPickCommand
 			final @NonNull PickingCandidateService pickingCandidateService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
+			final @NonNull HUReservationService huReservationService,
+			final @NonNull PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @NonNull PickingJobLineId pickingJobLineId,
@@ -126,9 +144,9 @@ public class PickingJobPickCommand
 			final boolean isPickWholeTU,
 			final @Nullable Boolean checkIfAlreadyPacked,
 			final boolean createInventoryForMissingQty,
-			boolean isSetBestBeforeDate,
+			final boolean isSetBestBeforeDate,
 			final @Nullable LocalDate bestBeforeDate,
-			boolean isSetLotNo,
+			final boolean isSetLotNo,
 			final @Nullable String lotNo)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -137,6 +155,8 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingCandidateService = pickingCandidateService;
 		this.huQRCodesService = huQRCodesService;
+		this.huReservationService = huReservationService;
+		this.pickingConfigRepo = pickingConfigRepo;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
@@ -220,6 +240,8 @@ public class PickingJobPickCommand
 
 	private void executeInTrx()
 	{
+		validatePickedHU();
+
 		createStepIfNeeded();
 
 		final ImmutableList<PickedToHU> pickedHUs = createAndProcessPickingCandidate();
@@ -551,6 +573,57 @@ public class PickingJobPickCommand
 					.setParameter("LMQRCode", pickFromHUQRCode)
 					.setParameter("catchWeightBD", catchWeightBD);
 		}
+	}
+
+	private void validatePickedHU()
+	{
+		final HuId huIdToBePicked = getHuIdToBePicked();
+		final boolean isDestroyed = handlingUnitsBL.isDestroyed(handlingUnitsDAO.getById(huIdToBePicked));
+		if (isDestroyed)
+		{
+			return;
+		}
+
+		final PickFromHUsSupplier pickFromHUsSupplier = PickFromHUsSupplier.builder()
+				.huReservationService(huReservationService)
+				.considerAttributes(pickingConfigRepo.getPickingConfig().isConsiderAttributes())
+				.build();
+
+		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
+		if (pickFromHUS.isEmpty())
+		{
+			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG)
+					.markAsUserValidationError();
+		}
+	}
+
+	@NonNull
+	private HuId getHuIdToBePicked()
+	{
+		if (stepId != null)
+		{
+			final PickingJobStep step = pickingJob.getStepById(stepId);
+			step.getPickFrom(stepPickFromKey).assertNotPicked();
+			final PickingJobStepPickFrom pickFrom = step.getPickFrom(stepPickFromKey);
+			return pickFrom.getPickFromHUId();
+		}
+		return huQRCodesService.getHuIdByQRCode(getPickFromHUQRCode());
+	}
+
+	@NonNull
+	private PickFromHUsGetRequest getPickFromHUValidateRequest(@NonNull final HuId huId)
+	{
+		final Packageable packageable = packagingDAO.getByShipmentScheduleId(getShipmentScheduleId());
+
+		final Optional<HUReservationDocRef> reservationDocRef = stepId != null
+				? Optional.of(HUReservationDocRef.ofPickingJobStepId(stepId))
+				: Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId);
+
+		return CreatePickingPlanCommand.getPickFromHUsGetRequest(CreatePickingPlanCommand.toAllocablePackageable(packageable), warehouseBL, bPartnerBL)
+				.toBuilder()
+				.onlyHuIds(ImmutableSet.of(huId))
+				.reservationRef(reservationDocRef)
+				.build();
 	}
 
 	//

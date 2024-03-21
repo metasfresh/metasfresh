@@ -311,9 +311,22 @@ public class HUReservationService
 				.map(HUReservation::getReservedQtySum);
 	}
 
+	@NonNull
+	public Optional<HUReservation> getByDocumentRef(
+			@NonNull final HUReservationDocRef documentRef,
+			@Nullable final ImmutableSet<HuId> onlyHuIds)
+	{
+		if (onlyHuIds == null)
+		{
+			return getByDocumentRef(documentRef);
+		}
+		return huReservationRepository.getByDocumentRef(documentRef, onlyHuIds);
+	}
+
+	@NonNull
 	public Optional<HUReservation> getByDocumentRef(@NonNull final HUReservationDocRef documentRef)
 	{
-		return huReservationRepository.getByDocumentRef(documentRef);
+		return huReservationRepository.getByDocumentRef(documentRef, ImmutableSet.of());
 	}
 
 	public ImmutableSet<HuId> getVHUIdsByDocumentRef(@NonNull final HUReservationDocRef documentRef)
