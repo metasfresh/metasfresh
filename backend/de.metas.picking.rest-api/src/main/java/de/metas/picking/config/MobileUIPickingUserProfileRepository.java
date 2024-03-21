@@ -73,6 +73,7 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.onlyBPartnerIds(onlyBPartnerIds)
+				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.filters(retrieveFilters(profileRecord))
@@ -110,6 +111,7 @@ public class MobileUIPickingUserProfileRepository
 		{
 			profileRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking.class);
 		}
+		profileRecord.setIsAlwaysSplitHUsEnabled(profile.isAlwaysSplitHUsEnabled());
 		profileRecord.setName(profile.getName());
 		profileRecord.setIsAllowPickingAnyHU(profile.isAllowPickingAnyHU());
 		profileRecord.setCreateShipmentPolicy(profile.getCreateShipmentPolicy().getCode());
