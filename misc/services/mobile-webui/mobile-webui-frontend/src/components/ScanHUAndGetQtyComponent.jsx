@@ -218,7 +218,7 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
     bestBeforeDate,
     lotNo,
-    gotoPickingLineScreen = true,
+    isDone = true,
   }) => {
     onResult({
       qty: qtyEnteredAndValidated,
@@ -231,7 +231,7 @@ const ScanHUAndGetQtyComponent = ({
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
       bestBeforeDate,
       lotNo,
-      gotoPickingLineScreen,
+      isDone,
     });
   };
 

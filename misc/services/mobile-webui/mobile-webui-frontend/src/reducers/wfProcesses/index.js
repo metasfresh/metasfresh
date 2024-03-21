@@ -33,8 +33,27 @@ export const getActivitiesInOrder = (wfProcess) => {
   return activityIdsInOrder.map((activityId) => activitiesById[activityId]);
 };
 
+export const getFirstActivityByComponentType = ({ state, wfProcessId, componentType }) => {
+  const wfProcess = getWfProcess(state, wfProcessId);
+  const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
+  const activitiesById = wfProcess.activities ?? {};
+  for (const activityId of activityIdsInOrder) {
+    const activity = activitiesById[activityId];
+    if (activity?.componentType === componentType) {
+      return activity;
+    }
+  }
+
+  return null;
+};
+
 export const getActivityById = (state, wfProcessId, activityId) => {
-  return getWfProcess(state, wfProcessId)?.activities?.[activityId];
+  const wfProcess = getWfProcess(state, wfProcessId);
+  return getActivityByIdFromWFProcess(wfProcess, activityId);
+};
+
+export const getActivityByIdFromWFProcess = (wfProcess, activityId) => {
+  return wfProcess?.activities?.[activityId] ?? {};
 };
 
 export const getLineByIdFromActivity = (activity, lineId) => {

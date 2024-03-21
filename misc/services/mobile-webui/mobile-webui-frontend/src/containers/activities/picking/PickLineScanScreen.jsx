@@ -22,8 +22,7 @@
 
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import React, { useCallback, useEffect } from 'react';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import React, { useCallback } from 'react';
 import { trl } from '../../../utils/translations';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { getActivityById, getLineById, getQtyRejectedReasonsFromActivity } from '../../../reducers/wfProcesses';
@@ -31,52 +30,56 @@ import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useBooleanSetting } from '../../../reducers/settings';
-import { getQtyPickedOrRejectedTotalForLine, getQtyToPickRemainingForLine } from '../../../utils/picking';
+import {
+  getNextEligibleLineToPick,
+  getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickRemainingForLine,
+} from '../../../utils/picking';
 import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 import { useSearchParams } from '../../../hooks/useSearchParams';
+import { useHeaderUpdate } from './PickLineScreen';
+import { pickingLineScanScreenLocation } from '../../../routes/picking';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+
+export const NEXT_PickingJob = 'pickingJob';
+export const NEXT_NextPickingLine = 'nextPickingLine';
 
 const PickLineScanScreen = () => {
   const {
     url,
-    params: { workflowId: wfProcessId, activityId, lineId },
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
   const [urlParams] = useSearchParams();
   const qrCode = urlParams.get('qrCode');
+  const next = urlParams.get('next');
 
-  const { productId, qtyToPickRemaining, uom, qtyRejectedReasons, catchWeightUom } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
+  const {
+    activity,
+    caption,
+    productId,
+    qtyToPick,
+    qtyPicked,
+    qtyToPickRemaining,
+    uom,
+    qtyRejectedReasons,
+    catchWeightUom,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.PickingLine'),
-        values: [],
-      })
-    );
-  }, []);
+  useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
     (scannedBarcode) => convertScannedBarcodeToResolvedResult({ scannedBarcode, expectedProductId: productId }),
     [productId]
   );
 
-  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId });
+  const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
-  const history = useHistory();
-  const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
-  const onClose = () => {
-    if (isGotoPickingJobOnClose) {
-      history.go(-2); // go to picking job screen
-    }
-  };
+  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, onClose });
 
   return (
     <ScanHUAndGetQtyComponent
+      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`}
       scannedBarcode={qrCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPickRemaining}
@@ -102,6 +105,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
   return {
+    activity,
+    caption: line?.caption,
     productId: line.productId,
     qtyToPick: line.qtyToPick,
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
@@ -141,9 +146,47 @@ export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   return result;
 };
 
-export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null }) => {
-  const dispatch = useDispatch();
+export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   const history = useHistory();
+  const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
+
+  const gotoPickingJob = () => {
+    history.replace(getWFProcessScreenLocation({ applicationId, wfProcessId }));
+  };
+
+  const gotoNextPickingLine = () => {
+    const nextLineId = getNextEligibleLineToPick({ activity, excludeLineId: lineId })?.pickingLineId;
+    if (nextLineId) {
+      history.replace(
+        pickingLineScanScreenLocation({
+          applicationId,
+          wfProcessId,
+          activityId: activity.activityId,
+          lineId: nextLineId,
+        })
+      );
+    } else {
+      gotoPickingJob();
+    }
+  };
+
+  return () => {
+    if (next === NEXT_PickingJob) {
+      gotoPickingJob();
+    } else if (next === NEXT_NextPickingLine) {
+      gotoNextPickingLine();
+    } else {
+      if (isGotoPickingJobOnClose) {
+        gotoPickingJob();
+      } else {
+        history.go(-1); // go to picking line screen
+      }
+    }
+  };
+};
+
+export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null, onClose }) => {
+  const dispatch = useDispatch();
 
   return ({
     lineId = null,
@@ -156,7 +199,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
     isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
     lotNo = null,
-    gotoPickingLineScreen = true,
+    isDone = true,
     resolvedBarcodeData,
     ...others
   }) => {
@@ -174,7 +217,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       bestBeforeDate,
       isShowLotNo,
       lotNo,
-      gotoPickingLineScreen,
+      isDone,
       ...others,
     });
 
@@ -194,12 +237,9 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       bestBeforeDate,
       setLotNo: isShowLotNo,
       lotNo,
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      if (gotoPickingLineScreen) {
-        history.go(-1);
-      }
-    });
+    })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .then(() => isDone && onClose());
     //.catch((axiosError) => toastError({ axiosError })); // no need to catch, will be handled by caller
   };
 };
