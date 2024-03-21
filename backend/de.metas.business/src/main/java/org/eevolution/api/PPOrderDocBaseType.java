@@ -22,13 +22,16 @@
 
 package org.eevolution.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocBaseType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 {
@@ -67,4 +70,18 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
 
 	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
+
+	public Set<BOMType> getBOMTypes()
+	{
+		switch (this)
+		{
+			case REPAIR_ORDER:
+			case QUALITY_ORDER:
+			case MAINTENANCE_ORDER:
+			case MANUFACTURING_ORDER:
+				return ImmutableSet.of(BOMType.CurrentActive, BOMType.MakeToOrder);
+			default:
+				throw new AdempiereException("Unsupported type=" + this);
+		}
+	}
 }
