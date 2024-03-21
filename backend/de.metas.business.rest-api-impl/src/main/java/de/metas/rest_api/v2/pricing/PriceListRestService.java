@@ -294,7 +294,7 @@ public class PriceListRestService
 		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalPriceListVersionIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION.getCode())
 				.build();
 

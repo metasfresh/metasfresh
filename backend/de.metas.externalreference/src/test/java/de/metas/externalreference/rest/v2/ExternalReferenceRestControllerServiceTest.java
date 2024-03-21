@@ -89,12 +89,12 @@ class ExternalReferenceRestControllerServiceTest
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("system"))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id1")
+														   .externalReference("id1")
 														   .type("bpartner")
 														   .build(),
 												   JsonMetasfreshId.of(23)))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id2")
+														   .externalReference("id2")
 														   .type("bpartner")
 														   .build(),
 												   JsonMetasfreshId.of(24)))
@@ -119,7 +119,7 @@ class ExternalReferenceRestControllerServiceTest
 				.build();
 		final JsonExternalReferenceLookupItem lookupItem2 = JsonExternalReferenceLookupItem.builder()
 				.type("bpartner")
-				.id("id2")
+				.externalReference("id2")
 				.build();
 		final JsonExternalReferenceLookupItem lookupItem3 = JsonExternalReferenceLookupItem.builder()
 				.type("bpartner")
@@ -155,12 +155,12 @@ class ExternalReferenceRestControllerServiceTest
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("system"))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id1")
+														   .externalReference("id1")
 														   .type("bpartner")
 														   .build(),
 												   JsonMetasfreshId.of(25)))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
-														   .id("id2")
+														   .externalReference("id2")
 														   .type("bpartner")
 														   .build(),
 												   JsonMetasfreshId.of(26)))

@@ -125,3 +125,56 @@ Feature: external references for metasfresh resources
         ]
 }
     """
+
+  Scenario: upsert - a new externalReference record is inserted
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name              | OPT.IsCustomer | OPT.CompanyName       | OPT.AD_Language |
+      | customer_so_25_01 | customer_so_25_01 | Y              | customer_so_25_01_cmp | de_DE           |
+
+
+    When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
+    """
+{
+  "externalReferenceItem": {
+    "externalReference": "customer_so_25_01",
+    "externalReferenceUrl": "https://example.com",
+    "lookupItem": {
+      "id": "nosuchexistingpartner",
+      "type": "BPartner"
+    }
+  },
+  "systemName": "Other"
+}
+    """
+
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL |
+      | Other          | BPartner | customer_so_25_01 | https://example.com  |
+
+
+  Scenario: upsert - an existing externalReference record is updated
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name              | OPT.IsCustomer | OPT.CompanyName       | OPT.AD_Language |
+      | customer_so_25_02 | customer_so_25_02 | Y              | customer_so_25_02_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | Type     | ExternalReference | OPT.C_BPartner_ID.Identifier |
+      | externalRef_BPartner              | Other          | BPartner | 345               | customer_so_25_02            |
+
+    When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
+    """
+{
+  "externalReferenceItem": {
+    "externalReference": "345-NEW",
+    "externalReferenceUrl": "https://example.com",
+    "lookupItem": {
+      "id": "345",
+      "type": "BPartner"
+    }
+  },
+  "systemName": "Other"
+}
+    """
+
+    Then the following S_ExternalReference is changed:
+      | S_ExternalReference_ID.Identifier | OPT.ExternalReference | OPT.ExternalReferenceURL |
+      | externalRef_BPartner              | 345-NEW               | https://example.com      |

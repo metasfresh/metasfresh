@@ -395,7 +395,7 @@ public class JsonPersisterService
 		if (EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
 		{
 			final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-					.id(externalIdentifier.asExternalValueAndSystem().getValue())
+					.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 					.type(externalReferenceType.getCode())
 					.build();
 
@@ -731,7 +731,7 @@ public class JsonPersisterService
 		}
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalBusinessKey.asExternalValueAndSystem().getValue())
+				.externalReference(externalBusinessKey.asExternalValueAndSystem().getValue())
 				.type(BPartnerExternalReferenceType.BPARTNER_VALUE.getCode())
 				.build();
 
@@ -1820,7 +1820,7 @@ public class JsonPersisterService
 		}
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalIdentifier.asExternalValueAndSystem().getValue())
+				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.type(externalReferenceType.getCode())
 				.build();
 

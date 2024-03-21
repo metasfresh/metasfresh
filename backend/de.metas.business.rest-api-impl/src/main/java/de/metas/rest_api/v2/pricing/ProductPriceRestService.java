@@ -374,7 +374,7 @@ public class ProductPriceRestService
 		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(ProductPriceExternalReferenceType.PRODUCT_PRICE.getCode())
 				.build();
 

@@ -27,13 +27,20 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
+@Getter
+@ToString
+@EqualsAndHashCode
 public class JsonExternalReferenceItem
 {
 	public static JsonExternalReferenceItem of(
@@ -49,30 +56,52 @@ public class JsonExternalReferenceItem
 		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null, null);
 	}
 
+	@ApiModelProperty(required = true, value = "Object used to lookup the item to update. If no existing record is found, one is created.")
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
+	@ApiModelProperty(hidden = true)
+	private boolean externalReferenceSet;
+	
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
+	@ApiModelProperty(hidden = true)
+	private boolean metasfreshIdSet;
+	
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.Version`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String version;
 
+	@ApiModelProperty(hidden = true)
+	private boolean versionSet;
+	
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
+	@ApiModelProperty(hidden = true)
+	private boolean externalReferenceUrlSet;
+	
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.ExternalSystem`. Mandatory if a new record is created.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonExternalSystemName systemName;
 
+	@ApiModelProperty(hidden = true)
+	private boolean systemNameSet;
+	
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference_ID`. Ignored in upserts, only filled by metasfresh in lookups")
 	@Nullable
+	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalReferenceId;
 	
@@ -95,4 +124,35 @@ public class JsonExternalReferenceItem
 		this.systemName = systemName;
 		this.externalReferenceId = externalReferenceId;
 	}
+
+	public void setExternalReference(@Nullable final String externalReference)
+	{
+		this.externalReference = externalReference;
+		this.externalReferenceSet = true;
+	}
+
+	public void setMetasfreshId(@Nullable final JsonMetasfreshId metasfreshId)
+	{
+		this.metasfreshId = metasfreshId;
+		this.metasfreshIdSet = true;
+	}
+
+	public void setVersion(@Nullable final String version)
+	{
+		this.version = version;
+		this.versionSet = true;
+	}
+
+	public void setExternalReferenceUrl(@Nullable final String externalReferenceUrl)
+	{
+		this.externalReferenceUrl = externalReferenceUrl;
+		this.externalReferenceUrlSet = true;
+	}
+
+	public void setSystemName(@Nullable final JsonExternalSystemName systemName)
+	{
+		this.systemName = systemName;
+		this.systemNameSet = true;
+	}
+
 }

@@ -165,6 +165,17 @@ public class ExternalReferenceRepository
 		return ImmutableMap.copyOf(result);
 	}
 
+	@Nullable
+	public ExternalReference getExternalReferenceOrNull(@NonNull final ExternalReferenceQuery query)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.filter(createFilterFor(query))
+				.create()
+				.firstOnlyOptional(I_S_ExternalReference.class)
+				.map(this::buildExternalReference)
+				.orElse(null);
+	}
+	
 	@NonNull
 	public Optional<ExternalReference> getExternalReferenceByMFReference(@NonNull final GetExternalReferenceByRecordIdReq request)
 	{

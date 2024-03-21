@@ -234,7 +234,7 @@ public class ProductRestService
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(ProductExternalReferenceType.PRODUCT.getCode())
 				.build();
 
@@ -416,7 +416,7 @@ public class ProductRestService
 				.systemName(externalSystemName)
 				.item(JsonExternalReferenceLookupItem.builder()
 							  .type(externalReferenceType.getCode())
-							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
+							  .externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 							  .build())
 				.build();
 

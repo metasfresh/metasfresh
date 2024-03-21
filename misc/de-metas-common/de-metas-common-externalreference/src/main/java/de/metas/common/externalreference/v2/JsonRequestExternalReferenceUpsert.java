@@ -39,6 +39,7 @@ public class JsonRequestExternalReferenceUpsert
 	@NonNull
 	JsonExternalSystemName systemName;
 
+	@ApiModelProperty(required = true)
 	@NonNull
 	JsonExternalReferenceItem externalReferenceItem;
 
