@@ -2,6 +2,8 @@ package de.metas.handlingunits.picking.job.service.commands;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
@@ -39,7 +41,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
@@ -53,8 +54,9 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.picking.api.IPackagingDAO;
-import de.metas.picking.api.Packageable;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -67,9 +69,11 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 
@@ -91,8 +95,8 @@ public class PickingJobPickCommand
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
@@ -613,16 +617,24 @@ public class PickingJobPickCommand
 	@NonNull
 	private PickFromHUsGetRequest getPickFromHUValidateRequest(@NonNull final HuId huId)
 	{
-		final Packageable packageable = packagingDAO.getByShipmentScheduleId(getShipmentScheduleId());
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(getShipmentScheduleId());
+		final WarehouseId warehouseId = shipmentScheduleBL.getWarehouseId(shipmentSchedule);
+		final BPartnerId bPartnerId = shipmentScheduleBL.getBPartnerId(shipmentSchedule);
 
 		final Optional<HUReservationDocRef> reservationDocRef = stepId != null
 				? Optional.of(HUReservationDocRef.ofPickingJobStepId(stepId))
-				: Optional.ofNullable(packageable.getSalesOrderLineIdOrNull()).map(HUReservationDocRef::ofSalesOrderLineId);
+				: Optional.ofNullable(OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID())).map(HUReservationDocRef::ofSalesOrderLineId);
 
-		return CreatePickingPlanCommand.getPickFromHUsGetRequest(CreatePickingPlanCommand.toAllocablePackageable(packageable), warehouseBL, bPartnerBL)
-				.toBuilder()
-				.onlyHuIds(ImmutableSet.of(huId))
+		return PickFromHUsGetRequest.builder()
+				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(warehouseId))
+				.partnerId(shipmentScheduleBL.getBPartnerId(shipmentSchedule))
+				.productId(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID()))
+				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(shipmentSchedule.getShipmentAllocation_BestBefore_Policy())
+										  .orElseGet(() -> bPartnerBL.getBestBeforePolicy(bPartnerId)))
 				.reservationRef(reservationDocRef)
+				.enforceMandatoryAttributesOnPicking(true)
+				.onlyHuIds(ImmutableSet.of(huId))
 				.build();
 	}
 
