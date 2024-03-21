@@ -29,6 +29,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.POWrapper;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.model.copy.TableCloningEnabled;
 import org.compiere.model.copy.TableDownlineCloningStrategy;
@@ -1530,11 +1531,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		public Stream<POInfo> stream() {return byTableId.values().stream();}
 
 		public int size() {return byTableId.size();}
-
-		public Stream<POInfo> stream() {return byTableId.values().stream();}
-
-		public int size() {return byTableId.size();}
-
 		public ImmutableCollection<POInfo> toCollection() {return byTableId.values();}
 	}
 }   // POInfo
