@@ -15,7 +15,7 @@ Feature: external references for metasfresh resources
 {
   "systemName": "Github",
   "items": [
-    { "id": "1", "type": "IssueID" }
+    { "externalReference": "1", "type": "IssueID" }
   ]
 }
 """
@@ -23,7 +23,7 @@ Feature: external references for metasfresh resources
     """
 {
   "items": [
-    { "lookupItem":{"id":"1","type":"IssueID"} }
+    { "lookupItem":{"externalReference":"1","type":"IssueID"} }
   ]
 }
     """
@@ -35,7 +35,7 @@ Feature: external references for metasfresh resources
 {
   "systemName": "Github",
   "items": [
-    { "lookupItem": { "id": "1", "type": "IssueID" }, "metasfreshId": 43 }
+    { "lookupItem": { "externalReference": "1", "type": "IssueID" }, "metasfreshId": 43 }
   ]
 }
     """
@@ -44,9 +44,9 @@ Feature: external references for metasfresh resources
 {
     "systemName": "Github",
     "items": [
-        { "id": "2", "type": "IssueID" },
-        { "id": "1", "type": "IssueID" },
-        { "id": "3", "type": "IssueID" }
+        { "externalReference": "2", "type": "IssueID" },
+        { "externalReference": "1", "type": "IssueID" },
+        { "externalReference": "3", "type": "IssueID" }
     ]
 }
 """
@@ -57,13 +57,13 @@ Feature: external references for metasfresh resources
             {
                 "lookupItem": {
                     "type": "IssueID",
-                    "id": "2"
+                    "externalReference": "2"
                 }
             },
             {
                 "lookupItem": {
                     "type": "IssueID",
-                    "id": "1"
+                    "externalReference": "1"
                 },
                 "metasfreshId": 43,
                 "externalReference": "1",
@@ -72,7 +72,7 @@ Feature: external references for metasfresh resources
             {
                 "lookupItem": {
                     "type": "IssueID",
-                    "id": "3"
+                    "externalReference": "3"
                 }
             }
         ]
@@ -85,8 +85,8 @@ Feature: external references for metasfresh resources
 {
   "systemName": "GRSSignum",
   "items": [
-    { "lookupItem": { "id": "1", "type": "BPartner" }, "metasfreshId": 53 },
-    { "lookupItem": { "id": "2", "type": "IssueID" }, "metasfreshId": 54 }
+    { "lookupItem": { "externalReference": "1", "type": "BPartner" }, "metasfreshId": 53 },
+    { "lookupItem": { "externalReference": "2", "type": "IssueID" }, "metasfreshId": 54 }
   ]
 }
     """
@@ -96,7 +96,7 @@ Feature: external references for metasfresh resources
   "systemName": "GRSSignum",
   "items": [
     { "metasfreshId": 53, "type": "BPartner" },
-    { "id": "2", "type": "IssueID" }
+    { "externalReference": "2", "type": "IssueID" }
   ]
 }
     """
@@ -116,7 +116,7 @@ Feature: external references for metasfresh resources
             {
                 "lookupItem": {
                     "type": "IssueID",
-                    "id": "2"
+                    "externalReference": "2"
                 },
                 "metasfreshId": 54,
                 "externalReference": "2",
@@ -127,19 +127,15 @@ Feature: external references for metasfresh resources
     """
 
   Scenario: upsert - a new externalReference record is inserted
-    Given metasfresh contains C_BPartners:
-      | Identifier        | Name              | OPT.IsCustomer | OPT.CompanyName       | OPT.AD_Language |
-      | customer_so_25_01 | customer_so_25_01 | Y              | customer_so_25_01_cmp | de_DE           |
-
-
-    When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
+    Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "externalReferenceItem": {
     "externalReference": "customer_so_25_01",
     "externalReferenceUrl": "https://example.com",
+    "metasfreshId": 12345,
     "lookupItem": {
-      "id": "nosuchexistingpartner",
+      "externalReference": "nosuchexistingpartner",
       "type": "BPartner"
     }
   },
@@ -148,8 +144,8 @@ Feature: external references for metasfresh resources
     """
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL |
-      | Other          | BPartner | customer_so_25_01 | https://example.com  |
+      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL | OPT.Referenced_Record_ID |
+      | Other          | BPartner | customer_so_25_01 | https://example.com  | 12345                    |
 
 
   Scenario: upsert - an existing externalReference record is updated
@@ -167,7 +163,7 @@ Feature: external references for metasfresh resources
     "externalReference": "345-NEW",
     "externalReferenceUrl": "https://example.com",
     "lookupItem": {
-      "id": "345",
+      "externalReference": "345",
       "type": "BPartner"
     }
   },

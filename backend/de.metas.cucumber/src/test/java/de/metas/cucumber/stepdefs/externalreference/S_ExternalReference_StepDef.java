@@ -142,15 +142,22 @@ public class S_ExternalReference_StepDef
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
 					.create()
-					.anyMatch();
+					.firstOnly(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
+			assertThat(externalRefRecord).as("S_ExternalReference was created").isNotNull();
+
+			final Integer recordId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_Referenced_Record_ID);
+			if (recordId != null)
+			{
+				assertThat(externalRefRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
+				assertThat(externalRefRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
+			}
 		}
 	}
 

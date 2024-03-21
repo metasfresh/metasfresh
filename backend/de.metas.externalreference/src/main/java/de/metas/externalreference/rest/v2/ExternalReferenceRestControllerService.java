@@ -305,26 +305,35 @@ public class ExternalReferenceRestControllerService
 	@NonNull
 	private ExternalReference mapJsonToExternalReference(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
 	{
-		Check.assumeNotNull(request.getExternalReferenceItem().getMetasfreshId(), "MetasfreshId cannot be null at this stage!");
-		Check.assumeNotNull(request.getExternalReferenceItem().getLookupItem().getExternalReference(), "ExternalReference cannot be null when persisting S_ExternalReference!");
+		final JsonMetasfreshId metasfreshId = request.getExternalReferenceItem().getMetasfreshId();
+		if (metasfreshId == null)
+		{
+			throw new MissingPropertyException("metasfreshId", request.getExternalReferenceItem());
+		}
 
+		final String externalReference = request.getExternalReferenceItem().getExternalReference();
+		if(EmptyUtil.isBlank(externalReference))
+		{
+			throw new MissingPropertyException("externalReference", request.getExternalReferenceItem());
+		}
+		
 		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
 				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
-
+		
 		return ExternalReference.builder()
 				.orgId(orgId)
 				.externalSystem(externalSystem)
 				.externalReferenceType(externalReferenceType)
-				.externalReference(request.getExternalReferenceItem().getLookupItem().getExternalReference())
-				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
+				.externalReference(externalReference)
+				.recordId(metasfreshId.getValue())
 				.version(request.getExternalReferenceItem().getVersion())
 				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
 				.build();
 	}
-	
+
 	@NonNull
 	private ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> extractRepoQueries(
 			@NonNull final ImmutableSet<JsonExternalReferenceLookupItem> items,
