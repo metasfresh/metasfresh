@@ -23,6 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
@@ -30,6 +31,10 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.handlingunits.storage.impl.SaveDecoupledHUStorageDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,12 +51,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 public class HUAssignmentBL implements IHUAssignmentBL
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	final IHUStorageDAO storageDAO = new SaveDecoupledHUStorageDAO();
+	final IHUStorageFactory storageFactory = new DefaultHUStorageFactory(storageDAO);
 	private final CompositeHUAssignmentListener listeners = new CompositeHUAssignmentListener();
 
 	/**
@@ -158,6 +166,9 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		builder.setM_LU_HU(luHU);
 		builder.setM_TU_HU(tuHU);
 
+		Optional.ofNullable(CoalesceUtil.coalesce(tuHU, topLevelHU))
+				.ifPresent(hu -> builder.setQty(storageFactory.getStorage(hu).getQtyForProductStorages().getSourceQty()));
+
 		return builder;
 	}
 
@@ -211,6 +222,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	/**
+	 *
 	 */
 	private void updateHUAssignmentAndSave(final IHUAssignmentBuilder builder, final Object model, final I_M_HU topLevelHU, @Nullable final Boolean isTransferPackingMaterials)
 	{
