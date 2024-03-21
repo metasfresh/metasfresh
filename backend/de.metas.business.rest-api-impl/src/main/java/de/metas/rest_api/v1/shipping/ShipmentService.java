@@ -37,6 +37,7 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.api.ShippingInfoCache;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
@@ -347,7 +348,9 @@ public class ShipmentService
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
 				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				ImmutableMap.of());
+				ImmutableMap.of(),
+				true  /* backwards compatibility: true - fail if no picked HUs found*/
+		);
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
