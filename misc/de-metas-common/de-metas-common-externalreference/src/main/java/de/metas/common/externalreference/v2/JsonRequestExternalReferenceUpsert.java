@@ -41,13 +41,13 @@ public class JsonRequestExternalReferenceUpsert
 
 	@ApiModelProperty(required = true)
 	@NonNull
-	JsonExternalReferenceItem externalReferenceItem;
+	JsonExternalReferenceRequestItem externalReferenceItem;
 
 	@JsonCreator
 	@Builder
 	public JsonRequestExternalReferenceUpsert(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceRequestItem externalReferenceItem)
 	{
 		this.systemName = systemName;
 		this.externalReferenceItem = externalReferenceItem;

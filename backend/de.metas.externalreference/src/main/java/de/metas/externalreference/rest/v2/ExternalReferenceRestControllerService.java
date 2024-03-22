@@ -26,10 +26,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -115,7 +116,7 @@ public class ExternalReferenceRestControllerService
 		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
-				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.map(JsonExternalReferenceResponseItem::getMetasfreshId)
 				.filter(Objects::nonNull)
 				.findFirst();
 	}
@@ -141,7 +142,7 @@ public class ExternalReferenceRestControllerService
 		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
-				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.map(JsonExternalReferenceResponseItem::getMetasfreshId)
 				.filter(Objects::nonNull)
 				.findFirst();
 	}
@@ -196,9 +197,9 @@ public class ExternalReferenceRestControllerService
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
-		final List<JsonExternalReferenceItem> references = request.getItems();
+		final List<JsonExternalReferenceRequestItem> references = request.getItems();
 
-		for (final JsonExternalReferenceItem reference : references)
+		for (final JsonExternalReferenceRequestItem reference : references)
 		{
 			final JsonExternalReferenceLookupItem lookupItem = reference.getLookupItem();
 			final JsonMetasfreshId metasfreshId = reference.getMetasfreshId();
@@ -228,7 +229,7 @@ public class ExternalReferenceRestControllerService
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
-		final JsonExternalReferenceItem jsonItemToSyncFrom = request.getExternalReferenceItem();
+		final JsonExternalReferenceRequestItem jsonItemToSyncFrom = request.getExternalReferenceItem();
 		final ExternalReferenceQuery query = extractRepoQuery(jsonItemToSyncFrom.getLookupItem(), orgId, externalSystem);
 
 		final ExternalReference existingReference = externalReferenceRepository.getExternalReferenceOrNull(query);
@@ -237,27 +238,26 @@ public class ExternalReferenceRestControllerService
 		{
 			final ExternalReference.ExternalReferenceBuilder builder = existingReference.toBuilder();
 			final String newReference = jsonItemToSyncFrom.getExternalReference();
-			if (jsonItemToSyncFrom.getExternalReferenceSet() !=null && jsonItemToSyncFrom.getExternalReferenceSet() && EmptyUtil.isNotBlank(newReference))
+			if (jsonItemToSyncFrom.isExternalReferenceSet() && EmptyUtil.isNotBlank(newReference))
 			{
 				builder.externalReference(newReference);
 			}
 			final String newVersion = jsonItemToSyncFrom.getVersion();
-			if (jsonItemToSyncFrom.getVersionSet() != null && jsonItemToSyncFrom.getVersionSet())
+			if (jsonItemToSyncFrom.isVersionSet())
 			{
 				builder.version(newVersion);
 			}
 			final String referenceUrl = jsonItemToSyncFrom.getExternalReferenceUrl();
-			if (jsonItemToSyncFrom.getExternalReferenceUrlSet() != null && jsonItemToSyncFrom.getExternalReferenceUrlSet())
+			if (jsonItemToSyncFrom.isExternalReferenceUrlSet())
 			{
 				builder.externalReferenceUrl(referenceUrl);
 			}
 			final int recordId = JsonMetasfreshId.toValueInt(jsonItemToSyncFrom.getMetasfreshId());
-			if (jsonItemToSyncFrom.getMetasfreshIdSet() != null && jsonItemToSyncFrom.getMetasfreshIdSet() && recordId > 0)
+			if (jsonItemToSyncFrom.isMetasfreshIdSet() && recordId > 0)
 			{
 				builder.recordId(recordId);
 			}
 			externalReferenceToUpsert = builder.build();
-
 		}
 		else
 		{
@@ -385,15 +385,15 @@ public class ExternalReferenceRestControllerService
 
 			final ExternalReference externalReference = externalReferences.get(lookupItem2QueryEntry.getValue());
 
-			final JsonExternalReferenceItem responseItem;
+			final JsonExternalReferenceResponseItem responseItem;
 
 			if (ExternalReference.NULL.equals(externalReference))
 			{
-				responseItem = JsonExternalReferenceItem.of(lookupItem);
+				responseItem = JsonExternalReferenceResponseItem.of(lookupItem);
 			}
 			else
 			{
-				responseItem = JsonExternalReferenceItem.builder()
+				responseItem = JsonExternalReferenceResponseItem.builder()
 						.lookupItem(lookupItem)
 						.metasfreshId(JsonMetasfreshId.of(externalReference.getRecordId()))
 						.externalReference(externalReference.getExternalReference())

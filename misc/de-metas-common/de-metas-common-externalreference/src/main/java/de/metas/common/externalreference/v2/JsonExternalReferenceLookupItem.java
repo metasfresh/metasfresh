@@ -33,6 +33,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Used in both requests and responses.
+ */
 @Value
 public class JsonExternalReferenceLookupItem
 {

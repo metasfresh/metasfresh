@@ -64,8 +64,8 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpser
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -399,7 +399,7 @@ public class JsonPersisterService
 					.type(externalReferenceType.getCode())
 					.build();
 
-			final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+			final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, metasfreshId);
 
 			final JsonSingleExternalReferenceCreateReq externalReferenceCreateRequest = JsonSingleExternalReferenceCreateReq
 					.builder()
@@ -735,8 +735,8 @@ public class JsonPersisterService
 				.type(BPartnerExternalReferenceType.BPARTNER_VALUE.getCode())
 				.build();
 
-		final JsonExternalReferenceItem externalReferenceItem =
-				JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+		final JsonExternalReferenceRequestItem externalReferenceItem =
+				JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, metasfreshId);
 
 		final JsonRequestExternalReferenceUpsert externalReferenceUpsert = JsonRequestExternalReferenceUpsert.builder()
 				.systemName(JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem()))
@@ -1824,7 +1824,7 @@ public class JsonPersisterService
 				.type(externalReferenceType.getCode())
 				.build();
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(externalReferenceLookupItem)
 				.metasfreshId(responseUpsertItem.getMetasfreshId())
 				.version(externalVersion)

@@ -26,8 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -254,7 +254,7 @@ public class S_ExternalReference_StepDef
 		assertThat(jsonExternalReferenceLookupResponse).isNotNull();
 		assertThat(jsonExternalReferenceLookupResponse.getItems()).isNotEmpty();
 
-		final List<JsonExternalReferenceItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
+		final List<JsonExternalReferenceResponseItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
 		final List<Map<String, String>> rows = table.asMaps();
 
 		assertThat(referenceItems.size()).isEqualTo(rows.size());
@@ -263,7 +263,7 @@ public class S_ExternalReference_StepDef
 		{
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
-			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
+			final JsonExternalReferenceResponseItem item = Check.singleElement(referenceItems
 																			   .stream()
 																			   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
 																			   .collect(ImmutableList.toImmutableList()));

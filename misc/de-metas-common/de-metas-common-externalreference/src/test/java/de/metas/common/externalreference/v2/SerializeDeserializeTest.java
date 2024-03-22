@@ -84,11 +84,11 @@ class SerializeDeserializeTest
 	{
 		final JsonExternalReferenceCreateRequest build = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("systemName"))
-				.item(JsonExternalReferenceItem.builder()
+				.item(JsonExternalReferenceRequestItem.builder()
 							  .lookupItem(JsonExternalReferenceLookupItem.builder().externalReference("item1Id").type("item1Type").build())
 							  .metasfreshId(JsonMetasfreshId.of(24))
 							  .version("Version").build())
-				.item(JsonExternalReferenceItem.of(
+				.item(JsonExternalReferenceRequestItem.of(
 						JsonExternalReferenceLookupItem.builder().externalReference("item2Id").type("item2Type").build(),
 						JsonMetasfreshId.of(25)))
 				.build();
@@ -113,8 +113,8 @@ class SerializeDeserializeTest
 	public void jsonExternalReferenceLookupResponse() throws Exception
 	{
 		final JsonExternalReferenceLookupResponse jsonExternalReferenceLookupResponse = JsonExternalReferenceLookupResponse.builder()
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder().type("item1Type").externalReference("item1Id").build()))
-				.item(JsonExternalReferenceItem.of(
+				.item(JsonExternalReferenceResponseItem.of(JsonExternalReferenceLookupItem.builder().type("item1Type").externalReference("item1Id").build()))
+				.item(JsonExternalReferenceResponseItem.of(
 						JsonExternalReferenceLookupItem.builder().type("item2Type").externalReference("item2Id").build(),
 						JsonMetasfreshId.of(23)))
 				.build();
@@ -126,7 +126,7 @@ class SerializeDeserializeTest
 	{
 		final JsonRequestExternalReferenceUpsert upsertRequest = JsonRequestExternalReferenceUpsert.builder()
 				.systemName(JsonExternalSystemName.of("externalSystemName"))
-				.externalReferenceItem(JsonExternalReferenceItem.builder()
+				.externalReferenceItem(JsonExternalReferenceRequestItem.builder()
 											   .metasfreshId(JsonMetasfreshId.of(1))
 											   .lookupItem(JsonExternalReferenceLookupItem.builder()
 																   .type("item1Type")

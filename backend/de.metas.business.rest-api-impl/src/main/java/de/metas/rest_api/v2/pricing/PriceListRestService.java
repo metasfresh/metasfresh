@@ -24,8 +24,8 @@ package de.metas.rest_api.v2.pricing;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
@@ -299,7 +299,7 @@ public class PriceListRestService
 				.build();
 
 		final JsonMetasfreshId jsonPriceListVersionId = JsonMetasfreshId.of(priceListVersionId.getRepoId());
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, jsonPriceListVersionId);
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, jsonPriceListVersionId);
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem());
 		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
