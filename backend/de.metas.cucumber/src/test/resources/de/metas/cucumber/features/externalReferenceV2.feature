@@ -131,11 +131,11 @@ Feature: external references for metasfresh resources
     """
 {
   "externalReferenceItem": {
-    "externalReference": "customer_so_25_01",
+    "externalReference": "to_be_ignored_because_the_lookupItem_ref_takes_precedence",
     "externalReferenceUrl": "https://example.com",
-    "metasfreshId": 12345,
+    "metasfreshId": 20240322,
     "lookupItem": {
-      "externalReference": "nosuchexistingpartner",
+      "externalReference": "externalReference123",
       "type": "BPartner"
     }
   },
@@ -144,8 +144,8 @@ Feature: external references for metasfresh resources
     """
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | customer_so_25_01 | https://example.com  | 12345                    |
+      | ExternalSystem | Type     | ExternalReference    | ExternalReferenceURL | OPT.Referenced_Record_ID |
+      | Other          | BPartner | externalReference123 | https://example.com  | 20240322                 |
 
 
   Scenario: upsert - an existing externalReference record is updated
