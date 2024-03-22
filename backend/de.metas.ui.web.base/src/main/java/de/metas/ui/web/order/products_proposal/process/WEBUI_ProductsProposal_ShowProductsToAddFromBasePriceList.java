@@ -2,6 +2,19 @@ package de.metas.ui.web.order.products_proposal.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+import de.metas.util.Services;
+import org.compiere.model.I_C_BPartner;
+>>>>>>> a7c0827393a (Products Proposal modal update)
+import org.springframework.beans.factory.annotation.Autowired;
+
+>>>>>>> cf6ab1e4bb0 (Products Proposal modal update)
+=======
+>>>>>>> 38925b2448f (Products Proposal modal update)
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.view.BasePLVProductsProposalViewFactory;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
