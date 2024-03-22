@@ -41,7 +41,6 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
 
@@ -87,15 +86,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return attributeDAO.getImmutableAttributeSetById(asiId);
 	}
 
-	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
+	public HUQRCode getFirstQRCodeByHuId(@NonNull final HuId huId)
 	{
-		return huQRCodeService.getQRCodeByHuId(huId);
-	}
-
-	@Nullable
-	public HUQRCode getQRCodeByHuIdIfExists(@NonNull final HuId huId)
-	{
-		return huQRCodeService.getQRCodeByHuIdIfExists(huId);
+		return huQRCodeService.getFirstQRCodeByHuId(huId);
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
