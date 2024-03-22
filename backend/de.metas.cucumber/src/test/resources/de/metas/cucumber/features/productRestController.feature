@@ -19,7 +19,7 @@ Feature:product get/create/update using metasfresh api
       | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
       | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
       | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
-    Given metasfresh contains S_ExternalReference:
+    And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
       | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
       | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
@@ -165,7 +165,7 @@ Feature:product get/create/update using metasfresh api
       | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
       | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
       | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
-    Given metasfresh contains S_ExternalReference:
+    And metasfresh contains S_ExternalReference:
       | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
       | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
       | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
