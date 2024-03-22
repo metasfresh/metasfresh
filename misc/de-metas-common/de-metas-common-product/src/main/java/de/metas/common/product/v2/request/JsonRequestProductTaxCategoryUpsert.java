@@ -27,6 +27,7 @@ import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.jackson.Jacksonized;
 
@@ -34,6 +35,7 @@ import java.time.Instant;
 
 @Getter
 @Builder
+@EqualsAndHashCode
 @Jacksonized
 public class JsonRequestProductTaxCategoryUpsert
 {
