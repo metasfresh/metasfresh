@@ -26,39 +26,41 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.common.pricing.v2.productprice.TaxCategory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.time.Instant;
 
+import static de.metas.common.product.v2.request.JsonRequestUtil.getJsonRequestProductTaxCategoryUpsert;
 import static org.assertj.core.api.Assertions.*;
 
 public class JsonRequestProductTaxCategoryUpsertTest
 {
+	ObjectMapper mapper = new ObjectMapper();
 
-	private final ObjectMapper mapper = new ObjectMapper()
-			.findAndRegisterModules()
-			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-			.enable(MapperFeature.USE_ANNOTATIONS);
-
-	//@Test TODO see why Instant deserialization returns {"epochSecond":1711053523,"nano":348000000}
-	public void serializeDeserialize() throws IOException
+	private static ObjectMapper newJsonObjectMapper()
 	{
-		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = JsonRequestProductTaxCategoryUpsert.builder()
+		return new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+				.enable(MapperFeature.USE_ANNOTATIONS);
+	}
 
-				.taxCategory(TaxCategory.NORMAL)
+	@BeforeEach
+	public void beforeEach()
+	{
+		mapper = newJsonObjectMapper();
+	}
 
-				.validFrom(Instant.now())
-				.countryCode("DE")
-				.build();
+	@Test
+	void serializeDeserialize() throws IOException
+	{
+		final JsonRequestProductTaxCategoryUpsert request = getJsonRequestProductTaxCategoryUpsert();
+		final String valueAsString = mapper.writeValueAsString(request);
 
-		final String string = mapper.writeValueAsString(jsonRequestProductTaxCategoryUpsert);
+		final JsonRequestProductTaxCategoryUpsert readValue = mapper.readValue(valueAsString, JsonRequestProductTaxCategoryUpsert.class);
 
-		final JsonRequestProductTaxCategoryUpsert result = mapper.readValue(string, JsonRequestProductTaxCategoryUpsert.class);
-
-		assertThat(result).isEqualTo(jsonRequestProductTaxCategoryUpsert);
+		assertThat(readValue).isEqualTo(request);
 	}
 }
-

@@ -22,8 +22,10 @@
 
 package de.metas.common.product.v2.request;
 
+import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.v2.SyncAdvise;
 
+import java.time.Instant;
 import java.util.Collections;
 
 public class JsonRequestUtil
@@ -65,7 +67,6 @@ public class JsonRequestUtil
 		jsonRequestProduct.setProductCategoryIdentifier("test");
 		jsonRequestProduct.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		jsonRequestProduct.setBpartnerProductItems(Collections.singletonList(getJsonRequestBPartnerProductUpsert()));
-		//jsonRequestProduct.setProductTaxCategories(Collections.singletonList(getJsonRequestProductTaxCategoryUpsert()));
 
 		return jsonRequestProduct;
 	}
@@ -86,21 +87,14 @@ public class JsonRequestUtil
 				.build();
 	}
 
+	public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
+	{
+		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = JsonRequestProductTaxCategoryUpsert.builder()
+				.taxCategory(TaxCategory.NORMAL)
+				.countryCode("DE")
+				.validFrom(Instant.parse("2019-11-22T00:00:00Z"))
+				.build();
 
-	// public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
-	// {
-	// 	final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = new JsonRequestProductTaxCategoryUpsert();
-	//
-	//
-	// 	jsonRequestProductTaxCategoryUpsert.setTaxCategory(TaxCategory.NORMAL);
-	//
-	// 	jsonRequestProductTaxCategoryUpsert.setCountryCode("DE");
-	//
-	// 	final Instant validFrom =Instant.parse("2019-11-22T00:00:00Z");
-	//
-	// 	jsonRequestProductTaxCategoryUpsert.setValidFrom(validFrom);
-	//
-	//
-	// 	return jsonRequestProductTaxCategoryUpsert;
-	// }
+		return jsonRequestProductTaxCategoryUpsert;
+	}
 }

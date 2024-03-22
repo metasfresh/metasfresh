@@ -51,14 +51,6 @@ public class JsonRequestProductTaxCategoryUpsert
 
 	@ApiModelProperty(hidden = true)
 	private boolean validFromSet;
-
-	private SyncAdvise syncAdvise;
-
-	@ApiModelProperty(hidden = true)
-	private boolean syncAdviseSet;
-
-
-
 	public void setTaxCategory(final TaxCategory taxCategory)
 	{
 		this.taxCategory = taxCategory;
@@ -76,10 +68,4 @@ public class JsonRequestProductTaxCategoryUpsert
 		this.countryCodeSet = true;
 	}
 
-
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
-	{
-		this.syncAdvise = syncAdvise;
-		this.syncAdviseSet = true;
-	}
 }
