@@ -7,6 +7,7 @@ Feature: create or update BPartner v2
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @S0405
   @from:cucumber
   Scenario: create a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -135,6 +136,7 @@ Feature: create or update BPartner v2
 }
 """
 
+  @S0405
   Scenario: Update a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
@@ -228,6 +230,7 @@ Feature: create or update BPartner v2
 }
 """
 
+  @S0405
   Scenario: Update a BPartner contact record and Create another contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
