@@ -445,8 +445,8 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getDiscount()).as("Discount").isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).as("Processed").isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
-		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualTo(qtyordered);
-		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualTo(qtyinvoiced);
+		assertThat(orderLine.getQtyOrdered()).as("QtyOrdered").isEqualByComparingTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).as("QtyInvoiced").isEqualByComparingTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());
