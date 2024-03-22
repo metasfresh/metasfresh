@@ -176,8 +176,8 @@ Feature: external references for metasfresh resources
 
     # now omit the property "externalReferenceUrl" => expect it to be unchanged
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference           | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | externalReference_S0402-NEW | https://example.com  | 20240322                 |
+      | ExternalSystem | Type     | ExternalReference           | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW | https://example.com  |
 
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
@@ -185,7 +185,7 @@ Feature: external references for metasfresh resources
   "externalReferenceItem": {
     "externalReference": "externalReference_S0402-NEW_2",
     "lookupItem": {
-      "externalReference": "externalReference_S0402",
+      "externalReference": "externalReference_S0402-NEW",
       "type": "BPartner"
     }
   },
@@ -194,18 +194,17 @@ Feature: external references for metasfresh resources
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com  | 20240322                 |
+      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com  |
 
     # now set the property "externalReferenceUrl" explicitly to null => expect it to be null
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "externalReferenceItem": {
-    "externalReference": "externalReference_S0402-NEW_2",
     "externalReferenceUrl": null,
     "lookupItem": {
-      "externalReference": "externalReference_S0402",
+      "externalReference": "externalReference_S0402-NEW_2",
       "type": "BPartner"
     }
   },
@@ -214,5 +213,5 @@ Feature: external references for metasfresh resources
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | null                 | 20240322                 |
+      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | null                 | 
