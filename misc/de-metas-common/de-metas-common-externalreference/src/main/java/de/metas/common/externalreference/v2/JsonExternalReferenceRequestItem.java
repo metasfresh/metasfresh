@@ -22,17 +22,15 @@
 
 package de.metas.common.externalreference.v2;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -46,25 +44,21 @@ public class JsonExternalReferenceRequestItem
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceRequestItem(lookupItem, metasfreshId, null, null, null, null, null);
+		return new JsonExternalReferenceRequestItem(lookupItem, metasfreshId, null, null, null);
 	}
 
-	public static JsonExternalReferenceRequestItem of(
-			@NonNull final JsonExternalReferenceLookupItem lookupItem)
-	{
-		return new JsonExternalReferenceRequestItem(lookupItem, null, null, null, null, null, null);
-	}
 
 	@ApiModelProperty(required = true, value = "Object used to lookup the item to update. If no existing record is found, one is created. When creating a new record, the properties from the lookup-item are preferred to their counterparts from this object")
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
-	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
 	@ApiModelProperty(hidden = true)
+	@JsonIgnore
 	private boolean externalReferenceSet;
 
 	@ApiModelProperty(value = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created - either here or in the `lookupItem`.")
@@ -73,6 +67,7 @@ public class JsonExternalReferenceRequestItem
 	JsonMetasfreshId metasfreshId;
 
 	@ApiModelProperty(hidden = true)
+	@JsonIgnore
 	private boolean metasfreshIdSet;
 
 	@ApiModelProperty(value = "Translates to `S_ExternalReference.Version`.")
@@ -81,77 +76,73 @@ public class JsonExternalReferenceRequestItem
 	String version;
 
 	@ApiModelProperty(hidden = true)
+	@JsonIgnore
 	private boolean versionSet;
 
+	@ApiModelProperty(value = "Translates to `S_ExternalReference.ExternalReferenceURL`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
 	@ApiModelProperty(hidden = true)
+	@JsonIgnore
 	private boolean externalReferenceUrlSet;
 
-	@ApiModelProperty(value = "Translates to `S_ExternalReference.ExternalSystem`. Mandatory if a new record is created.")
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonExternalSystemName systemName;
-
-	@ApiModelProperty(hidden = true)
-	private boolean systemNameSet;
-
-	@ApiModelProperty(value = "Translates to `S_ExternalReference.S_ExternalReference_ID`. Ignored in upserts, only filled by metasfresh in lookups")
-	@Nullable
-	@Setter
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonMetasfreshId externalReferenceId;
-
-	@JsonCreator
 	@Builder
 	private JsonExternalReferenceRequestItem(
-			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
-			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
-			@JsonProperty("externalReference") @Nullable final String externalReference,
-			@JsonProperty("version") @Nullable final String version,
-			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl,
-			@JsonProperty("systemName") @Nullable final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceId") @Nullable final JsonMetasfreshId externalReferenceId)
+			@NonNull final JsonExternalReferenceLookupItem lookupItem,
+			@Nullable final JsonMetasfreshId metasfreshId,
+			@Nullable final String externalReference,
+			@Nullable final String version,
+			@Nullable final String externalReferenceUrl)
 	{
 		this.lookupItem = lookupItem;
 		this.metasfreshId = metasfreshId;
 		this.externalReference = externalReference;
 		this.version = version;
 		this.externalReferenceUrl = externalReferenceUrl;
-		this.systemName = systemName;
-		this.externalReferenceId = externalReferenceId;
 	}
 
+	/**
+	 * USer by jackon to create an empty instance which can then be filled using the setters.
+	 * Note that we have the setters in order to distinguish between property={@code null} and property not specified.
+	 */
+	public JsonExternalReferenceRequestItem()
+	{
+	}
+	
+	@JsonProperty("lookupItem")
+	public void setLookupItem(@NonNull final JsonExternalReferenceLookupItem lookupItem)
+	{
+		this.lookupItem = lookupItem;
+	}
+	
+	@JsonProperty("externalReference")
 	public void setExternalReference(@Nullable final String externalReference)
 	{
 		this.externalReference = externalReference;
 		this.externalReferenceSet = true;
 	}
 
+	@JsonProperty("metasfreshId")
 	public void setMetasfreshId(@Nullable final JsonMetasfreshId metasfreshId)
 	{
 		this.metasfreshId = metasfreshId;
 		this.metasfreshIdSet = true;
 	}
 
+	@JsonProperty("version")
+	//@JsonSetter
 	public void setVersion(@Nullable final String version)
 	{
 		this.version = version;
 		this.versionSet = true;
 	}
 
+	@JsonProperty("externalReferenceUrl")
 	public void setExternalReferenceUrl(@Nullable final String externalReferenceUrl)
 	{
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.externalReferenceUrlSet = true;
 	}
-
-	public void setSystemName(@Nullable final JsonExternalSystemName systemName)
-	{
-		this.systemName = systemName;
-		this.systemNameSet = true;
-	}
-
 }
