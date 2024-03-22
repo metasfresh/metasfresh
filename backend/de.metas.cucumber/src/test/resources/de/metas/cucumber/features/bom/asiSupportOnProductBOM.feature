@@ -49,10 +49,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S1              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | productExternalRef_S1   | Product                    | product_S1          |
-      | GRSSignum           | componentExternalRef_S1 | Product                    | component_S1        |
+    And metasfresh contains S_ExternalReference:
+      | ExternalSystem.Code | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
+      | GRSSignum           | productExternalRef_S1   | Product | product_S1                  |
+      | GRSSignum           | componentExternalRef_S1 | Product | component_S1                |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -174,10 +174,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S2              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | productExternalRef_S2   | Product                    | product_S2          |
-      | GRSSignum           | componentExternalRef_S2 | Product                    | component_S2        |
+    And metasfresh contains S_ExternalReference:
+      | ExternalSystem.Code | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
+      | GRSSignum           | productExternalRef_S2   | Product | product_S2                  |
+      | GRSSignum           | componentExternalRef_S2 | Product | component_S2                |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -293,10 +293,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S3              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference     | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | productExternalRef_S3 | Product                    | product_S3          |
-      | GRSSignum           | componentExternalRef  | Product                    | component_S3        |
+    And metasfresh contains S_ExternalReference:
+      | ExternalSystem.Code | ExternalReference     | Type    | OPT.M_Product_ID.Identifier |
+      | GRSSignum           | productExternalRef_S3 | Product | product_S3                  |
+      | GRSSignum           | componentExternalRef  | Product | component_S3                |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -464,10 +464,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S4              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | productExternalRef_S4   | Product                    | product_S4          |
-      | GRSSignum           | componentExternalRef_S4 | Product                    | component_S4        |
+    And metasfresh contains S_ExternalReference:
+      | ExternalSystem.Code | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
+      | GRSSignum           | productExternalRef_S4   | Product | product_S4                  |
+      | GRSSignum           | componentExternalRef_S4 | Product | component_S4                |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
