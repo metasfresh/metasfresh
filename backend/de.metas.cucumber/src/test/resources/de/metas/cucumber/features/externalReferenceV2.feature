@@ -8,6 +8,7 @@ Feature: external references for metasfresh resources
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @S0403
   @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
@@ -27,8 +28,8 @@ Feature: external references for metasfresh resources
   ]
 }
     """
-
-
+      
+  @S0403
   Scenario: some external resources are referenced to a metasfresh resource
     Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'POST' request with the payload
     """
@@ -79,6 +80,7 @@ Feature: external references for metasfresh resources
 }
     """
 
+  @S0403
   Scenario: some external resources are referenced to metasfresh resources and are searched by externalReference and metasfreshId
     Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'POST' request with the payload
     """
@@ -126,6 +128,7 @@ Feature: external references for metasfresh resources
 }
     """
 
+  @S0401
   Scenario: upsert - a new externalReference record is inserted
     Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
@@ -135,7 +138,7 @@ Feature: external references for metasfresh resources
     "externalReferenceUrl": "https://example.com",
     "metasfreshId": 20240322,
     "lookupItem": {
-      "externalReference": "externalReference123",
+      "externalReference": "externalReference_S0401",
       "type": "BPartner"
     }
   },
@@ -144,26 +147,26 @@ Feature: external references for metasfresh resources
     """
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference    | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | externalReference123 | https://example.com  | 20240322                 |
+      | ExternalSystem | Type     | ExternalReference       | ExternalReferenceURL | OPT.Referenced_Record_ID |
+      | Other          | BPartner | externalReference_S0401 | https://example.com  | 20240322                 |
 
-
+  @S0402
   Scenario: upsert - an existing externalReference record is updated
     Given metasfresh contains C_BPartners:
-      | Identifier        | Name              | OPT.IsCustomer | OPT.CompanyName       | OPT.AD_Language |
-      | customer_so_25_02 | customer_so_25_02 | Y              | customer_so_25_02_cmp | de_DE           |
+      | Identifier     | Name           | OPT.IsCustomer | OPT.CompanyName    | OPT.AD_Language |
+      | customer_S0402 | customer_S0402 | Y              | customer_S0402_cmp | de_DE           |
     And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | Type     | ExternalReference | OPT.C_BPartner_ID.Identifier |
-      | externalRef_BPartner              | Other          | BPartner | 345               | customer_so_25_02            |
+      | S_ExternalReference_ID.Identifier | ExternalSystem | Type     | ExternalReference       | OPT.C_BPartner_ID.Identifier |
+      | externalRef_BPartner_S0402        | Other          | BPartner | externalReference_S0402 | customer_S0402               |
 
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "externalReferenceItem": {
-    "externalReference": "345-NEW",
+    "externalReference": "externalReference_S0402-NEW",
     "externalReferenceUrl": "https://example.com",
     "lookupItem": {
-      "externalReference": "345",
+      "externalReference": "externalReference_S0402",
       "type": "BPartner"
     }
   },
@@ -172,5 +175,5 @@ Feature: external references for metasfresh resources
     """
 
     Then the following S_ExternalReference is changed:
-      | S_ExternalReference_ID.Identifier | OPT.ExternalReference | OPT.ExternalReferenceURL |
-      | externalRef_BPartner              | 345-NEW               | https://example.com      |
+      | S_ExternalReference_ID.Identifier | OPT.ExternalReference       | OPT.ExternalReferenceURL |
+      | externalRef_BPartner_S0402        | externalReference_S0402-NEW | https://example.com      |
