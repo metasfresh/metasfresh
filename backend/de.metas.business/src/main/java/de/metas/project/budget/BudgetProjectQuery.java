@@ -39,22 +39,28 @@ public class BudgetProjectQuery
 	String value;
 	ExternalId externalId;
 	String externalProjectReference;
+	String externalIdPattern;
 
 	@Builder
 	public BudgetProjectQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final String value,
 			@Nullable final ExternalId externalId,
-			@Nullable final String externalProjectReference)
+			@Nullable final String externalProjectReference,
+			@Nullable final String externalIdPattern)
 	{
+		Check.assume(externalId == null || externalIdPattern == null, "ExternalId and ExternalIdPattern cannot be both set");
+
 		this.orgId = orgId;
 
 		this.value = value;
 		this.externalId = externalId;
 		this.externalProjectReference = externalProjectReference;
+		this.externalIdPattern = externalIdPattern;
 		Check.errorIf(EmptyUtil.isBlank(value)
 							  && externalId == null
-							  && externalProjectReference == null, 
-					  "At least one of value, externalId or externalProjectReference need to be specified");
+							  && externalProjectReference == null
+							  && externalIdPattern == null,
+					  "At least one of value, externalId, externalProjectReference or externalIdPattern need to be specified");
 	}
 }

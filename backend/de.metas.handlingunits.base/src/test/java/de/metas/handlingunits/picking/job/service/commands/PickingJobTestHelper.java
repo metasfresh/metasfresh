@@ -170,7 +170,8 @@ public class PickingJobTestHelper
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
 				huQRCodeService,
-				inventoryService);
+				inventoryService,
+				huReservationService);
 
 		huTracer = new HUTracerInstance()
 				.dumpAttributes(false)
