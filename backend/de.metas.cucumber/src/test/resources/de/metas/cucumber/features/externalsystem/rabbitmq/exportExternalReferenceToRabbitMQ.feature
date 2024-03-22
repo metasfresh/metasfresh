@@ -80,9 +80,9 @@ Feature: Validate external reference is sent to RabbitMQ
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.parameters.C_BPartner_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                             |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPLocation_ER_25032022","type":"BPartnerLocation"}]}                                                                                                |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPContact_ER_25032022","type":"UserID"}]}                                                                                                           |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_25032022","type":"BPartner"},{"id":"BPLocation_ER_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_25032022","type":"UserID"}]} |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPLocation_ER_25032022","type":"BPartnerLocation"}]}                                                                                                |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPContact_ER_25032022","type":"UserID"}]}                                                                                                           |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPartner_ER_25032022","type":"BPartner"},{"externalReference":"BPLocation_ER_25032022","type":"BPartnerLocation"},{"externalReference":"BPContact_ER_25032022","type":"UserID"}]} |
       | config_1                            | created_bpartner                        |                                                                                                                                                                                               |
 
     And deactivate ExternalSystem_Config
@@ -164,15 +164,15 @@ Feature: Validate external reference is sent to RabbitMQ
     "systemName": "Shopware6",
     "items": [
         {
-            "id": "BPartner_ER_S2_25032022",
+            "externalReference": "BPartner_ER_S2_25032022",
             "type": "BPartner"
         },
         {
-            "id": "BPLocation_ER_S2_25032022",
+            "externalReference": "BPLocation_ER_S2_25032022",
             "type": "BPartnerLocation"
         },
         {
-            "id": "BPContact_ER_S2_25032022",
+            "externalReference": "BPContact_ER_S2_25032022",
             "type": "UserID"
         }
     ]
@@ -201,7 +201,7 @@ Feature: Validate external reference is sent to RabbitMQ
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
-      | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
+      | config_1                            | {"systemName":"Shopware6","items":[{"externalReference":"BPartner_ER_S2_25032022","type":"BPartner"},{"externalReference":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"externalReference":"BPContact_ER_S2_25032022","type":"UserID"}]} |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |

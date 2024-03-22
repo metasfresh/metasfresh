@@ -23,8 +23,8 @@
 package de.metas.rest_api.v2.pricing;
 
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
@@ -374,12 +374,12 @@ public class ProductPriceRestService
 		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(ProductPriceExternalReferenceType.PRODUCT_PRICE.getCode())
 				.build();
 
 		final JsonMetasfreshId jsonProductPriceId = JsonMetasfreshId.of(productPriceId.getRepoId());
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, jsonProductPriceId);
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, jsonProductPriceId);
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem());
 		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()

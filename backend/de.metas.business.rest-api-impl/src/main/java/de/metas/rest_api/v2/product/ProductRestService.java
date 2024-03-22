@@ -25,10 +25,11 @@ package de.metas.rest_api.v2.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
@@ -234,11 +235,11 @@ public class ProductRestService
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
+				.externalReference(externalReferenceValueAndSystem.getValue())
 				.type(ProductExternalReferenceType.PRODUCT.getCode())
 				.build();
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(externalReferenceLookupItem)
 				.metasfreshId(metasfreshId)
 				.version(externalVersion)
@@ -416,14 +417,14 @@ public class ProductRestService
 				.systemName(externalSystemName)
 				.item(JsonExternalReferenceLookupItem.builder()
 							  .type(externalReferenceType.getCode())
-							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
+							  .externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 							  .build())
 				.build();
 
 		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceRestControllerService.performLookup(orgCode, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
-				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.map(JsonExternalReferenceResponseItem::getMetasfreshId)
 				.filter(Objects::nonNull)
 				.findFirst();
 	}

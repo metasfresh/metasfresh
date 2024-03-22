@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,16 +26,20 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -44,6 +48,7 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
@@ -63,6 +68,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
@@ -79,6 +85,8 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Produc
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 public class S_ExternalReference_StepDef
@@ -89,6 +97,8 @@ public class S_ExternalReference_StepDef
 	private final S_ExternalReference_StepDefData externalRefTable;
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -98,19 +108,26 @@ public class S_ExternalReference_StepDef
 	private final TestContext testContext;
 
 	public S_ExternalReference_StepDef(
+			@NonNull final ExternalSystems externalSystems,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpLocationTable,
+			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext testContext)
 	{
+		this.externalSystems = externalSystems;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpLocationTable = bpLocationTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
 
@@ -125,15 +142,22 @@ public class S_ExternalReference_StepDef
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
 					.create()
-					.anyMatch();
+					.firstOnly(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
+			assertThat(externalRefRecord).as("S_ExternalReference was created").isNotNull();
+
+			final Integer recordId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_Referenced_Record_ID);
+			if (recordId != null)
+			{
+				assertThat(externalRefRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
+				assertThat(externalRefRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
+			}
 		}
 	}
 
@@ -187,6 +211,28 @@ public class S_ExternalReference_StepDef
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
 			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
+				assertThat(bPartnerIdentifier).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bPartnerRecord.getC_BPartner_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bPartnerRecord.getC_BPartner_ID());
+			}
+			else if (type.getCode().equals(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode()))
+			{
+				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+				assertThat(bPartnerLocationIdentifier).isNotNull();
+
+				final I_C_BPartner_Location bpartnerLocationRecord = bpLocationTable.get(bPartnerLocationIdentifier);
+				assertThat(bpartnerLocationRecord).isNotNull();
+
+				externalReferenceRecord.setRecord_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+				externalReferenceRecord.setReferenced_Record_ID(bpartnerLocationRecord.getC_BPartner_Location_ID());
+			}
 			else
 			{
 				throw new AdempiereException("Unknown X_S_ExternalReference.Type! type:" + typeCode);
@@ -208,7 +254,7 @@ public class S_ExternalReference_StepDef
 		assertThat(jsonExternalReferenceLookupResponse).isNotNull();
 		assertThat(jsonExternalReferenceLookupResponse.getItems()).isNotEmpty();
 
-		final List<JsonExternalReferenceItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
+		final List<JsonExternalReferenceResponseItem> referenceItems = jsonExternalReferenceLookupResponse.getItems();
 		final List<Map<String, String>> rows = table.asMaps();
 
 		assertThat(referenceItems.size()).isEqualTo(rows.size());
@@ -217,9 +263,9 @@ public class S_ExternalReference_StepDef
 		{
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
-			final JsonExternalReferenceItem item = Check.singleElement(referenceItems
+			final JsonExternalReferenceResponseItem item = Check.singleElement(referenceItems
 																			   .stream()
-																			   .filter(referenceItem -> referenceItem.getLookupItem().getId().equals(expectedExternalReference))
+																			   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
 																			   .collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -250,7 +296,6 @@ public class S_ExternalReference_StepDef
 			externalRefTable.putOrReplace(externalReferenceIdentifier, externalReferenceRecord);
 		}
 	}
-
 
 	@And("metasfresh contains S_ExternalReferences:")
 	public void metasfresh_contains_s_external_reference(@NonNull final DataTable dataTable)

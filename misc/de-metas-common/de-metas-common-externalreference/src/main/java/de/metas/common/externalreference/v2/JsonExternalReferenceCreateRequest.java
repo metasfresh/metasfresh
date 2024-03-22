@@ -39,13 +39,13 @@ public class JsonExternalReferenceCreateRequest
 	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
-	List<JsonExternalReferenceItem> items;
+	List<JsonExternalReferenceRequestItem> items;
 
 	@JsonCreator
 	@Builder
 	public JsonExternalReferenceCreateRequest(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceItem> items)
+			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceRequestItem> items)
 	{
 		this.systemName = systemName;
 		this.items = items;

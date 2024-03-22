@@ -37,8 +37,8 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -176,7 +176,7 @@ public class ExportCustomerProcessor implements Processor
 		return jsonExternalReferenceLookupResponse
 				.getItems()
 				.stream()
-				.map(JsonExternalReferenceItem::getExternalReference)
+				.map(JsonExternalReferenceResponseItem::getExternalReference)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
