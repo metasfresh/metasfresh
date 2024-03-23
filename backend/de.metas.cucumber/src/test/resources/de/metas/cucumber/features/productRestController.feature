@@ -15,10 +15,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: create Product request, as a REST-API invoker
   I want to be able to upsert products
 
-    Given metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -157,10 +161,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
 
-    And metasfresh contains S_ExternalReferences
-      | ExternalSystem | ExternalReference | Type     |
-      | ALBERTA        | 345               | BPartner |
-      | ALBERTA        | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """

@@ -28,7 +28,7 @@ Feature: external references for metasfresh resources
   ]
 }
     """
-      
+
   @S0403
   Scenario: some external resources are referenced to a metasfresh resource
     Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'POST' request with the payload
@@ -174,6 +174,44 @@ Feature: external references for metasfresh resources
 }
     """
 
-    Then the following S_ExternalReference is changed:
-      | S_ExternalReference_ID.Identifier | OPT.ExternalReference       | OPT.ExternalReferenceURL |
-      | externalRef_BPartner_S0402        | externalReference_S0402-NEW | https://example.com      |
+    # now omit the property "externalReferenceUrl" => expect it to be unchanged
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference           | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW | https://example.com  |
+
+    When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
+    """
+{
+  "externalReferenceItem": {
+    "externalReference": "externalReference_S0402-NEW_2",
+    "lookupItem": {
+      "externalReference": "externalReference_S0402-NEW",
+      "type": "BPartner"
+    }
+  },
+  "systemName": "Other"
+}
+    """
+
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com  |
+
+    # now set the property "externalReferenceUrl" explicitly to null => expect it to be null
+    When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
+    """
+{
+  "externalReferenceItem": {
+    "externalReferenceUrl": null,
+    "lookupItem": {
+      "externalReference": "externalReference_S0402-NEW_2",
+      "type": "BPartner"
+    }
+  },
+  "systemName": "Other"
+}
+    """
+
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | null                 | 

@@ -699,11 +699,11 @@ Feature: create production order
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_comp_1                | 100        | PCE               | CO            | boml_1                           |
       | oc_1                             | olc_2      | p_comp_2                | 150        | PCE               | CO            | boml_2                           |
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference        | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | finishedGoodExternalRef6 | Product                    | p_1                 |
-      | GRSSignum           | component1ExternalRef6   | Product                    | p_comp_1            |
-      | GRSSignum           | component3ExternalRef6   | Product                    | p_comp_3            |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference        | Type    | OPT.M_Product_ID.Identifier |
+      | finishedGoodExternalRef6          | GRSSignum      | finishedGoodExternalRef6 | Product | p_1                         |
+      | component1ExternalRef6            | GRSSignum      | component1ExternalRef6   | Product | p_comp_1                    |
+      | component3ExternalRef6            | GRSSignum      | component3ExternalRef6   | Product | p_comp_3                    |
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bom/version/001' and fulfills with '200' status code
     """
  {
