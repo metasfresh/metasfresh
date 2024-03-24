@@ -59,6 +59,7 @@ Feature: Picking workflow - validate picked HU
 
 
   @from:cucumber
+  @Id:S0406_70
   Scenario: Pick an already picked HU => error
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | IsAlwaysSplitHUsEnabled |
@@ -116,6 +117,7 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+  @Id:S0406_80
   Scenario: Pick an already shipped HU => error
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | IsAlwaysSplitHUsEnabled |
@@ -184,6 +186,7 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+  @Id:S0406_90
   Scenario: Pick a destroyed HU => success
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | IsAlwaysSplitHUsEnabled |
@@ -266,6 +269,7 @@ Feature: Picking workflow - validate picked HU
     # END
 
   @from:cucumber
+  @Id:S0406_100
   Scenario: Pick more than specified on shipment schedule in 2 sessions => success
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | IsAlwaysSplitHUsEnabled |
