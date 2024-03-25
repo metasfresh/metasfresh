@@ -98,6 +98,7 @@ import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.Env;
@@ -446,7 +447,12 @@ public class PostFinanceYbInvoiceService
 		}
 
 		senderParty.getPartyType().setAddress(addressType);
-		senderParty.getPartyType().setTaxID(bPartnerDAO.getById(bPartnerId).getTaxID());
+		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
+		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		{
+			senderParty.getPartyType().setTaxID(partnerRecord.getTaxID());
+		}
+
 
 		return senderParty;
 	}
@@ -499,6 +505,12 @@ public class PostFinanceYbInvoiceService
 
 		final PartyType partyType = YB_INVOICE_OBJECT_FACTORY.createPartyType();
 		partyType.setAddress(addressType);
+
+		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
+		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		{
+			partyType.setTaxID(partnerRecord.getTaxID());
+		}
 
 		final BillHeaderType.ReceiverParty receiverParty = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypeReceiverParty();
 		receiverParty.setPartyType(partyType);
