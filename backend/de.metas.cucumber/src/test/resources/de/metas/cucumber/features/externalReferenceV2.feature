@@ -174,11 +174,11 @@ Feature: external references for metasfresh resources
 }
     """
 
-    # now omit the property "externalReferenceUrl" => expect it to be unchanged
     Then verify that S_ExternalReference was created
       | ExternalSystem | Type     | ExternalReference           | ExternalReferenceURL |
       | Other          | BPartner | externalReference_S0402-NEW | https://example.com  |
 
+    # now omit the property "externalReferenceUrl" => expect it to be unchanged
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
