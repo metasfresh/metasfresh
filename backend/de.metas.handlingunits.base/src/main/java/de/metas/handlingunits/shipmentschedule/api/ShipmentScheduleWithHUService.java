@@ -914,7 +914,6 @@ public class ShipmentScheduleWithHUService
 				.huShipmentScheduleBL(huShipmentScheduleBL)
 				.shipmentScheduleAllocDAO(shipmentScheduleAllocDAO)
 				.handlingUnitsBL(handlingUnitsBL)
-				.lutuConfigurationFactory(lutuConfigurationFactory)
 				//
 				.shipmentScheduleIds(shipmentScheduleIds)
 				//
