@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUConstants;
@@ -115,6 +116,7 @@ public class ShipmentScheduleWithHUService
 	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly";
 
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
+	public static final String SYSCONFIG_PACK_CUS_TO_TU = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -273,7 +275,7 @@ public class ShipmentScheduleWithHUService
 	{
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
+		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
@@ -465,7 +467,7 @@ public class ShipmentScheduleWithHUService
 			final Optional<HUReservation> reservation = huReservationService.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 			if (reservation.isPresent())
 			{
-				for (final I_M_HU reservedHURecord : handlingUnitsDAO.retrieveByIds(reservation.get().getVhuIds()))
+				for (final I_M_HU reservedHURecord : handlingUnitsDAO.getByIds(reservation.get().getVhuIds()))
 				{
 					if (huStatusBL.isStatusActive(reservedHURecord))
 					{
@@ -596,8 +598,8 @@ public class ShipmentScheduleWithHUService
 		final List<ShipmentScheduleWithHU> candidatesForPick = new ArrayList<>();
 
 		//
-		// Create necessary LUs (if any)
-		createLUsIfNeeded(schedule, quantityType);
+		// Create necessary TUs/LUs (if any)
+		createTUsLUsIfNeeded(schedule, quantityType);
 
 		// retrieve the qty picked entries again, some new ones might have been created on LU creation
 		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
@@ -657,11 +659,11 @@ public class ShipmentScheduleWithHUService
 	}
 
 	/**
-	 * Create LUs for given shipment schedule.
+	 * Create TUs for picked VHUs if needed. Create LUs for given shipment schedule.
 	 * <p>
-	 * After calling this method, all our TUs from QtyPicked records shall have an LU.
+	 * After calling this method, all our CUs/TU from QtyPicked records shall have an LU.
 	 */
-	private void createLUsIfNeeded(
+	private void createTUsLUsIfNeeded(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
@@ -674,6 +676,11 @@ public class ShipmentScheduleWithHUService
 		if (HUConstants.isQuickShipment() && onlyUseQtyToDeliver)
 		{
 			return;
+		}
+
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_PACK_CUS_TO_TU, true))
+		{
+			aggregateCUsToTUs(ImmutableSet.of(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID())));
 		}
 
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);

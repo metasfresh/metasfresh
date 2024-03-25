@@ -1,6 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -34,7 +33,7 @@ class ShipmentSchedulesCUsToTUsAggregator
 			@NonNull final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			//
-			@NonNull Set<ShipmentScheduleId> shipmentScheduleIds)
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		this.huShipmentScheduleBL = huShipmentScheduleBL;
 		this.shipmentScheduleAllocDAO = shipmentScheduleAllocDAO;
@@ -57,11 +56,11 @@ class ShipmentSchedulesCUsToTUsAggregator
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesById.get(shipmentScheduleId);
 
-			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = qtyPickedRecordsByScheduleId.get(shipmentScheduleId)
+			final ImmutableSet<HuId> cuIdsToAggregate = qtyPickedRecordsByScheduleId.get(shipmentScheduleId)
 					.stream()
 					.filter(ShipmentSchedulesCUsToTUsAggregator::isEligibleForAggregation)
-					.collect(ImmutableList.toImmutableList());
-			final ImmutableSet<HuId> cuIdsToAggregate = qtyPickedRecords.stream().map(record -> HuId.ofRepoId(record.getVHU_ID())).collect(ImmutableSet.toImmutableSet());
+					.map(record -> HuId.ofRepoId(record.getVHU_ID()))
+					.collect(ImmutableSet.toImmutableSet());
 			final List<I_M_HU> cusToAggregate = handlingUnitsBL.getByIds(cuIdsToAggregate);
 			if (cusToAggregate.isEmpty())
 			{
