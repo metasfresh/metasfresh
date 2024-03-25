@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -37,6 +38,7 @@ class TULoaderInstance
 
 	@Nullable private I_M_HU _currentTU = null;
 	@Nullable private Quantity _currentTUQty = null;
+	@Nullable private AttributeSetAggregator _currentAttributes;
 
 	@Builder
 	private TULoaderInstance(
@@ -95,7 +97,19 @@ class TULoaderInstance
 		final I_M_HU currentTU = getOrCreateCurrentTU();
 		huTransformService.addCUsToTU(ImmutableList.of(cuHU), currentTU);
 		addToCurrentTUQty(cuQty);
+
+		if (_currentAttributes == null)
+		{
+			_currentAttributes = new AttributeSetAggregator();
+		}
+		_currentAttributes.collect(getAttributeStorage(cuHU));
+
 		closeCurrentTUIfCapacityExceeded();
+	}
+
+	private IAttributeStorage getAttributeStorage(final I_M_HU cuHU)
+	{
+		return huContext.getHUAttributeStorageFactory().getAttributeStorage(cuHU);
 	}
 
 	private Quantity getCurrentTURemainingQty()
@@ -126,9 +140,23 @@ class TULoaderInstance
 	{
 		if (_currentTU != null && getCurrentTURemainingQty().signum() <= 0)
 		{
-			_currentTU = null;
-			_currentTUQty = null;
+			closeCurrentTU();
 		}
+	}
+
+	void closeCurrentTU()
+	{
+		if (_currentTU != null && _currentAttributes != null)
+		{
+			final IAttributeStorage tuAttributes = getAttributeStorage(_currentTU);
+			tuAttributes.setSaveOnChange(true);
+
+			_currentAttributes.updateAggregatedValuesTo(tuAttributes);
+		}
+
+		_currentTU = null;
+		_currentTUQty = null;
+		_currentAttributes = null;
 	}
 
 	private void addToCurrentTUQty(final Quantity qtyToAdd)
@@ -184,5 +212,4 @@ class TULoaderInstance
 
 		return CollectionUtils.singleElement(destination.getCreatedHUs());
 	}
-
 }

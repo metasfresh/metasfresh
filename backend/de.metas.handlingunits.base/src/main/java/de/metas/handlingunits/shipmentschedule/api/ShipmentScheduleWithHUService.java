@@ -800,6 +800,8 @@ public class ShipmentScheduleWithHUService
 			// Also, if there are more than one QtyPickedRecords for tuHU, all those shall be updated
 			// see de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxListener.huParentChanged(I_M_HU, I_M_HU_Item)
 		}
+
+		luLoader.close();
 	}
 
 	/**

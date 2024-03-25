@@ -47,6 +47,11 @@ public class TULoader
 		tuInstance.addCU(cuHU);
 	}
 
+	public void closeCurrentTUs()
+	{
+		tuInstances.values().forEach(TULoaderInstance::closeCurrentTU);
+	}
+
 	private static void assertCU(final @NonNull I_M_HU cuHU)
 	{
 		if (!HuPackingInstructionsVersionId.ofRepoId(cuHU.getM_HU_PI_Version_ID()).isVirtual())

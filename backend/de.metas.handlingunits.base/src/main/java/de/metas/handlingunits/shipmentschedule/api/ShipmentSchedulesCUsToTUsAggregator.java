@@ -77,6 +77,7 @@ class ShipmentSchedulesCUsToTUsAggregator
 			try (final IAutoCloseable ignored = ShipmentScheduleHUTrxListener.temporaryEnableUpdateAllocationLUAndTUForCU())
 			{
 				tuLoader.addCUs(cusToAggregate);
+				tuLoader.closeCurrentTUs();
 			}
 		}
 	}
