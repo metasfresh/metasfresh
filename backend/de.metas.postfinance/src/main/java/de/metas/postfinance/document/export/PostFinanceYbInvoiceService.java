@@ -323,17 +323,22 @@ public class PostFinanceYbInvoiceService
 		}
 
 		deliveryType.setDeliveryDate(toXMLCalendar(invoiceToExport.getInvoiceDate()));
-		final String docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
-		final String transactionId = invoiceToExport.getId().getRepoId()
-				+ invoiceToExport.getDocBaseAndSubType().getDocBaseType().getCode()
-				+ (EmptyUtil.isBlank(docSubType) ? "" : docSubType)
-				+ invoiceToExport.getDocumentNumber();
-		deliveryType.setTransactionID(transactionId);
+
+		deliveryType.setTransactionID(getTransactionId(invoiceToExport));
 		deliveryType.setEBillAccountID(Long.parseLong(eBillAccountID));
 		deliveryType.setBillDetailsType(YB_INVOICE_BILL_DETAILS_TYPE_PDF_APPENDIX);
 
 
 		return deliveryType;
+	}
+
+	public String getTransactionId(@NonNull final InvoiceToExport invoiceToExport)
+	{
+		final String docSubType = invoiceToExport.getDocBaseAndSubType().getDocSubType();
+		return invoiceToExport.getId().getRepoId()
+				+ invoiceToExport.getDocBaseAndSubType().getDocBaseType().getCode()
+				+ (EmptyUtil.isBlank(docSubType) ? "" : docSubType)
+				+ invoiceToExport.getDocumentNumber();
 	}
 
 	private BillType getBillType(@NonNull final InvoiceToExport invoiceToExport)
@@ -342,7 +347,7 @@ public class PostFinanceYbInvoiceService
 		final BillType.Header header = YB_INVOICE_OBJECT_FACTORY.createBillTypeHeader();
 
 		header.setDocumentType(PostFinanceDocumentType.BILL);
-		header.setDocumentID(invoiceToExport.getDocumentNumber());
+		header.setDocumentID(getTransactionId(invoiceToExport));
 
 		final XMLGregorianCalendar invoiceDate = toXMLCalendar(invoiceToExport.getInvoiceDate());
 		header.setDocumentDate(invoiceDate);
@@ -639,9 +644,20 @@ public class PostFinanceYbInvoiceService
 		final SummaryType summaryType = YB_INVOICE_OBJECT_FACTORY.createSummaryType();
 		summaryType.setTax(taxType);
 
-		summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines());
-		summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal());
-		summaryType.setTotalAmountDue(invoiceRecord.getGrandTotal());
+		if(invoiceToExport.getDocBaseAndSubType().getDocBaseType().isARCreditMemo())
+		{
+			summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines().negate());
+			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal().negate());
+			summaryType.setTotalAmountDue(invoiceRecord.getGrandTotal().negate());
+		}
+		else
+		{
+			summaryType.setTotalAmountExclusiveTax(invoiceRecord.getTotalLines());
+			summaryType.setTotalAmountInclusiveTax(invoiceRecord.getGrandTotal());
+			summaryType.setTotalAmountDue(invoiceRecord.getGrandTotal());
+		}
+
+
 
 		summaryType.setTotalAmountPaid(BigDecimal.ZERO);
 

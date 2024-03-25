@@ -97,11 +97,18 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(creditMemoRecord.getRef_Invoice_ID());
 		if(refInvoiceId != null)
 		{
-			final I_C_Invoice invoiceRecord = invoiceBL.getById(refInvoiceId);
+			final Optional<InvoiceToExport> refInvoiceToExportOptional = invoiceToExportFactory.getCreateForId(invoiceId);
+
+			if(invoiceToExportOptional.isEmpty())
+			{
+				throw new PostFinanceExportException("Failed to create refInvoiceToExport");
+			}
+
+			final InvoiceToExport refInvoiceToExport = invoiceToExportOptional.get();
 			final FixedReference billNumberReference = YB_INVOICE_OBJECT_FACTORY.createFixedReference();
 			billNumberReference.setReferenceType("BillNumber");
 			billNumberReference.setReferencePosition("0");
-			billNumberReference.setReferenceValue(invoiceRecord.getDocumentNo());
+			billNumberReference.setReferenceValue(postFinanceYbInvoiceService.getTransactionId(refInvoiceToExport));
 			envelope.getBody().getBill().getHeader().getFixedReference().add(billNumberReference);
 		}
 

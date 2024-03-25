@@ -69,18 +69,16 @@ public class PostFinanceLogRepository
 				.build();
 	}
 
-	public Optional<PostFinanceLog> retrieveLatestLogWithTransactionId(@NonNull final DocOutboundLogId docOutboundLogId)
+	public Optional<PostFinanceLog> retrieveLatestLogWithTransactionId(@NonNull final String transactionId)
 	{
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_PostFinance_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMN_C_Doc_Outbound_Log_ID, docOutboundLogId)
-				.addNotNull(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMN_PostFinance_Transaction_Id)
+				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMN_PostFinance_Transaction_Id, transactionId)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_Created)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_C_Doc_Outbound_Log_PostFinance_Log_ID)
 				.create()
 				.stream()
 				.findFirst()
 				.map(this::toPostFinanceLog);
-
 	}
 }
