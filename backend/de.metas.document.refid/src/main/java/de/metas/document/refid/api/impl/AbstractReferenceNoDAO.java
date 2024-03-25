@@ -13,6 +13,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@Override
 	// @Cached(cacheName = I_C_ReferenceNo_Type.Table_Name + "_ForClient")
 	public final List<I_C_ReferenceNo_Type> retrieveReferenceNoTypes()
@@ -233,4 +236,22 @@ public abstract class AbstractReferenceNoDAO implements IReferenceNoDAO
 				.map(ReferenceNoId::ofRepoId);
 	}
 
+	@Override
+	public Optional<I_C_ReferenceNo> retrieveRefNo(@NonNull final TableRecordReference tableRecordReference, @NonNull final I_C_ReferenceNo_Type type)
+	{
+		final IQuery<I_C_ReferenceNo_Doc> referenceDocSubQuery = queryBL.createQueryBuilder(I_C_ReferenceNo_Doc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.addEqualsFilter(I_C_ReferenceNo_Doc.COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_ReferenceNo.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID, type.getC_ReferenceNo_Type_ID())
+				.addInSubQueryFilter(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID,
+									 I_C_ReferenceNo_Doc.COLUMNNAME_C_ReferenceNo_ID,
+									 referenceDocSubQuery)
+				.create()
+				.firstOnlyOptional(I_C_ReferenceNo.class);
+	}
 }

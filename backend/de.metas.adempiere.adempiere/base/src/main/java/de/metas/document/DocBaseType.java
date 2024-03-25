@@ -95,4 +95,10 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isSalesOrder() {return SalesOrder.equals(this);}
 
 	public boolean isPurchaseOrder() {return PurchaseOrder.equals(this);}
+
+	public boolean isSalesInvoice() {return ARInvoice.equals(this);}
+
+	public boolean isARCreditMemo() {return ARCreditMemo.equals(this);}
+
+	public boolean isDunningDoc(){return DunningDoc.equals((this));}
 }

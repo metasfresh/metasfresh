@@ -1,19 +1,8 @@
-package de.metas.invoice_gateway.spi.model;
-
-import de.metas.invoice.InvoiceLineId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import java.util.List;
-
 /*
  * #%L
- * metasfresh-invoice.gateway.commons
+ * de.metas.postfinance
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,19 +20,20 @@ import java.util.List;
  * #L%
  */
 
+package de.metas.postfinance.document.export;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 @Value
 @Builder
-public class InvoiceLine
+public class PostFinanceYbInvoiceRequest
 {
-	@NonNull
-	InvoiceLineId id;
+	@NonNull TableRecordReference documentReference;
 
-	@NonNull
-	ProductId productId;
+	@NonNull TableRecordReference pInstanceReference;
 
-	@Singular
-	List<String> externalIds;
-
-	@NonNull
-	Money lineAmount;
+	@NonNull TableRecordReference docOutboundLogReference;
 }
