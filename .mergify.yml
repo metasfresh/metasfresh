@@ -40,6 +40,7 @@ pull_request_rules:
               - base=secondary_opinion_uat
               - base=tasty_ham_uat
               - base=tenacious_d_uat
+              - base=vampire_textbook_uat
               - base=yoyo_uat
               - base=zulu_alpha_uat
           - or: &PROJECT_BRANCHES_HOTFIX
