@@ -106,7 +106,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
 		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().getPaymentInformation().setPaymentType(PostFinanceDocumentType.REMINDER);
+		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.REMINDER);
 		final String transactionId = postFinanceYbInvoiceService.getTransactionId(dunningToExport);
 		envelope.getBody().getDeliveryInfo().setTransactionID(transactionId);
 		envelope.getBody().getBill().getHeader().setDocumentID(transactionId);
