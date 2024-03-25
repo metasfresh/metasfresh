@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.allocation.impl.TULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -20,6 +21,8 @@ import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
@@ -27,6 +30,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
 	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule shipmentSchedule);
+
+	Map<ShipmentScheduleId, de.metas.handlingunits.model.I_M_ShipmentSchedule> getByIds(@NonNull Set<ShipmentScheduleId> ids);
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -63,6 +68,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 */
 	void updateAllocationLUForTU(I_M_HU tuHU);
 
+	void updateAllocationLUAndTUForCU(I_M_HU cuHU);
+
 	/**
 	 * Unassigns the given <code>shipmmentSchedule</code> from the given <code>tuHU</code> by inactivating existing {@link I_M_ShipmentSchedule_QtyPicked} records.<br>
 	 * Also updates the given <code>tuHU</code> 's (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to <code>null</code>.<br>
@@ -92,6 +99,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_IgnoringPickedHUs(I_M_ShipmentSchedule shipmentSchedule);
 
 	I_M_ShipmentSchedule getShipmentScheduleOrNull(I_M_HU hu);
+
+	Optional<TULoader> createTULoader(de.metas.handlingunits.model.I_M_ShipmentSchedule schedule);
 
 	I_M_HU_LUTU_Configuration deriveM_HU_LUTU_Configuration(I_M_ShipmentSchedule schedule);
 
