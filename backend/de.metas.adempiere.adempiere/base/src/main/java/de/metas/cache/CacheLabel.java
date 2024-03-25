@@ -32,17 +32,26 @@ public class CacheLabel
 {
 	public static final String NO_TABLENAME_PREFIX = "$NoTableName$";
 
-	public static CacheLabel ofTableName(final String tableName)
-	{
-		return new CacheLabel(tableName);
-	}
-
-	String name;
+	@NonNull String name;
 
 	private CacheLabel(@NonNull final String name)
 	{
 		this.name = name;
 	}
+
+	public static CacheLabel ofTableName(@NonNull final String tableName)
+	{
+		return new CacheLabel(tableName);
+	}
+
+	public static CacheLabel ofString(@NonNull final String string)
+	{
+		return new CacheLabel(string);
+	}
+
+	@Override
+	@Deprecated
+	public String toString() {return getName();}
 
 	public boolean equalsByName(@Nullable final String otherName)
 	{
