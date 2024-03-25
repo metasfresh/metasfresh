@@ -3,7 +3,7 @@
 Feature:product get/create/update using metasfresh api
   As a REST-API invoker
   I want want to be able to upsert products
-  
+
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -380,9 +380,9 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+    And metasfresh contains S_ExternalReference:
+      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | OPT.M_Product_ID.Identifier |
+      | LeichUndMehl        | productExternalRef | Product                    | product_1                   |
 
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
 
