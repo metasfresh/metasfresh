@@ -36,13 +36,13 @@ public class JsonSingleExternalReferenceCreateReq
 	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
-	JsonExternalReferenceItem externalReferenceItem;
+	JsonExternalReferenceRequestItem externalReferenceItem;
 
 	@JsonCreator
 	@Builder
 	public JsonSingleExternalReferenceCreateReq(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceRequestItem externalReferenceItem)
 	{
 		this.systemName = systemName;
 		this.externalReferenceItem = externalReferenceItem;

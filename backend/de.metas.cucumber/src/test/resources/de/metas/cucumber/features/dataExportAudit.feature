@@ -186,15 +186,15 @@ Feature: data export audit using bpartner metasfresh api
     "systemName": "Shopware6",
     "items": [
         {
-            "id": "BPartner_ER_Audit_25032022",
+            "externalReference": "BPartner_ER_Audit_25032022",
             "type": "BPartner"
         },
         {
-            "id": "BPLocation_ER_Audit_25032022",
+            "externalReference": "BPLocation_ER_Audit_25032022",
             "type": "BPartnerLocation"
         },
         {
-            "id": "BPContact_ER_Audit_25032022",
+            "externalReference": "BPContact_ER_Audit_25032022",
             "type": "UserID"
         }
     ]

@@ -27,8 +27,8 @@ import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestGreetingUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.bankaccount.BPBankAccountType;
@@ -46,7 +46,7 @@ import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERE
 public class JsonExternalReferenceHelper
 {
 	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestLocationUpsertItem upsertItem)
+	public static Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final JsonRequestLocationUpsertItem upsertItem)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getLocationIdentifier());
 
@@ -55,10 +55,10 @@ public class JsonExternalReferenceHelper
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(JsonExternalReferenceLookupItem.builder()
 									.type(BPLocationExternalReferenceType.BPARTNER_LOCATION.getCode())
-									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 									.build())
 				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.externalSystemConfigId(upsertItem.getExternalSystemConfigId())
@@ -70,7 +70,7 @@ public class JsonExternalReferenceHelper
 	}
 
 	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestContactUpsertItem upsertItem)
+	public static Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final JsonRequestContactUpsertItem upsertItem)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getContactIdentifier());
 
@@ -79,10 +79,10 @@ public class JsonExternalReferenceHelper
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(JsonExternalReferenceLookupItem.builder()
 									.type(ExternalUserReferenceType.USER_ID.getCode())
-									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 									.build())
 				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.externalSystemConfigId(upsertItem.getExternalSystemConfigId())
@@ -93,7 +93,7 @@ public class JsonExternalReferenceHelper
 	}
 
 	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestBPartnerUpsertItem upsertItem)
+	public static Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final JsonRequestBPartnerUpsertItem upsertItem)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getBpartnerIdentifier());
 
@@ -102,10 +102,10 @@ public class JsonExternalReferenceHelper
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(JsonExternalReferenceLookupItem.builder()
 									.type(BPartnerExternalReferenceType.BPARTNER.getCode())
-									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 									.build())
 				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.externalSystemConfigId(upsertItem.getExternalSystemConfigId())
@@ -118,7 +118,7 @@ public class JsonExternalReferenceHelper
 	}
 
 	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestBankAccountUpsertItem upsertItem)
+	public static Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final JsonRequestBankAccountUpsertItem upsertItem)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getIdentifier());
 
@@ -127,10 +127,10 @@ public class JsonExternalReferenceHelper
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(JsonExternalReferenceLookupItem.builder()
 									.type(BPBankAccountType.BPBankAccount.getCode())
-									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 									.build())
 				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.build();
@@ -139,7 +139,7 @@ public class JsonExternalReferenceHelper
 	}
 
 	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestGreetingUpsertItem upsertItem)
+	public static Optional<JsonExternalReferenceRequestItem> getExternalReferenceItem(@NonNull final JsonRequestGreetingUpsertItem upsertItem)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getIdentifier());
 
@@ -148,10 +148,10 @@ public class JsonExternalReferenceHelper
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+		final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.builder()
 				.lookupItem(JsonExternalReferenceLookupItem.builder()
 									.type(GreetingExternalReferenceType.GREETING.getCode())
-									.id(externalIdentifier.asExternalValueAndSystem().getValue())
+									.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 									.build())
 				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 				.build();

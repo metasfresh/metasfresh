@@ -27,48 +27,53 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
 import javax.annotation.Nullable;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
-public class JsonExternalReferenceItem
+public class JsonExternalReferenceResponseItem
 {
 	@NonNull
-	public static JsonExternalReferenceItem of(
+	public static JsonExternalReferenceResponseItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return JsonExternalReferenceItem.builder()
+		return JsonExternalReferenceResponseItem.builder()
 				.lookupItem(lookupItem)
 				.metasfreshId(metasfreshId)
 				.build();
 	}
 
 	@NonNull
-	public static JsonExternalReferenceItem of(
+	public static JsonExternalReferenceResponseItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return JsonExternalReferenceItem.builder()
+		return JsonExternalReferenceResponseItem.builder()
 				.lookupItem(lookupItem)
 				.build();
 	}
 
+	@Schema(requiredMode = REQUIRED, description = "Object used to lookup the item to update. If no existing record is found, one is created. When creating a new record, the properties from the lookup-item are preferred to their counterparts from this object")
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
+	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
+	@Schema(description = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created - either here or in the `lookupItem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@With
 	JsonMetasfreshId metasfreshId;
 
+	@Schema(description = "Translates to `S_ExternalReference.Version`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String version;
@@ -77,25 +82,19 @@ public class JsonExternalReferenceItem
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
+	@Schema(description = "Translates to `S_ExternalReference.ExternalSystem`. Mandatory if a new record is created.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonExternalSystemName systemName;
 
+	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference_ID`. Ignored in upserts, only filled by metasfresh in lookups")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalReferenceId;
 
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonMetasfreshId externalSystemConfigId;
-
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	Boolean isReadOnlyMetasfresh;
-
 	@JsonCreator
 	@Builder
-	private JsonExternalReferenceItem(
+	private JsonExternalReferenceResponseItem(
 			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@JsonProperty("externalReference") @Nullable final String externalReference,
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
@@ -113,7 +112,5 @@ public class JsonExternalReferenceItem
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.systemName = systemName;
 		this.externalReferenceId = externalReferenceId;
-		this.externalSystemConfigId = externalSystemConfigId;
-		this.isReadOnlyMetasfresh = isReadOnlyMetasfresh;
 	}
 }

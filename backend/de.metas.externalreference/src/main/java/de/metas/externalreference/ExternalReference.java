@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ExternalReference
 {
 	/**
