@@ -24,9 +24,9 @@ Feature:product get/create/update using metasfresh api
       | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
       | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
     And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem.Code | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
-      | ExternalReference_20240322_1      | ALBERTA             | 345               | BPartner | customer_20240322_1          |
-      | ExternalReference_20240322_2      | ALBERTA             | 456               | BPartner | customer_20240322_2          |
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
@@ -251,9 +251,9 @@ Feature:product get/create/update using metasfresh api
       | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
       | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
     And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem.Code | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
-      | ExternalReference_20240322_1      | ALBERTA             | 345               | BPartner | customer_20240322_1          |
-      | ExternalReference_20240322_2      | ALBERTA             | 456               | BPartner | customer_20240322_2          |
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -381,7 +381,7 @@ Feature:product get/create/update using metasfresh api
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
     And metasfresh contains S_ExternalReference:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | OPT.M_Product_ID.Identifier |
+      | ExternalSystem | ExternalReference  | ExternalReferenceType | OPT.M_Product_ID.Identifier |
       | LeichUndMehl        | productExternalRef | Product                    | product_1                   |
 
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
