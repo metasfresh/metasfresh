@@ -1,25 +1,3 @@
-/*
- * #%L
- * de-metas-camel-sap-file-import
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.camel.externalsystems.pcm.product;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,6 +7,7 @@ import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -41,23 +20,14 @@ import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesControlle
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
+@RequiredArgsConstructor
 public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
 	private static final String START_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "startProductSyncLocalFile";
 	private static final String STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "stopProductSyncLocalFile";
 
-	@VisibleForTesting
-	public static final String START_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + START_PRODUCT_SYNC_LOCAL_FILE_ROUTE;
-	@VisibleForTesting
-	public static final String STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE;
-
 	@NonNull
 	private final ProcessLogger processLogger;
-
-	public LocalFileProductSyncServiceRouteBuilder(final @NonNull ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
 
 	@Override
 	public void configure()
@@ -66,15 +36,15 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(START_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStartProductRouteId()))
+				.routeId(getStartProductRouteId())
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStopProductRouteId()))
+				.routeId(getStopProductRouteId())
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -149,5 +119,17 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 	public String getDisableCommand()
 	{
 		return STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE;
+	}
+
+	@NonNull
+	public String getStartProductRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getEnableCommand();
+	}
+
+	@NonNull
+	public String getStopProductRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getDisableCommand();
 	}
 }
