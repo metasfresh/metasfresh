@@ -73,7 +73,7 @@ public class PostFinanceLogRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_PostFinance_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMN_PostFinance_Transaction_Id, transactionId)
+				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_PostFinance_Transaction_Id, transactionId)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_Created)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_C_Doc_Outbound_Log_PostFinance_Log_ID)
 				.create()

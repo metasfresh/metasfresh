@@ -24,6 +24,7 @@ package de.metas.postfinance.customerregistration.util;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.metas.postfinance.ConfiguredXmlMapper;
+import de.metas.postfinance.document.results.model.XmlProcessProtocol;
 import de.metas.postfinance.jaxb.DownloadFile;
 import de.metas.postfinance.customerregistration.model.XmlCustomerRegistrationMessage;
 import lombok.NonNull;
@@ -67,6 +68,7 @@ public class XMLUtil
 		}
 	}
 
+
 	public boolean isXML(@NonNull final String filename)
 	{
 		final String name = filename.trim().toLowerCase();
@@ -99,5 +101,22 @@ public class XMLUtil
 							  new StreamResult(buffer));
 
 		return buffer.toString();
+	}
+
+	@NonNull
+	public XmlProcessProtocol getXmlProcessProtocol(@NonNull final DownloadFile downloadFile)
+	{
+		try
+		{
+			final Document document = readFromDownloadFile(downloadFile);
+			final String documentAsString = toString(document);
+
+			final XmlMapper xmlMapper = ConfiguredXmlMapper.get();
+			return xmlMapper.readValue(documentAsString, XmlProcessProtocol.class);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException(e);
+		}
 	}
 }
