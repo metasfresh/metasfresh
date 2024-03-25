@@ -38,6 +38,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -46,6 +47,7 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
@@ -339,6 +341,13 @@ public class PostFinanceYbInvoiceService
 				+ invoiceToExport.getDocBaseAndSubType().getDocBaseType().getCode()
 				+ (EmptyUtil.isBlank(docSubType) ? "" : docSubType)
 				+ invoiceToExport.getDocumentNumber();
+	}
+
+	public String getTransactionId(@NonNull final DunningToExport dunningToExport)
+	{
+		return dunningToExport.getId().getRepoId()
+				+ DocBaseType.DunningDoc.getCode()
+				+ dunningToExport.getDocumentNumber();
 	}
 
 	private BillType getBillType(@NonNull final InvoiceToExport invoiceToExport)
