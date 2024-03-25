@@ -68,7 +68,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -105,6 +104,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 @Service
 public class ShipmentScheduleWithHUService
@@ -124,9 +124,12 @@ public class ShipmentScheduleWithHUService
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final HUReservationService huReservationService;
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService)
 	{
@@ -180,7 +183,7 @@ public class ShipmentScheduleWithHUService
 		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
 		final IHUContext huContext = request.getHuContext();
 
-		final I_M_ShipmentSchedule scheduleRecord = Services.get(IShipmentSchedulePA.class).getById(request.getShipmentScheduleId());
+		final I_M_ShipmentSchedule scheduleRecord = huShipmentScheduleBL.getById(request.getShipmentScheduleId());
 
 		switch (quantityType)
 		{
@@ -268,8 +271,6 @@ public class ShipmentScheduleWithHUService
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final IHUContext huContext)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
 		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
@@ -279,7 +280,6 @@ public class ShipmentScheduleWithHUService
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
 				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext));
@@ -328,7 +328,7 @@ public class ShipmentScheduleWithHUService
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final boolean pickAvailableHUsOntheFly = Services.get(ISysConfigBL.class)
+		final boolean pickAvailableHUsOntheFly = sysConfigBL
 				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
 						true,
 						adClientId,
@@ -363,7 +363,6 @@ public class ShipmentScheduleWithHUService
 			return ImmutableList.of();
 		}
 
-		//final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		//		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
 		//
 		//		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
@@ -548,8 +547,6 @@ public class ShipmentScheduleWithHUService
 			final ProductId productId,
 			final I_C_UOM uomRecord)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		return handlingUnitsBL
 				.getStorageFactory()
 				.getStorage(sourceHURecord)
@@ -800,7 +797,7 @@ public class ShipmentScheduleWithHUService
 			luLoader.addTU(tuHU);
 
 			// NOTE: after TU was added to an LU we expect this qtyPickedRecord to be updated and M_LU_HU_ID to be set
-			// Also, if there more then one QtyPickedRecords for tuHU, all those shall be updated
+			// Also, if there are more than one QtyPickedRecords for tuHU, all those shall be updated
 			// see de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxListener.huParentChanged(I_M_HU, I_M_HU_Item)
 		}
 	}
@@ -812,9 +809,6 @@ public class ShipmentScheduleWithHUService
 	 */
 	private void createLUsForQtyToDeliver(final I_M_ShipmentSchedule schedule)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(schedule);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
@@ -854,12 +848,9 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@NonNull
-	private ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
+	ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(schedule);
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
 		final ILUTUProducerAllocationDestination luProducerDestination = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
@@ -910,5 +901,23 @@ public class ShipmentScheduleWithHUService
 		return alreadyAllocatedHUs.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver, Quantity::subtract);
+	}
+
+	public void aggregateCUsToTUs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		ShipmentSchedulesCUsToTUsAggregator.builder()
+				.huShipmentScheduleBL(huShipmentScheduleBL)
+				.shipmentScheduleAllocDAO(shipmentScheduleAllocDAO)
+				.handlingUnitsBL(handlingUnitsBL)
+				.lutuConfigurationFactory(lutuConfigurationFactory)
+				//
+				.shipmentScheduleIds(shipmentScheduleIds)
+				//
+				.build().execute();
 	}
 }

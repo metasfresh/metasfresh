@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -57,7 +56,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -101,7 +99,6 @@ public class PickingJobPickCommand
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 
-	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -275,7 +272,6 @@ public class PickingJobPickCommand
 		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
 		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
 		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
-		final PackToSpec packToSpec = PackToSpec.ofTUPackingInstructionsId(HUPIItemProductId.ofRepoIdOrNone(orderDAO.getOrderLineById(line.getSalesOrderAndLineId()).getM_HU_PI_Item_Product_ID()));
 
 		pickingJob = pickingJob.withNewStep(
 				PickingJob.AddStepRequest.builder()
@@ -291,13 +287,14 @@ public class PickingJobPickCommand
 								.id(pickFromHUId)
 								.qrCode(pickFromHUQRCode)
 								.build())
-						.packToSpec(packToSpec)
+						.packToSpec(PackToSpec.VIRTUAL) // will aggregate them later
 						.build()
 		);
 
 		this.stepId = newStepId;
 	}
 
+	@NonNull
 	private HUQRCode getPickFromHUQRCode()
 	{
 		final IHUQRCode pickFromHUQRCode = Check.assumeNotNull(this.pickFromHUQRCode, "HU QR code shall be provided");
@@ -381,13 +378,12 @@ public class PickingJobPickCommand
 		step.getPickFrom(stepPickFromKey).assertNotPicked();
 
 		final ProductId productId = step.getProductId();
-		final PackToSpec packToSpec = step.getPackToSpec();
 		final PickingJobStepPickFrom pickFrom = step.getPickFrom(stepPickFromKey);
 		final HUInfo pickFromHU = pickFrom.getPickFromHU();
 		final LocatorId pickFromLocatorId = pickFrom.getPickFromLocatorId();
 
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(
-				packToSpec,
+				step.getPackToSpec(),
 				pickingJob.getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
@@ -587,6 +583,8 @@ public class PickingJobPickCommand
 	private void validatePickedHU()
 	{
 		final HuId huIdToBePicked = getHuIdToBePicked();
+
+		// Accept destroyed HUs because in case of createInventoryForMissingQty we will create a new HU out of the blue
 		final boolean isDestroyed = handlingUnitsBL.isDestroyed(handlingUnitsDAO.getById(huIdToBePicked));
 		if (isDestroyed)
 		{
@@ -601,8 +599,7 @@ public class PickingJobPickCommand
 		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
 		if (pickFromHUS.isEmpty())
 		{
-			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG)
-					.markAsUserValidationError();
+			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG).markAsUserValidationError();
 		}
 	}
 

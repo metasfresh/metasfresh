@@ -74,6 +74,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
@@ -141,6 +142,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		return shipmentScheduleDAO.getByIds(ids, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
@@ -191,7 +198,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext);
 	}
 
-	private void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)
+	private static void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)
 	{
 		qtyPickedRecord.setM_LU_HU(husPair.getM_LU_HU());
 		qtyPickedRecord.setM_TU_HU(husPair.getM_TU_HU());

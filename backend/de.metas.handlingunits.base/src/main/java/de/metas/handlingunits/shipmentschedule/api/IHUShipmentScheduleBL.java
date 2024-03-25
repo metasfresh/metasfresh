@@ -20,6 +20,7 @@ import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
@@ -27,6 +28,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
 	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule shipmentSchedule);
+
+	Map<ShipmentScheduleId, de.metas.handlingunits.model.I_M_ShipmentSchedule> getByIds(@NonNull Set<ShipmentScheduleId> ids);
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule shipmentSchedule);
 

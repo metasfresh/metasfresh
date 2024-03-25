@@ -48,6 +48,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
@@ -160,6 +161,7 @@ public class PickingJobTestHelper
 				),
 				pickingConfigRepo,
 				ShipmentService.getInstance(),
+				new ShipmentScheduleWithHUService(huReservationService),
 				huQRCodeService,
 				inventoryService,
 				huReservationService);

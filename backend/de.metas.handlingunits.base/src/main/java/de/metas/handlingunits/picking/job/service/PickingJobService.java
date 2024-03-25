@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickComma
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -65,6 +66,7 @@ public class PickingJobService
 	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final IShipmentService shipmentService;
+	@NonNull private final ShipmentScheduleWithHUService shipmentScheduleService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
@@ -110,6 +112,7 @@ public class PickingJobService
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.shipmentService(shipmentService)
+				.shipmentScheduleService(shipmentScheduleService)
 				//
 				.pickingJob(pickingJob);
 	}

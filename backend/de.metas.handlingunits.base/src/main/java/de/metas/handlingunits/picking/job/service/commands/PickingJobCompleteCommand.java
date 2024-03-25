@@ -9,6 +9,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,6 +28,7 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final IShipmentService shipmentService;
+	@NonNull private final ShipmentScheduleWithHUService shipmentScheduleService;
 
 	@NonNull private final PickingJob initialPickingJob;
 	@NonNull private final CreateShipmentPolicy createShipmentPolicy;
@@ -38,6 +40,7 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			final @NonNull IShipmentService shipmentService,
+			final @NonNull ShipmentScheduleWithHUService shipmentScheduleService,
 			//
 			final @NonNull PickingJob pickingJob,
 			final @Nullable CreateShipmentPolicy createShipmentPolicy)
@@ -47,6 +50,7 @@ public class PickingJobCompleteCommand
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.shipmentService = shipmentService;
+		this.shipmentScheduleService = shipmentScheduleService;
 
 		this.initialPickingJob = pickingJob;
 		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
@@ -75,6 +79,8 @@ public class PickingJobCompleteCommand
 			throw new AdempiereException("All steps shall be picked");
 		}
 
+		shipmentScheduleService.aggregateCUsToTUs(initialPickingJob.getShipmentScheduleIds());
+
 		final PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
@@ -101,7 +107,7 @@ public class PickingJobCompleteCommand
 					.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 					.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
 					// since we are not going to immediately create invoices, we want to move on and to wait for shipments
-					.waitForShipments(false) 
+					.waitForShipments(false)
 					.build());
 		}
 	}
