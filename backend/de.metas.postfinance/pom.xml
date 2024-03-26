@@ -16,9 +16,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
-        <migration-sql-basedir>90-postfinance</migration-sql-basedir>
-        <src.dir>src/main/java-gen</src.dir>
-        <src.dir>src/main/java-xjc</src.dir>
+        <migration-sql-basedir/>
     </properties>
 
     <dependencies>
