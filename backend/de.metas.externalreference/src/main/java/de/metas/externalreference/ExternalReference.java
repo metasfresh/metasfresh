@@ -71,7 +71,8 @@ public class ExternalReference
 	@Nullable
 	Integer externalSystemParentConfigId;
 
-	boolean isReadOnlyInMetasfresh;
+	@Builder.Default
+	boolean readOnlyInMetasfresh = false;
 
 	int recordId;
 

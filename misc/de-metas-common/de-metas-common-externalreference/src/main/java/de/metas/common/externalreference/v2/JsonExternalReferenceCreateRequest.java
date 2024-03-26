@@ -33,10 +33,12 @@ import lombok.Value;
 
 import java.util.List;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 public class JsonExternalReferenceCreateRequest
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@Schema(requiredMode = REQUIRED, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
 	List<JsonExternalReferenceRequestItem> items;

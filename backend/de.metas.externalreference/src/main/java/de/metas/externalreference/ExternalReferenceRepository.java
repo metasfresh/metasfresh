@@ -49,8 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -355,7 +355,7 @@ public class ExternalReferenceRepository
 				.version(record.getVersion())
 				.externalReferenceUrl(record.getExternalReferenceURL())
 				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
-				.isReadOnlyInMetasfresh(record.isReadOnlyInMetasfresh())
+				.readOnlyInMetasfresh(record.isReadOnlyInMetasfresh())
 				.build();
 	}
 

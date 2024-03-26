@@ -59,16 +59,16 @@ public class JsonExternalReferenceResponseItem
 				.build();
 	}
 
-	@Schema(requiredMode = REQUIRED, description = "Object used to lookup the item to update. If no existing record is found, one is created. When creating a new record, the properties from the lookup-item are preferred to their counterparts from this object")
+	@Schema(requiredMode = REQUIRED, description = "Object used to lookup the item in question.")
 	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
-	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
+	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReference;
 
-	@Schema(description = "Translates to `S_ExternalReference.Record_ID`. Mandatory if a new record is created - either here or in the `lookupItem`.")
+	@Schema(description = "Translates to `S_ExternalReference.Record_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
@@ -78,20 +78,34 @@ public class JsonExternalReferenceResponseItem
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String version;
 
+	@Schema(description = "Translates to `S_ExternalReference.ExternalReferenceURL`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String externalReferenceUrl;
 
-	@Schema(description = "Translates to `S_ExternalReference.ExternalSystem`. Mandatory if a new record is created.")
+	@Schema(description = "Translates to `S_ExternalReference.ExternalSystem`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonExternalSystemName systemName;
 
-	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference_ID`. Ignored in upserts, only filled by metasfresh in lookups")
+	@Schema(description = "Translates to `S_ExternalReference.S_ExternalReference_ID`.")
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalReferenceId;
 
+	@Schema(description = "Translates to `S_ExternalReference.ExternalSystem_Config_ID`.")
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonMetasfreshId externalSystemConfigId;
+
+	/**
+	 * Note: may be null if no external reference was found for the respective lookup request item.
+	 */
+	@Schema(description = "Translates to `S_ExternalReference.IsReadOnlyInMetasfresh`.")
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean readOnlyMetasfresh;
+	
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceResponseItem(
@@ -103,7 +117,7 @@ public class JsonExternalReferenceResponseItem
 			@JsonProperty("systemName") @Nullable final JsonExternalSystemName systemName,
 			@JsonProperty("externalReferenceId") @Nullable final JsonMetasfreshId externalReferenceId,
 			@JsonProperty("externalSystemConfigId") @Nullable final JsonMetasfreshId externalSystemConfigId,
-			@JsonProperty("isReadOnlyMetasfresh") @Nullable final Boolean isReadOnlyMetasfresh)
+			@JsonProperty("readOnlyMetasfresh") @Nullable final Boolean readOnlyMetasfresh)
 	{
 		this.lookupItem = lookupItem;
 		this.metasfreshId = metasfreshId;
@@ -112,5 +126,7 @@ public class JsonExternalReferenceResponseItem
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.systemName = systemName;
 		this.externalReferenceId = externalReferenceId;
+		this.externalSystemConfigId = externalSystemConfigId;
+		this.readOnlyMetasfresh = readOnlyMetasfresh;
 	}
 }

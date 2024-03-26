@@ -164,7 +164,7 @@ public class ExternalReferenceRestControllerService
 			@Nullable OrgId orgId,
 			@NonNull final JsonExternalReferenceLookupRequest request)
 	{
-		orgId = orgId != null ? orgId : Env.getOrgId();
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
@@ -175,7 +175,7 @@ public class ExternalReferenceRestControllerService
 
 		final ImmutableSet<JsonExternalReferenceLookupItem> items = ImmutableSet.copyOf(request.getItems());
 
-		final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query = extractRepoQueries(items, orgId, externalSystem);
+		final ImmutableMap<JsonExternalReferenceLookupItem, ExternalReferenceQuery> item2Query = extractRepoQueries(items, orgIdToUse, externalSystem);
 
 		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(item2Query.values());
 
@@ -219,7 +219,7 @@ public class ExternalReferenceRestControllerService
 					.version(reference.getVersion())
 					.externalReferenceUrl(reference.getExternalReferenceUrl())
 					.externalSystemParentConfigId(JsonMetasfreshId.toValue(reference.getExternalSystemConfigId()))
-					.isReadOnlyInMetasfresh(Boolean.TRUE.equals(reference.getIsReadOnlyMetasfresh()))
+					.readOnlyInMetasfresh(Boolean.TRUE.equals(reference.getIsReadOnlyMetasfresh()))
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -245,20 +245,26 @@ public class ExternalReferenceRestControllerService
 			{
 				builder.externalReference(newReference);
 			}
-			final String newVersion = jsonItemToSyncFrom.getVersion();
 			if (jsonItemToSyncFrom.isVersionSet())
 			{
-				builder.version(newVersion);
+				builder.version(jsonItemToSyncFrom.getVersion());
 			}
-			final String referenceUrl = jsonItemToSyncFrom.getExternalReferenceUrl();
 			if (jsonItemToSyncFrom.isExternalReferenceUrlSet())
 			{
-				builder.externalReferenceUrl(referenceUrl);
+				builder.externalReferenceUrl(jsonItemToSyncFrom.getExternalReferenceUrl());
 			}
 			final int recordId = JsonMetasfreshId.toValueInt(jsonItemToSyncFrom.getMetasfreshId());
 			if (jsonItemToSyncFrom.isMetasfreshIdSet() && recordId > 0)
 			{
 				builder.recordId(recordId);
+			}
+			if (jsonItemToSyncFrom.isReadOnlyMetasfreshSet())
+			{
+				builder.readOnlyInMetasfresh(jsonItemToSyncFrom.getIsReadOnlyMetasfresh());
+			}
+			if (jsonItemToSyncFrom.isExternalSystemConfigIdSet())
+			{
+				builder.externalSystemParentConfigId(JsonMetasfreshId.toValue(jsonItemToSyncFrom.getExternalSystemConfigId()));
 			}
 			externalReferenceToUpsert = builder.build();
 		}
@@ -335,12 +341,11 @@ public class ExternalReferenceRestControllerService
 		getExistingExternalReference(request.getExternalReferenceItem().getMetasfreshId(), externalReferenceType, externalSystem)
 				.ifPresent(existingReference -> externalReferenceBuilder
 						.externalReferenceId(existingReference.getExternalReferenceId())
-						.isReadOnlyInMetasfresh(existingReference.isReadOnlyInMetasfresh())
 						.externalSystemParentConfigId(existingReference.getExternalSystemParentConfigId()));
 
 		if (request.getExternalReferenceItem().getIsReadOnlyMetasfresh() != null)
 		{
-			externalReferenceBuilder.isReadOnlyInMetasfresh(request.getExternalReferenceItem().getIsReadOnlyMetasfresh());
+			externalReferenceBuilder.readOnlyInMetasfresh(request.getExternalReferenceItem().getIsReadOnlyMetasfresh());
 		}
 
 		if (request.getExternalReferenceItem().getExternalSystemConfigId() != null)
@@ -423,7 +428,7 @@ public class ExternalReferenceRestControllerService
 						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.externalSystemConfigId(JsonMetasfreshId.ofOrNull(externalReference.getExternalSystemParentConfigId()))
-						.isReadOnlyMetasfresh(externalReference.isReadOnlyInMetasfresh())
+						.readOnlyMetasfresh(externalReference.isReadOnlyInMetasfresh())
 						.build();
 			}
 			result.item(responseItem);

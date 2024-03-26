@@ -98,9 +98,17 @@ public class JsonExternalReferenceRequestItem
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalSystemConfigId;
 
+	@Schema(hidden = true)
+	@JsonIgnore
+	private boolean externalSystemConfigIdSet;
+	
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	Boolean isReadOnlyMetasfresh;
+
+	@Schema(hidden = true)
+	@JsonIgnore
+	private boolean isReadOnlyMetasfreshSet;
 	
 	@Builder
 	private JsonExternalReferenceRequestItem(
@@ -157,10 +165,25 @@ public class JsonExternalReferenceRequestItem
 		this.versionSet = true;
 	}
 
+	
 	@JsonProperty("externalReferenceUrl")
 	public void setExternalReferenceUrl(@Nullable final String externalReferenceUrl)
 	{
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.externalReferenceUrlSet = true;
 	}
+	
+	@JsonProperty("externalSystemConfigId")
+	public void setExternalSystemConfigId(@Nullable final JsonMetasfreshId externalSystemConfigId)
+	{
+		this.externalSystemConfigId = externalSystemConfigId;
+		this.externalSystemConfigIdSet = true;
+	}
+
+	@JsonProperty("readOnlyMetasfresh")
+	public void setReadOnlyMetasfresh(final boolean readOnlyMetasfresh)
+	{
+		this.isReadOnlyMetasfresh = readOnlyMetasfresh;
+		this.isReadOnlyMetasfreshSet = true;
+	}	
 }

@@ -146,39 +146,33 @@ public class S_ExternalReference_StepDef
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference);
 
-			final Integer externalSystemParentConfigId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
-			if (externalSystemParentConfigId != null)
-			{
-				externalReferenceQueryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, externalSystemParentConfigId);
-			}
-
 			final I_S_ExternalReference externalReferenceRecord = externalReferenceQueryBuilder
 					.create()
 					.firstOnlyOrNull(I_S_ExternalReference.class);
 
 			assertThat(externalReferenceRecord).as("S_ExternalReference with [ExternalSystem=%s, Type=%s, ExternalReference=%s]", externalSystem, type, externalReference).isNotNull();
 
-			final SoftAssertions softyl = new SoftAssertions();
+			final SoftAssertions softly = new SoftAssertions();
 			
 			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orgCodeIdentifier))
 			{
 				final int orgId = orgTable.get(orgCodeIdentifier).getAD_Org_ID();
 
-				softyl.assertThat(externalReferenceRecord.getAD_Org_ID()).as("AD_Org_ID for Identifier=%s", orgCodeIdentifier).isEqualTo(orgId);
+				softly.assertThat(externalReferenceRecord.getAD_Org_ID()).as("AD_Org_ID for Identifier=%s", orgCodeIdentifier).isEqualTo(orgId);
 			}
 
 			final Integer recordId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_Referenced_Record_ID);
 			if (recordId != null)
 			{
-				softyl.assertThat(externalReferenceRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
-				softyl.assertThat(externalReferenceRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
+				softly.assertThat(externalReferenceRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
+				softly.assertThat(externalReferenceRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
 			}
 
 			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh);
 			if (isReadOnlyInMetasfresh != null)
 			{
-				softyl.assertThat(externalReferenceRecord.isReadOnlyInMetasfresh()).as("IsReadOnlyInMetasfresh").isEqualTo(isReadOnlyInMetasfresh);
+				softly.assertThat(externalReferenceRecord.isReadOnlyInMetasfresh()).as("IsReadOnlyInMetasfresh").isEqualTo(isReadOnlyInMetasfresh);
 			}
 
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalReferenceURL);
@@ -186,14 +180,27 @@ public class S_ExternalReference_StepDef
 			{
 				if (NULL_STRING.equals(externalReferenceURL))
 				{
-					softyl.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isNull();
+					softly.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isNull();
 				}
 				else
 				{
-					softyl.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isEqualTo(externalReferenceURL);
+					softly.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isEqualTo(externalReferenceURL);
 				}
 			}
-			softyl.assertAll();
+			final String externalSystemParentConfigId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
+			if (externalSystemParentConfigId != null)
+			{
+				if (NULL_STRING.equals(externalSystemParentConfigId))
+				{
+					softly.assertThat(externalReferenceRecord.getExternalSystem_Config_ID()).as("ExternalSystem_Config_ID").isLessThanOrEqualTo(0);
+				}
+				else
+				{
+					softly.assertThat(externalReferenceRecord.getExternalSystem_Config_ID()).as("ExternalSystem_Config_ID").isEqualTo(Integer.parseInt(externalSystemParentConfigId));
+				}
+			}
+			
+			softly.assertAll();
 		}
 	}
 

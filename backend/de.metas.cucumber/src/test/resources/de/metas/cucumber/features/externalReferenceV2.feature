@@ -37,7 +37,7 @@ Feature: external references for metasfresh resources (V2)
 {
   "systemName": "Github",
   "items": [
-    { "lookupItem": { "externalReference": "Referenced_GitHubIssue_v2_290922_1", "type": "IssueID" }, "metasfreshId": 43, "externalSystemConfigId": 540005, "isReadOnlyMetasfresh": true }
+    { "lookupItem": { "externalReference": "Referenced_GitHubIssue_v2_290922_1", "type": "IssueID" }, "metasfreshId": 43, "externalSystemConfigId": 540005, "readOnlyMetasfresh": true }
   ]
 }
     """
@@ -71,7 +71,7 @@ Feature: external references for metasfresh resources (V2)
                 "externalReference": "Referenced_GitHubIssue_v2_290922_1",
                 "systemName": "Github",
                 "externalSystemConfigId": 540005,
-                "isReadOnlyMetasfresh": true
+                "readOnlyMetasfresh": true
             },
             {
                 "lookupItem": {
@@ -90,8 +90,8 @@ Feature: external references for metasfresh resources (V2)
 {
   "systemName": "GRSSignum",
   "items": [
-    { "lookupItem": { "externalReference": "Referenced_BPartner_v2_290922", "type": "BPartner" }, "metasfreshId": 53, "externalSystemConfigId": 540006, "isReadOnlyMetasfresh": true },
-    { "lookupItem": { "externalReference": "Referenced_GitHubIssue_v2_290922_2", "type": "IssueID" }, "metasfreshId": 54, "externalSystemConfigId": 540006, "isReadOnlyMetasfresh": false }
+    { "lookupItem": { "externalReference": "Referenced_BPartner_v2_290922", "type": "BPartner" }, "metasfreshId": 53, "externalSystemConfigId": 540006, "readOnlyMetasfresh": true },
+    { "lookupItem": { "externalReference": "Referenced_GitHubIssue_v2_290922_2", "type": "IssueID" }, "metasfreshId": 54, "externalSystemConfigId": 540006, "readOnlyMetasfresh": false }
   ]
 }
     """
@@ -118,7 +118,7 @@ Feature: external references for metasfresh resources (V2)
                 "externalReference": "Referenced_BPartner_v2_290922",
                 "systemName": "GRSSignum",
                 "externalSystemConfigId": 540006,
-                "isReadOnlyMetasfresh": true
+                "readOnlyMetasfresh": true
             },
             {
                 "lookupItem": {
@@ -129,7 +129,7 @@ Feature: external references for metasfresh resources (V2)
                 "externalReference": "Referenced_GitHubIssue_v2_290922_2",
                 "systemName": "GRSSignum",
                 "externalSystemConfigId": 540006,
-                "isReadOnlyMetasfresh": false
+                "readOnlyMetasfresh": false
             }
         ]
 }
@@ -140,7 +140,7 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "readOnlyMetasfresh": true }
 }
     """
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
@@ -164,7 +164,7 @@ Feature: external references for metasfresh resources (V2)
                 "metasfreshId": 25,
                 "externalReference": "Referenced_Product_v2_290922",
                 "systemName": "Shopware6",
-                "isReadOnlyMetasfresh": true
+                "readOnlyMetasfresh": true
             }
         ]
 }
@@ -173,7 +173,7 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "externalSystemConfigId": 540001, "isReadOnlyMetasfresh": false }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "externalSystemConfigId": 540001, "readOnlyMetasfresh": false }
 }
     """
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
@@ -198,7 +198,7 @@ Feature: external references for metasfresh resources (V2)
                 "externalReference": "Referenced_Product_v2_290922",
                 "systemName": "Shopware6",
                 "externalSystemConfigId": 540001,
-                "isReadOnlyMetasfresh": false
+                "readOnlyMetasfresh": false
             }
         ]
 }
@@ -207,7 +207,7 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "readOnlyMetasfresh": true }
 }
     """
     And the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
@@ -239,7 +239,7 @@ Feature: external references for metasfresh resources (V2)
                 "externalReference": "Referenced_Product_v2_290922",
                 "systemName": "Shopware6",
                 "externalSystemConfigId": 540001,
-                "isReadOnlyMetasfresh": true
+                "readOnlyMetasfresh": true
             }
         ]
 }
@@ -276,12 +276,17 @@ Feature: external references for metasfresh resources (V2)
       | S_ExternalReference_ID.Identifier | ExternalSystem | Type     | ExternalReference       | OPT.C_BPartner_ID.Identifier |
       | externalRef_BPartner_S0402        | Other          | BPartner | externalReference_S0402 | customer_S0402               |
 
+    # note externalSystemConfigId 540013 is "SAP"
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "externalReferenceItem": {
     "externalReference": "externalReference_S0402-NEW",
     "externalReferenceUrl": "https://example.com",
+    "readOnlyMetasfresh": true,
+    "externalSystemConfigId": 540013,
+    "version": "v.1.2",
+    "metasfreshId": 54321,
     "lookupItem": {
       "externalReference": "externalReference_S0402",
       "type": "BPartner"
@@ -292,10 +297,10 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference           | OPT.ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW | https://example.com      |
+      | ExternalSystem | Type     | ExternalReference           | OPT.ExternalReferenceURL | OPT.IsReadOnlyInMetasfresh | OPT.ExternalSystem_Config_ID | OPT.Version | OPT.Referenced_Record_ID |
+      | Other          | BPartner | externalReference_S0402-NEW | https://example.com      | true                       | 540013                       | v.1.2       | 54321                    |
 
-    # now omit the property "externalReferenceUrl" => expect it to be unchanged
+    # now omit the property "externalReferenceUrl" and the others => expect them to be unchanged
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
@@ -311,15 +316,17 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com      |
+      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL | OPT.IsReadOnlyInMetasfresh | OPT.ExternalSystem_Config_ID | OPT.Version | OPT.Referenced_Record_ID |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com      | true                       | 540013                       | v.1.2       | 54321                    |
 
-    # now set the property "externalReferenceUrl" explicitly to null => expect it to be null
+    # now set the property "externalReferenceUrl" and the other "nullable" ones explicitly to null => expect them to be null
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "externalReferenceItem": {
     "externalReferenceUrl": null,
+    "externalSystemConfigId": null,
+    "version": null,
     "lookupItem": {
       "externalReference": "externalReference_S0402-NEW_2",
       "type": "BPartner"
@@ -330,5 +337,5 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | null                     | 
+      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL | OPT.ExternalSystem_Config_ID | OPT.Version |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | null                     | null                         | null        |
