@@ -49,6 +49,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_Acct_Export;
@@ -62,6 +64,10 @@ import de.metas.externalsystem.model.I_SAP_BPartnerImportSettings;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.pcm.ExternalSystemPCMConfig;
+import de.metas.externalsystem.pcm.ExternalSystemPCMConfigId;
+import de.metas.externalsystem.pcm.PCMConfigMapper;
+import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
@@ -143,6 +149,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemMetasfreshConfigId.cast(id));
 			case Amazon:
 				return getById(ExternalSystemAmazonConfigId.cast(id));
+			case ProCareManagement:
+				return getById(ExternalSystemPCMConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -186,6 +194,9 @@ public class ExternalSystemConfigRepo
 			case Amazon:
 				return getAmazonConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case ProCareManagement:
+				return getPCMConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -220,6 +231,8 @@ public class ExternalSystemConfigRepo
 				return getMetasfreshConfigByParentId(id);
 			case Amazon:
 				return getAmazonConfigByParentId(id);
+			case ProCareManagement:
+				return getPCMConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -254,6 +267,9 @@ public class ExternalSystemConfigRepo
 				break;
 			case GRSSignum:
 				result = getAllByTypeGRS();
+				break;
+			case ProCareManagement:
+				result = getAllByTypePCM();
 				break;
 			case LeichUndMehl:
 				result = getAllByTypeLeichMehl();
@@ -1347,6 +1363,82 @@ public class ExternalSystemConfigRepo
 				.create()
 				.stream()
 				.map(SAPConfigMapper::ofBPartnerImportSettingsRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemPCMConfigId id)
+	{
+		final I_ExternalSystem_Config_ProCareManagement config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_ProCareManagement.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
+	{
+		final ExternalSystemPCMConfig child = buildExternalSystemPCMConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemPCMConfig buildExternalSystemPCMConfig(@NonNull final I_ExternalSystem_Config_ProCareManagement config)
+	{
+		final ExternalSystemPCMConfigId pcmConfigId = ExternalSystemPCMConfigId.ofRepoId(config.getExternalSystem_Config_ProCareManagement_ID());
+
+		final PCMContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(pcmConfigId).orElse(null);
+
+		return ExternalSystemPCMConfig.builder()
+				.id(pcmConfigId)
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.contentSourceLocalFile(contentSourceLocalFile)
+				.build();
+	}
+
+	@NonNull
+	private Optional<PCMContentSourceLocalFile> getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemPCMConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement_LocalFile.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement_LocalFile.COLUMNNAME_ExternalSystem_Config_ProCareManagement_ID, configId.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement_LocalFile.class)
+				.map(PCMConfigMapper::buildContentSourceLocalFile);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getPCMConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement.class)
+				.map(this::buildExternalSystemPCMConfig);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_ProCareManagement> getPCMConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_ProCareManagement.class);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypePCM()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
 }
