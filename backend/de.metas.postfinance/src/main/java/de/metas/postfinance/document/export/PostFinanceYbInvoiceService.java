@@ -38,6 +38,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -46,6 +47,7 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
@@ -61,6 +63,8 @@ import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import de.metas.postfinance.jaxb.ArrayOfProcessedInvoice;
 import de.metas.postfinance.jaxb.Invoice;
 import de.metas.postfinance.jaxb.ProcessedInvoice;
+import de.metas.postfinance.paperBillReferences.PaperBillReference;
+import de.metas.postfinance.paperBillReferences.PaperBillReferencesRepository;
 import de.metas.postfinance.ybinvoice.v2.AccountAssignmentType;
 import de.metas.postfinance.ybinvoice.v2.AchievementDateType;
 import de.metas.postfinance.ybinvoice.v2.AddressType;
@@ -96,6 +100,7 @@ import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.Env;
@@ -131,6 +136,7 @@ public class PostFinanceYbInvoiceService
 	@NonNull private final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository;
 	@NonNull private final LocationRepository locationRepository;
 	@NonNull private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
+	@NonNull private final PaperBillReferencesRepository paperBillReferencesRepository;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -341,6 +347,13 @@ public class PostFinanceYbInvoiceService
 				+ invoiceToExport.getDocumentNumber();
 	}
 
+	public String getTransactionId(@NonNull final DunningToExport dunningToExport)
+	{
+		return dunningToExport.getId().getRepoId()
+				+ DocBaseType.DunningDoc.getCode()
+				+ dunningToExport.getDocumentNumber();
+	}
+
 	private BillType getBillType(@NonNull final InvoiceToExport invoiceToExport)
 	{
 
@@ -437,7 +450,12 @@ public class PostFinanceYbInvoiceService
 		}
 
 		senderParty.getPartyType().setAddress(addressType);
-		senderParty.getPartyType().setTaxID(bPartnerDAO.getById(bPartnerId).getTaxID());
+		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
+		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		{
+			senderParty.getPartyType().setTaxID(partnerRecord.getTaxID());
+		}
+
 
 		return senderParty;
 	}
@@ -491,11 +509,40 @@ public class PostFinanceYbInvoiceService
 		final PartyType partyType = YB_INVOICE_OBJECT_FACTORY.createPartyType();
 		partyType.setAddress(addressType);
 
+		final I_C_BPartner partnerRecord = bPartnerDAO.getById(bPartnerId);
+		if(EmptyUtil.isNotBlank(partnerRecord.getTaxID()))
+		{
+			partyType.setTaxID(partnerRecord.getTaxID());
+		}
+
 		final BillHeaderType.ReceiverParty receiverParty = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypeReceiverParty();
+
+		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
+		if(postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
+		{
+			paperBillReferencesRepository.retrievePaperBillReferences(orgId)
+					.map(this::toReference)
+					.forEach(reference -> partyType.getAdditionalReference().add(reference));
+		}
+
 		receiverParty.setPartyType(partyType);
 
 		return receiverParty;
 	}
+
+	private Reference toReference(@NonNull final PaperBillReference paperBillReference)
+	{
+		final Reference reference = YB_INVOICE_OBJECT_FACTORY.createReference();
+		reference.setReferencePosition(paperBillReference.getReferencePosition());
+		reference.setReferenceType(paperBillReference.getReferenceType());
+		reference.setReferenceValue(paperBillReference.getReferenceValue());
+
+		return reference;
+	}
+
+
 
 	private BillHeaderType.PaymentInformation getPaymentInformation(@NonNull final InvoiceToExport invoiceToExport)
 	{

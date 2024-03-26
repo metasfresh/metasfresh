@@ -48,7 +48,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -104,15 +103,18 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 			throw new PostFinanceExportException("Failed to create invoiceToExport");
 		}
 
-		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExportOptional.get());
+		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
+		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().getPaymentInformation().setPaymentType(PostFinanceDocumentType.REMINDER);
+		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.REMINDER);
+		final String transactionId = postFinanceYbInvoiceService.getTransactionId(dunningToExport);
+		envelope.getBody().getDeliveryInfo().setTransactionID(transactionId);
+		envelope.getBody().getBill().getHeader().setDocumentID(transactionId);
 
-		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceId);
 		final FixedReference billNumberReference = YB_INVOICE_OBJECT_FACTORY.createFixedReference();
 		billNumberReference.setReferenceType("BillNumber");
 		billNumberReference.setReferencePosition("0");
-		billNumberReference.setReferenceValue(invoiceRecord.getDocumentNo());
+		billNumberReference.setReferenceValue(postFinanceYbInvoiceService.getTransactionId(invoiceToExport));
 		envelope.getBody().getBill().getHeader().getFixedReference().add(billNumberReference);
 
 		envelope.getBody().getBill().getSummary().setTotalAmountPaid(dunningToExport.getAlreadyPaidAmount().getAmount());
