@@ -69,3 +69,9 @@ UPDATE AD_Process_Para SET AD_Val_Rule_ID=540670,Updated=TO_TIMESTAMP('2024-03-2
 UPDATE AD_Process SET Classname='de.metas.postfinance.document.results.process.C_Doc_Outbound_Log_RetrieveResultsFromPostFinance',Updated=TO_TIMESTAMP('2024-03-25 19:37:03.743','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585366
 ;
 
+
+-- Process: C_Doc_Outbound_Log_RetrieveResultsFromPostFinance(de.metas.postfinance.document.results.process.C_Doc_Outbound_Log_RetrieveResultsFromPostFinance)
+-- 2024-03-26T18:46:21.522Z
+UPDATE AD_Process_Trl SET Name='Retrieve Results From PostFinance',Updated=TO_TIMESTAMP('2024-03-26 20:46:21.521','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585366
+;
+
