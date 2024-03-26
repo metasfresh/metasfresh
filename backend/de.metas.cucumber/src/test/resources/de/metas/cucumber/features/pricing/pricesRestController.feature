@@ -34,9 +34,9 @@ Feature: Prices rest controller
       | bpartner_1 | BPartnerName | N            | Y              | pricingSystem_1               |
 
     And metasfresh contains S_ExternalReference:
-      | ExternalSystem | ExternalReference   | Type     | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
-      | LeichUndMehl   | productExternalRef  | Product  | product_1                   |                              |
-      | LeichUndMehl   | bpartnerExternalRef | BPartner |                             | bpartner_1                   |
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference   | Type     | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier |
+      | productExternalRef                | LeichUndMehl   | productExternalRef  | Product  | product_1                   |                              |
+      | bpartnerExternalRef               | LeichUndMehl   | bpartnerExternalRef | BPartner |                             | bpartner_1                   |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/prices/001/product/search' and fulfills with '200' status code
     """
