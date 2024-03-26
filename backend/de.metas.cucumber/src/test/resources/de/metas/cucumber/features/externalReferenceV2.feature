@@ -140,7 +140,7 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "id": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
 }
     """
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
@@ -173,7 +173,7 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "id": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "externalSystemConfigId": 540001, "isReadOnlyMetasfresh": false }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "externalSystemConfigId": 540001, "isReadOnlyMetasfresh": false }
 }
     """
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
@@ -207,14 +207,14 @@ Feature: external references for metasfresh resources (V2)
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "id": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "metasfreshId": 25, "isReadOnlyMetasfresh": true }
 }
     """
     And the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
   "systemName": "Shopware6",
-  "externalReferenceItem": { "lookupItem": { "id": "Referenced_Product_v2_290922", "type": "Product" }, "externalSystemConfigId": 540001, "metasfreshId": 25 }
+  "externalReferenceItem": { "lookupItem": { "externalReference": "Referenced_Product_v2_290922", "type": "Product" }, "externalSystemConfigId": 540001, "metasfreshId": 25 }
 }
     """
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
