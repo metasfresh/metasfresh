@@ -53,6 +53,13 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
+	private final CCache<BPartnerId, Optional<BankAccount>> bankAccountByBPartnerId = CCache.<BPartnerId, Optional<BankAccount>>builder()
+			.tableName(I_C_BP_BankAccount.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
+
 	@Override
 	public BankAccount getById(@NonNull final BankAccountId bankAccountId)
 	{
@@ -113,6 +120,11 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 
 	@Override
 	public Optional<BankAccount> getDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
+	{
+		return bankAccountByBPartnerId.getOrLoad(bpartnerId, this::retrieveDefaultESRBankAccount);
+	}
+
+	private Optional<BankAccount> retrieveDefaultESRBankAccount(@NonNull final BPartnerId bpartnerId)
 	{
 		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addOnlyActiveRecordsFilter()

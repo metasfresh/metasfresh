@@ -165,7 +165,7 @@ public class PostFinanceYbInvoiceService
 	public static final ObjectFactory YB_INVOICE_OBJECT_FACTORY = new ObjectFactory();
 
 
-	public void exportToPostFinance(final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	public void exportToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
 		arrayOfProcessedInvoice.getProcessedInvoice()

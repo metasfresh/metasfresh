@@ -74,7 +74,7 @@ public class B2BServiceWrapper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ArrayOfProcessedInvoice uploadFilesReport(final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	public ArrayOfProcessedInvoice uploadFilesReport(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		final B2BService port = new B2BService_Service().getUserNamePassword();
 		final ArrayOfInvoice arrayOfInvoice = B2B_SERVICE_OBJECT_FACTORY.createArrayOfInvoice();
