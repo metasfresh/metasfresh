@@ -347,7 +347,9 @@ public class ShipmentService
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
 				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				ImmutableMap.of());
+				ImmutableMap.of(),
+				true  /* backwards compatibility: true - fail if no picked HUs found*/
+		);
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()

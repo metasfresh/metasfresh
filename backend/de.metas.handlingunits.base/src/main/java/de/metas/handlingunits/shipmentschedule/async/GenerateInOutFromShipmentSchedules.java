@@ -60,6 +60,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
+	private ImmutableList<I_M_ShipmentSchedule> _shipmentSchedules = null; // lazy
+
 	@NonNull
 	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday, @Nullable LocalDate fixedDate)
 	{
@@ -95,12 +97,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
-			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
+			// this is a frequent case,
+			// but can be business as usual when user just wants to close some lines without picking something.
+			// So don't throw an exception, just log it.
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
 
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		final ForexContractRef forexContractRef = JsonObjectMapperHolder.fromJson(parameters.getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_ForexContractRef), ForexContractRef.class);
 		final DeliveryPlanningId deliveryPlanningId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_M_Delivery_Planning_ID, DeliveryPlanningId.class);
 		final InOutId b2bReceiptId = parameters.getParameterAsId(ShipmentScheduleWorkPackageParameters.PARAM_B2B_Receipt_ID, InOutId.class);
@@ -132,10 +135,10 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.createShipments(shipmentSchedulesWithHU);
 		Loggables.addLog("Generated: {}", result);
 
+		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		if (isCloseShipmentSchedules)
 		{
-			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = shipmentSchedulesWithHU.stream().map(ShipmentScheduleWithHU::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
-			shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds);
+			shipmentScheduleBL.closeShipmentSchedules(getShipmentScheduleIds());
 		}
 
 		return Result.SUCCESS;
@@ -197,7 +200,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 */
 	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride)
 	{
-		final List<I_M_ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return ImmutableList.of();
@@ -210,14 +213,33 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean onTheFlyPickToPackingInstructions = getParameters()
 				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
 
+		final boolean isCloseShipmentSchedules = getParameters().getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
+		final boolean isFailIfNoPickedHUs = !isCloseShipmentSchedules;
+
 		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
 				shipmentSchedules,
 				quantityTypeToUse,
 				onTheFlyPickToPackingInstructions,
-				scheduleId2QtyToDeliverOverride);
+				scheduleId2QtyToDeliverOverride,
+				isFailIfNoPickedHUs);
 	}
 
-	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()
+	private ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		return getShipmentSchedules().stream().map(sched -> ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private ImmutableList<I_M_ShipmentSchedule> getShipmentSchedules()
+	{
+		ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = this._shipmentSchedules;
+		if(shipmentSchedules == null)
+		{
+			shipmentSchedules = this._shipmentSchedules = retrieveShipmentSchedules();
+		}
+		return shipmentSchedules;
+	}
+
+	private ImmutableList<I_M_ShipmentSchedule> retrieveShipmentSchedules()
 	{
 		final I_C_Queue_WorkPackage workpackage = getC_Queue_WorkPackage();
 		final boolean skipAlreadyProcessedItems = false; // yes, we want items whose queue packages were already processed! This is a workaround, but we need it that way.
@@ -236,6 +258,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		return queryBuilder
 				.create()
-				.list();
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 }
