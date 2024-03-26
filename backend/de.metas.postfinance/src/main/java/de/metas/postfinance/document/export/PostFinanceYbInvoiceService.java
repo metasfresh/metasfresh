@@ -63,6 +63,8 @@ import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import de.metas.postfinance.jaxb.ArrayOfProcessedInvoice;
 import de.metas.postfinance.jaxb.Invoice;
 import de.metas.postfinance.jaxb.ProcessedInvoice;
+import de.metas.postfinance.paperBillReferences.PaperBillReference;
+import de.metas.postfinance.paperBillReferences.PaperBillReferencesRepository;
 import de.metas.postfinance.ybinvoice.v2.AccountAssignmentType;
 import de.metas.postfinance.ybinvoice.v2.AchievementDateType;
 import de.metas.postfinance.ybinvoice.v2.AddressType;
@@ -134,6 +136,7 @@ public class PostFinanceYbInvoiceService
 	@NonNull private final PostFinanceBPartnerConfigRepository postFinanceBPartnerConfigRepository;
 	@NonNull private final LocationRepository locationRepository;
 	@NonNull private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
+	@NonNull private final PaperBillReferencesRepository paperBillReferencesRepository;
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -513,10 +516,33 @@ public class PostFinanceYbInvoiceService
 		}
 
 		final BillHeaderType.ReceiverParty receiverParty = YB_INVOICE_OBJECT_FACTORY.createBillHeaderTypeReceiverParty();
+
+		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
+		if(postFinanceBPartnerConfigOptional.isEmpty() && postFinanceOrgConfig.isUsePaperBill())
+		{
+			paperBillReferencesRepository.retrievePaperBillReferences(orgId)
+					.map(this::toReference)
+					.forEach(reference -> partyType.getAdditionalReference().add(reference));
+		}
+
 		receiverParty.setPartyType(partyType);
 
 		return receiverParty;
 	}
+
+	private Reference toReference(@NonNull final PaperBillReference paperBillReference)
+	{
+		final Reference reference = YB_INVOICE_OBJECT_FACTORY.createReference();
+		reference.setReferencePosition(paperBillReference.getReferencePosition());
+		reference.setReferenceType(paperBillReference.getReferenceType());
+		reference.setReferenceValue(paperBillReference.getReferenceValue());
+
+		return reference;
+	}
+
+
 
 	private BillHeaderType.PaymentInformation getPaymentInformation(@NonNull final InvoiceToExport invoiceToExport)
 	{
