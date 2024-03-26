@@ -2016,35 +2016,6 @@ public interface I_R_Request
 	public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set Anfangsdatum.
-	 * First effective day (inclusive)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStartDate(java.sql.Timestamp StartDate);
-
-	/**
-	 * Get Anfangsdatum.
-	 * First effective day (inclusive)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getStartDate();
-
-	/**
-	 * Column definition for StartDate
-	 */
-	public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_StartDate = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "StartDate", null);
-	/**
-	 * Column name StartDate
-	 */
-	public static final String COLUMNNAME_StartDate = "StartDate";
-
-	/**
 	 * Set Startdatum.
 	 *
 	 * <br>Type: DateTime

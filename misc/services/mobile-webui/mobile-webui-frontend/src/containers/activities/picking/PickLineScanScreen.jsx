@@ -163,6 +163,7 @@ export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next 
           wfProcessId,
           activityId: activity.activityId,
           lineId: nextLineId,
+          next: NEXT_NextPickingLine,
         })
       );
     } else {

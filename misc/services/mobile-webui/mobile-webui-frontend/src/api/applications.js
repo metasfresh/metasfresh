@@ -18,11 +18,13 @@ export function getSettings() {
 export const logErrorToBackend = (error, info) => {
   console.log('Sending error to backend...', { error, info });
 
+  let message = error?.message ?? `${error}`;
+
   axios
     .post(`${API}/errors`, {
       errors: [
         {
-          message: error,
+          message: message,
           stackTrace: info?.componentStack,
           issueCategory: 'MOBILEUI',
         },
