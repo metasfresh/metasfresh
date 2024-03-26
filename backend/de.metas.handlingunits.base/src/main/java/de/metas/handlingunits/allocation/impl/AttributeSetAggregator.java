@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.impl;
 
+import de.metas.handlingunits.attribute.weightable.Weightables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -13,7 +14,6 @@ import java.util.HashSet;
 
 class AttributeSetAggregator
 {
-	public static final String ATTR_VALUE_PREFIX_WEIGHT = "Weight";
 	private final HashMap<AttributeCode, AttributeAggregator> attributeAggregators = new HashMap<>();
 
 	void collect(@NonNull final IAttributeSet from)
@@ -41,7 +41,7 @@ class AttributeSetAggregator
 
 	private static boolean isAggregable(@NonNull final I_M_Attribute attribute)
 	{
-		return !attribute.getValue().contains(ATTR_VALUE_PREFIX_WEIGHT);
+		return !Weightables.isWeightableAttribute(AttributeCode.ofString(attribute.getValue()));
 	}
 
 	//
