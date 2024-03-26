@@ -288,8 +288,8 @@ public class PostFinanceYbInvoiceService
 
 		final AppendixType appendixType = YB_INVOICE_OBJECT_FACTORY.createAppendixType();
 		final AppendixType.Document document = YB_INVOICE_OBJECT_FACTORY.createAppendixTypeDocument();
-		//document.setMimeType(MimeType.TYPE_PDF);
-		document.setMimeType("x-application/pdfappendix");
+
+		document.setMimeType(MimeType.TYPE_PDF_APPENDIX);
 		document.setValue(Base64.getEncoder().encodeToString(archive.getArchiveData()));
 		appendixType.getDocument().add(document);
 		return appendixType;
