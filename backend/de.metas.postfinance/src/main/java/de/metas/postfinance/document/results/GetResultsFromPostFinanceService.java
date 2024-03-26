@@ -25,23 +25,32 @@ package de.metas.postfinance.document.results;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
+import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.model.X_C_Doc_Outbound_Log;
 import de.metas.organization.OrgId;
 import de.metas.postfinance.B2BServiceWrapper;
-import de.metas.postfinance.customerregistration.util.XMLUtil;
 import de.metas.postfinance.docoutboundlog.PostFinanceLog;
 import de.metas.postfinance.docoutboundlog.PostFinanceLogCreateRequest;
 import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import de.metas.postfinance.document.export.PostFinanceExportException;
-import de.metas.postfinance.document.results.model.XmlProcessResult;
 import de.metas.postfinance.jaxb.DownloadFile;
+import de.metas.postfinance.processprotocol.BillType;
+import de.metas.postfinance.processprotocol.Envelope;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,10 +60,12 @@ public class GetResultsFromPostFinanceService
 	@NonNull private final PostFinanceLogRepository postFinanceLogRepository;
 	@NonNull private final AttachmentEntryService attachmentEntryService;
 
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+
 	public void handleResultsFromPostFinance(@NonNull final OrgId orgId)
 	{
 		final List<DownloadFile> processProtocol = b2BServiceWrapper.getProcessProtocol(orgId);
-		processProtocol.forEach(file -> handleResultsFromPostFinance (file, orgId));
+		processProtocol.forEach(file -> handleResultsFromPostFinance(file, orgId));
 	}
 
 	private void handleResultsFromPostFinance(@NonNull final DownloadFile downloadFile, @NonNull final OrgId orgId)
@@ -62,40 +73,88 @@ public class GetResultsFromPostFinanceService
 
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = createAttachmentRequest(downloadFile);
 
-		final List<XmlProcessResult> xmlProcessResults = XMLUtil.getXmlProcessProtocol(downloadFile)
-						.processResults(); // TODO HERE
-		xmlProcessResults.forEach(processResult -> handleProcessResult(processResult, attachmentEntryCreateRequest, orgId));
+		try
+		{
+			JAXBContext jc = JAXBContext.newInstance(Envelope.class);
+			final Unmarshaller unmarshaller = jc.createUnmarshaller();
+			final ByteArrayInputStream inputStream = new ByteArrayInputStream(downloadFile.getData().getValue());
 
+			final Envelope envelope = (Envelope)unmarshaller.unmarshal(inputStream);
 
+			envelope.getBody().getDeliveryDate().forEach(deliveryDate -> handleDeliveryDate(deliveryDate, attachmentEntryCreateRequest, orgId));
+		}
+		catch (final JAXBException e)
+		{
 
+		}
 
 	}
 
-	private void handleProcessResult(final XmlProcessResult processResult, final AttachmentEntryCreateRequest attachmentEntryCreateRequest, final OrgId orgId)
+	private void handleDeliveryDate(@NonNull final Envelope.Body.DeliveryDate deliveryDate,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull final OrgId orgId)
 	{
-		final String transactionID = processResult.transactionID();
-		final PostFinanceLog postFinanceLog = postFinanceLogRepository.retrieveLatestLogWithTransactionId(transactionID)
-				.orElseThrow();
+		deliveryDate.getOKResult().getBill().forEach(bill -> handleOKBill(bill, attachmentEntryCreateRequest, orgId));
+		deliveryDate.getNOKResult().getBill().forEach(bill -> handleNOKBill(bill, attachmentEntryCreateRequest, orgId));
+	}
 
-		final TableRecordReference docOutboundLogReference = TableRecordReference.of(I_C_Doc_Outbound_Log.Table_Name, postFinanceLog.getDocOutboundLogId());
+	private void handleNOKBill(@NonNull final BillType bill,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull final OrgId orgId)
+	{
+		final String transactionID = bill.getTransactionID();
+		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionIdAndOrgId(transactionID, orgId);
 
-		attachmentEntryService.createNewAttachment(docOutboundLogReference,attachmentEntryCreateRequest);
+		postFinanceLogOptional.map(postFinanceLog -> sendResultToDocOutbound(attachmentEntryCreateRequest,
+																			 PostFinanceLogCreateRequest.builder()
+																					 .docOutboundLogId(postFinanceLog.getDocOutboundLogId())
+																					 .transactionId(transactionID)
+																					 .postFinanceExportException(new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()))
+																					 .message(bill.getReasonCode() + " " + bill.getReasonText())
+																					 .build(),
+																			 postFinanceLog.getDocOutboundLogId()))
+				.orElse(null);
 
-		final @NonNull PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
-				.docOutboundLogId(postFinanceLog.getDocOutboundLogId())
-				.transactionId(transactionID)
-				.postFinanceExportException(new PostFinanceExportException(processResult.reasonCode() + " " + processResult.reasonText()))
-				.message(processResult.reasonCode() + " " + processResult.reasonText())
-				.build();
+	}
 
-		postFinanceLogRepository.create(postFinanceLogCreateRequest);
+	private void handleOKBill(@NonNull final Envelope.Body.DeliveryDate.OKResult.Bill bill,
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull final OrgId orgId)
+	{
+		final String transactionID = bill.getTransactionID();
+		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionIdAndOrgId(transactionID, orgId);
 
+		postFinanceLogOptional.map(postFinanceLog -> sendResultToDocOutbound(attachmentEntryCreateRequest,
+																			 PostFinanceLogCreateRequest.builder()
+																					 .docOutboundLogId(postFinanceLog.getDocOutboundLogId())
+																					 .transactionId(transactionID)
+																					 .build(),
+																			 postFinanceLog.getDocOutboundLogId()))
+				.orElse(null);
+
+	}
+
+	private PostFinanceLog sendResultToDocOutbound(final @NonNull AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull PostFinanceLogCreateRequest postFinanceLogCreateRequest,
+			@NonNull final DocOutboundLogId docOutboundLogId)
+	{
+		final TableRecordReference docOutboundLogReference = TableRecordReference.of(I_C_Doc_Outbound_Log.Table_Name, docOutboundLogId);
+
+		attachmentEntryService.createNewAttachment(docOutboundLogReference, attachmentEntryCreateRequest);
+
+		final PostFinanceLog postFinanceLog = postFinanceLogRepository.create(postFinanceLogCreateRequest);
+
+		if (postFinanceLog.isError())
+		{
+			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error);
+		}
+
+		return postFinanceLog;
 	}
 
 	@NonNull
 	private AttachmentEntryCreateRequest createAttachmentRequest(@NonNull final DownloadFile downloadFile)
 	{
-		// TODO refactor to not have duplicate code
 		final AttachmentTags attachmentTags = AttachmentTags.builder()
 				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true))
 				.build();
@@ -107,6 +166,5 @@ public class GetResultsFromPostFinanceService
 				.tags(attachmentTags)
 				.build();
 	}
-
 
 }
