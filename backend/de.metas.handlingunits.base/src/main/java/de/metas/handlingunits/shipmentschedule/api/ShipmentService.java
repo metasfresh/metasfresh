@@ -290,7 +290,6 @@ public class ShipmentService implements IShipmentService
 		return shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(ids)
 				.values()
 				.stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)

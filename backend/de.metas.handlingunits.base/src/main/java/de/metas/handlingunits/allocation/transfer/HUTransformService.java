@@ -1387,7 +1387,7 @@ public class HUTransformService
 		return totalQtyCU;
 	}
 
-	private void addCUsToTU(
+	public void addCUsToTU(
 			@NonNull final List<I_M_HU> childCUs,
 			@NonNull final I_M_HU targetTU)
 	{

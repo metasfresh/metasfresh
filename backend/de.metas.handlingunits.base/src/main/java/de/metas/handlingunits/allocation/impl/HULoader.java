@@ -120,6 +120,7 @@ public class HULoader
 	public static class HULoaderBuilder
 	{
 		public IAllocationResult load(final IAllocationRequest request) { return build().load(request); }
+		public void unloadAllFromSource() { build().unloadAllFromSource(); }
 	}
 
 	/**
