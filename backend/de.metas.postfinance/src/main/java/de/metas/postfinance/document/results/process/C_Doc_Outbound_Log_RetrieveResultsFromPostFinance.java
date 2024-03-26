@@ -27,7 +27,9 @@ import de.metas.organization.OrgId;
 import de.metas.postfinance.document.results.GetResultsFromPostFinanceService;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_PInstance;
 
 import javax.annotation.Nullable;
 
@@ -61,7 +63,9 @@ public class C_Doc_Outbound_Log_RetrieveResultsFromPostFinance extends JavaProce
 	@Override
 	protected String doIt() throws Exception
 	{
-		getResultsFromPostFinanceService.handleResultsFromPostFinance(p_AD_Org_ID);
+		final TableRecordReference adPInstanceReference = TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId());
+
+		getResultsFromPostFinanceService.handleResultsFromPostFinance(p_AD_Org_ID, adPInstanceReference);
 
 		return MSG_OK;
 	}
