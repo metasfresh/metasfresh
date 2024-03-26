@@ -63,7 +63,7 @@ public class JsonRequestWarehouseUpsertItem
 			@NonNull @JsonProperty("warehouseIdentifier") final String warehouseIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
-			@NonNull @JsonProperty("requestProduct") final JsonRequestWarehouse requestWarehouse)
+			@NonNull @JsonProperty("requestWarehouse") final JsonRequestWarehouse requestWarehouse)
 	{
 		this.warehouseIdentifier = warehouseIdentifier;
 		this.externalVersion = externalVersion;
