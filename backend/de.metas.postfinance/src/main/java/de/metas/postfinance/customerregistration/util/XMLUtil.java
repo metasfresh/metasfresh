@@ -24,9 +24,9 @@ package de.metas.postfinance.customerregistration.util;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import de.metas.postfinance.ConfiguredXmlMapper;
+import de.metas.postfinance.customerregistration.model.XmlCustomerRegistrationMessage;
 import de.metas.postfinance.document.results.model.XmlProcessProtocol;
 import de.metas.postfinance.jaxb.DownloadFile;
-import de.metas.postfinance.customerregistration.model.XmlCustomerRegistrationMessage;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;

@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 @Component
 public class PostFinanceLogRepository
 {
@@ -44,7 +45,7 @@ public class PostFinanceLogRepository
 	public PostFinanceLog create(@NonNull final PostFinanceLogCreateRequest postFinanceLogCreateRequest)
 	{
 		final I_C_Doc_Outbound_Log_PostFinance_Log logRecord = newInstance(I_C_Doc_Outbound_Log_PostFinance_Log.class);
-		if(postFinanceLogCreateRequest.getPostFinanceExportException() != null)
+		if (postFinanceLogCreateRequest.getPostFinanceExportException() != null)
 		{
 			final AdIssueId issueId = errorManager.createIssue(postFinanceLogCreateRequest.getPostFinanceExportException());
 			logRecord.setAD_Issue_ID(issueId.getRepoId());
@@ -73,7 +74,7 @@ public class PostFinanceLogRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_PostFinance_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_PostFinance_Transaction_Id, transactionId)
+				.addStringLikeFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_PostFinance_Transaction_Id, transactionId, false)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_Created)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_C_Doc_Outbound_Log_PostFinance_Log_ID)
 				.create()

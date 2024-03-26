@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static de.metas.postfinance.PostFinanceConstants.TYPE_RESPONSE;
+import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
