@@ -180,7 +180,7 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
     And validate created M_Quality_Attributes for product: p_1
       | OPT.QualityAttribute  |
@@ -351,7 +351,7 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | testForSale             | true                   | testForPurchase             |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | true                       |
     When a 'GET' request with the below payload is sent to the metasfresh REST-API 'api/v2/products' and fulfills with '200' status code
 """

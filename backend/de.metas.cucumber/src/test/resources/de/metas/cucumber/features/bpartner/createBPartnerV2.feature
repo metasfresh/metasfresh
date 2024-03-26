@@ -247,12 +247,12 @@ Feature: create or update BPartner v2
       | 23.17  | true     | Insurance               | 2022-10-31   | false     | 100               |
       | 10     | false    | Insurance               | 2022-10-30   | true      | null              |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference  | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type             | ExternalReference  | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001                | www.ExternalReferenceURL.com | 540000                       | false                      |
-      | ALBERTA        | BPartnerLocation | l22                |                              | 540000                       | true                       |
-      | ALBERTA        | UserID           | c11                |                              | 540000                       | true                       |
-      | ALBERTA        | UserID           | c22                |                              | 540000                       | true                       |
-      | ALBERTA        | Greeting         | greetingTest261023 |                              |                              |                            |
+      | ALBERTA        | BPartnerLocation | l22                | null                         | 540000                       | true                       |
+      | ALBERTA        | UserID           | c11                | null                         | 540000                       | true                       |
+      | ALBERTA        | UserID           | c22                | null                         | 540000                       | true                       |
+      | ALBERTA        | Greeting         | greetingTest261023 | null                         |                              |                            |
     And validate C_BPartner_Stats
       | C_BPartner_ID.Identifier | OPT.SOCreditStatus | OPT.SO_CreditUsed |
       | created_bpartner         | W                  | 0                 |
@@ -535,10 +535,10 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-Other-l33      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_address1 test_name_updated |
       | ext-ALBERTA-001    | ext-Other-l44      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_location_name2                       |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type             | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | true                       |
-      | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | false                      |
-      | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
+      | ALBERTA        | BPartnerLocation | l22               | null                         | 540000                       | false                      |
+      | ALBERTA        | UserID           | c11               | null                         | 540000                       | true                       |
 
   @Id:S0285_300
   Scenario: Update a BPartner contact record

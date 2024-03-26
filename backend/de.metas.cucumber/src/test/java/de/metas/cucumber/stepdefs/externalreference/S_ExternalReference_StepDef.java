@@ -39,8 +39,6 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
-import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
-import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -62,9 +60,9 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -85,6 +83,7 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
+import static org.glassfish.gmbal.impl.TypeConverterImpl.NULL_STRING;
 
 public class S_ExternalReference_StepDef
 {
@@ -138,19 +137,14 @@ public class S_ExternalReference_StepDef
 		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : externalReferencesTableList)
 		{
-			final String externalSystem = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalSystem");
-			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type");
-			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
-			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
-
-			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, false);
+			final String externalSystem = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
+			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, I_S_ExternalReference.COLUMNNAME_Type);
+			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final IQueryBuilder<I_S_ExternalReference> externalReferenceQueryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
-					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
-					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, isReadOnlyInMetasfresh);
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference);
 
 			final Integer externalSystemParentConfigId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
 			if (externalSystemParentConfigId != null)
@@ -162,27 +156,50 @@ public class S_ExternalReference_StepDef
 					.create()
 					.firstOnlyOrNull(I_S_ExternalReference.class);
 
-			assertThat(externalReferenceRecord).as("S_ExternalReference was created").isNotNull();
+			assertThat(externalReferenceRecord).as("S_ExternalReference with [ExternalSystem=%s, Type=%s, ExternalReference=%s]", externalSystem, type, externalReference).isNotNull();
 
-			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.AD_Org_ID.Identifier");
+			final SoftAssertions softyl = new SoftAssertions();
+			
+			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(orgCodeIdentifier))
 			{
 				final int orgId = orgTable.get(orgCodeIdentifier).getAD_Org_ID();
 
-				assertThat(externalReferenceRecord.getAD_Org_ID()).isEqualTo(orgId);
+				softyl.assertThat(externalReferenceRecord.getAD_Org_ID()).as("AD_Org_ID for Identifier=%s", orgCodeIdentifier).isEqualTo(orgId);
 			}
 
 			final Integer recordId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_Referenced_Record_ID);
 			if (recordId != null)
 			{
-				assertThat(externalReferenceRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
-				assertThat(externalReferenceRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
+				softyl.assertThat(externalReferenceRecord.getRecord_ID()).as("Record_ID").isEqualTo(recordId);
+				softyl.assertThat(externalReferenceRecord.getReferenced_Record_ID()).as("Referenced_Record_ID").isEqualTo(recordId);
 			}
+
+			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOrNull(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh);
+			if (isReadOnlyInMetasfresh != null)
+			{
+				softyl.assertThat(externalReferenceRecord.isReadOnlyInMetasfresh()).as("IsReadOnlyInMetasfresh").isEqualTo(isReadOnlyInMetasfresh);
+			}
+
+			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalReferenceURL);
+			if (externalReferenceURL != null)
+			{
+				if (NULL_STRING.equals(externalReferenceURL))
+				{
+					softyl.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isNull();
+				}
+				else
+				{
+					softyl.assertThat(externalReferenceRecord.getExternalReferenceURL()).as("ExternalReferenceURL").isEqualTo(externalReferenceURL);
+				}
+			}
+			softyl.assertAll();
 		}
 	}
 
 	@And("metasfresh contains S_ExternalReference:")
-	public void add_S_ExternalReference(@NonNull final DataTable dataTable)
+	public void add_S_ExternalReference(
+			@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -264,7 +281,7 @@ public class S_ExternalReference_StepDef
 
 					externalReferenceRecord.setExternalSystem_Config_ID(externalSystemConfigId);
 				}
-				
+
 				final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 				assertThat(productIdentifier).isNotNull();
 
@@ -287,7 +304,8 @@ public class S_ExternalReference_StepDef
 	}
 
 	@And("process external reference lookup endpoint response")
-	public void process_external_reference_lookup_endpoint_response(@NonNull final DataTable table) throws JsonProcessingException
+	public void process_external_reference_lookup_endpoint_response(
+			@NonNull final DataTable table) throws JsonProcessingException
 	{
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
@@ -305,9 +323,9 @@ public class S_ExternalReference_StepDef
 			final String expectedExternalReference = DataTableUtil.extractStringForColumnName(row, I_S_ExternalReference.COLUMNNAME_ExternalReference);
 
 			final JsonExternalReferenceResponseItem item = Check.singleElement(referenceItems
-																			   .stream()
-																			   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
-																			   .collect(ImmutableList.toImmutableList()));
+																					   .stream()
+																					   .filter(referenceItem -> referenceItem.getLookupItem().getExternalReference().equals(expectedExternalReference))
+																					   .collect(ImmutableList.toImmutableList()));
 
 			final String externalReferenceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_ExternalReference_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -320,7 +338,8 @@ public class S_ExternalReference_StepDef
 	}
 
 	@And("the following S_ExternalReference is changed:")
-	public void change_S_ExternalReference(@NonNull final DataTable dataTable)
+	public void change_S_ExternalReference(
+			@NonNull final DataTable dataTable)
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -339,7 +358,8 @@ public class S_ExternalReference_StepDef
 	}
 
 	@And("remove external reference if exists:")
-	public void remove_external_reference_if_exists(@NonNull final DataTable dataTable)
+	public void remove_external_reference_if_exists(
+			@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -348,7 +368,8 @@ public class S_ExternalReference_StepDef
 		}
 	}
 
-	private void removeExternalReferenceIfExists(@NonNull final Map<String, String> tableRow)
+	private void removeExternalReferenceIfExists(
+			@NonNull final Map<String, String> tableRow)
 	{
 		final String externalSystem = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalSystem);
 		final String externalReference = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalReference);

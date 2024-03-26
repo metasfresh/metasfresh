@@ -264,8 +264,8 @@ Feature: external references for metasfresh resources (V2)
     """
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference       | ExternalReferenceURL | OPT.Referenced_Record_ID |
-      | Other          | BPartner | externalReference_S0401 | https://example.com  | 20240322                 |
+      | ExternalSystem | Type     | ExternalReference       | OPT.ExternalReferenceURL | OPT.Referenced_Record_ID |
+      | Other          | BPartner | externalReference_S0401 | https://example.com      | 20240322                 |
 
   @S0402
   Scenario: upsert - an existing externalReference record is updated
@@ -292,8 +292,8 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference           | ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW | https://example.com  |
+      | ExternalSystem | Type     | ExternalReference           | OPT.ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW | https://example.com      |
 
     # now omit the property "externalReferenceUrl" => expect it to be unchanged
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
@@ -311,8 +311,8 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com  |
+      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | https://example.com      |
 
     # now set the property "externalReferenceUrl" explicitly to null => expect it to be null
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
@@ -330,5 +330,5 @@ Feature: external references for metasfresh resources (V2)
     """
 
     Then verify that S_ExternalReference was created
-      | ExternalSystem | Type     | ExternalReference             | ExternalReferenceURL |
-      | Other          | BPartner | externalReference_S0402-NEW_2 | null                 | 
+      | ExternalSystem | Type     | ExternalReference             | OPT.ExternalReferenceURL |
+      | Other          | BPartner | externalReference_S0402-NEW_2 | null                     | 
