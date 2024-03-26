@@ -5,6 +5,7 @@ Feature: create or update BPartner v2
   As a user
   I want create or update a BPartner record
 
+  # IMPORTANT: the different scenarios assume depend on each other, so you can't run just one of them (pls fix when time)
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -420,7 +421,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_200
   @S0405
-  Scenario: Update a BPartner record
+  Scenario: Update a BPartner record - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -441,7 +442,8 @@ Feature: create or update BPartner v2
                "url":"url_updated",
                "group":"test-group",
                "vatId":null,
-               "urproduzent":false
+               "urproduzent":false,
+               "storageWarehouse":true
             },
             "locations":{
                "requestItems":[
@@ -531,7 +533,7 @@ Feature: create or update BPartner v2
       | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
     And verify that location was updated for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
-      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |
+      | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name               |
       | ext-ALBERTA-001    | ext-Other-l33      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_address1 test_name_updated |
       | ext-ALBERTA-001    | ext-Other-l44      | test_address1 | null          | null       | null         | test_region | test_city | DE          | null    | null       | null        | test_location_name2                       |
     And verify that S_ExternalReference was created
@@ -541,7 +543,7 @@ Feature: create or update BPartner v2
       | ALBERTA        | UserID           | c11               | null                         | 540000                       | true                       |
 
   @Id:S0285_300
-  Scenario: Update a BPartner contact record
+  Scenario: Update a BPartner contact record - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 
@@ -607,7 +609,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_400
   @S0405
-  Scenario: Update a BPartner contact record and Create another contact record
+  Scenario: Update a BPartner contact record and Create another contact record - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -667,7 +669,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_500
   @from:cucumber
-  Scenario: create BPartner with external reference type of code - orgCode set in path
+  Scenario: create BPartner with external reference type of code - orgCode set in path - DEPENDS ON PREDECESSOR
 
     Given load AD_Org:
       | AD_Org_ID.Identifier | Value |
@@ -709,7 +711,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_600
   @from:cucumber
-  Scenario: process CreateBPartner requests given:
+  Scenario: process CreateBPartner requests given - DEPENDS ON PREDECESSOR:
   _no orgCode in path
   _different orgCode set for each request item
 
@@ -769,8 +771,7 @@ Feature: create or update BPartner v2
       | bpartner3                | ext-ALBERTA-bPartner3 | BPartnerTestName3 | BPartnerTestCompany3 | bPartner3_orgCode        |
 
   @Id:S0285_700
-  Scenario: Create BPartner Account record,
-  using all supported external identifier formats:
+  Scenario: Create BPartner Account record, using all supported external identifier formats - DEPENDS ON PREDECESSOR?:
   - external reference
   - iban
   - qr_iban
@@ -1019,7 +1020,7 @@ Feature: create or update BPartner v2
 }
 """
 
-  Scenario: Update a BPartner contact record with a missing greeting, expecting error
+  Scenario: Update a BPartner contact record with a missing greeting, expecting error - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '422' status code
     """
 
