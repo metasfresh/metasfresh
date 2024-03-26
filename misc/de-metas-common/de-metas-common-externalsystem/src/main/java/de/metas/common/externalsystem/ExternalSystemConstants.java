@@ -121,13 +121,12 @@ public class ExternalSystemConstants
 
 	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
 
-
 	public static final String PARAM_APP_ID = "AppId";
 	public static final String PARAM_CERT_ID = "CertId";
 	public static final String PARAM_DEV_ID = "DevId";
 	public static final String PARAM_REDIRECT_URL = "RedirectURL";
-	public static final String PARAM_API_MODE  = "ApiMode";
-	public static final String PARAM_API_USER_REFRESH_TOKEN  = "RefreshToken";
+	public static final String PARAM_API_MODE = "ApiMode";
+	public static final String PARAM_API_USER_REFRESH_TOKEN = "RefreshToken";
 
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
