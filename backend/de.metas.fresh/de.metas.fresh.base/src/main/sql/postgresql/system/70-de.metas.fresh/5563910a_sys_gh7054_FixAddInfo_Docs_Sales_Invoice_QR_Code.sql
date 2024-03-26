@@ -1,3 +1,4 @@
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code (IN p_C_invoice_id numeric);
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_QR_Code(IN p_C_invoice_id numeric)
     RETURNS TABLE
@@ -36,10 +37,7 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || -- E'\n' || --UCR – Postal code
         E'\n' || -- E'\n' || --UCR – City
         E'\n' || -- E'\n' || --UCR – Country
-        to_char((case
-            when cl.referenceNo is not null then   to_number(substring(cl.referenceNo, 3, 8), '999999999') + (to_number(substring(cl.referenceNo, 11, 2), '99') /100 )
-            else i.GrandTotal
-           end),'FM99999999.00')  || E'\n' ||
+        i.GrandTotal || E'\n' ||
         cur.iso_code || E'\n' ||
         'K' || E'\n' || -- UD– AdressTyp = Combined address
         substring(bpartneraddress from 1 for position(E'\n' in bpartneraddress)) || --UD – Name
@@ -87,11 +85,7 @@ select ('SPC' || E'\n' || --QRType
            end)
                                                AS referenceno,
        i.bpartneraddress                       as DR_Address,
-       (case
-            when cl.referenceNo is not null then to_number(substring(cl.referenceNo, 3, 8), '999999999') +
-                                                 (to_number(substring(cl.referenceNo, 11, 2), '99') / 100)
-            else i.GrandTotal
-           end)                                as Amount,
+       i.grandtotal                            as Amount,
        cur.iso_code                            as currency,
        left(replace(replace(coalesce(i.description, ''),E'\n', ''), E'\r', ''), 140) as additional_informations,
        orgbpb.sepa_creditoridentifier          as SCOR,
