@@ -125,6 +125,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.postfinance.B2BServiceWrapper.B2B_SERVICE_OBJECT_FACTORY;
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.BILL;
 
 @Service
 @RequiredArgsConstructor
@@ -165,7 +166,7 @@ public class PostFinanceYbInvoiceService
 	public static final ObjectFactory YB_INVOICE_OBJECT_FACTORY = new ObjectFactory();
 
 
-	public void exportToPostFinance(final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	public void exportToPostFinance(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
 	{
 		final ArrayOfProcessedInvoice arrayOfProcessedInvoice = b2BServiceWrapper.uploadFilesReport(billerId, invoices);
 		arrayOfProcessedInvoice.getProcessedInvoice()
@@ -288,8 +289,8 @@ public class PostFinanceYbInvoiceService
 
 		final AppendixType appendixType = YB_INVOICE_OBJECT_FACTORY.createAppendixType();
 		final AppendixType.Document document = YB_INVOICE_OBJECT_FACTORY.createAppendixTypeDocument();
-		//document.setMimeType(MimeType.TYPE_PDF);
-		document.setMimeType("x-application/pdfappendix");
+
+		document.setMimeType(MimeType.TYPE_PDF_APPENDIX);
 		document.setValue(Base64.getEncoder().encodeToString(archive.getArchiveData()));
 		appendixType.getDocument().add(document);
 		return appendixType;
@@ -359,7 +360,7 @@ public class PostFinanceYbInvoiceService
 
 		final BillType.Header header = YB_INVOICE_OBJECT_FACTORY.createBillTypeHeader();
 
-		header.setDocumentType(PostFinanceDocumentType.BILL);
+		header.setDocumentType(BILL.toString());
 		header.setDocumentID(getTransactionId(invoiceToExport));
 
 		final XMLGregorianCalendar invoiceDate = toXMLCalendar(invoiceToExport.getInvoiceDate());

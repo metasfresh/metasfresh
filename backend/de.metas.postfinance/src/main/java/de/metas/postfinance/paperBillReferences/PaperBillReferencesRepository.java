@@ -27,15 +27,15 @@ import de.metas.postfinance.model.I_AD_Org_PostFinance_PaperBill_References;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.stream.Stream;
 
-@Component
+@Repository
 public class PaperBillReferencesRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	public Stream<PaperBillReference> retrievePaperBillReferences(OrgId orgId)
+	public Stream<PaperBillReference> retrievePaperBillReferences(@NonNull final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_AD_Org_PostFinance_PaperBill_References.class)
 				.addOnlyActiveRecordsFilter()

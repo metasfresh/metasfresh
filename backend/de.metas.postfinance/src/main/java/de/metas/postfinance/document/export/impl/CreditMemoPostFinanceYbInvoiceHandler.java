@@ -31,7 +31,6 @@ import de.metas.invoice.export.InvoiceToExportFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.postfinance.document.export.IPostFinanceYbInvoiceHandler;
-import de.metas.postfinance.document.export.PostFinanceDocumentType;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -47,10 +46,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.CREDITADVICE;
 import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.YB_INVOICE_OBJECT_FACTORY;
 
 @Component
@@ -63,7 +62,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
 
 	@Override
-	public boolean applies(final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
+	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final TableRecordReference tableRecordReference = postFinanceYbInvoiceRequest.getDocumentReference();
 		if(!tableRecordReference.getTableName().equals(I_C_Invoice.Table_Name))
@@ -77,8 +76,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 	}
 
 	@Override
-	@Nullable
-	public PostFinanceYbInvoiceResponse prepareExportData(final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
+	public PostFinanceYbInvoiceResponse prepareExportData(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final InvoiceId invoiceId = postFinanceYbInvoiceRequest.getDocumentReference().getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
 		final Optional<InvoiceToExport> invoiceToExportOptional = invoiceToExportFactory.getCreateForId(invoiceId);
@@ -91,7 +89,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
 		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.CREDIT_ADVICE);
+		envelope.getBody().getBill().getHeader().setDocumentType(CREDITADVICE.toString());
 
 		final I_C_Invoice creditMemoRecord = invoiceBL.getById(invoiceId);
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(creditMemoRecord.getRef_Invoice_ID());
@@ -99,7 +97,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 		{
 			final Optional<InvoiceToExport> refInvoiceToExportOptional = invoiceToExportFactory.getCreateForId(invoiceId);
 
-			if(invoiceToExportOptional.isEmpty())
+			if(refInvoiceToExportOptional.isEmpty())
 			{
 				throw new PostFinanceExportException("Failed to create refInvoiceToExport");
 			}

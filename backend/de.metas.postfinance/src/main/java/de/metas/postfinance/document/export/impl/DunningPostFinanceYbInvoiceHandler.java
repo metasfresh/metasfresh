@@ -33,10 +33,8 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.InvoiceToExportFactory;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.postfinance.document.export.IPostFinanceYbInvoiceHandler;
-import de.metas.postfinance.document.export.PostFinanceDocumentType;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -50,12 +48,12 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.REMINDER;
 import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.YB_INVOICE_OBJECT_FACTORY;
 
 @Component
@@ -64,13 +62,13 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@NonNull private final DunningToExportFactory dunningToExportFactory;
 	@NonNull private final InvoiceToExportFactory invoiceToExportFactory;
 	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+
 	@Override
-	public boolean applies(final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
+	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final TableRecordReference documentReference = postFinanceYbInvoiceRequest.getDocumentReference();
 		if(!documentReference.getTableName().equals(I_C_DunningDoc.Table_Name))
@@ -84,7 +82,6 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 	}
 
 	@Override
-	@Nullable
 	public PostFinanceYbInvoiceResponse prepareExportData(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final DunningDocId dunningDocId = postFinanceYbInvoiceRequest.getDocumentReference().getIdAssumingTableName(I_C_DunningDoc.Table_Name, DunningDocId::ofRepoId);
@@ -106,7 +103,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
 		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.REMINDER);
+		envelope.getBody().getBill().getHeader().setDocumentType(REMINDER.toString());
 		final String transactionId = postFinanceYbInvoiceService.getTransactionId(dunningToExport);
 		envelope.getBody().getDeliveryInfo().setTransactionID(transactionId);
 		envelope.getBody().getBill().getHeader().setDocumentID(transactionId);

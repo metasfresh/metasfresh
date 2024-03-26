@@ -30,14 +30,14 @@ import de.metas.postfinance.model.I_C_Doc_Outbound_Log_PostFinance_Log;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-@Component
+@Repository
 public class PostFinanceLogRepository
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -46,7 +46,7 @@ public class PostFinanceLogRepository
 	public PostFinanceLog create(@NonNull final PostFinanceLogCreateRequest postFinanceLogCreateRequest)
 	{
 		final I_C_Doc_Outbound_Log_PostFinance_Log logRecord = newInstance(I_C_Doc_Outbound_Log_PostFinance_Log.class);
-		if (postFinanceLogCreateRequest.getPostFinanceExportException() != null)
+		if(postFinanceLogCreateRequest.getPostFinanceExportException() != null)
 		{
 			final AdIssueId issueId = errorManager.createIssue(postFinanceLogCreateRequest.getPostFinanceExportException());
 			logRecord.setAD_Issue_ID(issueId.getRepoId());
