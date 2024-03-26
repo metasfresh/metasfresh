@@ -176,12 +176,9 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode);
 	}
 
-	private boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
+	private static boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
 	{
-		return Weightables.ATTR_WeightGross.equals(attributeCode)
-				|| Weightables.ATTR_WeightNet.equals(attributeCode)
-				|| Weightables.ATTR_WeightTare.equals(attributeCode)
-				|| Weightables.ATTR_WeightTareAdjust.equals(attributeCode);
+		return Weightables.isWeightableAttribute(attributeCode);
 
 	}
 
