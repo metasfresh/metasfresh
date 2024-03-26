@@ -41,12 +41,12 @@ Feature: create invoice candidate via API
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.C_BPartner_ID.Identifier | Name         | OPT.C_BPartner_Locations.Identifier |
       | IC_User_05012023      | IC_Customer_05012023         | user1_1_name | IC_Customer_Location_05012023       |
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference     | ExternalReferenceType.Code | RecordId.Identifier           |
-      | Other               | productExternalRef    | Product                    | product_05012023              |
-      | Other               | bpartnerExternalRef   | BPartner                   | IC_Customer_05012023          |
-      | Other               | bpLocationExternalRef | BPartnerLocation           | IC_Customer_Location_05012023 |
-      | Other               | userExternalRef       | UserID                     | IC_User_05012023              |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference     | Type             | OPT.M_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier |
+      | productExternalRef                | Other          | productExternalRef    | Product          | product_05012023            |                              |                                       |                           |
+      | bpartnerExternalRef               | Other          | bpartnerExternalRef   | BPartner         |                             | IC_Customer_05012023         |                                       |                           |
+      | bpLocationExternalRef             | Other          | bpLocationExternalRef | BPartnerLocation |                             |                              | IC_Customer_Location_05012023         |                           |
+      | userExternalRef                   | Other          | userExternalRef       | UserID           |                             |                              |                                       | IC_User_05012023          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/invoices/createCandidates' and fulfills with '200' status code
 """

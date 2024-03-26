@@ -56,10 +56,10 @@ class SerializeDeserializeTest
 		final JsonExternalReferenceLookupRequest jsonExternalReferenceLookupRequest = JsonExternalReferenceLookupRequest.builder()
 				.systemName(JsonExternalSystemName.of("systemName"))
 				.item(JsonExternalReferenceLookupItem.builder()
-							  .id("item1Id")
+							  .externalReference("item1Id")
 							  .type("item1Type").build())
 				.item(JsonExternalReferenceLookupItem.builder()
-							  .id("item2Id")
+							  .externalReference("item2Id")
 							  .type("item2Type").build())
 				.build();
 		testSerializeDeserialize(jsonExternalReferenceLookupRequest, JsonExternalReferenceLookupRequest.class);
@@ -71,7 +71,7 @@ class SerializeDeserializeTest
 		String jsonString = "{\n"
 				+ "  \"systemName\": \"Github\",\n"
 				+ "  \"items\": [\n"
-				+ "    { \"id\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
+				+ "    { \"externalReference\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
 				+ "  ]\n"
 				+ "}";
 
@@ -82,15 +82,19 @@ class SerializeDeserializeTest
 	@Test
 	void jsonExternalReferenceCreateRequest() throws Exception
 	{
+		final JsonExternalReferenceRequestItem item1 = new JsonExternalReferenceRequestItem();
+		item1.setLookupItem(JsonExternalReferenceLookupItem.builder().externalReference("item1Id").type("item1Type").build());
+		item1.setVersion("Version");
+		item1.setMetasfreshId(JsonMetasfreshId.of(24));
+
+		final JsonExternalReferenceRequestItem item2 = new JsonExternalReferenceRequestItem();
+		item2.setMetasfreshId(JsonMetasfreshId.of(25));
+		item2.setLookupItem(JsonExternalReferenceLookupItem.builder().externalReference("item2Id").type("item2Type").build());
+
 		final JsonExternalReferenceCreateRequest build = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("systemName"))
-				.item(JsonExternalReferenceItem.builder()
-							  .lookupItem(JsonExternalReferenceLookupItem.builder().id("item1Id").type("item1Type").build())
-							  .metasfreshId(JsonMetasfreshId.of(24))
-							  .version("Version").build())
-				.item(JsonExternalReferenceItem.of(
-						JsonExternalReferenceLookupItem.builder().id("item2Id").type("item2Type").build(),
-						JsonMetasfreshId.of(25)))
+				.item(item1)
+				.item(item2)
 				.build();
 		testSerializeDeserialize(build, JsonExternalReferenceCreateRequest.class);
 	}
@@ -101,7 +105,7 @@ class SerializeDeserializeTest
 		final String jsonString = "{\n"
 				+ "  \"systemName\": \"Github\",\n"
 				+ "  \"items\": [\n"
-				+ "    { \"lookupItem\": { \"id\": \"existingId\", \"type\": \"IssueID\" }, \"metasfreshId\": 43 }\n"
+				+ "    { \"lookupItem\": { \"externalReference\": \"existingId\", \"type\": \"IssueID\" }, \"metasfreshId\": 43 }\n"
 				+ "  ]\n"
 				+ "}";
 
@@ -113,9 +117,9 @@ class SerializeDeserializeTest
 	public void jsonExternalReferenceLookupResponse() throws Exception
 	{
 		final JsonExternalReferenceLookupResponse jsonExternalReferenceLookupResponse = JsonExternalReferenceLookupResponse.builder()
-				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder().type("item1Type").id("item1Id").build()))
-				.item(JsonExternalReferenceItem.of(
-						JsonExternalReferenceLookupItem.builder().type("item2Type").id("item2Id").build(),
+				.item(JsonExternalReferenceResponseItem.of(JsonExternalReferenceLookupItem.builder().type("item1Type").externalReference("item1Id").build()))
+				.item(JsonExternalReferenceResponseItem.of(
+						JsonExternalReferenceLookupItem.builder().type("item2Type").externalReference("item2Id").build(),
 						JsonMetasfreshId.of(23)))
 				.build();
 		testSerializeDeserialize(jsonExternalReferenceLookupResponse, JsonExternalReferenceLookupResponse.class);
@@ -124,17 +128,16 @@ class SerializeDeserializeTest
 	@Test
 	public void jsonRequestExternalReferenceUpsert() throws Exception
 	{
+		final JsonExternalReferenceRequestItem jsonExternalReferenceRequestItem = new JsonExternalReferenceRequestItem();
+		jsonExternalReferenceRequestItem.setMetasfreshId(JsonMetasfreshId.of(1));
+		jsonExternalReferenceRequestItem.setLookupItem(JsonExternalReferenceLookupItem.builder()
+															   .type("item1Type")
+															   .externalReference("item1Id")
+															   .build());
+
 		final JsonRequestExternalReferenceUpsert upsertRequest = JsonRequestExternalReferenceUpsert.builder()
 				.systemName(JsonExternalSystemName.of("externalSystemName"))
-				.externalReferenceItem(JsonExternalReferenceItem.builder()
-											   .metasfreshId(JsonMetasfreshId.of(1))
-											   .lookupItem(JsonExternalReferenceLookupItem.builder()
-																   .type("item1Type")
-																   .id("item1Id")
-																   .build()
-											   )
-											   .build()
-				)
+				.externalReferenceItem(jsonExternalReferenceRequestItem)
 				.build();
 		testSerializeDeserialize(upsertRequest, JsonRequestExternalReferenceUpsert.class);
 	}

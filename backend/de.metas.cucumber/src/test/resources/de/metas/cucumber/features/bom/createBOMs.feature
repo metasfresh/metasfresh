@@ -16,11 +16,11 @@ Feature:bom create using metasfresh api
       | component_1_Id  | productValue2 | component1   |
       | component_2_Id  | productValue3 | component2   |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
-      | GRSSignum           | finishedGoodExternalRef | Product                    | finishedGood_Id     |
-      | GRSSignum           | component1ExternalRef   | Product                    | component_1_Id      |
-      | GRSSignum           | component2ExternalRef   | Product                    | component_2_Id      |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
+      | finishedGoodExternalRef           | GRSSignum      | finishedGoodExternalRef | Product | finishedGood_Id             |
+      | component1ExternalRef             | GRSSignum      | component1ExternalRef   | Product | component_1_Id              |
+      | component2ExternalRef             | GRSSignum      | component2ExternalRef   | Product | component_2_Id              |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bom/version/001' and fulfills with '200' status code
 
@@ -59,7 +59,7 @@ Feature:bom create using metasfresh api
 
     And verify that bomLine was created for bom
       | OPT.PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty | UomCode | IsQtyPercentage | OPT.Scrap | Line |
-      | boml_1                           | bom_1                        | component_1_Id          | 5.0 | KGM     | true            | 20.15     | 1    |
+      | boml_1                               | bom_1                        | component_1_Id          | 5.0 | KGM     | true            | 20.15     | 1    |
 
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bom/version/001' and fulfills with '200' status code
@@ -95,4 +95,4 @@ Feature:bom create using metasfresh api
 
     And verify that bomLine was created for bom
       | OPT.PP_Product_BOMLine_ID.Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | Qty  | UomCode | IsQtyPercentage | OPT.Scrap | Line |
-      | boml_2                           | bom_2                        | component_2_Id          | 20.0 | KGM     | true            | 7.5       | 1    |
+      | boml_2                               | bom_2                        | component_2_Id          | 20.0 | KGM     | true            | 7.5       | 1    |

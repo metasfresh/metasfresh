@@ -33,33 +33,36 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Used in both requests and responses.
+ */
 @Value
 public class JsonExternalReferenceLookupItem
 {
-	@Schema(description = "JsonMetasfreshId of the referenced resource")
+	@Schema(description = "JsonMetasfreshId of the referenced resource. E.g. a `C_BPartner_ID`. Either this or `externalReference` are required")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
 	@Schema(required = true, description = "Type of the externally referenced resource. E.g. user, issue, timebooking")
 	String type;
 
-	@Schema(description = "External identifier of the referenced resource")
+	@Schema(description = "External identifier of the referenced resource. Either this or `metasfreshId` are required")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String id;
+	String externalReference;
 
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceLookupItem(
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
 			@JsonProperty("type") @NonNull final String type,
-			@JsonProperty("id") @Nullable final String id)
+			@JsonProperty("externalReference") @Nullable final String externalReference)
 	{
-		if (metasfreshId == null && id == null)
+		if (metasfreshId == null && externalReference == null)
 		{
 			throw new RuntimeException("metasfreshId && externalReference cannot be both null!");
 		}
 
-		this.id = id;
+		this.externalReference = externalReference;
 		this.type = type;
 		this.metasfreshId = metasfreshId;
 	}

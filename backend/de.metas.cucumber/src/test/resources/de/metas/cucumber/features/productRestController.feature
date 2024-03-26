@@ -3,7 +3,7 @@
 Feature:product get/create/update using metasfresh api
   As a REST-API invoker
   I want want to be able to upsert products
-  
+
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -19,10 +19,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: create Product request, as a REST-API invoker
   I want to be able to upsert products
 
-    Given metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference | Type     |
-      | ALBERTA             | 345               | BPartner |
-      | ALBERTA             | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value                   |
@@ -176,7 +180,7 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
     And validate created M_Quality_Attributes for product: p_1
       | OPT.QualityAttribute  |
@@ -242,10 +246,14 @@ Feature:product get/create/update using metasfresh api
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
 
-    And metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference | Type     |
-      | ALBERTA             | 345               | BPartner |
-      | ALBERTA             | 456               | BPartner |
+    Given metasfresh contains C_BPartners:
+      | Identifier          | Name                | OPT.IsCustomer | OPT.CompanyName         | OPT.AD_Language |
+      | customer_20240322_1 | customer_20240322_1 | Y              | customer_20240322_1_cmp | de_DE           |
+      | customer_20240322_2 | customer_20240322_2 | Y              | customer_20240322_2_cmp | de_DE           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ExternalReference_20240322_1      | ALBERTA        | 345               | BPartner | customer_20240322_1          |
+      | ExternalReference_20240322_2      | ALBERTA        | 456               | BPartner | customer_20240322_2          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
@@ -343,7 +351,7 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | testForSale             | true                   | testForPurchase             |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ExternalSystem | Type    | ExternalReference | OPT.ExternalReferenceURL     | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | true                       |
     When a 'GET' request with the below payload is sent to the metasfresh REST-API 'api/v2/products' and fulfills with '200' status code
 """
@@ -372,9 +380,9 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
-    And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+    And metasfresh contains S_ExternalReference:
+      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference  | Type    | OPT.M_Product_ID.Identifier |
+      | productExternalRef                | LeichUndMehl   | productExternalRef | Product | product_1                   |
 
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
 

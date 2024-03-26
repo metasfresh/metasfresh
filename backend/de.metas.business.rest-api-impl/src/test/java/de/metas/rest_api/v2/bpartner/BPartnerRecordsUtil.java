@@ -257,7 +257,7 @@ public class BPartnerRecordsUtil
 														 .orgId(OrgId.ofRepoId(10))
 														 .recordId(AD_USER_ID)
 														 .externalSystemParentConfigId(ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID)
-														 .isReadOnlyInMetasfresh(true)
+														 .readOnlyInMetasfresh(true)
 														 .build());
 			}
 		}

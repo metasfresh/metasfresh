@@ -5,7 +5,7 @@ Feature: data export audit using bpartner metasfresh api
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the export audit data is reset
 
   Scenario: The request is good and the export audit data is created
@@ -168,10 +168,10 @@ Feature: data export audit using bpartner metasfresh api
       | created_bpartner         | ext-Shopware6-BPartner_ER_Audit_25032022 | shopware6codeAudit | shopware6nameAudit | shopware6cmpAudit | de           |
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference            | ExternalReferenceURL |
-      | Shopware6      | BPartner         | BPartner_ER_Audit_25032022   | www.Shopware6.ro     |
-      | Shopware6      | BPartnerLocation | BPLocation_ER_Audit_25032022 | null                 |
-      | Shopware6      | UserID           | BPContact_ER_Audit_25032022  | null                 |
+      | ExternalSystem | Type             | ExternalReference            | OPT.ExternalReferenceURL |
+      | Shopware6      | BPartner         | BPartner_ER_Audit_25032022   | www.Shopware6.ro         |
+      | Shopware6      | BPartnerLocation | BPLocation_ER_Audit_25032022 | null                     |
+      | Shopware6      | UserID           | BPContact_ER_Audit_25032022  | null                     |
 
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue    | OPT.IsSyncExternalReferencesToRabbitMQ |
@@ -186,15 +186,15 @@ Feature: data export audit using bpartner metasfresh api
     "systemName": "Shopware6",
     "items": [
         {
-            "id": "BPartner_ER_Audit_25032022",
+            "externalReference": "BPartner_ER_Audit_25032022",
             "type": "BPartner"
         },
         {
-            "id": "BPLocation_ER_Audit_25032022",
+            "externalReference": "BPLocation_ER_Audit_25032022",
             "type": "BPartnerLocation"
         },
         {
-            "id": "BPContact_ER_Audit_25032022",
+            "externalReference": "BPContact_ER_Audit_25032022",
             "type": "UserID"
         }
     ]

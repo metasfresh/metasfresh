@@ -72,8 +72,8 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpser
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -472,11 +472,11 @@ public class JsonPersisterService
 		if (EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
 		{
 			final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-					.id(externalIdentifier.asExternalValueAndSystem().getValue())
+					.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
 					.type(externalReferenceType.getCode())
 					.build();
 
-			final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+			final JsonExternalReferenceRequestItem externalReferenceItem = JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, metasfreshId);
 
 			final JsonSingleExternalReferenceCreateReq externalReferenceCreateRequest = JsonSingleExternalReferenceCreateReq
 					.builder()
@@ -829,12 +829,12 @@ public class JsonPersisterService
 		}
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalBusinessKey.asExternalValueAndSystem().getValue())
+				.externalReference(externalBusinessKey.asExternalValueAndSystem().getValue())
 				.type(BPartnerExternalReferenceType.BPARTNER_VALUE.getCode())
 				.build();
 
-		final JsonExternalReferenceItem externalReferenceItem =
-				JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+		final JsonExternalReferenceRequestItem externalReferenceItem =
+				JsonExternalReferenceRequestItem.of(externalReferenceLookupItem, metasfreshId);
 
 		final JsonRequestExternalReferenceUpsert externalReferenceUpsert = JsonRequestExternalReferenceUpsert.builder()
 				.systemName(JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem()))
@@ -2133,7 +2133,7 @@ public class JsonPersisterService
 	@NonNull
 	private static Optional<JsonRequestExternalReferenceUpsert> mapToJsonRequestExternalReferenceUpsert(
 			@NonNull final JsonResponseUpsertItem responseUpsertItem,
-			@NonNull final Map<String, JsonExternalReferenceItem> externalRef2item)
+			@NonNull final Map<String, JsonExternalReferenceRequestItem> externalRef2item)
 	{
 		if (SyncOutcome.NOTHING_DONE.equals(responseUpsertItem.getSyncOutcome()))
 		{
@@ -2146,7 +2146,7 @@ public class JsonPersisterService
 			return Optional.empty();
 		}
 
-		final JsonExternalReferenceItem externalReferenceItem = externalRef2item.get(externalIdentifier.asExternalValueAndSystem().getValue());
+		final JsonExternalReferenceRequestItem externalReferenceItem = externalRef2item.get(externalIdentifier.asExternalValueAndSystem().getValue());
 
 		if (externalReferenceItem == null)
 		{
@@ -2155,13 +2155,12 @@ public class JsonPersisterService
 					.setParameter("JsonResponseUpsertItem", responseUpsertItem);
 		}
 
-		final JsonExternalReferenceItem externalReferenceItemWithMetasfreshId = externalReferenceItem
-				.withMetasfreshId(responseUpsertItem.getMetasfreshId());
+		externalReferenceItem.setMetasfreshId(responseUpsertItem.getMetasfreshId());
 
 		final JsonRequestExternalReferenceUpsert jsonRequestExternalReferenceUpsert = JsonRequestExternalReferenceUpsert
 				.builder()
 				.systemName(JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem()))
-				.externalReferenceItem(externalReferenceItemWithMetasfreshId)
+				.externalReferenceItem(externalReferenceItem)
 				.build();
 
 		return Optional.of(jsonRequestExternalReferenceUpsert);
@@ -2184,7 +2183,7 @@ public class JsonPersisterService
 		final List<JsonResponseUpsertItem> bPartnerLocationsResult = result.getResponseLocationItems();
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
-			final Map<String, JsonExternalReferenceItem> locationIdentifier2ExternalReferenceItem = requestItem
+			final Map<String, JsonExternalReferenceRequestItem> locationIdentifier2ExternalReferenceItem = requestItem
 					.getBpartnerComposite()
 					.getLocationsNotNull()
 					.getRequestItems()
@@ -2194,7 +2193,7 @@ public class JsonPersisterService
 					.map(Optional::get)
 					.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
 					.collect(Collectors.toMap(
-							JsonExternalReferenceItem::getExternalReference,
+							JsonExternalReferenceRequestItem::getExternalReference,
 							Function.identity()));
 
 			externalReferenceCreateReqs.addAll(bPartnerLocationsResult
@@ -2210,7 +2209,7 @@ public class JsonPersisterService
 		if (!CollectionUtils.isEmpty(bPartnerContactItems))
 		{
 
-			final Map<String, JsonExternalReferenceItem> contactIdentifier2ExternalReferenceItem = requestItem
+			final Map<String, JsonExternalReferenceRequestItem> contactIdentifier2ExternalReferenceItem = requestItem
 					.getBpartnerComposite()
 					.getContactsNotNull()
 					.getRequestItems()
@@ -2220,7 +2219,7 @@ public class JsonPersisterService
 					.map(Optional::get)
 					.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
 					.collect(Collectors.toMap(
-							JsonExternalReferenceItem::getExternalReference,
+							JsonExternalReferenceRequestItem::getExternalReference,
 							Function.identity()));
 
 			externalReferenceCreateReqs.addAll(bPartnerContactItems
@@ -2238,7 +2237,7 @@ public class JsonPersisterService
 		final List<JsonResponseUpsertItem> greetingItems = resultBuilder.buildGreetingResults();
 		if (!CollectionUtils.isEmpty(greetingItems))
 		{
-			final Map<String, JsonExternalReferenceItem> greetingIdentifier2ExternalReferenceItem = requestItem
+			final Map<String, JsonExternalReferenceRequestItem> greetingIdentifier2ExternalReferenceItem = requestItem
 					.getBpartnerComposite()
 					.getContactsNotNull()
 					.getRequestItems()
@@ -2251,7 +2250,7 @@ public class JsonPersisterService
 					.map(Optional::get)
 					.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
 					.collect(Collectors.toMap(
-							JsonExternalReferenceItem::getExternalReference,
+							JsonExternalReferenceRequestItem::getExternalReference,
 							Function.identity()));
 
 			externalReferenceCreateReqs.addAll(greetingItems
@@ -2511,7 +2510,7 @@ public class JsonPersisterService
 			return ImmutableSet.of();
 		}
 
-		final Map<String, JsonExternalReferenceItem> identifier2ExternalReferenceItem = bankAccountUpsertRequest
+		final Map<String, JsonExternalReferenceRequestItem> identifier2ExternalReferenceItem = bankAccountUpsertRequest
 				.getRequestItems()
 				.stream()
 				.map(JsonExternalReferenceHelper::getExternalReferenceItem)
@@ -2519,7 +2518,7 @@ public class JsonPersisterService
 				.map(Optional::get)
 				.filter(externalRefItem -> externalRefItem.getExternalReference() != null)
 				.collect(Collectors.toMap(
-						JsonExternalReferenceItem::getExternalReference,
+						JsonExternalReferenceRequestItem::getExternalReference,
 						Function.identity()));
 
 		return bankAccountItems
