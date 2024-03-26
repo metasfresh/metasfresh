@@ -31,6 +31,7 @@ import de.metas.postfinance.document.export.PostFinanceYbInvoiceService;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -72,7 +73,7 @@ public class C_Doc_Outbound_Log_Export_To_Post_Finance extends JavaProcess
 		return MSG_OK;
 	}
 
-	private PostFinanceYbInvoiceRequest toPostFinanceExportRequest(final I_C_Doc_Outbound_Log docOutboundLog)
+	private PostFinanceYbInvoiceRequest toPostFinanceExportRequest(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
 	{
 		return PostFinanceYbInvoiceRequest.builder()
 				.documentReference(TableRecordReference.of(docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID()))

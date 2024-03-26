@@ -44,7 +44,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Component
@@ -56,8 +55,9 @@ public class SalesInvoicePostFinanceYbInvoiceHandler implements IPostFinanceYbIn
 
 	@NonNull private final InvoiceToExportFactory invoiceToExportFactory;
 	@NonNull private final PostFinanceYbInvoiceService postFinanceYbInvoiceService;
+
 	@Override
-	public boolean applies(final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
+	public boolean applies(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final TableRecordReference tableRecordReference = postFinanceYbInvoiceRequest.getDocumentReference();
 		if(!tableRecordReference.getTableName().equals(I_C_Invoice.Table_Name))
@@ -71,7 +71,6 @@ public class SalesInvoicePostFinanceYbInvoiceHandler implements IPostFinanceYbIn
 	}
 
 	@Override
-	@Nullable
 	public PostFinanceYbInvoiceResponse prepareExportData(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest)
 	{
 		final InvoiceId invoiceId = postFinanceYbInvoiceRequest.getDocumentReference().getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);

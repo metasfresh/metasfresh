@@ -22,11 +22,13 @@
 
 package de.metas.postfinance.document.export;
 
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 
 public interface IPostFinanceYbInvoiceHandler
 {
-	boolean applies (final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest);
+	boolean applies (@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest);
 	@Nullable
-	PostFinanceYbInvoiceResponse prepareExportData(final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest);
+	PostFinanceYbInvoiceResponse prepareExportData(@NonNull final PostFinanceYbInvoiceRequest postFinanceYbInvoiceRequest);
 }
