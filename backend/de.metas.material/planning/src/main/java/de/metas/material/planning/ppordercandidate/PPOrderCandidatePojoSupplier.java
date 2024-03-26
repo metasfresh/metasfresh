@@ -50,6 +50,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.service.ClientId;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
@@ -113,7 +114,7 @@ public class PPOrderCandidatePojoSupplier
 
 		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(productPlanningData.getPP_Product_BOMVersions_ID());
 
-		productBOMDAO.getLatestBOMByVersion(bomVersionsId)
+		productBOMDAO.getLatestBOMIdByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes())
 				.orElseThrow(() -> new MrpException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + productId + ")"));
 
 		//

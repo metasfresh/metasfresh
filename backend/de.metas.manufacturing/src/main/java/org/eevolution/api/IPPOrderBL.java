@@ -116,4 +116,6 @@ public interface IPPOrderBL extends ISingletonService
 	void updateDraftedOrdersMatchingBOM(@NonNull ProductBOMVersionsId bomVersionsId, @NonNull ProductBOMId newVersionId);
 	
 	boolean isModularOrder(@NonNull PPOrderId ppOrderId);
+
+	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
 }

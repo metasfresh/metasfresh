@@ -14,6 +14,7 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
@@ -21,6 +22,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /*
@@ -79,7 +81,7 @@ public class PP_Product_Planning
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = {I_PP_Product_Planning.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID})
+			ifColumnsChanged = { I_PP_Product_Planning.COLUMNNAME_M_Product_ID, I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID })
 	public void validateBOMVersionsAndProductId(final I_PP_Product_Planning planning)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(planning.getM_Product_ID());
@@ -117,9 +119,9 @@ public class PP_Product_Planning
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
-				I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID,
-				I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant,
-				I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID,
+					I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant,
+					I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID,
 			})
 	public void validateProductBOMASI(@NonNull final I_PP_Product_Planning productPlanning)
 	{
@@ -128,18 +130,16 @@ public class PP_Product_Planning
 			return;
 		}
 
-		if (productPlanning.getPP_Product_BOMVersions_ID() <= 0)
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
+		if (bomVersionsId == null)
 		{
 			return;
 		}
 
-		final Optional<I_PP_Product_BOM> bom = bomDAO.getLatestBOMRecordByVersionId(ProductBOMVersionsId.ofRepoId(productPlanning.getPP_Product_BOMVersions_ID()));
-
-		if (!bom.isPresent())
-		{
-			return;
-		}
-
-		productBOMService.verifyBOMAssignment(productPlanning, bom.get());
+		Arrays.stream(PPOrderDocBaseType.values())
+				.map(docType -> bomDAO.getLatestBOMRecordByVersionAndType(bomVersionsId, docType.getBOMTypes()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.forEach(bom -> productBOMService.verifyBOMAssignment(productPlanning, bom));
 	}
 }
