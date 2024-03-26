@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUConstants;
@@ -68,7 +69,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -105,6 +105,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 @Service
 public class ShipmentScheduleWithHUService
@@ -115,6 +116,7 @@ public class ShipmentScheduleWithHUService
 	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly";
 
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
+	public static final String SYSCONFIG_PACK_CUS_TO_TU = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -124,9 +126,12 @@ public class ShipmentScheduleWithHUService
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final HUReservationService huReservationService;
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService)
 	{
@@ -180,7 +185,7 @@ public class ShipmentScheduleWithHUService
 		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
 		final IHUContext huContext = request.getHuContext();
 
-		final I_M_ShipmentSchedule scheduleRecord = Services.get(IShipmentSchedulePA.class).getById(request.getShipmentScheduleId());
+		final I_M_ShipmentSchedule scheduleRecord = huShipmentScheduleBL.getById(request.getShipmentScheduleId());
 
 		switch (quantityType)
 		{
@@ -268,18 +273,15 @@ public class ShipmentScheduleWithHUService
 			final boolean pickAccordingToPackingInstruction,
 			@NonNull final IHUContext huContext)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
+		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
 		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
 		if (pickAvailableHUsOnTheFly)
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
 				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext));
@@ -328,7 +330,7 @@ public class ShipmentScheduleWithHUService
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final boolean pickAvailableHUsOntheFly = Services.get(ISysConfigBL.class)
+		final boolean pickAvailableHUsOntheFly = sysConfigBL
 				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
 						true,
 						adClientId,
@@ -363,7 +365,6 @@ public class ShipmentScheduleWithHUService
 			return ImmutableList.of();
 		}
 
-		//final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		//		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
 		//
 		//		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
@@ -466,7 +467,7 @@ public class ShipmentScheduleWithHUService
 			final Optional<HUReservation> reservation = huReservationService.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 			if (reservation.isPresent())
 			{
-				for (final I_M_HU reservedHURecord : handlingUnitsDAO.retrieveByIds(reservation.get().getVhuIds()))
+				for (final I_M_HU reservedHURecord : handlingUnitsDAO.getByIds(reservation.get().getVhuIds()))
 				{
 					if (huStatusBL.isStatusActive(reservedHURecord))
 					{
@@ -548,8 +549,6 @@ public class ShipmentScheduleWithHUService
 			final ProductId productId,
 			final I_C_UOM uomRecord)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 		return handlingUnitsBL
 				.getStorageFactory()
 				.getStorage(sourceHURecord)
@@ -599,8 +598,8 @@ public class ShipmentScheduleWithHUService
 		final List<ShipmentScheduleWithHU> candidatesForPick = new ArrayList<>();
 
 		//
-		// Create necessary LUs (if any)
-		createLUsIfNeeded(schedule, quantityType);
+		// Create necessary TUs/LUs (if any)
+		createTUsLUsIfNeeded(schedule, quantityType);
 
 		// retrieve the qty picked entries again, some new ones might have been created on LU creation
 		qtyPickedRecords = retrieveQtyPickedRecords(schedule);
@@ -660,11 +659,11 @@ public class ShipmentScheduleWithHUService
 	}
 
 	/**
-	 * Create LUs for given shipment schedule.
+	 * Create TUs for picked VHUs if needed. Create LUs for given shipment schedule.
 	 * <p>
-	 * After calling this method, all our TUs from QtyPicked records shall have an LU.
+	 * After calling this method, all our CUs/TU from QtyPicked records shall have an LU.
 	 */
-	private void createLUsIfNeeded(
+	private void createTUsLUsIfNeeded(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
@@ -677,6 +676,11 @@ public class ShipmentScheduleWithHUService
 		if (HUConstants.isQuickShipment() && onlyUseQtyToDeliver)
 		{
 			return;
+		}
+
+		if (sysConfigBL.getBooleanValue(SYSCONFIG_PACK_CUS_TO_TU, true))
+		{
+			aggregateCUsToTUs(ImmutableSet.of(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID())));
 		}
 
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
@@ -800,9 +804,11 @@ public class ShipmentScheduleWithHUService
 			luLoader.addTU(tuHU);
 
 			// NOTE: after TU was added to an LU we expect this qtyPickedRecord to be updated and M_LU_HU_ID to be set
-			// Also, if there more then one QtyPickedRecords for tuHU, all those shall be updated
+			// Also, if there are more than one QtyPickedRecords for tuHU, all those shall be updated
 			// see de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleHUTrxListener.huParentChanged(I_M_HU, I_M_HU_Item)
 		}
+
+		luLoader.close();
 	}
 
 	/**
@@ -812,9 +818,6 @@ public class ShipmentScheduleWithHUService
 	 */
 	private void createLUsForQtyToDeliver(final I_M_ShipmentSchedule schedule)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(schedule);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
 
@@ -854,12 +857,9 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@NonNull
-	private ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
+	ILUTUProducerAllocationDestination createLUTUProducerDestination(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-
 		final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(schedule);
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
 		final ILUTUProducerAllocationDestination luProducerDestination = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
@@ -910,5 +910,22 @@ public class ShipmentScheduleWithHUService
 		return alreadyAllocatedHUs.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver, Quantity::subtract);
+	}
+
+	public void aggregateCUsToTUs(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		ShipmentSchedulesCUsToTUsAggregator.builder()
+				.huShipmentScheduleBL(huShipmentScheduleBL)
+				.shipmentScheduleAllocDAO(shipmentScheduleAllocDAO)
+				.handlingUnitsBL(handlingUnitsBL)
+				//
+				.shipmentScheduleIds(shipmentScheduleIds)
+				//
+				.build().execute();
 	}
 }
