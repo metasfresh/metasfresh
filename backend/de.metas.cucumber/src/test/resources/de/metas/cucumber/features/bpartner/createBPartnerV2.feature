@@ -36,8 +36,8 @@ Feature: create or update BPartner v2
       | Identifier          | Name                          |
       | sectionGroupPartner | sectionGroupPartnerIdentifier |
     And metasfresh contains S_ExternalReference:
-      | ExternalSystem | ExternalReference | ExternalReferenceType | OPT.C_BPartner_ID.Identifier |
-      | ALBERTA        | bp2212            | BPartner              | sectionGroupPartner          |
+      | ExternalSystem | ExternalReference | Type     | OPT.C_BPartner_ID.Identifier |
+      | ALBERTA        | bp2212            | BPartner | sectionGroupPartner          |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """

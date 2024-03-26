@@ -381,8 +381,8 @@ Feature:product get/create/update using metasfresh api
       | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
 
     And metasfresh contains S_ExternalReference:
-      | ExternalSystem | ExternalReference  | ExternalReferenceType | OPT.M_Product_ID.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1                   |
+      | ExternalSystem | ExternalReference  | Type    | OPT.M_Product_ID.Identifier |
+      | LeichUndMehl   | productExternalRef | Product | product_1                   |
 
     When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
 
