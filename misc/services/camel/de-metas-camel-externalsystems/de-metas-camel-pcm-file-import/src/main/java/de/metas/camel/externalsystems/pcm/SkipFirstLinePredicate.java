@@ -27,17 +27,9 @@ import org.apache.camel.Predicate;
 
 public class SkipFirstLinePredicate implements Predicate
 {
-	private boolean firstLine = true;
-
 	@Override
 	public boolean matches(final Exchange exchange)
 	{
-		// Skip the first line
-		if (firstLine)
-		{
-			firstLine = false;
-			return false;
-		}
-		return true;
+		return exchange.getProperty(Exchange.SPLIT_INDEX, Integer.class) > 0;
 	}
 }
