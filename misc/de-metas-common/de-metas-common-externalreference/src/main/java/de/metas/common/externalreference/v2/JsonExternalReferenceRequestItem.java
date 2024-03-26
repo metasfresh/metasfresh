@@ -55,7 +55,6 @@ public class JsonExternalReferenceRequestItem
 	
 
 	@Schema(requiredMode =  REQUIRED, description = "Object used to lookup the item to update. If no existing record is found, one is created. When creating a new record, the properties from the lookup-item are preferred to their counterparts from this object")
-	@NonNull
 	JsonExternalReferenceLookupItem lookupItem;
 
 	@Schema(description = "Translates to `S_ExternalReference.ExternalReference`. Mandatory if a new record is created - either here or in the `lookupItem`.")
@@ -104,12 +103,15 @@ public class JsonExternalReferenceRequestItem
 	
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	Boolean isReadOnlyMetasfresh;
+	Boolean readOnlyMetasfresh;
 
 	@Schema(hidden = true)
 	@JsonIgnore
-	private boolean isReadOnlyMetasfreshSet;
-	
+	private boolean readOnlyMetasfreshSet;
+
+	/**
+	 * This builder is not used by jackson, but when we internally invoke the service. 
+	 */
 	@Builder
 	private JsonExternalReferenceRequestItem(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
@@ -121,16 +123,28 @@ public class JsonExternalReferenceRequestItem
 			@Nullable final Boolean isReadOnlyMetasfresh)
 	{
 		this.lookupItem = lookupItem;
+		
 		this.metasfreshId = metasfreshId;
+		this.metasfreshIdSet = metasfreshId != null;
+		
 		this.externalReference = externalReference;
+		this.externalReferenceSet = externalReference != null;
+		
 		this.version = version;
+		this.versionSet = version != null;
+		
 		this.externalReferenceUrl = externalReferenceUrl;
+		this.externalReferenceUrlSet = externalReferenceUrl != null;
+		
 		this.externalSystemConfigId = externalSystemConfigId;
-		this.isReadOnlyMetasfresh = isReadOnlyMetasfresh;
+		this.externalSystemConfigIdSet = externalSystemConfigId != null;
+		
+		this.readOnlyMetasfresh = isReadOnlyMetasfresh;
+		this.readOnlyMetasfreshSet = isReadOnlyMetasfresh != null;
 	}
 
 	/**
-	 * USer by jackon to create an empty instance which can then be filled using the setters.
+	 * Used by jackson to create an empty instance which can then be filled using the setters.
 	 * Note that we have the setters in order to distinguish between property={@code null} and property not specified.
 	 */
 	public JsonExternalReferenceRequestItem()
@@ -183,7 +197,7 @@ public class JsonExternalReferenceRequestItem
 	@JsonProperty("readOnlyMetasfresh")
 	public void setReadOnlyMetasfresh(final boolean readOnlyMetasfresh)
 	{
-		this.isReadOnlyMetasfresh = readOnlyMetasfresh;
-		this.isReadOnlyMetasfreshSet = true;
+		this.readOnlyMetasfresh = readOnlyMetasfresh;
+		this.readOnlyMetasfreshSet = true;
 	}	
 }
