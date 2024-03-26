@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.process;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -33,6 +34,7 @@ import de.metas.externalsystem.pcm.ExternalSystemPCMConfig;
 import de.metas.externalsystem.pcm.ExternalSystemPCMConfigId;
 import de.metas.externalsystem.pcm.InvokePCMService;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -70,7 +72,10 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 	{
 		final ExternalSystemPCMConfig pcmConfig = ExternalSystemPCMConfig.cast(externalSystemParentConfig.getChildConfig());
 
-		return invokePCMService.getParameters(pcmConfig, externalRequest);
+		final BPartnerLocationId orgBPartnerLocationId = orgDAO.getOrgInfoById(getOrgId()).getOrgBPartnerLocationId();
+		Check.assumeNotNull(orgBPartnerLocationId, "Organisation Business Partner Location ID cannot be missing");
+
+		return invokePCMService.getParameters(pcmConfig, externalRequest, orgBPartnerLocationId.getBpartnerId());
 	}
 
 	@Override

@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.pcm;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ERRORED_DIRECTORY;
@@ -52,12 +54,14 @@ public class InvokePCMService
 	@NonNull
 	public Map<String, String> getParameters(
 			@NonNull final ExternalSystemPCMConfig pcmConfig,
-			@NonNull final String externalRequest)
+			@NonNull final String externalRequest,
+			@NonNull final BPartnerId bPartnerId)
 	{
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, pcmConfig.getValue());
 		parameters.putAll(extractContentSourceParameters(pcmConfig, externalRequest));
+		parameters.put(PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId()));
 
 		return parameters;
 	}

@@ -26,11 +26,6 @@ public class LocalFileWarehouseSyncServiceRouteBuilder extends RouteBuilder impl
 	private static final String START_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE = "startWarehouseSyncLocalFile";
 	private static final String STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE = "stopWarehouseSyncLocalFile";
 
-	@VisibleForTesting
-	public static final String START_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + START_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE;
-	@VisibleForTesting
-	public static final String STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE;
-
 	@NonNull
 	private final ProcessLogger processLogger;
 
@@ -41,15 +36,15 @@ public class LocalFileWarehouseSyncServiceRouteBuilder extends RouteBuilder impl
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(START_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStartWarehouseRouteId()))
+				.routeId(getStartWarehouseRouteId())
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStopWarehouseRouteId()))
+				.routeId(getStopWarehouseRouteId())
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -124,5 +119,17 @@ public class LocalFileWarehouseSyncServiceRouteBuilder extends RouteBuilder impl
 	public String getDisableCommand()
 	{
 		return STOP_WAREHOUSE_SYNC_LOCAL_FILE_ROUTE;
+	}
+
+	@NonNull
+	public String getStartWarehouseRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getEnableCommand();
+	}
+
+	@NonNull
+	public String getStopWarehouseRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getDisableCommand();
 	}
 }
