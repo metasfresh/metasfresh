@@ -31,7 +31,6 @@ import de.metas.invoice.export.InvoiceToExportFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.postfinance.document.export.IPostFinanceYbInvoiceHandler;
-import de.metas.postfinance.document.export.PostFinanceDocumentType;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -50,6 +49,7 @@ import org.springframework.stereotype.Component;
 import java.util.GregorianCalendar;
 import java.util.Optional;
 
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.CREDITADVICE;
 import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.YB_INVOICE_OBJECT_FACTORY;
 
 @Component
@@ -89,7 +89,7 @@ public class CreditMemoPostFinanceYbInvoiceHandler implements IPostFinanceYbInvo
 		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
 		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.CREDIT_ADVICE);
+		envelope.getBody().getBill().getHeader().setDocumentType(CREDITADVICE.toString());
 
 		final I_C_Invoice creditMemoRecord = invoiceBL.getById(invoiceId);
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(creditMemoRecord.getRef_Invoice_ID());

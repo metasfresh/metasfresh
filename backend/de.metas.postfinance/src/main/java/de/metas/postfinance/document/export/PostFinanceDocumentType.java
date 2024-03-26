@@ -22,9 +22,9 @@
 
 package de.metas.postfinance.document.export;
 
-public final class PostFinanceDocumentType
+public enum PostFinanceDocumentType
 {
-	public static final String BILL = "BILL";
-	public static final String CREDIT_ADVICE = "CREDITADVICE";
-	public static final String REMINDER = "REMINDER";
+	BILL,
+	CREDITADVICE,
+	REMINDER;
 }

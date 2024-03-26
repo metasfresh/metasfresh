@@ -125,6 +125,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.postfinance.B2BServiceWrapper.B2B_SERVICE_OBJECT_FACTORY;
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.BILL;
 
 @Service
 @RequiredArgsConstructor
@@ -359,7 +360,7 @@ public class PostFinanceYbInvoiceService
 
 		final BillType.Header header = YB_INVOICE_OBJECT_FACTORY.createBillTypeHeader();
 
-		header.setDocumentType(PostFinanceDocumentType.BILL);
+		header.setDocumentType(BILL.toString());
 		header.setDocumentID(getTransactionId(invoiceToExport));
 
 		final XMLGregorianCalendar invoiceDate = toXMLCalendar(invoiceToExport.getInvoiceDate());

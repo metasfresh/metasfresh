@@ -35,7 +35,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.InvoiceToExportFactory;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.postfinance.document.export.IPostFinanceYbInvoiceHandler;
-import de.metas.postfinance.document.export.PostFinanceDocumentType;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceRequest;
 import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
@@ -54,6 +53,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import static de.metas.postfinance.document.export.PostFinanceDocumentType.REMINDER;
 import static de.metas.postfinance.document.export.PostFinanceYbInvoiceService.YB_INVOICE_OBJECT_FACTORY;
 
 @Component
@@ -103,7 +103,7 @@ public class DunningPostFinanceYbInvoiceHandler implements IPostFinanceYbInvoice
 		final InvoiceToExport invoiceToExport = invoiceToExportOptional.get();
 		final Envelope envelope = postFinanceYbInvoiceService.prepareExportData(postFinanceYbInvoiceRequest, invoiceToExport);
 
-		envelope.getBody().getBill().getHeader().setDocumentType(PostFinanceDocumentType.REMINDER);
+		envelope.getBody().getBill().getHeader().setDocumentType(REMINDER.toString());
 		final String transactionId = postFinanceYbInvoiceService.getTransactionId(dunningToExport);
 		envelope.getBody().getDeliveryInfo().setTransactionID(transactionId);
 		envelope.getBody().getBill().getHeader().setDocumentID(transactionId);
