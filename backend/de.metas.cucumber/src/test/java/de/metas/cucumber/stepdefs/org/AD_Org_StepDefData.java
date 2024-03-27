@@ -36,6 +36,8 @@ public class AD_Org_StepDefData extends StepDefData<I_AD_Org>
 
 	public OrgId getId(final StepDefDataIdentifier identifier)
 	{
-		return OrgId.ofRepoId(get(identifier).getAD_Org_ID());
+		return OrgId.ofRepoId(getIdAsInt(identifier));
 	}
+
+	public int getIdAsInt(final StepDefDataIdentifier identifier) {return get(identifier).getAD_Org_ID();}
 }
