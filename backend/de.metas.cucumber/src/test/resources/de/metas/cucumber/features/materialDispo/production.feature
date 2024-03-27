@@ -22,9 +22,9 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
   @from:cucumber
   Scenario: Disposal is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:
-      | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_31032022_6           | standard_category                    |
-      | p_2        | trackedProduct_component_31032022_6 | standard_category                    |
+      | Identifier | Name                     | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | tracked_@Date@           | standard_category                    |
+      | p_2        | tracked_component_@Date@ | standard_category                    |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
       | ps_1       | pricing_system_name_31032022_6 | pricing_system_value_31032022_6 | pricing_system_description_31032022_6 | true         |
@@ -64,9 +64,9 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
       | ppln_2     | p_2                     |                                          | true         | Y               |
 
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
-      | endcustomer_1 | EndCustomer_31032022_6 | N            | Y              | ps_1                          |                                     |
-      | endvendor_1   | EndVendor_31032022_6   | Y            | N              | ps_1                          | ds_1                                |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
+      | endcustomer_1 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | Y            | N              | ps_1                          | ds_1                                |
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_2                     |
