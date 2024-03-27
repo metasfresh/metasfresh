@@ -87,18 +87,52 @@ public class DataTableRow
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractStringForColumnName(map, columnName);
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			throw new AdempiereException("Column `" + columnName + "` is missing from " + this);
+		}
+
+		final String string = map.get(columnNameEffective);
+		if (string == null || Check.isBlank(string))
+		{
+			throw new AdempiereException("Missing value for columnName=" + columnNameEffective)
+					.appendParametersToMessage()
+					.setParameter("row", this);
+		}
+		return string;
+	}
+
+	@Nullable
+	private String findEffectiveColumnName(@NonNull final String columnName)
+	{
+		if (map.containsKey(columnName))
+		{
+			return columnName;
+		}
+
+		if (!columnName.startsWith("OPT."))
+		{
+			final String optColumnName = "OPT." + columnName;
+			if (map.containsKey(optColumnName))
+			{
+				return optColumnName;
+			}
+		}
+
+		return null;
 	}
 
 	@NonNull
 	public Optional<String> getAsOptionalString(@NonNull final String columnName)
 	{
-		String value = map.get(columnName);
-		if (value == null && !columnName.startsWith("OPT."))
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
 		{
-			value = map.get("OPT." + columnName);
+			return Optional.empty(); // column is missing
 		}
 
+		String value = map.get(columnNameEffective);
 		return Optional.ofNullable(value);
 	}
 
@@ -209,37 +243,67 @@ public class DataTableRow
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractBigDecimalForColumnName(map, columnName);
+		return parseBigDecimal(getAsString(columnName), columnName);
 	}
 
 	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)
 	{
-		return getAsOptionalString(columnName).map(NumberUtils::asBigDecimal);
+		return getAsOptionalString(columnName).map(valueStr -> parseBigDecimal(valueStr, columnName));
+	}
+
+	private BigDecimal parseBigDecimal(@Nullable String valueStr, @NonNull String columnInfo)
+	{
+		try
+		{
+			return NumberUtils.asBigDecimal(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.appendParametersToMessage()
+					.setParameter("columnName", columnInfo);
+		}
 	}
 
 	public int getAsInt(@NonNull final String columnName)
 	{
-		return DataTableUtil.extractIntForColumnName(map, columnName);
+		return parseInt(getAsString(columnName), columnName);
 	}
 
 	@NonNull
 	public OptionalInt getAsOptionalInt(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
-				.map(DataTableRow::parseOptionalInt)
+				.map(valueStr -> parseOptionalInt(valueStr, columnName))
 				.orElseGet(OptionalInt::empty);
 	}
 
-	private static OptionalInt parseOptionalInt(@Nullable final String value)
+	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, String columnInfo)
 	{
-		final String valueNorm = StringUtils.trimBlankToNull(value);
-		if (valueNorm == null)
+		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
+		if (valueStrNorm == null)
 		{
 			return OptionalInt.empty();
 		}
 
-		final int valueInt = NumberUtils.asInt(value);
+		final int valueInt = parseInt(valueStrNorm, columnInfo);
 		return OptionalInt.of(valueInt);
+	}
+
+	private static int parseInt(@Nullable final String valueStr, String columnInfo)
+	{
+		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
+		if (valueStrNorm == null)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` contains empty/blank value. Please use a legit integer.");
+		}
+
+		final Integer valueInt = NumberUtils.asIntegerOrNull(valueStrNorm);
+		if (valueInt == null)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Integer value `" + valueStr + "`");
+		}
+		return valueInt;
 	}
 
 	public boolean getAsBoolean(@NonNull final String columnName)
@@ -292,7 +356,7 @@ public class DataTableRow
 	}
 
 	@NonNull
-	private static LocalDate parseLocalDate(final String valueStr, final String columnName)
+	private static LocalDate parseLocalDate(final String valueStr, final String columnInfo)
 	{
 		try
 		{
@@ -300,7 +364,7 @@ public class DataTableRow
 		}
 		catch (Exception ex)
 		{
-			throw new AdempiereException("Column `" + columnName + "` has invalid LocalDate: `" + valueStr + "`");
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDate `" + valueStr + "`");
 		}
 	}
 
