@@ -311,8 +311,16 @@ public class PostFinanceYbInvoiceService
 		final DeliveryType deliveryType = YB_INVOICE_OBJECT_FACTORY.createDeliveryType();
 		final OrgId orgId = OrgId.ofRepoId(bPartnerBL.getById(invoiceToExport.getBiller().getId()).getAD_OrgBP_ID());
 		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+
 		final String billerId = postFinanceOrgConfig.getBillerId();
-		deliveryType.setBillerID(Long.parseLong(billerId));
+		try
+		{
+			deliveryType.setBillerID(Long.parseLong(billerId));
+		}
+		catch(final NumberFormatException nfe)
+		{
+			throw new PostFinanceExportException("Sender eBillId should be a number, but got " + billerId);
+		}
 
 		final Optional<PostFinanceBPartnerConfig> postFinanceBPartnerConfigOptional = postFinanceBPartnerConfigRepository.getByBPartnerId(invoiceToExport.getRecipient().getId());
 		final String eBillAccountID;
@@ -332,7 +340,15 @@ public class PostFinanceYbInvoiceService
 		deliveryType.setDeliveryDate(toXMLCalendar(invoiceToExport.getInvoiceDate()));
 
 		deliveryType.setTransactionID(getTransactionId(invoiceToExport));
-		deliveryType.setEBillAccountID(Long.parseLong(eBillAccountID));
+		try
+		{
+			deliveryType.setEBillAccountID(Long.parseLong(eBillAccountID));
+		}
+		catch(final NumberFormatException nfe)
+		{
+			throw new PostFinanceExportException("Receiver eBillId should be a number, but got " + eBillAccountID);
+		}
+
 		deliveryType.setBillDetailsType(YB_INVOICE_BILL_DETAILS_TYPE_PDF_APPENDIX);
 
 
