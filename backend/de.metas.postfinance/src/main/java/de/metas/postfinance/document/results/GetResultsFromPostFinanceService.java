@@ -22,7 +22,6 @@
 
 package de.metas.postfinance.document.results;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
@@ -80,7 +79,7 @@ public class GetResultsFromPostFinanceService
 
 				final Envelope envelope = (Envelope)unmarshaller.unmarshal(inputStream);
 
-				envelope.getBody().getDeliveryDate().forEach(deliveryDate -> handleDeliveryDate(deliveryDate, attachmentEntryCreateRequest, orgId));
+				envelope.getBody().getDeliveryDate().forEach(deliveryDate -> handleDeliveryDate(deliveryDate, attachmentEntryCreateRequest));
 			}
 			catch (final JAXBException e)
 			{
@@ -91,19 +90,17 @@ public class GetResultsFromPostFinanceService
 	}
 
 	private void handleDeliveryDate(@NonNull final Envelope.Body.DeliveryDate deliveryDate,
-			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
-			@NonNull final OrgId orgId)
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		deliveryDate.getOKResult().getBill().forEach(bill -> handleValidResults(bill, attachmentEntryCreateRequest, orgId));
-		deliveryDate.getNOKResult().getBill().forEach(bill -> handleResultsWithErrors(bill, attachmentEntryCreateRequest, orgId));
+		deliveryDate.getOKResult().getBill().forEach(bill -> handleValidResults(bill, attachmentEntryCreateRequest));
+		deliveryDate.getNOKResult().getBill().forEach(bill -> handleResultsWithErrors(bill, attachmentEntryCreateRequest));
 	}
 
 	private void handleResultsWithErrors(@NonNull final BillType bill,
-			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
-			@NonNull final OrgId orgId)
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final String transactionID = bill.getTransactionID();
-		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionIdAndOrgId(transactionID, orgId);
+		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionId(transactionID);
 
 		if (!postFinanceLogOptional.isPresent())
 		{
@@ -113,7 +110,7 @@ public class GetResultsFromPostFinanceService
 
 		final String errorMessage;
 		boolean isException = true;
-		if("05".equals(bill.getReasonCode()))
+		if ("05".equals(bill.getReasonCode()))
 		{
 			errorMessage = "The document was sent again before receiving processing result of valid document. Ignoring " + bill.getReasonCode() + " " + bill.getReasonText();
 			isException = false;
@@ -125,7 +122,7 @@ public class GetResultsFromPostFinanceService
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
 				.transactionId(transactionID)
-				.postFinanceExportException( isException ? new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()) : null)
+				.postFinanceExportException(isException ? new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()) : null)
 				.message(errorMessage)
 				.build();
 
@@ -136,11 +133,10 @@ public class GetResultsFromPostFinanceService
 	}
 
 	private void handleValidResults(@NonNull final Envelope.Body.DeliveryDate.OKResult.Bill bill,
-			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest,
-			@NonNull final OrgId orgId)
+			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final String transactionID = bill.getTransactionID();
-		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionIdAndOrgId(transactionID, orgId);
+		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionId(transactionID);
 
 		if (postFinanceLogOptional.isEmpty())
 		{

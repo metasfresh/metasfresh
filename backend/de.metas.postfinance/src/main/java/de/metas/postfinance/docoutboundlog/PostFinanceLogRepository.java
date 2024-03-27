@@ -71,12 +71,11 @@ public class PostFinanceLogRepository
 				.build();
 	}
 
-	public Optional<PostFinanceLog> retrieveLatestLogWithTransactionIdAndOrgId(@NonNull final String transactionId, @NonNull final OrgId orgId)
+	public Optional<PostFinanceLog> retrieveLatestLogWithTransactionId(@NonNull final String transactionId)
 	{
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_PostFinance_Log.class)
 				.addOnlyActiveRecordsFilter()
 				.addStringLikeFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_PostFinance_Transaction_Id, transactionId, false)
-				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_AD_Org_ID, orgId)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_Created)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_C_Doc_Outbound_Log_PostFinance_Log_ID)
 				.create()
