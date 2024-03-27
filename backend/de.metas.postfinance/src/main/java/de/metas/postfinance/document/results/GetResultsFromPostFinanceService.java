@@ -73,7 +73,7 @@ public class GetResultsFromPostFinanceService
 
 			try
 			{
-				JAXBContext jc = JAXBContext.newInstance(Envelope.class);
+				final JAXBContext jc = JAXBContext.newInstance(Envelope.class);
 				final Unmarshaller unmarshaller = jc.createUnmarshaller();
 				final ByteArrayInputStream inputStream = new ByteArrayInputStream(file.getData().getValue());
 

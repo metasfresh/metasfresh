@@ -88,15 +88,12 @@ public class B2BServiceWrapper
 
 	public List<DownloadFile> getProcessProtocol(@NonNull final OrgId orgId)
 	{
-		// todo
-
 		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		// note: if true, use already downloaded data. False = never downloaded data only
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
 
 		final B2BService port = new B2BService_Service().getUserNamePassword();
-		//	final ArrayOfProtocolReport processProtocolList = port.getProcessProtocol(billerId, isArchiveData);
 
 		final ArrayOfProtocolReport arrayOfProtocolReport = port.getProcessProtocolList(billerId, isArchiveData);
 
