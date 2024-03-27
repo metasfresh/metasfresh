@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.cucumber.stepdefs.ContextAwareDescription;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -46,12 +47,12 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID;
@@ -104,12 +105,20 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		final List<DataTableRow> rows = DataTableRow.toRows(dataTable);
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
-		final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
-		assertThat(records).hasSameSizeAs(rows);
-
-		for (int i = 0; i < rows.size(); i++)
+		try (final IAutoCloseable ignored = ContextAwareDescription.putContext("shipmentScheduleId", shipmentScheduleId))
 		{
-			validateQtyPickedRow(rows.get(i), records.get(i));
+			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
+			assertThat(records).hasSameSizeAs(rows);
+
+			for (int i = 0; i < rows.size(); i++)
+			{
+				final DataTableRow expected = rows.get(i);
+				final I_M_ShipmentSchedule_QtyPicked actual = records.get(i);
+				try (final IAutoCloseable ignored2 = ContextAwareDescription.putContext("expected", expected, "actual", actual))
+				{
+					validateQtyPickedRow(expected, actual);
+				}
+			}
 		}
 	}
 
@@ -159,7 +168,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 	private void validateHuId(@NonNull final StepDefDataIdentifier expectedHuIdentifier, @Nullable final HuId actualHuId)
 	{
-		final Supplier<String> description = () -> "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId;
+		final ContextAwareDescription description = ContextAwareDescription.ofString("expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId);
 
 		if (expectedHuIdentifier.isNullPlaceholder())
 		{
