@@ -75,7 +75,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 				.build();
 	}
 
-	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
 	{
 		return JsonQRCode.builder()
 				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())

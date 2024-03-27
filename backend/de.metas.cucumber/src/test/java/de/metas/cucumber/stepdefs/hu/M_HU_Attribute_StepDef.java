@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
@@ -46,9 +47,11 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -89,10 +92,7 @@ public class M_HU_Attribute_StepDef
 	@And("M_HU_Attribute is validated")
 	public void validate_m_hu_attribute(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			validateHUAttribute(tableRow);
-		}
+		DataTableRow.toRows(dataTable).forEach(this::validateHUAttribute);
 	}
 
 	@And("update M_HU_Attribute recursive:")
@@ -152,17 +152,13 @@ public class M_HU_Attribute_StepDef
 		saveRecord(huAttributeRecord);
 	}
 
-	private void validateHUAttribute(@NonNull final Map<String, String> tableRow)
+	private void validateHUAttribute(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huId = huTable.getOptional(huIdentifier)
-				.map(I_M_HU::getM_HU_ID)
-				.orElseGet(() -> Integer.parseInt(huIdentifier));
-
+		final int huId = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).lookupIn(huTable).getM_HU_ID();
 		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
 		assertThat(huRecord).isNotNull();
 
-		final String attributeCodeString = DataTableUtil.extractStringForColumnName(tableRow, I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+		final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
 		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
 
 		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
@@ -172,8 +168,18 @@ public class M_HU_Attribute_StepDef
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
 		assertThat(huAttribute).isNotNull();
 
-		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
-		assertThat(valueNumber).isEqualByComparingTo(huAttribute.getValueNumber());
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
+				.ifPresent(valueString -> {
+					final String valueStringNorm = !valueString.equalsIgnoreCase("-") ? valueString : null;
+					assertThat(huAttribute.getValue()).isEqualTo(valueStringNorm);
+				});
+		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+				.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).isEqualByComparingTo(valueNumber));
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
+				.ifPresent(valueString -> {
+					final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
+					assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).isEqualTo(valueDate);
+				});
 	}
 
 	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)

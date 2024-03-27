@@ -52,7 +52,7 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
-	private static final String NULL_STRING = "null";
+	public static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,

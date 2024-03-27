@@ -36,6 +36,10 @@ public class HUQRCode implements IHUQRCode
 		return Objects.equals(o1, o2);
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return toGlobalQRCodeString();}
+
 	@NonNull
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
@@ -58,6 +62,11 @@ public class HUQRCode implements IHUQRCode
 	public GlobalQRCode toGlobalQRCode()
 	{
 		return HUQRCodeJsonConverter.toGlobalQRCode(this);
+	}
+
+	public String toGlobalQRCodeString()
+	{
+		return HUQRCodeJsonConverter.toGlobalQRCodeJsonString(this);
 	}
 
 	public String toDisplayableQRCode()

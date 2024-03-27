@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
@@ -33,5 +35,15 @@ public class M_ShipmentSchedule_StepDefData extends StepDefData<I_M_ShipmentSche
 	public M_ShipmentSchedule_StepDefData()
 	{
 		super(I_M_ShipmentSchedule.class);
+	}
+
+	public ShipmentScheduleId getId(final String identifier)
+	{
+		return getId(StepDefDataIdentifier.ofString(identifier));
+	}
+
+	public ShipmentScheduleId getId(final StepDefDataIdentifier identifier)
+	{
+		return ShipmentScheduleId.ofRepoId(get(identifier).getM_ShipmentSchedule_ID());
 	}
 }

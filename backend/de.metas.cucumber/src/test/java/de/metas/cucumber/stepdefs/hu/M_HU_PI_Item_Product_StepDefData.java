@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
 public class M_HU_PI_Item_Product_StepDefData extends StepDefData<I_M_HU_PI_Item_Product>
@@ -31,4 +33,6 @@ public class M_HU_PI_Item_Product_StepDefData extends StepDefData<I_M_HU_PI_Item
 	{
 		super(I_M_HU_PI_Item_Product.class);
 	}
+
+	public HUPIItemProductId getId(final StepDefDataIdentifier identifier) {return HUPIItemProductId.ofRepoId(get(identifier).getM_HU_PI_Item_Product_ID());}
 }
