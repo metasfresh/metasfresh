@@ -139,6 +139,12 @@ public abstract class StepDefData<T>
 	}
 
 	@NonNull
+	public <ET extends T> ET get(@NonNull final String identifier, @NonNull final Class<ET> type)
+	{
+		return InterfaceWrapperHelper.create(get(identifier), type);
+	}
+
+	@NonNull
 	public RecordDataItem<T> getRecordDataItem(@NonNull final String identifier)
 	{
 		final RecordDataItem<T> recordDataItem = records.get(identifier);

@@ -131,3 +131,49 @@ Feature: mobileUI Picking - Test for single piece L+M items
       | 0.106             | KGM          | 1         | cu6    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
       | 0.107             | KGM          | 1         | cu7    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
       | 0.108             | KGM          | 1         | cu8    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueNumber |
+      | cu1                | WeightNet            | 0.101       |
+      | cu2                | WeightNet            | 0.102       |
+      | cu3                | WeightNet            | 0.103       |
+      | cu4                | WeightNet            | 0.104       |
+      | cu5                | WeightNet            | 0.105       |
+      | cu6                | WeightNet            | 0.106       |
+      | cu7                | WeightNet            | 0.107       |
+      | cu8                | WeightNet            | 0.108       |
+      | tu1                | WeightNet            | 0.410       |
+      | tu2                | WeightNet            | 0.426       |
+      | lu1                | WeightNet            | 0.836       |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID.Identifier | M_Attribute_ID.Value | ValueDate  |
+      | cu1                | HU_BestBeforeDate    | 2025-11-01 |
+      | cu2                | HU_BestBeforeDate    | 2025-11-02 |
+      | cu3                | HU_BestBeforeDate    | 2025-11-03 |
+      | cu4                | HU_BestBeforeDate    | 2025-11-04 |
+      | cu5                | HU_BestBeforeDate    | 2025-11-05 |
+      | cu6                | HU_BestBeforeDate    | 2025-11-06 |
+      | cu7                | HU_BestBeforeDate    | 2025-11-07 |
+      | cu8                | HU_BestBeforeDate    | 2025-11-08 |
+      | tu1                | HU_BestBeforeDate    | -          |
+      | tu2                | HU_BestBeforeDate    | -          |
+      | lu1                | HU_BestBeforeDate    | -          |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID.Identifier | M_Attribute_ID.Value | Value |
+      | cu1                | Lot-Nummer           | 500   |
+      | cu2                | Lot-Nummer           | 501   |
+      | cu3                | Lot-Nummer           | 502   |
+      | cu4                | Lot-Nummer           | 503   |
+      | cu5                | Lot-Nummer           | 504   |
+      | cu6                | Lot-Nummer           | 505   |
+      | cu7                | Lot-Nummer           | 506   |
+      | cu8                | Lot-Nummer           | 507   |
+      | tu1                | Lot-Nummer           | -     |
+      | tu2                | Lot-Nummer           | -     |
+      | lu1                | Lot-Nummer           | -     |
+
+    And validate the created shipment lines by id
+      | Identifier    | M_Product_ID | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | shipmentLine1 | product      | 8           | 0.836             | 2            | TUx4                    | asi1                      |
