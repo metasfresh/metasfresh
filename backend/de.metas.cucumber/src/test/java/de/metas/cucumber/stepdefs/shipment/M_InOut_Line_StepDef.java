@@ -32,8 +32,8 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -44,8 +44,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -54,7 +56,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -84,39 +85,56 @@ public class M_InOut_Line_StepDef
 	private final M_AttributeSetInstance_StepDefData asiTable;
 
 	@And("^validate the created (shipment|material receipt) lines$")
-	public void validate_created_M_InOutLine(@NonNull final String model_UNUSED, @NonNull final DataTable table)
+	public void validate_created_M_InOutLines(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(table))
+		DataTableRow.toRows(table).forEach(this::validateAndLoadInOutLine);
+	}
+
+	private void validateAndLoadInOutLine(final DataTableRow row)
+	{
+		logger.info("validate_created_M_InOutLine: {}", row);
+
+		final InOutId shipmentId = shipmentTable.getId(row.getAsIdentifier("M_InOut_ID"));
+
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final int expectedProductId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(productIdentifier::getAsInt);
+
+		//dev-note: we assume the tests are not using the same product on different lines
+		final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentId)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
+
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
+				.map(orderLineTable::getId)
+				.ifPresent(orderLineId -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId));
+		row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
+				.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
+
+		final I_M_InOutLine shipmentLineRecord = getSingleShipmentLine(lineQueryBuilder.create());
+		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);
+	}
+
+	private static I_M_InOutLine getSingleShipmentLine(final IQuery<I_M_InOutLine> query)
+	{
+		final List<I_M_InOutLine> lines = query.list();
+		if (lines.isEmpty())
 		{
-			final StepDefDataIdentifier shipmentIdentifier = row.getAsIdentifier("M_InOut_ID");
-			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
-
-			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
-			final int expectedProductId = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(productIdentifier::getAsInt);
-
-			//dev-note: we assume the tests are not using the same product on different lines
-			final IQueryBuilder<I_M_InOutLine> lineQueryBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
-					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
-
-			row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
-					.ifPresent(orderLineIdentifier -> {
-						@Nullable final OrderLineId orderLineId = orderLineTable.getId(orderLineIdentifier);
-						lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId);
-					});
-
-			row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
-					.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
-
-			final I_M_InOutLine shipmentLineRecord = lineQueryBuilder
-					.create()
-					.firstOnlyNotNull(I_M_InOutLine.class);
-
-			validateShipmentLine(shipmentLineRecord, row);
-
-			row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);
+			throw new AdempiereException("No shipment lines found")
+					.appendParametersToMessage()
+					.setParameter("query", query);
+		}
+		else if (lines.size() > 1)
+		{
+			throw new AdempiereException("More than one shipment line found")
+					.appendParametersToMessage()
+					.setParameter("query", query)
+					.setParameter("lines", lines);
+		}
+		else
+		{
+			return lines.get(0);
 		}
 	}
 
