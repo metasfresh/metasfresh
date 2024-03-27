@@ -127,4 +127,6 @@ public interface IPricingContext extends IContextAware
 	BigDecimal getManualPrice();
 
 	Quantity getQuantity();
+
+	BigDecimal getManualPrice();
 }

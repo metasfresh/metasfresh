@@ -34,6 +34,8 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -176,6 +178,8 @@ class JsonInsertInvoiceCandidateServiceTest
 				new CurrencyService(),
 				new ManualCandidateService(bpartnerCompositeRepository),
 				new InvoiceCandidateRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}

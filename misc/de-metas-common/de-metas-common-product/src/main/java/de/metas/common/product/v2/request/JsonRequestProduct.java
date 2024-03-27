@@ -165,6 +165,10 @@ public class JsonRequestProduct
 	@Schema
 	private JsonRequestProductWarehouseAssignmentSave warehouseAssignments;
 
+
+	@Schema(position = 160)
+	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -318,4 +322,11 @@ public class JsonRequestProduct
 			return type;
 		}
 	}
+
+	public void setProductTaxCategories(final List<JsonRequestProductTaxCategoryUpsert> productTaxCategories)
+	{
+		this.productTaxCategories = productTaxCategories;
+	}
+
+
 }

@@ -27,13 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
+import de.metas.async.model.*;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.cache.CCache;
@@ -43,11 +37,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.*;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -60,12 +50,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {

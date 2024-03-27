@@ -49,6 +49,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 						new GLCategoryRepository()
 						));
 		SystemTime.setTimeSource(today);
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

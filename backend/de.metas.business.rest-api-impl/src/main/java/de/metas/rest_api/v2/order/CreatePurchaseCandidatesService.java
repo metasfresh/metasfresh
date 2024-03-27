@@ -186,8 +186,20 @@ public class CreatePurchaseCandidatesService
 				.isManualPrice(manualPrice)
 				.prepared(request.isPrepared())
 				.attributeSetInstanceId(attributeSetInstanceId)
-				.source(PurchaseCandidateSource.Api)
-				.productDescription(request.getProductDescription())
+				.source(PurchaseCandidateSource.Api);
+
+		if (manualPrice)
+		{
+			purchaseCandidateBuilder.price(request.getPrice().getValue());
+			purchaseCandidateBuilder.priceUomId(getPriceUOMId(request.getPrice()).orElse(quantity.getUomId()));
+			purchaseCandidateBuilder.currencyId(getCurrencyId(request.getPrice()));
+		}
+		else
+		{
+			purchaseCandidateBuilder.price(BigDecimal.ZERO);
+		}
+
+		final PurchaseCandidate purchaseCandidate = purchaseCandidateBuilder.productDescription(request.getProductDescription())
 				.activityId(activityId);
 
 		if (manualPrice)

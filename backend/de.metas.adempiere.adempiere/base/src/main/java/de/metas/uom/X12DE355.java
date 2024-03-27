@@ -64,6 +64,12 @@ public class X12DE355
 	}
 
 	@NonNull
+	public static Optional<X12DE355> ofCodeOrOptional(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
+	}
+
+	@NonNull
 	public static X12DE355 ofTemporalUnit(@NonNull final TemporalUnit temporalUnit)
 	{
 		final X12DE355 x12de355 = cacheByTemporalUnit.get(temporalUnit);

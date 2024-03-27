@@ -15,6 +15,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;

@@ -11,6 +11,7 @@ import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeMetasfreshAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokeSAPAction;
+import de.metas.externalsystem.process.InvokePCMAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -57,6 +58,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName()),
 	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName()),
 	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
+	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
+	ProCareManagement(X_ExternalSystem_Config.TYPE_ProCareManagement, "ProCareManagement", InvokePCMAction.class.getName())
 	;
 
 	@Getter
