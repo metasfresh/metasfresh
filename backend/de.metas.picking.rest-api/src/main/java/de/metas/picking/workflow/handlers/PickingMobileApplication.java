@@ -98,6 +98,10 @@
 				.showFilters(true)
 				.build();
 
+		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
+		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
+		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
+
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
 		private final DisplayValueProviderService displayValueProviderService;
@@ -260,7 +264,7 @@
 					.isAllowAbort(pickingJob.isAllowAbort())
 					.activities(ImmutableList.of(
 							WFActivity.builder()
-									.id(WFActivityId.ofString("A1"))
+									.id(ACTIVITY_ID_ScanPickingSlot)
 									.caption(ImmutableTranslatableString.builder()
 											.trl("de_DE", "Kommissionierplatz scannen")
 											.trl("de_CH", "Kommissionierplatz scannen")
@@ -270,13 +274,13 @@
 									.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 									.build(),
 							WFActivity.builder()
-									.id(WFActivityId.ofString("A2"))
+									.id(ACTIVITY_ID_PickLines)
 									.caption(TranslatableStrings.anyLanguage("Pick"))
 									.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 									.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
 									.build(),
 							WFActivity.builder()
-									.id(WFActivityId.ofString("A3"))
+									.id(ACTIVITY_ID_Complete)
 									.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 									.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 									.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))

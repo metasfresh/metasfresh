@@ -22,12 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -37,6 +40,8 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -86,11 +91,70 @@ public class DataTableRow
 		return Optional.ofNullable(value);
 	}
 
+	public String getAsName(@NonNull final String columnName)
+	{
+		return resolveName(getAsString(columnName));
+	}
+
+	public Optional<String> getAsOptionalName(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(DataTableRow::resolveName);
+	}
+
+	@NonNull
+	private static String resolveName(@NonNull final String name)
+	{
+		String nameResolved = StringUtils.trimBlankToNull(name);
+		if (nameResolved == null)
+		{
+			throw new AdempiereException("Invalid name: `" + name + "`");
+		}
+
+		nameResolved = nameResolved.replace("@Date@", Instant.now().toString());
+		return nameResolved;
+	}
+
+	public ValueAndName getValueAndName()
+	{
+		return getOptionalValueAndName().orElseThrow();
+	}
+
+	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
+	{
+		String name = getAsOptionalName("Name").orElse(null);
+		String value = getAsOptionalName("Value").orElse(null);
+		if (name == null)
+		{
+			if (value == null)
+			{
+				return ExplainedOptional.emptyBecause("At least Value or Name columns shall contain a valid name string");
+			}
+			else
+			{
+				return ExplainedOptional.of(ValueAndName.ofValue(value));
+			}
+		}
+		else
+		{
+			if (value == null)
+			{
+				return ExplainedOptional.of(ValueAndName.ofName(name));
+			}
+			else
+			{
+				return ExplainedOptional.of(ValueAndName.ofValueAndName(value, name));
+			}
+		}
+	}
+
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier()
 	{
 		return getAsIdentifier(StepDefDataIdentifier.SUFFIX);
 	}
+
+	@NonNull
+	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier() {return getAsOptionalIdentifier(StepDefDataIdentifier.SUFFIX);}
 
 	@NonNull
 	public StepDefDataIdentifier getAsIdentifier(@NonNull final String columnName)
@@ -206,4 +270,44 @@ public class DataTableRow
 		return Optional.of(Quantity.of(valueBD, uom));
 	}
 
+	public LocalDate getAsLocalDate(@NonNull final String columnName)
+	{
+		return parseLocalDate(getAsString(columnName), columnName);
+	}
+
+	public Optional<LocalDate> getAsOptionalLocalDate(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalDate(valueStr, columnName));
+	}
+
+	@NonNull
+	private static LocalDate parseLocalDate(final String valueStr, final String columnName)
+	{
+		try
+		{
+			return LocalDate.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalDate: `" + valueStr + "`");
+		}
+	}
+
+	public <T extends ReferenceListAwareEnum> Optional<T> getAsOptionalEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	{
+		try
+		{
+			return getAsOptionalString(columnName).map(valueStr -> ReferenceListAwareEnums.ofNullableCode(valueStr, type));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid `" + type.getSimpleName() + "` of column `" + columnName + "`", ex);
+		}
+	}
+
+	public <T extends ReferenceListAwareEnum> T getAsEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	{
+		return getAsOptionalEnum(columnName, type)
+				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
+	}
 }
