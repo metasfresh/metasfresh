@@ -167,7 +167,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		}
 		else
 		{
-			assertThat(actualHuId).isNotNull();
+			assertThat(actualHuId).as(description).isNotNull();
 			final HuId expectedHuId = huTable.getIdOptional(expectedHuIdentifier).orElse(null);
 			if (expectedHuId == null)
 			{
