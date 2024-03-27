@@ -214,7 +214,7 @@ public class DataTableRow
 
 	public Optional<BigDecimal> getAsOptionalBigDecimal(@NonNull final String columnName)
 	{
-		return Optional.ofNullable(DataTableUtil.extractBigDecimalOrNullForColumnName(map, columnName));
+		return getAsOptionalString(columnName).map(NumberUtils::asBigDecimal);
 	}
 
 	public int getAsInt(@NonNull final String columnName)
