@@ -26,28 +26,32 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.postfinance.PostFinanceOrgConfig;
 import de.metas.bpartner.postfinance.PostFinanceOrgConfigRepository;
 import de.metas.organization.OrgId;
+import de.metas.postfinance.customerregistration.util.XMLUtil;
+import de.metas.postfinance.document.export.PostFinanceYbInvoiceResponse;
+import de.metas.postfinance.jaxb.ArrayOfInvoice;
+import de.metas.postfinance.jaxb.ArrayOfProcessedInvoice;
 import de.metas.postfinance.jaxb.ArrayOfProtocolReport;
 import de.metas.postfinance.jaxb.B2BService;
 import de.metas.postfinance.jaxb.B2BService_Service;
 import de.metas.postfinance.jaxb.DownloadFile;
+import de.metas.postfinance.jaxb.ObjectFactory;
 import de.metas.postfinance.jaxb.ProtocolReport;
-import de.metas.postfinance.customerregistration.util.XMLUtil;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_MESSAGE;
 
 @Service
+@RequiredArgsConstructor
 public class B2BServiceWrapper
 {
+	@NonNull
 	private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
-
-	public B2BServiceWrapper(@NonNull final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository)
-	{
-		this.postFinanceOrgConfigRepository = postFinanceOrgConfigRepository;
-	}
+	public static final ObjectFactory B2B_SERVICE_OBJECT_FACTORY = new ObjectFactory();
 
 	@NonNull
 	public List<DownloadFile> getCustomerRegistrationMessageFiles(@NonNull final OrgId orgId)
@@ -55,7 +59,7 @@ public class B2BServiceWrapper
 		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
-		
+
 		final B2BService port = new B2BService_Service().getUserNamePassword();
 		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList(billerId, isArchiveData);
 
@@ -69,5 +73,40 @@ public class B2BServiceWrapper
 				.flatMap(List::stream)
 				.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public ArrayOfProcessedInvoice uploadFilesReport(@NonNull final String billerId, @NonNull final List<PostFinanceYbInvoiceResponse> invoices)
+	{
+		final B2BService port = new B2BService_Service().getUserNamePassword();
+		final ArrayOfInvoice arrayOfInvoice = B2B_SERVICE_OBJECT_FACTORY.createArrayOfInvoice();
+		invoices.forEach(invoice -> arrayOfInvoice.getInvoice().add(invoice.getInvoice()));
+
+		return port.uploadFilesReport(
+				arrayOfInvoice,
+				billerId);
+	}
+
+	public List<DownloadFile> getProcessProtocol(@NonNull final OrgId orgId)
+	{
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final String billerId = postFinanceOrgConfig.getBillerId();
+		// note: if true, use already downloaded data. False = never downloaded data only
+		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
+
+		final B2BService port = new B2BService_Service().getUserNamePassword();
+
+		final ArrayOfProtocolReport arrayOfProtocolReport = port.getProcessProtocolList(billerId, isArchiveData);
+
+		final Stream<ProtocolReport> protocolReportStream = arrayOfProtocolReport.getProtocolReport()
+				.stream();
+
+		return protocolReportStream
+				.map(ProtocolReport::getCreateDate)
+				.map(createDate -> port.getProcessProtocol(billerId, createDate, isArchiveData)
+						.getDownloadFile())
+				.flatMap(List::stream)
+				.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
+				.collect(ImmutableList.toImmutableList());
+
 	}
 }

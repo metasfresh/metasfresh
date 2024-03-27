@@ -64,6 +64,7 @@ public class PostFinanceOrgConfigRepository
 				.id(PostFinanceOrgConfigId.ofRepoId(financeOrgConfig.getPostFinance_Org_Config_ID()))
 				.billerId(financeOrgConfig.getPostFinance_Sender_BillerId())
 				.isArchiveData(financeOrgConfig.isArchiveData())
+				.isUsePaperBill(financeOrgConfig.isUsePaperBill())
 				.build();
 	}
 }
