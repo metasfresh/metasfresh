@@ -68,6 +68,7 @@ public class StepDefUtil
 
 		while (deadLineMillis > System.currentTimeMillis() && !conditionIsMet)
 		{
+			//noinspection BusyWait
 			Thread.sleep(checkingIntervalMs);
 			conditionIsMet = worker.get();
 		}
@@ -119,6 +120,7 @@ public class StepDefUtil
 		ItemProvider.ProviderResult<T> lastWorkerResult = null;
 		while (deadLineMillis > System.currentTimeMillis())
 		{
+			//noinspection BusyWait
 			Thread.sleep(checkingIntervalMs);
 
 			lastWorkerResult = worker.execute();
@@ -133,7 +135,7 @@ public class StepDefUtil
 			logContext.run();
 		}
 		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout. "
-				+ "The logging output of the last try is:\n" + lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog());
+				+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog()));
 		return null;
 
 	}
@@ -173,6 +175,7 @@ public class StepDefUtil
 		{
 			while (deadLineMillis > System.currentTimeMillis())
 			{
+				//noinspection BusyWait
 				Thread.sleep(checkingIntervalMs);
 				final Optional<T> workerResult = worker.get();
 				if (workerResult.isPresent())
@@ -217,6 +220,7 @@ public class StepDefUtil
 		{
 			while (deadLineMillis > System.currentTimeMillis())
 			{
+				//noinspection BusyWait
 				Thread.sleep(checkingIntervalMs);
 				final Optional<T> workerResult = worker.get();
 				if (workerResult.isPresent())
