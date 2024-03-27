@@ -79,6 +79,11 @@ public class DataTableRow
 		return new DataTableRow(1, CollectionUtils.singleElement(dataTable.asMaps()));
 	}
 
+	public static DataTableRow singleRow(@NonNull final Map<String, String> map)
+	{
+		return new DataTableRow(-1, map);
+	}
+
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
 	{
