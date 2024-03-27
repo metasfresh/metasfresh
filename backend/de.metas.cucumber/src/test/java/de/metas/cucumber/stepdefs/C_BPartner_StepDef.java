@@ -29,12 +29,17 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.order.DeliveryRule;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -42,12 +47,16 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
@@ -55,13 +64,19 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_AD_ORG_TARGET_ID;
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_DATE_ORG_CHANGE;
+import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -70,17 +85,21 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
 
+@RequiredArgsConstructor
 public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
@@ -95,24 +114,9 @@ public class C_BPartner_StepDef
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
-
-	public C_BPartner_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final AD_Org_StepDefData orgTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.pricingSystemTable = pricingSystemTable;
-		this.productTable = productTable;
-		this.discountSchemaTable = discountSchemaTable;
-		this.orgTable = orgTable;
-	}
 
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
@@ -187,13 +191,23 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	@And("load C_BPartner:")
-	public void load_C_BPartner(@NonNull final DataTable dataTable)
+	@Given("load C_BPartner:")
+	public void load_bpartner(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			loadBPartner(tableRow);
+			load_bpartner(tableRow);
+		}
+	}
+
+	@Given("update C_BPartner:")
+	public void update_c_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
 		}
 	}
 
@@ -205,15 +219,15 @@ public class C_BPartner_StepDef
 		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
 				.orElse(BP_GROUP_ID);
 
-		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(StepDefConstants.ORG_ID.getRepoId());
 
-		final I_C_BPartner bPartnerRecord =
+		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.create(
 				CoalesceUtil.coalesceSuppliers(
 						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
-						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class));
+						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class)), de.metas.edi.model.I_C_BPartner.class);
 
 		bPartnerRecord.setName(bPartnerName);
 		bPartnerRecord.setValue(bPartnerValue);
@@ -222,6 +236,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 		bPartnerRecord.setAD_Org_ID(orgId);
+		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -245,7 +260,10 @@ public class C_BPartner_StepDef
 		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
 		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
 		{
-			final int pricingSystemId = pricingSystemTable.get(pricingSystemIdentifier).getM_PricingSystem_ID();
+			final int pricingSystemId = pricingSystemTable.getOptional(pricingSystemIdentifier)
+					.map(I_M_PricingSystem::getM_PricingSystem_ID)
+					.orElseGet(() -> Integer.parseInt(pricingSystemIdentifier));
+
 			bPartnerRecord.setM_PricingSystem_ID(pricingSystemId);
 			bPartnerRecord.setPO_PricingSystem_ID(pricingSystemId);
 		}
@@ -274,6 +292,12 @@ public class C_BPartner_StepDef
 
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
+
+		final boolean isEdiDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiDesadvRecipient, false);
+		final boolean isEdiInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiInvoicRecipient, false);
+
+		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
+		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
 
 		final String companyName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
 		if (EmptyUtil.isNotBlank(companyName))
@@ -432,7 +456,7 @@ public class C_BPartner_StepDef
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 
-	private void loadBPartner(@NonNull final Map<String, String> row)
+	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 
@@ -445,5 +469,151 @@ public class C_BPartner_StepDef
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
+
+		if (Check.isNotBlank(value))
+		{
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
+			assertThat(bPartnerRecord).isNotNull();
+
+			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+		}
+	}
+
+	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+
+		assertThat(bPartner).isNotNull();
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+		if (EmptyUtil.isNotBlank(invoiceRule))
+		{
+			bPartner.setInvoiceRule(invoiceRule);
+		}
+
+		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
+		if (EmptyUtil.isNotBlank(poInvoiceRule))
+		{
+			bPartner.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+		{
+			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
+			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		}
+
+		InterfaceWrapperHelper.save(bPartner);
+
+		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
+	}
+
+	@And("validate C_BPartner:")
+	public void validate_C_BPartner(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+
+			final String bpValue = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_Value);
+			softly.assertThat(bPartnerRecord.getValue()).as("Value").isEqualTo(bpValue);
+
+			final String companyName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
+			if (Check.isNotBlank(companyName))
+			{
+				softly.assertThat(bPartnerRecord.getCompanyName()).as("CompanyName").isEqualTo(companyName);
+			}
+
+			final String vaTaxID = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
+			if (Check.isNotBlank(vaTaxID))
+			{
+				softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID);
+			}
+		}
+
+		softly.assertAll();
+	}
+
+	@And("^after not more than (.*)s, C_BPartner are found:$")
+	public void validate_created_c_bPartners(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> tableRow : dataTable)
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final IQueryBuilder<I_C_BPartner> query = queryBL.createQueryBuilder(I_C_BPartner.class);
+
+			final String bPartnerName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Name);
+			if(!Check.isEmpty(bPartnerName))
+			{
+				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, bPartnerName);
+			}
+
+			final String bPartnerValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Value);
+			if(!Check.isEmpty(bPartnerValue))
+			{
+				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, bPartnerValue);
+			}
+
+			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+					.map(orgTable::get)
+					.map(I_AD_Org::getAD_Org_ID)
+					.orElse(StepDefConstants.ORG_ID.getRepoId());
+			query.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId);
+
+			final Supplier<Boolean> QueryExecutor = () -> {
+				final I_C_BPartner bPartnerRecord = query.create().firstOnly(I_C_BPartner.class);
+
+				if (bPartnerRecord == null)
+				{
+					return false;
+				}
+
+				bPartnerTable.putOrReplace(bPartnerIdentifier, bPartnerRecord);
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 500, QueryExecutor);
+		}
+	}
+
+
+	@Given("C_BPartner_MoveToAnotherOrg is invoked with parameters:")
+	public void C_BPartner_MoveToAnotherOrg(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
+
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_AD_Org orgRecord = orgTable.get(orgIdentifier);
+
+			final Timestamp changeDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, PARAM_DATE_ORG_CHANGE);
+
+			final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg.class);
+
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
+			processInfoBuilder.setRecord(I_C_BPartner.Table_Name, bPartnerRecord.getC_BPartner_ID());
+			processInfoBuilder.addParameter(PARAM_AD_ORG_TARGET_ID, orgRecord.getAD_Org_ID());
+			processInfoBuilder.addParameter(PARAM_DATE_ORG_CHANGE, changeDate);
+			processInfoBuilder.addParameter(PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, false);
+
+			processInfoBuilder
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
 	}
 }
