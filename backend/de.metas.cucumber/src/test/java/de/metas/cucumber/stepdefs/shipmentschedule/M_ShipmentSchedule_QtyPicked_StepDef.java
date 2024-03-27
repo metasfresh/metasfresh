@@ -36,6 +36,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -45,10 +46,12 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID;
@@ -57,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class M_ShipmentSchedule_QtyPicked_StepDef
 {
+	private final Logger logger = LogManager.getLogger(M_ShipmentSchedule_QtyPicked_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -119,6 +123,8 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			@NonNull final DataTableRow expected,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked actual)
 	{
+		logger.info("validateQtyPickedRow: expected={}, actual={}", expected, actual);
+
 		expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked)
 				.ifPresent(qtyPicked -> assertThat(actual.getQtyPicked()).isEqualByComparingTo(qtyPicked));
 		expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyDeliveredCatch)
@@ -153,9 +159,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 	private void validateHuId(@NonNull final StepDefDataIdentifier expectedHuIdentifier, @Nullable final HuId actualHuId)
 	{
+		final Supplier<String> description = () -> "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId;
+
 		if (expectedHuIdentifier.isNullPlaceholder())
 		{
-			assertThat(actualHuId).isNull();
+			assertThat(actualHuId).as(description).isNull();
 		}
 		else
 		{
@@ -167,7 +175,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			}
 			else
 			{
-				assertThat(actualHuId).isEqualTo(expectedHuId);
+				assertThat(actualHuId).as(description).isEqualTo(expectedHuId);
 			}
 		}
 	}
