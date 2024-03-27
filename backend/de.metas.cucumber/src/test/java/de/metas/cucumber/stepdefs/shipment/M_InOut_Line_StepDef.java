@@ -32,6 +32,8 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.logging.LogManager;
+import de.metas.order.OrderLineId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -43,7 +45,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -51,7 +52,9 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +71,7 @@ import static org.compiere.model.I_M_InOutLine.COLUMNNAME_QtyEntered;
 @RequiredArgsConstructor
 public class M_InOut_Line_StepDef
 {
+	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
@@ -85,7 +89,6 @@ public class M_InOut_Line_StepDef
 		for (final DataTableRow row : DataTableRow.toRows(table))
 		{
 			final StepDefDataIdentifier shipmentIdentifier = row.getAsIdentifier("M_InOut_ID");
-
 			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
 
 			final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
@@ -99,8 +102,10 @@ public class M_InOut_Line_StepDef
 					.addEqualsFilter(COLUMNNAME_M_Product_ID, expectedProductId);
 
 			row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
-					.map(orderLineTable::get)
-					.ifPresent(orderLine -> lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID()));
+					.ifPresent(orderLineIdentifier -> {
+						@Nullable final OrderLineId orderLineId = orderLineTable.getId(orderLineIdentifier);
+						lineQueryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineId);
+					});
 
 			row.getAsOptionalBigDecimal(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent)
 					.ifPresent(qualityDiscountPercent -> lineQueryBuilder.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, qualityDiscountPercent));
@@ -253,6 +258,8 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine actual, @NonNull final DataTableRow expected)
 	{
+		logger.info("validateShipmentLine: expected={}, actual={}", expected, actual);
+
 		expected.getAsOptionalIdentifier("M_Product_ID")
 				.ifPresent(productIdentifier -> {
 					final int expectedProductId = productTable.getOptional(productIdentifier)
@@ -285,7 +292,7 @@ public class M_InOut_Line_StepDef
 					else
 					{
 						final AttributeSetInstanceId asiId = asiTable.getIdOptional(asiIdentifier).orElse(null);
-						if(asiId == null)
+						if (asiId == null)
 						{
 							asiTable.put(asiIdentifier, InterfaceWrapperHelper.load(asiIdActual, I_M_AttributeSetInstance.class));
 						}
