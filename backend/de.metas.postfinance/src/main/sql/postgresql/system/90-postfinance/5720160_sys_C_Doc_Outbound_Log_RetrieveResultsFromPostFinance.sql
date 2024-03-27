@@ -75,3 +75,8 @@ UPDATE AD_Process SET Classname='de.metas.postfinance.document.results.process.C
 UPDATE AD_Process_Trl SET Name='Retrieve Results From PostFinance',Updated=TO_TIMESTAMP('2024-03-26 20:46:21.521','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585366
 ;
 
+-- Process: C_Doc_Outbound_Log_RetrieveResultsFromPostFinance(de.metas.postfinance.document.results.process.C_Doc_Outbound_Log_RetrieveResultsFromPostFinance)
+-- 2024-03-27T10:44:12.794Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-03-27 12:44:12.791','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585366
+;
+
