@@ -9,49 +9,49 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent
+public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1704128096L;
+	private static final long serialVersionUID = -1679925780L;
 
-		/** Standard Constructor */
+    /** Standard Constructor */
     public X_C_Doc_Outbound_Log (final Properties ctx, final int C_Doc_Outbound_Log_ID, @Nullable final String trxName)
-		{
-			super (ctx, C_Doc_Outbound_Log_ID, trxName);
-		}
+    {
+      super (ctx, C_Doc_Outbound_Log_ID, trxName);
+    }
 
-		/** Load Constructor */
+    /** Load Constructor */
     public X_C_Doc_Outbound_Log (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-		{
-			super (ctx, rs, trxName);
-		}
+    {
+      super (ctx, rs, trxName);
+    }
 
 
-		/** Load Meta Data */
-		@Override
+	/** Load Meta Data */
+	@Override
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
-		{
+	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-		}
+	}
 
-		@Override
+	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
-		{
-			if (AD_Table_ID < 1)
-				set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-			else
+	{
+		if (AD_Table_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
+		else 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
-		}
+	}
 
-		@Override
-		public int getAD_Table_ID ()
-		{
+	@Override
+	public int getAD_Table_ID() 
+	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
-		}
+	}
 
-		@Override
+	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
-		{
+	{
 		if (C_Async_Batch_ID < 1) 
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
 		else 
@@ -62,6 +62,21 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public int getC_Async_Batch_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
@@ -82,37 +97,22 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		throw new IllegalArgumentException ("C_BP_Group_ID is virtual column");	}
 
 	@Override
-	public int getC_BP_Group_ID ()
+	public int getC_BP_Group_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
 	}
 
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
-	}
-
-	@Override
-	public int getC_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
 	public void setC_Doc_Outbound_Log_ID (final int C_Doc_Outbound_Log_ID)
 	{
-		if (C_Doc_Outbound_Log_ID < 1)
+		if (C_Doc_Outbound_Log_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, C_Doc_Outbound_Log_ID);
 	}
 
 	@Override
-	public int getC_Doc_Outbound_Log_ID ()
+	public int getC_Doc_Outbound_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Doc_Outbound_Log_ID);
 	}
@@ -120,26 +120,26 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0)
+		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID ()
+	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
 	@Override
-	public void setCurrentEMailAddress (final @Nullable String CurrentEMailAddress)
+	public void setCurrentEMailAddress (final @Nullable java.lang.String CurrentEMailAddress)
 	{
 		set_Value (COLUMNNAME_CurrentEMailAddress, CurrentEMailAddress);
 	}
 
 	@Override
-	public String getCurrentEMailAddress()
+	public java.lang.String getCurrentEMailAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_CurrentEMailAddress);
 	}
@@ -147,14 +147,14 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setCurrentEMailRecipient_ID (final int CurrentEMailRecipient_ID)
 	{
-		if (CurrentEMailRecipient_ID < 1)
+		if (CurrentEMailRecipient_ID < 1) 
 			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, CurrentEMailRecipient_ID);
 	}
 
 	@Override
-	public int getCurrentEMailRecipient_ID ()
+	public int getCurrentEMailRecipient_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CurrentEMailRecipient_ID);
 	}
@@ -166,7 +166,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.sql.Timestamp getDateDoc ()
+	public java.sql.Timestamp getDateDoc() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateDoc);
 	}
@@ -178,7 +178,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.sql.Timestamp getDateLastEMail ()
+	public java.sql.Timestamp getDateLastEMail() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateLastEMail);
 	}
@@ -190,7 +190,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.sql.Timestamp getDateLastPrint ()
+	public java.sql.Timestamp getDateLastPrint() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateLastPrint);
 	}
@@ -202,12 +202,12 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.sql.Timestamp getDateLastStore ()
+	public java.sql.Timestamp getDateLastStore() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateLastStore);
 	}
 
-	/**
+	/** 
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -237,25 +237,25 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (final @Nullable String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocStatus, DocStatus);
 	}
 
 	@Override
-	public String getDocStatus()
+	public java.lang.String getDocStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
-	public void setDocumentNo (final @Nullable String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public String getDocumentNo()
+	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -280,13 +280,13 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** DontSend = N */
 	public static final String EDI_EXPORTSTATUS_DontSend = "N";
 	@Override
-	public void setEDI_ExportStatus (final @Nullable String EDI_ExportStatus)
+	public void setEDI_ExportStatus (final @Nullable java.lang.String EDI_ExportStatus)
 	{
 		set_ValueNoCheck (COLUMNNAME_EDI_ExportStatus, EDI_ExportStatus);
 	}
 
 	@Override
-	public String getEDI_ExportStatus()
+	public java.lang.String getEDI_ExportStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_EDI_ExportStatus);
 	}
@@ -297,7 +297,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		throw new IllegalArgumentException ("EMailCount is virtual column");	}
 
 	@Override
-	public int getEMailCount ()
+	public int getEMailCount() 
 	{
 		return get_ValueAsInt(COLUMNNAME_EMailCount);
 	}
@@ -309,20 +309,18 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public java.lang.String getFileName()
+	public java.lang.String getFileName() 
 	{
 		return get_ValueAsString(COLUMNNAME_FileName);
 	}
 
-	/** Set Beleg soll per EDI übermittelt werden.
-		@param IsEdiEnabled Beleg soll per EDI übermittelt werden	  */
 	@Override
 	public void setIsEdiEnabled (final boolean IsEdiEnabled)
 	{
 		throw new IllegalArgumentException ("IsEdiEnabled is virtual column");	}
 
 	@Override
-	public boolean isEdiEnabled ()
+	public boolean isEdiEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
 	}
@@ -334,7 +332,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public boolean isInvoiceEmailEnabled ()
+	public boolean isInvoiceEmailEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
@@ -345,20 +343,43 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		throw new IllegalArgumentException ("PDFCount is virtual column");	}
 
 	@Override
-	public int getPDFCount ()
+	public int getPDFCount() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PDFCount);
 	}
 
 	@Override
-	public void setPOReference (final @Nullable String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		throw new IllegalArgumentException ("POReference is virtual column");	}
 
 	@Override
-	public String getPOReference()
+	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	/** 
+	 * PostFinance_Export_Status AD_Reference_ID=541860
+	 * Reference name: PostFinance_ExportStatus
+	 */
+	public static final int POSTFINANCE_EXPORT_STATUS_AD_Reference_ID=541860;
+	/** NotSent = N */
+	public static final String POSTFINANCE_EXPORT_STATUS_NotSent = "N";
+	/** Error = E */
+	public static final String POSTFINANCE_EXPORT_STATUS_Error = "E";
+	/** OK = O */
+	public static final String POSTFINANCE_EXPORT_STATUS_OK = "O";
+	@Override
+	public void setPostFinance_Export_Status (final java.lang.String PostFinance_Export_Status)
+	{
+		set_ValueNoCheck (COLUMNNAME_PostFinance_Export_Status, PostFinance_Export_Status);
+	}
+
+	@Override
+	public java.lang.String getPostFinance_Export_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_PostFinance_Export_Status);
 	}
 
 	@Override
@@ -367,7 +388,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		throw new IllegalArgumentException ("PrintCount is virtual column");	}
 
 	@Override
-	public int getPrintCount ()
+	public int getPrintCount() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PrintCount);
 	}
@@ -375,14 +396,14 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
-		if (Record_ID < 0)
+		if (Record_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}
 
 	@Override
-	public int getRecord_ID ()
+	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
@@ -393,7 +414,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		throw new IllegalArgumentException ("StoreCount is virtual column");	}
 
 	@Override
-	public int getStoreCount ()
+	public int getStoreCount() 
 	{
 		return get_ValueAsInt(COLUMNNAME_StoreCount);
 	}
