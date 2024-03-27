@@ -18,8 +18,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | p_1        | noPriceProduct_10052022_1 | true      |
 
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156425       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |

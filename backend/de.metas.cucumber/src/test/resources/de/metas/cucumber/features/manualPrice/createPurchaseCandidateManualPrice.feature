@@ -14,8 +14,8 @@ Feature: create Purchase Candidate having manual price set
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load C_BPartner:
-      | C_BPartner_ID.Identifier | C_BPartner_ID |
-      | bpartner_1               | 2156423       |
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156423           |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205173                | bpartner_1               |

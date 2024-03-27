@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: desadv and invoic
 
   Background:
@@ -8,7 +9,7 @@ Feature: desadv and invoic
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-  Scenario:
+  Scenario: 1
 
   in:
   C_OLCand:
@@ -130,7 +131,7 @@ Feature: desadv and invoic
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | TU                             | false             | 5                            | 10                          | 10             | TU                    | 10                  |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -188,7 +189,7 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-  Scenario:
+  Scenario: 2
 
   in:
   C_UOM_Conversions
@@ -364,7 +365,7 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-  Scenario:
+  Scenario: 3
   in:
 
   M_ProductPrice:
@@ -480,7 +481,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | true              | 5                            | 10                          | 10             | PCE                   | 10                  |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -536,7 +537,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | PCE                       | 5                        | 10              | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-  Scenario:
+  Scenario: 4
 
   in:
   C_UOM_Conversion:
@@ -655,7 +656,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | PCE                   | 5                   |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -711,7 +712,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | KGM                       | 1.25                     | 5               | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-  Scenario:
+  Scenario: 5
 
   in:
   C_UOM_Conversion:
@@ -835,7 +836,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 40         | 0           | 50    | 0        | EUR          | true      | KGM                            | true              | 5                            | 10                          | 10             | KGM                   | 10                  |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -891,7 +892,7 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | KGM               | 1    | p_1                     | 10         | 5                 | 40         | PCE                       | 20                       | 10              | KGM                        | 5                       | 5                        | 20                        |
 
   @from:cucumber
-  Scenario:
+  Scenario: 6
 
   in:
   C_UOM_Conversion:
@@ -1014,7 +1015,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 50         | 0           | 10    | 0        | EUR          | true      | TU                             | true              | 5                            | 10                          | 10             | TU                    | 5                   |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 

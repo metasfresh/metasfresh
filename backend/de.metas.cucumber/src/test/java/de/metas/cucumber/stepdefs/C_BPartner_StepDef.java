@@ -45,14 +45,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 
 import java.util.List;
@@ -62,20 +55,7 @@ import java.util.Optional;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
+import static org.compiere.model.I_C_BPartner.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -193,7 +173,7 @@ public class C_BPartner_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			loadBPartner(tableRow);
+			load_bpartner(tableRow);
 		}
 	}
 
@@ -392,7 +372,7 @@ public class C_BPartner_StepDef
 		bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 	}
 
-	private void loadBPartner(@NonNull final Map<String, String> row)
+	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 
@@ -401,6 +381,16 @@ public class C_BPartner_StepDef
 		if (id != null)
 		{
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(id);
+			assertThat(bPartnerRecord).isNotNull();
+
+			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+		}
+
+		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
+
+		if (Check.isNotBlank(value))
+		{
+			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
