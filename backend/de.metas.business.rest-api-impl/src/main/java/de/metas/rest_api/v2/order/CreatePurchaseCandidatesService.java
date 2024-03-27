@@ -88,7 +88,7 @@ import java.util.Optional;
 @Service
 public class CreatePurchaseCandidatesService
 {
-	private final static transient Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
+	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -186,20 +186,8 @@ public class CreatePurchaseCandidatesService
 				.isManualPrice(manualPrice)
 				.prepared(request.isPrepared())
 				.attributeSetInstanceId(attributeSetInstanceId)
-				.source(PurchaseCandidateSource.Api);
-
-		if (manualPrice)
-		{
-			purchaseCandidateBuilder.price(request.getPrice().getValue());
-			purchaseCandidateBuilder.priceUomId(getPriceUOMId(request.getPrice()).orElse(quantity.getUomId()));
-			purchaseCandidateBuilder.currencyId(getCurrencyId(request.getPrice()));
-		}
-		else
-		{
-			purchaseCandidateBuilder.price(BigDecimal.ZERO);
-		}
-
-		final PurchaseCandidate purchaseCandidate = purchaseCandidateBuilder.productDescription(request.getProductDescription())
+				.source(PurchaseCandidateSource.Api)
+				.productDescription(request.getProductDescription())
 				.activityId(activityId);
 
 		if (manualPrice)

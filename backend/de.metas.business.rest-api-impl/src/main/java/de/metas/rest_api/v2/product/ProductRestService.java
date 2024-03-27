@@ -26,10 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
-import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
@@ -65,9 +62,11 @@ import de.metas.product.quality.attribute.QualityAttributeService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.pricing.ProductPriceRestService;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -111,6 +110,9 @@ public class ProductRestService
 	private final JsonRetrieverService jsonRetrieverService;
 	private final ExternalIdentifierResolver externalIdentifierResolver;
 
+	private final ProductPriceRestService productPriceRestService;
+	private final ProductTaxCategoryService productTaxCategoryService;
+	
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService,
@@ -119,7 +121,9 @@ public class ProductRestService
 			@NonNull final ProductAllergenRestService productAllergenRestService,
 			@NonNull final QualityAttributeService qualityAttributeService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final ExternalIdentifierResolver externalIdentifierResolver)
+			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
+			@NonNull final ProductPriceRestService productPriceRestService,
+			@NonNull final ProductTaxCategoryService productTaxCategoryService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
@@ -129,6 +133,9 @@ public class ProductRestService
 		this.productWarehouseAssignmentRestService = productWarehouseAssignmentRestService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.externalIdentifierResolver = externalIdentifierResolver;
+
+		this.productPriceRestService = productPriceRestService;
+		this.productTaxCategoryService = productTaxCategoryService;
 	}
 
 	@NonNull

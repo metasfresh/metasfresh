@@ -114,9 +114,6 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Amazon = "AMZ";
 	/** PrintingClient = PC */
 	public static final String TYPE_PrintingClient = "PC";
-
-	/** GRSSignum = GRS */
-	public static final String TYPE_GRSSignum = "GRS";
 	/** Pro Care Management = PCM */
 	public static final String TYPE_ProCareManagement = "PCM";
 	@Override

@@ -34,7 +34,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.rules.price_list_version.AbstractPriceListBasedRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.impl.PricingBL;
 import de.metas.pricing.tax.LookupTaxCategoryRequest;
@@ -56,7 +55,7 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-public class ManualPricePricingRule extends AbstractPriceListBasedRule /*or implements IPricingRule ?*/
+public class ManualPricePricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(ManualPricePricingRule.class);
 
@@ -70,11 +69,6 @@ public class ManualPricePricingRule extends AbstractPriceListBasedRule /*or impl
 	@Override
 	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
-		if (!super.applies(pricingCtx, result))
-		{
-			return false;
-		}
-
 		if (!PricingBL.isManualPrice(pricingCtx))
 		{
 			logger.info("Not applying because not manual price !");

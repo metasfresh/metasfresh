@@ -74,7 +74,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_P
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_Processed;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
@@ -105,7 +104,6 @@ public class C_InvoiceLine_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final C_Activity_StepDefData activityTable,
 			@NonNull final C_Calendar_StepDefData calendarTable,
@@ -349,17 +347,6 @@ public class C_InvoiceLine_StepDef
 		if (qtyInvoicedInPriceUOM != null)
 		{
 			softly.assertThat(invoiceLine.getQtyInvoicedInPriceUOM()).as(COLUMNNAME_QtyInvoicedInPriceUOM).isEqualByComparingTo(qtyInvoicedInPriceUOM);
-		}
-
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		if (Check.isNotBlank(taxCategoryIdentifier))
-		{
-			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
-					.map(I_C_TaxCategory::getC_TaxCategory_ID)
-					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
-
-			assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
 
 		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

@@ -22,10 +22,8 @@
 
 package de.metas.common.product.v2.request;
 
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
-import de.metas.common.rest_api.v2.SyncAdvise;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -33,26 +31,30 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Getter
 @Builder
 @EqualsAndHashCode
 @Jacksonized
 public class JsonRequestProductTaxCategoryUpsert
 {
-	@ApiModelProperty(required = true)
+	@Schema(requiredMode = REQUIRED)
 	private TaxCategory taxCategory;
 
-	@ApiModelProperty(required = false)
+	@Schema(requiredMode = NOT_REQUIRED)
 	private String countryCode;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(requiredMode = REQUIRED)
 	private boolean countryCodeSet;
 
-	@ApiModelProperty(required = true)
+	@Schema(requiredMode = REQUIRED)
 	private Instant validFrom;
 
-	@ApiModelProperty(hidden = true)
+	@Schema(requiredMode = REQUIRED)
 	private boolean validFromSet;
+	
 	public void setTaxCategory(final TaxCategory taxCategory)
 	{
 		this.taxCategory = taxCategory;

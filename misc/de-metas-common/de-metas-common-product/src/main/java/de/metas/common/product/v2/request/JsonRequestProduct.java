@@ -40,7 +40,7 @@ import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.*;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Getter
 @ToString
@@ -165,8 +165,7 @@ public class JsonRequestProduct
 	@Schema
 	private JsonRequestProductWarehouseAssignmentSave warehouseAssignments;
 
-
-	@Schema(position = 160)
+	@Schema
 	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
 
 	public void setCode(final @NonNull String code)

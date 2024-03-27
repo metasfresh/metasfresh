@@ -50,7 +50,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -77,7 +76,6 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
@@ -100,7 +98,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 
 public class C_OrderLine_StepDef
@@ -586,8 +583,6 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
-
 		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
