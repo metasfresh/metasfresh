@@ -102,21 +102,4 @@ public class XMLUtil
 
 		return buffer.toString();
 	}
-
-	@NonNull
-	public Envelope getXmlProcessProtocol(@NonNull final DownloadFile downloadFile)
-	{
-		try
-		{
-			final Document document = readFromDownloadFile(downloadFile);
-			final String documentAsString = toString(document);
-
-			final XmlMapper xmlMapper = ConfiguredXmlMapper.get();
-			return xmlMapper.readValue(documentAsString, Envelope.class);
-		}
-		catch (final Exception e)
-		{
-			throw new AdempiereException(e);
-		}
-	}
 }

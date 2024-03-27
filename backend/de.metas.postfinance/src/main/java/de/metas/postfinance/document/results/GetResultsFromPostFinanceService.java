@@ -111,11 +111,22 @@ public class GetResultsFromPostFinanceService
 		}
 		final DocOutboundLogId docOutboundLogId = postFinanceLogOptional.get().getDocOutboundLogId();
 
+		final String errorMessage;
+		boolean isException = true;
+		if("05".equals(bill.getReasonCode()))
+		{
+			errorMessage = "The document was sent again before receiving processing result of valid document. Ignoring " + bill.getReasonCode() + " " + bill.getReasonText();
+			isException = false;
+		}
+		else
+		{
+			errorMessage = bill.getReasonCode() + " " + bill.getReasonText();
+		}
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
 				.transactionId(transactionID)
-				.postFinanceExportException(new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()))
-				.message(bill.getReasonCode() + " " + bill.getReasonText())
+				.postFinanceExportException( isException ? new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()) : null)
+				.message(errorMessage)
 				.build();
 
 		sendResultToDocOutbound(attachmentEntryCreateRequest,
