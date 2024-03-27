@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,16 +51,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.*;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -71,7 +62,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -268,7 +259,7 @@ public class M_PriceList_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
+			final String productPriceIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, "M_ProductPrice");
 			final Integer productPriceID = productPriceTable.getOptional(productPriceIdentifier)
 					.map(I_M_ProductPrice::getM_ProductPrice_ID)
 					.orElseGet(() -> Integer.parseInt(productPriceIdentifier));
@@ -277,13 +268,22 @@ public class M_PriceList_StepDef
 
 			final I_M_ProductPrice productPrice = InterfaceWrapperHelper.load(productPriceID, I_M_ProductPrice.class);
 
-			final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-			productPrice.setPriceStd(priceStd);
-
-			final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-			final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
-
+			final BigDecimal priceStd = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_PriceStd);
+			if(priceStd != null) 
+			{
+				productPrice.setPriceStd(priceStd);
+			}
+			final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+			if(Check.isNotBlank(x12de355Code)) 
+			{
+				final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+				productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
+			}
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_UOM.COLUMNNAME_IsActive);
+			if(isActive != null)
+			{
+				productPrice.setIsActive(isActive);
+			}
 			final String invoicableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 			if (Check.isNotBlank(invoicableQtyBasedOn))
 			{

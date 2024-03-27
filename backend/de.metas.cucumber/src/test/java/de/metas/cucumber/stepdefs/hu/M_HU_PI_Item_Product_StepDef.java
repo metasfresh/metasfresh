@@ -49,7 +49,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_Qty
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom;
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Item_Product_StepDef
 {
@@ -75,10 +75,17 @@ public class M_HU_PI_Item_Product_StepDef
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final String huPiItemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String huPiItemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer huPiItemId = huPiItemTable.getOptional(huPiItemIdentifier)
+				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
+				.orElseGet(() -> Integer.parseInt(huPiItemIdentifier));
+
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		final Integer mhupiItemProductID = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID);
+
 			final I_M_HU_PI_Item huPiItem = huPiItemTable.get(huPiItemIdentifier);
 
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Qty);
@@ -86,7 +93,7 @@ public class M_HU_PI_Item_Product_StepDef
 			final boolean active = DataTableUtil.extractBooleanForColumnNameOr(row, COLUMNNAME_IsActive, true);
 
 			final I_M_HU_PI_Item_Product existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_ID, huPiItem.getM_HU_PI_Item_ID())
 					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_IsActive, active)
@@ -97,8 +104,13 @@ public class M_HU_PI_Item_Product_StepDef
 																								() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
 			assertThat(huPiItemProductRecord).isNotNull();
 
-			huPiItemProductRecord.setM_Product_ID(product.getM_Product_ID());
-			huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItem.getM_HU_PI_Item_ID());
+		if (mhupiItemProductID != null)
+		{
+			huPiItemProductRecord.setM_HU_PI_Item_Product_ID(mhupiItemProductID);
+		}
+
+		huPiItemProductRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItemId);
 			huPiItemProductRecord.setQty(qty);
 			huPiItemProductRecord.setValidFrom(validFrom);
 			huPiItemProductRecord.setC_UOM_ID(PCE_UOM_ID.getRepoId());

@@ -35,6 +35,8 @@ import java.util.Properties;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.location.impl.DummyDocumentLocationBL;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -125,6 +127,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

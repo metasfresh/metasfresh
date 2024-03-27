@@ -20,12 +20,15 @@ import de.metas.order.OrderFreightCostsService;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.pricing.service.impl.PricingTestHelper;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.model.I_M_FreightCostShipper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -108,6 +111,8 @@ public class FreightCostTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		de.metas.common.util.time.SystemTime.setFixedTimeSource("2019-07-10T16:11:23+01:00[Europe/Berlin]");
+
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test
