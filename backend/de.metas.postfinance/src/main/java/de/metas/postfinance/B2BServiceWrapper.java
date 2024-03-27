@@ -49,9 +49,9 @@ import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_ME
 @RequiredArgsConstructor
 public class B2BServiceWrapper
 {
-	public static final ObjectFactory B2B_SERVICE_OBJECT_FACTORY = new ObjectFactory();
 	@NonNull
 	private final PostFinanceOrgConfigRepository postFinanceOrgConfigRepository;
+	public static final ObjectFactory B2B_SERVICE_OBJECT_FACTORY = new ObjectFactory();
 
 	@NonNull
 	public List<DownloadFile> getCustomerRegistrationMessageFiles(@NonNull final OrgId orgId)
