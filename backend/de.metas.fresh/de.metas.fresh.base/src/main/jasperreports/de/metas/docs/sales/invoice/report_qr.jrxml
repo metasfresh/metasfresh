@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.5000000000000024"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotfix.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
@@ -247,22 +247,24 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" mode="Transparent" x="335" y="129" width="236" height="11" uuid="9615c10e-cf61-444c-8ab4-6c1198f0c5a3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[$F{additional_informations}!=null || !$F{additional_informations}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 					<paragraph lineSpacing="Single" lineSpacingSize="0.8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{QR_PayableBy}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{QR_AdditionalInfos}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement positionType="Float" mode="Transparent" x="335" y="139" width="236" height="12" uuid="5644c4a9-5b3a-4fac-b0db-af45c559996b">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[$F{additional_informations}!=null || !$F{additional_informations}.isEmpty()]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="10"/>
 					<paragraph lineSpacing="Single" lineSpacingSize="0.8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{dr_address}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{additional_informations}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="334" y="84" width="236" height="12" uuid="0f3401cc-5694-47ee-90e2-d3bf9707c0d0">
@@ -431,6 +433,26 @@
 					<font fontName="OCRB" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{codeline}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="156" width="236" height="11" uuid="2e1d89aa-db8b-4ce6-9961-8d8c1f564d61">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="true"/>
+					<paragraph lineSpacing="Single" lineSpacingSize="0.8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{QR_PayableBy}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="Float" mode="Transparent" x="335" y="166" width="236" height="12" uuid="d968c3e6-59e4-4c59-89ae-9e78b8f02a58">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="10"/>
+					<paragraph lineSpacing="Single" lineSpacingSize="0.8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dr_address}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>
