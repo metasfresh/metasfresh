@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.edi
+ * de.metas.document.archive.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.edi.model;
+package de.metas.document.archive;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

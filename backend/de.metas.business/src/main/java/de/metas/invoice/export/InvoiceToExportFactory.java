@@ -19,6 +19,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
@@ -31,11 +32,11 @@ import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
-import de.metas.invoice_gateway.spi.model.ProductId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
@@ -139,7 +140,7 @@ public class InvoiceToExportFactory
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
 				.id(id)
-				.docSubType(docBaseAndSubType.getDocSubType()) // might be null
+				.docBaseAndSubType(docBaseAndSubType)
 				.alreadyPaidAmount(allocatedMoney)
 				.amount(grandTotal)
 				.biller(createBiller(invoiceRecord))
@@ -188,8 +189,9 @@ public class InvoiceToExportFactory
 		{
 			final InvoiceLine invoiceLine = InvoiceLine
 					.builder()
+					.id(InvoiceLineId.ofRepoId(lineRecord.getC_Invoice_ID(), lineRecord.getC_InvoiceLine_ID()))
 					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
-					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
+					.productId(ProductId.ofRepoId(lineRecord.getM_Product_ID()))
 					.externalIds(ExternalIdsUtil.splitExternalIds(lineRecord.getExternalIds()))
 					.build();
 			invoiceLines.add(invoiceLine);

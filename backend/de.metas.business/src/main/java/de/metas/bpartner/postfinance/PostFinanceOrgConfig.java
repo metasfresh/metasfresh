@@ -35,4 +35,6 @@ public class PostFinanceOrgConfig
 	@NonNull String billerId;
 	
 	boolean isArchiveData;
+
+	boolean isUsePaperBill;
 }

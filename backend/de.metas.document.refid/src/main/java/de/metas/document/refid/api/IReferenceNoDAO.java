@@ -22,22 +22,21 @@ package de.metas.document.refid.api;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
 import de.metas.document.refid.api.impl.ReferenceNoId;
-import lombok.NonNull;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type_Table;
 import de.metas.document.refid.spi.IReferenceNoGenerator;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IReferenceNoDAO extends ISingletonService
 {
@@ -98,10 +97,11 @@ public interface IReferenceNoDAO extends ISingletonService
 	 * @param generatorClazz mandatory filter for the type (via {@link I_C_ReferenceNo_Type#COLUMNNAME_Classname}) that the common referenceNo needs to have.
 	 * @param clazz mandatory filter criterion for the associated records to be retrieved.
 	 * @return
-	 * @throws org.adempiere.model.InterfaceWrapperHelper.MissingTableNameException if no table name can't be found for the given class
 	 */
 	<T> List<T> retrieveAssociatedRecords(Object model, Class<? extends IReferenceNoGenerator> generatorClazz, Class<T> clazz);
 
 	@NonNull
 	Optional<ReferenceNoId> getReferenceNoId(@NonNull String referenceNo, @NonNull I_C_ReferenceNo_Type invoiceReferenceNoType);
+
+	Optional<I_C_ReferenceNo> retrieveRefNo(@NonNull TableRecordReference tableRecordReference, @NonNull I_C_ReferenceNo_Type type);
 }
