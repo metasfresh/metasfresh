@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -53,24 +54,29 @@ import java.util.stream.Collectors;
 @ToString
 public class DataTableRow
 {
+	private final int lineNo; // introduced to improve logging/debugging
 	final Map<String, String> map;
 
-	private DataTableRow(@NonNull final Map<String, String> map)
+	private DataTableRow(
+			final int lineNo,
+			@NonNull final Map<String, String> map)
 	{
+		this.lineNo = lineNo;
 		this.map = map;
 	}
 
 	public static List<DataTableRow> toRows(@NonNull final DataTable dataTable)
 	{
+		final AtomicInteger nextLineNo = new AtomicInteger(1);
 		return dataTable.asMaps()
 				.stream()
-				.map(DataTableRow::new)
+				.map(values -> new DataTableRow(nextLineNo.getAndIncrement(), values))
 				.collect(Collectors.toList());
 	}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
-		return new DataTableRow(CollectionUtils.singleElement(dataTable.asMaps()));
+		return new DataTableRow(1, CollectionUtils.singleElement(dataTable.asMaps()));
 	}
 
 	@NonNull
