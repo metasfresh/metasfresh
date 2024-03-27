@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -34,4 +36,6 @@ public class C_Invoice_Candidate_StepDefData extends StepDefData<I_C_Invoice_Can
 	{
 		super(I_C_Invoice_Candidate.class);
 	}
+
+	public InvoiceCandidateId getId(final StepDefDataIdentifier identifier) {return InvoiceCandidateId.ofRepoId(get(identifier).getC_Invoice_Candidate_ID());}
 }

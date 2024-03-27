@@ -39,6 +39,11 @@ public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
 		super(I_M_InOutLine.class);
 	}
 
+	public InOutLineId getId(final StepDefDataIdentifier identifier)
+	{
+		return InOutLineId.ofRepoId(get(identifier).getM_InOutLine_ID());
+	}
+
 	public Optional<InOutLineId> getIdOptional(final StepDefDataIdentifier identifier)
 	{
 		return getOptional(identifier)
