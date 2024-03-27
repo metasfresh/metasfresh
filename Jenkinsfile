@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@intensive_care_uat_newnexus')
 import de.metas.jenkins.MvnConf
 
 chuckNorris()
@@ -67,7 +67,7 @@ try {
                                 'pom.xml', // pomFile
                                 MAVEN_SETTINGS, // settingsFile
                                 "mvn-${env.BRANCH_NAME}".replace("/", "-"), // mvnRepoName
-                                'https://repo.metasfresh.com' // mvnRepoBaseURL
+                                'https://nexustemp.metasfresh.com' // mvnRepoBaseURL
                         )
                         // This toString() method causes problems in the area of "CPS".
                         // Namely, our cucumber-tests are not executed and the message is

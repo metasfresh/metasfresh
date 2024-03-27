@@ -51,12 +51,8 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
             'de-metas-edi-esb-camel', // artifactName
             env.BRANCH_NAME, // branchName
             env.MF_VERSION, // versionSuffix
-            './', // workDir
-            '', // additionalBuildArgs
-            'Dockerfile', // dockerFile
-            '', // pullRegistry - empty string means "use dockerhub!"
-            'dockerhub_metasfresh' // pullRegistryCredentialsId
-    ) 
+            '.' // workDir
+    )
     final String publishedDockerImageName = dockerBuildAndPush(dockerConf)
 
     currentBuild.description = """${currentBuild.description}<p/>
