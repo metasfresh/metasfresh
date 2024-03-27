@@ -42,7 +42,6 @@ pull_request_rules:
               - base=tenacious_d_uat
               - base=vampire_textbook_uat
               - base=yoyo_uat
-              - base=zulu_alpha_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               - base=hard_encoded_hotfix
               - base=intensive_care_hotfix
