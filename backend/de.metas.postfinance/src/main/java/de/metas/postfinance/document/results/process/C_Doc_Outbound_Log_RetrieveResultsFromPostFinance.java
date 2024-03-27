@@ -60,6 +60,7 @@ public class C_Doc_Outbound_Log_RetrieveResultsFromPostFinance extends JavaProce
 			}
 		}
 	}
+
 	@Override
 	protected String doIt() throws Exception
 	{
