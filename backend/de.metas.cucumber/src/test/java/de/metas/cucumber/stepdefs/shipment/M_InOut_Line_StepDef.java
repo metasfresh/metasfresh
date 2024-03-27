@@ -73,7 +73,7 @@ public class M_InOut_Line_StepDef
 {
 	private final Logger logger = LogManager.getLogger(M_InOut_Line_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
@@ -206,7 +206,7 @@ public class M_InOut_Line_StepDef
 			inOutLine.setMovementQty(movementQty);
 
 			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
-			final I_C_UOM uom = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			final I_C_UOM uom = uomDAO.getByX12DE355(X12DE355.ofCode(uomCode));
 			assertThat(uom).isNotNull();
 
 			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
@@ -229,8 +229,8 @@ public class M_InOut_Line_StepDef
 				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
 			}
 
-			final boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnName(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
-			if (isPackingMaterial)
+			final Boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
+			if (isPackingMaterial != null)
 			{
 				inOutLine.setIsPackagingMaterial(isPackingMaterial);
 			}
