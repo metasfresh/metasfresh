@@ -284,6 +284,23 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>processprotocol</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatePackage>de.metas.postfinance.processprotocol</generatePackage>
+                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/postfinance/processprotocol/</schemaDirectory>
+                            <generateDirectory>src/main/java-xjc</generateDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

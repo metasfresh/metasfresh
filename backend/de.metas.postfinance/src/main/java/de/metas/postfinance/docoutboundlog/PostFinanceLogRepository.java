@@ -25,6 +25,7 @@ package de.metas.postfinance.docoutboundlog;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.organization.OrgId;
 import de.metas.postfinance.model.I_C_Doc_Outbound_Log_PostFinance_Log;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,7 +75,7 @@ public class PostFinanceLogRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_PostFinance_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMN_PostFinance_Transaction_Id, transactionId)
+				.addStringLikeFilter(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_PostFinance_Transaction_Id, transactionId, false)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_Created)
 				.orderByDescending(I_C_Doc_Outbound_Log_PostFinance_Log.COLUMNNAME_C_Doc_Outbound_Log_PostFinance_Log_ID)
 				.create()

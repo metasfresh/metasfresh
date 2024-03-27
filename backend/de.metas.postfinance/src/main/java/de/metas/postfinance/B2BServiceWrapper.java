@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static de.metas.postfinance.PostFinanceConstants.CUSTOMER_REGISTRATION_MESSAGE;
 
@@ -58,7 +59,7 @@ public class B2BServiceWrapper
 		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
 		final String billerId = postFinanceOrgConfig.getBillerId();
 		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
-		
+
 		final B2BService port = new B2BService_Service().getUserNamePassword();
 		final ArrayOfProtocolReport arrayOfProtocolReport = port.getRegistrationProtocolList(billerId, isArchiveData);
 
@@ -83,5 +84,29 @@ public class B2BServiceWrapper
 		return port.uploadFilesReport(
 				arrayOfInvoice,
 				billerId);
+	}
+
+	public List<DownloadFile> getProcessProtocol(@NonNull final OrgId orgId)
+	{
+		final PostFinanceOrgConfig postFinanceOrgConfig = postFinanceOrgConfigRepository.getByOrgId(orgId);
+		final String billerId = postFinanceOrgConfig.getBillerId();
+		// note: if true, use already downloaded data. False = never downloaded data only
+		final boolean isArchiveData = postFinanceOrgConfig.isArchiveData();
+
+		final B2BService port = new B2BService_Service().getUserNamePassword();
+
+		final ArrayOfProtocolReport arrayOfProtocolReport = port.getProcessProtocolList(billerId, isArchiveData);
+
+		final Stream<ProtocolReport> protocolReportStream = arrayOfProtocolReport.getProtocolReport()
+				.stream();
+
+		return protocolReportStream
+				.map(ProtocolReport::getCreateDate)
+				.map(createDate -> port.getProcessProtocol(billerId, createDate, isArchiveData)
+						.getDownloadFile())
+				.flatMap(List::stream)
+				.filter(downloadFile -> XMLUtil.isXML(downloadFile.getFilename().getValue()))
+				.collect(ImmutableList.toImmutableList());
+
 	}
 }
