@@ -34,7 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Queue_PackageProcessor_StepDef
 {

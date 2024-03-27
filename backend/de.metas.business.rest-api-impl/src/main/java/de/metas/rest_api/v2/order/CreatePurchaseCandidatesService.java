@@ -88,7 +88,7 @@ import java.util.Optional;
 @Service
 public class CreatePurchaseCandidatesService
 {
-	private final static transient Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
+	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);

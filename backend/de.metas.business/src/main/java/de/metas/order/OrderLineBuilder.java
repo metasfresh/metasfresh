@@ -85,7 +85,6 @@ public class OrderLineBuilder
 
 	@Nullable
 	private UomId priceUomId;
-
 	private BigDecimal manualDiscount;
 
 	@Nullable

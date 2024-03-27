@@ -26,9 +26,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.QueueWorkPackageId;
+import de.metas.async.model.*;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -50,7 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Queue_WorkPackage_StepDef
 {

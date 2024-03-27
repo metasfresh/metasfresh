@@ -23,9 +23,11 @@
 package de.metas.common.product.v2.request;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.Collections;
 
 public class JsonRequestUtil
@@ -86,6 +88,17 @@ public class JsonRequestUtil
 				.requestProduct(getJsonRequestProduct())
 				.productIdentifier("test")
 				.build();
+	}
+
+	public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
+	{
+		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = JsonRequestProductTaxCategoryUpsert.builder()
+				.taxCategory(TaxCategory.NORMAL)
+				.countryCode("DE")
+				.validFrom(Instant.parse("2019-11-22T00:00:00Z"))
+				.build();
+
+		return jsonRequestProductTaxCategoryUpsert;
 	}
 
 	@NonNull

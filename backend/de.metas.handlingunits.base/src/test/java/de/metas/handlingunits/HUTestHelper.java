@@ -463,6 +463,7 @@ public class HUTestHelper
 		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(),
 																   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
 																   qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);

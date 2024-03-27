@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pricing;
 
+import de.metas.cucumber.stepdefs.C_Country_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.location.CountryId;
@@ -57,13 +58,16 @@ public class M_Product_TaxCategory_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final M_Product_TaxCategory_StepDefData productTaxCategoryTable;
+	private final C_Country_StepDefData countryTable;
 
 	public M_Product_TaxCategory_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Country_StepDefData countryTable,
 			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final M_Product_TaxCategory_StepDefData productTaxCategoryTable)
 	{
 		this.productTable = productTable;
+		this.countryTable = countryTable;
 		this.taxCategoryTable = taxCategoryTable;
 		this.productTaxCategoryTable = productTaxCategoryTable;
 	}

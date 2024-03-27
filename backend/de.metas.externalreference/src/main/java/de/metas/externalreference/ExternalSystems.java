@@ -43,6 +43,7 @@ public class ExternalSystems
 		registerExternalSystem(GRSSignumExternalSystem.GRSSIGNUM);
 		registerExternalSystem(LeichUndMehlExternalSystem.LEICHUNDMEHL);
 		registerExternalSystem(SAPExternalSystem.SAP);
+		registerExternalSystem(PCMExternalSystem.PROCAREMANAGEMENT);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
