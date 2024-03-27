@@ -53,6 +53,7 @@
         <module>com-adekia-exchange</module>
         <module>de-metas-camel-sap</module>
         <module>de-metas-camel-printingclient</module>
+        <module>de-metas-camel-pcm-file-import</module>
     </modules>
 
     <dependencies>

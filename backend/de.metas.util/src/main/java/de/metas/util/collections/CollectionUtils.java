@@ -789,7 +789,6 @@ public final class CollectionUtils
 		return Optional.ofNullable(first(collection));
 	}
 
-
 	public static <K, V> ImmutableMap<K, ImmutableList<V>> toImmutableMap(final ListMultimap<K, V> multimap)
 	{
 		if (multimap.isEmpty())
@@ -804,7 +803,6 @@ public final class CollectionUtils
 		}
 		return result.build();
 	}
-
 
 	@Nullable
 	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
