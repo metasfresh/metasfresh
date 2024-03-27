@@ -141,7 +141,7 @@ public class M_PriceList_StepDef
 
 	private void createM_PricingSystem(@NonNull final DataTableRow row)
 	{
-		final ValueAndName valueAndName = row.getOptionalValueAndName().orElseGet(() -> ValueAndName.unique("Test Pricing System"));
+		final ValueAndName valueAndName = computeValueAndNameEffective(row);
 		final String description = row.getAsOptionalString("Description").orElse(null);
 		final boolean isActive = row.getAsOptionalBoolean("IsActive").orElseTrue();
 
@@ -159,6 +159,24 @@ public class M_PriceList_StepDef
 		saveRecord(m_pricingSystem);
 		row.getAsIdentifier().putOrReplace(pricingSystemTable, m_pricingSystem);
 	}
+
+	private static ValueAndName computeValueAndNameEffective(@NonNull final DataTableRow row)
+	{
+		ValueAndName valueAndName = row.getOptionalValueAndName().orElse(null);
+		if (valueAndName != null)
+		{
+			return valueAndName;
+		}
+
+		final StepDefDataIdentifier recordIdentifier = row.getAsOptionalIdentifier().orElse(null);
+		if (recordIdentifier != null)
+		{
+			return ValueAndName.unique(recordIdentifier.getAsString());
+		}
+
+		return ValueAndName.unique("PS");
+	}
+
 
 	private void createM_PriceList(@NonNull final DataTableRow row)
 	{
