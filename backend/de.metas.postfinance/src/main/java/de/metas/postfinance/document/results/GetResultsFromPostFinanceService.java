@@ -123,7 +123,7 @@ public class GetResultsFromPostFinanceService
 		}
 		else
 		{
-			errorMessage = transactionDetails.getReasonCode() + " " + transactionDetails.getReasonText();
+			errorMessage = transactionDetails.getStatus() + " " + transactionDetails.getReasonCode() + " " + transactionDetails.getReasonText();
 		}
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
