@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.attribute;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.util.Services;
@@ -86,8 +86,7 @@ public class M_AttributeSetInstance_StepDef
 	@And("validate M_AttributeInstance:")
 	public void validate_M_AttributeInstance(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final I_M_AttributeSetInstance attributeSetInstance = row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID).lookupIn(attributeSetInstanceTable);
 			assertThat(attributeSetInstance).isNotNull();
 
@@ -113,6 +112,6 @@ public class M_AttributeSetInstance_StepDef
 
 				assertThat(attributeInstance).isNotNull();
 			}
-		}
+		});
 	}
 }

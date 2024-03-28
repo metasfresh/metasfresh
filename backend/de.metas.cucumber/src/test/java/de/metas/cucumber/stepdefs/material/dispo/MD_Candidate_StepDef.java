@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -77,7 +78,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
@@ -151,10 +151,9 @@ public class MD_Candidate_StepDef
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
-	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
+	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
-		for (final MaterialDispoTableRow tableRow : table.getRows())
-		{
+		table.forEach((tableRow) -> {
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mdCandidateRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			mdCandidateRecord.setM_Product_ID(tableRow.getProductId().getRepoId());
@@ -203,14 +202,13 @@ public class MD_Candidate_StepDef
 			}
 
 			stockCandidateTable.putOrReplace(tableRow.getIdentifier(), mdStockCandidateRecord);
-		}
+		});
 	}
 
 	@Then("metasfresh has this MD_Candidate data")
-	public void metasfresh_has_this_md_candidate_data(@NonNull final MD_Candidate_StepDefTable table)
+	public void metasfresh_has_this_md_candidate_data(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
-		for (final MaterialDispoTableRow tableRow : table.getRows())
-		{
+		table.forEach((tableRow) -> {
 			final MaterialDispoDataItem materialDispoRecord = materialDispoRecordRepository.getBy(tableRow.createQuery());
 			assertThat(materialDispoRecord).isNotNull(); // add message
 
@@ -222,11 +220,11 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
-		}
+		});
 	}
 
 	@Then("^after not more than (.*)s, metasfresh has this MD_Candidate data$")
-	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	public void metasfresh_has_this_md_candidate_data(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		final Supplier<Boolean> mdCandidateDemandDetailRecordsCounterChecker = () ->
 				queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate_Demand_Detail.class)
@@ -236,8 +234,7 @@ public class MD_Candidate_StepDef
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, mdCandidateDemandDetailRecordsCounterChecker);
 
-		for (final MaterialDispoTableRow tableRow : table.getRows())
-		{
+		table.forEach((tableRow) -> {
 			final MaterialDispoDataItem materialDispoDataItem = materialDispoRecordRepository.getBy(tableRow.createQuery());
 
 			assertThat(materialDispoDataItem).isNotNull(); // add message
@@ -248,7 +245,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoDataItem.getAtp()).isEqualByComparingTo(tableRow.getAtp());
 
 			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoDataItem);
-		}
+		});
 	}
 
 	@And("metasfresh generates this MD_Candidate_Demand_Detail data")
@@ -390,14 +387,11 @@ public class MD_Candidate_StepDef
 	}
 
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
-	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		validate_md_candidates(timeoutSec, table);
 
-		final ImmutableSet<ProductId> productIdSet = table.getRows()
-				.stream()
-				.map(MaterialDispoTableRow::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<ProductId> productIdSet = table.getProductIds();
 
 		final int storedCandidatesSize = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addInArrayFilter(I_MD_Candidate.COLUMNNAME_M_Product_ID, productIdSet)
@@ -405,7 +399,7 @@ public class MD_Candidate_StepDef
 				.count();
 
 		// expected count is twice the number of rows bc we integrated the stock md_candidate as a column in step def
-		final int expectedCandidateAndStocks = table.getRows().size() * 2;
+		final int expectedCandidateAndStocks = table.size() * 2;
 
 		if (expectedCandidateAndStocks != storedCandidatesSize)
 		{
@@ -423,12 +417,11 @@ public class MD_Candidate_StepDef
 	@And("^after not more than (.*)s, MD_Candidates are found$")
 	public void validate_md_candidates(
 			final int timeoutSec,
-			@NonNull final MD_Candidate_StepDefTable table) throws InterruptedException
+			@NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		for (final MaterialDispoTableRow tableRow : table.getRows())
-		{
+		table.forEach((tableRow) -> {
 			// make sure the given md_candidate has been created
 			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, tableRow);
 
@@ -465,23 +458,17 @@ public class MD_Candidate_StepDef
 			}
 
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
-		}
+		});
 
 		stopwatch.stop();
 		logger.info("All candidates were created after {}", stopwatch);
 	}
 
 	@And("the following MD_Candidates are validated")
-	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable) throws InterruptedException
+	public void validate_md_candidate_by_id(@NonNull final DataTable dataTable)
 	{
 		final long timeoutSec = 60L; //FIXME: add to stepdef
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			try (final IAutoCloseable ignored = SharedTestContext.put("row", row))
-			{
-				validate_md_candidate_with_stock(row, timeoutSec);
-			}
-		}
+		DataTableRows.of(dataTable).forEach((row) -> validate_md_candidate_with_stock(row, timeoutSec));
 	}
 
 	@And("the following stock MD_Candidates are validated")
@@ -496,20 +483,18 @@ public class MD_Candidate_StepDef
 
 	private MaterialDispoDataItem tryAndWaitForCandidate(
 			final int timeoutSec,
-			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
+			final @NonNull MaterialDispoTableRow row) throws InterruptedException
 	{
+		final CandidatesQuery candidatesQuery = row.createQuery();
+		SharedTestContext.put("candidatesQuery", candidatesQuery);
+		SharedTestContext.put("query result candidates", () -> materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery));
+		SharedTestContext.put("all product related candidates", () -> materialDispoRecordRepository.getAllAsString(row.getProductId()));
+
 		return StepDefUtil.tryAndWaitForItem(
 				timeoutSec,
 				1000,
-				() -> retrieveMaterialDispoDataItem(tableRow),
-				() -> {
-					final CandidatesQuery candidatesQuery = tableRow.createQuery();
-					return "MD_Candidate not found\n"
-							+ "**tableRow:** \n" + tableRow + "\n"
-							+ "**candidatesQuery:** \n" + candidatesQuery + "\n"
-							+ "**query result candidates:** \n" + materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery) + "\n"
-							+ "**all product related candidates:** \n" + materialDispoRecordRepository.getAllAsString(tableRow.getProductId());
-				});
+				() -> retrieveMaterialDispoDataItem(row)
+		);
 	}
 
 	private ProviderResult<MaterialDispoDataItem> retrieveMaterialDispoDataItem(final @NonNull MaterialDispoTableRow tableRow)

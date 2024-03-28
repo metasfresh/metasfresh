@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Ordering;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -542,8 +543,7 @@ public class PP_Order_StepDef
 	@And("load manufactured HU for PP_Order:")
 	public void loadManufacturedHUs(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable)
-				.forEach(this::loadManufacturedHu);
+		DataTableRows.of(dataTable).forEach(this::loadManufacturedHu);
 	}
 
 	private void loadManufacturedHu(@NonNull final DataTableRow tableRow)

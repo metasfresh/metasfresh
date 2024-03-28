@@ -24,11 +24,13 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -87,7 +89,7 @@ public class M_InOut_Line_StepDef
 	@And("^validate the created (shipment|material receipt) lines$")
 	public void validate_created_M_InOutLines(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
-		DataTableRow.toRows(table).forEach(this::validateAndLoadInOutLine);
+		DataTableRows.of(table).forEach(this::validateAndLoadInOutLine);
 	}
 
 	private void validateAndLoadInOutLine(final DataTableRow row)
@@ -141,11 +143,12 @@ public class M_InOut_Line_StepDef
 	@And("^validate the created (shipment|material receipt) lines by id$")
 	public void validateShipmentLinesById(@NonNull final String model_UNUSED, @NonNull final DataTable table)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(table))
-		{
+		DataTableRows.of(table).forEach((row) -> {
 			final I_M_InOutLine shipmentLine = InterfaceWrapperHelper.create(row.getAsIdentifier().lookupIn(shipmentLineTable), I_M_InOutLine.class);
+			SharedTestContext.put("shipmentLine", shipmentLine);
+
 			validateShipmentLine(shipmentLine, row);
-		}
+		});
 	}
 
 	@And("^validate the (shipment|material receipt) lines do not exist$")

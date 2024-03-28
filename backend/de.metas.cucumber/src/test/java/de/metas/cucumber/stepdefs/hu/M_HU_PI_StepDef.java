@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -52,8 +52,7 @@ public class M_HU_PI_StepDef
 	@And("metasfresh contains M_HU_PI:")
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final String name = row.getAsName("Name");
 			final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();
 
@@ -71,17 +70,16 @@ public class M_HU_PI_StepDef
 
 			saveRecord(huPiRecord);
 			row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).putOrReplace(huPiTable, huPiRecord);
-		}
+		});
 	}
 
 	@And("load M_HU_PI:")
 	public void load_M_HU_PI(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final int huPiId = row.getAsInt(COLUMNNAME_M_HU_PI_ID);
 			final I_M_HU_PI huPiRecord = InterfaceWrapperHelper.load(huPiId, I_M_HU_PI.class);
 			row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).putOrReplace(huPiTable, huPiRecord);
-		}
+		});
 	}
 }

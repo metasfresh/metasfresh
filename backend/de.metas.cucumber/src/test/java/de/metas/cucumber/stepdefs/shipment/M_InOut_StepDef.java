@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -132,7 +133,7 @@ public class M_InOut_StepDef
 	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final String ignoredInoutType, @NonNull final DataTable table)
 	{
-		DataTableRow.toRows(table).forEach(this::validate_created_shipment);
+		DataTableRows.of(table).forEach(this::validate_created_shipment);
 	}
 
 	private void validate_created_shipment(final DataTableRow row)

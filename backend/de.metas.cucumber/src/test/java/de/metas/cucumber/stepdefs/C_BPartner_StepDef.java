@@ -118,15 +118,15 @@ public class C_BPartner_StepDef
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
 	@Given("metasfresh contains C_BPartners:")
-	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
 	{
-		DataTableRow.toRows(dataTable).forEach(row -> createC_BPartner(row, true));
+		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, true));
 	}
 
 	@Given("metasfresh contains C_BPartners without locations:")
-	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable)
+	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable) throws Throwable
 	{
-		DataTableRow.toRows(dataTable).forEach(row -> createC_BPartner(row, false));
+		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, false));
 	}
 
 	@And("preexisting test data is put into tableData")

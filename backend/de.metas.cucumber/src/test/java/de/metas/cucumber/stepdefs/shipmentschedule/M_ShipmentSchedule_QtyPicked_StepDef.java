@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
@@ -76,26 +77,24 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	@And("there are no M_ShipmentSchedule_QtyPicked records created for the following shipment schedules")
 	public void validate_no_m_shipmentSchedule_qtyPicked_records(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final ShipmentScheduleId shipmentScheduleId = getShipmentScheduleId(row);
 			final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedRecords = retrieveRecordsOrdered(shipmentScheduleId);
 			assertThat(shipmentScheduleQtyPickedRecords).isEmpty();
-		}
+		});
 	}
 
 	@And("validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule")
 	@And("validate M_ShipmentSchedule_QtyPicked:")
 	public void validateQtyPickedRows(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final ShipmentScheduleId shipmentScheduleId = getShipmentScheduleId(row);
 			final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedRecords = retrieveRecordsOrdered(shipmentScheduleId);
 			assertThat(shipmentScheduleQtyPickedRecords).hasSize(1);
 
 			validateQtyPickedRow(row, shipmentScheduleQtyPickedRecords.get(0));
-		}
+		});
 	}
 
 	@And("^validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by (.*)$")
@@ -103,23 +102,20 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			@NonNull final String shipmentScheduleIdentifier,
 			@NonNull final DataTable dataTable)
 	{
-		final List<DataTableRow> rows = DataTableRow.toRows(dataTable);
+		final DataTableRows rows = DataTableRows.of(dataTable);
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
-		try (final IAutoCloseable ignored = SharedTestContext.put("shipmentScheduleId", shipmentScheduleId))
+		try (final IAutoCloseable ignored = SharedTestContext.temporaryPut("shipmentScheduleId", shipmentScheduleId))
 		{
 			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
-			assertThat(records).hasSameSizeAs(rows);
+			assertThat(records).hasSize(rows.size());
 
-			for (int i = 0; i < rows.size(); i++)
-			{
-				final DataTableRow expected = rows.get(i);
-				final I_M_ShipmentSchedule_QtyPicked actual = records.get(i);
-				try (final IAutoCloseable ignored2 = SharedTestContext.put("expected", expected, "actual", actual))
-				{
-					validateQtyPickedRow(expected, actual);
-				}
-			}
+			DataTableRows.of(dataTable).forEach((expected, index) -> {
+				final I_M_ShipmentSchedule_QtyPicked actual = records.get(index);
+				SharedTestContext.put("actual", actual);
+
+				validateQtyPickedRow(expected, actual);
+			});
 		}
 	}
 
@@ -244,11 +240,12 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 	@And("validate M_ShipmentSchedule_QtyPicked by id")
 	public void validate_M_ShipmentSchedule_QtyPicked(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).lookupIn(shipmentScheduleQtyPickedTable);
+			SharedTestContext.put("shipmentScheduleQtyPicked", shipmentScheduleQtyPicked);
+
 			validateQtyPickedRow(row, shipmentScheduleQtyPicked);
-		}
+		});
 	}
 
 	@And("^load M_HU as (.*) from M_ShipmentSchedule_QtyPicked identified by (.*)$")

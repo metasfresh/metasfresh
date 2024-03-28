@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -25,7 +26,7 @@ public class PickingSlot_StepDef
 	@Given("metasfresh contains M_PickingSlot:")
 	public void createPickingSlots(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::createPickingSlot);
+		DataTableRows.of(dataTable).forEach(this::createPickingSlot);
 	}
 
 	private void createPickingSlot(@NonNull final DataTableRow row)

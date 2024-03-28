@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.pricing;
 import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -130,13 +131,13 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::createM_PricingSystem);
+		DataTableRows.of(dataTable).forEach(this::createM_PricingSystem);
 	}
 
 	@And("metasfresh contains M_PriceLists")
 	public void add_M_PriceList(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::createM_PriceList);
+		DataTableRows.of(dataTable).forEach(this::createM_PriceList);
 	}
 
 	private void createM_PricingSystem(@NonNull final DataTableRow row)
@@ -176,7 +177,6 @@ public class M_PriceList_StepDef
 
 		return ValueAndName.unique("PS");
 	}
-
 
 	private void createM_PriceList(@NonNull final DataTableRow row)
 	{
@@ -245,7 +245,7 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PriceList_Versions")
 	public void add_M_PriceListVersion(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::createM_PriceList_Version);
+		DataTableRows.of(dataTable).forEach(this::createM_PriceList_Version);
 	}
 
 	private void createM_PriceList_Version(@NonNull final DataTableRow row)
@@ -276,7 +276,7 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_ProductPrices")
 	public void add_M_ProductPrice(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::createM_ProductPrice);
+		DataTableRows.of(dataTable).forEach(this::createM_ProductPrice);
 	}
 
 	@And("update M_ProductPrice:")

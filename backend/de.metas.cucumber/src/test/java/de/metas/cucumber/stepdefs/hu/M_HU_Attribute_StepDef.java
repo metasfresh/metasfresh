@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
@@ -92,7 +93,7 @@ public class M_HU_Attribute_StepDef
 	@And("M_HU_Attribute is validated")
 	public void validate_m_hu_attribute(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::validateHUAttribute);
+		DataTableRows.of(dataTable).forEach(this::validateHUAttribute);
 	}
 
 	@And("update M_HU_Attribute recursive:")

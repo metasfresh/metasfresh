@@ -288,7 +288,7 @@ public class StepDefUtil
 		while (deadLineMillis > System.currentTimeMillis())
 		{
 			iteration++;
-			logger.info("Waiting {}ms (maxWaitSeconds={})", checkingIntervalMs, maxWaitSeconds);
+			logger.info("Waiting {}ms (iteration={}, accumulated wait time={}, maxWaitSeconds={})", checkingIntervalMs, iteration, stopwatch, maxWaitSeconds);
 			//noinspection BusyWait
 			Thread.sleep(checkingIntervalMs);
 
@@ -302,7 +302,7 @@ public class StepDefUtil
 			}
 			else
 			{
-				logger.info("Got no result because: {}", lastWorkerResult.getLog());
+				logger.info("After {} tries and {}, got NO result because: {}", iteration, stopwatch, lastWorkerResult.getLog());
 			}
 		}
 

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDef;
@@ -66,10 +67,9 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	}
 
 	@And("validate created C_InvoiceCandidate_InOutLine")
-	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable) throws Throwable
+	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			Supplier<String> logContext = null;
 			final InvoiceCandidateId invoiceCandidateId = row.getAsOptionalIdentifier(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID)
 					.map(invoiceCandTable::getId)
@@ -90,8 +90,7 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 
 				StepDefUtil.tryAndWaitForItem(5, 1000, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
 			}
-
-		}
+		});
 	}
 
 	@NonNull

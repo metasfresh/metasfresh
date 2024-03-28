@@ -54,7 +54,7 @@ public class ContextAwareDescription extends Description
 		return result.toString();
 	}
 
-	private static void appendMap(@NonNull final StringBuilder result, @Nullable final Map<String, ?> context)
+	static void appendMap(@NonNull final StringBuilder result, @Nullable final Map<String, ?> context)
 	{
 		if (context == null || context.isEmpty()) {return;}
 

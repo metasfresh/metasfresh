@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.handlingunits.HuId;
@@ -61,7 +62,7 @@ public class MobileUI_Picking_StepDef
 	@When("pick lines")
 	public void pickLines(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::pickLine);
+		DataTableRows.of(dataTable).forEach(this::pickLine);
 	}
 
 	private void pickLine(@NonNull final DataTableRow row)
