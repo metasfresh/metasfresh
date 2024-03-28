@@ -26,11 +26,6 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	private static final String START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE = "startPurchaseOrderSyncLocalFile";
 	private static final String STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE = "stopPurchaseOrderSyncLocalFile";
 
-	@VisibleForTesting
-	public static final String START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE;
-	@VisibleForTesting
-	public static final String STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID = PCM_SYSTEM_NAME + "-" + STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE;
-
 	@NonNull
 	private final ProcessLogger processLogger;
 
@@ -41,15 +36,15 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStartPurchaseOrderRouteId()))
+				.routeId(getStartPurchaseOrderRouteId())
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID))
-				.routeId(STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE_ID)
+		from(direct(getStopPurchaseOrderRouteId()))
+				.routeId(getStopPurchaseOrderRouteId())
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -124,5 +119,17 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	public String getDisableCommand()
 	{
 		return STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE;
+	}
+
+	@NonNull
+	public String getStartPurchaseOrderRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getEnableCommand();
+	}
+
+	@NonNull
+	public String getStopPurchaseOrderRouteId()
+	{
+		return getExternalSystemTypeCode() + "-" + getDisableCommand();
 	}
 }
