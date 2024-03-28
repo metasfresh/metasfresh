@@ -128,6 +128,12 @@ public class WarehouseDAO implements IWarehouseDAO
 	}
 
 	@Override
+	public <T extends I_M_Warehouse> T getByIdInTrx(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
+	{
+		return load(warehouseId, modelType);
+	}
+
+	@Override
 	public <T extends I_M_Warehouse> T getById(@NonNull final WarehouseId warehouseId, @NonNull final Class<T> modelType)
 	{
 		final T outOfTrxWarehouseRecord = loadOutOfTrx(warehouseId, modelType);
@@ -136,7 +142,7 @@ public class WarehouseDAO implements IWarehouseDAO
 			return outOfTrxWarehouseRecord; // with is almost always the case
 		}
 
-		return load(warehouseId, modelType); // this fallback is needed if the WH was just created itself, within this very trx
+		return getByIdInTrx(warehouseId, modelType); // this fallback is needed if the WH was just created itself, within this very trx
 	}
 
 	@Override
