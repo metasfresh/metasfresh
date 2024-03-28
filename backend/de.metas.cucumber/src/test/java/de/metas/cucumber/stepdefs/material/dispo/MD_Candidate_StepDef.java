@@ -47,7 +47,6 @@ import de.metas.material.dispo.commons.candidate.MaterialDispoRecordRepository;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
@@ -76,7 +75,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -116,13 +117,13 @@ public class MD_Candidate_StepDef
 	private final MaterialDispoRecordRepository materialDispoRecordRepository;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final MaterialEventObserver materialEventObserver;
+	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 	private final SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final MD_Candidate_StockChange_Detail_StepDefData stockChangeDetailStepDefData;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 
 	public MD_Candidate_StepDef(
 			@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData,
@@ -142,7 +143,6 @@ public class MD_Candidate_StepDef
 		postMaterialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
-		CandidateRepositoryWriteService candidateWriteService = SpringContextHolder.instance.getBean(CandidateRepositoryWriteService.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
 	}
@@ -297,6 +297,7 @@ public class MD_Candidate_StepDef
 	public void metasfresh_has_this_md_candidate_stockChange_detail_data(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		final SoftAssertions softly = new SoftAssertions();
 		for (final Map<String, String> row : tableRows)
 		{
 			final String stockChangeDetailIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_MD_Candidate_StockChange_Detail.COLUMNNAME_MD_Candidate_StockChange_Detail_ID + ".Identifier");
@@ -311,20 +312,21 @@ public class MD_Candidate_StepDef
 					.create()
 					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
-			assertThat(stockChangeDetail).isNotNull();
-			assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).isEqualTo(freshQtyOnHandId);
-			assertThat(stockChangeDetail.isReverted()).isEqualTo(isReverted);
+			softly.assertThat(stockChangeDetail).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s", freshQtyOnHandLineId).isNotNull();
+			softly.assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - Fresh_QtyOnHand_ID", freshQtyOnHandLineId).isEqualTo(freshQtyOnHandId);
+			softly.assertThat(stockChangeDetail.isReverted()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - isReverted", freshQtyOnHandLineId).isEqualTo(isReverted);
 
 			if (candidateIdentifier != null)
 			{
 				final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(candidateIdentifier);
-				assertThat(materialDispoDataItem.getCandidateId().getRepoId()).isEqualTo(stockChangeDetail.getMD_Candidate_ID());
+				softly.assertThat(materialDispoDataItem.getCandidateId().getRepoId()).as("MD_Candidate_StockChange_Detail with Fresh_QtyOnHand_Line_ID=%s - MD_Candidate_ID", freshQtyOnHandLineId).isEqualTo(stockChangeDetail.getMD_Candidate_ID());
 			}
 			if (stockChangeDetailIdentifier != null)
 			{
 				stockChangeDetailStepDefData.putOrReplace(stockChangeDetailIdentifier, stockChangeDetail);
 			}
 		}
+		softly.assertAll();
 	}
 
 	@And("^metasfresh receives a (StockEstimateCreatedEvent|StockEstimateDeletedEvent)$")
@@ -409,7 +411,7 @@ public class MD_Candidate_StepDef
 					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
 					.append(" See:\n");
 
-			logCandidateRecords(message);
+			logCandidateRecords(message, productIdSet);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -453,6 +455,12 @@ public class MD_Candidate_StepDef
 				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
 			}
 
+			final WarehouseId warehouseId = tableRow.getWarehouseId();
+			if (warehouseId != null)
+			{
+				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
+			}
+
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
 
@@ -478,37 +486,6 @@ public class MD_Candidate_StepDef
 		{
 			validate_md_candidate_stock(tableRow);
 		}
-	}
-
-	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
-	public void deactivate_simulated_md_candidates()
-	{
-		final String traceId = UUID.randomUUID().toString();
-
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
-
-		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-				.build(), null);
-
-		materialEventObserver.awaitProcessing(traceId);
-	}
-
-	@And("delete all simulated candidates")
-	public void delete_simulated_candidates()
-	{
-		simulatedCandidateService.deleteAllSimulatedCandidates();
-	}
-
-	@And("validate there is no simulated md_candidate")
-	public void validate_no_simulated_md_candidate()
-	{
-		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.create()
-				.count();
-
-		assertThat(noOfRecords).isZero();
 	}
 
 	private MaterialDispoDataItem tryAndWaitForCandidate(
@@ -561,15 +538,27 @@ public class MD_Candidate_StepDef
 	{
 		if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the qty values are different");
+			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
+					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
+					+ " because the qty values are different"
+					+ " Expected=" + tableRow.getQty().abs() + " (abs), Actual= " + item.getMaterialDescriptor().getQuantity().abs() + " (abs)"
+			);
 		}
 		if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the atp values are different");
+			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
+					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
+					+ " because the atp values are different"
+					+ " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp()
+			);
 		}
 		if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 		{
-			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the time (resp. materialDecription.date) values are different");
+			return BooleanWithReason.falseBecause("item with id=" + item.getCandidateId().getRepoId()
+					+ " does not match tableRow with Identifier " + tableRow.getIdentifier()
+					+ " because the time (resp. materialDecription.date) values are different"
+					+ " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
+			);
 		}
 		if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
 		{
@@ -577,6 +566,37 @@ public class MD_Candidate_StepDef
 		}
 
 		return BooleanWithReason.TRUE;
+	}
+
+	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
+	public void deactivate_simulated_md_candidates()
+	{
+		final String traceId = UUID.randomUUID().toString();
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+
+		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
+				.build(), null);
+
+		materialEventObserver.awaitProcessing(traceId);
+	}
+
+	@And("delete all simulated candidates")
+	public void delete_simulated_candidates()
+	{
+		simulatedCandidateService.deleteAllSimulatedCandidates();
+	}
+
+	@And("validate there is no simulated md_candidate")
+	public void validate_no_simulated_md_candidate()
+	{
+		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isZero();
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
@@ -613,7 +633,6 @@ public class MD_Candidate_StepDef
 				.build();
 
 		final ItemProvider<MaterialDispoDataItem> itemProvider = () -> {
-
 			final MaterialDispoDataItem result = materialDispoRecordRepository.getBy(candidatesQuery);
 			return ProviderResult.resultWasFound(result);
 		};
@@ -701,26 +720,12 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	private void logCurrentContext(@NonNull final MaterialDispoTableRow tableRow)
-	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("Looking for instance with:").append("\n")
-				.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(tableRow.getType().getCode()).append("\n")
-				.append(COLUMNNAME_M_Product_ID).append(" : ").append(tableRow.getProductId().getRepoId()).append("\n")
-				.append(COLUMNNAME_DateProjected).append(" : ").append(tableRow.getTime()).append("\n")
-				.append(COLUMNNAME_Qty).append(" : ").append(tableRow.getQty()).append("\n")
-				.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(tableRow.getAtp()).append("\n")
-				.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(tableRow.getBusinessCase()).append("\n");
-
-		logCandidateRecords(message);
-	}
-
-	private void logCandidateRecords(@NonNull final StringBuilder message)
+	private void logCandidateRecords(@NonNull final StringBuilder message, @NonNull final ImmutableSet<ProductId> productIds)
 	{
 		message.append("MD_Candidate records:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_MD_Candidate.class)
 				.forEach(candidateRecord -> message
