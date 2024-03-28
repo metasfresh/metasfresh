@@ -6,7 +6,11 @@ Feature: mobileUI Picking - Test for single piece L+M items
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2024-03-26T13:30:13+01:00[Europe/Berlin]
+
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
+    And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+
     And metasfresh contains M_PickingSlot:
       | Identifier | PickingSlot | IsDynamic |
       | 200.0      | 200.0       | Y         |
