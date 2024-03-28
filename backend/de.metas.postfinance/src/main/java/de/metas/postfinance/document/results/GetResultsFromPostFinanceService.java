@@ -96,7 +96,10 @@ public class GetResultsFromPostFinanceService
 		{
 			handleResultsWithErrors(transactionDetails, attachmentEntryCreateRequest);
 		}
-		handleValidResults(transactionDetails, attachmentEntryCreateRequest);
+		else
+		{
+			handleValidResults(transactionDetails, attachmentEntryCreateRequest);
+		}
 	}
 
 	private void handleResultsWithErrors(@NonNull final Envelope.TransactionDetails transactionDetails,
