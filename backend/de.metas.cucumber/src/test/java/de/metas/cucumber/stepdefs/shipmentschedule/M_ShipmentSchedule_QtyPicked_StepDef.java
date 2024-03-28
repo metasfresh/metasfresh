@@ -23,10 +23,11 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cucumber.stepdefs.ContextAwareDescription;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.handlingunits.HuId;
@@ -105,7 +106,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 		final List<DataTableRow> rows = DataTableRow.toRows(dataTable);
 
 		final ShipmentScheduleId shipmentScheduleId = shipmentScheduleTable.getId(shipmentScheduleIdentifier);
-		try (final IAutoCloseable ignored = ContextAwareDescription.putContext("shipmentScheduleId", shipmentScheduleId))
+		try (final IAutoCloseable ignored = SharedTestContext.put("shipmentScheduleId", shipmentScheduleId))
 		{
 			final ImmutableList<I_M_ShipmentSchedule_QtyPicked> records = retrieveRecordsOrdered(shipmentScheduleId);
 			assertThat(records).hasSameSizeAs(rows);
@@ -114,7 +115,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			{
 				final DataTableRow expected = rows.get(i);
 				final I_M_ShipmentSchedule_QtyPicked actual = records.get(i);
-				try (final IAutoCloseable ignored2 = ContextAwareDescription.putContext("expected", expected, "actual", actual))
+				try (final IAutoCloseable ignored2 = SharedTestContext.put("expected", expected, "actual", actual))
 				{
 					validateQtyPickedRow(expected, actual);
 				}
