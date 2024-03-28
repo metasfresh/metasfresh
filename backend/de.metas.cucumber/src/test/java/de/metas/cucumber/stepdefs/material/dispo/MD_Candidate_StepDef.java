@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -75,8 +74,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
@@ -87,6 +86,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -625,18 +625,6 @@ public class MD_Candidate_StepDef
 			final long timeoutSec) throws InterruptedException
 	{
 		final String materialDispoDataIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final RecordDataItem<MaterialDispoDataItem> materialDispoDataItem = materialDispoDataItemStepDefData.getRecordDataItem(materialDispoDataIdentifier);
-
-		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
-				.id(materialDispoDataItem.getRecord().getCandidateId())
-				.type(materialDispoDataItem.getRecord().getType())
-				.build();
-
-		final ItemProvider<MaterialDispoDataItem> itemProvider = () -> {
-			final MaterialDispoDataItem result = materialDispoRecordRepository.getBy(candidatesQuery);
-			return ProviderResult.resultWasFound(result);
-		};
-		final MaterialDispoDataItem freshMaterialDispoItemInfo = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, itemProvider);
 
 		final String businessCase = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_MD_Candidate_BusinessCase);
 
@@ -647,6 +635,8 @@ public class MD_Candidate_StepDef
 		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty);
 		final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Qty_AvailableToPromise);
 		final String type = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_MD_Candidate_Type);
+
+		final MaterialDispoDataItem freshMaterialDispoItemInfo = getFreshMaterialDispoItemInfo(materialDispoDataIdentifier, qty, timeoutSec);
 
 		if (businessCase == null)
 		{
@@ -686,6 +676,35 @@ public class MD_Candidate_StepDef
 					.as("M_AttributeSetInstance_ID for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
 					.isEqualTo(expectedAttributesKey);
 		}
+	}
+
+	private MaterialDispoDataItem getFreshMaterialDispoItemInfo(
+			@NonNull final String materialDispoDataIdentifier,
+			@Nullable final BigDecimal expectedQty,
+			final long timeoutSec
+	) throws InterruptedException
+	{
+		final RecordDataItem<MaterialDispoDataItem> materialDispoDataItem = materialDispoDataItemStepDefData.getRecordDataItem(materialDispoDataIdentifier);
+
+		final CandidatesQuery candidatesQuery = CandidatesQuery.builder()
+				.id(materialDispoDataItem.getRecord().getCandidateId())
+				.type(materialDispoDataItem.getRecord().getType())
+				.build();
+
+		return StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> {
+			final MaterialDispoDataItem item = materialDispoRecordRepository.getBy(candidatesQuery);
+
+			if (expectedQty != null)
+			{
+				final BigDecimal actualQty = item.getMaterialDescriptor().getQuantity();
+				if (actualQty.abs().compareTo(expectedQty.abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
+				{
+					return ProviderResult.resultWasNotFound("Qty is not matching the expected quantity - expectedQty=" + expectedQty + ", actualQty=" + actualQty + ", item=" + item);
+				}
+			}
+
+			return ProviderResult.resultWasFound(item);
+		});
 	}
 
 	private void setAttributeSetInstance(
