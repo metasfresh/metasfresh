@@ -150,7 +150,7 @@ public class GetResultsFromPostFinanceService
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
 				.transactionId(transactionID)
-				.message("PostFinance results are successful")
+				.message("PostFinance result status " + transactionDetails.getStatus())
 				.build();
 
 		sendResultToDocOutbound(attachmentEntryCreateRequest,
