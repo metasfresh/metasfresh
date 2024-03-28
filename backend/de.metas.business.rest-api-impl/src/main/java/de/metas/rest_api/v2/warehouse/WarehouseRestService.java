@@ -201,12 +201,20 @@ public class WarehouseRestService
 	}
 
 	@NonNull
-	private Optional<WarehouseId> resolveWarehouseExternalIdentifier(
+	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
 			@NonNull final ExternalIdentifier warehouseIdentifier,
 			@NonNull final I_AD_Org org)
 	{
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
-
+		
+		return resolveWarehouseExternalIdentifier(warehouseIdentifier, orgId);
+	}
+	
+	@NonNull
+	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
+			@NonNull final ExternalIdentifier warehouseIdentifier,
+			@NonNull final OrgId orgId)
+	{
 		switch (warehouseIdentifier.getType())
 		{
 			case METASFRESH_ID:

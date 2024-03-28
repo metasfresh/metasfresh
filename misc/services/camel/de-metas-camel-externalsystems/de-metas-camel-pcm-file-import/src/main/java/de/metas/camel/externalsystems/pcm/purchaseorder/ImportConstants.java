@@ -31,5 +31,5 @@ public interface ImportConstants
 	String DEFAULT_CURRENCY_CODE = "EUR";
 	ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
 	DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-	DateTimeFormatter LOCAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+	DateTimeFormatter LOCAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("M/d/yyyy");
 }
