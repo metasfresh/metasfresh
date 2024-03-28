@@ -42,6 +42,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.AfterAll;
@@ -69,7 +70,7 @@ class ExternalSystemConfigRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
+		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO());
 	}
 
 	@BeforeAll

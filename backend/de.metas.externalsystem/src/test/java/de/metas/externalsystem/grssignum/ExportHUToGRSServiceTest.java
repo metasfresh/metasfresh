@@ -38,6 +38,7 @@ import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
@@ -75,7 +76,7 @@ public class ExportHUToGRSServiceTest
 
 		exportHUToGRSService = new ExportHUToGRSService(new DataExportAuditRepository(),
 														new DataExportAuditLogRepository(),
-														new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+														new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 														new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 														externalSystemConfigServiceMock);
 		createPrerequisites();

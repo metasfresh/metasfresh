@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,37 +20,32 @@
  * #L%
  */
 
-package de.metas.pricing.tax;
+package de.metas.common.externalsystem;
 
-import de.metas.location.CountryId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Value
-@Builder(toBuilder = true)
-public class ProductTaxCategory
+public class JsonTaxCategoryMapping
 {
 	@NonNull
-	ProductTaxCategoryId productTaxCategoryId;
+	String taxCategory;
 
-	@NonNull
-	ProductId productId;
+	@NonNull List<BigDecimal> taxRates;
 
-	@NonNull
-	TaxCategoryId taxCategoryId;
-
-	@NonNull
-	Instant validFrom;
-
-	@Nullable
-	CountryId countryId;
-
-	@Builder.Default
-	boolean active = true;
+	@Builder
+	@JsonCreator
+	public JsonTaxCategoryMapping(
+			@JsonProperty("taxCategory") @NonNull final String taxCategory,
+			@JsonProperty("taxRates") @NonNull final List<BigDecimal> taxRates)
+	{
+		this.taxCategory = taxCategory;
+		this.taxRates = taxRates;
+	}
 }
