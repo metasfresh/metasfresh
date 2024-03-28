@@ -620,39 +620,45 @@ public class MD_Candidate_StepDef
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private void validate_md_candidate_with_stock(
-			@NonNull final DataTableRow row,
-			final long timeoutSec) throws InterruptedException
+	private void validate_md_candidate_with_stock(@NonNull final DataTableRow row, final long timeoutSec) throws InterruptedException
 	{
 		final StepDefDataIdentifier materialDispoDataIdentifier = row.getAsIdentifier(COLUMNNAME_MD_Candidate_ID);
-		final String businessCase = row.getAsOptionalString(COLUMNNAME_MD_Candidate_BusinessCase).orElse(null);
+		final CandidateBusinessCase businessCase = row.getAsOptionalEnum(COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class).orElse(null);
 		final ProductId productId = productTable.getId(row.getAsIdentifier(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID));
 		final String dateProjected = row.getAsString(COLUMNNAME_DateProjected);
 		final BigDecimal qty = row.getAsBigDecimal(COLUMNNAME_Qty);
 		final BigDecimal atp = row.getAsBigDecimal(COLUMNNAME_Qty_AvailableToPromise);
 		final CandidateType type = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 
-		final MaterialDispoDataItem freshMaterialDispoItemInfo = getFreshMaterialDispoItemInfo(materialDispoDataIdentifier, qty, timeoutSec);
+		final MaterialDispoDataItem materialDispoDataItem = getFreshMaterialDispoItem(materialDispoDataIdentifier, qty, timeoutSec);
 
+		final SoftAssertions softly = new SoftAssertions();
 		if (businessCase == null)
 		{
-			assertThat(freshMaterialDispoItemInfo.getBusinessCase()).isNull();
+			softly.assertThat(materialDispoDataItem.getBusinessCase()).isNull();
 		}
 		else
 		{
-			assertThat(freshMaterialDispoItemInfo.getBusinessCase()).isNotNull();
-			assertThat(freshMaterialDispoItemInfo.getBusinessCase().getCode()).as("MD_Candidate_BusinessCase for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId()).isEqualTo(businessCase);
+			softly.assertThat(materialDispoDataItem.getBusinessCase()).isNotNull();
+			softly.assertThat(materialDispoDataItem.getBusinessCase())
+					.as("MD_Candidate_BusinessCase for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
+					.isEqualTo(businessCase);
 		}
 
-		assertThat(freshMaterialDispoItemInfo.getType()).as("MD_Candidate_Type for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+		softly.assertThat(materialDispoDataItem.getType())
+				.as("MD_Candidate_Type for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 				.isEqualTo(type);
-		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getProductId()).as("M_Product_ID for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+		softly.assertThat(materialDispoDataItem.getMaterialDescriptor().getProductId())
+				.as("M_Product_ID for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 				.isEqualTo(productId.getRepoId());
-		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getDate()).as("DateProjected for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+		softly.assertThat(materialDispoDataItem.getMaterialDescriptor().getDate())
+				.as("DateProjected for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 				.isEqualTo(dateProjected);
-		assertThat(freshMaterialDispoItemInfo.getMaterialDescriptor().getQuantity().abs()).as("Qty for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+		softly.assertThat(materialDispoDataItem.getMaterialDescriptor().getQuantity().abs())
+				.as("Qty for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 				.isEqualByComparingTo(qty.abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-		assertThat(freshMaterialDispoItemInfo.getAtp()).as("Qty_AvailableToPromise for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+		softly.assertThat(materialDispoDataItem.getAtp())
+				.as("Qty_AvailableToPromise for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 				.isEqualByComparingTo(atp);
 
 		final AttributeSetInstanceId expectedAsiId = row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
@@ -662,16 +668,18 @@ public class MD_Candidate_StepDef
 		{
 			final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedAsiId).orElse(AttributesKey.NONE);
 
-			final AttributeSetInstanceId materialCandASI = AttributeSetInstanceId.ofRepoId(freshMaterialDispoItemInfo.getMaterialDescriptor().getAttributeSetInstanceId());
+			final AttributeSetInstanceId materialCandASI = AttributeSetInstanceId.ofRepoId(materialDispoDataItem.getMaterialDescriptor().getAttributeSetInstanceId());
 			final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(materialCandASI).orElse(AttributesKey.NONE);
 
-			assertThat(mdAttributesKeys)
-					.as("M_AttributeSetInstance_ID for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, freshMaterialDispoItemInfo.getCandidateId().getRepoId())
+			softly.assertThat(mdAttributesKeys)
+					.as("M_AttributeSetInstance_ID for Identifier=%s; MD_Candidate_ID=%s", materialDispoDataIdentifier, materialDispoDataItem.getCandidateId().getRepoId())
 					.isEqualTo(expectedAttributesKey);
 		}
+
+		softly.assertAll();
 	}
 
-	private MaterialDispoDataItem getFreshMaterialDispoItemInfo(
+	private MaterialDispoDataItem getFreshMaterialDispoItem(
 			@NonNull final StepDefDataIdentifier materialDispoDataIdentifier,
 			@Nullable final BigDecimal expectedQty,
 			final long timeoutSec
@@ -695,6 +703,7 @@ public class MD_Candidate_StepDef
 				}
 			}
 
+			System.out.println("Found " + item + " for " + candidatesQuery + ", expectedQty=" + expectedQty);
 			return ProviderResult.resultWasFound(item);
 		});
 	}
