@@ -29,24 +29,20 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
 @Builder
 public class CreateProductTaxCategoryRequest
 {
+	@NonNull ProductId productId;
 
-	@NonNull
-	ProductId productId;
+	@NonNull TaxCategoryId taxCategoryId;
 
-	@NonNull
-	TaxCategoryId taxCategoryId;
+	@NonNull Instant validFrom;
 
-	@Nullable
-	Instant validFrom;
+	@NonNull CountryId countryId;
 
-	@Nullable
-	CountryId countryId;
-
+	@Builder.Default
+	boolean active = true;
 }

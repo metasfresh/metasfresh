@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
@@ -35,6 +36,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_LocalFile;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement_TaxCategory;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
@@ -46,6 +48,7 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.pcm.ExternalSystemPCMConfig;
 import de.metas.externalsystem.pcm.ExternalSystemPCMConfigId;
 import de.metas.externalsystem.pcm.PCMConfigMapper;
+import de.metas.externalsystem.pcm.TaxCategoryPCMMapping;
 import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
@@ -58,7 +61,9 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
 import de.metas.util.Check;
@@ -71,6 +76,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,10 +86,14 @@ public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+	private final TaxCategoryDAO taxCategoryDAO;
 
-	public ExternalSystemConfigRepo(@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	public ExternalSystemConfigRepo(
+			@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository,
+			@NonNull final TaxCategoryDAO taxCategoryDAO)
 	{
 		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
+		this.taxCategoryDAO = taxCategoryDAO;
 	}
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
@@ -238,7 +249,7 @@ public class ExternalSystemConfigRepo
 		switch (externalSystemType)
 		{
 			case Alberta:
-					return getAlbertaConfigByQuery(query);
+				return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
 			default:
@@ -784,6 +795,32 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private List<TaxCategoryPCMMapping> getTaxCategoryPCMMappingList(@NonNull final ExternalSystemPCMConfigId externalSystemPCMConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ProCareManagement_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ProCareManagement_TaxCategory.COLUMN_ExternalSystem_Config_ProCareManagement_ID, externalSystemPCMConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(this::toTaxCategoryPCMMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private TaxCategoryPCMMapping toTaxCategoryPCMMapping(@NonNull final I_ExternalSystem_Config_ProCareManagement_TaxCategory record)
+	{
+		final ImmutableSet<BigDecimal> taxRates = Arrays.stream(record.getTaxRates().split(","))
+				.map(StringUtils::toBigDecimalOrZero)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return TaxCategoryPCMMapping.builder()
+				.externalSystemPCMConfigId(ExternalSystemPCMConfigId.ofRepoId(record.getExternalSystem_Config_ProCareManagement_ID()))
+				.taxCategory(taxCategoryDAO.getTaxCategory(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID())))
+				.taxRates(taxRates)
+				.build();
+	}
+
+	@NonNull
 	private UOMShopwareMapping toUOMShopwareMapping(@NonNull final I_ExternalSystem_Config_Shopware6_UOM record)
 	{
 		return UOMShopwareMapping.builder()
@@ -823,6 +860,7 @@ public class ExternalSystemConfigRepo
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
 				.contentSourceLocalFile(contentSourceLocalFile)
+				.taxCategoryPCMMappingList(getTaxCategoryPCMMappingList(pcmConfigId))
 				.build();
 	}
 

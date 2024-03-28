@@ -125,7 +125,6 @@ public class JsonRequestProduct
 	@ApiModelProperty(position = 150)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
 
-
 	@ApiModelProperty(position = 160)
 	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
 
@@ -211,11 +210,8 @@ public class JsonRequestProduct
 		this.bpartnerProductItems = bpartnerProductItems;
 	}
 
-
 	public void setProductTaxCategories(final List<JsonRequestProductTaxCategoryUpsert> productTaxCategories)
 	{
 		this.productTaxCategories = productTaxCategories;
 	}
-
-
 }

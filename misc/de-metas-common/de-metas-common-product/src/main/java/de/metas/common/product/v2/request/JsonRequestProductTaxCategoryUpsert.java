@@ -22,40 +22,45 @@
 
 package de.metas.common.product.v2.request;
 
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
-import de.metas.common.pricing.v2.productprice.TaxCategory;
-import de.metas.common.rest_api.v2.SyncAdvise;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.extern.jackson.Jacksonized;
+import lombok.ToString;
 
 import java.time.Instant;
 
 @Getter
-@Builder
+@ToString
 @EqualsAndHashCode
-@Jacksonized
+@ApiModel(description = "Contains the actual product tax category to insert or update.")
 public class JsonRequestProductTaxCategoryUpsert
 {
-	@ApiModelProperty(required = true)
-	private TaxCategory taxCategory;
-
-	@ApiModelProperty(required = false)
-	private String countryCode;
+	@ApiModelProperty
+	private String taxCategory;
 
 	@ApiModelProperty(hidden = true)
-	private boolean countryCodeSet;
+	private boolean taxCategorySet;
 
 	@ApiModelProperty(required = true)
+	private String countryCode;
+
+	@ApiModelProperty
 	private Instant validFrom;
 
 	@ApiModelProperty(hidden = true)
 	private boolean validFromSet;
-	public void setTaxCategory(final TaxCategory taxCategory)
+
+	@ApiModelProperty
+	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
+	private boolean activeSet;
+	
+	public void setTaxCategory(final String taxCategory)
 	{
 		this.taxCategory = taxCategory;
+		this.taxCategorySet = true;
 	}
 
 	public void setValidFrom(final Instant validFrom)
@@ -67,7 +72,11 @@ public class JsonRequestProductTaxCategoryUpsert
 	public void setCountryCode(final String countryCode)
 	{
 		this.countryCode = countryCode;
-		this.countryCodeSet = true;
 	}
 
+	public void setActive(final Boolean active)
+	{
+		this.active = active;
+		this.activeSet = true;
+	}
 }

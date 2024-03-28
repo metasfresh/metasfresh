@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
@@ -47,6 +48,9 @@ public class ExternalSystemPCMConfig implements IExternalSystemChildConfig
 	@Nullable
 	PCMContentSourceLocalFile contentSourceLocalFile;
 
+	@NonNull
+	List<TaxCategoryPCMMapping> taxCategoryPCMMappingList;
+	
 	@NonNull
 	public static ExternalSystemPCMConfig cast(@NonNull final IExternalSystemChildConfig childCondig)
 	{
