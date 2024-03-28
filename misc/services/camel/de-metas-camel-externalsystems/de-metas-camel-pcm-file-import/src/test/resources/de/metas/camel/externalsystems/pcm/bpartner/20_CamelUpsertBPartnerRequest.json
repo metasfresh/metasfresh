@@ -7,6 +7,7 @@
         "externalVersion": null,
         "externalReferenceUrl": null,
         "bpartnerComposite": {
+          "orgCode": "orgCode",
           "bpartner": {
             "code": "bp_value_1",
             "codeSet": true,
