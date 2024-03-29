@@ -89,7 +89,12 @@ public abstract class StepDefData<T>
 
 		//noinspection unchecked
 		final StepDefDataGetIdAware<RepoIdAware, T> thisIdAware = (StepDefDataGetIdAware<RepoIdAware, T>)this;
+
 		final RepoIdAware id = thisIdAware.extractIdFromRecord(record);
+		if (thisIdAware.isAllowDuplicateRecordsForSameIdentifier(id))
+		{
+			return;
+		}
 
 		final StepDefDataIdentifier otherIdentifier = thisIdAware.getFirstIdentifierById(id, identifier).orElse(null);
 		if (otherIdentifier != null)

@@ -44,12 +44,13 @@ import org.junit.jupiter.api.function.ThrowingConsumer;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 
 @Builder
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@NonNull @Singular ImmutableMap<String, MaterialDispoTableRow> rows;
+	@NonNull @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
 
 	public int size() {return rows.size();}
 
@@ -63,10 +64,15 @@ public class MD_Candidate_StepDefTable
 
 	public void forEach(@NonNull final ThrowingConsumer<MaterialDispoTableRow> consumer) throws Throwable
 	{
-		for (final MaterialDispoTableRow row : rows.values())
+		for (final Map.Entry<StepDefDataIdentifier, MaterialDispoTableRow> entry : rows.entrySet())
 		{
+			final StepDefDataIdentifier identifier = entry.getKey();
+			final MaterialDispoTableRow row = entry.getValue();
+
 			SharedTestContext.run(() -> {
+				SharedTestContext.put("rowIdentifier", identifier);
 				SharedTestContext.put("row", row);
+
 				consumer.accept(row);
 			});
 		}

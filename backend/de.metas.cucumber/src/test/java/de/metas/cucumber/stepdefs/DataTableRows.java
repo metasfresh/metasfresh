@@ -11,6 +11,7 @@ import org.junit.jupiter.api.function.ThrowingConsumer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @EqualsAndHashCode
@@ -26,8 +27,13 @@ public class DataTableRows
 
 	public static DataTableRows of(@NonNull final DataTable dataTable)
 	{
+		return ofListOfMaps(dataTable.asMaps());
+	}
+
+	public static DataTableRows ofListOfMaps(@NonNull final List<Map<String, String>> list)
+	{
 		final AtomicInteger nextLineNo = new AtomicInteger(1);
-		return dataTable.asMaps()
+		return list
 				.stream()
 				.map(values -> new DataTableRow(nextLineNo.getAndIncrement(), values))
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));

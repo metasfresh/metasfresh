@@ -43,4 +43,10 @@ public class M_AttributeSetInstance_StepDefData extends StepDefData<I_M_Attribut
 	{
 		return AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID());
 	}
+
+	@Override
+	public boolean isAllowDuplicateRecordsForSameIdentifier(final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		return attributeSetInstanceId.isNone();
+	}
 }

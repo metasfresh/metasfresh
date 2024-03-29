@@ -15,6 +15,10 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	ID extractIdFromRecord(RecordType record);
 
 	//
+	// Optional methods you might want to implement
+	default boolean isAllowDuplicateRecordsForSameIdentifier(ID id) {return false;}
+
+	//
 	// Methods implemented by StepDefData:
 	@NonNull RecordType get(@NonNull final StepDefDataIdentifier identifier);
 
@@ -58,4 +62,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return Optional.empty();
 	}
 
+	default Optional<StepDefDataIdentifier> getFirstIdentifierByRecord(@NonNull final RecordType record)
+	{
+		return getFirstIdentifierById(extractIdFromRecord(record), null);
+	}
 }
