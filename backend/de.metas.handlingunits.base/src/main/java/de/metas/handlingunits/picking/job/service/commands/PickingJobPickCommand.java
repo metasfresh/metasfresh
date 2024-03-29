@@ -599,7 +599,9 @@ public class PickingJobPickCommand
 		final ImmutableList<PickFromHU> pickFromHUS = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUValidateRequest(huIdToBePicked));
 		if (pickFromHUS.isEmpty())
 		{
-			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG).markAsUserValidationError();
+			throw new AdempiereException(HU_CANNOT_BE_PICKED_ERROR_MSG)
+					.setParameter("huIdToBePicked", huIdToBePicked)
+					.markAsUserValidationError();
 		}
 	}
 
