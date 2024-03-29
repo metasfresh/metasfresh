@@ -53,6 +53,7 @@ import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -133,7 +134,7 @@ public class ProductsRestControllerTest
 
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 																					  new ExternalSystemExportAuditRepo(),
 																					  new RuntimeParametersRepository(),
 																					  externalServices,

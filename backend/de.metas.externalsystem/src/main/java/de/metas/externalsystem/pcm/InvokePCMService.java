@@ -22,7 +22,12 @@
 
 package de.metas.externalsystem.pcm;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.externalsystem.JsonTaxCategoryMapping;
+import de.metas.common.externalsystem.JsonTaxCategoryMappings;
 import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -32,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,6 +51,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_WAREHOUSE_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_TAX_CATEGORY_MAPPINGS;
 
 @Service
 public class InvokePCMService
@@ -62,6 +69,7 @@ public class InvokePCMService
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, pcmConfig.getValue());
 		parameters.putAll(extractContentSourceParameters(pcmConfig, externalRequest));
 		parameters.put(PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId()));
+		parameters.put(PARAM_TAX_CATEGORY_MAPPINGS, getTaxCategoryMappings(pcmConfig));
 
 		return parameters;
 	}
@@ -81,6 +89,39 @@ public class InvokePCMService
 		throwErrorIfFalse(pcmContentSourceLocalFile.isStartServicePossible(pcmExternalRequest, pcmConfig.getParentId(), msgBL));
 
 		return extractLocalFileSourceParameters(pcmContentSourceLocalFile);
+	}
+
+	@NonNull
+	private static String getTaxCategoryMappings(@NonNull final ExternalSystemPCMConfig pcmConfig)
+	{
+		try
+		{
+			final List<JsonTaxCategoryMapping> taxCategoryMappings = pcmConfig.getTaxCategoryPCMMappingList()
+					.stream()
+					.map(InvokePCMService::toJsonTaxCategoryMapping)
+					.collect(ImmutableList.toImmutableList());
+
+			final JsonTaxCategoryMappings jsonTaxCategoryMappings = JsonTaxCategoryMappings.builder()
+					.jsonTaxCategoryMappingList(taxCategoryMappings)
+					.build();
+
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(jsonTaxCategoryMappings);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("pcmConfigId", pcmConfig.getId().getRepoId());
+		}
+	}
+
+	@NonNull
+	private static JsonTaxCategoryMapping toJsonTaxCategoryMapping(@NonNull final TaxCategoryPCMMapping taxCategory)
+	{
+		return JsonTaxCategoryMapping.builder()
+				.taxCategory(taxCategory.getTaxCategory().getInternalName())
+				.taxRates(taxCategory.getTaxRates().asList())
+				.build();
 	}
 
 	@NonNull

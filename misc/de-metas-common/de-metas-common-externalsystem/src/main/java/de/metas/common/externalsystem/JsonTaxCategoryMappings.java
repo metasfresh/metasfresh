@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-common-externalsystem
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,39 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common.v2;
+package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
-import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
 @Builder
-@JsonDeserialize(builder = ProductUpsertCamelRequest.ProductUpsertCamelRequestBuilder.class)
-public class ProductUpsertCamelRequest
+@JsonDeserialize(builder = JsonTaxCategoryMappings.JsonTaxCategoryMappingsBuilder.class)
+public class JsonTaxCategoryMappings
 {
 	@NonNull
-	@JsonProperty("orgCode")
-	String orgCode;
-
-	@NonNull
-	@JsonProperty("jsonRequestProductUpsert")
-	JsonRequestProductUpsert jsonRequestProductUpsert;
-
-	public String toString()
-	{
-		try
-		{
-			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(this);
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw new RuntimeException("toString() failed for ProductUpsertCamelRequest", e);
-		}
-	}
+	@JsonProperty("taxCategoryMappings")
+	List<JsonTaxCategoryMapping> jsonTaxCategoryMappingList;
 }

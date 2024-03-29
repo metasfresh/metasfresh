@@ -326,6 +326,4 @@ public class JsonRequestProduct
 	{
 		this.productTaxCategories = productTaxCategories;
 	}
-
-
 }

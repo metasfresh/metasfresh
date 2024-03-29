@@ -91,6 +91,7 @@ public class BPartnerUpsertProcessor implements Processor
 		}
 
 		final JsonRequestComposite composite = JsonRequestComposite.builder()
+				.orgCode(externalSystemRequest.getOrgCode())
 				.bpartner(getBPartnerRequest(partnerRow))
 				.locations(getBPartnerLocationRequest(partnerRow))
 				.build();

@@ -23,8 +23,10 @@
 package de.metas.rest_api.v2.warehouse;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceRequestItem;
@@ -77,6 +79,7 @@ public class WarehouseRestService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceService;
 
@@ -201,12 +204,20 @@ public class WarehouseRestService
 	}
 
 	@NonNull
-	private Optional<WarehouseId> resolveWarehouseExternalIdentifier(
+	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
 			@NonNull final ExternalIdentifier warehouseIdentifier,
 			@NonNull final I_AD_Org org)
 	{
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
-
+		
+		return resolveWarehouseExternalIdentifier(warehouseIdentifier, orgId);
+	}
+	
+	@NonNull
+	public Optional<WarehouseId> resolveWarehouseExternalIdentifier(
+			@NonNull final ExternalIdentifier warehouseIdentifier,
+			@NonNull final OrgId orgId)
+	{
 		switch (warehouseIdentifier.getType())
 		{
 			case METASFRESH_ID:
@@ -270,7 +281,7 @@ public class WarehouseRestService
 			else
 			{
 				final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(jsonRequestWarehouse.getBpartnerLocationIdentifier());
-				final BPartnerLocationId bPartnerLocationId = getBPartnerLocationId(externalIdentifier, orgId);
+				final BPartnerLocationId bPartnerLocationId = getOrgBPartnerLocationId(externalIdentifier, orgId);
 
 				builder.partnerLocationId(bPartnerLocationId);
 			}
@@ -293,14 +304,32 @@ public class WarehouseRestService
 	}
 
 	@NonNull
-	private BPartnerLocationId getBPartnerLocationId(
+	private BPartnerLocationId getOrgBPartnerLocationId(
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final OrgId orgId)
 	{
-		return resolveBPartnerLocationExternalIdentifier(externalIdentifier, orgId)
+		final BPartnerId bPartnerId = partnerOrgBL.retrieveLinkedBPartnerId(orgId)
+				.orElseThrow(() -> new AdempiereException("No Org BPartner found for Org ID !")
+						.appendParametersToMessage()
+						.setParameter("OrgId", orgId));
+
+		final OrgId bPartnerOrgId = OrgId.ofRepoId(bpartnersRepo.getById(bPartnerId).getAD_Org_ID());
+
+		final BPartnerLocationId bPartnerLocationId = resolveBPartnerLocationExternalIdentifier(externalIdentifier, bPartnerOrgId)
 				.orElseThrow(() -> new AdempiereException("No BPartnerLocationId found for external identifier")
 						.appendParametersToMessage()
-						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue()));
+						.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue())); 
+		
+		if (!bPartnerLocationId.getBpartnerId().equals(bPartnerId))
+		{
+			throw new AdempiereException("Found BPartnerLocationId does not belong to the current Org BPartner !")
+					.appendParametersToMessage()
+					.setParameter("rawExternalIdentifier", externalIdentifier.getRawValue())
+					.setParameter("BPartnerLocationID", bPartnerLocationId)
+					.setParameter("Org BPartnerId", bPartnerOrgId);
+		}
+		
+		return bPartnerLocationId;
 	}
 
 	@NonNull
@@ -343,7 +372,7 @@ public class WarehouseRestService
 				.orgId(orgId)
 				.name(jsonRequestWarehouse.getName())
 				.value(jsonRequestWarehouse.getCode())
-				.partnerLocationId(getBPartnerLocationId(externalIdentifier, orgId))
+				.partnerLocationId(getOrgBPartnerLocationId(externalIdentifier, orgId))
 				.active(Optional.ofNullable(jsonRequestWarehouse.getActive()).orElse(true))
 				.build();
 	}

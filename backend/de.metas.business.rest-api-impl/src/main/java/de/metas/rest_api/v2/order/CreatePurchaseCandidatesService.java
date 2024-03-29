@@ -174,7 +174,7 @@ public class CreatePurchaseCandidatesService
 				.poReference(request.getPoReference())
 				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
-				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.resolveWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)

@@ -38,7 +38,6 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -114,19 +113,22 @@ public class ProductTaxCategoryService
 				.build();
 	}
 
-	@Nullable
-	public ProductTaxCategory findProductTaxCategory(@NonNull final ProductId productId, @NonNull final TaxCategoryId taxCategoryId, @Nullable CountryId countryId)
+	@NonNull
+	public Optional<ProductTaxCategory> getProductTaxCategoryByUniqueKey(
+			@NonNull final ProductId productId,
+			@NonNull final CountryId countryId)
 	{
-		return productTaxCategoryRepository.findProductTaxCategory(productId, taxCategoryId, countryId);
+		return productTaxCategoryRepository.getProductTaxCategoryByUniqueKey(productId, countryId);
 	}
 
-	public void updateProductTaxCategory(@NonNull final ProductTaxCategory request)
+	public void save(@NonNull final ProductTaxCategory request)
 	{
-		productTaxCategoryRepository.updateProductTaxCategory(request);
+		productTaxCategoryRepository.save(request);
 	}
 
-	public void createProductTaxCategory(final CreateProductTaxCategoryRequest createProductTaxCategoryRequest)
+	@NonNull
+	public ProductTaxCategory createProductTaxCategory(@NonNull final CreateProductTaxCategoryRequest createProductTaxCategoryRequest)
 	{
-		productTaxCategoryRepository.createProductTaxCategory(createProductTaxCategoryRequest);
+		return productTaxCategoryRepository.createProductTaxCategory(createProductTaxCategoryRequest);
 	}
 }

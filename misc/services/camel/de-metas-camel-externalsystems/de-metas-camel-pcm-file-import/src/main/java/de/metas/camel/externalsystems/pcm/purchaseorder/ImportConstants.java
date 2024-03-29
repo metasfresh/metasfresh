@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-camel-pcm-file-import
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,37 +20,16 @@
  * #L%
  */
 
-package de.metas.pricing.tax;
+package de.metas.camel.externalsystems.pcm.purchaseorder;
 
-import de.metas.location.CountryId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
-
-@Value
-@Builder(toBuilder = true)
-public class ProductTaxCategory
+public interface ImportConstants
 {
-	@NonNull
-	ProductTaxCategoryId productTaxCategoryId;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	TaxCategoryId taxCategoryId;
-
-	@NonNull
-	Instant validFrom;
-
-	@Nullable
-	CountryId countryId;
-
-	@Builder.Default
-	boolean active = true;
+	String DEFAULT_UOM_X12DE355_CODE = "PCE";
+	String DEFAULT_CURRENCY_CODE = "EUR";
+	ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
+	DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+	DateTimeFormatter LOCAL_DATE_FORMATTER = DateTimeFormatter.ofPattern("M/d/yyyy");
 }

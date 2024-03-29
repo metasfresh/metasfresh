@@ -233,8 +233,11 @@ public class ExternalReferenceRestControllerService
 
 	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @Nullable final String orgCode)
 	{
-		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		performUpsert(request, retrieveOrgIdOrDefault(orgCode));
+	}
 
+	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
+	{
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 

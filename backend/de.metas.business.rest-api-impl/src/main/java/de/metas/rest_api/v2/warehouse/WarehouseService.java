@@ -99,20 +99,33 @@ public class WarehouseService
 	@NonNull
 	private final JsonAttributeService jsonAttributeService;
 
+	@NonNull
+	private final WarehouseRestService warehouseRestService;
+
 	public WarehouseService(
 			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
 			@NonNull final InventoryService inventoryService,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
-			@NonNull final JsonAttributeService jsonAttributeService)
+			@NonNull final JsonAttributeService jsonAttributeService,
+			@NonNull final WarehouseRestService warehouseRestService)
 	{
 		this.externalIdentifierResolver = externalIdentifierResolver;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 		this.inventoryService = inventoryService;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.jsonAttributeService = jsonAttributeService;
+		this.warehouseRestService = warehouseRestService;
 	}
 
+	@NonNull
+	public WarehouseId resolveWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
+	{
+		return ExternalIdentifier.ofIdentifierCandidate(warehouseIdentifier)
+				.flatMap(identifier -> warehouseRestService.resolveWarehouseExternalIdentifier(identifier, orgId))
+				.orElseGet(() -> getWarehouseByIdentifier(orgId, warehouseIdentifier));
+	}
+	
 	@NonNull
 	public WarehouseId getWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
 	{

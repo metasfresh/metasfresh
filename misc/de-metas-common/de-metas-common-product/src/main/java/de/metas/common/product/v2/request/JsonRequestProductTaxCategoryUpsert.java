@@ -22,42 +22,46 @@
 
 package de.metas.common.product.v2.request;
 
-import de.metas.common.pricing.v2.productprice.TaxCategory;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.extern.jackson.Jacksonized;
+import lombok.ToString;
 
 import java.time.Instant;
 
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.NOT_REQUIRED;
 import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Getter
-@Builder
+@ToString
 @EqualsAndHashCode
-@Jacksonized
+@Schema(description = "Contains the actual product tax category to insert or update.")
 public class JsonRequestProductTaxCategoryUpsert
 {
-	@Schema(requiredMode = REQUIRED)
-	private TaxCategory taxCategory;
+	@Schema
+	private String taxCategory;
 
-	@Schema(requiredMode = NOT_REQUIRED)
+	@Schema(hidden = true)
+	private boolean taxCategorySet;
+
+	@Schema(requiredMode = REQUIRED)
 	private String countryCode;
 
-	@Schema(requiredMode = REQUIRED)
-	private boolean countryCodeSet;
-
-	@Schema(requiredMode = REQUIRED)
+	@Schema
 	private Instant validFrom;
 
-	@Schema(requiredMode = REQUIRED)
+	@Schema(hidden = true)
 	private boolean validFromSet;
+
+	@Schema
+	private Boolean active;
+
+	@Schema(hidden = true)
+	private boolean activeSet;
 	
-	public void setTaxCategory(final TaxCategory taxCategory)
+	public void setTaxCategory(final String taxCategory)
 	{
 		this.taxCategory = taxCategory;
+		this.taxCategorySet = true;
 	}
 
 	public void setValidFrom(final Instant validFrom)
@@ -69,7 +73,11 @@ public class JsonRequestProductTaxCategoryUpsert
 	public void setCountryCode(final String countryCode)
 	{
 		this.countryCode = countryCode;
-		this.countryCodeSet = true;
 	}
 
+	public void setActive(final Boolean active)
+	{
+		this.active = active;
+		this.activeSet = true;
+	}
 }

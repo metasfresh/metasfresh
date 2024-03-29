@@ -90,13 +90,14 @@ public class JsonRequestUtil
 				.build();
 	}
 
+	@NonNull
 	public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
 	{
-		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = JsonRequestProductTaxCategoryUpsert.builder()
-				.taxCategory(TaxCategory.NORMAL)
-				.countryCode("DE")
-				.validFrom(Instant.parse("2019-11-22T00:00:00Z"))
-				.build();
+		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = new JsonRequestProductTaxCategoryUpsert();
+		
+		jsonRequestProductTaxCategoryUpsert.setTaxCategory(TaxCategory.NORMAL.getInternalName());
+		jsonRequestProductTaxCategoryUpsert.setCountryCode("DE");
+		jsonRequestProductTaxCategoryUpsert.setValidFrom(Instant.parse("2019-11-22T00:00:00Z"));
 
 		return jsonRequestProductTaxCategoryUpsert;
 	}

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,37 +20,24 @@
  * #L%
  */
 
-package de.metas.pricing.tax;
+package de.metas.externalsystem.pcm;
 
-import de.metas.location.CountryId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.pricing.v2.productprice.TaxCategory;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
+import java.math.BigDecimal;
 
 @Value
-@Builder(toBuilder = true)
-public class ProductTaxCategory
+@Builder
+public class TaxCategoryPCMMapping
 {
 	@NonNull
-	ProductTaxCategoryId productTaxCategoryId;
+	ExternalSystemPCMConfigId externalSystemPCMConfigId;
 
-	@NonNull
-	ProductId productId;
+	@NonNull TaxCategory taxCategory;
 
-	@NonNull
-	TaxCategoryId taxCategoryId;
-
-	@NonNull
-	Instant validFrom;
-
-	@Nullable
-	CountryId countryId;
-
-	@Builder.Default
-	boolean active = true;
+	@NonNull ImmutableSet<BigDecimal> taxRates;
 }
