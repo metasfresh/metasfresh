@@ -146,13 +146,9 @@ Feature: mobileUI Picking tests
       | Identifier               | C_OrderLine_ID.Identifier | IsToRecompute |
       | sched_CatchWeightProduct | line1                     | N             |
       | sched_RegularProduct     | line2                     | N             |
-    And start picking job
-      | C_Order_ID |
-      | salesOrder |
+    And start picking job for sales order identified by salesOrder
 
-    And scan picking slot
-      | PickingSlot |
-      | 200.0       |
+    And scan picking slot identified by 200.0
 
     And pick lines
       | PickingLine.byProduct | PickFromHU    | LMQRCode                   |

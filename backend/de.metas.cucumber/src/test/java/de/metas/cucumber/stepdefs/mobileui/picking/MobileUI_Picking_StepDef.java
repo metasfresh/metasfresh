@@ -53,21 +53,18 @@ public class MobileUI_Picking_StepDef
 
 	@NonNull private final Context context = new Context();
 
-	@When("start picking job")
-	public void start(@NonNull final DataTable dataTable)
+	@When("^start picking job for sales order identified by (.*)$")
+	public void start(@NonNull final String salesOrderIdentifier)
 	{
-		final DataTableRow row = DataTableRow.singleRow(dataTable);
-		final I_C_Order salesOrder = row.getAsIdentifier("C_Order_ID").lookupIn(ordersTable);
-
+		final I_C_Order salesOrder = ordersTable.get(salesOrderIdentifier);
 		final JsonWFProcess wfProcess = mobileUIPickingClient.startJobBySalesDocumentNo(salesOrder.getDocumentNo());
 		context.setWfProcess(wfProcess);
 	}
 
-	@When("scan picking slot")
-	public void scanPickingSlot(@NonNull final DataTable dataTable)
+	@When("^scan picking slot identified by (.*)$")
+	public void scanPickingSlot(@NonNull final String pickingSlotIdentifier)
 	{
-		final DataTableRow row = DataTableRow.singleRow(dataTable);
-		final PickingSlotIdAndCaption pickingSlotIdAndCaption = pickingSlotsTable.getPickingSlotIdAndCaption(row.getAsIdentifier("PickingSlot"));
+		final PickingSlotIdAndCaption pickingSlotIdAndCaption = pickingSlotsTable.getPickingSlotIdAndCaption(pickingSlotIdentifier);
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.scanPickingSlot(context.getWfProcessIdNotNull(), pickingSlotIdAndCaption);
 		context.setWfProcess(wfProcess);

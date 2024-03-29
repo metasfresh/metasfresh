@@ -10,6 +10,11 @@ public class PickingSlot_StepDefData extends StepDefData<I_M_PickingSlot>
 {
 	public PickingSlot_StepDefData() {super(I_M_PickingSlot.class);}
 
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(final String identifier)
+	{
+		return getPickingSlotIdAndCaption(StepDefDataIdentifier.ofString(identifier));
+	}
+
 	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(final StepDefDataIdentifier identifier)
 	{
 		final I_M_PickingSlot pickingSlot = get(identifier);
