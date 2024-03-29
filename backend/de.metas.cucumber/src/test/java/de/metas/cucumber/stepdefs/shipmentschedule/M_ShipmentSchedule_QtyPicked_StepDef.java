@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -165,7 +164,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 	private void validateHuId(@NonNull final StepDefDataIdentifier expectedHuIdentifier, @Nullable final HuId actualHuId)
 	{
-		final ContextAwareDescription description = ContextAwareDescription.ofString("expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId);
+		final String description = "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId;
 
 		if (expectedHuIdentifier.isNullPlaceholder())
 		{

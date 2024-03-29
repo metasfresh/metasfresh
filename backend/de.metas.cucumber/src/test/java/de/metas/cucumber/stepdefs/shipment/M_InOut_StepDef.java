@@ -307,7 +307,17 @@ public class M_InOut_StepDef
 
 			if (shipment != null)
 			{
-				shipmentTable.put(shipmentIdentifier, shipment);
+				final I_M_InOut prevShipment = shipmentTable.getOptional(shipmentIdentifier).orElse(null);
+				if (prevShipment == null)
+				{
+					shipmentTable.put(shipmentIdentifier, shipment);
+				}
+				else
+				{
+					assertThat(prevShipment.getM_InOut_ID()).isEqualTo(shipment.getM_InOut_ID());
+					shipmentTable.putOrReplace(shipmentIdentifier, shipment);
+				}
+
 				return true;
 			}
 

@@ -84,6 +84,7 @@ public class SharedTestContext
 			if (context != null && !context.isEmpty())
 			{
 				ex.setParameter("sharedTestContext", context);
+				ex.appendParametersToMessage();
 			}
 			throw ex;
 		}

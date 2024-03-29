@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -44,6 +45,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
@@ -60,8 +62,6 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
-import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_Date;
-import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 
 public class M_HU_Attribute_StepDef
 {
@@ -134,15 +134,15 @@ public class M_HU_Attribute_StepDef
 		final I_M_HU_Attribute huAttributeRecord = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
 		Assertions.assertThat(huAttributeRecord).isNotNull();
 
-		final String attributeValueType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AttributeValueType);
+		final AttributeValueType attributeValueType = AttributeValueType.ofCode(DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AttributeValueType));
 
 		switch (attributeValueType)
 		{
-			case ATTRIBUTEVALUETYPE_Date:
+			case DATE:
 				final Timestamp attributeValueTimestamp = DataTableUtil.extractDateTimestampForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
 				huAttributeRecord.setValueDate(attributeValueTimestamp);
 				break;
-			case ATTRIBUTEVALUETYPE_StringMax40:
+			case STRING:
 				final String attributeValueString = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_Value);
 				huAttributeRecord.setValue(attributeValueString);
 				break;
@@ -161,26 +161,39 @@ public class M_HU_Attribute_StepDef
 
 		final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
 		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+		SharedTestContext.put("attributeCode", attributeCode);
 
-		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
-		assertThat(attributeRecord).isNotNull();
+		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeCode);
 
 		final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
-		assertThat(huAttribute).isNotNull();
+		assertThat(huAttribute).as("M_HU_Attribute exists").isNotNull();
+		SharedTestContext.put("huAttribute", () -> toString(huAttribute));
 
 		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
 				.ifPresent(valueString -> {
 					final String valueStringNorm = !valueString.equalsIgnoreCase("-") ? valueString : null;
-					assertThat(huAttribute.getValue()).isEqualTo(valueStringNorm);
+					assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
 				});
 		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
-				.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).isEqualByComparingTo(valueNumber));
+				.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber));
 		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
 				.ifPresent(valueString -> {
 					final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
-					assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).isEqualTo(valueDate);
+					assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).as("ValueDate").isEqualTo(valueDate);
 				});
+	}
+
+	private static String toString(final I_M_HU_Attribute huAttribute)
+	{
+		if (huAttribute == null)
+		{
+			return null;
+		}
+		return "M_HU_Attribute_ID=" + huAttribute.getM_Attribute_ID()
+				+ ", Value=" + huAttribute.getValue()
+				+ ", ValueNumber=" + huAttribute.getValueNumber()
+				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
 	private void changeHUAttribute(@NonNull final Map<String, String> tableRow)

@@ -94,7 +94,7 @@ class MobileUIPickingClient
 			@NonNull final HUQRCode pickFromHUQRCode,
 			@NonNull final LMQRCode itemQRCode)
 	{
-		return pickingRestController.postEvent(
+		return pickLine(
 				JsonPickingStepEvent.builder()
 						.wfProcessId(wfProcessId)
 						.wfActivityId(wfActivityId)
@@ -108,6 +108,12 @@ class MobileUIPickingClient
 						.setLotNo(true)
 						.lotNo(itemQRCode.getLotNumber())
 						.build());
+	}
+
+	public JsonWFProcess pickLine(JsonPickingStepEvent request)
+	{
+		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
+		return pickingRestController.postEvent(request);
 	}
 
 	public JsonWFProcess complete(final String wfProcessId)

@@ -42,6 +42,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -89,6 +91,13 @@ public class DataTableRow
 					.setParameter("row", this);
 		}
 		return string;
+	}
+
+	@NonNull
+	public List<String> getAsCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String value = getAsString(columnName);
+		return Arrays.asList(value.split(","));
 	}
 
 	@Nullable
