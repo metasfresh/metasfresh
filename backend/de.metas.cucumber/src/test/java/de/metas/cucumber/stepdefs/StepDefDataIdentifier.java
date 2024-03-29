@@ -30,6 +30,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 
 @EqualsAndHashCode
@@ -39,6 +42,9 @@ public final class StepDefDataIdentifier
 
 	public static final String SUFFIX = "Identifier";
 
+	private static final String PREFIX_Unnamed = "unnamed-";
+	private static final AtomicInteger nextUnnamedIdentifierId = new AtomicInteger(1);
+
 	@NonNull private final String value;
 
 	private StepDefDataIdentifier(@NonNull final String value)
@@ -46,6 +52,7 @@ public final class StepDefDataIdentifier
 		this.value = value;
 	}
 
+	@NonNull
 	public static StepDefDataIdentifier ofString(@NonNull String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
@@ -62,6 +69,20 @@ public final class StepDefDataIdentifier
 			return new StepDefDataIdentifier(valueNorm);
 		}
 	}
+
+	@Nullable
+	public static StepDefDataIdentifier ofNullableString(@Nullable String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		return valueNorm != null ? ofString(valueNorm) : null;
+	}
+
+	public static StepDefDataIdentifier nextUnnamed()
+	{
+		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
+	}
+
+	public static boolean equals(@Nullable StepDefDataIdentifier id1, @Nullable StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
 
 	@Override
 	public String toString() {return getAsString();}

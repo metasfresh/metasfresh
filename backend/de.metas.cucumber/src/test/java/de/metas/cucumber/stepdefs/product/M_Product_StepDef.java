@@ -24,9 +24,12 @@ package de.metas.cucumber.stepdefs.product;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -57,7 +60,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,11 +104,7 @@ public class M_Product_StepDef
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createM_Product(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createM_Product);
 	}
 
 	@And("no product with value {string} exists")
@@ -245,12 +243,12 @@ public class M_Product_StepDef
 		}
 	}
 
-	private void createM_Product(@NonNull final Map<String, String> tableRow)
+	private void createM_Product(@NonNull DataTableRow rowObj)
 	{
-		String productName = tableRow.get("Name");
-		productName = productName.replace("@Date@", Instant.now().toString());
+		final ValueAndName valueAndName = rowObj.suggestValueAndName();
 
-		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
+		@NonNull final Map<String, String> tableRow = rowObj.asMap();
+
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
 		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
 
@@ -262,12 +260,12 @@ public class M_Product_StepDef
 				.orElse(StepDefConstants.ORG_ID.getRepoId());
 
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
-				() -> productDAO.retrieveProductByValue(productValue),
+				() -> productDAO.retrieveProductByValue(valueAndName.getValue()),
 				() -> newInstanceOutOfTrx(I_M_Product.class));
 
 		productRecord.setAD_Org_ID(orgId);
-		productRecord.setValue(productValue);
-		productRecord.setName(productName);
+		productRecord.setValue(valueAndName.getValue());
+		productRecord.setName(valueAndName.getName());
 
 		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
 		if (Check.isNotBlank(uomX12DE355))

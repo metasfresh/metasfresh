@@ -20,6 +20,8 @@ public class ValueAndName
 
 	public static ValueAndName ofValueAndName(@NonNull final String value, @NonNull final String name) {return builder().value(value).name(name).build();}
 
+	public static ValueAndName unique() {return unique(null);}
+
 	public static ValueAndName unique(@Nullable final String prefix)
 	{
 		String prefixNorm = prefix != null ? prefix + "_" : "";
