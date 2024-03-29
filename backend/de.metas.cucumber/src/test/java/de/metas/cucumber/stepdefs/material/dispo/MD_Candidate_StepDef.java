@@ -513,6 +513,7 @@ public class MD_Candidate_StepDef
 				if (otherIdentifierOfCandidate != null)
 				{
 					resultNotFoundLog.append("Excluded ").append(item.getCandidateId().getRepoId()).append(" because it was already loaded for ").append(otherIdentifierOfCandidate).append("\n");
+					continue;
 				}
 
 				final BooleanWithReason matching = checkMatching(item, tableRow);
