@@ -99,7 +99,7 @@ public interface I_ExternalSystem_Config_ProCareManagement_LocalFile
 
 	/**
 	 * Set Errored Directory.
-	 * Defines where files should be moved after being processed with error. (The path should be relative to the current target location)
+	 * Defines where files should be moved after attempting to process them with error.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -109,7 +109,7 @@ public interface I_ExternalSystem_Config_ProCareManagement_LocalFile
 
 	/**
 	 * Get Errored Directory.
-	 * Defines where files should be moved after being processed with error. (The path should be relative to the current target location)
+	 * Defines where files should be moved after attempting to process them with error.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -237,7 +237,7 @@ public interface I_ExternalSystem_Config_ProCareManagement_LocalFile
 
 	/**
 	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed. (The path should be relative to the current target location)
+	 * Defines where files should be moved after being successfully processed.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -247,7 +247,7 @@ public interface I_ExternalSystem_Config_ProCareManagement_LocalFile
 
 	/**
 	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed. (The path should be relative to the current target location)
+	 * Defines where files should be moved after being successfully processed.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
