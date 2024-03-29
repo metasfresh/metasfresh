@@ -283,42 +283,41 @@ public class M_InOut_Line_StepDef
 	{
 		logger.info("validateShipmentLine: expected={}, actual={}", expected, actual);
 
+		final SoftAssertions softly = new SoftAssertions();
+
 		expected.getAsOptionalIdentifier("M_Product_ID")
 				.ifPresent(productIdentifier -> {
 					final int expectedProductId = productTable.getOptional(productIdentifier)
 							.map(I_M_Product::getM_Product_ID)
 							.orElseGet(productIdentifier::getAsInt);
-					assertThat(actual.getM_Product_ID()).isEqualTo(expectedProductId);
+					softly.assertThat(actual.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
 				});
 		expected.getAsOptionalBigDecimal("movementqty")
-				.ifPresent(movementQty -> assertThat(actual.getMovementQty()).isEqualByComparingTo(movementQty));
+				.ifPresent(movementQty -> softly.assertThat(actual.getMovementQty()).as("movementqty").isEqualByComparingTo(movementQty));
 		expected.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)
-				.ifPresent(qtyDeliveredCatch -> assertThat(actual.getQtyDeliveredCatch()).isEqualByComparingTo(qtyDeliveredCatch));
+				.ifPresent(qtyDeliveredCatch -> softly.assertThat(actual.getQtyDeliveredCatch()).as("QtyDeliveredCatch").isEqualByComparingTo(qtyDeliveredCatch));
 		expected.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEntered)
-				.ifPresent(qtyEntered -> assertThat(actual.getQtyEntered()).isEqualByComparingTo(qtyEntered));
+				.ifPresent(qtyEntered -> softly.assertThat(actual.getQtyEntered()).as("QtyEntered").isEqualByComparingTo(qtyEntered));
 
 		expected.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEnteredTU)
-				.ifPresent(qtyEnteredTU -> assertThat(actual.getQtyEnteredTU()).isEqualByComparingTo(qtyEnteredTU));
+				.ifPresent(qtyEnteredTU -> softly.assertThat(actual.getQtyEnteredTU()).as("QtyEnteredTU").isEqualByComparingTo(qtyEnteredTU));
 		expected.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.ifPresent(huPIItemProductIdentifier -> {
 					final HUPIItemProductId huPIItemProductId = huPIItemProductIdentifier.isNullPlaceholder() ? null : huPIItemProductTable.getId(huPIItemProductIdentifier);
-					assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID())).isEqualTo(huPIItemProductId);
+					softly.assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID())).as("M_HU_PI_Item_Product_ID").isEqualTo(huPIItemProductId);
 				});
 
-		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + org.compiere.model.I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		SoftAssertions softly = new SoftAssertions();
-		if (Check.isNotBlank(x12de355Code))
-		{
-			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
-			softly.assertThat(shipmentLine.getC_UOM_ID()).as("C_UOM_ID").isEqualTo(uomId.getRepoId());
-		}
+		expected.getAsOptionalString(I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName())
+				.map(X12DE355::ofCode)
+				.map(uomDAO::getUomIdByX12DE355)
+				.ifPresent(uomId -> softly.assertThat(UomId.ofRepoIdOrNull(actual.getC_UOM_ID())).as("C_UOM_ID").isEqualTo(uomId));
 
 		expected.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.ifPresent(asiIdentifier -> {
 					final AttributeSetInstanceId asiIdActual = AttributeSetInstanceId.ofRepoIdOrNone(actual.getM_AttributeSetInstance_ID());
 					if (asiIdentifier.isNullPlaceholder())
 					{
-						assertThat(asiIdActual).isEqualTo(AttributeSetInstanceId.NONE);
+						softly.assertThat(asiIdActual).as("M_AttributeSetInstance_ID").isEqualTo(AttributeSetInstanceId.NONE);
 					}
 					else
 					{
@@ -329,13 +328,13 @@ public class M_InOut_Line_StepDef
 						}
 						else
 						{
-							assertThat(asiIdActual).isEqualTo(asiId);
+							softly.assertThat(asiIdActual).as("M_AttributeSetInstance_ID").isEqualTo(asiId);
 						}
 					}
 				});
 
 		expected.getAsOptionalBoolean("processed")
-				.ifPresent(processed -> assertThat(actual.isProcessed()).isEqualTo(processed));
+				.ifPresent(processed -> softly.assertThat(actual.isProcessed()).as("processed").isEqualTo(processed));
 
 		softly.assertAll();
 	}
