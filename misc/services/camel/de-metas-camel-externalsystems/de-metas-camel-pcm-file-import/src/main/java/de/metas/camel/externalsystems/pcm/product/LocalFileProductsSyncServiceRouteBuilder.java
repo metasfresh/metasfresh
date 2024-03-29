@@ -21,7 +21,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 @RequiredArgsConstructor
-public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class LocalFileProductsSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
 	private static final String START_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "startProductSyncLocalFile";
 	private static final String STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "stopProductSyncLocalFile";
