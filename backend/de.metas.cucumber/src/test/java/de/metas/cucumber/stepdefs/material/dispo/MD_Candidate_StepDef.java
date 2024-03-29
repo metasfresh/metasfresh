@@ -95,6 +95,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_DateProjected;
 import static de.metas.material.dispo.model.I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase;
@@ -267,7 +268,7 @@ public class MD_Candidate_StepDef
 
 			assertThat(DemandDetail.cast(businessCaseDetail).getOrderLineId()).isEqualTo(orderLineId);
 			assertThat(DemandDetail.cast(businessCaseDetail).getQty()).isEqualByComparingTo(plannedQty);
-			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isNotNull();
+			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isGreaterThan(0);
 		}
 	}
 
@@ -405,7 +406,7 @@ public class MD_Candidate_StepDef
 					.append(" MD_Candidate records, but got: ").append(storedCandidatesSize)
 					.append(" See:\n");
 
-			logCandidateRecords(message, productIdSet);
+			logCandidateRecords(message, productIdSet, table);
 		}
 
 		assertThat(storedCandidatesSize).isEqualTo(expectedCandidateAndStocks);
@@ -739,24 +740,39 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	private void logCandidateRecords(@NonNull final StringBuilder message, @NonNull final ImmutableSet<ProductId> productIds)
+	private void logCandidateRecords(
+			@NonNull final StringBuilder message,
+			@NonNull final ImmutableSet<ProductId> productIds,
+			@NonNull final MD_Candidate_StepDefTable table)
 	{
 		message.append("MD_Candidate records:").append("\n");
 
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
+		final String mdCandidateRecordsStr = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addInArrayFilter(COLUMNNAME_M_Product_ID, productIds)
 				.create()
 				.stream(I_MD_Candidate.class)
-				.forEach(candidateRecord -> message
-						.append(COLUMNNAME_MD_Candidate_ID).append(" : ").append(candidateRecord.getMD_Candidate_ID()).append(" ; ")
-						.append(COLUMNNAME_MD_Candidate_Type).append(" : ").append(candidateRecord.getMD_Candidate_Type()).append(" ; ")
-						.append(COLUMNNAME_M_Product_ID).append(" : ").append(candidateRecord.getM_Product_ID()).append(" ; ")
-						.append(COLUMNNAME_DateProjected).append(" : ").append(candidateRecord.getDateProjected()).append(" ; ")
-						.append(COLUMNNAME_Qty).append(" : ").append(candidateRecord.getQty()).append(" ; ")
-						.append(COLUMNNAME_Qty_AvailableToPromise).append(" : ").append(candidateRecord.getQty_AvailableToPromise()).append(" ; ")
-						.append(COLUMNNAME_MD_Candidate_BusinessCase).append(" : ").append(candidateRecord.getMD_Candidate_BusinessCase()).append(" ; ")
-						.append("\n"));
+				.map(MD_Candidate_StepDef::toString)
+				.collect(Collectors.joining("\n"));
 
-		logger.error("*** Error while looking for MD_Candidate records, see current context: \n" + message);
+		final String rowsStr = table.stream()
+				.map(MaterialDispoTableRow::toString)
+				.collect(Collectors.joining("\n"));
+
+		logger.error("*** Error while looking for MD_Candidate records, see current context:"
+				+ "\nMD_Candidate records:"
+				+ "\n" + mdCandidateRecordsStr
+				+ "\nRows:"
+				+ "\n" + rowsStr);
+	}
+
+	private static String toString(I_MD_Candidate candidateRecord)
+	{
+		return COLUMNNAME_MD_Candidate_ID + " : " + candidateRecord.getMD_Candidate_ID() + " ; "
+				+ COLUMNNAME_MD_Candidate_Type + " : " + candidateRecord.getMD_Candidate_Type() + " ; "
+				+ COLUMNNAME_M_Product_ID + " : " + candidateRecord.getM_Product_ID() + " ; "
+				+ COLUMNNAME_DateProjected + " : " + candidateRecord.getDateProjected() + " ; "
+				+ COLUMNNAME_Qty + " : " + candidateRecord.getQty() + " ; "
+				+ COLUMNNAME_Qty_AvailableToPromise + " : " + candidateRecord.getQty_AvailableToPromise() + " ; "
+				+ COLUMNNAME_MD_Candidate_BusinessCase + " : " + candidateRecord.getMD_Candidate_BusinessCase() + " ; ";
 	}
 }

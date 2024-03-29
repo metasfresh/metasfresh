@@ -34,7 +34,9 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -45,19 +47,21 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Builder
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@NonNull @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
+	@NonNull @Getter(AccessLevel.NONE) @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
 
 	public int size() {return rows.size();}
 
+	public Stream<MaterialDispoTableRow> stream() {return rows.values().stream();}
+
 	public ImmutableSet<ProductId> getProductIds()
 	{
-		return rows.values()
-				.stream()
+		return stream()
 				.map(MaterialDispoTableRow::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
