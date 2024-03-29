@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -59,8 +60,11 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 		final List<Map<String, String>> rawRowsList = dataTable.entries();
 
 		DataTableRows.ofListOfMaps(rawRowsList).forEach((row) -> {
-			final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("MD_Candidate_ID")
-					.orElseGet(row::getAsIdentifier);
+			final StepDefDataIdentifier identifier = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> row.getAsOptionalIdentifier("MD_Candidate_ID").orElse(null),
+					() -> row.getAsOptionalIdentifier().orElse(null),
+					StepDefDataIdentifier::nextUnnamed
+			);
 
 			final CandidateType type = row.getAsEnum(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, CandidateType.class);
 
