@@ -53,7 +53,7 @@ public class M_HU_PI_StepDef
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
-			final String name = row.getAsName("Name");
+			final String name = row.suggestValueAndName().getName();
 			final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();
 
 			final I_M_HU_PI huPiRecord = CoalesceUtil.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_M_HU_PI.class)
@@ -69,7 +69,10 @@ public class M_HU_PI_StepDef
 			huPiRecord.setIsActive(active);
 
 			saveRecord(huPiRecord);
-			row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).putOrReplace(huPiTable, huPiRecord);
+
+			row.getAsOptionalIdentifier()
+					.orElseGet(() -> row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID))
+					.putOrReplace(huPiTable, huPiRecord);
 		});
 	}
 
