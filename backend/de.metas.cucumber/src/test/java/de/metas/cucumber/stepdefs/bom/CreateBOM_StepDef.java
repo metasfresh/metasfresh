@@ -289,8 +289,7 @@ public class CreateBOM_StepDef
 			@NonNull final String bomVersionsIdentifier)
 	{
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(response.getCreatedBOMProductId().getValue());
-
-		final I_PP_Product_BOM bom = InterfaceWrapperHelper.load(bomId, I_PP_Product_BOM.class);
+		final I_PP_Product_BOM bom = productBOMDAO.getById(bomId);
 
 		productBomTable.put(bomIdentifier, bom);
 
