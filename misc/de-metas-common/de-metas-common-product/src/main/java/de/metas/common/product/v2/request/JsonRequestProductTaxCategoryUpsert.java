@@ -57,7 +57,7 @@ public class JsonRequestProductTaxCategoryUpsert
 
 	@Schema(hidden = true)
 	private boolean activeSet;
-	
+
 	public void setTaxCategory(final String taxCategory)
 	{
 		this.taxCategory = taxCategory;

@@ -151,10 +151,10 @@ public class ExternalIdentifier
 		{
 			return Optional.of(new ExternalIdentifier(Type.QR_IBAN, identifier, null));
 		}
-		
+
 		return Optional.empty();
 	}
-	
+
 	@NonNull
 	public static ExternalIdentifier of(@NonNull final String identifier)
 	{

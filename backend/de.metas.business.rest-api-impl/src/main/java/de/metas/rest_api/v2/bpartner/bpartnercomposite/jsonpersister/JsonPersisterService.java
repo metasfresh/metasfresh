@@ -1762,7 +1762,6 @@ public class JsonPersisterService
 			bankAccount.setDefault(Boolean.TRUE.equals(jsonBankAccount.getIsDefault()));
 		}
 
-
 		// currency
 		if (jsonBankAccount.isCurrencyCodeSet())
 		{

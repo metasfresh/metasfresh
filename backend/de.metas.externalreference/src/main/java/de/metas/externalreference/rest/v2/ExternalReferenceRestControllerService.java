@@ -208,7 +208,7 @@ public class ExternalReferenceRestControllerService
 				throw new MissingPropertyException("metasfreshId", reference);
 			}
 			final String externalReferenceStr = lookupItem.getExternalReference();
-			if(Check.isBlank(externalReferenceStr))
+			if (Check.isBlank(externalReferenceStr))
 			{
 				throw new MissingPropertyException("externalReference", lookupItem);
 			}

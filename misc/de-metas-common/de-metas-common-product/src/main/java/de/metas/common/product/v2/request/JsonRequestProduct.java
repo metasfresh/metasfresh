@@ -53,19 +53,19 @@ public class JsonRequestProduct
 	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@Schema(description = "Corresponding to `M_Product.Name`", requiredMode= REQUIRED)
+	@Schema(description = "Corresponding to `M_Product.Name`", requiredMode = REQUIRED)
 	private String name;
 
 	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@Schema(description = "Corresponding to `M_Product.Type`", requiredMode= REQUIRED)
+	@Schema(description = "Corresponding to `M_Product.Type`", requiredMode = REQUIRED)
 	private Type type;
 
 	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", requiredMode= REQUIRED)
+	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", requiredMode = REQUIRED)
 	private String uomCode;
 
 	@Schema(hidden = true)

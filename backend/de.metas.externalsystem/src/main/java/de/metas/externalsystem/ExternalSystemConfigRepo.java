@@ -90,8 +90,8 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
-import de.metas.process.AdProcessId;
 import de.metas.pricing.tax.TaxCategoryDAO;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -295,7 +295,7 @@ public class ExternalSystemConfigRepo
 				result = getAllByTypeMetasfresh();
 				break;
 			case Amazon:
-				result=null;
+				result = null;
 				break;
 			case Other:
 				result = getAllByTypeOther();
@@ -663,7 +663,6 @@ public class ExternalSystemConfigRepo
 		final ExternalSystemEbayConfigId externalSystemEbayConfigId =
 				ExternalSystemEbayConfigId.ofRepoId(config.getExternalSystem_Config_Ebay_ID());
 
-
 		return ExternalSystemEbayConfig.builder()
 				.id(ExternalSystemEbayConfigId.ofRepoId(config.getExternalSystem_Config_Ebay_ID()))
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
@@ -729,8 +728,6 @@ public class ExternalSystemConfigRepo
 				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
-
-
 
 	@NonNull
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemWooCommerceConfigId id)
@@ -1050,6 +1047,7 @@ public class ExternalSystemConfigRepo
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
+
 	@NonNull
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypeAmazon()
 	{
@@ -1326,6 +1324,7 @@ public class ExternalSystemConfigRepo
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_Amazon.class);
 	}
+
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getAmazonConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
@@ -1336,6 +1335,7 @@ public class ExternalSystemConfigRepo
 				.firstOnlyOptional(I_ExternalSystem_Config_Amazon.class)
 				.map(ex -> buildExternalSystemAmazonConfig(ex, id));
 	}
+
 	@NonNull
 	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Amazon config)
 	{
@@ -1347,6 +1347,7 @@ public class ExternalSystemConfigRepo
 				.childConfig(child)
 				.build();
 	}
+
 	@NonNull
 	private ExternalSystemAmazonConfig buildExternalSystemAmazonConfig(
 			@NonNull final I_ExternalSystem_Config_Amazon config,
