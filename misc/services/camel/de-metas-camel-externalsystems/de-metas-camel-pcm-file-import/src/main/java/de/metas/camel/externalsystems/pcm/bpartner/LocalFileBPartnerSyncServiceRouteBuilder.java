@@ -3,7 +3,7 @@ package de.metas.camel.externalsystems.pcm.bpartner;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.pcm.PCMConfigUtil;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.PCMConstants.PCM_SYSTEM_NAME;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.START_HANDLE_ON_DEMAND_ROUTE_ID;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController.START_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -55,7 +55,7 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
+		final PCMOnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = PCMOnDemandRoutesController.StartOnDemandRouteRequest.builder()
 				.onDemandRouteBuilder(getBPartnersFromFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
@@ -68,7 +68,7 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
+		final PCMOnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = PCMOnDemandRoutesController.StopOnDemandRouteRequest.builder()
 				.routeId(getBPartnersFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
