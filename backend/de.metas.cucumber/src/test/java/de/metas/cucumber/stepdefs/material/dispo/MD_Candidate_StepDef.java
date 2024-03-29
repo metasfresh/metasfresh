@@ -76,9 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.assertj.core.api.SoftAssertions;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -149,9 +147,6 @@ public class MD_Candidate_StepDef
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
-
-
-
 
 	}
 
@@ -350,19 +345,12 @@ public class MD_Candidate_StepDef
 		final Instant dateDoc = DataTableUtil.extractInstantForColumnName(row, "DateDoc");
 		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, "Qty");
 
-		final AbstractStockEstimateEvent event;
-
-		switch (eventType)
+		final AbstractStockEstimateEvent event = switch (eventType)
 		{
-			case StockEstimateCreatedEvent.TYPE:
-				event = MaterialDispoUtils.createStockEstimateCreatedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
-				break;
-			case StockEstimateDeletedEvent.TYPE:
-				event = MaterialDispoUtils.createStockEstimateDeletedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
-				break;
-			default:
-				throw new AdempiereException("Event type not handeled: " + eventType);
-		}
+			case StockEstimateCreatedEvent.TYPE -> MaterialDispoUtils.createStockEstimateCreatedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
+			case StockEstimateDeletedEvent.TYPE -> MaterialDispoUtils.createStockEstimateDeletedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
+			default -> throw new AdempiereException("Event type not handled: " + eventType);
+		};
 
 		postMaterialEventService.enqueueEventNow(event);
 	}
@@ -461,12 +449,6 @@ public class MD_Candidate_StepDef
 			}
 
 			softly.assertAll();
-
-			final WarehouseId warehouseId = tableRow.getWarehouseId();
-			if (warehouseId != null)
-			{
-				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
-			}
 
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		});
@@ -590,8 +572,8 @@ public class MD_Candidate_StepDef
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-														 .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-														 .build());
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
+				.build());
 
 		materialEventObserver.awaitProcessing(traceId);
 	}

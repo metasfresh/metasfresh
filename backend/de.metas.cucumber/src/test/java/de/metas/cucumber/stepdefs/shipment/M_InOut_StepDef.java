@@ -61,6 +61,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -81,7 +82,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -197,18 +197,12 @@ public class M_InOut_StepDef
 			softly.assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
 		}
 
-		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(sectionCodeIdentifier))
-		{
-			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-			assertThat(shipment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
-		}
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_SectionCode_ID)
+				.map(sectionCodeTable::getId)
+				.ifPresent((sectionCodeId -> softly.assertThat(SectionCodeId.ofRepoIdOrNull(shipment.getM_SectionCode_ID())).isEqualTo(sectionCodeId)));
 
-		final Boolean isInterimInvoiceable = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_InOut.COLUMNNAME_IsInterimInvoiceable);
-		if (isInterimInvoiceable != null)
-		{
-			assertThat(shipment.isInterimInvoiceable()).isEqualTo(isInterimInvoiceable);
-		}
+		row.getAsOptionalBoolean(I_M_InOut.COLUMNNAME_IsInterimInvoiceable)
+				.ifPresent((isInterimInvoiceable) -> softly.assertThat(shipment.isInterimInvoiceable()).isEqualTo(isInterimInvoiceable));
 
 		softly.assertAll();
 	}

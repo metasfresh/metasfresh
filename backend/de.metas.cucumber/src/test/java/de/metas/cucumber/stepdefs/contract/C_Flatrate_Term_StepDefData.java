@@ -22,16 +22,25 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class C_Flatrate_Term_StepDefData extends StepDefData<I_C_Flatrate_Term>
+		implements StepDefDataGetIdAware<FlatrateTermId, I_C_Flatrate_Term>
 {
 	public C_Flatrate_Term_StepDefData()
 	{
 		super(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public FlatrateTermId extractIdFromRecord(final I_C_Flatrate_Term record)
+	{
+		return FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID());
 	}
 }

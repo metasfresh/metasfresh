@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -299,8 +300,7 @@ public class C_Invoice_Candidate_StepDef
 	@And("^after not more than (.*)s, C_Invoice_Candidate are found:$")
 	public void find_C_Invoice_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws Throwable
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			try
 			{
 				StepDefUtil.tryAndWait(timeoutSec, 1000, () -> load_C_Invoice_Candidate(row));
@@ -311,7 +311,7 @@ public class C_Invoice_Candidate_StepDef
 
 				StepDefUtil.tryAndWait(5, 1000, () -> load_C_Invoice_Candidate(row));
 			}
-		}
+		});
 	}
 
 	@And("validate C_Invoice_Candidates does not exist")
@@ -471,8 +471,8 @@ public class C_Invoice_Candidate_StepDef
 	public void validate_invoice_candidate(@NonNull final DataTable dataTable) throws Throwable
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
+		DataTableRows.of(dataTable).forEach((rowObj) -> {
+			final Map<String, String> row = rowObj.asMap();
 			final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
@@ -484,7 +484,7 @@ public class C_Invoice_Candidate_StepDef
 			}
 			catch (final Throwable e)
 			{
-				manuallyRecomputeInvoiceCandidate(e, row, maxSecondsToWait);
+				manuallyRecomputeInvoiceCandidate(e, rowObj, maxSecondsToWait);
 				updatedInvoiceCandidate = null;
 			}
 
@@ -583,7 +583,7 @@ public class C_Invoice_Candidate_StepDef
 			{
 				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
-		}
+		});
 	}
 
 	@And("^after not more than (.*)s, credit memo candidates are found:$")
@@ -598,8 +598,8 @@ public class C_Invoice_Candidate_StepDef
 	@And("validate C_Invoice_Candidate:")
 	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable) throws Throwable
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
+		DataTableRows.of(dataTable).forEach((rowObj) -> {
+			final Map<String, String> row = rowObj.asMap();
 			final String invoiceCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandTable.get(invoiceCandidateIdentifier);
 
@@ -611,7 +611,7 @@ public class C_Invoice_Candidate_StepDef
 			}
 			catch (final Throwable e)
 			{
-				manuallyRecomputeInvoiceCandidate(e, row, maxSecondsToWait);
+				manuallyRecomputeInvoiceCandidate(e, rowObj, maxSecondsToWait);
 				updatedInvoiceCandidate = null;
 			}
 
@@ -880,7 +880,7 @@ public class C_Invoice_Candidate_StepDef
 			{
 				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
-		}
+		});
 	}
 
 	@And("process invoice candidates")
@@ -1376,8 +1376,10 @@ public class C_Invoice_Candidate_StepDef
 		return candQueryBuilder.create();
 	}
 
-	private boolean load_C_Invoice_Candidate(@NonNull final Map<String, String> row)
+	private boolean load_C_Invoice_Candidate(@NonNull final DataTableRow rowObj)
 	{
+		final Map<String, String> row = rowObj.asMap();
+
 		final BigDecimal qtyToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
@@ -1996,17 +1998,13 @@ public class C_Invoice_Candidate_StepDef
 
 	public void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
-			@NonNull final Map<String, String> row,
+			@NonNull final DataTableRow row,
 			final int timeoutSec) throws Throwable
 	{
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
 				+ "Error message: {}", timeoutSec, throwable.getMessage());
 
-		final String invoiceCandIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER))
-				.orElse(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER));
-
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = Optional
-				.ofNullable(invoiceCandIdentifier)
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_Candidate_ID)
 				.flatMap(invoiceCandTable::getOptional);
 
 		if (!invoiceCandidate.isPresent())

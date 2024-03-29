@@ -77,14 +77,17 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
@@ -117,13 +120,13 @@ public class C_BPartner_StepDef
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
 	@Given("metasfresh contains C_BPartners:")
-	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
+	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, true));
 	}
 
 	@Given("metasfresh contains C_BPartners without locations:")
-	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable) throws Throwable
+	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, false));
 	}
@@ -201,16 +204,6 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	@Given("update C_BPartner:")
-	public void update_c_bpartner(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateBPartner(tableRow);
-		}
-	}
-
 	private void createC_BPartner(@NonNull final DataTableRow row, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
@@ -246,7 +239,7 @@ public class C_BPartner_StepDef
 		row.getAsOptionalEnum(COLUMNNAME_InvoiceRule, InvoiceRule.class)
 				.ifPresent(invoiceRule -> bPartnerRecord.setInvoiceRule(invoiceRule.getCode()));
 
-final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
+		final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
 		bPartnerRecord.setDeliveryRule(deliveryRule.getCode());
 
 		final StepDefDataIdentifier pricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
@@ -440,16 +433,6 @@ final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule,
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
-
-		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
-
-		if (Check.isNotBlank(value))
-		{
-			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
-			assertThat(bPartnerRecord).isNotNull();
-
-			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
-		}
 	}
 
 	private void updateBPartner(@NonNull final Map<String, String> tableRow)
@@ -518,142 +501,6 @@ final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule,
 
 			final Boolean isManuallyCreated = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BPartner.COLUMNNAME_IsManuallyCreated, false);
 			softly.assertThat(bPartnerRecord.isManuallyCreated()).as("IsManuallyCreated").isEqualTo(isManuallyCreated);
-		}
-
-		softly.assertAll();
-	}
-
-	@And("^after not more than (.*)s, C_BPartner are found:$")
-	public void validate_created_c_bPartners(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> tableRow : dataTable)
-		{
-			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final IQueryBuilder<I_C_BPartner> query = queryBL.createQueryBuilder(I_C_BPartner.class);
-
-			final String bPartnerName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Name);
-			if(!Check.isEmpty(bPartnerName))
-			{
-				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, bPartnerName);
-			}
-
-			final String bPartnerValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Value);
-			if(!Check.isEmpty(bPartnerValue))
-			{
-				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, bPartnerValue);
-			}
-
-			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
-					.map(orgTable::get)
-					.map(I_AD_Org::getAD_Org_ID)
-					.orElse(StepDefConstants.ORG_ID.getRepoId());
-			query.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId);
-
-			final Supplier<Boolean> QueryExecutor = () -> {
-				final I_C_BPartner bPartnerRecord = query.create().firstOnly(I_C_BPartner.class);
-
-				if (bPartnerRecord == null)
-				{
-					return false;
-				}
-
-				bPartnerTable.putOrReplace(bPartnerIdentifier, bPartnerRecord);
-				return true;
-			};
-
-			StepDefUtil.tryAndWait(timeoutSec, 500, QueryExecutor);
-		}
-	}
-
-
-	@Given("C_BPartner_MoveToAnotherOrg is invoked with parameters:")
-	public void C_BPartner_MoveToAnotherOrg(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
-
-			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_AD_Org orgRecord = orgTable.get(orgIdentifier);
-
-			final Timestamp changeDate = DataTableUtil.extractDateTimestampForColumnName(tableRow, PARAM_DATE_ORG_CHANGE);
-
-			final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg.class);
-
-			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-			processInfoBuilder.setRecord(I_C_BPartner.Table_Name, bPartnerRecord.getC_BPartner_ID());
-			processInfoBuilder.addParameter(PARAM_AD_ORG_TARGET_ID, orgRecord.getAD_Org_ID());
-			processInfoBuilder.addParameter(PARAM_DATE_ORG_CHANGE, changeDate);
-			processInfoBuilder.addParameter(PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, false);
-
-			processInfoBuilder
-					.buildAndPrepareExecution()
-					.executeSync()
-					.getResult();
-		}
-
-	}
-
-	private void updateBPartner(@NonNull final Map<String, String> tableRow)
-	{
-		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
-
-		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
-
-		assertThat(bPartner).isNotNull();
-
-		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
-		if (EmptyUtil.isNotBlank(invoiceRule))
-		{
-			bPartner.setInvoiceRule(invoiceRule);
-		}
-
-		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
-		if (EmptyUtil.isNotBlank(poInvoiceRule))
-		{
-			bPartner.setPO_InvoiceRule(poInvoiceRule);
-		}
-
-		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
-		{
-			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
-			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		}
-
-		InterfaceWrapperHelper.save(bPartner);
-
-		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
-	}
-
-	@And("validate C_BPartner:")
-	public void validate_C_BPartner(@NonNull final DataTable dataTable)
-	{
-		final SoftAssertions softly = new SoftAssertions();
-
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
-
-			final String bpValue = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_Value);
-			softly.assertThat(bPartnerRecord.getValue()).as("Value").isEqualTo(bpValue);
-
-			final String companyName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
-			if (Check.isNotBlank(companyName))
-			{
-				softly.assertThat(bPartnerRecord.getCompanyName()).as("CompanyName").isEqualTo(companyName);
-			}
-
-			final String vaTaxID = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
-			if (Check.isNotBlank(vaTaxID))
-			{
-				softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID);
-			}
 		}
 
 		softly.assertAll();

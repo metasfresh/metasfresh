@@ -211,7 +211,7 @@ public class C_Order_StepDef
 			final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Description);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final String docBaseType = DataTableRow.wrap(tableRow).getAsOptionalString(COLUMNNAME_DocBaseType).orElse(null);
+			final String docBaseType = DataTableRow.singleRow(tableRow).getAsOptionalString(COLUMNNAME_DocBaseType).orElse(null);
 
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 			final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
@@ -227,7 +227,7 @@ public class C_Order_StepDef
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setC_BPartner_ID(bPartnerId);
-			DataTableRow.wrap(tableRow).getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsSOTrx).ifPresent(order::setIsSOTrx);
+			DataTableRow.singleRow(tableRow).getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsSOTrx).ifPresent(order::setIsSOTrx);
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);
 			order.setIsDropShip(isDropShip);
@@ -280,7 +280,7 @@ public class C_Order_StepDef
 				order.setDeliveryViaRule(deliveryViaRule);
 			}
 
-			DataTableRow.wrap(tableRow).getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceRule).ifPresent(order::setInvoiceRule);
+			DataTableRow.singleRow(tableRow).getAsOptionalString(I_C_Order.COLUMNNAME_InvoiceRule).ifPresent(order::setInvoiceRule);
 
 			final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID + ".Value");
 			if (de.metas.util.Check.isNotBlank(paymentTermValue))

@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -39,16 +38,11 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID;
 
 @RequiredArgsConstructor
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
@@ -99,12 +93,6 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			final WarehouseId warehouseId = row.getAsOptionalIdentifier("M_Warehouse_ID")
 					.flatMap(warehouseTable::getIdOptional)
-					.orElse(null);
-
-			final WarehouseId warehouseId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER))
-					.flatMap(warehouseTable::getOptional)
-					.map(I_M_Warehouse::getM_Warehouse_ID)
-					.map(WarehouseId::ofRepoId)
 					.orElse(null);
 
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()

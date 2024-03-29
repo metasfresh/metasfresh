@@ -197,7 +197,7 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			final InOutLineId expectedShipmentLineId = shipmentLineTable.getIdOptional(expectedShipmentLineIdentifier).orElse(null);
 			if (expectedShipmentLineId == null)
 			{
-				shipmentLineTable.put(expectedShipmentLineIdentifier, inoutDAO.getLineById(actualShipmentLineId));
+				shipmentLineTable.put(expectedShipmentLineIdentifier, inoutDAO.getLineByIdInTrx(actualShipmentLineId));
 			}
 			else
 			{
