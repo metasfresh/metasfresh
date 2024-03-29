@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
@@ -31,19 +31,16 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class M_ShipmentSchedule_StepDefData extends StepDefData<I_M_ShipmentSchedule>
+		implements StepDefDataGetIdAware<ShipmentScheduleId, I_M_ShipmentSchedule>
 {
 	public M_ShipmentSchedule_StepDefData()
 	{
 		super(I_M_ShipmentSchedule.class);
 	}
 
-	public ShipmentScheduleId getId(final String identifier)
+	@Override
+	public ShipmentScheduleId extractIdFromRecord(final I_M_ShipmentSchedule record)
 	{
-		return getId(StepDefDataIdentifier.ofString(identifier));
-	}
-
-	public ShipmentScheduleId getId(final StepDefDataIdentifier identifier)
-	{
-		return ShipmentScheduleId.ofRepoId(get(identifier).getM_ShipmentSchedule_ID());
+		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 }

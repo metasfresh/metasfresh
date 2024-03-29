@@ -509,7 +509,7 @@ public class MD_Candidate_StepDef
 			{
 				//
 				// Exclude this item if it's already associated to a different identifier.
-				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierByCandidateId(item.getCandidateId(), tableRow.getIdentifier()).orElse(null);
+				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierById(item.getCandidateId(), tableRow.getIdentifier()).orElse(null);
 				if (otherIdentifierOfCandidate != null)
 				{
 					resultNotFoundLog.append("Excluded ").append(item.getCandidateId().getRepoId()).append(" because it was already loaded for ").append(otherIdentifierOfCandidate).append("\n");
