@@ -2275,7 +2275,7 @@ UPDATE AD_Message_Trl SET MsgText='Duplicate file lookup details !',Updated=TO_T
 ;
 
 -- 2024-03-21T15:22:20.846Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:22:20','YYYY-MM-DD HH24:MI:SS'),100,540013,'Y','Local-File Sync-BPartners','PCM',TO_TIMESTAMP('2024-03-21 17:22:20','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncBPartners')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:22:20','YYYY-MM-DD HH24:MI:SS'),100,540013,'Y','Local-File Sync-BPartners','PCM',TO_TIMESTAMP('2024-03-21 17:22:20','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncBPartnersPCM')
 ;
 
 -- 2024-03-21T15:22:45.399Z
@@ -2291,7 +2291,7 @@ UPDATE ExternalSystem_Service SET DisableCommand='stopBPartnerSyncLocalFile',Upd
 ;
 
 -- 2024-03-21T15:25:04.244Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:25:04','YYYY-MM-DD HH24:MI:SS'),100,540014,'Y','Local-File Sync-Products','PCM',TO_TIMESTAMP('2024-03-21 17:25:04','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncProducts')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:25:04','YYYY-MM-DD HH24:MI:SS'),100,540014,'Y','Local-File Sync-Products','PCM',TO_TIMESTAMP('2024-03-21 17:25:04','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncProductsPCM')
 ;
 
 -- 2024-03-21T15:25:05.612Z
@@ -2307,7 +2307,7 @@ UPDATE ExternalSystem_Service SET DisableCommand='stopProductSyncLocalFile',Upda
 ;
 
 -- 2024-03-21T15:25:43.584Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:25:43','YYYY-MM-DD HH24:MI:SS'),100,540015,'Y','Local-File Sync-Warehouses','PCM',TO_TIMESTAMP('2024-03-21 17:25:43','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncWarehouses')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:25:43','YYYY-MM-DD HH24:MI:SS'),100,540015,'Y','Local-File Sync-Warehouses','PCM',TO_TIMESTAMP('2024-03-21 17:25:43','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncWarehousesPCM')
 ;
 
 -- 2024-03-21T15:25:54.334Z
@@ -2323,7 +2323,7 @@ UPDATE ExternalSystem_Service SET DisableCommand='stopWarehouseSyncLocalFile',Up
 ;
 
 -- 2024-03-21T15:26:25.730Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:26:25','YYYY-MM-DD HH24:MI:SS'),100,540016,'Y','Local-File Sync-PurchaseOrders','PCM',TO_TIMESTAMP('2024-03-21 17:26:25','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncPurchaseOrders')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2024-03-21 17:26:25','YYYY-MM-DD HH24:MI:SS'),100,540016,'Y','Local-File Sync-PurchaseOrders','PCM',TO_TIMESTAMP('2024-03-21 17:26:25','YYYY-MM-DD HH24:MI:SS'),100,'LocalFileSyncPurchaseOrdersPCM')
 ;
 
 -- 2024-03-21T15:26:27.790Z
