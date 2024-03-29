@@ -23,7 +23,11 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.inout.InOutLineId;
 import org.compiere.model.I_M_InOutLine;
+
+import java.util.Optional;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
@@ -33,5 +37,16 @@ public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
 	public M_InOutLine_StepDefData()
 	{
 		super(I_M_InOutLine.class);
+	}
+
+	public InOutLineId getId(final StepDefDataIdentifier identifier)
+	{
+		return InOutLineId.ofRepoId(get(identifier).getM_InOutLine_ID());
+	}
+
+	public Optional<InOutLineId> getIdOptional(final StepDefDataIdentifier identifier)
+	{
+		return getOptional(identifier)
+				.map(inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()));
 	}
 }

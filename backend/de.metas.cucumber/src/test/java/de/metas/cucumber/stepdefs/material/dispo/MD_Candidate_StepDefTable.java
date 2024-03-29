@@ -22,8 +22,9 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -36,6 +37,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.function.ThrowingConsumer;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -45,17 +48,27 @@ import java.time.Instant;
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@Singular
-	ImmutableMap<String, MaterialDispoTableRow> rows;
+	@NonNull @Singular ImmutableMap<String, MaterialDispoTableRow> rows;
 
-	public MaterialDispoTableRow getRow(@NonNull final String identifier)
+	public int size() {return rows.size();}
+
+	public ImmutableSet<ProductId> getProductIds()
 	{
-		return rows.get(identifier);
+		return rows.values()
+				.stream()
+				.map(MaterialDispoTableRow::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public ImmutableCollection<MaterialDispoTableRow> getRows()
+	public void forEach(@NonNull final ThrowingConsumer<MaterialDispoTableRow> consumer) throws Throwable
 	{
-		return rows.values();
+		for (final MaterialDispoTableRow row : rows.values())
+		{
+			SharedTestContext.run(() -> {
+				SharedTestContext.put("row", row);
+				consumer.accept(row);
+			});
+		}
 	}
 
 	@Value
@@ -88,15 +101,18 @@ public class MD_Candidate_StepDefTable
 
 		boolean simulated;
 
+		@Nullable
+		WarehouseId warehouseId;
+
 		public CandidatesQuery createQuery()
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
 					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
 					.timeRangeEnd(DateAndSeqNo.builder()
-										  .date(time)
-										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
-										  .build())
+							.date(time)
+							.operator(DateAndSeqNo.Operator.INCLUSIVE)
+							.build())
 					.build();
 
 			return CandidatesQuery.builder()

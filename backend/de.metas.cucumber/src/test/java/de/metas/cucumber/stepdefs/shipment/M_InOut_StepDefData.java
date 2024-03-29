@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.inout.InOutId;
 import org.compiere.model.I_M_InOut;
 
 /**
@@ -34,4 +36,6 @@ public class M_InOut_StepDefData extends StepDefData<I_M_InOut>
 	{
 		super(I_M_InOut.class);
 	}
+
+	public InOutId getId(final StepDefDataIdentifier identifier) {return InOutId.ofRepoId(get(identifier).getM_InOut_ID());}
 }

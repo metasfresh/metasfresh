@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Lock;
 import de.metas.util.Services;
@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_User;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_ShipmentSchedule_LockStepDef
 {
@@ -48,9 +48,7 @@ public class M_ShipmentSchedule_LockStepDef
 	@Then("validate M_ShipmentSchedule_Lock record for")
 	public void validateLockForShipmentScheduleAndUser(@NonNull final DataTable dataTable)
 	{
-
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((tableRow) -> {
 			final int shipmentScheduleId = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 					.lookupIn(shipmentScheduleTable)
 					.getM_ShipmentSchedule_ID();
@@ -72,6 +70,6 @@ public class M_ShipmentSchedule_LockStepDef
 			assertThat(lockExists)
 					.as("Expecting M_ShipmentSchedule_Lock exists=" + expecting_lockExists + " for " + shipmentScheduleId + "; username: " + username)
 					.isEqualTo(expecting_lockExists);
-		}
+		});
 	}
 }
