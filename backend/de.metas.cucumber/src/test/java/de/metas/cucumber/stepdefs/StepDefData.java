@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,6 +40,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -112,6 +114,13 @@ public abstract class StepDefData<T>
 	}
 
 	public void putIfMissing(
+			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final T record)
+	{
+		putIfMissing(identifier.getAsString(), record);
+	}
+
+	public void putIfMissing(
 			@NonNull final String identifier,
 			@NonNull final T record)
 	{
@@ -171,9 +180,23 @@ public abstract class StepDefData<T>
 		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
 	}
 
+	public ImmutableSet<StepDefDataIdentifier> getIdentifiers()
+	{
+		return records.keySet()
+				.stream()
+				.map(StepDefDataIdentifier::ofString)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public ImmutableList<T> getRecords()
 	{
-		return records.values().stream().map(RecordDataItem::getRecord).collect(ImmutableList.toImmutableList());
+		return streamRecords().collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Stream<T> streamRecords()
+	{
+		return records.values().stream().map(RecordDataItem::getRecord);
 	}
 
 	/**

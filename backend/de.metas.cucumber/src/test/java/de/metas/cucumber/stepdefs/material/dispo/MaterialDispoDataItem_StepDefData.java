@@ -22,10 +22,14 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.MaterialDispoDataItem;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
@@ -38,8 +42,22 @@ public class MaterialDispoDataItem_StepDefData extends StepDefData<MaterialDispo
 		super(null);
 	}
 
-	public ImmutableSet<CandidateId> getCandidateIds()
+	public Optional<StepDefDataIdentifier> getFirstIdentifierByCandidateId(@NonNull final CandidateId candidateId, @Nullable final StepDefDataIdentifier excludeIdentifier)
 	{
-		return getRecords().stream().map(MaterialDispoDataItem::getCandidateId).collect(ImmutableSet.toImmutableSet());
+		for (final StepDefDataIdentifier identifier : getIdentifiers())
+		{
+			if (excludeIdentifier != null && StepDefDataIdentifier.equals(excludeIdentifier, identifier))
+			{
+				continue;
+			}
+
+			final MaterialDispoDataItem item = get(identifier);
+			if (CandidateId.equals(item.getCandidateId(), candidateId))
+			{
+				return Optional.of(identifier);
+			}
+		}
+
+		return Optional.empty();
 	}
 }

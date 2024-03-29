@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -76,7 +77,7 @@ public class MD_Candidate_StepDefTable
 	public static class MaterialDispoTableRow
 	{
 		@NonNull
-		String identifier;
+		StepDefDataIdentifier identifier;
 
 		@NonNull
 		CandidateType type;
@@ -97,7 +98,7 @@ public class MD_Candidate_StepDefTable
 		Instant time;
 
 		@Nullable
-		String attributeSetInstanceId;
+		StepDefDataIdentifier attributeSetInstanceId;
 
 		boolean simulated;
 

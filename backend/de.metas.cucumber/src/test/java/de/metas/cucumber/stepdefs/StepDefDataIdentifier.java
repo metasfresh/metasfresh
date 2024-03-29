@@ -30,6 +30,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.function.IntFunction;
 
 @EqualsAndHashCode
@@ -46,6 +48,7 @@ public final class StepDefDataIdentifier
 		this.value = value;
 	}
 
+	@NonNull
 	public static StepDefDataIdentifier ofString(@NonNull String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
@@ -62,6 +65,15 @@ public final class StepDefDataIdentifier
 			return new StepDefDataIdentifier(valueNorm);
 		}
 	}
+
+	@Nullable
+	public static StepDefDataIdentifier ofNullableString(@Nullable String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		return valueNorm != null ? ofString(valueNorm) : null;
+	}
+
+	public static boolean equals(@Nullable StepDefDataIdentifier id1, @Nullable StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
 
 	@Override
 	public String toString() {return getAsString();}

@@ -65,9 +65,7 @@ import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -83,7 +81,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -424,38 +421,37 @@ public class MD_Candidate_StepDef
 		table.forEach((tableRow) -> {
 			// make sure the given md_candidate has been created
 			final MaterialDispoDataItem materialDispoRecord = tryAndWaitForCandidate(timeoutSec, tableRow);
+			SharedTestContext.put("candidateId", materialDispoRecord.getCandidateId().getRepoId());
+			SharedTestContext.put("materialDispoRecord", materialDispoRecord);
 
-			assertThat(materialDispoRecord).isNotNull();
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(materialDispoRecord.getType()).as("type").isEqualTo(tableRow.getType());
+			softly.assertThat(materialDispoRecord.getBusinessCase()).as("businessCase").isEqualTo(tableRow.getBusinessCase());
+			softly.assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId").isEqualTo(tableRow.getProductId().getRepoId());
+			softly.assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date").isEqualTo(tableRow.getTime());
+			softly.assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity().abs()).as("quantity.abs").isEqualByComparingTo(tableRow.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
+			softly.assertThat(materialDispoRecord.getAtp()).as("atp").isEqualByComparingTo(tableRow.getAtp());
+			softly.assertThat(materialDispoRecord.isSimulated()).isEqualTo(tableRow.isSimulated());
 
-			assertThat(materialDispoRecord.getType()).as("type of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getType());
-			assertThat(materialDispoRecord.getBusinessCase()).as("businessCase of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getBusinessCase());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getProductId()).as("productId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getProductId().getRepoId());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getDate()).as("date  of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getTime());
-			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity().abs()).as("quantity of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getQty().abs()); // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
-			assertThat(materialDispoRecord.getAtp()).as("atp of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualByComparingTo(tableRow.getAtp());
-			assertThat(materialDispoRecord.isSimulated()).isEqualTo(tableRow.isSimulated());
-
-			final String attributeSetInstanceIdentifier = StringUtils.trimBlankToNull(tableRow.getAttributeSetInstanceId());
+			final StepDefDataIdentifier attributeSetInstanceIdentifier = tableRow.getAttributeSetInstanceId();
 			if (attributeSetInstanceIdentifier != null)
 			{
-				final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-				assertThat(expectedASI).isNotNull();
+				final AttributeSetInstanceId expectedAsiId = attributeSetInstanceTable.getId(attributeSetInstanceIdentifier);
+				final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(expectedAsiId).orElse(AttributesKey.NONE);
 
-				final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-						.orElse(AttributesKey.NONE);
+				final AttributeSetInstanceId actualAsiId = AttributeSetInstanceId.ofRepoId(materialDispoRecord.getMaterialDescriptor().getAttributeSetInstanceId());
+				final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(actualAsiId).orElse(AttributesKey.NONE);
 
-				final int materialCandASI = materialDispoRecord.getMaterialDescriptor().getAttributeSetInstanceId();
-				final AttributesKey mdAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(materialCandASI))
-						.orElse(AttributesKey.NONE);
-
-				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
+				softly.assertThat(actualAttributesKeys).as("asi").isEqualTo(expectedAttributesKey);
 			}
 
 			final WarehouseId warehouseId = tableRow.getWarehouseId();
 			if (warehouseId != null)
 			{
-				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
+				softly.assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId").isEqualTo(tableRow.getWarehouseId());
 			}
+
+			softly.assertAll();
 
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		});
@@ -511,6 +507,14 @@ public class MD_Candidate_StepDef
 		{
 			for (final MaterialDispoDataItem item : items)
 			{
+				//
+				// Exclude this item if it's already associated to a different identifier.
+				final StepDefDataIdentifier otherIdentifierOfCandidate = materialDispoDataItemStepDefData.getFirstIdentifierByCandidateId(item.getCandidateId(), tableRow.getIdentifier()).orElse(null);
+				if (otherIdentifierOfCandidate != null)
+				{
+					resultNotFoundLog.append("Excluded ").append(item.getCandidateId().getRepoId()).append(" because it was already loaded for ").append(otherIdentifierOfCandidate).append("\n");
+				}
+
 				final BooleanWithReason matching = checkMatching(item, tableRow);
 				if (matching.isFalse())
 				{
@@ -709,16 +713,13 @@ public class MD_Candidate_StepDef
 			@NonNull final I_MD_Candidate mdCandidateRecord,
 			@NonNull final MaterialDispoTableRow tableRow)
 	{
-		if (Check.isNotBlank(tableRow.getAttributeSetInstanceId()))
+		if (tableRow.getAttributeSetInstanceId() != null)
 		{
-			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(tableRow.getAttributeSetInstanceId());
-			assertThat(attributeSetInstance).isNotNull();
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceTable.getId(tableRow.getAttributeSetInstanceId());
 
-			mdCandidateRecord.setM_AttributeSetInstance_ID(attributeSetInstance.getM_AttributeSetInstance_ID());
+			mdCandidateRecord.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 
-			final AttributesKey storageAttributesKey = AttributesKeys
-					.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(attributeSetInstance.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
+			final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(attributeSetInstanceId).orElse(AttributesKey.NONE);
 
 			if (AttributesKey.NONE.equals(storageAttributesKey)
 					|| AttributesKey.ALL.equals(storageAttributesKey)
