@@ -27,7 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
@@ -88,8 +88,7 @@ public class M_Warehouse_StepDef
 	@And("metasfresh contains M_Warehouse:")
 	public void create_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final String value = row.getAsString(COLUMNNAME_Value);
 
 			final I_M_Warehouse warehouseRecord = CoalesceUtil.coalesceSuppliers(
@@ -130,6 +129,6 @@ public class M_Warehouse_StepDef
 			InterfaceWrapperHelper.saveRecord(warehouseRecord);
 
 			row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID).put(warehouseTable, warehouseRecord);
-		}
+		});
 	}
 }
