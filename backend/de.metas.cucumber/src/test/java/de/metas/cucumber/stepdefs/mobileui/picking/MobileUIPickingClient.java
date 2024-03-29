@@ -1,8 +1,6 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -25,8 +23,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -87,32 +83,9 @@ class MobileUIPickingClient
 		return wfProcess;
 	}
 
-	public JsonWFProcess pickLine(
-			@NonNull final String wfProcessId,
-			@NonNull final String wfActivityId,
-			@NonNull final String pickingLineId,
-			@NonNull final HUQRCode pickFromHUQRCode,
-			@NonNull final LMQRCode itemQRCode)
-	{
-		return pickLine(
-				JsonPickingStepEvent.builder()
-						.wfProcessId(wfProcessId)
-						.wfActivityId(wfActivityId)
-						.pickingLineId(pickingLineId)
-						.type(JsonPickingStepEvent.EventType.PICK)
-						.huQRCode(pickFromHUQRCode.toGlobalQRCodeString())
-						.qtyPicked(BigDecimal.ONE)
-						.catchWeight(itemQRCode.getWeightInKg())
-						.setBestBeforeDate(true)
-						.bestBeforeDate(itemQRCode.getBestBeforeDate())
-						.setLotNo(true)
-						.lotNo(itemQRCode.getLotNumber())
-						.build());
-	}
-
 	public JsonWFProcess pickLine(JsonPickingStepEvent request)
 	{
-		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
+		Check .assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);
 	}
 
