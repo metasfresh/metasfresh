@@ -87,10 +87,9 @@ public class M_Locator_StepDef
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator_record(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			createLocator(row);
-		}
+		});
 	}
 
 	private void createLocator(@NonNull final DataTableRow row)
@@ -98,7 +97,7 @@ public class M_Locator_StepDef
 		final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
 
 		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
-		final WarehouseId warehouseId = warehouseTable.getIdIfExists(warehouseIdentifier)
+			final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
 				.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
 
 		final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
@@ -141,6 +140,7 @@ public class M_Locator_StepDef
 		InterfaceWrapperHelper.saveRecord(locatorRecord);
 
 		row.getAsIdentifier(COLUMNNAME_M_Locator_ID).put(locatorTable, locatorRecord);
+		}
 	}
 
 	@Nullable

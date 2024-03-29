@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -46,19 +47,18 @@ public class WorkflowProcess_StepDef
 	public void validateDocStatusForProcess(@NonNull final DataTable dataTable)
 	{
 		final SoftAssertions softAssertions = new SoftAssertions();
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
-			final WFProcessId processId = tableRow.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final WFProcessId processId = row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable);
 
 			if (processId.getId().startsWith(PickingMobileApplication.APPLICATION_ID.getAsString()))
 			{
-				validatePickingJob(processId, tableRow, softAssertions);
+				validatePickingJob(processId, row, softAssertions);
 			}
 			else
 			{
 				softAssertions.fail("Unknown processId = " + processId.getId());
 			}
-		}
+		});
 
 		softAssertions.assertAll();
 	}

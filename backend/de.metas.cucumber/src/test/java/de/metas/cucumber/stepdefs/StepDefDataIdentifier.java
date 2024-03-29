@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
@@ -29,10 +30,20 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
+
 @EqualsAndHashCode
 public final class StepDefDataIdentifier
 {
+	public static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
+
 	public static final String SUFFIX = "Identifier";
+
+	private static final String PREFIX_Unnamed = "unnamed-";
+	private static final AtomicInteger nextUnnamedIdentifierId = new AtomicInteger(1);
 
 	@NonNull private final String value;
 
@@ -41,6 +52,7 @@ public final class StepDefDataIdentifier
 		this.value = value;
 	}
 
+	@NonNull
 	public static StepDefDataIdentifier ofString(@NonNull String value)
 	{
 		final String valueNorm = StringUtils.trimBlankToNull(value);
@@ -48,17 +60,48 @@ public final class StepDefDataIdentifier
 		{
 			throw new AdempiereException("Invalid identifier `" + value + "`");
 		}
-		return new StepDefDataIdentifier(valueNorm);
+		else if (valueNorm.equalsIgnoreCase(NULL.value) || "-".equals(value))
+		{
+			return NULL;
+		}
+		else
+		{
+			return new StepDefDataIdentifier(valueNorm);
+		}
 	}
+
+	@Nullable
+	public static StepDefDataIdentifier ofNullableString(@Nullable String value)
+	{
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		return valueNorm != null ? ofString(valueNorm) : null;
+	}
+
+	public static StepDefDataIdentifier nextUnnamed()
+	{
+		return ofString(PREFIX_Unnamed + nextUnnamedIdentifierId.getAndIncrement());
+	}
+
+	public static boolean equals(@Nullable StepDefDataIdentifier id1, @Nullable StepDefDataIdentifier id2) {return Objects.equals(id1, id2);}
 
 	@Override
 	public String toString() {return getAsString();}
+
+	public boolean isNullPlaceholder() {return this.equals(NULL);}
 
 	public String getAsString() {return value;}
 
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> idType) {return RepoIdAwares.ofObject(value, idType);}
 
+	public int getAsInt() {return NumberUtils.asInt(value);}
+
 	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(getAsString());}
+
+	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull IntFunction<T> loader)
+	{
+		return table.getOptional(getAsString())
+				.orElseGet(() -> loader.apply(getAsInt()));
+	}
 
 	public <T> void put(@NonNull final StepDefData<T> table, @NonNull T record) {table.put(this, record);}
 

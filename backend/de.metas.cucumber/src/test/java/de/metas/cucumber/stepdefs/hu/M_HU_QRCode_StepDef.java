@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.HuId;
@@ -107,10 +108,7 @@ public class M_HU_QRCode_StepDef
 	@And("generate QR Codes for HUs")
 	public void generate_qr_codes_for_HUs(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			generateQRCodes(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::generateQRCodes);
 	}
 
 	private void createHUQRCode(@NonNull final Map<String, String> row)
@@ -131,15 +129,15 @@ public class M_HU_QRCode_StepDef
 
 		final HUQRCode huQRCode = HUQRCode.builder()
 				.packingInfo(HUQRCodePackingInfo.builder()
-									 .huUnitType(HUQRCodeUnitType.ofCode(piVersion.getHU_UnitType()))
-									 .packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
-									 .caption(pi.getName())
-									 .build())
+						.huUnitType(HUQRCodeUnitType.ofCode(piVersion.getHU_UnitType()))
+						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(piVersion.getM_HU_PI_ID()))
+						.caption(pi.getName())
+						.build())
 				.product(HUQRCodeProductInfo.builder()
-								 .id(ProductId.ofRepoId(product.getM_Product_ID()))
-								 .code(product.getValue())
-								 .name(product.getName())
-								 .build())
+						.id(ProductId.ofRepoId(product.getM_Product_ID()))
+						.code(product.getValue())
+						.name(product.getName())
+						.build())
 				.attributes(ImmutableList.of())
 				.id(HUQRCodeUniqueId.ofUUID(UUID.randomUUID()))
 				.build();

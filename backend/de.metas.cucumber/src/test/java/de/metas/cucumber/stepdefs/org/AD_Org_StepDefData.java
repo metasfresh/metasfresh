@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.org;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.organization.OrgId;
 import org.compiere.model.I_AD_Org;
 
 public class AD_Org_StepDefData extends StepDefData<I_AD_Org>
+		implements StepDefDataGetIdAware<OrgId, I_AD_Org>
 {
 	public AD_Org_StepDefData()
 	{
 		super(I_AD_Org.class);
 	}
+
+	@Override
+	public OrgId extractIdFromRecord(final I_AD_Org record) {return OrgId.ofRepoId(record.getAD_Org_ID());}
+
+	public int getIdAsInt(final StepDefDataIdentifier identifier) {return getId(identifier).getRepoId();}
 }

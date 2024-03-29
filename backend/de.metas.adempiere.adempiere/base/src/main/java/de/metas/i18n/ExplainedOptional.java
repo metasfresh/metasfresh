@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -82,6 +83,11 @@ public final class ExplainedOptional<T>
 	public T orElse(@Nullable final T other)
 	{
 		return value != null ? value : other;
+	}
+
+	public T orElseGet(@NonNull final Supplier<? extends T> other)
+	{
+		return value != null ? value : other.get();
 	}
 
 	public T orElseThrow()
