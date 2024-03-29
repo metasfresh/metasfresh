@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,8 @@ public class DataTableRow
 	{
 		return new DataTableRow(-1, map);
 	}
+
+	public Map<String, String> asMap() {return map;}
 
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
@@ -156,9 +159,21 @@ public class DataTableRow
 		return nameResolved;
 	}
 
-	public ValueAndName getValueAndName()
+	public ValueAndName suggestValueAndName()
 	{
-		return getOptionalValueAndName().orElseThrow();
+		ValueAndName valueAndName = getOptionalValueAndName().orElse(null);
+		if (valueAndName != null)
+		{
+			return valueAndName;
+		}
+
+		final StepDefDataIdentifier recordIdentifier = getAsOptionalIdentifier().orElse(null);
+		if (recordIdentifier != null)
+		{
+			return ValueAndName.unique(recordIdentifier.getAsString());
+		}
+
+		return ValueAndName.unique();
 	}
 
 	public ExplainedOptional<ValueAndName> getOptionalValueAndName()
@@ -362,6 +377,42 @@ public class DataTableRow
 		catch (Exception ex)
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDate `" + valueStr + "`");
+		}
+	}
+
+	public Instant getAsInstant(@NonNull final String columnName)
+	{
+		return parseInstant(getAsString(columnName), columnName);
+	}
+
+	@NonNull
+	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return Instant.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
+		}
+	}
+
+	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	@NonNull
+	private static LocalDateTime parseLocalDateTime(final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return LocalDateTime.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDateTime `" + valueStr + "`");
 		}
 	}
 

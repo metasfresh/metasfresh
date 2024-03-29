@@ -91,7 +91,7 @@ public class M_Locator_StepDef
 			final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
 
 			final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
-			final WarehouseId warehouseId = warehouseTable.getIdIfExists(warehouseIdentifier)
+			final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
 					.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
 
 			final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
