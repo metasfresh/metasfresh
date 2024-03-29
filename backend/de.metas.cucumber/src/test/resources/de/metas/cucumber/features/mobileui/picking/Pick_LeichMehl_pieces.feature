@@ -24,9 +24,9 @@ Feature: mobileUI Picking tests
       | catchWeightProduct      | PCE                    | KGM                  | 0.10         | Y                        |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name      |
-      | TU                    | TU @Date@ |
-      | LU                    | LU @Date@ |
+      | M_HU_PI_ID | Name      |
+      | TU         | TU @Date@ |
+      | LU         | LU @Date@ |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name | HU_UnitType | IsCurrent |
       | TU                            | TU                    | TU   | TU          | Y         |
@@ -42,8 +42,8 @@ Feature: mobileUI Picking tests
 
 
     And metasfresh contains M_PricingSystems
-      | Identifier | Name      |
-      | PS         | PS @Date@ |
+      | Identifier |
+      | PS         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
       | PL         | PS                 | DE                    | EUR                 | true  |
@@ -95,12 +95,8 @@ Feature: mobileUI Picking tests
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule | line1                     | N             |
-    And start picking job
-      | C_Order_ID |
-      | salesOrder |
-    And scan picking slot
-      | PickingSlot |
-      | 200.0       |
+    And start picking job for sales order identified by salesOrder
+    And scan picking slot identified by 200.0
     And pick lines
       | PickFromHU    | LMQRCode                   |
       | catchWeightHU | LMQ#1#0.101#08.11.2025#500 |
@@ -133,7 +129,7 @@ Feature: mobileUI Picking tests
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-  Scenario: Pick multiple L+M items
+  Scenario: Pick multiple catch weight items and regular items
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | salesOrder | true    | customer                 | 2024-03-26  |
@@ -161,8 +157,8 @@ Feature: mobileUI Picking tests
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.107#08.11.2025#506 |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.108#08.11.2025#507 |
     And pick lines
-      | PickingLine.byProduct | PickFromHU       | LMQRCode | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
-      | regularProduct        | regularProductHU |          | 9         | 1           | N                     | 2027-03-01     | 9876  |
+      | PickingLine.byProduct | PickFromHU       | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | regularProduct        | regularProductHU | 9         | 1           | N                     | 2027-03-01     | 9876  |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_CatchWeightProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
