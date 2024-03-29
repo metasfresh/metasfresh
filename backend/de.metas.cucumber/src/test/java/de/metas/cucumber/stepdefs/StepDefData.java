@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -31,6 +32,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -42,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class StepDefData<T>
 {
+	protected final Logger logger = LogManager.getLogger(getClass());
 	private final Map<String, RecordDataItem<T>> records = new HashMap<>();
 
 	private final Class<T> clazz;
@@ -71,6 +74,8 @@ public abstract class StepDefData<T>
 		assertThat(oldRecord)
 				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
 				.isNull();
+
+		logger.info("put: {}={}", identifier, record);
 	}
 
 	public void putOrReplace(
@@ -93,6 +98,7 @@ public abstract class StepDefData<T>
 		else
 		{
 			records.replace(identifier, createRecordDataItem(record));
+			logger.info("replace: {}={}", identifier, record);
 		}
 	}
 
@@ -136,6 +142,12 @@ public abstract class StepDefData<T>
 		}
 
 		return record;
+	}
+
+	@NonNull
+	public <ET extends T> ET get(@NonNull final String identifier, @NonNull final Class<ET> type)
+	{
+		return InterfaceWrapperHelper.create(get(identifier), type);
 	}
 
 	@NonNull

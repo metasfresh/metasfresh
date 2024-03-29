@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.pporder.maturing;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.util.Services;
@@ -48,8 +49,8 @@ public class M_Maturing_Configuration_StepDef
 	IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Maturing_Configuration_StepDef(@NonNull final M_Maturing_Configuration_StepDefData maturingConfigurationTable,
-			@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable,
-			@NonNull final M_Product_StepDefData productStepDefData)
+											@NonNull final M_Maturing_Configuration_Line_StepDefData maturingConfigurationLineTable,
+											@NonNull final M_Product_StepDefData productStepDefData)
 	{
 		this.maturingConfigurationTable = maturingConfigurationTable;
 		this.maturingConfigurationLineTable = maturingConfigurationLineTable;
@@ -59,10 +60,7 @@ public class M_Maturing_Configuration_StepDef
 	@Given("metasfresh contains M_Maturing_Configurations")
 	public void createMaturingConfigurations(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
-			createUpdateMaturingConfigurationRow(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createUpdateMaturingConfigurationRow);
 
 	}
 
@@ -81,10 +79,7 @@ public class M_Maturing_Configuration_StepDef
 	@Given("metasfresh contains M_Maturing_Configuration_Lines")
 	public void createMaturingConfigurationLines(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
-			createUpdateMaturingConfigurationLineRow(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createUpdateMaturingConfigurationLineRow);
 
 	}
 
@@ -109,7 +104,7 @@ public class M_Maturing_Configuration_StepDef
 	}
 
 	private I_M_Maturing_Configuration_Line loadMaturingConfigurationLine(@NonNull final I_M_Product fromProduct,
-			@NonNull final I_M_Product maturedProduct)
+																		  @NonNull final I_M_Product maturedProduct)
 	{
 		return queryBL.createQueryBuilder(I_M_Maturing_Configuration_Line.class)
 				.addEqualsFilter(I_M_Maturing_Configuration_Line.COLUMNNAME_From_Product_ID, fromProduct.getM_Product_ID())

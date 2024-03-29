@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
@@ -96,10 +97,9 @@ public class M_HU_Storage_StepDef
 	}
 
 	@And("update M_HU_Storage:")
-	public void update_M_HU_Storages(@NonNull final DataTable dataTable)
+	public void update_M_HU_Storages(@NonNull final DataTable dataTable) throws Throwable
 	{
-		DataTableRow.toRows(dataTable)
-				.forEach(this::update_M_HU_Storage);
+		DataTableRows.of(dataTable).forEach(this::update_M_HU_Storage);
 	}
 
 	private void update_M_HU_Storage(@NonNull final DataTableRow tableRow)
