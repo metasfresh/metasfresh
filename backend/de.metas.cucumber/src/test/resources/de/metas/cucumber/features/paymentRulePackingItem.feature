@@ -34,7 +34,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-03-23  | 2001343                 | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-03-23      | 2001343                 | 0            | 1          | 0           | 1     | 0        | EUR          | true      |
 
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
@@ -44,9 +44,10 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier | quantityTypeToUse | isCompleteShipment |
       | shipment_1            | s_s_1                            | D                 | Y                  |
 
-    And after not more than 60s locate invoice candidates by order id:
-      | C_Invoice_Candidate_ID.Identifier        | C_Order_ID.Identifier |
-      | invoice_candidate_1, invoice_candidate_2 | o_1                   |
+    And after not more than 60s locate invoice candidates of order identified by o_1
+      | C_Invoice_Candidate_ID.Identifier | M_Product_ID |
+      | invoice_candidate_1               | 2005577      |
+      | invoice_candidate_2               | 2001343      |
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |

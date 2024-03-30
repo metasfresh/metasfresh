@@ -23,21 +23,21 @@
 package de.metas.cucumber.stepdefs.distribution;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.material.planning.ddorder.DistributionNetworkId;
 import org.eevolution.model.I_DD_NetworkDistribution;
 
 public class DD_NetworkDistribution_StepDefData extends StepDefData<I_DD_NetworkDistribution>
+		implements StepDefDataGetIdAware<DistributionNetworkId, I_DD_NetworkDistribution>
 {
 	public DD_NetworkDistribution_StepDefData()
 	{
 		super(I_DD_NetworkDistribution.class);
 	}
 
-	public DistributionNetworkId getId(final StepDefDataIdentifier identifier)
+	@Override
+	public DistributionNetworkId extractIdFromRecord(final I_DD_NetworkDistribution record)
 	{
-		final I_DD_NetworkDistribution model = get(identifier);
-		return DistributionNetworkId.ofRepoId(model.getDD_NetworkDistribution_ID());
+		return DistributionNetworkId.ofRepoId(record.getDD_NetworkDistribution_ID());
 	}
-
 }

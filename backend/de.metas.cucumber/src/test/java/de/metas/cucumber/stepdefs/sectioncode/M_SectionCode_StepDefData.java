@@ -23,12 +23,21 @@
 package de.metas.cucumber.stepdefs.sectioncode;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.sectionCode.SectionCodeId;
 import org.compiere.model.I_M_SectionCode;
 
 public class M_SectionCode_StepDefData extends StepDefData<I_M_SectionCode>
+		implements StepDefDataGetIdAware<SectionCodeId, I_M_SectionCode>
 {
 	public M_SectionCode_StepDefData()
 	{
 		super(I_M_SectionCode.class);
+	}
+
+	@Override
+	public SectionCodeId extractIdFromRecord(final I_M_SectionCode record)
+	{
+		return SectionCodeId.ofRepoId(record.getM_SectionCode_ID());
 	}
 }

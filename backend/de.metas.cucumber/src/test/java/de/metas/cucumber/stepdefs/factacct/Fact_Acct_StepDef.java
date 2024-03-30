@@ -12,6 +12,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_Currency_StepDefData;
 import de.metas.cucumber.stepdefs.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -126,8 +127,7 @@ public class Fact_Acct_StepDef
 	@And("^after not more than (.*)s, Fact_Acct are found$")
 	public void find_Fact_Accts(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final SoftAssertions softly = new SoftAssertions();
 
 			final List<I_Fact_Acct> factAcctRecords = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_Fact_Acct(row));
@@ -171,7 +171,7 @@ public class Fact_Acct_StepDef
 					});
 
 			softly.assertAll();
-		}
+		});
 	}
 
 	@And("^after not more than (.*)s, the (invoice|matchInvoice|inout|shippingNotification) document with identifier (.*) has the following accounting records:$")
@@ -183,10 +183,7 @@ public class Fact_Acct_StepDef
 	{
 		final TableRecordReference recordRef = getTableRecordReference(tableType, identifier);
 
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			findFactAcct(recordRef, row, timeoutSec);
-		}
+		DataTableRows.of(dataTable).forEach((row) -> findFactAcct(recordRef, row, timeoutSec));
 	}
 
 	@And("^fact account repost (invoice|matchInvoice) document with identifier (.*):$")
@@ -195,10 +192,7 @@ public class Fact_Acct_StepDef
 			@NonNull final String identifier,
 			@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			repostDocument(row, documentType, identifier);
-		}
+		DataTableRows.of(dataTable).forEach((row) -> repostDocument(row, documentType, identifier));
 	}
 
 	@NonNull

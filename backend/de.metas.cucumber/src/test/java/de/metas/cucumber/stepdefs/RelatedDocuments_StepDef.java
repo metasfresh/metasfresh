@@ -39,8 +39,8 @@ public class RelatedDocuments_StepDef
 			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final IZoomSource zoomSource = getZoomSource(tableType, identifier);
-		final List<DataTableRow> rows = DataTableRow.toRows(dataTable);
-		assertThat(rows).isNotEmpty();
+		final DataTableRows rows = DataTableRows.of(dataTable);
+		assertThat(rows.size()).isGreaterThan(0);
 
 		final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
 		final RelatedDocumentsChecker checker = new RelatedDocumentsChecker(relatedDocumentsFactory, zoomSource, rows);
@@ -78,7 +78,7 @@ public class RelatedDocuments_StepDef
 	{
 		@NonNull final RelatedDocumentsFactory relatedDocumentsFactory;
 		@NonNull final IZoomSource zoomSource;
-		@NonNull final List<DataTableRow> rows;
+		@NonNull final DataTableRows rows;
 
 		private ImmutableList<RelatedDocumentsCandidateGroup> _relatedDocumentsGroups = null; // lazy
 
@@ -88,13 +88,12 @@ public class RelatedDocuments_StepDef
 			final ImmutableList<RelatedDocumentsCandidateGroup> relatedDocumentsCandidateGroups = getRelatedDocumentsCandidates();
 
 			final ArrayList<DataTableRow> rowsNotMatched = new ArrayList<>();
-			for (final DataTableRow row : rows)
-			{
+			rows.forEach((row) -> {
 				if (!isMatching(relatedDocumentsCandidateGroups, row))
 				{
 					rowsNotMatched.add(row);
 				}
-			}
+			});
 
 			return rowsNotMatched.isEmpty()
 					? ProviderResult.resultWasFound(relatedDocumentsCandidateGroups)

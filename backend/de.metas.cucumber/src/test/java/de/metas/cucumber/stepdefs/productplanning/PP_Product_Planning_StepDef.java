@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.productplanning;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
@@ -105,10 +106,7 @@ public class PP_Product_Planning_StepDef
 	@Given("metasfresh contains PP_Product_Plannings")
 	public void add_PP_Product_Planning(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
-			createPP_Product_Planning(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createPP_Product_Planning);
 	}
 
 	private void createPP_Product_Planning(@NonNull final DataTableRow tableRow)
