@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
@@ -39,6 +40,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -50,6 +52,8 @@ public abstract class StepDefData<T>
 	private final HashMap<StepDefDataIdentifier, RecordDataItem<T>> records = new HashMap<>();
 
 	private final Class<T> clazz;
+
+	private boolean checkDuplicatesDisabled = false;
 
 	/**
 	 * @param clazz used if this stepdef is about model classes. In that case the record's {@link TableRecordReference} is stored, and the given clazz is then used when the record is loaded again.
@@ -72,7 +76,7 @@ public abstract class StepDefData<T>
 	{
 		final RecordDataItem<T> recordDataItem = newRecordDataItem(record);
 
-		assertNotAlreadyMappedToOtherIdentifier(identifier, record);
+		assertNotAlreadyMappedToOtherIdentifier(identifier, record, null);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
@@ -82,14 +86,33 @@ public abstract class StepDefData<T>
 		logger.info("put: {}={}", identifier, record);
 	}
 
-	private void assertNotAlreadyMappedToOtherIdentifier(final @NonNull StepDefDataIdentifier identifier, final @NonNull T record)
+	private void assertNotAlreadyMappedToOtherIdentifier(final @NonNull StepDefDataIdentifier identifier, final @NonNull T record, final @Nullable T oldRecord)
 	{
-		if (!(this instanceof StepDefDataGetIdAware)) {return;}
+		if (checkDuplicatesDisabled)
+		{
+			return;
+		}
 
+		if (!(this instanceof StepDefDataGetIdAware))
+		{
+			return;
+		}
 		//noinspection unchecked
 		final StepDefDataGetIdAware<RepoIdAware, T> thisIdAware = (StepDefDataGetIdAware<RepoIdAware, T>)this;
 
 		final RepoIdAware id = thisIdAware.extractIdFromRecord(record);
+
+		//
+		// If we are just updating the same record, don't validate if we have other identifiers referencing it
+		if (oldRecord != null)
+		{
+			final RepoIdAware oldId = thisIdAware.extractIdFromRecord(oldRecord);
+			if (Objects.equals(id, oldId))
+			{
+				return;
+			}
+		}
+
 		if (thisIdAware.isAllowDuplicateRecordsForSameIdentifier(id))
 		{
 			return;
@@ -100,6 +123,13 @@ public abstract class StepDefData<T>
 		{
 			throw new AdempiereException("Cannot map `" + record + "` with ID `" + id + "` to identifier `" + identifier + "` because it was already mapped to `" + otherIdentifier + "`");
 		}
+	}
+
+	public IAutoCloseable temporaryDisableDuplicatesChecking()
+	{
+		final boolean prev_checkDuplicatesDisabled = this.checkDuplicatesDisabled;
+		this.checkDuplicatesDisabled = true;
+		return () -> this.checkDuplicatesDisabled = prev_checkDuplicatesDisabled;
 	}
 
 	public void putOrReplace(
@@ -114,14 +144,13 @@ public abstract class StepDefData<T>
 			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
-
 		if (oldRecord == null)
 		{
 			put(identifier, record);
 		}
 		else
 		{
-			assertNotAlreadyMappedToOtherIdentifier(identifier, record);
+			assertNotAlreadyMappedToOtherIdentifier(identifier, record, oldRecord.getRecord());
 			records.replace(identifier, newRecordDataItem(record));
 			logger.info("replace: {}={}", identifier, record);
 		}
