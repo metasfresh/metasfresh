@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -43,7 +45,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +56,9 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	final Map<String, String> map;
+	private final Map<String, String> map;
+
+	private static final Splitter COMMA_SEPARATED_SPLITTER = Splitter.on(",").omitEmptyStrings();
 
 	DataTableRow(
 			final int lineNo,
@@ -100,7 +103,7 @@ public class DataTableRow
 	public List<String> getAsCommaSeparatedString(@NonNull final String columnName)
 	{
 		final String value = getAsString(columnName);
-		return Arrays.asList(value.split(","));
+		return COMMA_SEPARATED_SPLITTER.splitToList(value);
 	}
 
 	@Nullable
@@ -225,6 +228,26 @@ public class DataTableRow
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
+		return getAsOptionalIdentifierString(columnName).map(StepDefDataIdentifier::ofString);
+	}
+
+	public ImmutableList<StepDefDataIdentifier> getAsCommaSeparatedIdentifiers(@NonNull final String columnName)
+	{
+		final String identifiers = getAsOptionalIdentifierString(columnName)
+				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
+						.appendParametersToMessage()
+						.setParameter("row", map));
+
+		return COMMA_SEPARATED_SPLITTER.splitToList(identifiers)
+				.stream()
+				.map(StepDefDataIdentifier::ofString)
+				//.distinct() // NO! making sure the list is distinct shall be the job of the caller, there might be cases where duplicates are needed
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Optional<String> getAsOptionalIdentifierString(@NonNull final String columnName)
+	{
 		String string = null;
 
 		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
@@ -242,12 +265,7 @@ public class DataTableRow
 			string = map.get(columnName);
 		}
 
-		if (string == null || Check.isBlank(string))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(StepDefDataIdentifier.ofString(string));
+		return StringUtils.trimBlankToOptional(string);
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String columnName)
