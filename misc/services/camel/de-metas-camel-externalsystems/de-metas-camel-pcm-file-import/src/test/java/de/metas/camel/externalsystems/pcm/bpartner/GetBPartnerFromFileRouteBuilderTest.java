@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -62,8 +62,8 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 
 	private static final String BPARTNER_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/pcm/bpartner/" + BPARTNER_IMPORT_FILE_CSV;
 
-	private final LocalFileBPartnerSyncServiceRouteBuilder bpartnerServiceRouteBuilder =
-			new LocalFileBPartnerSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+	private final LocalFileBPartnerSyncServicePCMRouteBuilder bpartnerServiceRouteBuilder =
+			new LocalFileBPartnerSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
 	public boolean isUseAdviceWith()
@@ -74,7 +74,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { bpartnerServiceRouteBuilder, new OnDemandRoutesController() };
+		return new RouteBuilder[] { bpartnerServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
@@ -110,7 +110,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + bpartnerServiceRouteBuilder.getStartBPartnerRouteId(), externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, LocalFileBPartnerSyncServicePCMRouteBuilder.getBPartnersFromLocalFileRouteId(externalSystemRequest));
 
 		final InputStream expectedUpsertBPartnerRequest_20 = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST_20);
 		final BPUpsertCamelRequest bpartnerUpsertCamelRequest_20 = objectMapper.readValue(expectedUpsertBPartnerRequest_20, BPUpsertCamelRequest.class);
@@ -148,7 +148,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String routeId = LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(stopExternalSystemRequest);
+		final String routeId = LocalFileBPartnerSyncServicePCMRouteBuilder.getBPartnersFromLocalFileRouteId(stopExternalSystemRequest);
 
 		context.start();
 

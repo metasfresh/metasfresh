@@ -1,9 +1,9 @@
-package de.metas.camel.externalsystems.pcm.purchaseorder;
+package de.metas.camel.externalsystems.pcm.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.pcm.PCMConfigUtil;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -15,16 +15,16 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.PCMConstants.PCM_SYSTEM_NAME;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.START_HANDLE_ON_DEMAND_ROUTE_ID;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController.START_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 @RequiredArgsConstructor
-public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class LocalFileBPartnerSyncServicePCMRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE = "startPurchaseOrderSyncLocalFile";
-	private static final String STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE = "stopPurchaseOrderSyncLocalFile";
+	private static final String START_BPARTNER_SYNC_LOCAL_FILE_ROUTE = "startBPartnerSyncLocalFile";
+	private static final String STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE = "stopBPartnerSyncLocalFile";
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -36,15 +36,15 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(getStartPurchaseOrderRouteId()))
-				.routeId(getStartPurchaseOrderRouteId())
+		from(direct(getStartBPartnerRouteId()))
+				.routeId(getStartBPartnerRouteId())
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(getStopPurchaseOrderRouteId()))
-				.routeId(getStopPurchaseOrderRouteId())
+		from(direct(getStopBPartnerRouteId()))
+				.routeId(getStopBPartnerRouteId())
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -55,8 +55,8 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getPurchaseOrdersFromFileRouteBuilder(request, exchange.getContext()))
+		final OnDemandRoutesPCMController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesPCMController.StartOnDemandRouteRequest.builder()
+				.onDemandRouteBuilder(getBPartnersFromFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -68,8 +68,8 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getPurchaseOrdersFromLocalFileRouteId(request))
+		final OnDemandRoutesPCMController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesPCMController.StopOnDemandRouteRequest.builder()
+				.routeId(getBPartnersFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -78,29 +78,29 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	}
 
 	@NonNull
-	private GetPurchaseOrderFromFileRouteBuilder getPurchaseOrdersFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetBPartnerFromFileRouteBuilder getBPartnersFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetPurchaseOrderFromFileRouteBuilder
+		return GetBPartnerFromFileRouteBuilder
 				.builder()
 				.fileEndpointConfig(PCMConfigUtil.extractLocalFileConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getPurchaseOrdersFromLocalFileRouteId(request))
+				.routeId(getBPartnersFromLocalFileRouteId(request))
 				.build();
 	}
 
 	@NonNull
 	@VisibleForTesting
-	public static String getPurchaseOrdersFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getBPartnersFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "GetPurchaseOrderFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetBPartnerFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
 	public String getServiceValue()
 	{
-		return "LocalFileSyncPurchaseOrders";
+		return "LocalFileSyncBPartners";
 	}
 
 	@Override
@@ -112,23 +112,23 @@ public class LocalFilePurchaseOrderSyncServiceRouteBuilder extends RouteBuilder 
 	@Override
 	public String getEnableCommand()
 	{
-		return START_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE;
+		return START_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_PURCHASE_ORDER_SYNC_LOCAL_FILE_ROUTE;
+		return STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 	}
 
 	@NonNull
-	public String getStartPurchaseOrderRouteId()
+	public String getStartBPartnerRouteId()
 	{
 		return getExternalSystemTypeCode() + "-" + getEnableCommand();
 	}
 
 	@NonNull
-	public String getStopPurchaseOrderRouteId()
+	public String getStopBPartnerRouteId()
 	{
 		return getExternalSystemTypeCode() + "-" + getDisableCommand();
 	}

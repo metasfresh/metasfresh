@@ -5,7 +5,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,8 +40,8 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 
 	private static final String PURCHASE_ORDER_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/pcm/purchaseorder/" + PURCHASE_ORDER_IMPORT_FILE_CSV;
 
-	private final LocalFilePurchaseOrderSyncServiceRouteBuilder purchaseOrderServiceRouteBuilder =
-			new LocalFilePurchaseOrderSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+	private final LocalFilePurchaseOrderSyncServicePCMRouteBuilder purchaseOrderServiceRouteBuilder =
+			new LocalFilePurchaseOrderSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
 	public boolean isUseAdviceWith()
@@ -52,7 +52,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { purchaseOrderServiceRouteBuilder, new OnDemandRoutesController() };
+		return new RouteBuilder[] { purchaseOrderServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId(), externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertPurchaseOrderProcessor, LocalFilePurchaseOrderSyncServiceRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertPurchaseOrderProcessor, LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(externalSystemRequest));
 
 		final InputStream expectedUpsertPurchaseOrderRequest_20 = this.getClass().getResourceAsStream(JSON_UPSERT_PURCHASE_ORDER_REQUEST_20);
 		final PurchaseCandidateCamelRequest purchaseOrderUpsertCamelRequest_20 = objectMapper.readValue(expectedUpsertPurchaseOrderRequest_20, PurchaseCandidateCamelRequest.class);
@@ -126,7 +126,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String routeId = LocalFilePurchaseOrderSyncServiceRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(stopExternalSystemRequest);
+		final String routeId = LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(stopExternalSystemRequest);
 
 		context.start();
 
