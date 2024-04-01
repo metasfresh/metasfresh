@@ -23,7 +23,6 @@ package de.metas.dunning.invoice.api.impl;
  */
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -31,6 +30,7 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,10 +43,8 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
-import java.util.Date;
+import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
@@ -55,14 +53,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-
-	@Override
-	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
-	{
-
-		final Date payDate =  date != null ? date : SystemTime.asDate();
-		return TimeUtil.getDaysBetween(dueDate, payDate);
-	}
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public Iterator<I_C_Dunning_Candidate_Invoice_v1> retrieveDunningCandidateInvoices(final IDunningContext context)
@@ -74,7 +65,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 		Check.assumeNotNull(dunningLevel, "Context shall have DuningLevel set: {}", context);
 
 		Check.assumeNotNull(context.getDunningDate(), "Context shall have DunningDate set: {}", context);
-		final Date dunningDate = TimeUtil.asDate(context.getDunningDate());
+		final Timestamp dunningDate = context.getDunningDate().toTimestamp(orgDAO::getTimeZone);
 
 		final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> dunningGraceFilter = queryBL
 				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
