@@ -422,8 +422,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huProductTU_S0316_030              | huPiItemTU_S0316_030       | p_1_S0316_030           | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate         | DocumentNo     |
-      | huProduct_inventory_S0316_030 | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
+      | huProduct_inventory_S0316_030 | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory_S0316_030 | huProduct_inventoryLine_S0316_030 | p_1_S0316_030           | 0       | 10       |
@@ -583,8 +583,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huProductTU_11212023_2             | huPiItemTU_11212023_2      | p_1_11212023_2          | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier      | MovementDate         | DocumentNo     |
-      | huProduct_inventory_11212023_2 | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     |
+      | huProduct_inventory_11212023_2 | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory_11212023_2 | huProduct_inventoryLine_11212023_2 | p_1_11212023_2          | 0       | 10       |
@@ -736,8 +736,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huProductTU_11212023_3             | huPiItemTU_11212023_3      | p_1_11212023_3          | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier      | MovementDate         | DocumentNo     |
-      | huProduct_inventory_11212023_3 | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     |
+      | huProduct_inventory_11212023_3 | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory_11212023_3 | huProduct_inventoryLine_11212023_3 | p_1_11212023_3          | 0       | 10       |
@@ -925,8 +925,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   """
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate         | DocumentNo     |
-      | huProduct_inventory_S0316_040 | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
+      | huProduct_inventory_S0316_040 | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory_S0316_040 | huProduct_inventoryLine_S0316_040 | p_1_S0316_040           | 0       | 5        |
