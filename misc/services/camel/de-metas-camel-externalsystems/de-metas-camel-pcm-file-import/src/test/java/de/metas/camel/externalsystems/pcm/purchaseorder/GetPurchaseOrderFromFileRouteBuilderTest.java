@@ -5,7 +5,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -52,7 +52,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { purchaseOrderServiceRouteBuilder, new PCMOnDemandRoutesController() };
+		return new RouteBuilder[] { purchaseOrderServiceRouteBuilder, new OnDemandRoutesController() };
 	}
 
 	@Override

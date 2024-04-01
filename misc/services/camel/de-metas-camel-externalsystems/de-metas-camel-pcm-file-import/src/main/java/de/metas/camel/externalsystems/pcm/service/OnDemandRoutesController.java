@@ -23,7 +23,7 @@ import static de.metas.camel.externalsystems.pcm.PCMConstants.PCM_SYSTEM_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class PCMOnDemandRoutesController extends RouteBuilder
+public class OnDemandRoutesController extends RouteBuilder
 {
 	private static final String START_HANDLE_ON_DEMAND_ROUTE = "startHandleOnDemandRoute";
 	private static final String STOP_HANDLE_ON_DEMAND_ROUTE = "stopHandleOnDemandRoute";

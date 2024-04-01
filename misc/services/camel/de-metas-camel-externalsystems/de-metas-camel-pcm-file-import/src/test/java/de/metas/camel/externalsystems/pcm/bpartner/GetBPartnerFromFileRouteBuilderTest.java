@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { bpartnerServiceRouteBuilder, new PCMOnDemandRoutesController() };
+		return new RouteBuilder[] { bpartnerServiceRouteBuilder, new OnDemandRoutesController() };
 	}
 
 	@Override

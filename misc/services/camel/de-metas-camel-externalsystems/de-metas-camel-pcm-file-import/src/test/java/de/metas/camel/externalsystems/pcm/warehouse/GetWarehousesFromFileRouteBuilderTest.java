@@ -6,7 +6,7 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.WarehouseUpsertCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.PCMOnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,7 +56,7 @@ public class GetWarehousesFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { warehouseServiceRouteBuilder, new PCMOnDemandRoutesController() };
+		return new RouteBuilder[] { warehouseServiceRouteBuilder, new OnDemandRoutesController() };
 	}
 
 	@Override
