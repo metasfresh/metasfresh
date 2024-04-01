@@ -26,10 +26,11 @@ package de.metas.dunning.api.impl;
  */
 
 import de.metas.dunning.api.IDunnableDoc;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * Immutable plain {@link IDunnableDoc}
@@ -51,8 +52,8 @@ public class DunnableDoc implements IDunnableDoc
 	private final int C_Currency_ID;
 	private final BigDecimal totalAmt;
 	private final BigDecimal openAmt;
-	private final Date dueDate;
-	private final Date graceDate;
+	private final LocalDateAndOrgId dueDate;
+	private final LocalDateAndOrgId graceDate;
 	private final int daysDue;
 	private final boolean inDispute;
 	private final int M_SectionCode_ID;
@@ -79,7 +80,7 @@ public class DunnableDoc implements IDunnableDoc
 			final int C_BPartner_ID, final int C_BPartner_Location_ID, final int Contact_ID,
 			final int C_Currency_ID,
 			final BigDecimal totalAmt, final BigDecimal openAmt,
-			final Date dueDate, final Date graceDate,
+			final LocalDateAndOrgId dueDate, final LocalDateAndOrgId graceDate,
 			final int daysDue,
 			final int M_SectionCode_ID,
 			boolean isInDispute)
@@ -164,19 +165,16 @@ public class DunnableDoc implements IDunnableDoc
 	}
 
 	@Override
-	public Date getDueDate()
+	@NonNull
+	public LocalDateAndOrgId getDueDate()
 	{
-		return (Date)dueDate.clone();
+		return dueDate;
 	}
 
 	@Override
-	public Date getGraceDate()
+	public LocalDateAndOrgId getGraceDate()
 	{
-		if (graceDate == null)
-		{
-			return null;
-		}
-		return (Date)graceDate.clone();
+		return graceDate;
 	}
 
 	@Override

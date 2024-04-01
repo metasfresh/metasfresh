@@ -30,6 +30,8 @@ import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -41,6 +43,7 @@ import org.compiere.util.TrxRunnableAdapter;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 /**
  * Process responsible for generating dunning candidates for all configured {@link IDunnableSource}s
@@ -63,6 +66,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
 	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected void prepare()
@@ -123,7 +127,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			public void run(final String localTrxName)
 			{
 				final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery = buildRecomputeDunningCandidatesQuery();
-				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName(), recomputeDunningCandidatesQuery);
+				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, getDunningDate(), get_TrxName(), recomputeDunningCandidatesQuery);
 
 				final int countDelete;
 				if (!p_IsOnlyUpdate)
@@ -142,6 +146,15 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 		});
 	}
 
+	@Nullable
+	private LocalDateAndOrgId getDunningDate()
+	{
+		final OrgId orgId = Optional.ofNullable(p_AD_Org_ID)
+				.orElse(Env.getOrgId());
+		
+		return LocalDateAndOrgId.ofNullableTimestamp(p_DunningDate, orgId, orgDAO::getTimeZone);
+	}
+	
 	@NonNull
 	private RecomputeDunningCandidatesQuery buildRecomputeDunningCandidatesQuery()
 	{
