@@ -28,10 +28,10 @@ public class Database
 {
 	private final static DateTimeFormatter DAY_ONLY_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 			.withZone(ZoneOffset.UTC);
-	
+
 	private final static DateTimeFormatter DATE_TIME_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 			.withZone(ZoneOffset.UTC);
-	
+
 	/**
 	 * PostgreSQL ID
 	 */
@@ -81,25 +81,20 @@ public class Database
 	@NonNull
 	public static String TO_DATE(@NonNull final LocalDate localDate)
 	{
-		return " "
-				+ "'"
-				+ localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-				+ "'"
-				+ "::timestamp without time zone"
-				+ " ";
+		return "'" + localDate.format(DateTimeFormatter.ISO_LOCAL_DATE) + "'::timestamp without time zone";
 	}
 
 	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
-	 * @param time    Date to be converted; if {@code null}, then the current time is returned.
+	 * @param timestamp    Date to be converted; if {@code null}, then the current time is returned.
 	 * @param dayOnly true if time set to 00:00:00
 	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ')
 	 * or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
-	public static String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public static String TO_DATE(@Nullable final Timestamp timestamp, final boolean dayOnly)
 	{
-		if (time == null)
+		if (timestamp == null)
 		{
 			if (dayOnly)
 			{
@@ -108,19 +103,17 @@ public class Database
 			return "current_date()";
 		}
 
-		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
 		if (dayOnly)
 		{
-			dateString.append(DAY_ONLY_UTC_FORMATTER.format(TimeUtil.asLocalDate(time, SystemTime.zoneId())));
-			dateString.append("','YYYY-MM-DD')");
+			final LocalDate localDate = timestamp.toLocalDateTime().toLocalDate();
+			return TO_DATE(localDate);
 		}
 		else
 		{
-			dateString.append(DATE_TIME_UTC_FORMATTER.format(time.toInstant()))
+			return "TO_TIMESTAMP('" + DATE_TIME_UTC_FORMATTER.format(timestamp.toInstant())
 					// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"  (UTC time zone)
-					.append("','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
+					+ "','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'";
 		}
-		return dateString.toString();
 	}   // TO_DATE
 
 	/**

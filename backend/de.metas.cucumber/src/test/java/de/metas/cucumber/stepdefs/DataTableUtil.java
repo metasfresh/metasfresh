@@ -77,7 +77,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-	
+
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -294,30 +294,44 @@ public class DataTableUtil
 		}
 	}
 
+	@Deprecated
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
-		final String string = extractStringForColumnName(dataTableRow, columnName);
-		try
-		{
-			return TimeUtil.parseTimestamp(string);
-		}
-		catch (final DateTimeParseException e)
-		{
-			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
-					.setParameter("dataTableRow", dataTableRow);
-		}
+		return extractLocalDateTimestampForColumnName(dataTableRow, columnName);
 	}
 
+	@Deprecated
 	@Nullable
 	public static Timestamp extractDateTimestampForColumnNameOrNull(final Map<String, String> dataTableRow, final String columnName)
 	{
+		return extractLocalDateTimestampForColumnNameOrNull(dataTableRow, columnName);
+	}
+
+	public static Timestamp extractLocalDateTimestampForColumnName(final Map<String, String> row, final String columnName)
+	{
+		final String valueStr = extractStringForColumnName(row, columnName);
+		return parseLocalDateAsTimestamp(valueStr, columnName, row);
+	}
+
+	public static Timestamp extractLocalDateTimestampForColumnNameOrNull(final Map<String, String> row, final String columnName)
+	{
+		String valueStr = extractStringOrNullForColumnName(row, columnName);
+		valueStr = StringUtils.trimBlankToNull(valueStr);
+		return valueStr != null ? parseLocalDateAsTimestamp(valueStr, columnName, row) : null;
+	}
+
+	@NonNull
+	private static Timestamp parseLocalDateAsTimestamp(final String valueStr, final String columnName, final Map<String, String> row)
+	{
 		try
 		{
-			return extractDateTimestampForColumnName(dataTableRow, columnName);
+			return Timestamp.valueOf(LocalDate.parse(valueStr).atStartOfDay());
 		}
 		catch (final Exception e)
 		{
-			return null;
+			throw new AdempiereException("Can't parse value=`" + valueStr + "` of columnName=" + columnName, e)
+					.appendParametersToMessage()
+					.setParameter("row", row);
 		}
 	}
 

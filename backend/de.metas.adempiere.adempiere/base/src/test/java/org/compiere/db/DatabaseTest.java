@@ -23,17 +23,36 @@ package org.compiere.db;
  */
 
 import de.metas.common.util.time.SystemTime;
+import org.assertj.core.api.AbstractStringAssert;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class DatabaseTest
 {
+	@BeforeEach
+	void beforeEach()
+	{
+		SystemTime.resetTimeSource();
+	}
+
+	@AfterEach
+	void afterEach()
+	{
+		SystemTime.resetTimeSource();
+	}
+
 	@Test
 	public void test_convertDecimalPatternToPG()
 	{
@@ -44,69 +63,79 @@ public class DatabaseTest
 		test_convertDecimalPatternToPG("00###", "FM00999");
 	}
 
-	@Test
-	public void test_TO_DATE_null_time_dayOnly_false()
-	{
-		final String dateString = Database.TO_DATE(null, false);
-		Assert.assertEquals("current_date()", dateString);
-	}
-
-	@Test
-	public void test_TO_DATE_null_time_dayOnly_true()
-	{
-		final String dateString = Database.TO_DATE(null, true);
-		Assert.assertEquals("current_date()", dateString);
-	}
-
-	@Test
-	public void test_TO_DATE_starting_from_Zoned_Date_Time_dayOnly_true()
-	{
-		final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+00:00")
-				.withZoneSameInstant(ZoneId.of("Etc/UTC"));
-
-		final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
-		// setting zoneId to Europe/Berlin
-		SystemTime.setFixedTimeSource(ZonedDateTime.now(ZoneId.of("Europe/Berlin")));
-		final String dateString = Database.TO_DATE(time, true);
-		// dev-note: we expect 2023-12-05 as for column without time information, the values should always be in local time
-		Assert.assertEquals("TO_TIMESTAMP('2023-12-05','YYYY-MM-DD')", dateString);
-	}
-
-	@Test
-	public void test_TO_DATE_starting_from_Zoned_Date_Time_dayOnly_false()
-	{
-		final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.123456+00:00")
-				.withZoneSameInstant(ZoneId.of("Etc/UTC"));
-
-		final Timestamp time = TimeUtil.asTimestamp(zonedDateTime.toInstant());
-		final String dateString = Database.TO_DATE(time, false);
-		Assert.assertEquals("TO_TIMESTAMP('2023-12-04 23:59:59.123456','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'", dateString);
-	}
-
-	@Test
-	public void test_TO_DATE_starting_from_Zoned_Date_Time_different_timeZone_dayOnly_false()
-	{
-		final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+01:00")
-				.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
-
-		final Timestamp time = TimeUtil.asTimestamp(zonedDateTime.toInstant());
-		final String dateString = Database.TO_DATE(time, false);
-		Assert.assertEquals("TO_TIMESTAMP('2023-12-04 22:59:59.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'", dateString);
-	}
-
-	@Test
-	public void test_TO_DATE_starting_from_Instant_dayOnly_false()
-	{
-		final Instant instant = Instant.parse("2020-12-12T23:59:00.00Z");
-
-		final Timestamp time = TimeUtil.asTimestamp(instant);
-		final String dateString = Database.TO_DATE(time, false);
-		Assert.assertEquals("TO_TIMESTAMP('2020-12-12 23:59:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'", dateString);
-	}
-
 	private void test_convertDecimalPatternToPG(final String javaDecimalFormat, final String expectedPGFormat)
 	{
 		final String actualPGFormat = Database.convertDecimalPatternToPG(javaDecimalFormat);
-		Assert.assertEquals("Invalid converted PG format for java format: " + javaDecimalFormat, expectedPGFormat, actualPGFormat);
+		assertThat(actualPGFormat).as("Invalid converted PG format for java format: " + javaDecimalFormat).isEqualTo(expectedPGFormat);
 	}
+
+	private AbstractStringAssert<?> assert_TO_DATE(final Timestamp timestamp, boolean dayOnly)
+	{
+		return assertThat(Database.TO_DATE(timestamp, dayOnly))
+				.as(() -> "TO_DATE('" + timestamp + "', dayOnly=" + dayOnly + ")");
+	}
+
+	@Nested
+	class TO_DATE
+	{
+		@Test
+		void null_dayOnlyFalse() {assert_TO_DATE(null, false).isEqualTo("current_date()");}
+
+		@Test
+		void null_dayOnlyTrue() {assert_TO_DATE(null, true).isEqualTo("current_date()");}
+
+		@Test
+		void ZonedDateTime_asTimestamp_dayOnlyTrue()
+		{
+			final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+00:00")
+					.withZoneSameInstant(ZoneId.of("Etc/UTC"));
+			final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
+
+			// setting zoneId to Europe/Berlin
+			SystemTime.setFixedTimeSource(ZonedDateTime.now(ZoneId.of("Europe/Berlin")));
+
+			// dev-note: we expect 2023-12-05 as for column without time information, the values should always be in local time
+			assert_TO_DATE(time, true).isEqualTo("'2023-12-05'::timestamp without time zone");
+		}
+
+		@Test
+		void ZonedDateTime_asTimestamp_dayOnlyFalse()
+		{
+			final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.123456+00:00")
+					.withZoneSameInstant(ZoneId.of("Etc/UTC"));
+			final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
+
+			assert_TO_DATE(time, false).isEqualTo("TO_TIMESTAMP('2023-12-04 23:59:59.123456','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
+		}
+
+		@Test
+		void ZonedDateTime_asTimestamp_differentTimeZone_dayOnlyFalse()
+		{
+			final ZonedDateTime zonedDateTime = ZonedDateTime.parse("2023-12-04T23:59:59.000+01:00")
+					.withZoneSameInstant(ZoneId.of("Europe/Berlin"));
+			final Timestamp time = TimeUtil.asTimestamp(zonedDateTime);
+
+			assert_TO_DATE(time, false).isEqualTo("TO_TIMESTAMP('2023-12-04 22:59:59.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
+		}
+
+		@Test
+		void Instant_asTimestamp_dayOnlyFalse()
+		{
+			final Instant instant = Instant.parse("2020-12-12T23:59:00.00Z");
+			final Timestamp time = TimeUtil.asTimestamp(instant);
+
+			assert_TO_DATE(time, false).isEqualTo("TO_TIMESTAMP('2020-12-12 23:59:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'");
+		}
+	}
+
+	@ParameterizedTest(name = "SystemTime.zoneId={0}")
+	@ValueSource(strings = { "UTC-9", "UTC-5", "UTC-1", "UTC", "Europe/Berlin", "Europe/Bucharest", "UTC+5", "UTC+9" })
+	void parseLocalDateAsTimestamp_TO_DATE_dayOnlyTrue(final String timezone)
+	{
+		SystemTime.setFixedTimeSource(ZonedDateTime.now(ZoneId.of(timezone)));
+
+		final Timestamp timestamp = TimeUtil.parseLocalDateAsTimestamp("2022-03-23");
+		assert_TO_DATE(timestamp, true).isEqualTo("'2022-03-23'::timestamp without time zone");
+	}
+
 }
