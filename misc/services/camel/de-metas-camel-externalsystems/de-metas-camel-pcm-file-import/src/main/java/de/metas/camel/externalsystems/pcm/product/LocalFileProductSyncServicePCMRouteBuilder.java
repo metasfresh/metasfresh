@@ -3,7 +3,7 @@ package de.metas.camel.externalsystems.pcm.product;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.pcm.PCMConfigUtil;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.PCMConstants.PCM_SYSTEM_NAME;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.START_HANDLE_ON_DEMAND_ROUTE_ID;
-import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController.START_HANDLE_ON_DEMAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController.STOP_HANDLE_ON_DEMAND_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 @RequiredArgsConstructor
-public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class LocalFileProductSyncServicePCMRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
 	private static final String START_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "startProductSyncLocalFile";
 	private static final String STOP_PRODUCT_SYNC_LOCAL_FILE_ROUTE = "stopProductSyncLocalFile";
@@ -55,7 +55,7 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
+		final OnDemandRoutesPCMController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesPCMController.StartOnDemandRouteRequest.builder()
 				.onDemandRouteBuilder(getProductsFromFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
@@ -68,7 +68,7 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
-		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
+		final OnDemandRoutesPCMController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesPCMController.StopOnDemandRouteRequest.builder()
 				.routeId(getProductsFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)

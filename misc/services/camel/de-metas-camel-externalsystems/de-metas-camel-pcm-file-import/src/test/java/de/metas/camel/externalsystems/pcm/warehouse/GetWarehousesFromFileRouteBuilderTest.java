@@ -6,7 +6,7 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.WarehouseUpsertCamelRequest;
-import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.pcm.service.OnDemandRoutesPCMController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -44,8 +44,8 @@ public class GetWarehousesFromFileRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_UPSERT_WAREHOUSE_REQUEST_50 = "50_CamelUpsertWarehouseRequest.json";
 	private static final String JSON_MF_UPSERT_BPARTNERS = "UpsertBPartnersMetasfreshResponse.json";
 
-	private final LocalFileWarehouseSyncServiceRouteBuilder warehouseServiceRouteBuilder =
-			new LocalFileWarehouseSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+	private final LocalFileWarehouseSyncServicePCMRouteBuilder warehouseServiceRouteBuilder =
+			new LocalFileWarehouseSyncServicePCMRouteBuilder(Mockito.mock(ProcessLogger.class));
 
 	@Override
 	public boolean isUseAdviceWith()
@@ -56,7 +56,7 @@ public class GetWarehousesFromFileRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new RouteBuilder[] { warehouseServiceRouteBuilder, new OnDemandRoutesController() };
+		return new RouteBuilder[] { warehouseServiceRouteBuilder, new OnDemandRoutesPCMController() };
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class GetWarehousesFromFileRouteBuilderTest extends CamelTestSupport
 
 		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor,
 								   mockUpsertWarehouseProcessor,
-								   LocalFileWarehouseSyncServiceRouteBuilder.getWarehousesFromLocalFileRouteId(externalSystemRequest));
+								   LocalFileWarehouseSyncServicePCMRouteBuilder.getWarehousesFromLocalFileRouteId(externalSystemRequest));
 		//
 		final InputStream expectedUpsertPartnerRequest_20 = this.getClass().getResourceAsStream(JSON_UPSERT_PARTNER_REQUEST_20);
 		final BPUpsertCamelRequest partnerUpsertCamelRequest_20 = objectMapper.readValue(expectedUpsertPartnerRequest_20, BPUpsertCamelRequest.class);
@@ -142,7 +142,7 @@ public class GetWarehousesFromFileRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String routeId = LocalFileWarehouseSyncServiceRouteBuilder.getWarehousesFromLocalFileRouteId(stopExternalSystemRequest);
+		final String routeId = LocalFileWarehouseSyncServicePCMRouteBuilder.getWarehousesFromLocalFileRouteId(stopExternalSystemRequest);
 
 		context.start();
 
