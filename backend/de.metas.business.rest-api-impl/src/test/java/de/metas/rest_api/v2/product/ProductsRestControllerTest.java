@@ -49,17 +49,25 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobService;
 import de.metas.logging.LogManager;
+import de.metas.pricing.pricelist.PriceListVersionRepository;
+import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.quality.attribute.ProductQualityAttributeRepository;
 import de.metas.product.quality.attribute.QualityAttributeService;
+import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
+import de.metas.rest_api.v2.pricing.PriceListRestService;
+import de.metas.rest_api.v2.pricing.ProductPriceRestService;
 import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -126,7 +134,7 @@ public class ProductsRestControllerTest
 
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 																					  new ExternalSystemExportAuditRepo(),
 																					  new RuntimeParametersRepository(),
 																					  externalServices,
@@ -161,12 +169,27 @@ public class ProductsRestControllerTest
 				new IncotermsRepository(),
 				new BPartnerCreditLimitRepository(),
 				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
-
+		
 		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
 
 		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
 		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(productWarehouseAssignmentService, externalIdentifierResolver);
 		//
+
+		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
+		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
+		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
+
+		final PriceListVersionRepository priceListVersionRepository = new PriceListVersionRepository();
+		final PriceListRestService priceListService = new PriceListRestService(externalReferenceRestControllerService, priceListVersionRepository);
+
+		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService, 
+																						   productPriceRepository, 
+																						   priceListService, 
+																						   externalIdentifierResolver,
+																						   new BpartnerPriceListServicesFacade(productPriceRepository),
+																						   jsonServiceFactory);
+				
 		final ProductRestService productRestService = new ProductRestService(productRepository,
 																			 productWarehouseAssignmentRestService,
 																			 externalReferenceRestControllerService,
@@ -174,7 +197,10 @@ public class ProductsRestControllerTest
 																			 Mockito.mock(ProductAllergenRestService.class),
 																			 new QualityAttributeService(new ProductQualityAttributeRepository()),
 																			 jsonServiceFactory,
-																			 externalIdentifierResolver);
+																			 externalIdentifierResolver,
+																			 productPriceRestService,
+																			 new ProductTaxCategoryService(new ProductTaxCategoryRepository())
+		);
 		//
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
 	}

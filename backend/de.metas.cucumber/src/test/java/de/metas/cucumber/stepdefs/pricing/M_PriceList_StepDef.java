@@ -82,7 +82,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 
@@ -292,7 +292,7 @@ public class M_PriceList_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
+			final String productPriceIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, "M_ProductPrice");
 			final Integer productPriceID = productPriceTable.getOptional(productPriceIdentifier)
 					.map(I_M_ProductPrice::getM_ProductPrice_ID)
 					.orElseGet(() -> Integer.parseInt(productPriceIdentifier));
@@ -313,10 +313,11 @@ public class M_PriceList_StepDef
 				final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
 				productPrice.setC_UOM_ID(productPriceUomId.getRepoId());
 			}
-
-			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_ProductPrice.COLUMNNAME_IsActive, true);
-			productPrice.setIsActive(isActive);
-
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_UOM.COLUMNNAME_IsActive);
+			if (isActive != null)
+			{
+				productPrice.setIsActive(isActive);
+			}
 			final String invoicableQtyBasedOn = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ProductPrice.COLUMNNAME_InvoicableQtyBasedOn);
 			if (Check.isNotBlank(invoicableQtyBasedOn))
 			{

@@ -103,6 +103,7 @@ public class AllAvailableSingletonServicesTest
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
 		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@ParameterizedTest

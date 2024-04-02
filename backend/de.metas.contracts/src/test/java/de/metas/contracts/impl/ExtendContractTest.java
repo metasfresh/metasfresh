@@ -50,6 +50,7 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 						ADReferenceService.newMocked(),
 						new GLCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

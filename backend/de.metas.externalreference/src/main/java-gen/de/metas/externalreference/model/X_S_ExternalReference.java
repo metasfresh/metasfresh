@@ -83,6 +83,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_LeichUndMehl = "LeichUndMehl";
 	/** SAP = SAP */
 	public static final String EXTERNALSYSTEM_SAP = "SAP";
+	/** ProCareManagement = ProCareManagement */
+	public static final String EXTERNALSYSTEM_ProCareManagement = "ProCareManagement";
 	@Override
 	public void setExternalSystem (final String ExternalSystem)
 	{

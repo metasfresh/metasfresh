@@ -1,0 +1,120 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_2",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": {
+            "code": "bp_value_2",
+            "codeSet": true,
+            "active": null,
+            "activeSet": false,
+            "name": "bp_name_2",
+            "nameSet": true,
+            "name2": null,
+            "name2Set": false,
+            "name3": null,
+            "name3Set": false,
+            "companyName": "bp_name_2",
+            "companyNameSet": true,
+            "vendor": null,
+            "vendorSet": false,
+            "customer": null,
+            "customerSet": false,
+            "parentId": null,
+            "parentIdSet": false,
+            "phone": null,
+            "phoneSet": false,
+            "language": null,
+            "languageSet": false,
+            "invoiceRule": null,
+            "invoiceRuleSet": false,
+            "poInvoiceRule": null,
+            "poInvoiceRuleSet": false,
+            "url": null,
+            "urlSet": false,
+            "url2": null,
+            "url2Set": false,
+            "url3": null,
+            "url3Set": false,
+            "group": null,
+            "groupSet": false,
+            "globalId": null,
+            "globalIdset": false,
+            "priceListId": null,
+            "priceListIdSet": false,
+            "vatId": null,
+            "vatIdSet": false,
+            "memo": null,
+            "memoIsSet": false,
+            "syncAdvise": null,
+            "syncAdviseSet": false
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-ProCareManagement-bpartnerIdentifier_2",
+                "externalVersion": null,
+                "location": {
+                  "active": null,
+                  "activeSet": false,
+                  "name": null,
+                  "nameSet": false,
+                  "bpartnerName": null,
+                  "bpartnerNameSet": false,
+                  "address1": "street_2",
+                  "address1Set": true,
+                  "address2": null,
+                  "address2Set": false,
+                  "address3": null,
+                  "address3Set": false,
+                  "address4": null,
+                  "address4Set": false,
+                  "poBox": null,
+                  "poBoxSet": false,
+                  "postal": "postCode_2",
+                  "postalSet": true,
+                  "city": "city_2",
+                  "citySet": true,
+                  "district": null,
+                  "districtSet": false,
+                  "region": null,
+                  "regionSet": false,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": null,
+                  "glnSet": false,
+                  "shipTo": null,
+                  "shipToSet": false,
+                  "shipToDefault": true,
+                  "shipToDefaultSet": true,
+                  "billTo": null,
+                  "billToSet": false,
+                  "billToDefault": true,
+                  "billToDefaultSet": true,
+                  "ephemeral": false,
+                  "ephemeralSet": false,
+                  "email": null,
+                  "emailSet": false,
+                  "phone": null,
+                  "phoneSet": false,
+                  "visitorsAddress": null,
+                  "visitorsAddressSet": false
+                }
+              }
+            ],
+            "syncAdvise": null
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

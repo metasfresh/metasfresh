@@ -35,6 +35,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
@@ -68,6 +69,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
+	
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	@Override

@@ -33,7 +33,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ProductTaxCategory
 {
 	@NonNull
@@ -50,4 +50,7 @@ public class ProductTaxCategory
 
 	@Nullable
 	CountryId countryId;
+
+	@Builder.Default
+	boolean active = true;
 }

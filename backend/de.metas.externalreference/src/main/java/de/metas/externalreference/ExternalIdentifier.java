@@ -96,11 +96,11 @@ public class ExternalIdentifier
 	}
 
 	@NonNull
-	public static ExternalIdentifier of(@NonNull final String identifier)
+	public static Optional<ExternalIdentifier> ofIdentifierCandidate(@NonNull final String identifier)
 	{
 		if (Type.METASFRESH_ID.pattern.matcher(identifier).matches())
 		{
-			return new ExternalIdentifier(Type.METASFRESH_ID, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.METASFRESH_ID, identifier, null));
 		}
 
 		final Matcher externalReferenceMatcher = Type.EXTERNAL_REFERENCE.pattern.matcher(identifier);
@@ -113,48 +113,55 @@ public class ExternalIdentifier
 					.value(externalReferenceMatcher.group(2))
 					.build();
 
-			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem);
+			return Optional.of(new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem));
 		}
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(identifier);
 		if (glnMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.GLN, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.GLN, identifier, null));
 		}
 
 		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
 		if (valMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.VALUE, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.VALUE, identifier, null));
 		}
 
 		final Matcher internalNameMatcher = Type.INTERNAL_NAME.pattern.matcher(identifier);
 		if (internalNameMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.INTERNAL_NAME, identifier, null));
 		}
 
 		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
 		if (nameMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.NAME, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.NAME, identifier, null));
 		}
 
 		final Matcher ibanMatcher = Type.IBAN.pattern.matcher(identifier);
 		if (ibanMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.IBAN, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.IBAN, identifier, null));
 		}
 
 		final Matcher qrIbanMatcher = Type.QR_IBAN.pattern.matcher(identifier);
 		if (qrIbanMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.QR_IBAN, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.QR_IBAN, identifier, null));
 		}
 
-		throw new AdempiereException("Unknown externalId type!")
-				.appendParametersToMessage()
-				.setParameter("externalId", identifier);
+		return Optional.empty();
+	}
+
+	@NonNull
+	public static ExternalIdentifier of(@NonNull final String identifier)
+	{
+		return ofIdentifierCandidate(identifier)
+				.orElseThrow(() -> new AdempiereException("Unknown externalId type!")
+						.appendParametersToMessage()
+						.setParameter("externalId", identifier));
 	}
 
 	@NonNull

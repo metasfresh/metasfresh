@@ -214,7 +214,7 @@ public class C_BPartner_Location_StepDef
 
 		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
-
+	
 	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)
 	{
 		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);

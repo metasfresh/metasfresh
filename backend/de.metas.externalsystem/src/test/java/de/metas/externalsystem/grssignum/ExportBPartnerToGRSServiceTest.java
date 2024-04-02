@@ -37,6 +37,7 @@ import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -75,7 +76,7 @@ public class ExportBPartnerToGRSServiceTest
 
 		AdempiereTestHelper.get().init();
 
-		exportBPartnerToGRSService = new ExportBPartnerToGRSService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+		exportBPartnerToGRSService = new ExportBPartnerToGRSService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 																	new DataExportAuditRepository(),
 																	new DataExportAuditLogRepository(),
 																	new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),

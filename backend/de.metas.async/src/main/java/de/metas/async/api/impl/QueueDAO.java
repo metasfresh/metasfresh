@@ -25,11 +25,7 @@ package de.metas.async.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
-import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.model.I_C_Queue_Processor_Assign;
-import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.*;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -52,13 +48,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class QueueDAO extends AbstractQueueDAO
 {

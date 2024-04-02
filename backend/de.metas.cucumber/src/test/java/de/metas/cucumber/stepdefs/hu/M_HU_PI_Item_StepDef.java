@@ -48,7 +48,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_HU_PI_Item_StepDef
 {

@@ -1,6 +1,8 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;

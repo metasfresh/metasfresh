@@ -10,6 +10,7 @@ import de.metas.externalsystem.process.InvokeEbayAction;
 import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeMetasfreshAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
+import de.metas.externalsystem.process.InvokePCMAction;
 import de.metas.externalsystem.process.InvokeSAPAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
@@ -56,7 +57,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName()),
 	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName()),
 	Amazon(X_ExternalSystem_Config.TYPE_Amazon, "Amazon", InvokeAmazonAction.class.getName()),
-	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null)
+	PrintClient(X_ExternalSystem_Config.TYPE_PrintingClient, "PrintingClient", null),
+	ProCareManagement(X_ExternalSystem_Config.TYPE_ProCareManagement, "ProCareManagement", InvokePCMAction.class.getName())
 	;
 
 	@Getter

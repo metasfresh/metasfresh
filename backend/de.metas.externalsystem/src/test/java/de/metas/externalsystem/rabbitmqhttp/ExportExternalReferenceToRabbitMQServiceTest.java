@@ -46,6 +46,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -96,7 +97,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 		exportExternalReferenceToRabbitMQService = new ExportExternalReferenceToRabbitMQService(
 				new DataExportAuditRepository(),
 				new DataExportAuditLogRepository(),
-				new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
+				new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
 				new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 				externalReferenceRepository,
 				new UserGroupRepository(),
