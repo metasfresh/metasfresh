@@ -28,10 +28,10 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -94,7 +94,7 @@ public class InterimInvoiceCandidateService
 
 	private DocTypeId interimInvoiceDocType;
 
-	public ImmutableSet<InvoiceCandidateId> createInterimInvoiceCandidatesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord, @NonNull final BPartnerInterimContract bPartnerInterimContract)
+	public ImmutableSet<InvoiceCandidateId> createInterimInvoiceCandidatesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
 		if (inOutLines.isEmpty())
@@ -118,7 +118,7 @@ public class InterimInvoiceCandidateService
 				.soTrx(SOTrx.PURCHASE)
 				.invoiceDocTypeId(getInterimInvoiceDocType())
 				.invoiceRule(InvoiceRule.Immediate)
-				.harvestYearAndCalendarId(bPartnerInterimContract.getYearAndCalendarId())
+				.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getHarvesting_Year_ID()))
 				.productId(productIdToInvoice)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()

@@ -77,12 +77,7 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice_StepDef
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(flatrateTermIdentifier);
 
-			final String partnerInterimIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_InterimContract.COLUMNNAME_C_BPartner_InterimContract_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_InterimContract bPartnerInterimContractRecord = partnerInterimTable.get(partnerInterimIdentifier);
-
-			final BPartnerInterimContract bPartnerInterimContract = bPartnerInterimContractService.getById(BPartnerInterimContractId.ofRepoId(bPartnerInterimContractRecord.getC_BPartner_InterimContract_ID()));
-
-			final Set<InvoiceCandidateId> generatedICIds = interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord, bPartnerInterimContract);
+			final Set<InvoiceCandidateId> generatedICIds = interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord);
 			associateGeneratedIds(generatedICIds, row);
 		}
 	}

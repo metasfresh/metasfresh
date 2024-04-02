@@ -39,7 +39,7 @@ import java.time.Instant;
 @Builder
 public class ModularFlatrateTermQuery
 {
-	@NonNull BPartnerId bPartnerId;
+	@Nullable BPartnerId bPartnerId;
 	@Nullable
 	ProductId productId;
 	@NonNull SOTrx soTrx;
