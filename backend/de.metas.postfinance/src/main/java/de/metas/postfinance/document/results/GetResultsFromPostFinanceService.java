@@ -36,7 +36,6 @@ import de.metas.postfinance.docoutboundlog.PostFinanceLogCreateRequest;
 import de.metas.postfinance.docoutboundlog.PostFinanceLogRepository;
 import de.metas.postfinance.document.export.PostFinanceExportException;
 import de.metas.postfinance.jaxb.DownloadFile;
-import de.metas.postfinance.processprotocol.BillType;
 import de.metas.postfinance.processprotocol.Envelope;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -44,6 +43,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
@@ -79,7 +79,7 @@ public class GetResultsFromPostFinanceService
 
 				final Envelope envelope = (Envelope)unmarshaller.unmarshal(inputStream);
 
-				envelope.getBody().getDeliveryDate().forEach(deliveryDate -> handleDeliveryDate(deliveryDate, attachmentEntryCreateRequest));
+				handleTransactionDetails(envelope.getTransactionDetails(), attachmentEntryCreateRequest);
 			}
 			catch (final JAXBException e)
 			{
@@ -89,20 +89,26 @@ public class GetResultsFromPostFinanceService
 		});
 	}
 
-	private void handleDeliveryDate(@NonNull final Envelope.Body.DeliveryDate deliveryDate,
+	private void handleTransactionDetails(@NonNull final Envelope.TransactionDetails transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		deliveryDate.getOKResult().getBill().forEach(bill -> handleValidResults(bill, attachmentEntryCreateRequest));
-		deliveryDate.getNOKResult().getBill().forEach(bill -> handleResultsWithErrors(bill, attachmentEntryCreateRequest));
+		if(EnumUtils.isValidEnum(ProcessingStatusWithError.class, transactionDetails.getStatus()))
+		{
+			handleResultsWithErrors(transactionDetails, attachmentEntryCreateRequest);
+		}
+		else
+		{
+			handleValidResults(transactionDetails, attachmentEntryCreateRequest);
+		}
 	}
 
-	private void handleResultsWithErrors(@NonNull final BillType bill,
+	private void handleResultsWithErrors(@NonNull final Envelope.TransactionDetails transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		final String transactionID = bill.getTransactionID();
+		final String transactionID = transactionDetails.getTransactionID();
 		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionId(transactionID);
 
-		if (!postFinanceLogOptional.isPresent())
+		if (postFinanceLogOptional.isEmpty())
 		{
 			return;
 		}
@@ -110,19 +116,19 @@ public class GetResultsFromPostFinanceService
 
 		final String errorMessage;
 		boolean isException = true;
-		if ("05".equals(bill.getReasonCode()))
+		if ("05".equals(transactionDetails.getReasonCode()))
 		{
-			errorMessage = "The document was sent again before receiving processing result of valid document. Ignoring " + bill.getReasonCode() + " " + bill.getReasonText();
+			errorMessage = "The document was sent again before receiving processing result of valid document. Ignoring " + transactionDetails.getReasonCode() + " " + transactionDetails.getReasonText();
 			isException = false;
 		}
 		else
 		{
-			errorMessage = bill.getReasonCode() + " " + bill.getReasonText();
+			errorMessage = transactionDetails.getStatus() + " " + transactionDetails.getReasonCode() + " " + transactionDetails.getReasonText();
 		}
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
 				.transactionId(transactionID)
-				.postFinanceExportException(isException ? new PostFinanceExportException(bill.getReasonCode() + " " + bill.getReasonText()) : null)
+				.postFinanceExportException(isException ? new PostFinanceExportException(transactionDetails.getReasonCode() + " " + transactionDetails.getReasonText()) : null)
 				.message(errorMessage)
 				.build();
 
@@ -132,10 +138,10 @@ public class GetResultsFromPostFinanceService
 
 	}
 
-	private void handleValidResults(@NonNull final Envelope.Body.DeliveryDate.OKResult.Bill bill,
+	private void handleValidResults(@NonNull final Envelope.TransactionDetails transactionDetails,
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
-		final String transactionID = bill.getTransactionID();
+		final String transactionID = transactionDetails.getTransactionID();
 		final Optional<PostFinanceLog> postFinanceLogOptional = postFinanceLogRepository.retrieveLatestLogWithTransactionId(transactionID);
 
 		if (postFinanceLogOptional.isEmpty())
@@ -147,7 +153,7 @@ public class GetResultsFromPostFinanceService
 		final PostFinanceLogCreateRequest postFinanceLogCreateRequest = PostFinanceLogCreateRequest.builder()
 				.docOutboundLogId(docOutboundLogId)
 				.transactionId(transactionID)
-				.message("PostFinance results are successful")
+				.message("PostFinance result status " + transactionDetails.getStatus())
 				.build();
 
 		sendResultToDocOutbound(attachmentEntryCreateRequest,
@@ -156,8 +162,8 @@ public class GetResultsFromPostFinanceService
 
 	}
 
-	private PostFinanceLog sendResultToDocOutbound(final @NonNull AttachmentEntryCreateRequest attachmentEntryCreateRequest,
-			@NonNull PostFinanceLogCreateRequest postFinanceLogCreateRequest,
+	private void sendResultToDocOutbound(final @NonNull AttachmentEntryCreateRequest attachmentEntryCreateRequest,
+			@NonNull final PostFinanceLogCreateRequest postFinanceLogCreateRequest,
 			@NonNull final DocOutboundLogId docOutboundLogId)
 	{
 		final TableRecordReference docOutboundLogReference = TableRecordReference.of(I_C_Doc_Outbound_Log.Table_Name, docOutboundLogId);
@@ -170,8 +176,6 @@ public class GetResultsFromPostFinanceService
 		{
 			docOutboundDAO.setPostFinanceExportStatus(docOutboundLogId, X_C_Doc_Outbound_Log.POSTFINANCE_EXPORT_STATUS_Error);
 		}
-
-		return postFinanceLog;
 	}
 
 	@NonNull
