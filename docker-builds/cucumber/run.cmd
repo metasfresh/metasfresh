@@ -3,7 +3,7 @@
 @echo running cucumber tests
 @echo --------------------------
 
-docker-compose up --abort-on-container-exit --exit-code-from cucumber
+docker compose up --abort-on-container-exit --exit-code-from cucumber
 
 @echo.
 @echo --------------------------
