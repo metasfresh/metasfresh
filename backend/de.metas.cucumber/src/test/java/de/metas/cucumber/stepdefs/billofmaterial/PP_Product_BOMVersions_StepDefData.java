@@ -23,20 +23,21 @@
 package de.metas.cucumber.stepdefs.billofmaterial;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 
 public class PP_Product_BOMVersions_StepDefData extends StepDefData<I_PP_Product_BOMVersions>
+		implements StepDefDataGetIdAware<ProductBOMVersionsId, I_PP_Product_BOMVersions>
 {
 	public PP_Product_BOMVersions_StepDefData()
 	{
 		super(I_PP_Product_BOMVersions.class);
 	}
 
-	public ProductBOMVersionsId getId(final StepDefDataIdentifier identifier)
+	@Override
+	public ProductBOMVersionsId extractIdFromRecord(final I_PP_Product_BOMVersions record)
 	{
-		final I_PP_Product_BOMVersions bomVersions = get(identifier);
-		return ProductBOMVersionsId.ofRepoId(bomVersions.getPP_Product_BOMVersions_ID());
+		return ProductBOMVersionsId.ofRepoId(record.getPP_Product_BOMVersions_ID());
 	}
 }

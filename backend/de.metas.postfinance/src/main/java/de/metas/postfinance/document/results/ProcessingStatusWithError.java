@@ -1,15 +1,8 @@
-package de.metas.invoice_gateway.spi.model;
-
-
-
-import de.metas.util.Check;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.postfinance
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,18 +19,10 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-public class ProductId
+
+package de.metas.postfinance.document.results;
+
+public enum ProcessingStatusWithError
 {
-	public static ProductId ofId(final int id)
-	{
-		return new ProductId(id);
-	}
-
-	int id;
-
-	private ProductId(final int id)
-	{
-		this.id = Check.assumeGreaterThanZero(id, "id");
-	}
+	INVALID, REJECTED, RETURN, NOTDELIVERED, DELAYED
 }

@@ -1,0 +1,31 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="Envelope">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element type="xs:long" name="SenderID"/>
+				<xs:element type="xs:dateTime" name="ProtocolCreated"/>
+				<xs:element name="TransactionDetails">
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element type="xs:dateTime" name="EventDateTime"/>
+							<xs:element type="xs:string" name="Type"/>
+							<xs:element type="xs:string" name="Status"/>
+							<xs:element type="xs:string" name="TransactionID"/>
+							<xs:element type="xs:string" name="DocumentID"/>
+							<xs:element type="xs:string" name="RecipientID"/>
+							<xs:element type="xs:string" name="RecipientType"/>
+							<xs:element type="xs:string" name="CreditorAccount"/>
+							<xs:element type="xs:string" name="Amount"/>
+							<xs:element type="xs:string" name="Currency"/>
+							<xs:element type="xs:string" name="ReasonCode"/>
+							<xs:element type="xs:string" name="ReasonText"/>
+							<xs:element type="xs:string" name="RelocationAddress"/>
+							<xs:element type="xs:string" name="TrackingNumber"/>
+							<xs:element type="xs:string" name="LetterID"/>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

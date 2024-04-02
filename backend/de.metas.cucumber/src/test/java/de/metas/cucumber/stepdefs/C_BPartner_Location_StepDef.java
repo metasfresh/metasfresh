@@ -74,10 +74,7 @@ public class C_BPartner_Location_StepDef
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow tableRow : DataTableRow.toRows(dataTable))
-		{
-			createC_BPartner_Location(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createC_BPartner_Location);
 	}
 
 	@Given("update C_BPartner_Location:")
@@ -103,10 +100,7 @@ public class C_BPartner_Location_StepDef
 	@Given("load C_BPartner_Location:")
 	public void load_bpartner_location(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			load_bpartner_location(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::load_bpartner_location);
 	}
 
 	private void createC_BPartner_Location(@NonNull final DataTableRow row)

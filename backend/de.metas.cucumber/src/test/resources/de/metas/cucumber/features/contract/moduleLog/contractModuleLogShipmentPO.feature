@@ -136,10 +136,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_100                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_100                  | s_2_S0303_100         |
+      | s_s_2_S0303_100                  | s_1_S0303_100         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_100           | s_2_S0303_100         | modularContract_prod_S0303_100 | 3           | false     | soLine_2_S0303_100            |
+      | s_l_2_S0303_100           | s_1_S0303_100         | modularContract_prod_S0303_100 | 3           | false     | soLine_2_S0303_100            |
 
     When the shipment identified by s_1_S0303_100 is completed
 
@@ -261,10 +261,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_200                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_200                  | s_2_S0303_200         |
+      | s_s_2_S0303_200                  | s_1_S0303_200         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_200           | s_2_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2_S0303_200            |
+      | s_l_2_S0303_200           | s_1_S0303_200         | modularContract_prod_S0303_200 | 3           | false     | soLine_2_S0303_200            |
 
     When the shipment identified by s_1_S0303_200 is completed
 
@@ -364,10 +364,10 @@ Feature: Modular contract log from shipment (PO)
       | s_s_2_S0303_300                  | D            | false               | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | s_s_2_S0303_300                  | s_2_S0303_300         |
+      | s_s_2_S0303_300                  | s_1_S0303_300         |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier        | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | s_l_2_S0303_300           | s_2_S0303_300         | modularContract_prod_S0303_300 | 3           | false     | soLine_2_S0303_300            |
+      | s_l_2_S0303_300           | s_1_S0303_300         | modularContract_prod_S0303_300 | 3           | false     | soLine_2_S0303_300            |
 
     When the shipment identified by s_1_S0303_300 is completed
 

@@ -22,6 +22,7 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -50,6 +51,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class DocOutboundDAO implements IDocOutboundDAO
 {
@@ -112,6 +114,27 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
+	public I_C_Doc_Outbound_Log getById(@NonNull final DocOutboundLogId docOutboundLogId)
+	{
+		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
+	}
+
+	@Override
+	public final I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(@NonNull final DocOutboundLogId docOutboundLogId)
+	{
+		return retrieveCurrentPDFArchiveLogLineOrNull(getById(docOutboundLogId));
+	}
+
+	@Override
+	public void setPostFinanceExportStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final String exportStatus)
+	{
+		final I_C_Doc_Outbound_Log logRecord = getById(docOutboundLogId);
+		logRecord.setPostFinance_Export_Status(exportStatus);
+		InterfaceWrapperHelper.save(logRecord);
+	}
+
+	@Override
+	@Nullable
 	public final I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(final I_C_Doc_Outbound_Log log)
 	{
 		if (log == null)

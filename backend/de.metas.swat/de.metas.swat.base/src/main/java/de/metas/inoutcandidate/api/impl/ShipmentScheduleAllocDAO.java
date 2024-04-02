@@ -356,6 +356,8 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(createOnShipmentLineFilter(scheduleIds, onShipmentLine))
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID)
+				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
 				.stream(type)
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
