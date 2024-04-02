@@ -24,6 +24,7 @@ import org.compiere.model.I_AD_Language;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -283,7 +284,7 @@ public class POTrlRepository
 
 		if (isUpdatedColumnPresent)
 		{
-			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), false));
+			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), DisplayType.DateTime));
 		}
 
 		final String keyColumnName = trlInfo.getKeyColumnName();

@@ -1314,7 +1314,7 @@ public abstract class PO
 		}
 		else if (value instanceof Timestamp)
 		{
-			valueString = DB.TO_DATE((Timestamp)value, false);
+			valueString = DB.TO_DATE((Timestamp)value, DisplayType.DateTime);
 		}
 		else
 		{
@@ -3015,7 +3015,7 @@ public abstract class PO
 			}
 			else if (value instanceof Timestamp)
 			{
-				sql.append(DB.TO_DATE((Timestamp)encrypt(i, value), p_info.getColumnDisplayType(i) == DisplayType.Date));
+				sql.append(DB.TO_DATE((Timestamp)encrypt(i, value), p_info.getColumnDisplayType(i)));
 			}
 			else
 			{
@@ -3064,7 +3064,7 @@ public abstract class PO
 			{
 				final Timestamp now = new Timestamp(System.currentTimeMillis());
 				set_ValueNoCheck("Updated", now);
-				sql.append(",Updated=").append(DB.TO_DATE(now, false));
+				sql.append(",Updated=").append(DB.TO_DATE(now, DisplayType.DateTime));
 			}
 			if (!updatedBy)    // UpdatedBy not explicitly set
 			{
@@ -3408,7 +3408,7 @@ public abstract class PO
 				}
 				else if (value instanceof Timestamp)
 				{
-					sqlValues.append(DB.TO_DATE((Timestamp)encrypt(i, value), p_info.getColumnDisplayType(i) == DisplayType.Date));
+					sqlValues.append(DB.TO_DATE((Timestamp)encrypt(i, value), p_info.getColumnDisplayType(i)));
 				}
 				else if (c == String.class)
 				{
