@@ -100,7 +100,6 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	private I_C_Invoice_Candidate createInterimIC(final I_C_Flatrate_Term term)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = createBaseIC(term);
-		invoiceCandidate.setIsInterimInvoice(true);
 
 		final DocTypeId interimInvoiceDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(DocBaseType.APInvoice)

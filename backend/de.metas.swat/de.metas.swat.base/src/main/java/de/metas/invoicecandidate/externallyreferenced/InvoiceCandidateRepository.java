@@ -137,7 +137,6 @@ public class InvoiceCandidateRepository
 				icRecord.setC_Harvesting_Calendar_ID(harvestYearAndCalendarId.calendarId().getRepoId());
 				icRecord.setHarvesting_Year_ID(harvestYearAndCalendarId.yearId().getRepoId());
 			}
-			icRecord.setIsInterimInvoice(ic.isInterimInvoice());
 			icRecord.setC_ILCandHandler_ID(ic.getHandlerId().getRepoId());
 			icRecord.setIsManual(ic.isManual());
 			icRecord.setC_Auction_ID(AuctionId.toRepoId(ic.getAuctionId()));
@@ -344,7 +343,6 @@ public class InvoiceCandidateRepository
 
 		candidate.paymentTermId(PaymentTermId.ofRepoId(icRecord.getC_PaymentTerm_ID()));
 		candidate.isManual(icRecord.isManual());
-		candidate.isInterimInvoice(icRecord.isInterimInvoice());
 		candidate.handlerId(ILCandHandlerId.ofRepoId(icRecord.getC_ILCandHandler_ID()));
 		candidate.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(icRecord.getHarvesting_Year_ID(), icRecord.getC_Harvesting_Calendar_ID()));
 		candidate.auctionId(AuctionId.ofRepoIdOrNull(icRecord.getC_Auction_ID()));
