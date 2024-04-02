@@ -186,4 +186,3 @@ WHERE
   AND c.isactive = 'Y'
 ;
 
-a
