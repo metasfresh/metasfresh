@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2006985043L;
+	private static final long serialVersionUID = -1444673771L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -101,6 +101,21 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
+	public void setM_Co_Product_ID (final int M_Co_Product_ID)
+	{
+		if (M_Co_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Co_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Co_Product_ID, M_Co_Product_ID);
+	}
+
+	@Override
+	public int getM_Co_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Co_Product_ID);
+	}
+
+	@Override
 	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
 	{
 		if (ModCntr_Settings_ID < 1) 
@@ -131,18 +146,33 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
+	public void setM_Processed_Product_ID (final int M_Processed_Product_ID)
 	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
+		if (M_Processed_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Processed_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+			set_Value (COLUMNNAME_M_Processed_Product_ID, M_Processed_Product_ID);
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Processed_Product_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+		return get_ValueAsInt(COLUMNNAME_M_Processed_Product_ID);
+	}
+
+	@Override
+	public void setM_Raw_Product_ID (final int M_Raw_Product_ID)
+	{
+		if (M_Raw_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Raw_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Raw_Product_ID, M_Raw_Product_ID);
+	}
+
+	@Override
+	public int getM_Raw_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Raw_Product_ID);
 	}
 
 	@Override

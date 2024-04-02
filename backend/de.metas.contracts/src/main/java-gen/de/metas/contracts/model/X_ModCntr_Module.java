@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1918625418L;
+	private static final long serialVersionUID = 996720840L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -71,15 +71,15 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings()
+	public de.metas.contracts.model.I_ModCntr_Log getModCntr_Settings()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class);
 	}
 
 	@Override
-	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings)
+	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Log ModCntr_Settings)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class, ModCntr_Settings);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class, ModCntr_Settings);
 	}
 
 	@Override

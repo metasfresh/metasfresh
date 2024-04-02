@@ -88,7 +88,8 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Conditions_StepDef
@@ -348,12 +349,12 @@ public class C_Flatrate_Conditions_StepDef
 		assertThat(clonedSettings.getName()).isEqualTo(name);
 
 		// product
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		assertThat(productIdentifier).as(I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " is a mandatory column").isNotBlank();
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		assertThat(productIdentifier).as(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + " is a mandatory column").isNotBlank();
 
 		final I_M_Product product = productTable.get(productIdentifier);
 		assertThat(product).isNotNull();
-		assertThat(clonedSettings.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+		assertThat(clonedSettings.getM_Raw_Product_ID()).isEqualTo(product.getM_Product_ID());
 
 		// year & calendar
 		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
