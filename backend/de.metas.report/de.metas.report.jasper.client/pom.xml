@@ -38,8 +38,8 @@
 				</exclusion>
 				<!-- exclude itext, because jasper 6.2.1 accidentally uses version 2.1.7.js5-SNAPSHOT -->
 				<exclusion>
-					<groupId>com.lowagie</groupId>
-					<artifactId>itext</artifactId>
+					<groupId>com.itextpdf</groupId>
+					<artifactId>itextpdf</artifactId>
 				</exclusion>
 				<!--  exclude commons-logging because jasperreports 6.2.1 uses 1.1.1, and we use 1.2 -->
 				<exclusion>
@@ -50,8 +50,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>

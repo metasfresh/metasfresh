@@ -195,8 +195,8 @@
         </dependency>
         <!-- itext is required by org.adempiere.pdf.Document.java-->
         <dependency>
-            <groupId>com.lowagie</groupId>
-            <artifactId>itext</artifactId>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>

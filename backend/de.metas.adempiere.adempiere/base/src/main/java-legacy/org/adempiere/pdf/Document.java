@@ -13,13 +13,12 @@
  *****************************************************************************/
 package org.adempiere.pdf;
 
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Image;
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.viewer.PDFViewerBean;
@@ -53,14 +52,13 @@ public class Document {
 		try {
             final PageFormat pf = pageable.getPageFormat(0);
             
-            final com.lowagie.text.Document document =
-            	new com.lowagie.text.Document(new Rectangle(
-            			(int) pf.getWidth(), (int) pf.getHeight()));
+            final com.itextpdf.text.Document document =
+            	new com.itextpdf.text.Document();
             final PdfWriter writer = PdfWriter.getInstance(
                     document, output);
             writer.setPdfVersion(PdfWriter.VERSION_1_2);
             document.open();
-            final DefaultFontMapper mapper = new DefaultFontMapper();     
+            final DefaultFontMapper mapper = new DefaultFontMapper();
             
             //Elaine 2009/02/17 - load additional font from directory set in PDF_FONT_DIR of System Configurator 
             String pdfFontDir = Services.get(ISysConfigBL.class).getValue(PDF_FONT_DIR, "");
@@ -151,11 +149,11 @@ public class Document {
 			//
 			// PDF page size: image size + margins
 			final Rectangle pageSize = new Rectangle(0, 0,
-					pdfImage.getWidth() + 100,
-					pdfImage.getHeight() + 100);
+													 (int)(pdfImage.getWidth() + 100),
+													 (int)(pdfImage.getHeight() + 100));
 
 			// PDF document
-			final com.lowagie.text.Document document = new com.lowagie.text.Document(pageSize, 50, 50, 50, 50);
+			final com.itextpdf.text.Document document = new com.itextpdf.text.Document();
 
 			//
 			// Add image to document
