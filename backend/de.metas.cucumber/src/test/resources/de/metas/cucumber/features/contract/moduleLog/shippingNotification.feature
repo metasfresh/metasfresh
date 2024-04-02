@@ -75,7 +75,7 @@ Feature: Shipping Notifications
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod    | 10.00    | PCE               | Normal                        |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                      | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
+      | ModCntr_Settings_ID.Identifier | Name                      | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
       | modCntr_settings_2023          | testSettings_04102023_3   | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | false       |
       | modCntr_settings_2023_2        | testSettings_04102023_3_2 | modularContract_prod    | harvesting_calendar      | year_2022            | moduleLogPricingSystem            | true        |
 
