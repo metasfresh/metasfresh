@@ -814,10 +814,23 @@ public class TimeUtilTest
 	}
 
 	@ParameterizedTest(name = "JVM.zoneId={0}")
-	@ValueSource(strings = { "UTC-9", "UTC-5", "UTC-1", "UTC", "Europe/Berlin", "Europe/Bucharest", "UTC+5", "UTC+9" })
+	@ValueSource(strings = {
+			"Pacific/Midway", // -11:00
+			"US/Alaska", // -09:00,
+			"America/Jamaica", // -05:00
+			"Atlantic/Azores", // -01:00
+			"UTC",
+			"Europe/Berlin",  // +01:00
+			"Europe/Bucharest", // +02:00
+			"Asia/Kolkata", // +05:30
+			"Asia/Tokyo", // +09:00
+			"Pacific/Kiritimati", // +14:00
+	})
 	void parseLocalDateAsTimestamp_asLocalDate(final String timezone)
 	{
 		TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+		//System.out.println("JVM TimeZone: " + TimeZone.getDefault());
+		assertThat(TimeZone.getDefault()).isEqualTo(TimeZone.getTimeZone(timezone));
 
 		final Timestamp timestamp = TimeUtil.parseLocalDateAsTimestamp("2024-03-30");
 		assertThat(TimeUtil.asLocalDateNonNull(timestamp)).isEqualTo("2024-03-30");
