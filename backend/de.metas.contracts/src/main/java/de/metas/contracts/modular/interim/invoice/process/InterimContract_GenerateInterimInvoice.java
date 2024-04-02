@@ -26,8 +26,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractId;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.InterimInvoiceCandidateService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -45,6 +43,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 
 import java.util.List;
@@ -117,13 +116,16 @@ public class InterimContract_GenerateInterimInvoice extends JavaProcess implemen
 
 	private List<I_C_Flatrate_Term> streamFlatrateTermIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
+		final IQuery<I_C_Flatrate_Conditions> interimConditionsSubfilter = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addStringLikeFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE.getCode(), false)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(filter)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
-				.addStringLikeFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE.getCode(), false)
-				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Term.class)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, interimConditionsSubfilter)
+
 				.create()
 				.list();
 	}

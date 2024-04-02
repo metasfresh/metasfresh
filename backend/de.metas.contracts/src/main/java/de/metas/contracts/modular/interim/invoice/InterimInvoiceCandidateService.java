@@ -59,6 +59,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -139,24 +140,28 @@ public class InterimInvoiceCandidateService
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
 
-		inOutLines.forEach(
-				inOutLine -> {
-					final StockQtyAndUOMQty stockDeliveredQty = inOutBL.getStockQtyAndQtyInUOM(inOutLine);
+		final StockQtyAndUOMQty initialStockQtyAndUOM = StockQtyAndUOMQty.builder()
+				.productId(productIdToInvoice)
+				.stockQty(Quantitys.createZero(stockUOM))
+				.uomQty(Quantitys.createZero(stockUOM))
+				.build();
 
-					final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
-							.qtyOrdered(stockDeliveredQty)
-							.qtyDelivered(stockDeliveredQty)
-							.build();
+		final StockQtyAndUOMQty totalStockQtyAndUOMQty = inOutLines.stream().map(inOutLine -> inOutBL.getStockQtyAndQtyInUOM(inOutLine))
 
-					final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
-					invoiceCandidateSet.add(invoiceCandidateId);
-					modularContractLogService.setICProcessed(
-							ModularContractLogQuery.builder()
-									.contractType(LogEntryContractType.INTERIM)
-									.referenceSet(TableRecordReferenceSet.of(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLine.getM_InOutLine_ID())))
-									.build(),
-							invoiceCandidateId);
-				});
+				.reduce(initialStockQtyAndUOM, StockQtyAndUOMQty::add);
+
+		final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
+				.qtyOrdered(totalStockQtyAndUOMQty)
+				.qtyDelivered(totalStockQtyAndUOMQty)
+				.build();
+
+		final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
+		invoiceCandidateSet.add(invoiceCandidateId);
+		modularContractLogService.setICProcessed(
+				ModularContractLogQuery.builder()
+						.contractType(LogEntryContractType.INTERIM)
+						.build(),
+				invoiceCandidateId);
 
 		return invoiceCandidateSet.build();
 	}
@@ -167,8 +172,8 @@ public class InterimInvoiceCandidateService
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(flatrateTermRecord.getC_Order_Term_ID(), flatrateTermRecord.getC_OrderLine_Term_ID());
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveInterimInvoiceableInOuts(orderAndLineId);
 		final TableRecordReferenceSet tableRecordReferences = TableRecordReferenceSet.of(inOutLines.stream()
-				.map(TableRecordReference::of)
-				.collect(ImmutableSet.toImmutableSet()));
+																								 .map(TableRecordReference::of)
+																								 .collect(ImmutableSet.toImmutableSet()));
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.referenceSet(tableRecordReferences)
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
@@ -188,10 +193,10 @@ public class InterimInvoiceCandidateService
 		if (interimInvoiceDocType == null)
 		{
 			interimInvoiceDocType = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.adClientId(Env.getAD_Client_ID())
-					.docBaseType(DocBaseType.APInvoice)
-					.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
-					.build());
+																	.adClientId(Env.getAD_Client_ID())
+																	.docBaseType(DocBaseType.APInvoice)
+																	.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
+																	.build());
 		}
 		return interimInvoiceDocType;
 	}
