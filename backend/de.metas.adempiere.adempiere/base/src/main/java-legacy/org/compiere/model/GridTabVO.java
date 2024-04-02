@@ -369,7 +369,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.captions.loadCurrentLanguage(rs);
 	}
 
-
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
 	 *
@@ -519,9 +518,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
-	/** Detect default date filter	*/
+	/**
+	 * Detect default date filter
+	 */
 	private boolean IsAutodetectDefaultDateFilter;
-	
+
 	/**
 	 * Where
 	 */
@@ -592,6 +593,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
 
+	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
+
 	@Override
 	public String toString()
 	{
@@ -618,6 +621,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setAdWindowId(getAdWindowId())
 							.setAD_Tab_ID(getAD_Tab_ID())
 							.setTemplateTabId(AdTabId.toRepoId(getTemplateTabId()))
+							.setTabIncludeFiltersStrategy(includeFiltersStrategy)
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.setApplyRolePermissions(applyRolePermissions)
@@ -907,6 +911,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo.MaxQueryRecords = 0;
 		}
+
+		final boolean isIncludedTab = vo.TabLevel > 0;
+		vo.includeFiltersStrategy = TabIncludeFiltersStrategy.optionalOfNullableCode(rs.getString(I_AD_Tab.COLUMNNAME_IncludeFiltersStrategy))
+				.orElse(isIncludedTab ? TabIncludeFiltersStrategy.None : TabIncludeFiltersStrategy.Auto);
 	}
 
 	private void clone_metas(final Properties ctx, final int windowNo, final GridTabVO clone)
@@ -1104,6 +1112,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsAutodetectDefaultDateFilter;
 	}
+
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
@@ -1170,8 +1179,9 @@ public class GridTabVO implements Evaluatee, Serializable
 		return applyRolePermissions;
 	}
 
-	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
-	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
+	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
+
+	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
 
 	//
 	//

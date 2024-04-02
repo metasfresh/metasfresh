@@ -103,7 +103,7 @@ import java.util.Set;
 
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
-	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
+	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@Autowired
@@ -232,10 +232,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// NOTE: we need to add all HU's standard fields because those might be needed for some of the standard filters defined
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
-			huEntityBindings.getFields()
-					.stream()
-					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
-					.forEach(sqlViewBinding::field);
+			sqlViewBinding.fields(SqlViewBindingFactory.createViewFieldBindings(huEntityBindings, displayFieldNames));
 		}
 
 		//
@@ -477,9 +474,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
-							.setFieldName(PARAM_Barcode)
-							.setDisplayName(barcodeCaption)
-							.setWidgetType(DocumentFieldWidgetType.Text)
+							.fieldName(PARAM_Barcode)
+							.displayName(barcodeCaption)
+							.widgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}

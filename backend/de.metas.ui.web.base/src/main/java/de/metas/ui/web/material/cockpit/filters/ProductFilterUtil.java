@@ -59,35 +59,35 @@ public class ProductFilterUtil
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(ProductFilterVO.PARAM_ProductName)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setOperator(Operator.LIKE_I);
+				.fieldName(ProductFilterVO.PARAM_ProductName)
+				.displayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
+				.widgetType(DocumentFieldWidgetType.Text)
+				.operator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
-				.setWidgetType(DocumentFieldWidgetType.Text)
-				.setOperator(Operator.LIKE_I);
+				.fieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
+				.displayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
+				.widgetType(DocumentFieldWidgetType.Text)
+				.operator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
-				.setOperator(Operator.EQUAL);
+				.fieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
+				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+				.widgetType(DocumentFieldWidgetType.Lookup)
+				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
+				.operator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_M_Product.COLUMNNAME_IsPurchased)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsPurchased))
-				.setWidgetType(DocumentFieldWidgetType.YesNo)
-				.setOperator(Operator.EQUAL);
+				.fieldName(I_M_Product.COLUMNNAME_IsPurchased)
+				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsPurchased))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isSoldParameter = DocumentFilterParamDescriptor.builder()
-				.setFieldName(I_M_Product.COLUMNNAME_IsSold)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsSold))
-				.setWidgetType(DocumentFieldWidgetType.YesNo)
-				.setOperator(Operator.EQUAL);
+				.fieldName(I_M_Product.COLUMNNAME_IsSold)
+				.displayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsSold))
+				.widgetType(DocumentFieldWidgetType.YesNo)
+				.operator(Operator.EQUAL);
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
