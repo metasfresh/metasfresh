@@ -37,7 +37,7 @@
         <jackson.version>2.11.4</jackson.version>
         <amqp-client.version>5.10.0</amqp-client.version>
         
-        <jasperreports.version>6.7.0</jasperreports.version>
+        <jasperreports.version>6.21.2</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
 
