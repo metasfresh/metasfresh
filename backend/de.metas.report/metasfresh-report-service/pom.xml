@@ -48,28 +48,6 @@
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports</artifactId>
-			<exclusions>
-				<!-- 
-					Exclude lucene stuff from jasperreports because it's old.
-					Explicitly add them because they might be needed...but with versions implied by spring-boot.
-				-->
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-queryparser</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-analyzers-common</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-queries</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
