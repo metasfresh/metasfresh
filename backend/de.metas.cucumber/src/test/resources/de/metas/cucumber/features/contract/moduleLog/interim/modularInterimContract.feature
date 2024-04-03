@@ -139,7 +139,7 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | po_order_1 | false   | bp_interimPO             | 2022-02-01  | POO             | poModuleLogContract_ref_08022023 | harvesting_calendar                     | year_2022ó
+      | po_order_1 | false   | bp_interimPO             | 2022-02-01  | POO             | poModuleLogContract_ref_08022023 | harvesting_calendar                     | year_2022
 
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
