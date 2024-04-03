@@ -54,7 +54,7 @@ Feature: Import Modular Contract Logs via DataImportRestController
       | pp_fee1          | moduleLogPLV                      | fee1                    | 10.0     | PCE               | Normal                        |
       | pp_bonus1        | moduleLogPLV                      | bonus1                  | 15.0     | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_06292023_2 | importProduct           | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                | Value               | ModularContractHandlerType |

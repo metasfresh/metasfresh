@@ -85,7 +85,7 @@ Feature: Interim contract and interim invoice for bpartner
       | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 
@@ -355,7 +355,7 @@ Feature: Interim contract and interim invoice for bpartner
       | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_08032023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08032023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 
@@ -553,7 +553,7 @@ Feature: Interim contract and interim invoice for bpartner
       | invoicingGroup_p2                            | invoicingGroup                       | module_log_product_PO_2 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_08042023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
       | modCntr_settings_2             | testSettings_08042023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
 

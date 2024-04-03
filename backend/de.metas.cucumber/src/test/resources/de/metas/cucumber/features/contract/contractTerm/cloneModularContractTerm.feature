@@ -29,7 +29,7 @@ Feature: Clone Modular Contract Term
       | contract_module_product | contract_module_product_17072023_1 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
       | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
@@ -68,7 +68,7 @@ Feature: Clone Modular Contract Term
       | contract_module_product | contract_module_product_17072023_2 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
       | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
 
     And metasfresh contains ModCntr_Types:
