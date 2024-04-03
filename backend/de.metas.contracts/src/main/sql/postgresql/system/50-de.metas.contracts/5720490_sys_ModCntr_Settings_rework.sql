@@ -252,6 +252,22 @@ INSERT INTO t_alter_column values('modcntr_type','Description','VARCHAR(2000)',n
 /* DDL */ SELECT public.db_alter_table('ModCntr_Log','ALTER TABLE ModCntr_Log DROP COLUMN IF EXISTS IsBillable')
 ;
 
+
+
+-------------------
+
+
+
+DELETE FROM ad_ui_element e WHERE exists ( select 1 from ad_field f where e.ad_field_id = f.ad_field_id and f.ad_column_id = 587302 );
+
+
+
+DELETE FROM ad_field where AD_Column_ID=587302;
+
+
+
+------------
+
 -- Column: ModCntr_Log.IsBillable
 -- 2024-04-01T13:39:36.135Z
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=587302
