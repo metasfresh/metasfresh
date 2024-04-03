@@ -187,6 +187,8 @@ public class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
+		public String getParameterName() {return parameterName;}
+
 		public DocumentFieldWidgetType getWidgetType()
 		{
 			return widgetType;
@@ -223,6 +225,11 @@ public class DocumentFilterParamDescriptor
 		public Builder lookupDescriptor(@Nullable final LookupDescriptor lookupDescriptor)
 		{
 			return lookupDescriptor(Optional.ofNullable(lookupDescriptor));
+		}
+
+		public Builder lookupDescriptor(@NonNull final UnaryOperator<LookupDescriptor> mapper)
+		{
+			return lookupDescriptor(this.lookupDescriptor.map(mapper));
 		}
 	}
 

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Field
  *  @author metasfresh (generated) 
@@ -58,29 +57,6 @@ public interface I_AD_Field
 	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
-	 * Set Field.
-	 * Field on a database table
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Field_ID (int AD_Field_ID);
-
-	/**
-	 * Get Field.
-	 * Field on a database table
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Field_ID();
-
-	ModelColumn<I_AD_Field, Object> COLUMN_AD_Field_ID = new ModelColumn<>(I_AD_Field.class, "AD_Field_ID", null);
-	String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
-
-	/**
 	 * Set Field Group.
 	 * Logical grouping of fields
 	 *
@@ -106,6 +82,29 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, org.compiere.model.I_AD_FieldGroup> COLUMN_AD_FieldGroup_ID = new ModelColumn<>(I_AD_Field.class, "AD_FieldGroup_ID", org.compiere.model.I_AD_FieldGroup.class);
 	String COLUMNNAME_AD_FieldGroup_ID = "AD_FieldGroup_ID";
+
+	/**
+	 * Set Field.
+	 * Field on a database table
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Field_ID (int AD_Field_ID);
+
+	/**
+	 * Get Field.
+	 * Field on a database table
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Field_ID();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_AD_Field_ID = new ModelColumn<>(I_AD_Field.class, "AD_Field_ID", null);
+	String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
 
 	/**
 	 * Set AD_Name_ID.
@@ -503,27 +502,6 @@ public interface I_AD_Field
 	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
 
 	/**
-	 * Set IsForbidNewRecordCreation.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsForbidNewRecordCreation (boolean IsForbidNewRecordCreation);
-
-	/**
-	 * Get IsForbidNewRecordCreation.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isForbidNewRecordCreation();
-
-	ModelColumn<I_AD_Field, Object> COLUMN_IsForbidNewRecordCreation = new ModelColumn<>(I_AD_Field.class, "IsForbidNewRecordCreation", null);
-	String COLUMNNAME_IsForbidNewRecordCreation = "IsForbidNewRecordCreation";
-
-	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *
@@ -545,6 +523,27 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_Help = new ModelColumn<>(I_AD_Field.class, "Help", null);
 	String COLUMNNAME_Help = "Help";
+
+	/**
+	 * Set Included Tab Height.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncludedTabHeight (int IncludedTabHeight);
+
+	/**
+	 * Get Included Tab Height.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIncludedTabHeight();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IncludedTabHeight = new ModelColumn<>(I_AD_Field.class, "IncludedTabHeight", null);
+	String COLUMNNAME_IncludedTabHeight = "IncludedTabHeight";
 
 	/**
 	 * Set Included Tab.
@@ -572,27 +571,6 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, org.compiere.model.I_AD_Tab> COLUMN_Included_Tab_ID = new ModelColumn<>(I_AD_Field.class, "Included_Tab_ID", org.compiere.model.I_AD_Tab.class);
 	String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
-
-	/**
-	 * Set Included Tab Height.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIncludedTabHeight (int IncludedTabHeight);
-
-	/**
-	 * Get Included Tab Height.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getIncludedTabHeight();
-
-	ModelColumn<I_AD_Field, Object> COLUMN_IncludedTabHeight = new ModelColumn<>(I_AD_Field.class, "IncludedTabHeight", null);
-	String COLUMNNAME_IncludedTabHeight = "IncludedTabHeight";
 
 	/**
 	 * Set Info Factory Class.
@@ -639,6 +617,29 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_Field.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Always Updateable.
+	 * The column's field is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAlwaysUpdateable (@Nullable java.lang.String IsAlwaysUpdateable);
+
+	/**
+	 * Get Always Updateable.
+	 * The column's field is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAlwaysUpdateable();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsAlwaysUpdateable = new ModelColumn<>(I_AD_Field.class, "IsAlwaysUpdateable", null);
+	String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
 
 	/**
 	 * Set Displayed.
@@ -754,6 +755,48 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IsFieldOnly = new ModelColumn<>(I_AD_Field.class, "IsFieldOnly", null);
 	String COLUMNNAME_IsFieldOnly = "IsFieldOnly";
+
+	/**
+	 * Set Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterField (@Nullable java.lang.String IsFilterField);
+
+	/**
+	 * Get Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsFilterField();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsFilterField = new ModelColumn<>(I_AD_Field.class, "IsFilterField", null);
+	String COLUMNNAME_IsFilterField = "IsFilterField";
+
+	/**
+	 * Set IsForbidNewRecordCreation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsForbidNewRecordCreation (boolean IsForbidNewRecordCreation);
+
+	/**
+	 * Get IsForbidNewRecordCreation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isForbidNewRecordCreation();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsForbidNewRecordCreation = new ModelColumn<>(I_AD_Field.class, "IsForbidNewRecordCreation", null);
+	String COLUMNNAME_IsForbidNewRecordCreation = "IsForbidNewRecordCreation";
 
 	/**
 	 * Set Heading only.
@@ -890,6 +933,29 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_ObscureType = new ModelColumn<>(I_AD_Field.class, "ObscureType", null);
 	String COLUMNNAME_ObscureType = "ObscureType";
+
+	/**
+	 * Set Read Only Logic.
+	 * Logic to determine if field is read only (applies only when field is read-write)
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReadOnlyLogic (@Nullable java.lang.String ReadOnlyLogic);
+
+	/**
+	 * Get Read Only Logic.
+	 * Logic to determine if field is read only (applies only when field is read-write)
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReadOnlyLogic();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_ReadOnlyLogic = new ModelColumn<>(I_AD_Field.class, "ReadOnlyLogic", null);
+	String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
 
 	/**
 	 * Set SeqNo.

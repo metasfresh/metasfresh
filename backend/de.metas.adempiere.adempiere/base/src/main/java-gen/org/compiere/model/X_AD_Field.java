@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Field
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1789221161L;
+	private static final long serialVersionUID = 1312751479L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -63,21 +63,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public void setAD_Field_ID (final int AD_Field_ID)
-	{
-		if (AD_Field_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, AD_Field_ID);
-	}
-
-	@Override
-	public int getAD_Field_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Field_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_AD_FieldGroup getAD_FieldGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_FieldGroup_ID, org.compiere.model.I_AD_FieldGroup.class);
@@ -102,6 +87,21 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public int getAD_FieldGroup_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_FieldGroup_ID);
+	}
+
+	@Override
+	public void setAD_Field_ID (final int AD_Field_ID)
+	{
+		if (AD_Field_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, AD_Field_ID);
+	}
+
+	@Override
+	public int getAD_Field_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Field_ID);
 	}
 
 	@Override
@@ -383,18 +383,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public void setIsForbidNewRecordCreation (final boolean IsForbidNewRecordCreation)
-	{
-		set_Value (COLUMNNAME_IsForbidNewRecordCreation, IsForbidNewRecordCreation);
-	}
-
-	@Override
-	public boolean isForbidNewRecordCreation() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsForbidNewRecordCreation);
-	}
-
-	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -404,6 +392,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public java.lang.String getHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_Help);
+	}
+
+	@Override
+	public void setIncludedTabHeight (final int IncludedTabHeight)
+	{
+		set_Value (COLUMNNAME_IncludedTabHeight, IncludedTabHeight);
+	}
+
+	@Override
+	public int getIncludedTabHeight() 
+	{
+		return get_ValueAsInt(COLUMNNAME_IncludedTabHeight);
 	}
 
 	@Override
@@ -434,18 +434,6 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public void setIncludedTabHeight (final int IncludedTabHeight)
-	{
-		set_Value (COLUMNNAME_IncludedTabHeight, IncludedTabHeight);
-	}
-
-	@Override
-	public int getIncludedTabHeight() 
-	{
-		return get_ValueAsInt(COLUMNNAME_IncludedTabHeight);
-	}
-
-	@Override
 	public void setInfoFactoryClass (final @Nullable java.lang.String InfoFactoryClass)
 	{
 		set_Value (COLUMNNAME_InfoFactoryClass, InfoFactoryClass);
@@ -457,6 +445,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
 
+	/** 
+	 * IsAlwaysUpdateable AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALWAYSUPDATEABLE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALWAYSUPDATEABLE_Yes = "Y";
+	/** No = N */
+	public static final String ISALWAYSUPDATEABLE_No = "N";
+	@Override
+	public void setIsAlwaysUpdateable (final @Nullable java.lang.String IsAlwaysUpdateable)
+	{
+		set_Value (COLUMNNAME_IsAlwaysUpdateable, IsAlwaysUpdateable);
+	}
+
+	@Override
+	public java.lang.String getIsAlwaysUpdateable() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAlwaysUpdateable);
+	}
+
 	@Override
 	public void setIsDisplayed (final boolean IsDisplayed)
 	{
@@ -464,7 +473,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isDisplayed()
+	public boolean isDisplayed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
 	}
@@ -524,6 +533,39 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public boolean isFieldOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFieldOnly);
+	}
+
+	/** 
+	 * IsFilterField AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISFILTERFIELD_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISFILTERFIELD_Yes = "Y";
+	/** No = N */
+	public static final String ISFILTERFIELD_No = "N";
+	@Override
+	public void setIsFilterField (final @Nullable java.lang.String IsFilterField)
+	{
+		set_Value (COLUMNNAME_IsFilterField, IsFilterField);
+	}
+
+	@Override
+	public java.lang.String getIsFilterField() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFilterField);
+	}
+
+	@Override
+	public void setIsForbidNewRecordCreation (final boolean IsForbidNewRecordCreation)
+	{
+		set_Value (COLUMNNAME_IsForbidNewRecordCreation, IsForbidNewRecordCreation);
+	}
+
+	@Override
+	public boolean isForbidNewRecordCreation() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsForbidNewRecordCreation);
 	}
 
 	@Override
@@ -618,6 +660,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public java.lang.String getObscureType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ObscureType);
+	}
+
+	@Override
+	public void setReadOnlyLogic (final @Nullable java.lang.String ReadOnlyLogic)
+	{
+		set_Value (COLUMNNAME_ReadOnlyLogic, ReadOnlyLogic);
+	}
+
+	@Override
+	public java.lang.String getReadOnlyLogic() 
+	{
+		return get_ValueAsString(COLUMNNAME_ReadOnlyLogic);
 	}
 
 	@Override
