@@ -45,11 +45,11 @@ import lombok.NonNull;
 
 class PricingConditionsViewFilters
 {
-	private static String FILTERID_IsCustomer = "IsCustomer";
-	private static String PARAM_IsCustomer = "IsCustomer";
+	private static final String FILTERID_IsCustomer = "IsCustomer";
+	private static final String PARAM_IsCustomer = "IsCustomer";
 
-	private static String FILTERID_IsVendor = "IsVendor";
-	private static String PARAM_IsVendor = "IsVendor";
+	private static final String FILTERID_IsVendor = "IsVendor";
+	private static final String PARAM_IsVendor = "IsVendor";
 
 	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider; // lazy
 	private DocumentFilterList defaultFilters; // lazy

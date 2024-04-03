@@ -18,7 +18,6 @@ import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
 import java.util.List;
 
 /*
@@ -53,9 +52,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		final String tableName = StringUtils.trimBlankToNull(context.getTableName());
 		final AdTabId adTabId = context.getAdTabId();
@@ -66,7 +63,7 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 
 		final AdTableId adTableId = adTablesRepo.retrieveAdTableId(tableName);
 
-		final List<IUserQueryField> searchFields = fields
+		final List<IUserQueryField> searchFields = context.getFields()
 				.stream()
 				.map(UserQueryDocumentFilterDescriptorsProviderFactory::createUserQueryField)
 				.collect(ImmutableList.toImmutableList());

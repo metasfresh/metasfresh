@@ -59,6 +59,7 @@ SELECT
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
+     , t.IncludeFiltersStrategy
      , t.QuickInputLayout
      , t.NotFound_Message
      , t.NotFound_MessageDetail
