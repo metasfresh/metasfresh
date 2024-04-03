@@ -31,6 +31,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=583863
 
 
 /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate DROP COLUMN IsInterimInvoice ')
+;
 
 
 
