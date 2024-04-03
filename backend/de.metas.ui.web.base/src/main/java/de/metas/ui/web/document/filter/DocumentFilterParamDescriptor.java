@@ -229,7 +229,10 @@ public class DocumentFilterParamDescriptor
 
 		public Builder lookupDescriptor(@NonNull final UnaryOperator<LookupDescriptor> mapper)
 		{
-			return lookupDescriptor(this.lookupDescriptor.map(mapper));
+			//noinspection OptionalAssignedToNull
+			final Optional<LookupDescriptor> lookupDescriptor = this.lookupDescriptor != null ? this.lookupDescriptor : Optional.empty();
+
+			return lookupDescriptor(lookupDescriptor.map(mapper));
 		}
 	}
 
