@@ -64,13 +64,13 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -117,7 +117,7 @@ public class InterimInvoiceCandidateService
 		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.PURCHASE)
-				.invoiceDocTypeId(getInterimInvoiceDocType())
+				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
 				.invoiceRule(InvoiceRule.Immediate)
 				.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getHarvesting_Year_ID()))
 				.productId(productIdToInvoice)
@@ -146,8 +146,7 @@ public class InterimInvoiceCandidateService
 				.uomQty(Quantitys.createZero(stockUOM))
 				.build();
 
-		final StockQtyAndUOMQty totalStockQtyAndUOMQty = inOutLines.stream().map(inOutLine -> inOutBL.getStockQtyAndQtyInUOM(inOutLine))
-
+		final StockQtyAndUOMQty totalStockQtyAndUOMQty = inOutLines.stream().map(inOutBL::getStockQtyAndQtyInUOM)
 				.reduce(initialStockQtyAndUOM, StockQtyAndUOMQty::add);
 
 		final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
@@ -188,12 +187,12 @@ public class InterimInvoiceCandidateService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private DocTypeId getInterimInvoiceDocType()
+	private DocTypeId getInterimInvoiceDocType(@NonNull final ClientId clientId)
 	{
 		if (interimInvoiceDocType == null)
 		{
 			interimInvoiceDocType = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-																	.adClientId(Env.getAD_Client_ID())
+																	.adClientId(clientId.getRepoId())
 																	.docBaseType(DocBaseType.APInvoice)
 																	.docSubType(X_C_DocType.DOCSUBTYPE_DownPayment)
 																	.build());

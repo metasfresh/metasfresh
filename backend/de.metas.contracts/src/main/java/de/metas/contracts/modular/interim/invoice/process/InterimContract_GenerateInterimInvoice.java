@@ -23,10 +23,8 @@
 package de.metas.contracts.modular.interim.invoice.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.InterimInvoiceCandidateService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -40,21 +38,17 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 public class InterimContract_GenerateInterimInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final BPartnerInterimContractService bPartnerInterimContractService = SpringContextHolder.instance.getBean(BPartnerInterimContractService.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final InterimInvoiceCandidateService interimInvoiceCandidateService = SpringContextHolder.instance.getBean(InterimInvoiceCandidateService.class);
 
 	@Override
@@ -65,8 +59,7 @@ public class InterimContract_GenerateInterimInvoice extends JavaProcess implemen
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final List<I_C_Flatrate_Term> flatrateTermIds = streamFlatrateTermIds(context.getQueryFilter(I_C_Flatrate_Term.class));
-		if (flatrateTermIds.isEmpty())
+		if (!interimContractWasSelected(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No interim contract selected");
 		}
@@ -77,9 +70,9 @@ public class InterimContract_GenerateInterimInvoice extends JavaProcess implemen
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = streamFlatrateTermIds(getProcessInfo().getQueryFilterOrElseFalse())
+		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = flatrateDAO.createInterimContractQuery(getProcessInfo().getQueryFilterOrElseFalse())
 				.stream()
-				.map(flatrateTermRecord -> interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord))
+				.map(interimInvoiceCandidateService::createInterimInvoiceCandidatesFor)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -114,20 +107,9 @@ public class InterimContract_GenerateInterimInvoice extends JavaProcess implemen
 		return InvoicingParams.ofParams(getParameterAsIParams());
 	}
 
-	private List<I_C_Flatrate_Term> streamFlatrateTermIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	private boolean interimContractWasSelected(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
-		final IQuery<I_C_Flatrate_Conditions> interimConditionsSubfilter = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addStringLikeFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE.getCode(), false)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(filter)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, interimConditionsSubfilter)
-
-				.create()
-				.list();
+		return flatrateDAO.createInterimContractQuery(filter).anyMatch();
 	}
 
 }
