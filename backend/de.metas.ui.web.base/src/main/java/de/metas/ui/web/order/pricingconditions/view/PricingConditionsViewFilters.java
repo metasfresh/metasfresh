@@ -45,11 +45,11 @@ import lombok.NonNull;
 
 class PricingConditionsViewFilters
 {
-	private static String FILTERID_IsCustomer = "IsCustomer";
-	private static String PARAM_IsCustomer = "IsCustomer";
+	private static final String FILTERID_IsCustomer = "IsCustomer";
+	private static final String PARAM_IsCustomer = "IsCustomer";
 
-	private static String FILTERID_IsVendor = "IsVendor";
-	private static String PARAM_IsVendor = "IsVendor";
+	private static final String FILTERID_IsVendor = "IsVendor";
+	private static final String PARAM_IsVendor = "IsVendor";
 
 	private ImmutableDocumentFilterDescriptorsProvider filterDescriptorsProvider; // lazy
 	private DocumentFilterList defaultFilters; // lazy
@@ -81,9 +81,9 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsCustomer)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_IsCustomer)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
-						.setWidgetType(DocumentFieldWidgetType.YesNo))
+						.fieldName(PARAM_IsCustomer)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsCustomer))
+						.widgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 
@@ -93,9 +93,9 @@ class PricingConditionsViewFilters
 				.setFilterId(FILTERID_IsVendor)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_IsVendor)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
-						.setWidgetType(DocumentFieldWidgetType.YesNo))
+						.fieldName(PARAM_IsVendor)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_IsVendor))
+						.widgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 

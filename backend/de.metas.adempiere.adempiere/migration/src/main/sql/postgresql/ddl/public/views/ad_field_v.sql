@@ -1,7 +1,7 @@
 -- NOTE: keep in sync with ad_field_vt
 
 drop view if exists ad_field_v;
-CREATE OR REPLACE VIEW ad_field_v AS 
+CREATE OR REPLACE VIEW ad_field_v AS
 SELECT
 	t.ad_window_id
 	, f.colorlogic
@@ -66,7 +66,8 @@ SELECT
 	, c.IsUseDocSequence
 	--
 	-- Filtering
-	, c.IsSelectionColumn
+    , f.IsFilterField
+    , c.IsSelectionColumn
 	, c.SelectionColumnSeqNo
 	, c.filteroperator
 	, c.IsShowFilterIncrementButtons
@@ -82,7 +83,7 @@ FROM ad_tab t
 		LEFT JOIN ad_field f ON f.ad_tab_id = t.ad_tab_id AND f.ad_column_id = c.ad_column_id
 			LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 			LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
-WHERE 
+WHERE
 (f.isactive = 'Y' or f.AD_Field_ID is null)
 AND c.isactive = 'Y'
 ;
