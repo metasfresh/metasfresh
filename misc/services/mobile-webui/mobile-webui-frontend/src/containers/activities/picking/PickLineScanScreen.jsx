@@ -125,7 +125,7 @@ const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProduct
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedHUQRCode });
+  return convertQRCodeObjectToResolvedResult(parsedHUQRCode);
 };
 
 export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
