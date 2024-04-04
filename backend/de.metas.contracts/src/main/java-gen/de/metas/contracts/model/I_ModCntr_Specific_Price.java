@@ -41,6 +41,28 @@ public interface I_ModCntr_Specific_Price
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: TableDir
@@ -64,25 +86,4 @@ public interface I_ModCntr_Specific_Price
 
 	ModelColumn<I_ModCntr_Specific_Price, de.metas.contracts.model.I_ModCntr_Module> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_ModCntr_Specific_Price.class, "ModCntr_Module_ID", de.metas.contracts.model.I_ModCntr_Module.class);
 	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
-
-	/**
-	 * Set Price UOM.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPriceUOM (java.lang.String PriceUOM);
-
-	/**
-	 * Get Price UOM.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getPriceUOM();
-
-	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_PriceUOM = new ModelColumn<>(I_ModCntr_Specific_Price.class, "PriceUOM", null);
-	String COLUMNNAME_PriceUOM = "PriceUOM";
 }

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I_ModCntr_Specific_Price, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 275781142L;
+	private static final long serialVersionUID = -214774919L;
 
     /** Standard Constructor */
     public X_ModCntr_Specific_Price (final Properties ctx, final int ModCntr_Specific_Price_ID, @Nullable final String trxName)
@@ -62,6 +62,21 @@ public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I
 	}
 
 	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
 	public de.metas.contracts.model.I_ModCntr_Module getModCntr_Module()
 	{
 		return get_ValueAsPO(COLUMNNAME_ModCntr_Module_ID, de.metas.contracts.model.I_ModCntr_Module.class);
@@ -86,17 +101,5 @@ public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I
 	public int getModCntr_Module_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Module_ID);
-	}
-
-	@Override
-	public void setPriceUOM (final java.lang.String PriceUOM)
-	{
-		set_Value (COLUMNNAME_PriceUOM, PriceUOM);
-	}
-
-	@Override
-	public java.lang.String getPriceUOM() 
-	{
-		return get_ValueAsString(COLUMNNAME_PriceUOM);
 	}
 }
