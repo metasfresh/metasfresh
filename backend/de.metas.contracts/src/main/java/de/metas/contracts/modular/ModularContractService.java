@@ -27,10 +27,14 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Specific_Price;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
+import de.metas.pricing.productprice.ProductPrice;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +55,23 @@ public class ModularContractService
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull
 	private final ProcessModularLogsEnqueuer processLogsEnqueuer;
+
+	@NonNull
+	private final ModularContractPriceRepository modularContractPriceRepository;
+
+	private static <T> boolean isHandlerApplicableForSettings(
+			@NonNull final IModularContractTypeHandler<T> handler,
+			@Nullable final ModularContractSettings settings)
+	{
+		if (settings == null)
+		{
+			return false;
+		}
+
+		return settings.getModuleConfigs()
+				.stream()
+				.anyMatch(config -> config.isMatchingHandler(handler.getHandlerType()));
+	}
 
 	public <T> void invokeWithModelForAllContractTypes(@NonNull final T model, @NonNull final ModelAction action)
 	{
@@ -107,20 +128,6 @@ public class ModularContractService
 		return typeConditions.isModularOrInterim();
 	}
 
-	private static <T> boolean isHandlerApplicableForSettings(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@Nullable final ModularContractSettings settings)
-	{
-		if (settings == null)
-		{
-			return false;
-		}
-
-		return settings.getModuleConfigs()
-				.stream()
-				.anyMatch(config -> config.isMatchingHandler(handler.getHandlerType()));
-	}
-
 	private <T> void invokeWithModel(
 			@NonNull final IModularContractTypeHandler<T> handler,
 			@NonNull final T model,
@@ -146,5 +153,15 @@ public class ModularContractService
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		handler.handleAction(model, action, flatrateTermId, this);
+	}
+
+	public ProductPrice getContractPrice(@NonNull final ProductId productId, @NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_ModCntr_Specific_Price contractSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(productId, flatrateTermId);
+
+		ProductPrice.builder()
+				.priceStd(contractSpecificPrice.getPrice())
+				.uomId(UomId.ofRepoId(contractSpecificPrice.get())
+
 	}
 }

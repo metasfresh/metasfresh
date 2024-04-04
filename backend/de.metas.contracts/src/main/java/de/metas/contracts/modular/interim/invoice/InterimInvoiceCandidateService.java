@@ -139,6 +139,12 @@ public class InterimInvoiceCandidateService
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
+		// TODO
+		// final ProductPrice priceEnteredOverride =
+		// 		.money(Money.ofOrNull(record.getPrice(), baseCurrencyId))
+		// 		.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+		// 		.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+		// 		.build();
 
 		final StockQtyAndUOMQty initialStockQtyAndUOM = StockQtyAndUOMQty.builder()
 				.productId(productIdToInvoice)
