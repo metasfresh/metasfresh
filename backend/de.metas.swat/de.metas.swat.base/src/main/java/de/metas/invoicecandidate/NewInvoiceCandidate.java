@@ -27,7 +27,6 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.ILCandHandlerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
