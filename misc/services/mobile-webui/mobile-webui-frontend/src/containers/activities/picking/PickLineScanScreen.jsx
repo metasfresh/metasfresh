@@ -79,7 +79,7 @@ const PickLineScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`}
+      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPickRemaining}
