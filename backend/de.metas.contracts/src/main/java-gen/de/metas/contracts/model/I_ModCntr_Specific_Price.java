@@ -45,7 +45,7 @@ public interface I_ModCntr_Specific_Price
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_UOM_ID (int C_UOM_ID);
@@ -55,7 +55,7 @@ public interface I_ModCntr_Specific_Price
 	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_UOM_ID();

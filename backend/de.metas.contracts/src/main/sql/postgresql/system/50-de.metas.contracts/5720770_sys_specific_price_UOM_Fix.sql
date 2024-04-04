@@ -54,3 +54,16 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE ModCntr_Specific_Price ADD CONSTRAINT CUOM_ModCntrSpecificPrice FOREIGN KEY (C_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- Column: ModCntr_Specific_Price.C_UOM_ID
+-- 2024-04-04T11:04:18.056Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-04 14:04:18.056','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588112
+;
+
+-- 2024-04-04T11:04:18.634Z
+INSERT INTO t_alter_column values('modcntr_specific_price','C_UOM_ID','NUMERIC(10)',null,null)
+;
+
+-- 2024-04-04T11:04:18.636Z
+INSERT INTO t_alter_column values('modcntr_specific_price','C_UOM_ID',null,'NOT NULL',null)
+;
+
