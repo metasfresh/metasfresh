@@ -117,7 +117,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
+// @VisibleForTesting
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
   //console.log('resolveScannedBarcode', { parsedHUQRCode });
 
