@@ -79,7 +79,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -88,7 +88,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

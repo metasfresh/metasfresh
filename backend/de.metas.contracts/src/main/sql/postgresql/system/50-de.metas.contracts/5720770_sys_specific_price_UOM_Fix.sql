@@ -67,3 +67,18 @@ INSERT INTO t_alter_column values('modcntr_specific_price','C_UOM_ID','NUMERIC(1
 INSERT INTO t_alter_column values('modcntr_specific_price','C_UOM_ID',null,'NOT NULL',null)
 ;
 
+-- UI Element: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> main -> 10 -> infos.Beschreibung
+-- Column: ModCntr_Type.Description
+-- 2024-04-04T11:07:54.839Z
+UPDATE AD_UI_Element SET WidgetSize='XXL',Updated=TO_TIMESTAMP('2024-04-04 14:07:54.839','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=617950
+;
+
+-- Column: ModCntr_Type.Description
+-- 2024-04-04T11:08:49.010Z
+UPDATE AD_Column SET AD_Reference_ID=14,Updated=TO_TIMESTAMP('2024-04-04 14:08:49.01','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586750
+;
+
+-- 2024-04-04T11:08:54.955Z
+INSERT INTO t_alter_column values('modcntr_type','Description','VARCHAR(2000)',null,null)
+;
+
