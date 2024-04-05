@@ -32,8 +32,11 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
-import de.metas.pricing.productprice.ProductPrice;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -159,9 +162,18 @@ public class ModularContractService
 	{
 		final I_ModCntr_Specific_Price contractSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(productId, flatrateTermId);
 
-		ProductPrice.builder()
-				.priceStd(contractSpecificPrice.getPrice())
-				.uomId(UomId.ofRepoId(contractSpecificPrice.get())
+		return ProductPrice.builder()
+				.money(Money.of(contractSpecificPrice.getPrice(), CurrencyId.ofRepoId(contractSpecificPrice.getC_Currency_ID())))
+				.uomId(UomId.ofRepoId(contractSpecificPrice.getC_UOM_ID()))
+				.productId(productId)
+				.build();
 
+	}
+
+	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+
+		return modularContractSettings.getPricingSystemId();
 	}
 }

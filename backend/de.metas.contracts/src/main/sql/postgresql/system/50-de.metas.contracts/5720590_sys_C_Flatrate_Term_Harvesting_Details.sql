@@ -94,3 +94,42 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=727312
 
 
 
+
+
+
+
+-- UI Column: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10
+-- UI Element Group: harvesting details
+-- 2024-04-02T14:11:53.714Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540630,551740,TO_TIMESTAMP('2024-04-02 17:11:53.535','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','harvesting details',30,TO_TIMESTAMP('2024-04-02 17:11:53.535','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> harvesting details.Erntekalender
+-- Column: C_Flatrate_Term.C_Harvesting_Calendar_ID
+-- 2024-04-02T14:12:14.487Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,727311,0,540859,551740,624019,'F',TO_TIMESTAMP('2024-04-02 17:12:14.355','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Erntekalender',10,0,0,TO_TIMESTAMP('2024-04-02 17:12:14.355','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> harvesting details.Erntejahr
+-- Column: C_Flatrate_Term.Harvesting_Year_ID
+-- 2024-04-02T14:12:22.079Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,727312,0,540859,551740,624020,'F',TO_TIMESTAMP('2024-04-02 17:12:21.936','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Erntejahr',20,0,0,TO_TIMESTAMP('2024-04-02 17:12:21.936','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Field: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Erntekalender
+-- Column: C_Flatrate_Term.C_Harvesting_Calendar_ID
+-- 2024-04-02T14:13:59.004Z
+UPDATE AD_Field SET DisplayLogic='@Type_Conditions@=''ModularContract''|@Type_Conditions@=''InterimInvoice''',Updated=TO_TIMESTAMP('2024-04-02 17:13:59.004','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=727311
+;
+
+-- Field: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> Erntejahr
+-- Column: C_Flatrate_Term.Harvesting_Year_ID
+-- 2024-04-02T14:14:50.416Z
+UPDATE AD_Field SET DisplayLogic='@Type_Conditions@=''ModularContract''|@Type_Conditions@=''InterimInvoice''',Updated=TO_TIMESTAMP('2024-04-02 17:14:50.416','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=727312
+;
+
+
+
+
+
+

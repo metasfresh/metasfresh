@@ -88,7 +88,10 @@ public class ManualCandidateService
 						newIC.getSoTrx())
 				.setCountryId(countryId)
 				.setPriceDate(newIC.getDateOrdered())
-				.setFailIfNotCalculated();
+				.setFailIfNotCalculated()
+				.setPricingSystemId(newIC.getPricingSystemId());
+
+
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
 		candidate.pricingSystemId(pricingResult.getPricingSystemId());

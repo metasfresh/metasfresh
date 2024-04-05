@@ -32,6 +32,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -57,6 +58,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
@@ -64,6 +66,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -72,13 +75,14 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
-@Repository
+@Service
+@RequiredArgsConstructor
 public class InterimInvoiceCandidateService
 {
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -92,6 +96,8 @@ public class InterimInvoiceCandidateService
 	private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
+
+	private final ModularContractService modularContractService;
 
 	private DocTypeId interimInvoiceDocType;
 
@@ -114,12 +120,14 @@ public class InterimInvoiceCandidateService
 		final ProductId productIdToInvoice = modCntrInvoicingGroupRepository.getInvoicingGroupProductFor(productId)
 				.orElse(productId);
 
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
+
 		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.PURCHASE)
 				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
 				.invoiceRule(InvoiceRule.Immediate)
-				.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getHarvesting_Year_ID()))
+				.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID()))
 				.productId(productIdToInvoice)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()
@@ -136,15 +144,12 @@ public class InterimInvoiceCandidateService
 				.isInterimInvoice(true)
 				.isManual(false)
 				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(FlatrateTerm_Handler.class))
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
+				.flatrateTermId(flatrateTermId);
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
-		// TODO
-		// final ProductPrice priceEnteredOverride =
-		// 		.money(Money.ofOrNull(record.getPrice(), baseCurrencyId))
-		// 		.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-		// 		.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
-		// 		.build();
+
+		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
+		newInvoiceCandidateTemplate.pricingSystemId(pricingSystemId);
 
 		final StockQtyAndUOMQty initialStockQtyAndUOM = StockQtyAndUOMQty.builder()
 				.productId(productIdToInvoice)
