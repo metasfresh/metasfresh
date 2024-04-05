@@ -67,14 +67,8 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
   });
 
-  useEffect(() => {
-    if (scannedBarcodeParam) {
-      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
-    } else {
-      setProgressStatus(STATUS_READ_BARCODE);
-    }
-  }, [scannedBarcodeParam]);
-
+  //
+  // Init/reset resolvedBarcodeData on parameters changed (usually first time or when we get here from history.replace)
   useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
       lineId: prevState?.lineId,
@@ -111,6 +105,17 @@ const ScanHUAndGetQtyComponent = ({
     catchWeight,
     catchWeightUom,
   ]);
+
+  //
+  // Simulate barcode scanning when we get "qrCode" url param
+  // IMPORTANT: this shall be called after "Init/reset resolvedBarcodeData" effect
+  useEffect(() => {
+    if (scannedBarcodeParam) {
+      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
+    } else {
+      setProgressStatus(STATUS_READ_BARCODE);
+    }
+  }, [scannedBarcodeParam]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
@@ -155,7 +160,7 @@ const ScanHUAndGetQtyComponent = ({
     setResolvedBarcodeData(resolvedBarcodeDataNew);
     const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
 
-    // console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
+    console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
 
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
@@ -264,6 +269,7 @@ const ScanHUAndGetQtyComponent = ({
       );
     }
     case STATUS_READ_QTY: {
+      console.log('rendering qty dialog', { resolvedBarcodeData });
       return (
         <GetQuantityDialog
           userInfo={resolvedBarcodeData.userInfo}

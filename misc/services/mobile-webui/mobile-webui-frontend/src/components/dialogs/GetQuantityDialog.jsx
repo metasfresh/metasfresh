@@ -14,6 +14,7 @@ import { useBooleanSetting } from '../../reducers/settings';
 import { toastError } from '../../utils/toast';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
+import { toastErrorFromObj } from '../../utils/toast';
 
 const GetQuantityDialog = ({
   readOnly = false,
@@ -115,7 +116,7 @@ const GetQuantityDialog = ({
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
-      });
+      })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
 
