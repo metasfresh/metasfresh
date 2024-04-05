@@ -79,7 +79,7 @@ const PickLineScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`}
+      key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPickRemaining}
@@ -117,7 +117,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
+// @VisibleForTesting
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
   //console.log('resolveScannedBarcode', { parsedHUQRCode });
 
@@ -125,7 +126,7 @@ const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProduct
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedHUQRCode });
+  return convertQRCodeObjectToResolvedResult(parsedHUQRCode);
 };
 
 export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
