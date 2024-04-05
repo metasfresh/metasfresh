@@ -129,7 +129,7 @@ public class ModularContractSettingsDAO
 			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
 
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
-					.id(ModuleConfigId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
+					.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
 					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
