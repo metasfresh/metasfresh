@@ -756,6 +756,27 @@ public interface I_AD_Field
 	String COLUMNNAME_IsFieldOnly = "IsFieldOnly";
 
 	/**
+	 * Set Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterField (@Nullable java.lang.String IsFilterField);
+
+	/**
+	 * Get Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsFilterField();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsFilterField = new ModelColumn<>(I_AD_Field.class, "IsFilterField", null);
+	String COLUMNNAME_IsFilterField = "IsFilterField";
+
+	/**
 	 * Set Heading only.
 	 * Field without Column - Only label is displayed
 	 *

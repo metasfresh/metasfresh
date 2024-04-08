@@ -23,6 +23,7 @@
 package de.metas.ui.web.bpartner.filter;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
@@ -39,6 +40,7 @@ import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
@@ -70,7 +72,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
 			.addParameter(DocumentFilterParamDescriptor.builder()
 					.fieldName(PARAMETERNAME_SearchText)
-					.displayName(MSG_Caption)
+					.displayName(TranslatableStrings.adMessage(MSG_Caption))
 					.widgetType(DocumentFieldWidgetType.Text)
 			)
 			.build();
@@ -116,13 +118,17 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			return null;
 		}
 		final String searchText = filterParameter.getValueAsString();
+		if(Check.isBlank(searchText))
+		{
+			return null;
+		}
 		return FilterSql.ofWhereClause(SqlAndParams.builder()
 				.append(sqlOpts.getTableNameOrAlias())
 				.append(getSqlCriteria(searchText))
 				.build());
 	}
 
-	private SqlAndParams getSqlCriteria(final String searchText)
+	private SqlAndParams getSqlCriteria(@NonNull final String searchText)
 	{
 		final String searchLikeValue = convertSearchTextToSqlLikeString(searchText);
 		return SqlAndParams.of(BPARTNER_SEARCH_SQL_TEMPLATE, searchLikeValue, searchLikeValue, searchLikeValue);
