@@ -47,6 +47,7 @@ SELECT
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
+     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -58,6 +59,9 @@ SELECT
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
+     , t.QuickInputLayout
+     , t.NotFound_Message
+     , t.NotFound_MessageDetail
      , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
@@ -117,6 +121,7 @@ SELECT trl.ad_language
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
+     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -130,6 +135,11 @@ SELECT trl.ad_language
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
+     , t.QuickInputLayout
+     , trl.NotFound_Message
+     , t.NotFound_Message AS NotFound_Message_BaseLang
+     , trl.NotFound_MessageDetail
+     , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
      , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id

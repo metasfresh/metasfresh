@@ -20,6 +20,8 @@ SELECT
      , f.seqno
      , f.seqnogrid
      , f.sortno
+     , f.ad_sequence_id                                           AS AD_Sequence_ID
+     , f.isforbidnewrecordcreation                                AS isforbidnewrecordcreation
      , COALESCE(f.issameline, 'N'::bpchar) AS issameline
      , COALESCE(f.isheading, 'N'::bpchar) AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar) AS isfieldonly
@@ -42,8 +44,8 @@ SELECT
      , COALESCE(f.ad_reference_id, c.ad_reference_id) AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id) AS ad_val_rule_id
      , c.ad_process_id
-     , c.isalwaysupdateable
-     , c.readonlylogic
+     , COALESCE(NULLIF(f.isalwaysupdateable, ''), c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted AS isencryptedcolumn
@@ -76,6 +78,7 @@ SELECT
      , c.IsFacetFilter
      , c.FacetFilterSeqNo
      , c.MaxFacetsToFetch
+     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)       AS filter_val_rule_id
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
@@ -114,6 +117,8 @@ SELECT
      , f.seqno
      , f.seqnogrid
      , f.sortno
+     , f.ad_sequence_id                                           AS AD_Sequence_ID
+     , f.isforbidnewrecordcreation                                AS isforbidnewrecordcreation
      , COALESCE(f.issameline, 'N'::bpchar) AS issameline
      , COALESCE(f.isheading, 'N'::bpchar) AS isheading
      , COALESCE(f.isfieldonly, 'N'::bpchar) AS isfieldonly
@@ -128,7 +133,7 @@ SELECT
      , c.iskey
      , c.isparent
      , COALESCE(f.ismandatory, c.ismandatory) AS ismandatory
-     , c.IsMandatory as IsMandatoryDB
+     , c.IsMandatory                                              AS IsMandatoryDB
      , c.isidentifier
      , c.istranslated
      , COALESCE(f.ad_reference_value_id, c.ad_reference_value_id) AS ad_reference_value_id
@@ -136,8 +141,8 @@ SELECT
      , COALESCE(f.ad_reference_id, c.ad_reference_id) AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id) AS ad_val_rule_id
      , c.ad_process_id
-     , c.isalwaysupdateable
-     , c.readonlylogic
+     , COALESCE(NULLIF(f.isalwaysupdateable, ''),  c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted AS isencryptedcolumn
@@ -156,7 +161,7 @@ SELECT
      , c.iscalculated
      , f.SpanX
      , f.SpanY
-     , f.EntityType as FieldEntityType
+     , f.EntityType                                               AS FieldEntityType
      , c.FormatPattern
      , c.IsUseDocSequence
      --
@@ -171,6 +176,7 @@ SELECT
      , c.IsFacetFilter
      , c.FacetFilterSeqNo
      , c.MaxFacetsToFetch
+     , COALESCE(f.filter_val_rule_id, c.filter_val_rule_id)       AS filter_val_rule_id
 --
 FROM ad_tab t
          JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
