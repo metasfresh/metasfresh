@@ -189,4 +189,3 @@ UPDATE AD_Element_Trl SET Name='Projektzeit - Admin', PrintName='Projektzeit - A
 -- 2024-04-08T10:11:34.878Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583075,'nl_NL')
 ;
-
