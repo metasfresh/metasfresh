@@ -593,7 +593,7 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IncludedTabHeight = new ModelColumn<>(I_AD_Field.class, "IncludedTabHeight", null);
 	String COLUMNNAME_IncludedTabHeight = "IncludedTabHeight";
-
+	
 	/**
 	 * Set Info Factory Class.
 	 * Fully qualified class name that implements the InfoFactory interface

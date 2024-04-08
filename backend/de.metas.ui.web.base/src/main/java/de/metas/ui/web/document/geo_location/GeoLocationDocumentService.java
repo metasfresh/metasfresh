@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.geo_location;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.AdMessageKey;
@@ -94,14 +95,14 @@ public class GeoLocationDocumentService implements DocumentFilterDescriptorsProv
 
 	@Override
 	@Nullable
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (context.getTableName() == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
+
+		final ImmutableList<DocumentFieldDescriptor> fields = context.getFields();
 		if (fields.isEmpty())
 		{
 			return null;

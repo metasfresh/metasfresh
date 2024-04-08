@@ -37,7 +37,6 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
@@ -47,7 +46,6 @@ import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDescriptorsProviderFactory, SqlDocumentFilterConverter
@@ -81,9 +79,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	@Nullable
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (I_C_BPartner.Table_Name.equals(context.getTableName())
 				&& isEnabled())

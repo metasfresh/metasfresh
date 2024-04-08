@@ -17,6 +17,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
@@ -89,12 +90,12 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	private final ICachedStringExpression sqlSelectAllFrom;
 	private final ICachedStringExpression sqlWhereClause;
-	private final DocumentQueryOrderByList defaultOrderBys;
+	@Getter private final DocumentQueryOrderByList defaultOrderBys;
 
 	private final ImmutableMap<String, SqlDocumentFieldDataBindingDescriptor> _fieldsByFieldName;
 	private final ImmutableList<SqlDocumentFieldDataBindingDescriptor> keyFields;
 
-	private final Optional<String> sqlSelectVersionById;
+	@Getter private final Optional<String> sqlSelectVersionById;
 
 	private SqlDocumentEntityDataBindingDescriptor(final Builder builder)
 	{
@@ -219,11 +220,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 
 	}
 
-	public DocumentQueryOrderByList getDefaultOrderBys()
-	{
-		return defaultOrderBys;
-	}
-
 	@Override
 	public SqlDocumentFieldDataBindingDescriptor getFieldByFieldName(final String fieldName)
 	{
@@ -238,11 +234,6 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 	public Collection<SqlDocumentFieldDataBindingDescriptor> getFields()
 	{
 		return _fieldsByFieldName.values();
-	}
-
-	public Optional<String> getSqlSelectVersionById()
-	{
-		return sqlSelectVersionById;
 	}
 
 	@Override
@@ -392,7 +383,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 			return getFieldsByFieldName()
 					.values()
 					.stream()
-					.filter(field -> field.isDefaultOrderBy())
+					.filter(SqlDocumentFieldDataBindingDescriptor::isDefaultOrderBy)
 					.sorted(Comparator.comparing(SqlDocumentFieldDataBindingDescriptor::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
@@ -493,7 +484,7 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		{
 			assertNotBuilt();
 
-			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.castOrNull(field);
+			final SqlDocumentFieldDataBindingDescriptor sqlField = SqlDocumentFieldDataBindingDescriptor.cast(field);
 			_fieldsByFieldName.put(sqlField.getFieldName(), sqlField);
 
 			return this;

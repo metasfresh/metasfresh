@@ -69,6 +69,7 @@ SELECT t.ad_window_id
      , c.IsUseDocSequence
      --
      -- Filtering
+    , f.IsFilterField
      , c.IsSelectionColumn
      , c.SelectionColumnSeqNo
      , c.filteroperator

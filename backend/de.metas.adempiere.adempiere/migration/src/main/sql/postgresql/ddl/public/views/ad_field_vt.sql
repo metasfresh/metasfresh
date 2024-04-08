@@ -74,6 +74,7 @@ SELECT c_trl.ad_language
      , c.IsUseDocSequence
      --
      -- Filtering
+, f.IsFilterField
      , c.IsSelectionColumn
      , c.SelectionColumnSeqNo
      , c.filteroperator

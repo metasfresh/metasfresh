@@ -39,8 +39,9 @@ import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.ViewRowCustomizer;
-import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -71,29 +72,29 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final String _tableAlias;
 
 	private final ImmutableMap<String, SqlViewRowFieldBinding> _fieldsByFieldName;
-	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
+	@Getter private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
 
-	private final SqlViewSelectData sqlViewSelect;
+	@Getter private final SqlViewSelectData sqlViewSelect;
 	private final IStringExpression sqlWhereClause;
-	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
-	private final ViewRowCustomizer rowCustomizer;
+	@Getter private final ViewRowCustomizer rowCustomizer;
 
-	private final DocumentQueryOrderByList defaultOrderBys;
+	@Getter private final DocumentQueryOrderByList defaultOrderBys;
 	private final OrderByFieldNameAliasMap orderByFieldNameAliasMap;
 
 	private final DocumentFilterDescriptorsProvider filterDescriptors;
 	private final SqlDocumentFilterConvertersList filterConverters;
-	@Getter
-	private final boolean refreshViewOnChangeEvents;
+	@Getter private final boolean refreshViewOnChangeEvents;
 
-	private final SqlViewRowIdsConverter rowIdsConverter;
+	@Getter private final SqlViewRowIdsConverter rowIdsConverter;
 
 	private final SqlViewGroupingBinding groupingBinding;
 	private final Optional<SqlDocumentFilterConverterDecorator> filterConverterDecorator;
 
-	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+	@Getter private final IViewInvalidationAdvisor viewInvalidationAdvisor;
+
+	@NonNull @Getter private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
 
 	@Getter
 	private final boolean queryIfNoFilters;
@@ -101,6 +102,12 @@ public class SqlViewBinding implements SqlEntityBinding
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	@NonNull
+	public static ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> getIncludedEntitiesDescriptors(@NonNull final SqlEntityBinding binding)
+	{
+		return binding instanceof SqlViewBinding ? ((SqlViewBinding)binding).getIncludedEntitiesDescriptors() : ImmutableMap.of();
 	}
 
 	private SqlViewBinding(final Builder builder)
@@ -128,23 +135,6 @@ public class SqlViewBinding implements SqlEntityBinding
 				.build();
 		sqlWhereClause = builder.getSqlWhereClause();
 
-		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
-		for (final SqlViewRowFieldBinding field : allFields)
-		{
-			final boolean keyColumn = field.isKeyColumn();
-			final SqlViewRowFieldLoader rowFieldLoader = field.getFieldLoader();
-
-			if (keyColumn)
-			{
-				// If it's key column, add it first, because in case the record is missing, we want to fail fast
-				rowFieldLoaders.add(0, rowFieldLoader);
-			}
-			else
-			{
-				rowFieldLoaders.add(rowFieldLoader);
-			}
-		}
-		this.rowFieldLoaders = ImmutableList.copyOf(rowFieldLoaders);
 		this.rowCustomizer = builder.getRowCustomizer();
 
 		orderByFieldNameAliasMap = builder.buildOrderByFieldNameAliasMap();
@@ -162,6 +152,10 @@ public class SqlViewBinding implements SqlEntityBinding
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
 
 		queryIfNoFilters = builder.queryIfNoFilters;
+
+		includedEntitiesDescriptors = builder.includedEntitiesDescriptors != null
+				? ImmutableMap.copyOf(builder.includedEntitiesDescriptors)
+				: ImmutableMap.of();
 	}
 
 	@Override
@@ -205,25 +199,10 @@ public class SqlViewBinding implements SqlEntityBinding
 		return field;
 	}
 
-	public ImmutableMap<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
-	{
-		return widgetTypesByFieldName;
-	}
-
-	public SqlViewSelectData getSqlViewSelect()
-	{
-		return sqlViewSelect;
-	}
-
 	@Override
 	public IStringExpression getSqlWhereClause()
 	{
 		return sqlWhereClause;
-	}
-
-	public ViewRowCustomizer getRowCustomizer()
-	{
-		return rowCustomizer;
 	}
 
 	@Override
@@ -247,16 +226,6 @@ public class SqlViewBinding implements SqlEntityBinding
 	public Optional<SqlDocumentFilterConverterDecorator> getFilterConverterDecorator()
 	{
 		return filterConverterDecorator;
-	}
-
-	public SqlViewRowIdsConverter getRowIdsConverter()
-	{
-		return rowIdsConverter;
-	}
-
-	public DocumentQueryOrderByList getDefaultOrderBys()
-	{
-		return defaultOrderBys;
 	}
 
 	public final Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(final DocumentQueryOrderBy orderBy)
@@ -300,11 +269,6 @@ public class SqlViewBinding implements SqlEntityBinding
 			return false;
 		}
 		return groupingBinding.isAggregated(fieldName);
-	}
-
-	public IViewInvalidationAdvisor getViewInvalidationAdvisor()
-	{
-		return viewInvalidationAdvisor;
 	}
 
 	@lombok.Value
@@ -363,6 +327,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
+		private Map<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
 
 		private boolean queryIfNoFilters = true;
 
@@ -475,6 +440,12 @@ public class SqlViewBinding implements SqlEntityBinding
 		private Map<String, SqlViewRowFieldBinding> getFieldsByFieldName()
 		{
 			return _fieldsByFieldName;
+		}
+
+		public Builder fields(@NonNull final Collection<SqlViewRowFieldBinding> fields)
+		{
+			fields.forEach(this::field);
+			return this;
 		}
 
 		public Builder field(@NonNull final SqlViewRowFieldBinding field)
@@ -614,5 +585,12 @@ public class SqlViewBinding implements SqlEntityBinding
 			this.queryIfNoFilters = queryIfNoFilters;
 			return this;
 		}
+
+		public Builder includedEntitiesDescriptors(final Map<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors)
+		{
+			this.includedEntitiesDescriptors = includedEntitiesDescriptors;
+			return this;
+		}
+
 	}
 }

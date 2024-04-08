@@ -28,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
@@ -41,6 +42,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
@@ -130,6 +132,7 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean readOnly,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy,
 			final boolean loadAllLanguages,
 			final boolean applyRolePermissions,
 			final ResultSet rs)
@@ -391,7 +394,7 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
-			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs, tabIncludeFiltersStrategy);
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
@@ -419,18 +422,47 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   // create
 
-	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
+	@Nullable
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(
+			@NonNull final ResultSet rs,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy) throws SQLException
 	{
-		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
-		if (!defaultFilter && !facetFilter)
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.None)
+		{
+			return null;
+		}
+
+		final OptionalBoolean isFilterField = OptionalBoolean.ofNullableString(rs.getString(I_AD_Field.COLUMNNAME_IsFilterField));
+		if (isFilterField.isFalse())
+		{
+			return null;
+		}
+
+		final boolean isDefaultFilterColumn;
+		final boolean isFacetFilter;
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Explicit)
+		{
+			isDefaultFilterColumn = isFilterField.isTrue();
+			isFacetFilter = isFilterField.isTrue() && StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Auto)
+		{
+			isDefaultFilterColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+			isFacetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown TabIncludeFiltersStrategy: " + tabIncludeFiltersStrategy);
+		}
+
+		if (!isDefaultFilterColumn && !isFacetFilter)
 		{
 			return null;
 		}
 
 		return GridFieldDefaultFilterDescriptor.builder()
 				//
-				.defaultFilter(defaultFilter)
+				.defaultFilter(isDefaultFilterColumn)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
@@ -438,7 +470,7 @@ public class GridFieldVO implements Serializable
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
 				//
-				.facetFilter(facetFilter)
+				.facetFilter(isFacetFilter)
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
 				.maxFacetsToFetch(rs.getInt(I_AD_Column.COLUMNNAME_MaxFacetsToFetch))
 				//

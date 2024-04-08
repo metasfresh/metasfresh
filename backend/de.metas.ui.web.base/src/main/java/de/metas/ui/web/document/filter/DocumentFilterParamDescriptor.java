@@ -47,67 +47,67 @@ import java.util.function.UnaryOperator;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class DocumentFilterParamDescriptor
 {
-	public static Builder builder()
-	{
-		return new Builder();
-	}
-
 	private static final Logger logger = LogManager.getLogger(DocumentFilterParamDescriptor.class);
 
 	boolean joinAnd;
-	String parameterName;
-	String fieldName;
-	DocumentFieldWidgetType widgetType;
-	Class<?> valueClass;
-	ITranslatableString displayName;
+	@NonNull String parameterName;
+	@NonNull String fieldName;
+	@NonNull DocumentFieldWidgetType widgetType;
+	@NonNull Class<?> valueClass;
+	@NonNull ITranslatableString displayName;
 	boolean showIncrementDecrementButtons;
 
 	Operator operator;
-	Object defaultValue;
-	Object defaultValueTo;
+	@Nullable Object defaultValue;
+	@Nullable Object defaultValueTo;
 
 	boolean mandatory;
-	Optional<LookupDescriptor> lookupDescriptor;
+	@NonNull Optional<LookupDescriptor> lookupDescriptor;
 
 	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
 	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER = new String("@#AD_User_ID@");
-	Object autoFilterInitialValue;
+	@Nullable Object autoFilterInitialValue;
 
-	BarcodeScannerType barcodeScannerType;
+	@Nullable BarcodeScannerType barcodeScannerType;
 
-	private DocumentFilterParamDescriptor(final Builder builder)
+	@SuppressWarnings("OptionalAssignedToNull")
+	@lombok.Builder(toBuilder = true, builderClassName = "Builder")
+	private DocumentFilterParamDescriptor(
+			final boolean joinAnd,
+			@NonNull final String parameterName,
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final ITranslatableString displayName,
+			final boolean showIncrementDecrementButtons,
+			final Operator operator,
+			@Nullable final Object defaultValue,
+			@Nullable final Object defaultValueTo,
+			final boolean mandatory,
+			@Nullable final Optional<LookupDescriptor> lookupDescriptor,
+			@Nullable final Object autoFilterInitialValue,
+			@Nullable final BarcodeScannerType barcodeScannerType)
 	{
-		joinAnd = builder.joinAnd;
-
-		parameterName = builder.parameterName;
 		Check.assumeNotEmpty(parameterName, "parameterName is not empty");
-
-		fieldName = builder.getFieldName();
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
-
-		widgetType = builder.getWidgetType();
-		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
-		valueClass = DescriptorsFactoryHelper.getValueClass(builder.widgetType, builder.lookupDescriptor);
-
-		displayName = builder.getDisplayName();
 		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
 
-		showIncrementDecrementButtons = builder.showIncrementDecrementButtons;
+		this.joinAnd = joinAnd;
+		this.parameterName = parameterName;
+		this.fieldName = fieldName;
+		this.widgetType = widgetType;
+		this.displayName = displayName;
+		this.showIncrementDecrementButtons = showIncrementDecrementButtons;
+		this.operator = operator;
+		this.defaultValue = defaultValue;
+		this.defaultValueTo = defaultValueTo;
+		this.mandatory = mandatory;
+		this.lookupDescriptor = lookupDescriptor != null ? lookupDescriptor : Optional.empty();
+		this.autoFilterInitialValue = autoFilterInitialValue;
+		this.barcodeScannerType = barcodeScannerType;
 
-		operator = builder.operator;
-
-		defaultValue = builder.defaultValue;
-		defaultValueTo = builder.defaultValueTo;
-
-		lookupDescriptor = builder.lookupDescriptor;
-
-		mandatory = builder.mandatory;
-
-		autoFilterInitialValue = builder.autoFilterInitialValue;
-
-		barcodeScannerType = builder.barcodeScannerType;
+		valueClass = DescriptorsFactoryHelper.getValueClass(this.widgetType, this.lookupDescriptor);
 	}
 
 	public String getDisplayName(final String adLanguage)
