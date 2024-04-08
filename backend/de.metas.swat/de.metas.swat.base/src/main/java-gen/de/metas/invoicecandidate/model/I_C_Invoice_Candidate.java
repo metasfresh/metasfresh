@@ -2209,27 +2209,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
 
 	/**
-	 * Set Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsInterimInvoice (boolean IsInterimInvoice);
-
-	/**
-	 * Get Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isInterimInvoice();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInterimInvoice = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInterimInvoice", null);
-	String COLUMNNAME_IsInterimInvoice = "IsInterimInvoice";
-
-	/**
 	 * Set Invoicing error.
 	 *
 	 * <br>Type: YesNo

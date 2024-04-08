@@ -1610,18 +1610,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsInterimInvoice (final boolean IsInterimInvoice)
-	{
-		set_Value (COLUMNNAME_IsInterimInvoice, IsInterimInvoice);
-	}
-
-	@Override
-	public boolean isInterimInvoice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
-	}
-
-	@Override
 	public void setIsInvoicingError (final boolean IsInvoicingError)
 	{
 		set_Value (COLUMNNAME_IsInvoicingError, IsInvoicingError);
