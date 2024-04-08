@@ -15,7 +15,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZonedDateTime;
 import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,11 +120,5 @@ public class TestRecord_StepDef
 		assertThat(TimeZone.getDefault()).isEqualTo(TimeZone.getTimeZone(timezoneId));
 		SharedTestContext.put("timezoneId", timezoneId);
 		return () -> TimeZone.setDefault(previousTimeZone);
-	}
-
-	public static void main(String[] args)
-	{
-		System.out.println(Instant.now());
-		System.out.println(ZonedDateTime.now());
 	}
 }
