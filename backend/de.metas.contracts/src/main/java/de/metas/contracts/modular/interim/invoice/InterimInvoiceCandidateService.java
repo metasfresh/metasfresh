@@ -58,7 +58,6 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
@@ -147,9 +146,6 @@ public class InterimInvoiceCandidateService
 				.flatrateTermId(flatrateTermId);
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
-
-		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
-		newInvoiceCandidateTemplate.pricingSystemId(pricingSystemId);
 
 		final StockQtyAndUOMQty initialStockQtyAndUOM = StockQtyAndUOMQty.builder()
 				.productId(productIdToInvoice)

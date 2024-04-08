@@ -27,17 +27,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_ModCntr_Specific_Price;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +51,6 @@ public class ModularContractService
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull
 	private final ProcessModularLogsEnqueuer processLogsEnqueuer;
-
-	@NonNull
-	private final ModularContractPriceRepository modularContractPriceRepository;
 
 	private static <T> boolean isHandlerApplicableForSettings(
 			@NonNull final IModularContractTypeHandler<T> handler,
@@ -156,24 +146,5 @@ public class ModularContractService
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		handler.handleAction(model, action, flatrateTermId, this);
-	}
-
-	public ProductPrice getContractPrice(@NonNull final ProductId productId, @NonNull final FlatrateTermId flatrateTermId)
-	{
-		final I_ModCntr_Specific_Price contractSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(productId, flatrateTermId);
-
-		return ProductPrice.builder()
-				.money(Money.of(contractSpecificPrice.getPrice(), CurrencyId.ofRepoId(contractSpecificPrice.getC_Currency_ID())))
-				.uomId(UomId.ofRepoId(contractSpecificPrice.getC_UOM_ID()))
-				.productId(productId)
-				.build();
-
-	}
-
-	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
-
-		return modularContractSettings.getPricingSystemId();
 	}
 }

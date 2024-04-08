@@ -3,8 +3,6 @@ package de.metas.contracts.model;
 import java.math.BigDecimal;
 import org.adempiere.model.ModelColumn;
 
-import java.math.BigDecimal;
-
 /** Generated Interface for ModCntr_Specific_Price
  *  @author metasfresh (generated) 
  */

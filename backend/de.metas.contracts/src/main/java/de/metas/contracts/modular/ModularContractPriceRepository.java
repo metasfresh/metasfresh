@@ -24,11 +24,10 @@ package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
-import de.metas.product.ProductId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.apache.commons.math3.stat.descriptive.summary.Product;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -37,12 +36,16 @@ import javax.annotation.Nullable;
 public class ModularContractPriceRepository
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
-	public I_ModCntr_Specific_Price retrievePriceForProductAndContract(@NonNull final ProductId productId, @NonNull final FlatrateTermId flatrateTermId)
+
+	@Nullable
+	public I_ModCntr_Specific_Price retrievePriceForProductAndContract(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, modularContractModuleId)
 				.create()
-				.first(I_ModCntr_Specific_Price.class);
+
+				.firstOnly(I_ModCntr_Specific_Price.class);
 	}
+
 }
