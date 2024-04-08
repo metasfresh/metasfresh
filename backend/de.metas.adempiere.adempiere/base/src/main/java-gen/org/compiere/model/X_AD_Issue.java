@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1027252420L;
+	private static final long serialVersionUID = 1169265162L;
 
     /** Standard Constructor */
     public X_AD_Issue (final Properties ctx, final int AD_Issue_ID, @Nullable final String trxName)
@@ -245,6 +245,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	public java.lang.String getErrorTrace() 
 	{
 		return get_ValueAsString(COLUMNNAME_ErrorTrace);
+	}
+
+	@Override
+	public void setFrontendURL (final @Nullable java.lang.String FrontendURL)
+	{
+		set_Value (COLUMNNAME_FrontendURL, FrontendURL);
+	}
+
+	@Override
+	public java.lang.String getFrontendURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_FrontendURL);
 	}
 
 	/** 

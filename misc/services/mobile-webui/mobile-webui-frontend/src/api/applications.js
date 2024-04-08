@@ -27,6 +27,7 @@ export const logErrorToBackend = (error, info) => {
           message: message,
           stackTrace: info?.componentStack,
           issueCategory: 'MOBILEUI',
+          frontendUrl: window?.location?.href,
         },
       ],
     })
