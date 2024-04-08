@@ -1,5 +1,3 @@
-
-
 -- UI Element: Projektzeit - Admin -> Projektzeit - Admin.Erstellt durch
 -- Column: C_Project_TimeBooking.CreatedBy
 -- 2024-04-08T10:19:58.964Z
