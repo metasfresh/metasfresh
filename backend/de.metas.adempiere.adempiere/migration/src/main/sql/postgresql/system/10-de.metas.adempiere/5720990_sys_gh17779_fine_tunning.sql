@@ -40,6 +40,3 @@ UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2024-04
 UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2024-04-08 10:29:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542407
 ;
 
-delete from ad_window_access where ad_window_id = 541797 and ad_role_id <> 1000000
-;
-
