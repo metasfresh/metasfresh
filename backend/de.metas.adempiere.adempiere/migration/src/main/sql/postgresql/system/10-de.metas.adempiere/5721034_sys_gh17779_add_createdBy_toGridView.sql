@@ -33,3 +33,11 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 -- 2024-04-08T10:19:58.995Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2024-04-08 13:19:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=624367
 ;
+
+
+-- Column: C_Project.Project_BookedTime
+-- Column SQL (old): (SELECT CONCAT(FLOOR(bookedSeconds.totalBookedSeconds / 3600), ':', LPAD(CAST(FLOOR((bookedSeconds.totalBookedSeconds % 3600) / 60) AS VARCHAR), 2, '0')) from (SELECT SUM(bookedSeconds) as totalBookedSeconds from C_Project_TimeBooking where C_Project_TimeBooking.C_Project_ID = C_Project.C_Project_ID) bookedSeconds)
+-- 2024-04-08T10:42:02.104Z
+UPDATE AD_Column SET ColumnSQL='(SELECT CONCAT(coalesce(FLOOR(bookedSeconds.totalBookedSeconds / 3600),''0''), '':'', coalesce(LPAD(CAST(FLOOR((bookedSeconds.totalBookedSeconds % 3600) / 60) AS VARCHAR), 2, ''0''), ''00'')) from (SELECT SUM(bookedSeconds) as totalBookedSeconds from C_Project_TimeBooking where C_Project_TimeBooking.C_Project_ID = C_Project.C_Project_ID) bookedSeconds)',Updated=TO_TIMESTAMP('2024-04-08 13:42:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=588175
+;
+
