@@ -22,6 +22,7 @@
 
 package org.eevolution.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocBaseType;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -52,9 +53,15 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+	public static PPOrderDocBaseType ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
 
-	public static PPOrderDocBaseType ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static PPOrderDocBaseType ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
 
 	@NonNull
 	public static Optional<PPOrderDocBaseType> optionalOfNullable(@Nullable final String code) {return Optional.ofNullable(ofNullableCode(code));}
@@ -68,7 +75,10 @@ public enum PPOrderDocBaseType implements ReferenceListAwareEnum
 
 	public boolean isManufacturingOrder() {return MANUFACTURING_ORDER.equals(this);}
 
-	public boolean isQualityOrder() {return QUALITY_ORDER.equals(this);}
+	public boolean isQualityOrder()
+	{
+		return QUALITY_ORDER.equals(this);
+	}
 
 	public boolean isRepairOrder() {return REPAIR_ORDER.equals(this);}
 

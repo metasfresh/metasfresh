@@ -32,7 +32,14 @@ import {
   patchViewAttributesRequest,
   quickActionsRequest,
 } from './view';
-import { getUserSession } from './login';
+import {
+  getResetPasswordInfo,
+  getUserSession,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
+} from './login';
 import {
   breadcrumbRequest,
   elementPathRequest,
@@ -61,6 +68,7 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
+  getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
@@ -83,5 +91,9 @@ export {
   queryPathsRequest,
   quickActionsRequest,
   rootRequest,
+  resetPasswordComplete,
+  resetPasswordGetAvatar,
+  resetPasswordRequest,
+  setUserLang,
   topActionsRequest,
 };

@@ -40,6 +40,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.IQuery;
 import org.compiere.model.X_C_DocType;

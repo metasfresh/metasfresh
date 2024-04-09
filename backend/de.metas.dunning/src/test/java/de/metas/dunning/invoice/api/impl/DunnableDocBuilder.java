@@ -24,12 +24,12 @@ package de.metas.dunning.invoice.api.impl;
 
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.impl.DunnableDoc;
+import de.metas.organization.LocalDateAndOrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -46,8 +46,8 @@ public class DunnableDocBuilder
 	private int C_Currency_ID = -1;
 	private BigDecimal totalAmt;
 	private BigDecimal openAmt;
-	private Date dueDate;
-	private Date graceDate;
+	private LocalDateAndOrgId dueDate;
+	private LocalDateAndOrgId graceDate;
 	private int daysDue;
 	private boolean isInDispute;
 	private int M_SectionCode_ID = -1;
@@ -67,7 +67,7 @@ public class DunnableDocBuilder
 
 	public IDunnableDoc create()
 	{
-		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, record_id,
+		return new DunnableDoc(tableName, record_id,
 				documentNo, // FRESH-504: DocumentNo
 				AD_Client_ID, AD_Org_ID,
 				C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
@@ -78,8 +78,6 @@ public class DunnableDocBuilder
 				M_SectionCode_ID,
 				isInDispute,
 				poReference);
-
-		return dunnableDoc;
 	}
 
 	public IDunnableDoc createAndAppend(List<IDunnableDoc> list)
@@ -168,13 +166,13 @@ public class DunnableDocBuilder
 		return this;
 	}
 
-	public DunnableDocBuilder setDueDate(Date dueDate)
+	public DunnableDocBuilder setDueDate(LocalDateAndOrgId dueDate)
 	{
 		this.dueDate = dueDate;
 		return this;
 	}
 
-	public DunnableDocBuilder setGraceDate(Date graceDate)
+	public DunnableDocBuilder setGraceDate(LocalDateAndOrgId graceDate)
 	{
 		this.graceDate = graceDate;
 		return this;
