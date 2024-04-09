@@ -9,13 +9,13 @@ import java.math.BigDecimal;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_AD_Field 
+public interface I_AD_Field
 {
 
 	String Table_Name = "AD_Field";
 
-//	/** AD_Table_ID=107 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=107 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -593,7 +593,7 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IncludedTabHeight = new ModelColumn<>(I_AD_Field.class, "IncludedTabHeight", null);
 	String COLUMNNAME_IncludedTabHeight = "IncludedTabHeight";
-	
+
 	/**
 	 * Set Info Factory Class.
 	 * Fully qualified class name that implements the InfoFactory interface
@@ -915,7 +915,7 @@ public interface I_AD_Field
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -926,7 +926,7 @@ public interface I_AD_Field
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -940,7 +940,7 @@ public interface I_AD_Field
 	/**
 	 * Set Reihenfolge (grid).
 	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -951,7 +951,7 @@ public interface I_AD_Field
 	/**
 	 * Get Reihenfolge (grid).
 	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
