@@ -10,7 +10,7 @@
         "isManualPrice": true,
         "isPrepared": true,
         "price": {
-          "value": 5,
+          "value": 5.64,
           "currencyCode": "EUR",
           "priceUomCode": "PCE"
         },
