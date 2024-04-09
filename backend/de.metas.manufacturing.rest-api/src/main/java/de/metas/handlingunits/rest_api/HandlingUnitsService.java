@@ -176,7 +176,7 @@ public class HandlingUnitsService
 				hu,
 				loadJsonHURequest.isExcludeEmptyAttributes(),
 				loadJsonHURequest.getEmptyAttributesToInclude());
-        final JsonHUType huType = toJsonHUType(hu, loadJsonHURequest.isExcludeEmptyAttributes());
+        final JsonHUType huType = toJsonHUType(hu);
 
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
