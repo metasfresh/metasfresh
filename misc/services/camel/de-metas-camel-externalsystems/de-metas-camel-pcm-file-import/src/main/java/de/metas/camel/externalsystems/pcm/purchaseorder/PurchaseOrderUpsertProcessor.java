@@ -100,6 +100,7 @@ public class PurchaseOrderUpsertProcessor implements Processor
 							 .uomCode(DEFAULT_UOM_X12DE355_CODE)
 							 .build())
 				.isManualPrice(true)
+				.isPrepared(true)
 				.price(JsonPrice.builder()
 							   .value(purchaseOrderRow.getPrice())
 							   .currencyCode(DEFAULT_CURRENCY_CODE)
