@@ -29,10 +29,10 @@ import de.metas.dunning.api.IDunnableDoc;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * Immutable plain {@link IDunnableDoc}
@@ -63,44 +63,28 @@ public class DunnableDoc implements IDunnableDoc
 	private final int M_SectionCode_ID;
 	private final String poReference;
 
-	/**
-	 * create a dunnable doc
-	 *
-	 * @param tableName
-	 * @param C_BPartner_ID
-	 * @param recordId
-	 * @param C_BPartner_Location_ID
-	 * @param Contact_ID
-	 * @param C_Currency_ID
-	 * @param totalAmt
-	 * @param openAmt
-	 * @param dueDate
-	 * @param daysDue
-	 * @param poReference
-	 */
 	public DunnableDoc( // NOPMD by tsa on 3/20/13 8:44 PM, allow long parameters list
-			final String tableName, final int recordId,
+			@NonNull final String tableName, final int recordId,
 			final String documentNo, // FRESH-504: Also add the documentNo
 			final int adClientId, final int adOrgId,
 			final int C_BPartner_ID, final int C_BPartner_Location_ID, final int Contact_ID,
 			final int C_Currency_ID,
-			final BigDecimal totalAmt, final BigDecimal openAmt,
-			final LocalDateAndOrgId dueDate, final LocalDateAndOrgId graceDate,
+			@NonNull final BigDecimal totalAmt, 
+			@NonNull final BigDecimal openAmt,
+			@NonNull final LocalDateAndOrgId dueDate, 
+			final LocalDateAndOrgId graceDate,
 			final int daysDue,
 			final int M_SectionCode_ID,
-			boolean isInDispute,
+			final boolean isInDispute,
 			@Nullable final String poReference)
 	{
-		Check.assume(!Check.isEmpty(tableName, true), "tableName not empty");
+		Check.assume(Check.isNotBlank(tableName), "tableName not blank");
 		Check.assume(recordId > 0, "record_id > 0");
 		Check.assume(adClientId > 0, "AD_Client_ID > 0");
 		Check.assume(adOrgId > 0, "AD_Org_ID > 0");
 		Check.assume(C_BPartner_ID > 0, "C_BPartner_ID > 0");
 		Check.assume(C_BPartner_Location_ID > 0, "C_BPartner_ID > 0");
 		Check.assume(C_Currency_ID > 0, "C_Currency_ID > 0");
-		Check.assume(totalAmt != null, "totalAmt not null");
-		Check.assume(openAmt != null, "openAmt not null");
-		Check.assume(dueDate != null, "dueDate not null");
 		// Util.assume(graceDate != null, "dueDate not null"); not sure if grace date is mandatory
 
 		this.tableName = tableName;
@@ -114,8 +98,8 @@ public class DunnableDoc implements IDunnableDoc
 		this.Contact_ID = Contact_ID;
 		this.totalAmt = totalAmt;
 		this.openAmt = openAmt;
-		this.dueDate = (Date)dueDate.clone();
-		this.graceDate = graceDate == null ? null : (Date)graceDate.clone();
+		this.dueDate = dueDate;
+		this.graceDate = graceDate;
 		this.daysDue = daysDue;
 		this.inDispute = isInDispute;
 		this.M_SectionCode_ID = M_SectionCode_ID;

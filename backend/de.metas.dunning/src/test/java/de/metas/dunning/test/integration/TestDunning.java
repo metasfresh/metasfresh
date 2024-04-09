@@ -60,6 +60,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
@@ -181,7 +182,7 @@ public class TestDunning extends DunningTestBase
 		Assert.assertFalse("Candidate4 - WriteOff", candidate4.isWriteOff());
 		writeOffListener.assertNotTriggered(IInvoiceSourceBL.EVENT_AfterInvoiceWriteOff, candidate4);
 
-		candidate4.setDunningGrace(TimeUtil.getDay(2014, 01, 01));
+		candidate4.setDunningGrace(TimeUtil.getDay(2014, 1, 01));
 		InterfaceWrapperHelper.save(candidate4);
 
 		//
