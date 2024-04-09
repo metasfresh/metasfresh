@@ -216,7 +216,7 @@ public class DocumentFilterParamDescriptor
 
 		public Builder lookupDescriptor(@NonNull final UnaryOperator<LookupDescriptor> mapper)
 		{
-			if (this.lookupDescriptor.isPresent())
+			if (this.lookupDescriptor!= null)
 			{
 				return lookupDescriptor(this.lookupDescriptor.map(mapper));
 			}
