@@ -25,12 +25,14 @@ package de.metas.contracts.modular.workpackage.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -45,6 +47,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,6 +72,9 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+
+	@NonNull
+	private final ModularContractService modularContractService;
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
@@ -120,6 +126,11 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
+		final int modularContractModuleId = request.getConfigId().getModularContractModuleId();
+
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ModularContractModuleId.ofRepoId(modularContractModuleId),
+																								   request.getContractId());
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
@@ -133,7 +144,6 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
 											.quantity(quantity)
-											.amount(null)
 											.transactionDate(transactionDate)
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
@@ -141,6 +151,8 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 											.configId(request.getConfigId())
 											.invoicingGroupId(invoicingGroupId)
 											.isBillable(isBillable)
+											.priceActual(contractSpecificPrice)
+											.amount(contractSpecificPrice.computeAmount(quantity))
 											.build());
 	}
 

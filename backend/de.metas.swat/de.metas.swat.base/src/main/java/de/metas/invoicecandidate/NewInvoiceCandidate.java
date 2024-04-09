@@ -32,7 +32,6 @@ import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
@@ -121,13 +120,10 @@ public class NewInvoiceCandidate
 	@Nullable
 	FlatrateTermId flatrateTermId;
 
-
-	@Nullable PricingSystemId pricingSystemId;
-
 	@Nullable
-	ProductPrice contractSpecificPrice;
+	ContractSpecificPrice contractSpecificPrice;
 
-	//@Nullable ModularContractModuleId modularContractModuleId; todo
+
 
 	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
@@ -162,7 +158,7 @@ public class NewInvoiceCandidate
 			@NonNull final ILCandHandlerId handlerId,
 			final boolean isManual,
 			@Nullable final FlatrateTermId flatrateTermId,
-			@NonNull PricingSystemId pricingSystemId, @Nullable final ProductPrice contractSpecificPrice)
+			@Nullable final ContractSpecificPrice contractSpecificPrice)
 	{
 		this.orgId = orgId;
 
@@ -196,7 +192,6 @@ public class NewInvoiceCandidate
 		this.handlerId = handlerId;
 		this.isManual = isManual;
 		this.flatrateTermId = flatrateTermId;
-		this.pricingSystemId = pricingSystemId;
 		this.contractSpecificPrice = contractSpecificPrice;
 		if (priceEnteredOverride != null)
 		{

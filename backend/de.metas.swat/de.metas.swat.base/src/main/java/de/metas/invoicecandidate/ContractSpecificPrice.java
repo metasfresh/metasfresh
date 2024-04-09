@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.log;
+package de.metas.invoicecandidate;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.ModularContractHandlerType;
-import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductPrice;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ModularContractLogQuery
+public class ContractSpecificPrice
 {
-	@Nullable TableRecordReferenceSet referenceSet;
-	@Nullable LogEntryContractType contractType;
-	@Nullable ModularContractLogEntryId entryId;
-	@Nullable FlatrateTermId flatrateTermId;
-	@Nullable Boolean processed;
-	@Nullable Boolean billable;
-	@Nullable ModularContractHandlerType modularContractHandlerType;
-	@Nullable InvoiceCandidateId invoiceCandidateId;
+	@NonNull ProductPrice productPrice;
+
+	@NonNull TaxCategoryId taxCategoryId;
+
+	@NonNull PricingSystemId pricingSystemId;
 }
