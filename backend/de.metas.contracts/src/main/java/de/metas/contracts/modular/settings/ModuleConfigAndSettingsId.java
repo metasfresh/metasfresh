@@ -64,11 +64,6 @@ public class ModuleConfigAndSettingsId implements RepoIdAware
 	}
 
 	@JsonValue
-	public int getModularContractModuleId()
-	{
-		return getRepoId();
-	}
-
 	public int getRepoId()
 	{
 		return modularContractModuleId.getRepoId();

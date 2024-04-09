@@ -140,7 +140,7 @@ public class ModularContractLogDAO
 								 },
 								 () -> log.setPriceActual(null));
 
-		log.setModCntr_Module_ID(request.getConfigId().getModularContractModuleId());
+		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
 
 		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 

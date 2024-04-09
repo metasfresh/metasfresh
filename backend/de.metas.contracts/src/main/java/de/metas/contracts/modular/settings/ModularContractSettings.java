@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.lang.SOTrx;
@@ -33,7 +34,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +53,7 @@ public class ModularContractSettings
 	@NonNull
 	YearAndCalendarId yearAndCalendarId;
 
-	@Nullable
+	@NonNull
 	PricingSystemId pricingSystemId;
 
 	/**
@@ -68,6 +68,22 @@ public class ModularContractSettings
 
 	@NonNull
 	SOTrx soTrx;
+
+	public List<ModuleConfig> getModularContractConfigs()
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(moduleConfig -> !moduleConfig.isInterimInvoiceHandler())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<ModuleConfig> getInterimInvoiceConfigs()
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(ModuleConfig::isInterimInvoiceHandler)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(
