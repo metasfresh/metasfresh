@@ -216,8 +216,11 @@ public class DocumentFilterParamDescriptor
 
 		public Builder lookupDescriptor(@NonNull final UnaryOperator<LookupDescriptor> mapper)
 		{
-			return lookupDescriptor(this.lookupDescriptor.map(mapper));
+			if (this.lookupDescriptor.isPresent())
+			{
+				return lookupDescriptor(this.lookupDescriptor.map(mapper));
+			}
+			return this;
 		}
 	}
-
 }
