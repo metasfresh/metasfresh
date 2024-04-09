@@ -5,6 +5,7 @@ import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedules
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import org.compiere.SpringContextHolder;
 
 public class SplitShipmentView_ProcessAllRows extends SplitShipmentView_ProcessTemplate
@@ -25,12 +26,18 @@ public class SplitShipmentView_ProcessAllRows extends SplitShipmentView_ProcessT
 	@Override
 	protected String doIt()
 	{
+		final SplitShipmentView view = getView();
+		
 		shipmentService.generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest.builder()
-				.scheduleIds(ImmutableSet.of(getView().getShipmentScheduleId()))
+				.scheduleIds(ImmutableSet.of(view.getShipmentScheduleId()))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_SPLIT_SHIPMENT)
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(true)
 				.build());
+		
+		view.invalidateAll();
+
+		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(view);
 
 		return MSG_OK;
 	}

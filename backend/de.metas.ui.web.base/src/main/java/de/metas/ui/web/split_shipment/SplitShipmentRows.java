@@ -2,8 +2,10 @@ package de.metas.ui.web.split_shipment;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.document.dimension.Dimension;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitId;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
@@ -20,6 +22,7 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_UOM;
 
@@ -35,35 +38,74 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 {
 	public static SplitShipmentRows cast(final IRowsData<SplitShipmentRow> rowsData) {return (SplitShipmentRows)rowsData;}
 
-	@NonNull private final ShipmentScheduleSplitService service;
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final ShipmentScheduleSplitService shipmentScheduleSplitService;
 
 	@NonNull @Getter private final ShipmentScheduleId shipmentScheduleId;
-	@NonNull private final I_C_UOM uom;
+	private ShipmentScheduleInfo _shipmentScheduleInfo; // lazy
 
-	@NonNull private final LinkedHashMap<DocumentId, SplitShipmentRow> rowsById = new LinkedHashMap<>();
+	@NonNull private final LinkedHashMap<DocumentId, SplitShipmentRow> _rowsById = new LinkedHashMap<>();
+	private boolean needsRefresh = false;
 
 	@Builder
 	private SplitShipmentRows(
-			@NonNull ShipmentScheduleSplitService service,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final I_C_UOM uom)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull ShipmentScheduleSplitService shipmentScheduleSplitService,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		this.service = service;
-		this.shipmentScheduleId = shipmentScheduleId;
-		this.uom = uom;
+		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleSplitService = shipmentScheduleSplitService;
 
-		refresh();
-		addEmptyLineIfNeeded();
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.needsRefresh = true;
 	}
 
 	@Override
-	public synchronized Map<DocumentId, SplitShipmentRow> getDocumentId2TopLevelRows() {return ImmutableMap.copyOf(rowsById);}
+	public synchronized Map<DocumentId, SplitShipmentRow> getDocumentId2TopLevelRows()
+	{
+		refreshIfNeeded();
+		return ImmutableMap.copyOf(getMap());
+	}
 
 	@Override
-	public DocumentIdsSelection getDocumentIdsToInvalidate(final TableRecordReferenceSet recordRefs) {return DocumentIdsSelection.EMPTY;}
+	public DocumentIdsSelection getDocumentIdsToInvalidate(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return DocumentIdsSelection.EMPTY;
+		}
+
+		boolean isShipmentScheduleChanged = recordRefs.streamIds(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId)
+				.anyMatch(shipmentScheduleId -> ShipmentScheduleId.equals(shipmentScheduleId, this.shipmentScheduleId));
+		if (isShipmentScheduleChanged)
+		{
+			// all rows shall be invalidated
+			return DocumentIdsSelection.ALL;
+		}
+		else
+		{
+			final ImmutableMap<ShipmentScheduleSplitId, DocumentId> rowIdsBySplitId = getMap().values()
+					.stream()
+					.filter(row -> row.getShipmentScheduleSplitId() != null)
+					.collect(ImmutableMap.toImmutableMap(SplitShipmentRow::getShipmentScheduleSplitId, SplitShipmentRow::getId));
+			if (rowIdsBySplitId.isEmpty())
+			{
+				return DocumentIdsSelection.EMPTY;
+			}
+
+			return recordRefs.streamIds(I_M_ShipmentSchedule_Split.Table_Name, ShipmentScheduleSplitId::ofRepoId)
+					.map(rowIdsBySplitId::get)
+					.filter(Objects::nonNull)
+					.collect(DocumentIdsSelection.toDocumentIdsSelection());
+		}
+	}
 
 	@Override
-	public void invalidateAll() {}
+	public synchronized void invalidateAll()
+	{
+		this._shipmentScheduleInfo = null;
+		this.needsRefresh = true;
+	}
 
 	@Override
 	public void patchRow(final IEditableView.RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
@@ -73,16 +115,57 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 
 	private DocumentId newRowId() {return DocumentId.of(UUID.randomUUID().toString());}
 
+	private LinkedHashMap<DocumentId, SplitShipmentRow> getMap()
+	{
+		return this._rowsById;
+	}
+
+	private void refreshIfNeeded()
+	{
+		if (this.needsRefresh)
+		{
+			refresh();
+		}
+	}
+
 	private synchronized void refresh()
 	{
-		final LinkedHashMap<ShipmentScheduleSplitId, ShipmentScheduleSplit> existingSplitsById = service.getByShipmentScheduleId(shipmentScheduleId)
+		refreshRows();
+		addOrRemoveEmptyLineIfNeeded();
+
+		this.needsRefresh = false;
+	}
+
+	private synchronized ShipmentScheduleInfo getShipmentScheduleInfo()
+	{
+		if (_shipmentScheduleInfo == null)
+		{
+			_shipmentScheduleInfo = retrieveShipmentScheduleInfo();
+		}
+		return _shipmentScheduleInfo;
+	}
+
+	private ShipmentScheduleInfo retrieveShipmentScheduleInfo()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
+		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
+		return ShipmentScheduleInfo.builder()
+				.uom(qtyToDeliver.getUOM())
+				.readonly(shipmentSchedule.isProcessed() || shipmentSchedule.isClosed() || shipmentSchedule.isDeliveryStop())
+				.build();
+	}
+
+	private void refreshRows()
+	{
+		final LinkedHashMap<ShipmentScheduleSplitId, ShipmentScheduleSplit> existingSplitsById = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId)
 				.stream()
 				.collect(GuavaCollectors.toLinkedHashMapByKey(ShipmentScheduleSplit::getId));
 
 		//
 		// Update existing rows
 		// Remove rows which are no longer present in database
-		for (final SplitShipmentRow row : ImmutableList.copyOf(rowsById.values()))
+		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
+		for (final SplitShipmentRow row : ImmutableList.copyOf(getMap().values()))
 		{
 			if (row.getShipmentScheduleSplitId() == null)
 			{
@@ -97,7 +180,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			}
 			else
 			{
-				final SplitShipmentRow rowUpdated = updatingRow(row, existingSplit);
+				final SplitShipmentRow rowUpdated = updatingRow(row, existingSplit, shipmentScheduleInfo);
 				addRow(rowUpdated);
 			}
 		}
@@ -106,7 +189,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		// Add new rows
 		for (final ShipmentScheduleSplit split : existingSplitsById.values())
 		{
-			final SplitShipmentRow newRow = updatingRow(newEmptyRow(), split);
+			final SplitShipmentRow newRow = updatingRow(newEmptyRow(), split, shipmentScheduleInfo);
 			addRow(newRow);
 		}
 	}
@@ -115,7 +198,8 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			@NonNull final DocumentId rowId,
 			@NonNull final UnaryOperator<SplitShipmentRow> mapper)
 	{
-		rowsById.compute(rowId, (key, oldRow) -> {
+		refreshIfNeeded();
+		getMap().compute(rowId, (key, oldRow) -> {
 			if (oldRow == null)
 			{
 				throw new EntityNotFoundException(rowId.toJson());
@@ -125,7 +209,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			return saveIfPossible(row);
 		});
 
-		addEmptyLineIfNeeded();
+		addOrRemoveEmptyLineIfNeeded();
 	}
 
 	private SplitShipmentRow saveIfPossible(final SplitShipmentRow row)
@@ -138,7 +222,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		final ShipmentScheduleSplit splitUpdated;
 		if (row.getShipmentScheduleSplitId() != null)
 		{
-			splitUpdated = service.changeById(row.getShipmentScheduleSplitId(), split -> updateFromRow(split, row));
+			splitUpdated = shipmentScheduleSplitService.changeById(row.getShipmentScheduleSplitId(), split -> updateFromRow(split, row));
 		}
 		else
 		{
@@ -146,14 +230,13 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 					.shipmentScheduleId(shipmentScheduleId)
 					.deliveryDate(row.getDeliveryDate())
 					.qtyToDeliver(row.getQtyToDeliver())
-					.dimension(Dimension.EMPTY)
 					.build();
 			updateFromRow(split, row);
-			service.save(split);
+			shipmentScheduleSplitService.save(split);
 			splitUpdated = split;
 		}
 
-		return updatingRow(row, splitUpdated);
+		return updatingRow(row, splitUpdated, getShipmentScheduleInfo());
 	}
 
 	private static void updateFromRow(final ShipmentScheduleSplit split, final SplitShipmentRow from)
@@ -167,11 +250,11 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 				.build());
 	}
 
-	private static SplitShipmentRow updatingRow(final SplitShipmentRow row, final ShipmentScheduleSplit from)
+	private static SplitShipmentRow updatingRow(final SplitShipmentRow row, final ShipmentScheduleSplit from, final ShipmentScheduleInfo shipmentScheduleInfo)
 	{
 		final SplitShipmentRow rowUpdated = row.toBuilder()
 				.shipmentScheduleSplitId(from.getId())
-				.processed(from.isProcessed())
+				.readonly(from.isProcessed() || shipmentScheduleInfo.isReadonly())
 				//
 				.deliveryDate(from.getDeliveryDate())
 				.qtyToDeliver(from.getQtyToDeliver())
@@ -183,14 +266,27 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		return !Objects.equals(row, rowUpdated) ? rowUpdated : row;
 	}
 
-	private synchronized void addEmptyLineIfNeeded()
+	private synchronized void addOrRemoveEmptyLineIfNeeded()
 	{
-		if (!hasNewLines())
-		{
-			final SplitShipmentRow emptyRow = newEmptyRow();
-			addRow(emptyRow);
+		final boolean readonly = getShipmentScheduleInfo().isReadonly();
+		final LinkedHashMap<DocumentId, SplitShipmentRow> map = getMap();
+		final DocumentIdsSelection newLineIds = map.values().stream().filter(SplitShipmentRow::isNewLine).map(SplitShipmentRow::getId).collect(DocumentIdsSelection.toDocumentIdsSelection());
 
-			notifyFullyChanged();
+		if (readonly)
+		{
+			if (!newLineIds.isEmpty())
+			{
+				newLineIds.forEach(this::removeRowById);
+				notifyFullyChanged();
+			}
+		}
+		else
+		{
+			if (newLineIds.isEmpty())
+			{
+				addRow(newEmptyRow());
+				notifyFullyChanged();
+			}
 		}
 	}
 
@@ -199,22 +295,18 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(); // force reloading to also add the new row to frontend rows list
 	}
 
-	private boolean hasNewLines()
-	{
-		return rowsById.values().stream().anyMatch(SplitShipmentRow::isNewLine);
-	}
-
 	private SplitShipmentRow newEmptyRow()
 	{
+		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 		return SplitShipmentRow.builder()
 				.rowId(newRowId())
-				.qtyToDeliver(Quantity.zero(uom))
+				.qtyToDeliver(Quantity.zero(shipmentScheduleInfo.getUom()))
 				.build();
 	}
 
-	private void addRow(final SplitShipmentRow row) {rowsById.put(row.getId(), row);}
+	private void addRow(final SplitShipmentRow row) {getMap().put(row.getId(), row);}
 
-	private void removeRowById(final DocumentId rowId) {rowsById.remove(rowId);}
+	private void removeRowById(final DocumentId rowId) {getMap().remove(rowId);}
 
 	public synchronized void deleteByIds(@NonNull final DocumentIdsSelection rowIds)
 	{
@@ -223,8 +315,11 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			return;
 		}
 
+		refreshIfNeeded();
+
 		final HashSet<DocumentId> rowIdsToRemove = new HashSet<>();
 		final HashSet<ShipmentScheduleSplitId> splitIdsToRemove = new HashSet<>();
+		final LinkedHashMap<DocumentId, SplitShipmentRow> rowsById = getMap();
 		for (final SplitShipmentRow row : rowsById.values())
 		{
 			if (!rowIds.contains(row.getId()))
@@ -239,16 +334,25 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			}
 		}
 
-		service.deleteByIds(splitIdsToRemove);
+		shipmentScheduleSplitService.deleteByIds(splitIdsToRemove);
 		rowIdsToRemove.forEach(rowsById::remove);
 
-		addEmptyLineIfNeeded();
+		addOrRemoveEmptyLineIfNeeded();
 
 		notifyFullyChanged();
 	}
 
 	public synchronized boolean hasRowsToProcess()
 	{
-		return rowsById.values().stream().anyMatch(SplitShipmentRow::isEligibleForProcessing);
+		refreshIfNeeded();
+		return getMap().values().stream().anyMatch(SplitShipmentRow::isEligibleForProcessing);
+	}
+
+	@Value
+	@Builder
+	private static class ShipmentScheduleInfo
+	{
+		@NonNull I_C_UOM uom;
+		boolean readonly;
 	}
 }

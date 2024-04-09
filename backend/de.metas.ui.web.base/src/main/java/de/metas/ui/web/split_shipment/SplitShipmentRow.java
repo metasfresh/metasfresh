@@ -45,13 +45,19 @@ public class SplitShipmentRow implements IViewRow
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, fieldName = FIELD_UserElementString2)
 	@Nullable @Getter private final String userElementString2;
 
-	private final boolean processed;
+	private final boolean readonly;
 
 	@NonNull private final DocumentId rowId;
 	@Nullable @Getter private final ShipmentScheduleSplitId shipmentScheduleSplitId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<SplitShipmentRow> values;
-	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = ImmutableMap.<String, ViewEditorRenderMode>builder()
+	private static final ImmutableMap<String, ViewEditorRenderMode> EDITABLE = ImmutableMap.<String, ViewEditorRenderMode>builder()
+			.put(FIELD_DeliveryDate, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_QtyToDeliver, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementString1, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementString2, ViewEditorRenderMode.ALWAYS)
+			.build();
+	private static final ImmutableMap<String, ViewEditorRenderMode> READONLY = ImmutableMap.<String, ViewEditorRenderMode>builder()
 			.put(FIELD_DeliveryDate, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_QtyToDeliver, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_UserElementString1, ViewEditorRenderMode.ALWAYS)
@@ -61,7 +67,7 @@ public class SplitShipmentRow implements IViewRow
 	@Builder(toBuilder = true)
 	private SplitShipmentRow(
 			@Nullable final ShipmentScheduleSplitId shipmentScheduleSplitId,
-			final boolean processed,
+			final boolean readonly,
 			@NonNull final DocumentId rowId,
 			//
 			@Nullable final LocalDate deliveryDate,
@@ -74,7 +80,7 @@ public class SplitShipmentRow implements IViewRow
 		this.userElementString1 = userElementString1;
 		this.userElementString2 = userElementString2;
 
-		this.processed = processed;
+		this.readonly = readonly;
 		this.rowId = rowId;
 		this.shipmentScheduleSplitId = shipmentScheduleSplitId;
 
@@ -85,7 +91,7 @@ public class SplitShipmentRow implements IViewRow
 	public DocumentId getId() {return rowId;}
 
 	@Override
-	public boolean isProcessed() {return processed;}
+	public boolean isProcessed() {return readonly;}
 
 	@Nullable
 	@Override
@@ -98,7 +104,7 @@ public class SplitShipmentRow implements IViewRow
 	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues() {return values.get(this);}
 
 	@Override
-	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName() {return viewEditorRenderModeByFieldName;}
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName() {return readonly ? READONLY : EDITABLE;}
 
 	public boolean isNewLine()
 	{
@@ -143,7 +149,7 @@ public class SplitShipmentRow implements IViewRow
 
 	private void assertEditable()
 	{
-		if (processed)
+		if (readonly)
 		{
 			throw new AdempiereException("@Processed@");
 		}
@@ -151,6 +157,6 @@ public class SplitShipmentRow implements IViewRow
 
 	public boolean isEligibleForProcessing()
 	{
-		return !processed && shipmentScheduleSplitId != null;
+		return !readonly && shipmentScheduleSplitId != null;
 	}
 }

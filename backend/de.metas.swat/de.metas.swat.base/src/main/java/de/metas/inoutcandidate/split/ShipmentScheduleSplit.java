@@ -25,7 +25,7 @@ public class ShipmentScheduleSplit
 	@NonNull private final ShipmentScheduleId shipmentScheduleId;
 	@NonNull private LocalDate deliveryDate;
 	@NonNull private Quantity qtyToDeliver;
-	@NonNull private Dimension dimension;
+	@NonNull @Builder.Default private Dimension dimension = Dimension.EMPTY;
 
 	@Nullable @Setter(AccessLevel.NONE) private InOutAndLineId shipmentLineId;
 	@Setter(AccessLevel.NONE) private boolean processed;
