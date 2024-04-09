@@ -270,6 +270,24 @@ public final class GuavaCollectors
 	}
 
 	/**
+	 * Collects to {@link LinkedHashMap}.
+	 * <p>
+	 * If duplicate key was found, the last provided item will be used.
+	 *
+	 * @return {@link LinkedHashMap} collector
+	 */
+	public static <K, V> Collector<V, ?, LinkedHashMap<K, V>> toLinkedHashMapByKey(final Function<? super V, ? extends K> keyMapper)
+	{
+		// NOTE: before changing the "duplicates" behavior please check the callers first!
+		return Collectors.toMap(
+				keyMapper,
+				value -> value,
+				(valuePrev, valueNow) -> valueNow, // keep last 
+				LinkedHashMap::new
+		);
+	}
+
+	/**
 	 * Collects to {@link ImmutableMap}.
 	 * <p>
 	 * If duplicate key was found, the first provided item will be used.
@@ -449,6 +467,7 @@ public final class GuavaCollectors
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
+
 	public static <T> Collector<T, ?, Optional<ImmutableSet<T>>> toOptionalImmutableSet()
 	{
 		return Collectors.collectingAndThen(
