@@ -33,7 +33,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,7 +52,7 @@ public class ModularContractSettings
 	@NonNull
 	YearAndCalendarId yearAndCalendarId;
 
-	@Nullable
+	@NonNull
 	PricingSystemId pricingSystemId;
 
 	/**

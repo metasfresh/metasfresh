@@ -32,6 +32,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -52,17 +53,22 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +85,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,8 +109,8 @@ public class InterimInvoiceCandidateService
 
 	public ImmutableSet<InvoiceCandidateId> createInterimInvoiceCandidatesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
-		final List<I_M_InOutLine> inOutLines = getUnprocessedInOutLines(flatrateTermRecord);
-		if (inOutLines.isEmpty())
+		final List<ModularContractLogEntry> interimLogsToInvoice = getInterimLogsToInvoice(flatrateTermRecord);
+		if(interimLogsToInvoice.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
@@ -147,19 +154,29 @@ public class InterimInvoiceCandidateService
 
 		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
 
+		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
+		newInvoiceCandidateTemplate.pricingSystemId(pricingSystemId);
+
 		final StockQtyAndUOMQty initialStockQtyAndUOM = StockQtyAndUOMQty.builder()
 				.productId(productIdToInvoice)
 				.stockQty(Quantitys.createZero(stockUOM))
 				.uomQty(Quantitys.createZero(stockUOM))
 				.build();
 
-		final StockQtyAndUOMQty totalStockQtyAndUOMQty = inOutLines.stream().map(inOutBL::getStockQtyAndQtyInUOM)
+		final StockQtyAndUOMQty totalStockQtyAndUOMQty = interimLogsToInvoice.stream().map(modularContractLogService::getStockQtyAndQtyInUOM)
 				.reduce(initialStockQtyAndUOM, StockQtyAndUOMQty::add);
+
+		// TODO
+
+	//	final ProductPrice contractSPecificPrice = modularContractService.
+
+	//	newInvoiceCandidateTemplate.priceEnteredOverride(contractSPecificPrice);
 
 		final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
 				.qtyOrdered(totalStockQtyAndUOMQty)
 				.qtyDelivered(totalStockQtyAndUOMQty)
 				.build();
+
 
 		final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
 		invoiceCandidateSet.add(invoiceCandidateId);
@@ -194,6 +211,21 @@ public class InterimInvoiceCandidateService
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
+	private List<ModularContractLogEntry> getInterimLogsToInvoice(final @NonNull I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.contractType(LogEntryContractType.INTERIM)
+				.processed(false)
+				.billable(true)
+				.build();
+		final List<ModularContractLogEntry> modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);
+		modularContractLogService.validateLogPrices(modularContractLogEntries);
+
+		return modularContractLogEntries;
+	}
+
 	private DocTypeId getInterimInvoiceDocType(@NonNull final ClientId clientId)
 	{
 		if (interimInvoiceDocType == null)
@@ -206,5 +238,7 @@ public class InterimInvoiceCandidateService
 		}
 		return interimInvoiceDocType;
 	}
+
+
 
 }

@@ -38,4 +38,5 @@ public class ModularContractLogQuery
 	@Nullable ModularContractLogEntryId entryId;
 	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable Boolean processed;
+	@Nullable Boolean billable;
 }

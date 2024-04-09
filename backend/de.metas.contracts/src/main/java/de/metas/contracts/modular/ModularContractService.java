@@ -31,6 +31,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
+import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -146,5 +147,12 @@ public class ModularContractService
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		handler.handleAction(model, action, flatrateTermId, this);
+	}
+
+	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+
+		return modularContractSettings.getPricingSystemId();
 	}
 }
