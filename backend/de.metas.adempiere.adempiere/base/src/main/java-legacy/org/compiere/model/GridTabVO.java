@@ -603,6 +603,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	@Getter
 	private boolean queryIfNoFilters = true;
 
+	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
+
 	@Override
 	public String toString()
 	{
@@ -629,6 +631,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setAdWindowId(getAdWindowId())
 							.setAD_Tab_ID(getAD_Tab_ID())
 							.setTemplateTabId(AdTabId.toRepoId(getTemplateTabId()))
+							.setTabIncludeFiltersStrategy(includeFiltersStrategy)
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.setApplyRolePermissions(applyRolePermissions)
@@ -899,6 +902,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo.MaxQueryRecords = 0;
 		}
+
+		final boolean isIncludedTab = vo.TabLevel > 0;
+		vo.includeFiltersStrategy = TabIncludeFiltersStrategy.optionalOfNullableCode(rs.getString(I_AD_Tab.COLUMNNAME_IncludeFiltersStrategy))
+				.orElse(isIncludedTab ? TabIncludeFiltersStrategy.None : TabIncludeFiltersStrategy.Auto);
 	}
 
 	private void clone_metas(final Properties ctx, final int windowNo, final GridTabVO clone)

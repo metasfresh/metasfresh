@@ -243,10 +243,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// NOTE: we need to add all HU's standard fields because those might be needed for some of the standard filters defined
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
-			huEntityBindings.getFields()
-					.stream()
-					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
-					.forEach(sqlViewBinding::field);
+			sqlViewBinding.fields(SqlViewBindingFactory.createViewFieldBindings(huEntityBindings, displayFieldNames));
 		}
 
 		//

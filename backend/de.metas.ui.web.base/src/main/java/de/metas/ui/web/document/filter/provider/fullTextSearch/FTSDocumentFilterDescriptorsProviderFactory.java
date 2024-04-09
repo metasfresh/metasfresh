@@ -38,7 +38,6 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,7 +46,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -73,9 +71,7 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 
 	@Nullable
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		return StringUtils.trimBlankToOptional(context.getTableName())
 				.map(this::createFiltersProvider)
