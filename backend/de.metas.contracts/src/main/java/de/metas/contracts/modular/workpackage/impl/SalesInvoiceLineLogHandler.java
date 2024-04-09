@@ -25,8 +25,8 @@ package de.metas.contracts.modular.workpackage.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -192,7 +192,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_C_InvoiceLine> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler<I_C_InvoiceLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

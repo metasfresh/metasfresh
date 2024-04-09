@@ -34,13 +34,11 @@ import java.util.stream.Stream;
 class ModularContractLogHandlerRegistry
 {
 	@NonNull
-	private final List<IModularContractLogHandler<?>> handlers;
+	private final List<IModularContractLogHandler> handlers;
 
-	@NonNull <T> Stream<IModularContractLogHandler<T>> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest<T> request)
+	@NonNull <T> Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		return handlers.stream()
-				.filter(handler -> handler.getType().isAssignableFrom(request.getModel().getClass()))
-				.map(handler -> (IModularContractLogHandler<T>)handler)
 				.filter(handler -> handler.applies(request));
 	}
 }

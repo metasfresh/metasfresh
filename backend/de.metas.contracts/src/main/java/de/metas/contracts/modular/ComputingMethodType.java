@@ -32,7 +32,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 @AllArgsConstructor
-public enum ModularContractHandlerType implements ReferenceListAwareEnum
+public enum ComputingMethodType implements ReferenceListAwareEnum
 {
 	INTERIM_CONTRACT(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Interim_Contract),
 	INVENTORY_LINE_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_InventoryLine_Modular),
@@ -53,7 +53,9 @@ public enum ModularContractHandlerType implements ReferenceListAwareEnum
 	SHIPMENT_LINE_FOR_SO_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShipmentLineForSO_Modular),
 	SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular),
 	SHIPPING_NOTIFICATION_FOR_SALES_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular),
-	IMPORT_LOG(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog);
+	IMPORT_LOG(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog),
+	//TODO deactivate old and add new in reflist
+	RECEIPT("Receipt");
 	;
 
 	@Getter
@@ -61,16 +63,16 @@ public enum ModularContractHandlerType implements ReferenceListAwareEnum
 	private final String code;
 
 	@NonNull
-	public static ModularContractHandlerType ofCode(@NonNull final String code)
+	public static ComputingMethodType ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
 	}
 
 	@Nullable
-	public static ModularContractHandlerType ofNullableCode(@Nullable final String code)
+	public static ComputingMethodType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<ModularContractHandlerType> index = ReferenceListAwareEnums.index(values());
+	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 }

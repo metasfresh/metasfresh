@@ -22,30 +22,36 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.purchasecontract.receipt.ComputingMethod;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
 class MaterialReceiptLineInterimLogHandler extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
-	private final MaterialReceiptLineModularContractHandler contractHandler;
+	private final ComputingMethod computingMethod;
 
 	public MaterialReceiptLineInterimLogHandler(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final MaterialReceiptLineModularContractHandler contractHandler)
+			@NonNull final ComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
-		this.contractHandler = contractHandler;
+		this.computingMethod = computingMethod;
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_M_InOutLine> getModularContractTypeHandler()
+	public @NonNull LogEntryContractType getLogEntryContractType()
 	{
-		return contractHandler;
+		return LogEntryContractType.INTERIM;
+	}
+
+	@Override
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
+	{
+		return computingMethod;
 	}
 }

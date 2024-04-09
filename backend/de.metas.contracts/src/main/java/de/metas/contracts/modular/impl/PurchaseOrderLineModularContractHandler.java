@@ -29,11 +29,10 @@ import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -50,7 +49,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -65,13 +63,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract;
-import static de.metas.contracts.modular.ModularContractHandlerType.PURCHASE_ORDER_LINE_MODULAR;
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED;
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_ORDER_LINE_MODULAR;
 
 @Component
 @RequiredArgsConstructor
-public class PurchaseOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class PurchaseOrderLineModularContractHandler implements IModularContractComputingMethodHandler<I_C_OrderLine>
 {
 	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
 	private static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
@@ -144,20 +140,6 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 				.stream();
 	}
 
-	public void validateAction(
-			@NonNull final I_C_OrderLine model,
-			@NonNull final ModelAction action)
-	{
-		switch (action)
-		{
-			case COMPLETED, VOIDED -> {}
-			case REACTIVATED, REVERSED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
-			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
-																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		}
-	}
-
 	private void cancelLinkedContractsIfAllowed(@NonNull final I_C_OrderLine model, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		final List<I_M_InOutLine> generatedInOutLines = inOutDAO.retrieveLinesForOrderLine(model);
@@ -215,7 +197,7 @@ public class PurchaseOrderLineModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return PURCHASE_ORDER_LINE_MODULAR;
 	}

@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.impl.ShippingNotificationForSalesModularContractHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -49,7 +49,7 @@ public class ShippingNotificationForSalesContractLogsHandler extends AbstractShi
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_M_Shipping_NotificationLine> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler<I_M_Shipping_NotificationLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

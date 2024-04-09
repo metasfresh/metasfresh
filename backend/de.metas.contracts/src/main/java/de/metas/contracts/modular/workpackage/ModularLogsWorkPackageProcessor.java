@@ -83,7 +83,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	}
 
 	@NonNull
-	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
+	private List<IModularContractLogHandler.HandleLogsRequest> getRequestList()
 	{
 		final ProcessModularLogAggRequest processModularLogAggRequest = getRequestListParam();
 
@@ -94,8 +94,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 		return processModularLogAggRequest.getRequestList()
 				.stream()
 				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
-						.model(processRequest.getRecordReference().getModel())
-						.logEntryContractType(processRequest.getLogEntryContractType())
+						.tableRecordReference(processRequest.getRecordReference())
 						.modelAction(processRequest.getAction())
 						.workPackageId(workPackageId)
 						.handlerClassname(processRequest.getHandlerClassname())

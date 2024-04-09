@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,33 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
-import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.interim.logImpl.MaterialReceiptLineInterimContractHandler;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import lombok.NonNull;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
-class MaterialReceiptLineLogHandler extends AbstractMaterialReceiptLogHandler
+class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
-	private final MaterialReceiptLineInterimContractHandler contractHandler;
+	private final ComputingMethod computingMethod;
 
-	public MaterialReceiptLineLogHandler(
+	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final MaterialReceiptLineInterimContractHandler contractHandler)
+			@NonNull final ComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
-		this.contractHandler = contractHandler;
+		this.computingMethod = computingMethod;
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_M_InOutLine> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
+
+
 }

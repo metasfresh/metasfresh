@@ -30,9 +30,9 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
@@ -52,14 +52,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineProFormaPOModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class SalesOrderLineProFormaPOModularContractHandler implements IModularContractComputingMethodHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -155,7 +155,7 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IModularC
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
 	}

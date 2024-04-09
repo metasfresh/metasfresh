@@ -24,11 +24,11 @@ package de.metas.contracts.modular.impl;
 
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.order.IOrderBL;
@@ -45,12 +45,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class ShippingNotificationForPurchaseModularContractHandler implements IModularContractTypeHandler<I_M_Shipping_NotificationLine>
+public class ShippingNotificationForPurchaseModularContractHandler implements IModularContractComputingMethodHandler<I_M_Shipping_NotificationLine>
 {
 	@NonNull
 	private final ModularContractProvider contractProvider;
@@ -102,7 +102,7 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IM
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR;
 	}

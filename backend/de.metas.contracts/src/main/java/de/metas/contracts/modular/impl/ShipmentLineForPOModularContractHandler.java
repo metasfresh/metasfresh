@@ -29,10 +29,10 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.inout.IInOutDAO;
@@ -55,12 +55,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.SHIPMENT_LINE_FOR_PO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_PO_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineForPOModularContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class ShipmentLineForPOModularContractHandler implements IModularContractComputingMethodHandler<I_M_InOutLine>
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -140,7 +140,7 @@ public class ShipmentLineForPOModularContractHandler implements IModularContract
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SHIPMENT_LINE_FOR_PO_MODULAR;
 	}

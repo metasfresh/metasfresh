@@ -24,10 +24,10 @@ package de.metas.contracts.modular.interim.logImpl;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoice.InvoiceId;
@@ -46,12 +46,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.PURCHASE_INVOICE_LINE_INTERIM;
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_INVOICE_LINE_INTERIM;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Component
-public class PurchaseInvoiceLineInterimHandler implements IModularContractTypeHandler<I_C_InvoiceLine>
+public class PurchaseInvoiceLineInterimHandler implements IModularContractComputingMethodHandler<I_C_InvoiceLine>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -124,7 +124,7 @@ public class PurchaseInvoiceLineInterimHandler implements IModularContractTypeHa
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return PURCHASE_INVOICE_LINE_INTERIM;
 	}

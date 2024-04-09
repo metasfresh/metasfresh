@@ -23,10 +23,10 @@
 package de.metas.contracts.modular.impl;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
@@ -39,12 +39,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.INVENTORY_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class InventoryLineModularContractHandler implements IModularContractTypeHandler<I_M_InventoryLine>
+public class InventoryLineModularContractHandler implements IModularContractComputingMethodHandler<I_M_InventoryLine>
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
 
@@ -90,7 +90,7 @@ public class InventoryLineModularContractHandler implements IModularContractType
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return INVENTORY_LINE_MODULAR;
 	}

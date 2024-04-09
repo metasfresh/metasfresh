@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.contracts.modular;
+package de.metas.contracts.modular.computing;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractCalculationMethodHandlerFactory;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -31,20 +32,15 @@ import java.util.stream.Stream;
 
 /**
  * Implementors should be annotated with {@link org.springframework.stereotype.Component},
- * so that one instance per class is initialized and injected into {@link ModularContractHandlerFactory}.
+ * so that one instance per class is initialized and injected into {@link ModularContractCalculationMethodHandlerFactory}.
  * <p>
  * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.
  * When implementing another handler, please be sure to also add a model interceptor such as {@link de.metas.contracts.modular.interceptor.C_Order}.
  */
-public interface IModularContractTypeHandler<T>
+public interface IModularContractComputingMethodHandler
 {
-	@NonNull
-	Class<T> getType();
-
-	boolean applies(@NonNull final T model);
-
-	boolean applies(@NonNull final LogEntryContractType logEntryContractType);
+	boolean applies(@NonNull final TableRecordReference tableRecordReference);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):
@@ -54,24 +50,11 @@ public interface IModularContractTypeHandler<T>
 	 * </ul>
 	 */
 	@NonNull
-	Stream<FlatrateTermId> streamContractIds(@NonNull T model);
-
-	void validateAction(@NonNull final T model, @NonNull final ModelAction action);
+	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference);
 
 	@NonNull
-	ModularContractHandlerType getHandlerType();
-	
-	default void createContractIfRequired(@NonNull final T model) {}
+	ComputingMethodType getComputingMethodType();
 
-	default void handleAction(
-			@NonNull final T model,
-			@NonNull final ModelAction modelAction,
-			@NonNull final FlatrateTermId contractId,
-			@NonNull final ModularContractService contractService)
-	{}
-
-	default T getModel(@NonNull final TableRecordReference recordReference)
-	{
-		return recordReference.getModel(getType());
-	}
+	@NonNull
+	CalculationResponse calculate(@NonNull final CalculationRequest request);
 }

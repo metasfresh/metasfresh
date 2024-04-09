@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
-import de.metas.contracts.modular.impl.PurchaseModularContractHandler;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -34,9 +34,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -67,7 +65,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
 
 @Component
 @RequiredArgsConstructor
-class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I_C_Flatrate_Term>
+class PurchaseModularContractLog implements IModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
 
@@ -79,13 +77,13 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final PurchaseModularContractHandler contractHandler;
+	private final ComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
 	@NonNull
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -96,20 +94,16 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
+	public @NonNull String getSupportedTableName()
 	{
-		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());
-		}
-
-		return BooleanWithReason.TRUE;
+		return I_C_Flatrate_Term.Table_Name;
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_Flatrate_Term> request)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
-		final I_C_Flatrate_Term modularContractRecord = request.getHandleLogsRequest().getModel();
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(request.getHandleLogsRequest().getTableRecordReference().getRecord_ID());
+		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(flatrateTermId);
 		final ProductId productId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
 
 		final OrderId orderId = OrderId.ofRepoId(modularContractRecord.getC_Order_Term_ID());
@@ -160,18 +154,19 @@ class PurchaseModularContractLogsHandler implements IModularContractLogHandler<I
 											.priceActual(priceActual)
 											.amount(amount)
 											.invoicingGroupId(invoicingGroupId)
+											.isBillable(false)
 											.build());
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_C_Flatrate_Term> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 }

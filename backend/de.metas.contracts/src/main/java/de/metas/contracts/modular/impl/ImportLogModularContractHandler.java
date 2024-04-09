@@ -27,46 +27,40 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.IMPORT_LOG;
+import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
 
 @Component
 @RequiredArgsConstructor
-public class ImportLogModularContractHandler implements IModularContractTypeHandler<I_I_ModCntr_Log>
+public class ImportLogModularContractHandler implements IModularContractComputingMethodHandler
 {
 	@Override
-	public @NonNull Class<I_I_ModCntr_Log> getType()
+	public boolean applies(final @NonNull TableRecordReference tableRecordReference)
 	{
-		return I_I_ModCntr_Log.class;
-	}
-
-	@Override
-	public boolean applies(final @NonNull I_I_ModCntr_Log model)
-	{
-		return Check.isBlank(model.getI_ErrorMsg()) &&
-				!Objects.equals(X_I_ModCntr_Log.I_ISIMPORTED_ImportFailed, model.getI_IsImported()) ||
-				CalendarId.ofRepoIdOrNull(model.getC_Calendar_ID()) != null &&
-						YearId.ofRepoIdOrNull(model.getHarvesting_Year_ID()) != null &&
-						FlatrateTermId.ofRepoIdOrNull(model.getC_Flatrate_Term_ID()) != null;
-	}
-
-	@Override
-	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
-	{
-		return logEntryContractType.isModularContractType();
+		if(tableRecordReference.getTableName().equals(I_I_ModCntr_Log.Table_Name))
+		{
+			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
+			return Check.isBlank(importLogRecord.getI_ErrorMsg()) &&
+					!Objects.equals(X_I_ModCntr_Log.I_ISIMPORTED_ImportFailed, importLogRecord.getI_IsImported()) ||
+					CalendarId.ofRepoIdOrNull(importLogRecord.getC_Calendar_ID()) != null &&
+							YearId.ofRepoIdOrNull(importLogRecord.getHarvesting_Year_ID()) != null &&
+							FlatrateTermId.ofRepoIdOrNull(importLogRecord.getC_Flatrate_Term_ID()) != null;
+		}
+		return false;
 	}
 
 	@Override
@@ -88,7 +82,7 @@ public class ImportLogModularContractHandler implements IModularContractTypeHand
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return IMPORT_LOG;
 	}

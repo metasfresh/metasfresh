@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,11 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -33,9 +32,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -44,6 +41,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -65,7 +63,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_OrderLine>
+class PurchaseOrderLineLog implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_PO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.PurchaseOrderLineLogHandler.OnComplete.Description");
 
@@ -77,12 +75,12 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final PurchaseOrderLineModularContractHandler contractHandler;
+	private final ComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -94,22 +92,15 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
+	public @NonNull String getSupportedTableName()
 	{
-		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
-
-		if (!orderDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Order.DocStatus is " + orderDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
+		return I_C_OrderLine.Table_Name;
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final I_C_OrderLine orderLine = createLogRequest.getHandleLogsRequest().getModel();
+		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(createLogRequest.getHandleLogsRequest().getTableRecordReference().getRecord_ID()));
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -150,14 +141,15 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 											.configId(createLogRequest.getConfigId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.invoicingGroupId(invoicingGroupId)
+											.isBillable(false)
 											.build());
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(TableRecordReference.of(I_C_OrderLine.Table_Name, handleLogsRequest.getModel().getC_OrderLine_ID()))
+											.referencedModel(handleLogsRequest.getTableRecordReference())
 											.flatrateTermId(handleLogsRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
@@ -165,8 +157,8 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_C_OrderLine> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 }

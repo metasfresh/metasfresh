@@ -28,12 +28,13 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.ComputingMethodRequest;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
 import java.sql.ResultSet;
@@ -114,7 +115,12 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 
 	private void createImportModCntrLog(@NonNull final I_I_ModCntr_Log record)
 	{
-		modularContractService.invokeWithModel(record, ModelAction.COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
+
+		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+													   .tableRecordReference(TableRecordReference.of(record))
+													   .modelAction(ModelAction.COMPLETED)
+													   .build()
+		);
 	}
 
 }

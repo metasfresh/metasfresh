@@ -25,8 +25,8 @@ package de.metas.contracts.modular.workpackage.impl;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.interim.logImpl.InterimContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -38,9 +38,7 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -73,7 +71,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	@NonNull
 	private final ModularContractLogService modularContractLogService;
 	@NonNull
-	private final InterimContractHandler contractHandler;
+	private final InterimContractHandler computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
@@ -86,17 +84,6 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 					case RECREATE_LOGS -> LogAction.RECOMPUTE;
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				};
-	}
-
-	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
-	{
-		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());
-		}
-
-		return BooleanWithReason.TRUE;
 	}
 
 	@Override
@@ -162,22 +149,22 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_C_Flatrate_Term> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest)
+	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final I_C_Flatrate_Term interimContract = handleLogsRequest.getModel();
+		final I_C_Flatrate_Term interimContract = flatrateBL.getById(handleLogsRequest.getContractId());
 		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContract.getModular_Flatrate_Term_ID());
 
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(handleLogsRequest.getModelRef())
+				.referencedModel(handleLogsRequest.getTableRecordReference())
 				.flatrateTermId(modularContractId)
-				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.logEntryContractType(getLogEntryContractType())
 				.build();
 	}
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,17 +20,17 @@
  * #L%
  */
 
-package de.metas.handlingunits.modular.workpackage;
+package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.impl.PPCostCollectorModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -38,7 +38,6 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.handlingunits.modular.impl.PPCostCollectorModularContractHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
@@ -72,7 +71,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_PP_Cost_Collector>
+public class PPCostCollectorLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
 	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
@@ -85,12 +84,12 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final PPCostCollectorModularContractHandler contractHandler;
+	private final PPCostCollectorModularContractHandler computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -112,7 +111,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_PP_Cost_Collector> createLogRequest)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		final I_PP_Cost_Collector ppCostCollector = createLogRequest.getHandleLogsRequest().getModel();
 		final FlatrateTermId contractId = createLogRequest.getContractId();
@@ -159,7 +158,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 											.documentType(LogEntryDocumentType.PRODUCTION)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(modCntrLogQty)
 											.transactionDate(transactionDate)
@@ -179,13 +178,13 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_PP_Cost_Collector> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler<I_PP_Cost_Collector> getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 
 	@Override
-	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
+	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest handleLogsRequest)
 	{
 		return Optional.of(handleLogsRequest.getModel().getM_Product_ID())
 				.map(ProductId::ofRepoId);
@@ -193,7 +192,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
+	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		final I_PP_Cost_Collector ppCostCollector = handleLogsRequest.getModel();
 
@@ -201,7 +200,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
 				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
 				.flatrateTermId(handleLogsRequest.getContractId())
-				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.logEntryContractType(getLogEntryContractType())
 				.build();
 	}
 }

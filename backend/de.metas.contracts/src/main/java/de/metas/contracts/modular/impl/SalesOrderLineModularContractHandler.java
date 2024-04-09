@@ -26,11 +26,11 @@ import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -51,12 +51,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.SALES_ORDER_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_MODULAR;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineModularContractHandler implements IModularContractTypeHandler<I_C_OrderLine>
+public class SalesOrderLineModularContractHandler implements IModularContractComputingMethodHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -127,7 +127,7 @@ public class SalesOrderLineModularContractHandler implements IModularContractTyp
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SALES_ORDER_LINE_MODULAR;
 	}

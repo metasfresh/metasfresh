@@ -78,7 +78,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final I_C_OrderLine sourcePurchaseOrderLine = PurchaseOrderLineModularContractHandler.getSourcePurchaseOrderLine(flatrateTermRecord);
+		final I_C_OrderLine sourcePurchaseOrderLine = ;
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,

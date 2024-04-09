@@ -65,7 +65,7 @@ import java.time.ZoneId;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public abstract class AbstractShippingNotificationLogHandler implements IModularContractLogHandler<I_M_Shipping_NotificationLine>
+public abstract class AbstractShippingNotificationLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnReverse.Description");
@@ -79,7 +79,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_Shipping_NotificationLine> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{

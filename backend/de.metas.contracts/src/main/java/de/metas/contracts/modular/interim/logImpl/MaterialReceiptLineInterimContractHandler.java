@@ -24,10 +24,10 @@ package de.metas.contracts.modular.interim.logImpl;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.inout.IInOutDAO;
@@ -47,12 +47,12 @@ import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.MATERIAL_RECEIPT_LINE_INTERIM;
+import static de.metas.contracts.modular.ComputingMethodType.MATERIAL_RECEIPT_LINE_INTERIM;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class MaterialReceiptLineInterimContractHandler implements IModularContractTypeHandler<I_M_InOutLine>
+public class MaterialReceiptLineInterimContractHandler implements IModularContractComputingMethodHandler<I_M_InOutLine>
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -107,7 +107,7 @@ public class MaterialReceiptLineInterimContractHandler implements IModularContra
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return MATERIAL_RECEIPT_LINE_INTERIM;
 	}

@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -45,7 +45,7 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
+	public boolean isMatchingHandler(@NonNull final ComputingMethodType handlerType)
 	{
 		return modularContractType.isMatchingHandler(handlerType);
 	}

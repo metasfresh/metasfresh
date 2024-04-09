@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -71,7 +71,7 @@ public class ModularContractSettings
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(
-			@NonNull final ModularContractHandlerType handlerType,
+			@NonNull final ComputingMethodType handlerType,
 			@NonNull final ProductId productId)
 	{
 		return getModuleConfigs()

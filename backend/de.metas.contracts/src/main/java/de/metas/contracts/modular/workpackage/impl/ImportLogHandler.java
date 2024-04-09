@@ -26,8 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.impl.ImportLogModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -58,7 +58,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -158,7 +157,7 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_I_ModCntr_Log> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler<I_I_ModCntr_Log> getComputingMethod()
 	{
 		return contractHandler;
 	}

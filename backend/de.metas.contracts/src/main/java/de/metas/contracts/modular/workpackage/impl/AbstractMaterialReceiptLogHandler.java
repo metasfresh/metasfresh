@@ -32,13 +32,12 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -56,7 +55,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 @RequiredArgsConstructor
-abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler<I_M_InOutLine>
+public abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
@@ -71,7 +70,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -83,24 +82,16 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InOutLine model)
+	public @NonNull String getSupportedTableName()
 	{
-		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(model.getM_InOut_ID()));
-
-		if (!inOutDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The M_Inout.DocStatus is " + inOutDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
+		return I_M_InOutLine.Table_Name;
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			@NonNull final IModularContractLogHandler.CreateLogRequest<I_M_InOutLine> request)
+			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final I_M_InOutLine inOutLineRecord = request.getHandleLogsRequest().getModel();
-
+		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(request.getHandleLogsRequest().getTableRecordReference().getRecord_ID()));
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
@@ -109,7 +100,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
 
-		final boolean isBillable = request.getHandleLogsRequest().getLogEntryContractType().isInterimContractType()
+		final boolean isBillable = getLogEntryContractType().isInterimContractType()
 				? inOutRecord.isInterimInvoiceable()
 				: true;
 
@@ -129,7 +120,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 											.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
 											.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
-											.contractType(request.getHandleLogsRequest().getLogEntryContractType())
+											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
 											.quantity(quantity)
@@ -145,9 +136,10 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.HandleLogsRequest<I_M_InOutLine> request)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.HandleLogsRequest request)
 	{
-		final I_M_InOutLine inOutLineRecord = request.getModel();
+		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getTableRecordReference().getRecordIdAssumingTableName(I_M_InOutLine.Table_Name));
+		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(inOutLineId);
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 
@@ -159,7 +151,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 											.flatrateTermId(request.getContractId())
 											.description(description)
-											.logEntryContractType(request.getLogEntryContractType())
+											.logEntryContractType(getLogEntryContractType())
 											.build());
 	}
 }

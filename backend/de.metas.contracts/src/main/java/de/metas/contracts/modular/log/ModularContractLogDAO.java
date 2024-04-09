@@ -34,6 +34,7 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.ILockManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderLineId;
@@ -78,6 +79,7 @@ public class ModularContractLogDAO
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 
 	private final static AdMessageKey ERR_MSG_ON_REVERSE_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.reverseNotAllowedIfProcessed");
 
@@ -190,6 +192,9 @@ public class ModularContractLogDAO
 			throw new AdempiereException(ERR_MSG_ON_REVERSE_PROCESSED, oldLog);
 		}
 
+		oldLog.setIsBillable(false);
+		save(oldLog);
+
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
 		copyValues(oldLog, reversedLog);
 
@@ -208,6 +213,7 @@ public class ModularContractLogDAO
 			reversedLog.setDescription(request.description());
 		}
 
+		reversedLog.setIsBillable(false);
 		save(reversedLog);
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
@@ -286,9 +292,24 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, query.getFlatrateTermId());
 		}
 
+		if (query.getModularContractTypeId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, query.getModularContractTypeId());
+		}
+
 		if (query.getProcessed() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
+		}
+
+		if (query.getIsBillable() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, query.getIsBillable());
+		}
+
+		if (query.getLockOwner() != null)
+		{
+			sqlQueryBuilder.addFilter(lockManager.getLockedByFilter(I_ModCntr_Log.class, query.getLockOwner()));
 		}
 
 		return sqlQueryBuilder;

@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,11 +34,12 @@ import javax.annotation.Nullable;
 public class ModularContractType
 {
 	@NonNull ModularContractTypeId id;
-	@Nullable ModularContractHandlerType handlerType;
+	@Nullable
+	ComputingMethodType handlerType;
 	@Nullable String value;
 	@Nullable String name;
 
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
+	public boolean isMatchingHandler(@NonNull final ComputingMethodType handlerType)
 	{
 		return this.handlerType == handlerType;
 	}

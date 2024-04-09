@@ -23,8 +23,8 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -163,7 +163,7 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	}
 
 	@Override
-	public @NonNull IModularContractTypeHandler<I_C_OrderLine> getModularContractTypeHandler()
+	public @NonNull IModularContractComputingMethodHandler<I_C_OrderLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

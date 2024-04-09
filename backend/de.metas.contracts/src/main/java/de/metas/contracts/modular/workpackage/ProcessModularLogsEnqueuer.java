@@ -30,9 +30,8 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -67,11 +66,10 @@ public class ProcessModularLogsEnqueuer
 	private final ModularLogCreateStatusService createStatusService;
 
 	public void enqueueAfterCommit(
-			@NonNull final IModularContractTypeHandler<?> handler,
+			@NonNull final IModularContractComputingMethodHandler handler,
 			@NonNull final TableRecordReference recordReference,
 			@NonNull final ModelAction action,
-			@NonNull final FlatrateTermId flatrateTermId,
-			@NonNull final LogEntryContractType logEntryContractType)
+			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
 				ProcessModularLogsEnqueuer.class.getSimpleName(),
@@ -79,7 +77,6 @@ public class ProcessModularLogsEnqueuer
 						EnqueueRequest.builder()
 								.recordReference(recordReference)
 								.action(action)
-								.logEntryContractType(logEntryContractType)
 								.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 								.flatrateTermId(flatrateTermId)
 								.handlerClassname(handler.getClass().getName())
@@ -135,7 +132,6 @@ public class ProcessModularLogsEnqueuer
 	private record EnqueueRequest(
 			@NonNull TableRecordReference recordReference,
 			@NonNull ModelAction action,
-			@NonNull LogEntryContractType logEntryContractType,
 			@NonNull FlatrateTermId flatrateTermId,
 			@NonNull String handlerClassname,
 			@Nullable UserId userInChargeId)
@@ -148,7 +144,6 @@ public class ProcessModularLogsEnqueuer
 		return ProcessModularLogAggRequest.builder()
 				.requestList(enqueueRequestList.stream()
 									 .map(request -> ProcessModularLogAggRequest.ProcessRequest.builder()
-											 .logEntryContractType(request.logEntryContractType())
 											 .flatrateTermId(request.flatrateTermId())
 											 .handlerClassname(request.handlerClassname())
 											 .recordReference(request.recordReference())

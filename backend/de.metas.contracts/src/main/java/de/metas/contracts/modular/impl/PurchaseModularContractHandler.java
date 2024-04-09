@@ -25,10 +25,10 @@ package de.metas.contracts.modular.impl;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lang.SOTrx;
@@ -45,12 +45,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ModularContractHandlerType.PURCHASE_MODULAR_CONTRACT;
+import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_MODULAR_CONTRACT;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class PurchaseModularContractHandler implements IModularContractTypeHandler<I_C_Flatrate_Term>
+public class PurchaseModularContractHandler implements IModularContractComputingMethodHandler<I_C_Flatrate_Term>
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -90,7 +90,7 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(flatrateTermRecord.getC_Flatrate_Term_ID()));
+		return Stream.of(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class PurchaseModularContractHandler implements IModularContractTypeHandl
 	}
 
 	@Override
-	public @NonNull ModularContractHandlerType getHandlerType()
+	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return PURCHASE_MODULAR_CONTRACT;
 	}
