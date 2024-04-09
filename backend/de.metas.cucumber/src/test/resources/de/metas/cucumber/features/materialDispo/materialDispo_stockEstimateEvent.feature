@@ -131,7 +131,7 @@ Feature: material-dispo updates on StockEstimateEvent events
       | p_1          | 6                  | 66                      | 2021-06-24T00:00:00.00Z | 85  |
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
-      | c_1        | INVENTORY_UP      |                              M_Product | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-06-23T00:00:00.00Z | 100 | 100                    |
       | c_3        | INVENTORY_DOWN    | STOCK_CHANGE                  | p_1                     | 2021-06-24T00:00:00.00Z | -15 | 85                     |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-06-25T00:00:00.00Z | -60 | 25                     |
     And metasfresh has this MD_Candidate_StockChange_Detail data
