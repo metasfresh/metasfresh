@@ -152,7 +152,7 @@ public final class DocumentIdsSelection
 	private static final String ALL_String = "all";
 	private static final ImmutableSet<String> ALL_StringSet = ImmutableSet.of(ALL_String);
 
-	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private final boolean all;
 	private final ImmutableSet<DocumentId> documentIds;
