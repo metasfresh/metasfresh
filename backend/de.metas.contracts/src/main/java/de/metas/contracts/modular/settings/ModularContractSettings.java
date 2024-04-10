@@ -60,7 +60,11 @@ public class ModularContractSettings
 	 * Basically, purchase order line with this product may start the contract-frenzy.
 	 */
 	@NonNull
-	ProductId productId;
+	ProductId rawProductId;
+	@NonNull
+	ProductId processedProductId;
+	@NonNull
+	ProductId coProductId;
 
 	@NonNull
 	@Singular
