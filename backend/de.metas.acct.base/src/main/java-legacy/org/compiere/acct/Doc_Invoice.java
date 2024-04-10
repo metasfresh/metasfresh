@@ -31,9 +31,9 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -132,14 +132,14 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		return createInvoiceAccountProviderExtension(null);
 	}
 
-	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceLineId invoiceLineId)
+	InvoiceAccountProviderExtension createInvoiceAccountProviderExtension(@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		return getInvoiceAccounts()
 				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
 						.accountDAO(services.getAccountDAO())
 						.invoiceAccounts(invoiceAccounts)
 						.clientId(getClientId())
-						.invoiceLineId(invoiceLineId)
+						.invoiceAndLineId(invoiceAndLineId)
 						.build())
 				.orElse(null);
 
@@ -918,20 +918,20 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			return;
 		}
 
-		final Set<InvoiceLineId> invoiceLineIds = new HashSet<>();
+		final Set<InvoiceAndLineId> invoiceAndLineIds = new HashSet<>();
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			invoiceLineIds.add(line.getInvoiceLineId());
+			invoiceAndLineIds.add(line.getInvoiceLineId());
 		}
 
 		// 08643
 		// Do nothing in case there are no invoice lines
-		if (invoiceLineIds.isEmpty())
+		if (invoiceAndLineIds.isEmpty())
 		{
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInvoiceLineIds(invoiceAndLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 

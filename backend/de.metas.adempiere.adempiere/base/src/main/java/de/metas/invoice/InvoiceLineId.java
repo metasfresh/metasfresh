@@ -22,80 +22,60 @@
 
 package de.metas.invoice;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class InvoiceLineId implements RepoIdAware
 {
-	int repoId;
+	@JsonCreator
+	public static InvoiceLineId ofRepoId(final int repoId)
+	{
+		return new InvoiceLineId(repoId);
+	}
+
+	public static InvoiceLineId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InvoiceLineId(repoId) : null;
+	}
 
 	@NonNull
-	InvoiceId invoiceId;
-
-	public static InvoiceLineId cast(@Nullable final RepoIdAware repoIdAware)
+	public static Optional<InvoiceLineId> ofRepoIdOptional(final int repoId)
 	{
-		return (InvoiceLineId)repoIdAware;
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static InvoiceLineId ofRepoId(@NonNull final InvoiceId invoiceId, final int invoiceLineId)
+	int repoId;
+
+	private InvoiceLineId(final int repoId)
 	{
-		return new InvoiceLineId(invoiceId, invoiceLineId);
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_InvoiceLine_ID");
 	}
 
-	public static InvoiceLineId ofRepoId(final int invoiceId, final int invoiceLineId)
+	@JsonValue
+	@Override
+	public int getRepoId()
 	{
-		return new InvoiceLineId(InvoiceId.ofRepoId(invoiceId), invoiceLineId);
+		return repoId;
 	}
 
-	public static InvoiceLineId ofRepoIdOrNull(
-			@Nullable final Integer invoiceId,
-			@Nullable final Integer invoiceLineId)
-	{
-		return invoiceId != null && invoiceId > 0 && invoiceLineId != null && invoiceLineId > 0
-				? ofRepoId(invoiceId, invoiceLineId)
-				: null;
-	}
-
-	public static InvoiceLineId ofRepoIdOrNull(
-			@Nullable final InvoiceId bpartnerId,
-			final int bpartnerLocationId)
-	{
-		return bpartnerId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
-	}
-
-	private InvoiceLineId(@NonNull final InvoiceId invoiceId, final int bpartnerLocationId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(bpartnerLocationId, "bpartnerLocationId");
-		this.invoiceId = invoiceId;
-	}
-
-	public static int toRepoId(final InvoiceLineId invoiceLineId)
+	public static int toRepoId(@Nullable final InvoiceLineId invoiceLineId)
 	{
 		return toRepoIdOr(invoiceLineId, -1);
 	}
 
-	public static int toRepoIdOr(final InvoiceLineId bpLocationId, final int defaultValue)
+	public static int toRepoIdOr(@Nullable final InvoiceLineId invoiceLineId, final int defaultValue)
 	{
-		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
+		return invoiceLineId != null ? invoiceLineId.getRepoId() : defaultValue;
 	}
 
-	public static boolean equals(final InvoiceLineId id1, final InvoiceLineId id2)
-	{
-		return Objects.equals(id1, id2);
-	}
-
-	public void assertInvoiceId(@NonNull final InvoiceId expectedInvoiceId)
-	{
-		if (!InvoiceId.equals(this.invoiceId, expectedInvoiceId))
-		{
-			throw new AdempiereException("InvoiceId does not match for " + this + ". Expected invoiceId was " + expectedInvoiceId);
-		}
-	}
+	public static boolean equals(@Nullable final InvoiceLineId id1, @Nullable final InvoiceLineId id2) {return Objects.equals(id1, id2);}
 }

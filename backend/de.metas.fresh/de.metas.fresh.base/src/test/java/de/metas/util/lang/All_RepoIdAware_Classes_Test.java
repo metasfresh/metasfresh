@@ -75,7 +75,7 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			.skip(de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId.class)
 			//
-			.skip(de.metas.invoice.InvoiceLineId.class)
+			.skip(de.metas.invoice.InvoiceAndLineId.class)
 			//
 			.skip(de.metas.phonecall.PhonecallSchemaVersionId.class)
 			.skip(de.metas.phonecall.PhonecallSchemaVersionLineId.class)
