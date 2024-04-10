@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,39 +20,27 @@
  * #L%
  */
 
-package de.metas.contracts.modular.settings;
+package de.metas.contracts.modular;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
-import de.metas.util.lang.SeqNo;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
-@Value
+import javax.annotation.Nullable;
+
 @Builder
-public class ModuleConfig
+public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
+								   @NonNull FlatrateTermId flatrateTermId,
+								   @NonNull Money amount,
+								   @NonNull ModularContractModuleId modularContractModuleId,
+								   @NonNull ProductId productId,
+								   @NonNull TaxCategoryId taxCategoryId,
+								   @NonNull UomId uomId)
 {
-	@NonNull ModuleConfigAndSettingsId id;
 
-	@NonNull SeqNo seqNo;
-
-	@NonNull String name;
-
-	@NonNull String invoicingGroup;
-
-	@NonNull ProductId productId;
-
-	@NonNull ModularContractType modularContractType;
-
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
-	{
-		return modularContractType.isMatchingHandler(handlerType);
-	}
-
-	public boolean isInterimInvoiceHandler()
-	{
-		//FIXME adi consider introducing a flag on ModCntr_Module
-		return name.toLowerCase().contains("interim");
-	}
 }
