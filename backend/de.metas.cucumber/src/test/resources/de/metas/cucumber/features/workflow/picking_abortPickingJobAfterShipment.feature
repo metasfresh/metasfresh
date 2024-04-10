@@ -52,15 +52,15 @@ Feature: Picking workflow - abort not started picking jobs after shipment
     Given start picking job for sales order identified by salesOrder_17813
     And metasfresh contains M_PickingSlot:
       | Identifier | PickingSlot | IsDynamic |
-      | 300.0      | 300.0       | Y         |
-    And scan picking slot identified by 300.0
+      | 170.0      | 170.0       | Y         |
+    And scan picking slot identified by 170.0
     And validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | 300.0                       | pickingCustomer_17813    | pickingCustomer_17813Location     |
+      | 170.0                       | pickingCustomer_17813    | pickingCustomer_17813Location     |
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | pickingShipmentSchedule          | D            | true                | false       |
     Then validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | IsAllocated |
-      | 300.0                       | N           |
+      | 170.0                       | N           |
 
