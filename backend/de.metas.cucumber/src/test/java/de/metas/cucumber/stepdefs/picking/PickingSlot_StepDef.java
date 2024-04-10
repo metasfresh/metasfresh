@@ -1,5 +1,7 @@
 package de.metas.cucumber.stepdefs.picking;
 
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -8,12 +10,16 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 
 @RequiredArgsConstructor
 public class PickingSlot_StepDef
@@ -22,11 +28,49 @@ public class PickingSlot_StepDef
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final PickingSlot_StepDefData pickingSlotsTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	@Given("metasfresh contains M_PickingSlot:")
 	public void createPickingSlots(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createPickingSlot);
+	}
+
+	@Then("validate M_PickingSlot:")
+	public void validatePickingSlot(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach((tableRow) -> {
+			final I_M_PickingSlot pickingSlot = tableRow
+					.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
+					.lookupIn(pickingSlotsTable);
+
+			final SoftAssertions softAssertions = new SoftAssertions();
+
+			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
+					.map(identifier -> identifier.lookupIn(bpartnerTable))
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.ifPresent(bpartnerId -> softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(bpartnerId));
+
+			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
+					.map(identifier -> identifier.lookupIn(bpartnerLocationTable))
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.ifPresent(bpartnerLocationId -> softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId));
+
+			tableRow.getAsOptionalBoolean("IsAllocated")
+					.ifPresent(isAllocated -> {
+						if (isAllocated)
+						{
+							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isGreaterThan(0);
+							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isGreaterThan(0);
+						}
+						else
+						{
+							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(0);
+							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(0);
+						}
+					});
+		});
 	}
 
 	private void createPickingSlot(@NonNull final DataTableRow row)

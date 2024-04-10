@@ -155,6 +155,14 @@ public class PickingJobService
 				.ifPresent(this::abort);
 	}
 
+	public void abortNotStartedForSalesOrderId(@NonNull final OrderId salesOrderId)
+	{
+		pickingJobRepository
+				.getDraftBySalesOrderId(salesOrderId, pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
+				.filter(PickingJob::isNothingPicked)
+				.ifPresent(this::abort);
+	}
+
 	@NonNull
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final PickingJobReferenceQuery query)
 	{
