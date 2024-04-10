@@ -1509,33 +1509,19 @@ public class TimeUtil
 		return sdf.format(date);
 	}
 
-	/**
-	 * @deprecated please use {@link #parseTimestamp(String, ZoneId)} with the respective org's timezone isntead.
-	 * Otherwise, the resulting {@code 00:00:00}-timestamp might assume the wrong timezone.
-	 */
 	@Deprecated
-	public static Timestamp parseTimestamp(@NonNull final String date)
-	{
-		return parseTimestamp(date, SystemTime.zoneId());
-	}
+	public static Timestamp parseTimestamp(@NonNull final String date) {return parseLocalDateAsTimestamp(date);}
 
-	/**
-	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
-	 * The returned timestamp is 00:00 at the given date and timezone.
-	 */
-	public static Timestamp parseTimestamp(@NonNull final String date, @NonNull final ZoneId zoneId)
+	@NonNull
+	public static Timestamp parseLocalDateAsTimestamp(@NonNull final String localDateStr)
 	{
 		try
 		{
-			final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			simpleDateFormat.setTimeZone(TimeZone.getTimeZone(zoneId));
-
-			final Date parsedDate = simpleDateFormat.parse(date);
-			return new Timestamp(parsedDate.getTime());
+			return Timestamp.valueOf(LocalDate.parse(localDateStr).atStartOfDay());
 		}
-		catch (final ParseException e)
+		catch (final Exception e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw new AdempiereException("Failed converting `" + localDateStr + "` to LocalDate and then to Timestamp");
 		}
 	}
 
@@ -1640,17 +1626,69 @@ public class TimeUtil
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
 	 */
 	@Deprecated
+=======
+	 * @deprecated Consider using {@link InstantAndOrgId#toLocalDate(Function)}.
+	 */
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Timestamp ts, @NonNull final OrgId orgId)
+	{
+		if (ts == null)
+		{
+			return null;
+		}
+
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		return InstantAndOrgId.ofTimestamp(ts, orgId).toLocalDate(orgDAO::getTimeZone);
+	}
+
+>>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
-				? ts.toLocalDateTime().toLocalDate()
+				? asLocalDateNonNull(ts)
 				: null;
 	}
 
+<<<<<<< HEAD
+=======
+	@NonNull
+	public static LocalDate asLocalDateNonNull(@NonNull final Timestamp ts)
+	{
+		return ts.toLocalDateTime().toLocalDate();
+	}
+
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? date.toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	@Deprecated
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Instant instant)
+	{
+		return instant != null
+				? instant.atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+	public static LocalDate asLocalDate(@Nullable XMLGregorianCalendar calendar)
+	{
+		return calendar != null
+				? calendar.toGregorianCalendar().toInstant().atZone(SystemTime.zoneId()).toLocalDate()
+				: null;
+	}
+
+>>>>>>> 2fcd87f1b61 (Fix bugs related to usage of Timestamp as logic local date (#17752))
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{

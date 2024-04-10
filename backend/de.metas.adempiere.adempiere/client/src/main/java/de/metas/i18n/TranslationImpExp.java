@@ -25,6 +25,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Language;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
@@ -509,7 +510,7 @@ public class TranslationImpExp
 				{
 					m_sql.append(",");
 				}
-				m_sql.append("Updated=").append(DB.TO_DATE(m_time, false));
+				m_sql.append("Updated=").append(DB.TO_DATE(m_time, DisplayType.DateTime));
 				if (!m_isBaseLanguage)
 				{
 					if (m_trl != null
