@@ -23,6 +23,7 @@
 package de.metas.contracts.modular;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -55,5 +56,11 @@ public class ModCntrSpecificPriceId implements RepoIdAware
 	private ModCntrSpecificPriceId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_ModCntr_Specific_Price_ID");
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
 	}
 }
