@@ -52,7 +52,7 @@ public class ModuleConfig
 
 	public boolean isInterimInvoiceHandler()
 	{
-		//FIXME adi consider introducing a flag on ModCntr_Module
+		//FIXME adi consider introducing a flag on ModCntr_Type or even hardcoded in whatever replaces de.metas.contracts.modular.ModularContractHandlerType
 		return name.toLowerCase().contains("interim");
 	}
 }
