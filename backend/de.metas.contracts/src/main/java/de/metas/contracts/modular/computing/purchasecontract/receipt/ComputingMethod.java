@@ -32,6 +32,7 @@ import de.metas.contracts.modular.computing.CalculationRequest;
 import de.metas.contracts.modular.computing.CalculationResponse;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -57,6 +58,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,12 +79,13 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 	@NonNull private final ModularContractProvider contractProvider;
 
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference)
+	public boolean applies(final @NonNull TableRecordReference tableRecordReference, final @NonNull LogEntryContractType contractType)
 	{
 		switch (tableRecordReference.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
+				if (!contractType.isModularOrInterim()) { return false; }
 				final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 				final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 				final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
@@ -90,11 +93,13 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 			}
 			case I_C_OrderLine.Table_Name ->
 			{
+				if (!contractType.isModularContractType()) { return false; }
 				final I_C_Order orderRecord = orderBL.getById(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID())));
 				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase();
 			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
+				if (!contractType.isModularOrInterim()) { return false; }
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
 				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
 				{
@@ -142,11 +147,32 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculate(@NonNull final CalculationRequest request)
+	public @Nullable CalculationResponse calculate(@NonNull final CalculationRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request, LogEntryContractType.MODULAR_CONTRACT);
+
+		computingMethodService.validateLogs(logs);
+		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
+
+		return CalculationResponse.builder()
+				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
+				.qty(qty)
+				.build();
+	}
+
+	@Override
+	public @NonNull CalculationResponse calculateForInterim(@NonNull final CalculationRequest request)
+	{
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
+		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request, LogEntryContractType.INTERIM);
 
 		computingMethodService.validateLogs(logs);
 		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));

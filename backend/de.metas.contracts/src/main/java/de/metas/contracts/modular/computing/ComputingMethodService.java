@@ -26,6 +26,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -76,7 +77,7 @@ public class ComputingMethodService
 	public void validateAction(@NonNull final ComputingMethodRequest request)
 	{
 		final TableRecordReference tableRecordReference = request.getTableRecordReference();
-		final ModelAction action = request.getModelAction();;
+		final ModelAction action = request.getModelAction();
 		if (action.equals(RECREATE_LOGS) && tableRecordReference.getTableName().equals(I_PP_Cost_Collector.Table_Name))
 		{
 			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).getPP_Order_ID());
@@ -176,12 +177,13 @@ public class ComputingMethodService
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch),"ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
-	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final CalculationRequest request)
+	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final CalculationRequest request, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getFlatrateTermId())
 						.modularContractTypeId(request.getModularContractTypeId())
+						.contractType(logEntryContractType)
 						.processed(false)
 						.isBillable(true)
 						.lockOwner(request.getLockOwner())

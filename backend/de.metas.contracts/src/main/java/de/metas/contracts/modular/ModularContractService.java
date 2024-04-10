@@ -29,6 +29,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.ComputingMethodRequest;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
@@ -52,17 +53,19 @@ public class ModularContractService
 
 	public void invokeWithModel(@NonNull final ComputingMethodRequest request)
 	{
-		modularContractHandlerFactory.getApplicableHandlersFor(request)
-				.forEach(handler -> invokeWithModel(handler, request));
+		request.getLogEntryContractTypes()
+				.forEach(logEntryContractType -> modularContractHandlerFactory.getApplicableHandlersFor(request.getTableRecordReference(), logEntryContractType)
+						.forEach(handler -> invokeWithModel(handler, request, logEntryContractType)));
 	}
 
-	private <T> void invokeWithModel(
+	private void invokeWithModel(
 			@NonNull final IModularContractComputingMethodHandler handler,
-			@NonNull final ComputingMethodRequest request)
+			@NonNull final ComputingMethodRequest request,
+			@NonNull final LogEntryContractType logEntryContractType)
 	{
 		handler.streamContractIds(request.getTableRecordReference())
 				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
-				.forEach(flatrateTermId -> invokeWithModel(handler, request, flatrateTermId));
+				.forEach(flatrateTermId -> invokeWithModel(handler, request, flatrateTermId, logEntryContractType));
 	}
 
 	private boolean isApplicableContract(@NonNull final IModularContractComputingMethodHandler handler, @NonNull final FlatrateTermId flatrateTermId)
@@ -100,12 +103,14 @@ public class ModularContractService
 	private void invokeWithModel(
 			@NonNull final IModularContractComputingMethodHandler handler,
 			@NonNull final ComputingMethodRequest request,
-			@NonNull final FlatrateTermId flatrateTermId)
+			@NonNull final FlatrateTermId flatrateTermId,
+			@NonNull final LogEntryContractType logEntryContractType)
 	{
 		computingMethodService.validateAction(request);
 		processLogsEnqueuer.enqueueAfterCommit(handler,
 											   request.getTableRecordReference(),
 											   request.getModelAction(),
-											   flatrateTermId);
+											   flatrateTermId,
+											   logEntryContractType);
 	}
 }

@@ -23,10 +23,11 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.contracts.modular.computing.ComputingMethodRequest;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.util.stream.Stream;
@@ -39,12 +40,12 @@ public class ModularContractCalculationMethodHandlerFactory
 	private final ImmutableList<IModularContractComputingMethodHandler> knownHandlers;
 
 	@NonNull
-	public Stream<IModularContractComputingMethodHandler> getApplicableHandlersFor(@NonNull final ComputingMethodRequest request)
+	public Stream<IModularContractComputingMethodHandler> getApplicableHandlersFor(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final LogEntryContractType contractType)
 	{
 		return knownHandlers.stream()
-				//.filter(handler -> handler.getType().isAssignableFrom(model.getClass())) //each CalculationMethod/Handler can handle multiple models now
-				//.map(handler -> (IModularContractTypeHandler<T>)handler) //TODO remove
-				.filter(handler -> handler.applies(request));
+				.filter(handler -> handler.applies(tableRecordReference, contractType));
 	}
 
 }

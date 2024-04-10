@@ -95,6 +95,7 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 				.stream()
 				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
 						.tableRecordReference(processRequest.getRecordReference())
+						.logEntryContractType(processRequest.getLogEntryContractType())
 						.modelAction(processRequest.getAction())
 						.workPackageId(workPackageId)
 						.handlerClassname(processRequest.getHandlerClassname())

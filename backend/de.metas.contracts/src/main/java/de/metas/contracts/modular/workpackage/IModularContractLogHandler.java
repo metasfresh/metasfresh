@@ -68,7 +68,7 @@ public interface IModularContractLogHandler
 		final IModularContractComputingMethodHandler computingMethod = getComputingMethod();
 
 		final boolean isHandlerMatchingRequest = computingMethod.getClass().getName().equals(request.getHandlerClassname())
-				&& computingMethod.applies(request.getTableRecordReference());
+				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
 
 		if (!isHandlerMatchingRequest)
 		{
@@ -108,6 +108,7 @@ public interface IModularContractLogHandler
 	class HandleLogsRequest
 	{
 		@NonNull TableRecordReference tableRecordReference;
+		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
 		@NonNull String handlerClassname;

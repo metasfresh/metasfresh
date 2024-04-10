@@ -22,7 +22,9 @@
 
 package de.metas.contracts.modular.computing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,4 +36,6 @@ public class ComputingMethodRequest
 {
 	@NonNull TableRecordReference tableRecordReference;
 	@NonNull ModelAction modelAction;
+	@Builder.Default
+	@NonNull ImmutableSet<LogEntryContractType> logEntryContractTypes = ImmutableSet.copyOf(LogEntryContractType.values());
 }

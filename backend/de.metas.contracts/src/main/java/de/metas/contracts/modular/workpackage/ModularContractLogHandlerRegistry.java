@@ -36,7 +36,7 @@ class ModularContractLogHandlerRegistry
 	@NonNull
 	private final List<IModularContractLogHandler> handlers;
 
-	@NonNull <T> Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	@NonNull Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		return handlers.stream()
 				.filter(handler -> handler.applies(request));

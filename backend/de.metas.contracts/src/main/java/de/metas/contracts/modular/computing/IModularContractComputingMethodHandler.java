@@ -25,9 +25,11 @@ package de.metas.contracts.modular.computing;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractCalculationMethodHandlerFactory;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import javax.annotation.Nullable;
 import java.util.stream.Stream;
 
 /**
@@ -40,7 +42,7 @@ import java.util.stream.Stream;
  */
 public interface IModularContractComputingMethodHandler
 {
-	boolean applies(@NonNull final TableRecordReference tableRecordReference);
+	boolean applies(@NonNull final TableRecordReference tableRecordReference, @NonNull final LogEntryContractType contractType);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):
@@ -55,6 +57,9 @@ public interface IModularContractComputingMethodHandler
 	@NonNull
 	ComputingMethodType getComputingMethodType();
 
-	@NonNull
-	CalculationResponse calculate(@NonNull final CalculationRequest request);
+	@Nullable
+	default CalculationResponse calculate(@NonNull final CalculationRequest request) { return null; }
+
+	@Nullable
+	default CalculationResponse calculateForInterim(@NonNull final CalculationRequest request) { return null; }
 }
