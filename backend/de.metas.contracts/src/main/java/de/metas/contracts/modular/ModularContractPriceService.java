@@ -94,7 +94,7 @@ public class ModularContractPriceService
 
 		final Optional<ModuleConfig> interimContractModule = settings.getModuleConfigs()
 				.stream()
-				.filter(config -> config.isMatchingHandler(ModularContractHandlerType.INTERIM_CONTRACT))
+				.filter(config -> config.isMatchingHandler(ModularContractHandlerType.MATERIAL_RECEIPT_LINE_INTERIM))
 				.findFirst();
 
 		if (interimContractModule.isEmpty())
