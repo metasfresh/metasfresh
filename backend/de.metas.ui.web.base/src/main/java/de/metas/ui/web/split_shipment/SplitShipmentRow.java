@@ -13,6 +13,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -114,6 +115,12 @@ public class SplitShipmentRow implements IViewRow
 	public boolean isSaveable()
 	{
 		return deliveryDate != null && qtyToDeliver.signum() != 0;
+	}
+
+	@Nullable
+	public LocalDate getDeliveryDateNotNull()
+	{
+		return Check.assumeNotNull(getDeliveryDate(), "expected deliveryDate to be set: {}", this);
 	}
 
 	public SplitShipmentRow withChanges(final List<JSONDocumentChangedEvent> fieldChangeRequests)

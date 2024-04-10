@@ -21,8 +21,6 @@ import lombok.Singular;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.stream.Stream;
-
 public class SplitShipmentView extends AbstractCustomView<SplitShipmentRow> implements IEditableView
 {
 	private final ImmutableList<RelatedProcessDescriptor> relatedProcesses;

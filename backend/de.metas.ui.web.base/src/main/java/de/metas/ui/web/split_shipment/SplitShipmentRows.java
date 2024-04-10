@@ -43,7 +43,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 	private ShipmentScheduleInfo _shipmentScheduleInfo; // lazy
 
 	@NonNull private final LinkedHashMap<DocumentId, SplitShipmentRow> _rowsById = new LinkedHashMap<>();
-	private boolean needsRefresh = false;
+	private boolean needsRefresh;
 
 	@Builder
 	private SplitShipmentRows(
@@ -217,7 +217,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		{
 			final ShipmentScheduleSplit split = ShipmentScheduleSplit.builder()
 					.shipmentScheduleId(shipmentScheduleId)
-					.deliveryDate(row.getDeliveryDate())
+					.deliveryDate(row.getDeliveryDateNotNull())
 					.qtyToDeliver(row.getQtyToDeliver())
 					.build();
 			updateFromRow(split, row);
@@ -231,7 +231,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 	private static void updateFromRow(final ShipmentScheduleSplit split, final SplitShipmentRow from)
 	{
 		split.assertNotProcessed();
-		split.setDeliveryDate(from.getDeliveryDate());
+		split.setDeliveryDate(from.getDeliveryDateNotNull());
 		split.setQtyToDeliver(from.getQtyToDeliver());
 		split.setDimension(split.getDimension().toBuilder()
 				.userElementString1(from.getUserElementString1())
