@@ -6,6 +6,7 @@ import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @CsvRecord(separator = ",", skipField = true)
 @Getter
@@ -37,8 +38,24 @@ public class PurchaseOrderRow
 	private String productIdentifier;
 
 	@DataField(pos = 9)
-	private BigDecimal qty;
+	private String qty;
 
 	@DataField(pos = 10)
-	private BigDecimal price;
+	private String price;
+
+	public BigDecimal getQty()
+	{
+		return Optional.ofNullable(qty)
+				.map(String::trim)
+				.map(BigDecimal::new)
+				.orElse(null);
+	}
+
+	public BigDecimal getPrice()
+	{
+		return Optional.ofNullable(price)
+				.map(String::trim)
+				.map(BigDecimal::new)
+				.orElse(null);
+	}
 }

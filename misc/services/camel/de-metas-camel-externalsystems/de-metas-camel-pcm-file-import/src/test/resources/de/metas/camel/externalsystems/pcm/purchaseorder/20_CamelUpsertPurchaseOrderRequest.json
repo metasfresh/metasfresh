@@ -8,9 +8,9 @@
         "externalPurchaseOrderUrl": null,
         "externalLineId": "extLine_1",
         "isManualPrice": true,
-        "isPrepared": false,
+        "isPrepared": true,
         "price": {
-          "value": 5,
+          "value": 5.64,
           "currencyCode": "EUR",
           "priceUomCode": "PCE"
         },
