@@ -28,6 +28,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -125,4 +126,7 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(Set<ShipmentScheduleId> scheduleIds);
 
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedOnTheFlyAndNotDelivered(ShipmentScheduleId shipmentScheduleId, Class<T> modelClass);
+
+	@NonNull
+	Set<OrderId> retrieveOrderIds(@NonNull org.compiere.model.I_M_InOut inOut);
 }
