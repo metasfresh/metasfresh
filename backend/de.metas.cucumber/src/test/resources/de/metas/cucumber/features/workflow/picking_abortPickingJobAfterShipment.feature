@@ -52,18 +52,21 @@ Feature: Picking workflow - abort not started picking jobs after shipment
     Given start picking job for sales order identified by salesOrder_17813
     And metasfresh contains M_PickingSlot:
       | Identifier | PickingSlot | IsDynamic |
-      | 170.0      | 170.0       | Y         |
-    And scan picking slot identified by 170.0
+      | 180.0      | 180.0       | Y         |
+    And scan picking slot identified by 180.0
     And validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
-      | 170.0                       | pickingCustomer_17813    | pickingCustomer_17813Location     |
+      | 180.0                       | pickingCustomer_17813    | pickingCustomer_17813Location     |
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | pickingShipmentSchedule          | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | pickingShipmentSchedule          | s_1                   |
-    Then validate M_PickingSlot:
+    And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
+      | M_ShipmentSchedule_ID.Identifier | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly | OPT.VHU_ID.Identifier |
+      | pickingShipmentSchedule          | 10        | true      | false                       | null                  |
+    Then after not more than 15s, validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | IsAllocated |
-      | 170.0                       | N           |
+      | 180.0                       | N           |
 

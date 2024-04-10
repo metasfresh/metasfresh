@@ -5,6 +5,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
@@ -37,42 +38,21 @@ public class PickingSlot_StepDef
 		DataTableRows.of(dataTable).forEach(this::createPickingSlot);
 	}
 
-	@Then("validate M_PickingSlot:")
-	public void validatePickingSlot(@NonNull final DataTable dataTable)
+	@Then("^after not more than (.*)s, validate M_PickingSlot:$")
+	public void validateAndWaitPickingSlotStep(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach((tableRow) -> {
-			final I_M_PickingSlot pickingSlot = tableRow
-					.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
-					.lookupIn(pickingSlotsTable);
+		StepDefUtil.tryAndWait(timeoutSec, 1000,
+							   () -> {
+								   final SoftAssertions softAssertions = checkPickingSlot(dataTable);
+								   return softAssertions.assertionErrorsCollected().isEmpty();
+							   },
+							   () -> checkPickingSlot(dataTable).assertAll());
+	}
 
-			final SoftAssertions softAssertions = new SoftAssertions();
-
-			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
-					.map(identifier -> identifier.lookupIn(bpartnerTable))
-					.map(I_C_BPartner::getC_BPartner_ID)
-					.ifPresent(bpartnerId -> softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(bpartnerId));
-
-			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
-					.map(identifier -> identifier.lookupIn(bpartnerLocationTable))
-					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-					.ifPresent(bpartnerLocationId -> softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId));
-
-			tableRow.getAsOptionalBoolean("IsAllocated")
-					.ifPresent(isAllocated -> {
-						if (isAllocated)
-						{
-							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isGreaterThan(0);
-							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isGreaterThan(0);
-						}
-						else
-						{
-							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(0);
-							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(0);
-						}
-					});
-
-			softAssertions.assertAll();
-		});
+	@Then("validate M_PickingSlot:")
+	public void validatePickingSlotStep(@NonNull final DataTable dataTable)
+	{
+		checkPickingSlot(dataTable).assertAll();
 	}
 
 	private void createPickingSlot(@NonNull final DataTableRow row)
@@ -109,5 +89,43 @@ public class PickingSlot_StepDef
 	private LocatorId getMainLocatorId()
 	{
 		return warehouseBL.getDefaultLocatorId(WarehouseId.MAIN);
+	}
+
+	@NonNull
+	private SoftAssertions checkPickingSlot(@NonNull final DataTable dataTable)
+	{
+		final SoftAssertions softAssertions = new SoftAssertions();
+
+		DataTableRows.of(dataTable).forEach((tableRow) -> {
+			final I_M_PickingSlot pickingSlot = tableRow
+					.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)
+					.lookupIn(pickingSlotsTable);
+
+			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
+					.map(identifier -> identifier.lookupIn(bpartnerTable))
+					.map(I_C_BPartner::getC_BPartner_ID)
+					.ifPresent(bpartnerId -> softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(bpartnerId));
+
+			tableRow.getAsOptionalIdentifier(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
+					.map(identifier -> identifier.lookupIn(bpartnerLocationTable))
+					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+					.ifPresent(bpartnerLocationId -> softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId));
+
+			tableRow.getAsOptionalBoolean("IsAllocated")
+					.ifPresent(isAllocated -> {
+						if (isAllocated)
+						{
+							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isGreaterThan(0);
+							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isGreaterThan(0);
+						}
+						else
+						{
+							softAssertions.assertThat(pickingSlot.getC_BPartner_ID()).isEqualTo(0);
+							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(0);
+						}
+					});
+		});
+
+		return softAssertions;
 	}
 }
