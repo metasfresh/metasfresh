@@ -29,7 +29,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -59,5 +59,5 @@ public interface IModularContractComputingMethodHandler
 	@NonNull
 	CalculationResponse calculate(@NonNull final CalculationRequest request);
 
-	default @Nullable CalculationResponse calculateForInterim(@NonNull final CalculationRequest request) { return null; }
+	default @NonNull Optional<CalculationResponse> calculateForInterim(@NonNull final CalculationRequest request) { return Optional.empty(); }
 }

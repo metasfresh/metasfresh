@@ -65,6 +65,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,7 +171,7 @@ public class InterimComputingMethod implements IModularContractComputingMethodHa
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculateForInterim(@NonNull final CalculationRequest request)
+	public @NonNull Optional<CalculationResponse> calculateForInterim(@NonNull final CalculationRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
@@ -193,7 +194,7 @@ public class InterimComputingMethod implements IModularContractComputingMethodHa
 			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
 		}
 
-		return CalculationResponse.builder()
+		return Optional.of(CalculationResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
@@ -201,6 +202,7 @@ public class InterimComputingMethod implements IModularContractComputingMethodHa
 							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
 							   .build())
 				.qty(qty)
-				.build();
+				.build()
+		);
 	}
 }
