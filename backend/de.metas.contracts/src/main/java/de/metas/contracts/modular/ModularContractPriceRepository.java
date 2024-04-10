@@ -31,6 +31,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,6 +79,7 @@ public class ModularContractPriceRepository
 		price.setPrice(modCntrSpecificPrice.amount().toBigDecimal());
 		price.setModCntr_Module_ID(modCntrSpecificPrice.modularContractModuleId().getRepoId());
 		price.setC_UOM_ID(modCntrSpecificPrice.uomId().getRepoId());
+		price.setSeqNo(modCntrSpecificPrice.seqNo().toInt());
 
 		saveRecord(price);
 	}
@@ -93,6 +95,7 @@ public class ModularContractPriceRepository
 				.uomId(UomId.ofRepoId(modCntrSpecificPrice.getC_UOM_ID()))
 				.productId(ProductId.ofRepoId(modCntrSpecificPrice.getM_Product_ID()))
 				.amount(Money.of(modCntrSpecificPrice.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPrice.getC_Currency_ID())))
+				.seqNo(SeqNo.ofInt(modCntrSpecificPrice.getSeqNo()))
 				.build();
 	}
 

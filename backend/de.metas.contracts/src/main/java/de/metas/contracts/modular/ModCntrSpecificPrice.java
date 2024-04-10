@@ -28,6 +28,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -40,7 +41,8 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   @NonNull ModularContractModuleId modularContractModuleId,
 								   @NonNull ProductId productId,
 								   @NonNull TaxCategoryId taxCategoryId,
-								   @NonNull UomId uomId)
+								   @NonNull UomId uomId,
+								   SeqNo seqNo)
 {
 
 }
