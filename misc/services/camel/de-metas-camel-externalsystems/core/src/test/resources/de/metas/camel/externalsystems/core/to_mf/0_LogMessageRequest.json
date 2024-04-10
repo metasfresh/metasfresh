@@ -1,4 +1,4 @@
 {
   "pinstanceId": 1,
-  "logMessage": "ApiRequestAuditId: 100001; Error: JsonErrorItem(message=HTTP operation failed invoking www.does-not-matter.com with statusCode: 500, redirectLocation: Location, userFriendlyError=false, detail=null, stackTrace=org.apache.camel.http.base.HttpOperationFailedException: HTTP operation failed invoking www.does-not-matter.com with statusCode: 500, redirectLocation: Location, parameters={}, adIssueId=null, orgCode=null, sourceClassName=null, sourceMethodName=null, issueCategory=null, throwable=null)"
+  "logMessage": "ApiRequestAuditId: 100001; Error: JsonErrorItem(message=HTTP operation failed invoking www.does-not-matter.com with statusCode: 500, redirectLocation: Location, userFriendlyError=false, detail=null, stackTrace=org.apache.camel.http.base.HttpOperationFailedException: HTTP operation failed invoking www.does-not-matter.com with statusCode: 500, redirectLocation: Location, parameters={}, adIssueId=null, orgCode=null, sourceClassName=null, sourceMethodName=null, issueCategory=null, frontendUrl=null, throwable=null)"
 }

@@ -15,6 +15,7 @@ import de.metas.process.ProcessMDC;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -85,6 +86,7 @@ public class ErrorManager implements IErrorManager
 		issue.setStackTrace(request.getStacktrace());
 		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
 		issue.setAD_Org_ID(request.getOrgId().getRepoId());
+		issue.setFrontendURL(StringUtils.trimBlankToNull(request.getFrontendUrl()));
 		saveRecord(issue);
 		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
 	}
