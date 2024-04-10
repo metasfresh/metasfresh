@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.receipt;
+package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
@@ -37,6 +37,9 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -47,61 +50,56 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.RECEIPT;
-
 @Component
 @RequiredArgsConstructor
-public class ComputingMethod implements IModularContractComputingMethodHandler
+public class InterimComputingMethod implements IModularContractComputingMethodHandler
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractProvider contractProvider;
 
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference, final @NonNull LogEntryContractType contractType)
+	public boolean applies(final @NonNull TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
 	{
+		if (!logEntryContractType.isInterimContractType()) { return false; }
+
 		switch (tableRecordReference.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
-				if (!contractType.isModularOrInterim()) { return false; }
 				final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 				final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 				final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
 				return SOTrx.ofBoolean(inOutRecord.isSOTrx()).isPurchase() && !(inOutLineRecord.getMovementQty().signum() < 0) && orderId != null;
 			}
-			case I_C_OrderLine.Table_Name ->
-			{
-				if (!contractType.isModularContractType()) { return false; }
-				final I_C_Order orderRecord = orderBL.getById(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID())));
-				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase();
-			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
-				if (!contractType.isModularOrInterim()) { return false; }
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
-				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
+				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
 				{
 					return false;
 				}
@@ -115,26 +113,33 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 				final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
 				return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
 			}
+			case I_C_InvoiceLine.Table_Name ->
+			{
+				final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID())).getC_Invoice_ID()));
+				final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
+
+				return soTrx.isPurchase() && invoiceBL.isDownPayment(invoiceRecord);
+			}
 			default -> { return false; }
 		}
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference tableRecordReference)
 	{
 		switch (tableRecordReference.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
-				return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
-			}
-			case I_C_OrderLine.Table_Name ->
-			{
-				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+				return contractProvider.streamInterimPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
 				return Stream.of(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
+			}
+			case I_C_InvoiceLine.Table_Name ->
+			{
+				return contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 			}
 			default -> { return Stream.empty(); }
 		}
@@ -143,24 +148,21 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return RECEIPT;
+		return ComputingMethodType.INTERIM;
 	}
 
 	@Override
-	public @Nullable CalculationResponse calculate(@NonNull final CalculationRequest request)
+	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request, LogEntryContractType.MODULAR_CONTRACT);
-
-		computingMethodService.validateLogs(logs);
-		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
+		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		final List<ModularContractLogEntry> logs = new ArrayList<>();
 
 		return CalculationResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
+							   .money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
 							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
 							   .build())
 				.qty(qty)
@@ -172,16 +174,30 @@ public class ComputingMethod implements IModularContractComputingMethodHandler
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request, LogEntryContractType.INTERIM);
+		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		computingMethodService.validateLogs(logs);
 		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
+
+		final ProductPrice logProductPrice = logs.get(0) != null ? logs.get(0).getPriceActual() : null;
+
+		final Money money;
+		if(logProductPrice != null)
+		{
+			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
+			Check.assumeEquals(stockUOM.getC_UOM_ID(), logProductPrice.getUomId().getRepoId(), "Log Price UOM and Invoice Product UOM should be the same");
+			money = logProductPrice.toMoney();
+		}
+		else
+		{
+			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
+		}
 
 		return CalculationResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
+							   .money(money)
 							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
 							   .build())
 				.qty(qty)

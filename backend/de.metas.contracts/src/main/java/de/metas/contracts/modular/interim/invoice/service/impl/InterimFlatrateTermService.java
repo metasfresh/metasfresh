@@ -38,9 +38,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.function.Consumer;
 
 public class InterimFlatrateTermService implements IInterimFlatrateTermService
 {
@@ -54,25 +52,6 @@ public class InterimFlatrateTermService implements IInterimFlatrateTermService
 			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
 			@NonNull final Timestamp startDate,
 			@NonNull final Timestamp endDate)
-	{
-		createInterimContract(modularFlatrateTermRecord, startDate, endDate, null);
-	}
-
-	@Override
-	public void create(
-			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
-			@NonNull final Timestamp startDate,
-			@NonNull final Timestamp endDate,
-			@NonNull final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
-	{
-		createInterimContract(modularFlatrateTermRecord, startDate, endDate, beforeCompleteInterceptor);
-	}
-
-	private void createInterimContract(
-			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
-			@NonNull final Timestamp startDate,
-			@NonNull final Timestamp endDate,
-			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Term_ID());
 
@@ -92,7 +71,6 @@ public class InterimFlatrateTermService implements IInterimFlatrateTermService
 				.orderLineId(orderLineId)
 				.dateFrom(TimeUtil.asInstantNonNull(startDate))
 				.dateTo(TimeUtil.asInstantNonNull(endDate))
-				.beforeCompleteInterceptor(beforeCompleteInterceptor)
 				.build()
 				.execute();
 	}

@@ -20,26 +20,32 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.receipt;
+package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
+class InterimContractLog extends AbstractPurchaseContractHandler
 {
-	@NonNull
-	private final ReceiptComputingMethod computingMethod;
+	@NonNull private final InterimComputingMethod computingMethod;
 
-	public MaterialReceiptLineLog(
+	public InterimContractLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ReceiptComputingMethod computingMethod)
+			@NonNull final InterimComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
+	}
+
+	@Override
+	public @NonNull LogEntryContractType getLogEntryContractType()
+	{
+		return LogEntryContractType.INTERIM;
 	}
 
 	@Override
@@ -47,6 +53,4 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 	{
 		return computingMethod;
 	}
-
-
 }

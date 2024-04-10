@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.computing.tbd;
 
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
@@ -28,18 +28,32 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.CalculationRequest;
+import de.metas.contracts.modular.computing.CalculationResponse;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.money.Money;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
@@ -48,8 +62,11 @@ import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
 @RequiredArgsConstructor
 public class ImportLogModularContractHandler implements IModularContractComputingMethodHandler
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ComputingMethodService computingMethodService;
+	@NonNull final ModularContractLogService modularContractLogService;
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference)
+	public boolean applies(final @NonNull TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		if(tableRecordReference.getTableName().equals(I_I_ModCntr_Log.Table_Name))
 		{
@@ -64,26 +81,37 @@ public class ImportLogModularContractHandler implements IModularContractComputin
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_I_ModCntr_Log model)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return Stream.of(FlatrateTermId.ofRepoId(model.getC_Flatrate_Term_ID()));
-	}
-
-	@Override
-	public void validateAction(final @NonNull I_I_ModCntr_Log model, final @NonNull ModelAction action)
-	{
-		switch (action)
+		if(tableRecordReference.getTableName().equals(I_I_ModCntr_Log.Table_Name))
 		{
-			case COMPLETED, REVERSED ->
-			{
-			}
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
+			return Stream.of(FlatrateTermId.ofRepoId(importLogRecord.getC_Flatrate_Term_ID()));
 		}
+		return Stream.empty();
 	}
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return IMPORT_LOG;
+	}
+
+	@Override
+	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	{
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		final List<ModularContractLogEntry> logs = new ArrayList<>();
+
+		return CalculationResponse.builder()
+				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
+				.qty(qty)
+				.build();
 	}
 }

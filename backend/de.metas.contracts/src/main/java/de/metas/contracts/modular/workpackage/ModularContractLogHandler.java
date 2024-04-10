@@ -43,6 +43,7 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -228,7 +229,7 @@ class ModularContractLogHandler
 				return BooleanWithReason.TRUE;
 			}
 			case (I_C_InvoiceLine.Table_Name) -> {
-				final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(tableRecordReference.getRecord_ID()));
+				final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID())).getC_Invoice_ID()));
 				if (!invoiceDocStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The C_Invoice.DocStatus is " + invoiceDocStatus);

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
@@ -28,7 +28,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
-import de.metas.contracts.modular.interim.logImpl.PurchaseInvoiceLineInterimHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -40,12 +39,11 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -76,7 +74,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLogHandler<I_C_InvoiceLine>
+public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -85,7 +83,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final PurchaseInvoiceLineInterimHandler contractHandler;
+	private final InterimComputingMethod computingMethod;
 	private final ModularContractLogDAO contractLogDAO;
 	private final ModularContractLogService modularContractLogService;
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -93,20 +91,20 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
-	public PurchaseInvoiceLineInterimLogHandler(
-			@NonNull final PurchaseInvoiceLineInterimHandler contractHandler,
+	public PurchaseInvoiceLineLog(
+			@NonNull final InterimComputingMethod computingMethod,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
-		this.contractHandler = contractHandler;
+		this.computingMethod = computingMethod;
 		this.contractLogDAO = contractLogDAO;
 		this.modularContractLogService = modularContractLogService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 	}
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_InvoiceLine> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -118,21 +116,10 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine invoiceLineRecord)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
-		if (!invoiceDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Invoice.DocStatus is " + invoiceDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
-	{
-		final I_C_InvoiceLine invoiceLineRecord = createLogRequest.getHandleLogsRequest().getModel();
+		final TableRecordReference tableRecordReference = createLogRequest.getHandleLogsRequest().getTableRecordReference();
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
 
 		final BPartnerId invoiceBpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
@@ -183,7 +170,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
-						.referencedRecord(TableRecordReference.of(org.compiere.model.I_C_InvoiceLine.Table_Name, invoiceLineRecord.getC_InvoiceLine_ID()))
+						.referencedRecord(tableRecordReference)
 						.contractId(createLogRequest.getContractId())
 						.collectionPointBPartnerId(invoiceBpartnerId)
 						.producerBPartnerId(invoiceBpartnerId)
@@ -191,7 +178,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
 						.documentType(LogEntryDocumentType.INTERIM_INVOICE)
-						.contractType(LogEntryContractType.INTERIM)
+						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
 						.processed(false)
 						.quantity(qtyEntered)
@@ -209,10 +196,10 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_InvoiceLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final TableRecordReference invoiceLineRef = TableRecordReference.of(I_C_InvoiceLine.Table_Name,
-																			handleLogsRequest.getModel().getC_InvoiceLine_ID());
+		final TableRecordReference invoiceLineRef = handleLogsRequest.getTableRecordReference();
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
@@ -221,7 +208,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 						.contractType(LogEntryContractType.INTERIM)
 						.build());
 
-		final ProductId productId = ProductId.ofRepoId(handleLogsRequest.getModel().getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
@@ -236,8 +223,20 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_C_InvoiceLine> getComputingMethod()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_C_InvoiceLine.Table_Name;
+	}
+
+	@Override
+	public @NonNull LogEntryContractType getLogEntryContractType()
+	{
+		return LogEntryContractType.INTERIM;
 	}
 }

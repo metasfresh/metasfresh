@@ -56,10 +56,8 @@ public interface IModularContractComputingMethodHandler
 
 	@NonNull
 	ComputingMethodType getComputingMethodType();
+	@NonNull
+	CalculationResponse calculate(@NonNull final CalculationRequest request);
 
-	@Nullable
-	default CalculationResponse calculate(@NonNull final CalculationRequest request) { return null; }
-
-	@Nullable
-	default CalculationResponse calculateForInterim(@NonNull final CalculationRequest request) { return null; }
+	default @Nullable CalculationResponse calculateForInterim(@NonNull final CalculationRequest request) { return null; }
 }

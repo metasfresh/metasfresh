@@ -52,8 +52,6 @@ import org.compiere.util.TimeUtil;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 public class InterimInvoiceFlatrateTermCreateCommand
 {
@@ -71,8 +69,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	private final Instant dateTo;
 	@NonNull
 	private final FlatrateTermId modulareFlatrateTermId;
-	@Nullable
-	private final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor;
 
 	@NonNull
 	private final OrderLine orderLine;
@@ -91,8 +87,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@NonNull final Instant dateFrom,
 			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final FlatrateTermId modulareFlatrateTermId,
-			@Nullable final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor)
+			@NonNull final FlatrateTermId modulareFlatrateTermId)
 	{
 		final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -108,7 +103,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
 		this.modularContract = flatrateBL.getById(modulareFlatrateTermId);
-		this.beforeCompleteInterceptor = beforeCompleteInterceptor;
 	}
 
 	public void execute()
@@ -151,9 +145,6 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setC_Currency_ID(modularContract.getC_Currency_ID());
 
 		flatrateBL.save(flatrateTermRecord);
-
-		Optional.ofNullable(beforeCompleteInterceptor).ifPresent(interceptor -> interceptor.accept(flatrateTermRecord));
-
 		flatrateBL.complete(flatrateTermRecord);
 	}
 

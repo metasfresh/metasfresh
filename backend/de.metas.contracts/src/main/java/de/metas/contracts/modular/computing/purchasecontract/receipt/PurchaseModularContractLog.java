@@ -22,146 +22,24 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
-import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
-import de.metas.money.Money;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
+import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
-
 @Component
-@RequiredArgsConstructor
-class PurchaseModularContractLog implements IModularContractLogHandler
+class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 {
-	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	@NonNull
-	private final ComputingMethod computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	private final ReceiptComputingMethod computingMethod;
 
-	@Override
-	@NonNull
-	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
+	public PurchaseModularContractLog(
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ReceiptComputingMethod computingMethod)
 	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_Flatrate_Term.Table_Name;
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
-	{
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(request.getHandleLogsRequest().getTableRecordReference().getRecord_ID());
-		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(flatrateTermId);
-		final ProductId productId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
-
-		final OrderId orderId = OrderId.ofRepoId(modularContractRecord.getC_Order_Term_ID());
-
-		final I_C_Order order = orderBL.getById(orderId);
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
-		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
-
-		final Quantity quantity = Quantitys.create(modularContractRecord.getPlannedQtyPerUnit(),
-												   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
-												   productId);
-
-		final String productName = productBL.getProductValueAndName(productId);
-
-		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
-
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(modularContractRecord.getBill_BPartner_ID());
-		final ProductPrice priceActual = flatrateBL.extractPriceActual(modularContractRecord);
-		final Money amount = quantity != null && priceActual != null
-				? priceActual.computeAmount(quantity)
-				: null;
-
-		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(modularContractRecord.getStartDate(),
-																				OrgId.ofRepoId(modularContractRecord.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
-
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
-				.orElse(null);
-
-		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
-											.productId(productId)
-											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
-											.producerBPartnerId(billBPartnerId)
-											.invoicingBPartnerId(billBPartnerId)
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
-											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-											.processed(false)
-											.quantity(quantity)
-											.transactionDate(transactionDate)
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(description)
-											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
-											.priceActual(priceActual)
-											.amount(amount)
-											.invoicingGroupId(invoicingGroupId)
-											.isBillable(false)
-											.build());
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
-	{
-		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		super(modCntrInvoicingGroupRepository);
+		this.computingMethod = computingMethod;
 	}
 
 	@Override

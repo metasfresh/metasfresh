@@ -30,7 +30,12 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
@@ -40,9 +45,12 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
@@ -50,8 +58,12 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Service
 public class ModularContractProvider
@@ -62,6 +74,8 @@ public class ModularContractProvider
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
@@ -120,6 +134,23 @@ public class ModularContractProvider
 	}
 
 	@NonNull
+	public Stream<FlatrateTermId> streamInterimPurchaseContractsForReceiptLine(@NonNull final InOutLineId receiptInOutLineId)
+	{
+		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptInOutLineId);
+		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
+		if (inOutRecord.isSOTrx() || modularFlatrateTermId == null || inOutLineRecord.getMovementQty().signum() < 0)
+		{
+			return Stream.empty();
+		}
+
+		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, Objects.requireNonNull(TimeUtil.asInstant(inOutRecord.getMovementDate()))));
+	}
+
+
+
+
+	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForPPOrder(@NonNull final PPCostCollectorId ppCostCollectorId)
 	{
 		return Optional.of(ppCostCollectorBL.getById(ppCostCollectorId).getPP_Order_ID())
@@ -128,5 +159,38 @@ public class ModularContractProvider
 				.map(I_PP_Order::getModular_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoIdOrNull)
 				.stream();
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularPurchaseContractsForInvoiceLine(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
+		if (invoiceLineRecord.getC_Flatrate_Term_ID() > 0)
+		{
+			return Stream.of(FlatrateTermId.ofRepoId(invoiceLineRecord.getC_Flatrate_Term_ID()));
+		}
+		else
+		{
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
+			if (invoiceCandidates.size() != 1)
+			{
+				return Stream.empty();
+			}
+
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandidates.get(0);
+			final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
+			if (invoiceCandidateRecord.getAD_Table_ID() != flatrateTermTableId)
+			{
+				return Stream.empty();
+			}
+
+			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID());
+			if(!flatrateBL.isModularContract(flatrateTermId))
+			{
+				return Stream.empty();
+			}
+
+			return Stream.of(flatrateTermId);
+		}
 	}
 }

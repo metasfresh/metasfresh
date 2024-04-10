@@ -54,9 +54,9 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular),
 	SHIPPING_NOTIFICATION_FOR_SALES_MODULAR(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular),
 	IMPORT_LOG(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog),
-	//TODO deactivate old and add new in reflist
-	RECEIPT("Receipt");
-	;
+	//TODO deactivate/remove old and add new in refList
+	RECEIPT("Receipt"),
+	INTERIM("Interim");
 
 	@Getter
 	@NonNull

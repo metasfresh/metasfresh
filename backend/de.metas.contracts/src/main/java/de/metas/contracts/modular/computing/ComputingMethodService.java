@@ -26,7 +26,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -177,13 +176,12 @@ public class ComputingMethodService
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch),"ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
-	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final CalculationRequest request, @NonNull final LogEntryContractType logEntryContractType)
+	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final CalculationRequest request)
 	{
 		return contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getFlatrateTermId())
 						.modularContractTypeId(request.getModularContractTypeId())
-						.contractType(logEntryContractType)
 						.processed(false)
 						.isBillable(true)
 						.lockOwner(request.getLockOwner())

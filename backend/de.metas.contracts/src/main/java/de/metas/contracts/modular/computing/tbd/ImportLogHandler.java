@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
@@ -28,14 +28,12 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
-import de.metas.contracts.modular.impl.ImportLogModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -52,6 +50,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.springframework.stereotype.Component;
@@ -62,7 +61,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
+class ImportLogHandler implements IModularContractLogHandler
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -71,7 +70,7 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 	private final ImportLogModularContractHandler contractHandler;
 
 	@Override
-	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_I_ModCntr_Log> request)
+	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 		{
@@ -80,17 +79,6 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 			case RECREATE_LOGS -> LogAction.RECOMPUTE;
 			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 		};
-	}
-
-	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_I_ModCntr_Log model)
-	{
-		if (!model.isProcessed())
-		{
-			return BooleanWithReason.falseBecause("The I_I_ModCntr_Log is not processed " + model.getI_ModCntr_Log_ID());
-		}
-
-		return BooleanWithReason.TRUE;
 	}
 
 	@Nullable
@@ -112,9 +100,10 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 	@Override
 	@NonNull
 	public ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			@NonNull final CreateLogRequest<I_I_ModCntr_Log> createLogRequest)
+			@NonNull final CreateLogRequest createLogRequest)
 	{
-		final I_I_ModCntr_Log record = createLogRequest.getHandleLogsRequest().getModel();
+		final int logId = createLogRequest.getHandleLogsRequest().getTableRecordReference().getRecordIdAssumingTableName(I_I_ModCntr_Log.Table_Name);
+		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
 
 		if (harvestingYearId == null)
@@ -151,22 +140,30 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_I_ModCntr_Log> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest handleLogsRequest)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_I_ModCntr_Log> getComputingMethod()
+	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
 	{
 		return contractHandler;
 	}
 
 	@Override
-	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest<I_I_ModCntr_Log> handleLogsRequest)
+	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest handleLogsRequest)
 	{
-		return Optional.of(handleLogsRequest.getModel().getM_Product_ID())
+		final int logId = handleLogsRequest.getTableRecordReference().getRecordIdAssumingTableName(I_I_ModCntr_Log.Table_Name);
+		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
+		return Optional.of(record.getM_Product_ID())
 				.map(ProductId::ofRepoId);
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_I_ModCntr_Log.Table_Name;
 	}
 
 }

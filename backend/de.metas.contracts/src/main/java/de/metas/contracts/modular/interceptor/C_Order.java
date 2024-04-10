@@ -22,11 +22,13 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.ComputingMethodRequest;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -65,8 +67,6 @@ import static de.metas.contracts.modular.ModelAction.VOIDED;
 @RequiredArgsConstructor
 public class C_Order
 {
-	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
-	private static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed_PurchaseOrder");
 
@@ -131,7 +131,12 @@ public class C_Order
 			@NonNull final ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+				.forEach(line -> contractService.invokeWithModel(ComputingMethodRequest.builder()
+																		 .tableRecordReference(TableRecordReference.of(orderRecord))
+																		 .modelAction(modelAction)
+																		 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+																		 .build())
+				);
 	}
 
 	private void createModularContractIfRequired(final @NonNull I_C_Order orderRecord)

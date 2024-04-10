@@ -28,6 +28,7 @@ import de.metas.contracts.modular.computing.CalculationRequest;
 import de.metas.contracts.modular.computing.CalculationResponse;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
@@ -49,12 +50,12 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class ComputingMethod implements IModularContractComputingMethodHandler
+public class StorageCostComputingMethod implements IModularContractComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference)
+	public boolean applies(final @NonNull TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return false;
 	}

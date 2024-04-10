@@ -22,16 +22,22 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
+import de.metas.contracts.modular.computing.ComputingMethodRequest;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutLineQuery;
+import de.metas.inout.InOutQuery;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,9 +45,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_OrderLine;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
@@ -55,6 +63,7 @@ public class C_Flatrate_Term
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	private final static String SYS_CONFIG_INTERIM_CONTRACT_AUTO_CREATE = "de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete";
 
@@ -73,25 +82,28 @@ public class C_Flatrate_Term
 		}
 
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()));
-		if (settings.getSoTrx().isSales())
+		if (!settings.getSoTrx().isPurchase())
 		{
 			return;
 		}
 
-		final I_C_OrderLine sourcePurchaseOrderLine = ;
+		final AtomicBoolean containsInterimComputingMethod = new AtomicBoolean(false);
+		settings.getModuleConfigs().forEach(moduleConfig -> {
+			if(moduleConfig.getModularContractType().isMatchingHandler(ComputingMethodType.INTERIM))
+			{
+				containsInterimComputingMethod.set(true);
+			}
+		});
+		if(!containsInterimComputingMethod.get())
+		{
+			return;
+		}
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
 											flatrateTermRecord.getStartDate(),
-											flatrateTermRecord.getEndDate(),
-											(interimContract) -> {
-												if (sourcePurchaseOrderLine == null)
-												{
-													return;
-												}
-
-												PurchaseOrderLineModularContractHandler.crossLinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
-											});
+											flatrateTermRecord.getEndDate()
+		);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -102,14 +114,32 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final I_C_OrderLine sourcePurchaseOrderLine = PurchaseOrderLineModularContractHandler.getSourcePurchaseOrderLine(flatrateTermRecord);
-		if (sourcePurchaseOrderLine != null)
-		{
-			//dev-note: interim contract logs creation will be handled as part of the purchase order line processing
-			return;
-		}
+		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+													   .modelAction(COMPLETED)
+													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+													   .build());
 
-		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
+		createMissingInterimReceiptLogs(flatrateTermRecord);
+	}
+
+	private void createMissingInterimReceiptLogs(@NonNull final I_C_Flatrate_Term interimContract)
+	{
+		inoutBL.streamLines(
+						InOutLineQuery.builder()
+								.headerQuery(InOutQuery.builder()
+													 .docStatus(DocStatus.Completed)
+													 .movementDateFrom(interimContract.getStartDate().toInstant())
+													 .movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
+													 .build())
+								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
+								.build())
+				.forEach(inoutLine -> modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+																   .tableRecordReference(TableRecordReference.of(inoutLine))
+																   .modelAction(COMPLETED)
+																   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+																   .build())
+				);
 	}
 
 
@@ -121,6 +151,12 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
+		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+													   .modelAction(COMPLETED)
+													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+													   .build()
+		);
+
 	}
 }

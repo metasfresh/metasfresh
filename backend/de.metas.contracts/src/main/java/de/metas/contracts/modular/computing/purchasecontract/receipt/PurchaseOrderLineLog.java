@@ -75,7 +75,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final ComputingMethod computingMethod;
+	private final ReceiptComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 

@@ -27,7 +27,6 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 import java.sql.Timestamp;
-import java.util.function.Consumer;
 
 public interface IInterimFlatrateTermService extends ISingletonService
 {
@@ -35,10 +34,4 @@ public interface IInterimFlatrateTermService extends ISingletonService
 			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
 			@NonNull Timestamp startDate,
 			@NonNull Timestamp endDate);
-
-	void create(
-			@NonNull I_C_Flatrate_Term modularFlatrateTermRecord,
-			@NonNull Timestamp startDate,
-			@NonNull Timestamp endDate,
-			@NonNull final Consumer<I_C_Flatrate_Term> beforeCompleteInterceptor);
 }

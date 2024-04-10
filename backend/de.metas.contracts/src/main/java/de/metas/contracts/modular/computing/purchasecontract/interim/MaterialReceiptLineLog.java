@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,24 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
-import de.metas.contracts.modular.computing.purchasecontract.receipt.ComputingMethod;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-class MaterialReceiptLineInterimLogHandler extends AbstractMaterialReceiptLogHandler
+class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
-	private final ComputingMethod computingMethod;
+	private final InterimComputingMethod computingMethod;
 
-	public MaterialReceiptLineInterimLogHandler(
+	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ComputingMethod computingMethod)
+			@NonNull final InterimComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;

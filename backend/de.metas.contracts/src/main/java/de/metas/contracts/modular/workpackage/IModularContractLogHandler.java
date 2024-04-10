@@ -67,24 +67,26 @@ public interface IModularContractLogHandler
 	{
 		final IModularContractComputingMethodHandler computingMethod = getComputingMethod();
 
-		final boolean isHandlerMatchingRequest = computingMethod.getClass().getName().equals(request.getHandlerClassname())
+		final boolean isComputingMethodMatchingRequest = computingMethod.getClass().getName().equals(request.getHandlerClassname())
 				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
 
-		if (!isHandlerMatchingRequest)
+		if (!isComputingMethodMatchingRequest)
 		{
 			return false;
 		}
 
-		final boolean isHandlerMatchingContract = getComputingMethod()
+		final boolean isComputingMethodMatchingContract = getComputingMethod()
 				.streamContractIds(request.getTableRecordReference())
 				.anyMatch(contractId -> contractId.equals(request.getContractId()));
 
-		if (!isHandlerMatchingContract)
+		if (!isComputingMethodMatchingContract)
 		{
 			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
+			return false;
 		}
 
-		return isHandlerMatchingContract && request.getTableRecordReference().getTableName().equals(getSupportedTableName());
+		return request.getLogEntryContractType().equals(getLogEntryContractType())
+				&& request.getTableRecordReference().getTableName().equals(getSupportedTableName());
 	}
 	
 	@NonNull
