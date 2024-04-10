@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 @Value
 public class ModCntrSpecificPriceId implements RepoIdAware
 {
-
 	int repoId;
 
 	@JsonCreator
@@ -57,7 +56,6 @@ public class ModCntrSpecificPriceId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_ModCntr_Specific_Price_ID");
 	}
-
 
 	@Override
 	@JsonValue
