@@ -128,6 +128,7 @@ public class ModularContractPriceService
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.uomId(pricingResult.getPriceUomId())
 				.amount(pricingResult.getPriceStdAsMoney())
+				.productId(pricingResult.getProductId())
 				.seqNo(moduleConfig.getSeqNo());
 
 		modularContractPriceRepository.save(modCntrSpecificPriceBuilder.build());
