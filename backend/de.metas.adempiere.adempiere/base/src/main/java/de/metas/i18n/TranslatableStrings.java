@@ -8,8 +8,10 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.Amount;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -228,9 +230,11 @@ public class TranslatableStrings
 		return trl != null ? trl : empty();
 	}
 
-	public ITranslatableString amount(@NonNull final Amount amount)
+	public ITranslatableString amount(@Nullable final Amount amount)
 	{
-		return builder().append(amount).build();
+		return amount != null
+				? builder().append(amount).build()
+				: empty();
 	}
 
 	public NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
@@ -241,6 +245,15 @@ public class TranslatableStrings
 	public NumberTranslatableString number(final int valueInt)
 	{
 		return NumberTranslatableString.of(valueInt);
+	}
+
+	public ITranslatableString quantity(final BigDecimal valueBD, final String uom)
+	{
+		return TranslatableStrings.builder()
+				.append(NumberTranslatableString.of(valueBD, DisplayType.Quantity))
+				.append(" ")
+				.append(uom)
+				.build();
 	}
 
 	public DateTimeTranslatableString date(@NonNull final java.util.Date date)
@@ -408,6 +421,11 @@ public class TranslatableStrings
 	public static ITranslatableString adRefList(final int adReferenceId, @NonNull final String value)
 	{
 		return adRefList(ReferenceId.ofRepoId(adReferenceId), value);
+	}
+
+	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final ReferenceListAwareEnum value)
+	{
+		return adRefList(adReferenceId, value.getCode());
 	}
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)
