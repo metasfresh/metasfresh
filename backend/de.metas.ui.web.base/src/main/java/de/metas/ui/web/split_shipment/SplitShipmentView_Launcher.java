@@ -1,35 +1,31 @@
 package de.metas.ui.web.split_shipment;
 
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-public class SplitShipmentView_Launcher extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class SplitShipmentView_Launcher extends JavaProcess implements IProcessPrecondition
 {
 	private final IViewsRepository viewsFactory = SpringContextHolder.instance.getBean(IViewsRepository.class);
 
 	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final DocumentIdsSelection rowIds = getSelectedRowIds();
-		if (rowIds.isEmpty())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
-		}
-		else if (!rowIds.isSingleDocumentId())
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
-		else
-		{
-			return ProcessPreconditionsResolution.accept();
-		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -49,7 +45,14 @@ public class SplitShipmentView_Launcher extends ViewBasedProcessTemplate impleme
 
 	private ShipmentScheduleId getSelectedShipmentScheduleId()
 	{
-		return getSelectedRowIds().getSingleDocumentId().toId(ShipmentScheduleId::ofRepoId);
+		if (I_M_ShipmentSchedule.Table_Name.equals(getTableName()))
+		{
+			return ShipmentScheduleId.ofRepoId(getRecord_ID());
+		}
+		else
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 	}
 
 }
