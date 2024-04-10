@@ -133,3 +133,99 @@ UPDATE AD_Field SET DisplayLogic='@Type_Conditions@=''ModularContract''|@Type_Co
 
 
 
+-- Run mode: SWING_CLIENT
+
+-- Column: C_Flatrate_Term.C_Harvesting_Calendar_ID
+-- 2024-04-10T18:32:53.810Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-04-10 21:32:53.81','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588107
+;
+
+-- Column: C_Flatrate_Term.Harvesting_Year_ID
+-- 2024-04-10T18:33:09.376Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2024-04-10 21:33:09.376','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588108
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> harvesting details.Erntekalender
+-- Column: C_Flatrate_Term.C_Harvesting_Calendar_ID
+-- 2024-04-10T18:35:17.237Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.237','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=624019
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> harvesting details.Erntejahr
+-- Column: C_Flatrate_Term.Harvesting_Year_ID
+-- 2024-04-10T18:35:17.248Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.248','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=624020
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsbeginn
+-- Column: C_Flatrate_Term.StartDate
+-- 2024-04-10T18:35:17.257Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.256','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548298
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> default.Vertragsende
+-- Column: C_Flatrate_Term.EndDate
+-- 2024-04-10T18:35:17.265Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.265','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548299
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Preissystem
+-- Column: C_Flatrate_Term.M_PricingSystem_ID
+-- 2024-04-10T18:35:17.300Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.3','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548300
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Vertragsverlängerung
+-- Column: C_Flatrate_Term.C_Flatrate_Transition_ID
+-- 2024-04-10T18:35:17.308Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.308','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548301
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 10 -> prices.Kündigungsfrist
+-- Column: C_Flatrate_Term.NoticeDate
+-- 2024-04-10T18:35:17.316Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.316','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548302
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Autom. verlängern
+-- Column: C_Flatrate_Term.IsAutoRenew
+-- 2024-04-10T18:35:17.324Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.323','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548303
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> flags.Verarbeitet
+-- Column: C_Flatrate_Term.Processed
+-- 2024-04-10T18:35:17.332Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.332','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548304
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertrag Nr.
+-- Column: C_Flatrate_Term.MasterDocumentNo
+-- 2024-04-10T18:35:17.340Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.339','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551392
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner seit
+-- Column: C_Flatrate_Term.MasterStartDate
+-- 2024-04-10T18:35:17.345Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.345','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548400
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Vertragspartner bis
+-- Column: C_Flatrate_Term.MasterEndDate
+-- 2024-04-10T18:35:17.351Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.351','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548401
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> doc.Belegstatus
+-- Column: C_Flatrate_Term.DocStatus
+-- 2024-04-10T18:35:17.358Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.357','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548308
+;
+
+-- UI Element: Vertrag(540359,de.metas.contracts) -> Vertrag(540859,de.metas.contracts) -> main -> 20 -> org.Sektion
+-- Column: C_Flatrate_Term.AD_Org_ID
+-- 2024-04-10T18:35:17.363Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2024-04-10 21:35:17.363','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=548305
+;
+
