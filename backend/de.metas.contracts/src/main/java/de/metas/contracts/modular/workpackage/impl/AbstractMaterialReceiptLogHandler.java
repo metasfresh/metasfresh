@@ -32,7 +32,6 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
@@ -80,12 +79,12 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_InOutLine> request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED, REACTIVATED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case REVERSED, REACTIVATED -> LogAction.REVERSE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		};
 	}
 
 	@Override
@@ -126,9 +125,7 @@ abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogH
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
-		final int modularContractModuleId = request.getConfigId().getModularContractModuleId();
-
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ModularContractModuleId.ofRepoId(modularContractModuleId),
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getConfigId().getModularContractModuleId(),
 																								   request.getContractId());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()

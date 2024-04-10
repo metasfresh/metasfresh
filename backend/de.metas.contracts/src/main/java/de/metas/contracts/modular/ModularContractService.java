@@ -27,19 +27,14 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_ModCntr_Specific_Price;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -169,19 +164,19 @@ public class ModularContractService
 
 	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_ModCntr_Specific_Price modCntrSpecificPriceRecord = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
 
-		return TaxCategoryId.ofRepoId(modCntrSpecificPriceRecord.getC_TaxCategory_ID());
+		return modCntrSpecificPrice.taxCategoryId();
 	}
 
 	public ProductPrice getContractSpecificPrice(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_ModCntr_Specific_Price modCntrSpecificPriceRecord = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
 
 		return ProductPrice.builder()
-				.productId(ProductId.ofRepoId(modCntrSpecificPriceRecord.getM_Product_ID()))
-				.money(Money.of(modCntrSpecificPriceRecord.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPriceRecord.getC_Currency_ID())))
-				.uomId(UomId.ofRepoId(modCntrSpecificPriceRecord.getC_UOM_ID()))
+				.productId(modCntrSpecificPrice.productId())
+				.money(modCntrSpecificPrice.amount())
+				.uomId(modCntrSpecificPrice.uomId())
 				.build();
 	}
 }

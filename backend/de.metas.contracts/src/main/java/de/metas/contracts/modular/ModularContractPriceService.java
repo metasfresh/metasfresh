@@ -47,6 +47,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -86,12 +87,21 @@ public class ModularContractPriceService
 		}
 
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+
+		final Optional<ModuleConfig> interimContractModule = settings.getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatchingHandler(ModularContractHandlerType.INTERIM_CONTRACT))
+				.findFirst();
+
+		if (interimContractModule.isEmpty())
+		{
+			// there is no interim contract should not exist
+			return;
+		}
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		for (final ModuleConfig config : settings.getInterimInvoiceConfigs())
-		{
-			createModCntrSpecificPrices(flatrateTermRecord, config, pricingContextTemplate);
-		}
+		createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
+
 	}
 
 	public void createModCntrSpecificPrices(final @NonNull I_C_Flatrate_Term flatrateTermRecord, @NonNull final ModuleConfig moduleConfig, final @NonNull IEditablePricingContext pricingContextTemplate)
