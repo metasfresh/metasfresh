@@ -80,8 +80,10 @@ public interface I_M_ShipmentSchedule extends
 	 * or {@link #getM_HU_PI_Item_Product_Override_ID()}.
 	 */
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	@Override
 	void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
-	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
+	//void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
+	@Override
 	int getM_HU_PI_Item_Product_ID();
 	// public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 	// @formatter:on
@@ -89,8 +91,10 @@ public interface I_M_ShipmentSchedule extends
 
 	// @formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
+	@Override
 	void setM_HU_PI_Item_Product_Override_ID(int M_HU_PI_Item_Product_Override_ID);
 	//void setM_HU_PI_Item_Product_Override(final I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override);
+	@Override
 	int getM_HU_PI_Item_Product_Override_ID();
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on
@@ -111,9 +115,11 @@ public interface I_M_ShipmentSchedule extends
 
 	// @formatter:off
 	String COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID = "M_HU_PI_Item_Product_Calculated_ID";
-	// public void setM_HU_PI_Item_Product_Calculated_ID(int M_HU_PI_Item_Product_Calculated_ID);
+	@Override
+	void setM_HU_PI_Item_Product_Calculated_ID(int M_HU_PI_Item_Product_Calculated_ID);
+	@Override
 	int getM_HU_PI_Item_Product_Calculated_ID();
-	void setM_HU_PI_Item_Product_Calculated(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Calculated) throws RuntimeException;
+	//void setM_HU_PI_Item_Product_Calculated(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Calculated) throws RuntimeException;
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Calculated() throws RuntimeException;
 	// @formatter:on
 }

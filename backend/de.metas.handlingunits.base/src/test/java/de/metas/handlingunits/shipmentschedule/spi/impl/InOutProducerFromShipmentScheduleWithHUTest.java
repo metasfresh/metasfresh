@@ -13,7 +13,6 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -23,6 +22,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
@@ -64,6 +65,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -100,6 +102,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class InOutProducerFromShipmentScheduleWithHUTest
 {
+	private ShipmentScheduleWithHUFactory shipmentScheduleWithHUFactory;
+	private BPartnerLocationId bpartnerAndLocationId;
+	private WarehouseId warehouseId;
+	private I_C_UOM uom;
 
 	@BeforeEach
 	public void init()
@@ -113,6 +119,70 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 		//noinspection resource
 		Loggables.temporarySetLoggable(Loggables.console());
+
+		shipmentScheduleWithHUFactory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.build();
+
+		this.uom = uom("uom");
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private I_C_UOM uom(final String name)
+	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName(name);
+		uom.setUOMSymbol(name);
+		uom.setX12DE355(name);
+		saveRecord(uom);
+		return uom;
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private ProductId product(final String name, final I_C_UOM uom)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setValue(name);
+		product.setName(name);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
+		saveRecord(product);
+		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
+	private ShipmentScheduleWithHU createShipmentSchedule(
+			@NonNull final ProductId productId,
+			@NonNull final String qtyOrdered,
+			@NonNull final String qtyToDeliver,
+			@NonNull final DeliveryRule deliveryRule,
+			@Nullable final OrderId orderId)
+	{
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		saveRecord(orderLine);
+
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		shipmentSchedule.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		shipmentSchedule.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
+		shipmentSchedule.setM_Product_ID(productId.getRepoId());
+		// shipmentSchedule.setQtyOrdered(new BigDecimal(qtyOrdered)); // not needed
+		shipmentSchedule.setQtyOrdered_Calculated(new BigDecimal(qtyOrdered));
+		shipmentSchedule.setQtyToDeliver(new BigDecimal(qtyToDeliver));
+
+		shipmentSchedule.setDeliveryRule(deliveryRule.getCode());
+
+		shipmentSchedule.setC_Order_ID(OrderId.toRepoId(orderId));
+		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		shipmentSchedule.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
+		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
+
+		saveRecord(shipmentSchedule);
+
+		return shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+				shipmentSchedule,
+				StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(qtyToDeliver), productId),
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 	}
 
 	@Nested
@@ -228,12 +298,18 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	@Nested
 	public class calculateShipmentDate
 	{
-		private I_M_ShipmentSchedule createSchedule(final LocalDate deliveryDate)
+		private ShipmentScheduleWithHU createSchedule(final LocalDate deliveryDate)
 		{
+			final ProductId productId = product("product", uom);
+
 			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
 			schedule.setDeliveryDate(TimeUtil.asTimestamp(deliveryDate));
 			InterfaceWrapperHelper.save(schedule);
-			return schedule;
+			
+			return shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+					schedule,
+					StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("100"), productId),
+					M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 		}
 
 		@NonNull
@@ -249,7 +325,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 
-			final I_M_ShipmentSchedule schedule = createSchedule(today);
+			final ShipmentScheduleWithHU schedule = createSchedule(today);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, TODAY);
 
@@ -263,7 +339,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 
-			final I_M_ShipmentSchedule schedule = createSchedule(today);
+			final ShipmentScheduleWithHU schedule = createSchedule(today);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
@@ -279,7 +355,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final LocalDate anotherDate = LocalDate.of(2017, 11, 17);
 
-			final I_M_ShipmentSchedule schedule = createSchedule(anotherDate);
+			final ShipmentScheduleWithHU schedule = createSchedule(anotherDate);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, TODAY);
 
@@ -293,7 +369,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final LocalDate dateInFuture = LocalDate.of(2017, 11, 17);
 
-			final I_M_ShipmentSchedule schedule = createSchedule(dateInFuture);
+			final ShipmentScheduleWithHU schedule = createSchedule(dateInFuture);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
@@ -308,7 +384,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
 
-			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
+			final ShipmentScheduleWithHU schedule = createSchedule(dateInPast);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE_OR_TODAY);
 
@@ -323,7 +399,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 
 			final LocalDate dateInPast = LocalDate.of(2017, 11, 3);
 
-			final I_M_ShipmentSchedule schedule = createSchedule(dateInPast);
+			final ShipmentScheduleWithHU schedule = createSchedule(dateInPast);
 
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(schedule, DELIVERY_DATE);
 
@@ -335,53 +411,13 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		{
 			de.metas.common.util.time.SystemTime.setFixedTimeSource("2017-11-10T01:02:30+01:00");
 
-			final I_M_ShipmentSchedule schedule = createSchedule(LocalDate.parse("2018-11-03"));
+			final ShipmentScheduleWithHU schedule = createSchedule(LocalDate.parse("2018-11-03"));
 			final LocalDate shipmentDate = newInOutProducerFromShipmentScheduleWithHU().calculateShipmentDate(
 					schedule,
 					CalculateShippingDateRule.fixedDate(LocalDate.parse("2010-02-03")));
 
 			assertThat(shipmentDate).isEqualTo("2010-02-03");
 		}
-	}
-
-	private IHUContext huContext;
-	private BPartnerLocationId bpartnerAndLocationId;
-	private WarehouseId warehouseId;
-
-	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
-	private ShipmentScheduleWithHU createShipmentSchedule(
-			@NonNull final ProductId productId,
-			@NonNull final String qtyOrdered,
-			@NonNull final String qtyToDeliver,
-			@NonNull final DeliveryRule deliveryRule,
-			final OrderId orderId)
-	{
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		saveRecord(orderLine);
-
-		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
-		shipmentSchedule.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
-		shipmentSchedule.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
-		shipmentSchedule.setM_Product_ID(productId.getRepoId());
-		// shipmentSchedule.setQtyOrdered(new BigDecimal(qtyOrdered)); // not needed
-		shipmentSchedule.setQtyOrdered_Calculated(new BigDecimal(qtyOrdered));
-		shipmentSchedule.setQtyToDeliver(new BigDecimal(qtyToDeliver));
-
-		shipmentSchedule.setDeliveryRule(deliveryRule.getCode());
-
-		shipmentSchedule.setC_Order_ID(OrderId.toRepoId(orderId));
-		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		shipmentSchedule.setAD_Table_ID(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class));
-		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
-
-		saveRecord(shipmentSchedule);
-
-		return ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
-				shipmentSchedule,
-				StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal(qtyToDeliver), productId),
-				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 	}
 
 	@Nested
@@ -396,12 +432,10 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 			Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
 
-			final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 			trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
 			Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH); // needed for notifications
 
-			huContext = huContextFactory.createMutableHUContext();
 			createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialDelivery));
 			bpartnerAndLocationId = bpartnerAndLocation("BP");
 			warehouseId = warehouse("WH");
@@ -431,29 +465,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 				pip.setIsAllowAnyProduct(true);
 				saveRecord(pip);
 			}
-		}
-
-		@SuppressWarnings("SameParameterValue")
-		private I_C_UOM uom(final String name)
-		{
-			final I_C_UOM uom = newInstance(I_C_UOM.class);
-			uom.setName(name);
-			uom.setUOMSymbol(name);
-			uom.setX12DE355(name);
-			saveRecord(uom);
-			return uom;
-
-		}
-
-		@SuppressWarnings("SameParameterValue")
-		private ProductId product(final String name, final I_C_UOM uom)
-		{
-			final I_M_Product product = newInstance(I_M_Product.class);
-			product.setValue(name);
-			product.setName(name);
-			product.setC_UOM_ID(uom.getC_UOM_ID());
-			saveRecord(product);
-			return ProductId.ofRepoId(product.getM_Product_ID());
 		}
 
 		@SuppressWarnings("SameParameterValue")
