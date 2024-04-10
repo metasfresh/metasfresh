@@ -211,8 +211,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
   """
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate         | DocumentNo     |
-      | huProduct_inventory_S0317_020 | 2021-04-16T00:00:00Z | inventoryDocNo |
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
+      | huProduct_inventory_S0317_020 | 2021-04-16   | inventoryDocNo |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory_S0317_020 | huProduct_inventoryLine_S0317_020 | p_1_S0317_020           | 0       | 5        |

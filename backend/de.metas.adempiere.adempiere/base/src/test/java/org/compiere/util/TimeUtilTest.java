@@ -9,8 +9,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -33,6 +34,7 @@ import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,16 +43,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class TimeUtilTest
 {
+	private TimeZone jvmTimezoneBackup;
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		SystemTime.resetTimeSource();
+		jvmTimezoneBackup = TimeZone.getDefault();
 	}
 
 	@AfterEach
 	public void afterEach()
 	{
 		SystemTime.resetTimeSource();
+		TimeZone.setDefault(jvmTimezoneBackup);
 	}
 
 	private static Timestamp createTimestamp(final int year, int month, int day)
@@ -745,6 +751,7 @@ public class TimeUtilTest
 			assertThat(TimeUtil.asLocalDate(localDateAndOrgId)).isEqualTo("2022-03-04");
 		}
 	}
+
 	@Nested
 	public class isOverlapping
 	{
@@ -804,5 +811,28 @@ public class TimeUtilTest
 			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-07"), ts("2023-10-10")))
 					.isFalse();
 		}
+	}
+
+	@ParameterizedTest(name = "JVM.zoneId={0}")
+	@ValueSource(strings = {
+			"Pacific/Midway", // -11:00
+			"US/Alaska", // -09:00,
+			"America/Jamaica", // -05:00
+			"Atlantic/Azores", // -01:00
+			"UTC",
+			"Europe/Berlin",  // +01:00
+			"Europe/Bucharest", // +02:00
+			"Asia/Kolkata", // +05:30
+			"Asia/Tokyo", // +09:00
+			"Pacific/Kiritimati", // +14:00
+	})
+	void parseLocalDateAsTimestamp_asLocalDate(final String timezone)
+	{
+		TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+		//System.out.println("JVM TimeZone: " + TimeZone.getDefault());
+		assertThat(TimeZone.getDefault()).isEqualTo(TimeZone.getTimeZone(timezone));
+
+		final Timestamp timestamp = TimeUtil.parseLocalDateAsTimestamp("2024-03-30");
+		assertThat(TimeUtil.asLocalDateNonNull(timestamp)).isEqualTo("2024-03-30");
 	}
 }

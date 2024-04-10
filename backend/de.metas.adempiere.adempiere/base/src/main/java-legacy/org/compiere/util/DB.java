@@ -1891,14 +1891,10 @@ public class DB
 
 	/**
 	 * Create SQL TO Date String from Timestamp
-	 *
-	 * @param time    Date to be converted
-	 * @param dayOnly true if time set to 00:00:00
-	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ') or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
-	public String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public String TO_DATE(@Nullable final Timestamp time, final int displayType)
 	{
-		return Database.TO_DATE(time, dayOnly);
+		return Database.TO_DATE(time, displayType);
 	}
 
 	/**
@@ -1909,7 +1905,7 @@ public class DB
 	 */
 	public String TO_DATE(final Timestamp day)
 	{
-		return TO_DATE(day, true);
+		return TO_DATE(day, DisplayType.Date);
 	}
 
 	/**
