@@ -127,7 +127,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void onInterimContractSave(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void createInterimContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		if (!typeConditions.isInterimContractType())
@@ -138,7 +138,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void onModularContractSave(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	public void createModularContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		if (!typeConditions.isModularContractType())
