@@ -476,12 +476,13 @@ export class RawList extends PureComponent {
   };
 
   renderMultiSelectDropdown = () => {
-    const { listHash } = this.props;
+    const { listHash, loading } = this.props;
 
     return (
       <MultiSelect
         listHash={listHash}
         options={this.state.dropdownList}
+        loading={loading}
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
         isToggled={this.props.isToggled}
