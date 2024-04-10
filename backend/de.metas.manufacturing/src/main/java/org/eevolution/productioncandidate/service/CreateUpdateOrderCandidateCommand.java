@@ -41,6 +41,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
@@ -131,7 +132,7 @@ public class CreateUpdateOrderCandidateCommand
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 		ppOrderCandidateRecord.setIssue_HU_ID(HuId.toRepoId(request.getIssueHuId()));
 
-		if(!Utils.isEmpty(request.getLotForLot()))
+		if (!Utils.isEmpty(request.getLotForLot()))
 		{
 			ppOrderCandidateRecord.setIsLotForLot(request.getLotForLot());
 		}

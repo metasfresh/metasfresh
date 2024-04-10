@@ -71,7 +71,7 @@ public class ManualPricePricingRule implements IPricingRule
 	{
 		if (!PricingBL.isManualPrice(pricingCtx))
 		{
-			logger.info("Not applying because not manual price !");
+			logger.trace("Not applying because not manual price !");
 			return false;
 		}
 

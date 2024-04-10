@@ -53,9 +53,14 @@ import de.metas.invoice.service.impl.PlainInvoiceBL;
 import de.metas.letter.BoilerPlateRepository;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -68,6 +73,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -81,6 +87,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 
 public class DunningTestBase
@@ -107,6 +114,7 @@ public class DunningTestBase
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
 	protected IDunningBL dunningBL;
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
 	public final void beforeTest()
@@ -220,7 +228,9 @@ public class DunningTestBase
 	protected PlainDunningContext createPlainDunningContext(Date dunningDate, I_C_DunningLevel dunningLevel)
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
-		dunningContext.setDunningDate(dunningDate);
+		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
+											  .map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+											  .orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -278,6 +288,14 @@ public class DunningTestBase
 		POJOWrapper.enableStrictValues(level);
 
 		return level;
+	}
+
+	@NonNull
+	protected OrgInfo createOrgInfo()
+	{
+		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+											 .orgId(OrgId.MAIN)
+											 .build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)

@@ -692,6 +692,7 @@ public class PPOrderBL implements IPPOrderBL
 				});
 	}
 
+	@Override
 	public boolean isModularOrder(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getById(ppOrderId);
