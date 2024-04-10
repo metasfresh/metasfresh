@@ -7,6 +7,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.AbstractCustomView;
@@ -53,6 +54,9 @@ public class SplitShipmentView extends AbstractCustomView<SplitShipmentRow> impl
 
 	@Override
 	public ImmutableList<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors() {return relatedProcesses;}
+
+	@Override
+	public ViewHeaderProperties getHeaderProperties() {return getRowsData().getHeaderProperties();}
 
 	public void deleteRowsByIds(final DocumentIdsSelection rowIds)
 	{

@@ -3,7 +3,6 @@ package de.metas.ui.web.split_shipment;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
@@ -12,6 +11,7 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
+import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.view.template.IRowsData;
@@ -22,9 +22,7 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.I_C_UOM;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -38,7 +36,7 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 {
 	public static SplitShipmentRows cast(final IRowsData<SplitShipmentRow> rowsData) {return (SplitShipmentRows)rowsData;}
 
-	@NonNull private final IShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final ShipmentScheduleInfoLoader shipmentScheduleInfoLoader;
 	@NonNull private final ShipmentScheduleSplitService shipmentScheduleSplitService;
 
 	@NonNull @Getter private final ShipmentScheduleId shipmentScheduleId;
@@ -49,11 +47,11 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 
 	@Builder
 	private SplitShipmentRows(
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final ShipmentScheduleInfoLoader shipmentScheduleInfoLoader,
 			@NonNull ShipmentScheduleSplitService shipmentScheduleSplitService,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleInfoLoader = shipmentScheduleInfoLoader;
 		this.shipmentScheduleSplitService = shipmentScheduleSplitService;
 
 		this.shipmentScheduleId = shipmentScheduleId;
@@ -138,21 +136,12 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 
 	private synchronized ShipmentScheduleInfo getShipmentScheduleInfo()
 	{
-		if (_shipmentScheduleInfo == null)
+		ShipmentScheduleInfo shipmentScheduleInfo = this._shipmentScheduleInfo;
+		if (shipmentScheduleInfo == null)
 		{
-			_shipmentScheduleInfo = retrieveShipmentScheduleInfo();
+			shipmentScheduleInfo = this._shipmentScheduleInfo = shipmentScheduleInfoLoader.getById(shipmentScheduleId);
 		}
-		return _shipmentScheduleInfo;
-	}
-
-	private ShipmentScheduleInfo retrieveShipmentScheduleInfo()
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
-		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
-		return ShipmentScheduleInfo.builder()
-				.uom(qtyToDeliver.getUOM())
-				.readonly(shipmentSchedule.isProcessed() || shipmentSchedule.isClosed() || shipmentSchedule.isDeliveryStop())
-				.build();
+		return shipmentScheduleInfo;
 	}
 
 	private void refreshRows()
@@ -348,11 +337,8 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		return getMap().values().stream().anyMatch(SplitShipmentRow::isEligibleForProcessing);
 	}
 
-	@Value
-	@Builder
-	private static class ShipmentScheduleInfo
+	public ViewHeaderProperties getHeaderProperties()
 	{
-		@NonNull I_C_UOM uom;
-		boolean readonly;
+		return getShipmentScheduleInfo().toViewHeaderProperties();
 	}
 }
