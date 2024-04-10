@@ -10,6 +10,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
