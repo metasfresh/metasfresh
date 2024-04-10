@@ -24,6 +24,7 @@ package de.metas.contracts.modular;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -61,6 +62,7 @@ public class ModularContractPriceService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
@@ -73,8 +75,10 @@ public class ModularContractPriceService
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		for (final ModuleConfig config : settings.getModularContractConfigs())
+		for (final ModuleConfig config : settings.getModuleConfigs())
 		{
+			final ProductId productId = config.getProductId();
+			setProductDataOnPricingContext(productId, pricingContextTemplate);
 			createModCntrSpecificPrices(flatrateTermRecord, config, pricingContextTemplate);
 		}
 	}
@@ -101,10 +105,9 @@ public class ModularContractPriceService
 		}
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-
-			final ProductId productId = settings.getRawProductId();
-			setProductDataOnPricingContext(productId, pricingContextTemplate);
-			createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
+		final ProductId productId = settings.getRawProductId();
+		setProductDataOnPricingContext(productId, pricingContextTemplate);
+		createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
 
 	}
 
