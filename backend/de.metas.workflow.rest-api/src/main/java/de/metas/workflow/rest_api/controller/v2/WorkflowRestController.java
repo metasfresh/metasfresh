@@ -286,6 +286,7 @@ public class WorkflowRestController
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
+				.frontendUrl(jsonErrorItem.getFrontendUrl())
 				.build();
 	}
 
