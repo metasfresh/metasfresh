@@ -60,6 +60,9 @@ Feature: Picking workflow - abort not started picking jobs after shipment
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | pickingShipmentSchedule          | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | pickingShipmentSchedule          | s_1                   |
     Then validate M_PickingSlot:
       | M_PickingSlot_ID.Identifier | IsAllocated |
       | 170.0                       | N           |

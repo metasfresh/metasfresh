@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -39,12 +40,15 @@ import org.springframework.stereotype.Component;
 public class M_InOut
 {
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 
 	private final PickingJobService pickingJobService;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_M_InOut shipment)
 	{
-		shipmentScheduleAllocDAO.retrieveOrderIds(shipment).forEach(pickingJobService::abortNotStartedForSalesOrderId);
+		trxManager.runAfterCommit(() -> shipmentScheduleAllocDAO.retrieveOrderIds(shipment)
+				.forEach(pickingJobService::abortNotStartedForSalesOrderId));
 	}
 }

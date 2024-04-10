@@ -70,6 +70,8 @@ public class PickingSlot_StepDef
 							softAssertions.assertThat(pickingSlot.getC_BPartner_Location_ID()).isEqualTo(0);
 						}
 					});
+
+			softAssertions.assertAll();
 		});
 	}
 
