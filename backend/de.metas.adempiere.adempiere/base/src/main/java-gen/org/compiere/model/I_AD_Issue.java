@@ -346,6 +346,27 @@ public interface I_AD_Issue
 	String COLUMNNAME_ErrorTrace = "ErrorTrace";
 
 	/**
+	 * Set Frontend URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFrontendURL (@Nullable java.lang.String FrontendURL);
+
+	/**
+	 * Get Frontend URL.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFrontendURL();
+
+	ModelColumn<I_AD_Issue, Object> COLUMN_FrontendURL = new ModelColumn<>(I_AD_Issue.class, "FrontendURL", null);
+	String COLUMNNAME_FrontendURL = "FrontendURL";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
