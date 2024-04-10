@@ -27,6 +27,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
@@ -93,6 +94,7 @@ import java.util.stream.Stream;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
+import static de.metas.contracts.model.X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -1231,16 +1233,11 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public IQuery<I_C_Flatrate_Term> createInterimContractQuery(@NonNull final IQueryFilter<I_C_Flatrate_Term> contractFilter)
 	{
-
-		final IQuery<I_C_Flatrate_Conditions> interimConditionsSubfilter = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addStringLikeFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, TypeConditions.INTERIM_INVOICE.getCode(), false)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(contractFilter)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, interimConditionsSubfilter)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TYPE_CONDITIONS_InterimInvoice)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.create();
 	}
 

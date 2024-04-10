@@ -100,7 +100,7 @@ public class ModularContractPriceService
 
 		if (interimContractModule.isEmpty())
 		{
-			// there is no interim contract should not exist
+			// there is no module for interim prices
 			return;
 		}
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
