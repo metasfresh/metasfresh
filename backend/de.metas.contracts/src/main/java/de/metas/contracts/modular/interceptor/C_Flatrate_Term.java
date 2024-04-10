@@ -126,7 +126,7 @@ public class C_Flatrate_Term
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
 	}
 
-	@DocValidate(timings = ModelValidator.TYPE_AFTER_NEW)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void onInterimContractSave(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
@@ -137,7 +137,7 @@ public class C_Flatrate_Term
 		modularContractPriceService.createInterimContractSpecificPricesFor(flatrateTermRecord);
 	}
 
-	@DocValidate(timings = ModelValidator.TYPE_AFTER_NEW)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void onModularContractSave(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
