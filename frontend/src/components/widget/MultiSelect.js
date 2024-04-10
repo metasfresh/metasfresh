@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Spinner from '../app/SpinnerOverlay';
 
 class MultiSelect extends Component {
   constructor(props) {
@@ -64,11 +65,13 @@ class MultiSelect extends Component {
   };
 
   render() {
+    const { loading } = this.props;
     const { data, checkedItems } = this.state;
     const dataSource = data.length > 0 ? data : this.props.options;
 
     return (
       <div className="filter-multiselect">
+        {loading && <Spinner iconSize={25} />}
         <div>
           {dataSource.map((item) => (
             <div className="form-group" key={item.key}>
@@ -104,6 +107,7 @@ class MultiSelect extends Component {
 
 MultiSelect.propTypes = {
   options: PropTypes.array,
+  loading: PropTypes.bool,
   onFocus: PropTypes.func,
   onSelect: PropTypes.func,
   selectedItems: PropTypes.any,
