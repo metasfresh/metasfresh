@@ -24,10 +24,8 @@ package de.metas.contracts.modular;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
@@ -63,7 +61,6 @@ public class ModularContractPriceService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
@@ -104,20 +101,27 @@ public class ModularContractPriceService
 		}
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
 
+			final ProductId productId = settings.getRawProductId();
+			setProductDataOnPricingContext(productId, pricingContextTemplate);
+			createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
+
+	}
+
+	private void setProductDataOnPricingContext(final ProductId productId, final IEditablePricingContext pricingContextTemplate)
+	{
+		final I_M_Product product = productDAO.getById(productId);
+		pricingContextTemplate.setProductId(productId)
+				.setQty(Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(product.getC_UOM_ID()))));
 	}
 
 	public void createModCntrSpecificPrices(final @NonNull I_C_Flatrate_Term flatrateTermRecord, @NonNull final ModuleConfig moduleConfig, final @NonNull IEditablePricingContext pricingContextTemplate)
 	{
-		final ProductId productId = moduleConfig.getProductId();
-		final ModularContractModuleId modularContractModuleId = moduleConfig.getId().getModularContractModuleId();
+		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
 
-		final IPricingResult pricingResult = getPricingResult(pricingContextTemplate, productId);
 		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder modCntrSpecificPriceBuilder = ModCntrSpecificPrice.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.modularContractModuleId(modularContractModuleId)
-				.productId(productId)
+				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.uomId(pricingResult.getPriceUomId())
 				.amount(pricingResult.getPriceStdAsMoney())
@@ -128,27 +132,17 @@ public class ModularContractPriceService
 
 	private IEditablePricingContext createPricingContextTemplate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractSettings settings)
 	{
+		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID(), flatrateTermRecord.getBill_Location_ID());
 		final CountryId countryId = partnerDAO.getCountryId(bpartnerLocationId);
-
-		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		return pricingBL.createPricingContext()
 				.setOrgId(orgId)
 				.setFailIfNotCalculated()
 				.setSOTrx(settings.getSoTrx())
 				.setPricingSystemId(settings.getPricingSystemId())
 				.setBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
-				.setPriceDate(InstantAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(), orgId).toLocalDate(orgDAO::getTimeZone))
-				.setCountryId(countryId);
-
-	}
-
-	private IPricingResult getPricingResult(final @NonNull IEditablePricingContext pricingContextTemplate, @NonNull final ProductId productId)
-	{
-		final I_M_Product product = productDAO.getById(productId);
-		final IEditablePricingContext pricingContext = pricingContextTemplate.setProductId(productId)
-				.setQty(Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(product.getC_UOM_ID()))));
-		return pricingBL.calculatePrice(pricingContext);
+				.setCountryId(countryId)
+				.setPriceDate(InstantAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(), orgId).toLocalDate(orgDAO::getTimeZone));
 	}
 
 }
