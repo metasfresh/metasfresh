@@ -121,8 +121,8 @@ public class ModularContractSettingsDAO
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
 				.rawProductId(ProductId.ofRepoId(settingsRecord.getM_Raw_Product_ID()))
-				.processedProductId(ProductId.ofRepoId(settingsRecord.getM_Processed_Product_ID()))
-				.coProductId(ProductId.ofRepoId(settingsRecord.getM_Co_Product_ID()))
+				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
+				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()));
 
