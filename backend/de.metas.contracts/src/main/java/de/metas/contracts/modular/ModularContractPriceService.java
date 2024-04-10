@@ -23,14 +23,14 @@
 package de.metas.contracts.modular;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -61,7 +61,7 @@ public class ModularContractPriceService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
@@ -126,8 +126,8 @@ public class ModularContractPriceService
 	private IEditablePricingContext createPricingContextTemplate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractSettings settings)
 	{
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
-		final LocationId locationId = LocationId.ofRepoId(flatrateTermRecord.getBill_Location_ID());
-		final CountryId countryId = locationDAO.getCountryIdByLocationId(locationId);
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID(), flatrateTermRecord.getBill_Location_ID());
+		final CountryId countryId = partnerDAO.getCountryId(bpartnerLocationId);
 		return pricingBL.createPricingContext()
 				.setFailIfNotCalculated()
 				.setSOTrx(settings.getSoTrx())
