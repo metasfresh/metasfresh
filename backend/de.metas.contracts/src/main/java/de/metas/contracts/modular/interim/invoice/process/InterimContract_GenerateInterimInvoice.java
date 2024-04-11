@@ -23,21 +23,14 @@
 package de.metas.contracts.modular.interim.invoice.process;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContract;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractId;
-import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.InterimInvoiceCandidateService;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -45,24 +38,18 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
 import java.util.Properties;
 import java.util.Set;
 
-public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProcess implements IProcessPrecondition
+public class InterimContract_GenerateInterimInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
-	private final BPartnerInterimContractService bPartnerInterimContractService = SpringContextHolder.instance.getBean(BPartnerInterimContractService.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final InterimInvoiceCandidateService interimInvoiceCandidateService = SpringContextHolder.instance.getBean(InterimInvoiceCandidateService.class);
-
-	private final static AdMessageKey MSG_REJECTION_NO_INTERIM_CONTRACT = AdMessageKey.of("de.metas.contracts.modular.interim.notActiveRejection");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -72,16 +59,9 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProce
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (context.isMoreThanOneSelected())
+		if (!interimContractWasSelected(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		final BPartnerInterimContractId bPartnerInterimContractId = BPartnerInterimContractId.ofRepoId(context.getSingleSelectedRecordId());
-		final BPartnerInterimContract bPartnerInterimContract = bPartnerInterimContractService.getById(bPartnerInterimContractId);
-		if (!bPartnerInterimContract.getIsInterimContract())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_REJECTION_NO_INTERIM_CONTRACT));
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No interim contract selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -90,19 +70,9 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProce
 	@Override
 	protected String doIt() throws Exception
 	{
-		final BPartnerInterimContractId bPartnerInterimContractId = BPartnerInterimContractId.ofRepoId(getRecord_ID());
-		final BPartnerInterimContract bPartnerInterimContract = bPartnerInterimContractService.getById(bPartnerInterimContractId);
-
-		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
-				.bPartnerId(bPartnerInterimContract.getBPartnerId())
-				.calendarId(bPartnerInterimContract.getYearAndCalendarId().calendarId())
-				.yearId(bPartnerInterimContract.getYearAndCalendarId().yearId())
-				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.INTERIM_INVOICE)
-				.build();
-
-		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = flatrateBL.streamModularFlatrateTermsByQuery(modularFlatrateTermQuery)
-				.map(flatrateTermRecord -> interimInvoiceCandidateService.createInterimInvoiceCandidatesFor(flatrateTermRecord, bPartnerInterimContract))
+		final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = flatrateDAO.createInterimContractQuery(getProcessInfo().getQueryFilterOrElseFalse())
+				.stream()
+				.map(interimInvoiceCandidateService::createInterimInvoiceCandidatesFor)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -135,6 +105,11 @@ public class C_BPartner_InterimContract_GenerateInterimInvoice extends JavaProce
 	private InvoicingParams getInvoicingParams()
 	{
 		return InvoicingParams.ofParams(getParameterAsIParams());
+	}
+
+	private boolean interimContractWasSelected(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	{
+		return flatrateDAO.createInterimContractQuery(filter).anyMatch();
 	}
 
 }

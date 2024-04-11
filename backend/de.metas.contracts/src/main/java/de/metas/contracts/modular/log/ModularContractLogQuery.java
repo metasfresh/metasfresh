@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -39,4 +41,6 @@ public class ModularContractLogQuery
 	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable Boolean processed;
 	@Nullable Boolean billable;
+	@Nullable ModularContractHandlerType modularContractHandlerType;
+	@Nullable InvoiceCandidateId invoiceCandidateId;
 }

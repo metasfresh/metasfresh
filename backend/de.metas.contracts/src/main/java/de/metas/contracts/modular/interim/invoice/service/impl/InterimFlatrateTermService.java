@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interim.invoice.service.impl;
 
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -93,6 +94,7 @@ public class InterimFlatrateTermService implements IInterimFlatrateTermService
 				.dateFrom(TimeUtil.asInstantNonNull(startDate))
 				.dateTo(TimeUtil.asInstantNonNull(endDate))
 				.beforeCompleteInterceptor(beforeCompleteInterceptor)
+				.yearAndCalendarId(YearAndCalendarId.ofRepoId(modularFlatrateTermRecord.getHarvesting_Year_ID(), modularFlatrateTermRecord.getC_Harvesting_Calendar_ID()))
 				.build()
 				.execute();
 	}

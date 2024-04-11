@@ -86,15 +86,15 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public I_ModCntr_Settings getModCntr_Settings()
+	public de.metas.contracts.model.I_ModCntr_Log getModCntr_Settings()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class);
 	}
 
 	@Override
-	public void setModCntr_Settings(final I_ModCntr_Settings ModCntr_Settings)
+	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Log ModCntr_Settings)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, I_ModCntr_Settings.class, ModCntr_Settings);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class, ModCntr_Settings);
 	}
 
 	@Override
@@ -113,15 +113,15 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public I_ModCntr_Type getModCntr_Type()
+	public de.metas.contracts.model.I_ModCntr_Type getModCntr_Type()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class);
 	}
 
 	@Override
-	public void setModCntr_Type(final I_ModCntr_Type ModCntr_Type)
+	public void setModCntr_Type(final de.metas.contracts.model.I_ModCntr_Type ModCntr_Type)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.class, ModCntr_Type);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Type_ID, de.metas.contracts.model.I_ModCntr_Type.class, ModCntr_Type);
 	}
 
 	@Override

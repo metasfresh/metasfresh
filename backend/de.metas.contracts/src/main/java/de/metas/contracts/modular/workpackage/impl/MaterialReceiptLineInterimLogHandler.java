@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.impl.MaterialReceiptLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import lombok.NonNull;
@@ -37,9 +38,10 @@ class MaterialReceiptLineInterimLogHandler extends AbstractMaterialReceiptLogHan
 
 	public MaterialReceiptLineInterimLogHandler(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractService modularContractService,
 			@NonNull final MaterialReceiptLineModularContractHandler contractHandler)
 	{
-		super(modCntrInvoicingGroupRepository);
+		super(modCntrInvoicingGroupRepository, modularContractService);
 		this.contractHandler = contractHandler;
 	}
 

@@ -175,6 +175,26 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Co-Produkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Co_Product_ID (int M_Co_Product_ID);
+
+	/**
+	 * Get Co-Produkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Co_Product_ID();
+
+	String COLUMNNAME_M_Co_Product_ID = "M_Co_Product_ID";
+
+	/**
 	 * Set Modular Contract Settings.
 	 *
 	 * <br>Type: ID
@@ -199,7 +219,7 @@ public interface I_ModCntr_Settings
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_PricingSystem_ID (int M_PricingSystem_ID);
@@ -208,7 +228,7 @@ public interface I_ModCntr_Settings
 	 * Get Pricing System.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_PricingSystem_ID();
@@ -216,26 +236,44 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
+	 * Set Processed Product.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_ID (int M_Product_ID);
+	void setM_Processed_Product_ID (int M_Processed_Product_ID);
 
 	/**
-	 * Get Product.
-	 * Product, Service, Item
+	 * Get Processed Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Processed_Product_ID();
+
+	String COLUMNNAME_M_Processed_Product_ID = "M_Processed_Product_ID";
+
+	/**
+	 * Set Raw Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_ID();
+	void setM_Raw_Product_ID (int M_Raw_Product_ID);
 
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/**
+	 * Get Raw Product.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Raw_Product_ID();
+
+	String COLUMNNAME_M_Raw_Product_ID = "M_Raw_Product_ID";
 
 	/**
 	 * Set Name.

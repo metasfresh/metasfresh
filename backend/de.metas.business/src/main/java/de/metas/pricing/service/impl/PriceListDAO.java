@@ -254,6 +254,18 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public boolean isProductPriceExistsInSystem(final PricingSystemId pricingSystemId, final SOTrx soTrx, final ProductId productId)
+	{
+		final ImmutableSet<PriceListId> priceListIds = retrievePriceListsCollectionByPricingSystemId(pricingSystemId).filterAndListIds(soTrx);
+		return queryBL.createQueryBuilder(I_M_ProductPrice.class)
+				.addInArrayFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_ID,priceListIds)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsActive, true)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
 			final CountryId countryId,

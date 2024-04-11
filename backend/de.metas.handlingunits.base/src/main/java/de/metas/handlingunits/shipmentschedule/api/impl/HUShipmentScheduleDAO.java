@@ -3,13 +3,14 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
 import com.google.common.base.Preconditions;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -150,7 +151,10 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	@Override
 	public List<ShipmentScheduleWithHU> retrieveShipmentSchedulesWithHUsFromHUs(@NonNull final List<I_M_HU> hus)
 	{
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContextFactory.createMutableHUContext())
+				.build();
 
 		//
 		// Iterate HUs and collect candidates from them
@@ -181,7 +185,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 				// continue;
 				// }
 
-				final ShipmentScheduleWithHU candidate = ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(shipmentScheduleQtyPicked, huContext);
+				final ShipmentScheduleWithHU candidate = factory.ofQtyPickedRecord(shipmentScheduleQtyPicked);
 				candidatesForHU.add(candidate);
 			}
 

@@ -13,9 +13,16 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractHandlerFactory;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -56,6 +63,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -77,7 +85,12 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO()));
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractHandlerFactory(Collections.emptyList()),
+																		 new ModularContractSettingsDAO(),
+																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+																		 new ModularContractPriceRepository()));
 	}
 
 	@BeforeAll

@@ -1610,18 +1610,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsInterimInvoice (final boolean IsInterimInvoice)
-	{
-		set_Value (COLUMNNAME_IsInterimInvoice, IsInterimInvoice);
-	}
-
-	@Override
-	public boolean isInterimInvoice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
-	}
-
-	@Override
 	public void setIsInvoicingError (final boolean IsInvoicingError)
 	{
 		set_Value (COLUMNNAME_IsInvoicingError, IsInvoicingError);
@@ -1861,6 +1849,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getM_InOut_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public void setModCntr_Module_ID (final int ModCntr_Module_ID)
+	{
+		if (ModCntr_Module_ID < 1) 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, null);
+		else 
+			set_Value (COLUMNNAME_ModCntr_Module_ID, ModCntr_Module_ID);
+	}
+
+	@Override
+	public int getModCntr_Module_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Module_ID);
 	}
 
 	@Override

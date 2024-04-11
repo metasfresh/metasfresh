@@ -33,7 +33,7 @@ import lombok.Value;
 @Builder
 public class ModuleConfig
 {
-	@NonNull ModuleConfigId id;
+	@NonNull ModuleConfigAndSettingsId id;
 
 	@NonNull SeqNo seqNo;
 
@@ -48,5 +48,11 @@ public class ModuleConfig
 	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
 	{
 		return modularContractType.isMatchingHandler(handlerType);
+	}
+
+	public boolean isInterimInvoiceHandler()
+	{
+		//FIXME adi consider introducing a flag on ModCntr_Type or even hardcoded in whatever replaces de.metas.contracts.modular.ModularContractHandlerType
+		return name.toLowerCase().contains("interim");
 	}
 }

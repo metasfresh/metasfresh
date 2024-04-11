@@ -102,6 +102,8 @@ public interface IPriceListDAO extends ISingletonService
 	@Nullable
 	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationAndCaptureId bpartnerLocationId, SOTrx soTrx);
 
+	boolean isProductPriceExistsInSystem(PricingSystemId pricingSystemId, SOTrx soTrx, ProductId productId);
+
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
 	 *
