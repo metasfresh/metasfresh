@@ -86,8 +86,8 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
-      | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_1             | testSettings_08022023_1 | module_log_product_PO_1     | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08022023_2 | module_log_product_PO_2     | harvesting_calendar      | year_2022            | interimPS                         |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
@@ -139,7 +139,7 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                  | OPT.C_Harvesting_Calendar_ID.Identifier | OPT.Harvesting_Year_ID.Identifier |
-      | po_order_1 | false   | bp_interimPO             | 2022-02-01  | POO             | poModuleLogContract_ref_08022023 | harvesting_calendar                     | year_2022
+      | po_order_1 | false   | bp_interimPO             | 2022-02-01  | POO             | poModuleLogContract_ref_08022023 | harvesting_calendar                     | year_2022                         |
 
     And metasfresh contains C_OrderLines:
       | Identifier     | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_Flatrate_Conditions_ID.Identifier |
@@ -356,8 +356,8 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_08032023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
-      | modCntr_settings_2             | testSettings_08032023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_1             | testSettings_08032023_1 | module_log_product_PO_1     | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08032023_2 | module_log_product_PO_2     | harvesting_calendar      | year_2022            | interimPS                         |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
@@ -554,8 +554,8 @@ Feature: Interim contract and interim invoice for bpartner
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_08042023_1 | module_log_product_PO_1 | harvesting_calendar      | year_2022            | interimPS                         |
-      | modCntr_settings_2             | testSettings_08042023_2 | module_log_product_PO_2 | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_1             | testSettings_08042023_1 | module_log_product_PO_1     | harvesting_calendar      | year_2022            | interimPS                         |
+      | modCntr_settings_2             | testSettings_08042023_2 | module_log_product_PO_2     | harvesting_calendar      | year_2022            | interimPS                         |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                           | Value                          | ModularContractHandlerType  |
