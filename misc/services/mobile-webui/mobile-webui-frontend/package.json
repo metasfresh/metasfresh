@@ -49,7 +49,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "cross-env GENERATE_SOURCEMAP=true react-scripts build",
+    "build": "react-scripts build",
     "lint": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --quiet",
     "lintfix": "./node_modules/eslint/bin/eslint.js 'src/**/*.{js,jsx}' --fix",
     "test": "react-scripts test",
@@ -87,7 +87,6 @@
     "@babel/register": "7.15.3",
     "@babel/runtime": "7.15.3",
     "babel-plugin-dynamic-import-node": "2.3.3",
-    "cross-env": "^7.0.3",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "2.24.0",
     "eslint-plugin-jest": "24.4.0",
