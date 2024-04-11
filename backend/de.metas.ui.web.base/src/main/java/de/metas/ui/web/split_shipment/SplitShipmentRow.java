@@ -30,6 +30,8 @@ import java.util.Set;
 @ToString
 public class SplitShipmentRow implements IViewRow
 {
+	public static SplitShipmentRow cast(final IViewRow row) {return (SplitShipmentRow)row;}
+
 	public static final String FIELD_DeliveryDate = "DeliveryDate";
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.LocalDate, widgetSize = WidgetSize.Small, fieldName = FIELD_DeliveryDate)
 	@Nullable @Getter private final LocalDate deliveryDate;
