@@ -157,11 +157,11 @@ public interface I_ModCntr_Module
 	 */
 	int getModCntr_Settings_ID();
 
-	de.metas.contracts.model.I_ModCntr_Log getModCntr_Settings();
+	de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings();
 
-	void setModCntr_Settings(de.metas.contracts.model.I_ModCntr_Log ModCntr_Settings);
+	void setModCntr_Settings(de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings);
 
-	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Log> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Log.class);
+	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Settings.class);
 	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
