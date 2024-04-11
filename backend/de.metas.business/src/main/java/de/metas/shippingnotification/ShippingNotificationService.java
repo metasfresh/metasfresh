@@ -70,6 +70,11 @@ public class ShippingNotificationService
 		return shippingNotificationRepository.getRecordById(id);
 	}
 
+	public I_M_Shipping_NotificationLine getLineRecordByLineId(@NonNull final ShippingNotificationLineId id)
+	{
+		return shippingNotificationRepository.getLineRecordByLineId(id);
+	}
+
 	@NonNull
 	public ShippingNotification getById(@NonNull final ShippingNotificationId id)
 	{

@@ -52,8 +52,10 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationId;
+import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -213,13 +215,13 @@ class ModularContractLogHandler
 		return handler.createLogEntryCreateRequest(createLogRequest);
 	}
 
-	private BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final TableRecordReference tableRecordReference)
+	private BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final TableRecordReference recordRef)
 	{
-		switch (tableRecordReference.getTableName())
+		switch (recordRef.getTableName())
 		{
 			case (I_C_Flatrate_Term.Table_Name) ->
 			{
-				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
+				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 				if (!DocStatus.ofCode(flatrateTermRecord.getDocStatus()).isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + flatrateTermRecord.getDocStatus());
@@ -229,7 +231,7 @@ class ModularContractLogHandler
 			}
 			case (I_C_InvoiceLine.Table_Name) ->
 			{
-				final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID())).getC_Invoice_ID()));
+				final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecord_ID())).getC_Invoice_ID()));
 				if (!invoiceDocStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The C_Invoice.DocStatus is " + invoiceDocStatus);
@@ -239,7 +241,7 @@ class ModularContractLogHandler
 			}
 			case (I_C_OrderLine.Table_Name) ->
 			{
-				final DocStatus orderDocStatus = orderBL.getDocStatus(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID())));
+				final DocStatus orderDocStatus = orderBL.getDocStatus(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(recordRef.getRecord_ID())));
 				if (!orderDocStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The C_Order.DocStatus is " + orderDocStatus);
@@ -249,7 +251,7 @@ class ModularContractLogHandler
 			}
 			case (I_M_InOutLine.Table_Name) ->
 			{
-				final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+				final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 				final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 				if (!inOutDocStatus.isCompleted())
@@ -263,7 +265,7 @@ class ModularContractLogHandler
 			{
 
 				final ShippingNotification shippingNotification = notificationService
-						.getById(ShippingNotificationId.ofRepoId(tableRecordReference.getRecord_ID()));
+						.getById(ShippingNotificationId.ofRepoId(recordRef.getRecord_ID()));
 
 				if (shippingNotification.getDocStatus().isCompletedOrClosed())
 				{
@@ -274,7 +276,7 @@ class ModularContractLogHandler
 			}
 			case (I_I_ModCntr_Log.Table_Name) ->
 			{
-				final I_I_ModCntr_Log modCntrLogImportRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
+				final I_I_ModCntr_Log modCntrLogImportRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 				if (!modCntrLogImportRecord.isProcessed())
 				{
 					return BooleanWithReason.falseBecause("The I_I_ModCntr_Log is not processed " + modCntrLogImportRecord.getI_ModCntr_Log_ID());
@@ -284,7 +286,7 @@ class ModularContractLogHandler
 			}
 			case (I_M_InventoryLine.Table_Name) ->
 			{
-				final I_M_InventoryLine inventoryLineRecord = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+				final I_M_InventoryLine inventoryLineRecord = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
 				final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID()));
 				if (!inventoryDocStatus.isCompleted())
 				{
@@ -295,7 +297,7 @@ class ModularContractLogHandler
 			}
 			case (I_PP_Cost_Collector.Table_Name) ->
 			{
-				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).getDocStatus());
+				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID())).getDocStatus());
 				if (!docStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The PP_Cost_Collector.DocStatus is " + docStatus);
@@ -303,10 +305,23 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
+			case (I_M_Shipping_NotificationLine.Table_Name) ->
+			{
+				final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
+				final ShippingNotification shippingNotification = notificationService
+						.getById(ShippingNotificationId.ofRepoId(notificationLine.getM_Shipping_Notification_ID()));
+
+				if (shippingNotification.getDocStatus().isCompletedOrClosed())
+				{
+					return BooleanWithReason.TRUE;
+				}
+
+				return BooleanWithReason.falseBecause("The M_Shipping_Notification.DocStatus is " + shippingNotification.getDocStatus());
+			}
 
 			default ->
 			{
-				return BooleanWithReason.falseBecause("Unsupported table " + tableRecordReference.getTableName());
+				return BooleanWithReason.falseBecause("Unsupported table " + recordRef.getTableName());
 			}
 		}
 	}

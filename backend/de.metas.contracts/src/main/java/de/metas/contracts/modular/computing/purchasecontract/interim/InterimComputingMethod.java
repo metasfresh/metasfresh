@@ -28,10 +28,10 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
@@ -126,13 +126,13 @@ public class InterimComputingMethod implements ComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference tableRecordReference)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return switch (tableRecordReference.getTableName())
+		return switch (recordRef.getTableName())
 		{
-			case I_M_InOutLine.Table_Name -> contractProvider.streamInterimPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
-			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
-			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+			case I_M_InOutLine.Table_Name -> contractProvider.streamInterimPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 			default -> Stream.empty();
 		};
 	}

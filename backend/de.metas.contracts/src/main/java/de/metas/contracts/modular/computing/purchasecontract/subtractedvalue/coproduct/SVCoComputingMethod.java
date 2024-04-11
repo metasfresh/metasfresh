@@ -24,10 +24,10 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.co
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.money.Money;
@@ -61,7 +61,7 @@ public class SVCoComputingMethod implements ComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference tableRecordReference)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
 		return null;
 	}

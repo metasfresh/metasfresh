@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,65 +20,64 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.i18n.AdMessageKey;
-import de.metas.inventory.IInventoryBL;
-import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InventoryLine;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MODULAR;
 
 @Component
 @RequiredArgsConstructor
-public class InventoryLineModularContractHandler implements ComputingMethodHandler
+public class PPCostCollectorModularContractHandler implements ComputingMethodHandler
 {
-	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final ModularContractProvider contractProvider;
 
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(!logEntryContractType.isModularContractType())
+		if(recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name) && logEntryContractType.isModularContractType())
 		{
-			return false;
-		}
-
-		if(recordRef.getTableName().equals(I_M_InventoryLine.Table_Name))
-		{
-			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
-			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
+			return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID())).getPP_Order_ID()));
 		}
 		return false;
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
+	@NonNull
+	public Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
+		if(recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name))
+		{
+			return contractProvider.streamModularPurchaseContractsForPPOrder(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
+		}
+		return Stream.empty();
 	}
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return INVENTORY_LINE_MODULAR;
+		return PPCOSTCOLLECTOR_MODULAR;
 	}
 
 	@Override

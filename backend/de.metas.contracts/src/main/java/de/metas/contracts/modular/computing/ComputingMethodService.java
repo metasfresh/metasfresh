@@ -36,6 +36,7 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -151,6 +152,14 @@ public class ComputingMethodService
 				{
 					case COMPLETED, REVERSED, VOIDED, RECREATE_LOGS -> {}
 					case REACTIVATED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				}
+			}
+			case I_M_Shipping_NotificationLine.Table_Name ->
+			{
+				switch (action)
+				{
+					case COMPLETED, REVERSED, RECREATE_LOGS-> {}
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}

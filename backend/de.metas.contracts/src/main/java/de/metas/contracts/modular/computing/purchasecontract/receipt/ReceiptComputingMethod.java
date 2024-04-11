@@ -124,21 +124,21 @@ public class ReceiptComputingMethod implements ComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		switch (tableRecordReference.getTableName())
+		switch (recordRef.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
-				return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+				return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 			}
 			case I_C_OrderLine.Table_Name ->
 			{
-				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
-				return Stream.of(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
+				return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 			}
 			default -> {return Stream.empty();}
 		}

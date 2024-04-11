@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.tbd;
+package de.metas.contracts.modular.computing.tbd.logimport;
 
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
@@ -28,10 +28,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -68,7 +68,7 @@ public class ImportLogModularContractHandler implements ComputingMethodHandler
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name))
+		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 			return Check.isBlank(importLogRecord.getI_ErrorMsg()) &&
@@ -81,11 +81,11 @@ public class ImportLogModularContractHandler implements ComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(tableRecordReference.getTableName().equals(I_I_ModCntr_Log.Table_Name))
+		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name))
 		{
-			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
+			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 			return Stream.of(FlatrateTermId.ofRepoId(importLogRecord.getC_Flatrate_Term_ID()));
 		}
 		return Stream.empty();

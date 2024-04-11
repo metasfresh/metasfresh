@@ -55,7 +55,7 @@ public interface ComputingMethodHandler
 	 * </ul>
 	 */
 	@NonNull
-	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference);
+	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef);
 
 	default boolean isContractIdEligible(@NonNull final TableRecordReference recordRef, final FlatrateTermId contractId)
 	{

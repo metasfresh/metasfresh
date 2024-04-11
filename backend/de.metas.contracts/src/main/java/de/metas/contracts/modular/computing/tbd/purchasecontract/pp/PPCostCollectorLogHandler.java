@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
@@ -28,7 +28,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.PPCostCollectorModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -39,7 +38,6 @@ import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -59,6 +57,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
@@ -66,8 +65,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -82,11 +79,24 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 
 	@NonNull
 	private final PPCostCollectorModularContractHandler computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+
+	@Override
+	public @NonNull ComputingMethodHandler getComputingMethod()
+	{
+		return computingMethod;
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_PP_Cost_Collector.Table_Name;
+	}
 
 	@Override
 	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
@@ -100,20 +110,10 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_PP_Cost_Collector model)
-	{
-		if (!model.isProcessed())
-		{
-			return BooleanWithReason.falseBecause("The PP_Cost_Collector.Processed is false");
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final I_PP_Cost_Collector ppCostCollector = createLogRequest.getHandleLogsRequest().getModel();
+		final TableRecordReference recordRef = createLogRequest.getHandleLogsRequest().getTableRecordReference();
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final FlatrateTermId contractId = createLogRequest.getContractId();
 		final ModularContractSettings modularContractSettings = createLogRequest.getModularContractSettings();
 
@@ -172,33 +172,22 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_PP_Cost_Collector> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public @NonNull ComputingMethodHandler<I_PP_Cost_Collector> getComputingMethod()
-	{
-		return computingMethod;
-	}
-
-	@Override
-	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest handleLogsRequest)
-	{
-		return Optional.of(handleLogsRequest.getModel().getM_Product_ID())
-				.map(ProductId::ofRepoId);
 	}
 
 	@Override
 	@NonNull
 	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final I_PP_Cost_Collector ppCostCollector = handleLogsRequest.getModel();
+		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final PPCostCollectorId ppCostCollectorId = PPCostCollectorId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName()));
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(ppCostCollectorId);
 
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
-				.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
+				.subEntryId(LogSubEntryId.ofCostCollectorId(ppCostCollectorId))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
 				.build();

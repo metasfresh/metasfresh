@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,14 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.salescontract.shipnotification;
 
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.ShippingNotificationForSalesModularContractHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
 import de.metas.shippingnotification.ShippingNotificationService;
-import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -36,22 +35,22 @@ import org.springframework.stereotype.Component;
 public class ShippingNotificationForSalesContractLogsHandler extends AbstractShippingNotificationLogHandler
 {
 	@NonNull
-	private final ShippingNotificationForSalesModularContractHandler contractHandler;
+	private final ShippingNotificationForSalesModularContractHandler computingMethod;
 
 	public ShippingNotificationForSalesContractLogsHandler(
-			@NonNull final ShippingNotificationForSalesModularContractHandler contractHandler,
+			@NonNull final ShippingNotificationForSalesModularContractHandler computingMethod,
 			@NonNull final ShippingNotificationService notificationService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
 		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO);
-		this.contractHandler = contractHandler;
+		this.computingMethod = computingMethod;
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler<I_M_Shipping_NotificationLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 
 	@Override

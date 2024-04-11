@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,21 +20,18 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.salescontract.pfcontract;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.SalesContractProFormaModularContractHandler;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -64,7 +61,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
 
 @Component
 @RequiredArgsConstructor
-class SalesProFormaModularContractLogsHandler implements IModularContractLogHandler<I_C_Flatrate_Term>
+class SalesProFormaModularContractLogsHandler implements IModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesProFormaModularContractLogsHandler.CompleteLogDescription");
 
@@ -75,11 +72,11 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final SalesContractProFormaModularContractHandler contractHandler;
+	private final SalesContractProFormaModularContractHandler computingMethod;
 
 	@Override
 	@NonNull
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> request)
+	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 		{
@@ -90,20 +87,10 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_Flatrate_Term model)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
-		if (!DocStatus.ofCode(model.getDocStatus()).isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Flatrate_Term.DocStatus is " + model.getDocStatus());
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_Flatrate_Term> request)
-	{
-		final I_C_Flatrate_Term modularContractRecord = request.getHandleLogsRequest().getModel();
+		final TableRecordReference recordRef = request.getHandleLogsRequest().getTableRecordReference();
+		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final ProductId productId = ProductId.ofRepoId(modularContractRecord.getM_Product_ID());
 
 		final OrderId orderId = OrderId.ofRepoId(modularContractRecord.getC_Order_Term_ID());
@@ -135,7 +122,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.collectionPointBPartnerId(warehousePartnerId)
 											.warehouseId(warehouseId)
 											.documentType(LogEntryDocumentType.PRO_FORMA_SO_MODULAR_CONTRACT)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.SALES)
 											.processed(false)
 											.quantity(quantity)
@@ -152,14 +139,20 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_Flatrate_Term> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler<I_C_Flatrate_Term> getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_C_Flatrate_Term.Table_Name;
 	}
 }

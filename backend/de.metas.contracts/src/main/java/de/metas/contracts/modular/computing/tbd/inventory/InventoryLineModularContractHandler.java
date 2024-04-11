@@ -20,73 +20,65 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
+package de.metas.contracts.modular.computing.tbd.inventory;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
-import de.metas.money.Money;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
 
 @Component
 @RequiredArgsConstructor
-public class RawSalesComputingMethod implements ComputingMethodHandler
+public class InventoryLineModularContractHandler implements ComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final ComputingMethodService computingMethodService;
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+
 	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
+		if(!logEntryContractType.isModularContractType())
+		{
+			return false;
+		}
+
+		if(recordRef.getTableName().equals(I_M_InventoryLine.Table_Name))
+		{
+			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
+			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
+		}
 		return false;
 	}
 
 	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		return null;
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
 	}
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null;
+		return INVENTORY_LINE_MODULAR;
 	}
 
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-		final List<ModularContractLogEntry> logs = new ArrayList<>();
-
-		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
-				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
-				.qty(qty)
-				.build();
+		return null;
 	}
 }

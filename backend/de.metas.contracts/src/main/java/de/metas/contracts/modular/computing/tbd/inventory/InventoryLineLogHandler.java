@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,13 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.inventory;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.InventoryLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -35,13 +34,12 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -65,7 +63,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-class InventoryLineLogHandler implements IModularContractLogHandler<I_M_InventoryLine>
+class InventoryLineLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -75,12 +73,12 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final InventoryLineModularContractHandler contractHandler;
+	private final InventoryLineModularContractHandler computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
-	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InventoryLine> request)
+	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
 				{
@@ -92,24 +90,12 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_InventoryLine model)
-	{
-		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(model.getM_Inventory_ID()));
-
-		if (!inventoryDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The M_Inventory.DocStatus is " + inventoryDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
 	@NonNull
 	public ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
-			@NonNull final CreateLogRequest<I_M_InventoryLine> createLogRequest)
+			@NonNull final CreateLogRequest createLogRequest)
 	{
-		final I_M_InventoryLine inventoryLine = createLogRequest.getHandleLogsRequest().getModel();
+		final TableRecordReference recordRef = createLogRequest.getHandleLogsRequest().getTableRecordReference();
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
 
@@ -162,9 +148,11 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest<I_M_InventoryLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest handleLogsRequest)
 	{
-		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(handleLogsRequest.getModel().getM_Inventory_ID()));
+		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InventoryLine.Table_Name)));
+		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
 
 		if (inventoryBL.isReversal(inventory))
 		{
@@ -173,15 +161,21 @@ class InventoryLineLogHandler implements IModularContractLogHandler<I_M_Inventor
 		}
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(TableRecordReference.of(handleLogsRequest.getModel()))
+											.referencedModel(recordRef)
 											.flatrateTermId(handleLogsRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler<I_M_InventoryLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_M_InventoryLine.Table_Name;
 	}
 }

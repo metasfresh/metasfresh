@@ -41,11 +41,11 @@ public class ModularContractComputingMethodHandlerRegistry
 
 	@NonNull
 	public List<ComputingMethodHandler> getApplicableHandlersFor(
-			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final TableRecordReference recordRef,
 			@NonNull final LogEntryContractType contractType)
 	{
 		return handlers.stream()
-				.filter(handler -> handler.applies(tableRecordReference, contractType))
+				.filter(handler -> handler.applies(recordRef, contractType))
 				.collect(ImmutableList.toImmutableList());
 	}
 }

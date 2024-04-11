@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.tbd;
+package de.metas.contracts.modular.computing.tbd.logimport;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
@@ -102,7 +102,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	public ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final CreateLogRequest createLogRequest)
 	{
-		final int logId = createLogRequest.getHandleLogsRequest().getTableRecordReference().getRecordIdAssumingTableName(I_I_ModCntr_Log.Table_Name);
+		final int logId = createLogRequest.getHandleLogsRequest().getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName());
 		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
 
@@ -154,7 +154,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	@Override
 	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest handleLogsRequest)
 	{
-		final int logId = handleLogsRequest.getTableRecordReference().getRecordIdAssumingTableName(I_I_ModCntr_Log.Table_Name);
+		final int logId = handleLogsRequest.getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName());
 		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
 		return Optional.of(record.getM_Product_ID())
 				.map(ProductId::ofRepoId);
