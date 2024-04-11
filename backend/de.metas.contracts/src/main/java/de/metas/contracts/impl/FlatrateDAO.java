@@ -1249,4 +1249,14 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, DOCSTATUS_Completed)
 				.stream();
 	}
+
+	@Override
+	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(selectedContractsFilter)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract)
+				.create()
+				.anyMatch();
+	}
 }

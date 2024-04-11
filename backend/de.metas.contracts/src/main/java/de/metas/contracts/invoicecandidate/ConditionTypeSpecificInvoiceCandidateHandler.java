@@ -1,5 +1,6 @@
 package de.metas.contracts.invoicecandidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -170,5 +171,11 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	default void postSave(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//NOOP
+	}
+
+	@NonNull
+	default ImmutableList<Object> getRecordsToLock(@NonNull final I_C_Flatrate_Term term)
+	{
+		return ImmutableList.of(term);
 	}
 }

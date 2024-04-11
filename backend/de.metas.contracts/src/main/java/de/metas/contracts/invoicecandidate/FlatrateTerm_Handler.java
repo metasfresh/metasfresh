@@ -3,7 +3,9 @@ package de.metas.contracts.invoicecandidate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
 import de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler;
@@ -19,6 +21,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
@@ -50,7 +53,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		this(ImmutableList.<ConditionTypeSpecificInvoiceCandidateHandler>of(
 				new FlatrateTermSubscription_Handler(),
 				new FlatrateTermRefund_Handler(),
-				new FlatrateTermInterimInvoice_Handler()));
+				new FlatrateTermInterimInvoice_Handler(),
+				new FlatrateTermModular_Handler()));
 	}
 
 	public FlatrateTerm_Handler(
@@ -194,12 +198,19 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+		if (term.getType_Conditions().equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract))
+		{
+			ic.setQtyOrdered(calculateQtyOrdered.toBigDecimal());
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
-		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
+			final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+			ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
+		}
 	}
 
 	/**
@@ -255,7 +266,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void postSave(@NonNull final InvoiceCandidateGenerateResult result)
 	{
-		for (final I_C_Invoice_Candidate ic: result.getC_Invoice_Candidates())
+		for (final I_C_Invoice_Candidate ic : result.getC_Invoice_Candidates())
 		{
 			final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 			final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
@@ -264,4 +275,13 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
+	@Override
+	@NonNull
+	public ImmutableList<Object> getRecordsToLock(@NonNull final Object model)
+	{
+		final I_C_Flatrate_Term modularContract = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
+
+		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(modularContract); 
+		return handler.getRecordsToLock(modularContract);
+	}
 }

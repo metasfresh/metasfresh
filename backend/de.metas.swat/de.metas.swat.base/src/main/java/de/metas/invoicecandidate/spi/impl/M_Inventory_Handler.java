@@ -84,7 +84,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the inventory line requests
-		return InvoiceCandidateGenerateRequest.ofAll(inventoryLineHandlers, linesForInventory);
+		return InvoiceCandidateGenerateRequest.ofAll(inventoryLineHandlers, linesForInventory, request.getLockOwner());
 	}
 
 	@Override

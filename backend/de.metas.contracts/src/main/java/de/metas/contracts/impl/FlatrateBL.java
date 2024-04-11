@@ -125,6 +125,7 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -2371,6 +2372,12 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
 
 		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
+	}
+
+	@Override
+	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	{
+		return flatrateDAO.isExistsModularContract(selectedContractsFilter);
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)

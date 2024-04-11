@@ -291,6 +291,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
+		if (query.getBillable() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, query.getBillable());
+		}
+
 		return sqlQueryBuilder;
 	}
 
@@ -367,6 +372,14 @@ public class ModularContractLogDAO
 				.iterateWithGuaranteedIterator(I_ModCntr_Log.class);
 	}
 
+	@NonNull
+	public ImmutableList<I_ModCntr_Log> getModularContractLogRecords(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.create()
+				.listImmutable(I_ModCntr_Log.class);
+	}
+	
 	@Nullable
 	private static ProductPrice extractPriceActual(@NonNull final I_ModCntr_Log record)
 	{
