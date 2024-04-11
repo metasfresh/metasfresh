@@ -116,7 +116,15 @@ public class SplitShipmentRow implements IViewRow
 
 	public boolean isSaveable()
 	{
-		return deliveryDate != null && qtyToDeliver.signum() != 0;
+		return deliveryDate != null 
+				&& qtyToDeliver.signum() != 0 
+				&& !Check.isBlank(userElementString1)
+				&& !Check.isBlank(userElementString2);
+	}
+
+	public boolean isDeletable()
+	{
+		return !isProcessed();
 	}
 
 	@Nullable
