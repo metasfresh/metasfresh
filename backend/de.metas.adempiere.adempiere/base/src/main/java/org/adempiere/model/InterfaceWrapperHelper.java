@@ -481,7 +481,6 @@ public class InterfaceWrapperHelper
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
 	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
-	 *
 	 */
 	public static void markStaled(final Object model)
 	{

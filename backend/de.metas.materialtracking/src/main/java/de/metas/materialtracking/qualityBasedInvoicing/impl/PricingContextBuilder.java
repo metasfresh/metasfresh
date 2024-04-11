@@ -22,13 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorInvoicingInfo;
@@ -42,6 +35,12 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
 
 /**
  * Helper class used to create the inital pricing context when invoicing.
@@ -154,6 +153,7 @@ public class PricingContextBuilder
 		pricingCtx.setPricingSystemId(pricingSytemId);
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom())); // just to drive home this point
+		pricingCtx.setCountryId(vendorInvoicingInfo.getCountryId());
 	}
 
 }
