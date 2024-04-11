@@ -21,6 +21,8 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
@@ -75,6 +77,8 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
 				new C_Flatrate_Term(

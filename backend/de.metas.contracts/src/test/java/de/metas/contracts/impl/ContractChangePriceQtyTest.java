@@ -10,6 +10,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -53,6 +55,8 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 
 		contractsRepository = new ContractChangePriceQtyService();
 		contractsDAO = Services.get(IContractsDAO.class);

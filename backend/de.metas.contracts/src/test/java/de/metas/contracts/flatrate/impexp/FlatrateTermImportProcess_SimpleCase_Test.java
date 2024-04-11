@@ -12,6 +12,8 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.greeting.GreetingRepository;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
@@ -89,6 +91,8 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 	}
 
 	@Test
