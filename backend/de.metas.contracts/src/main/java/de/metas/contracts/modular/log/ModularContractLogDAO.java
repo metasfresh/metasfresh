@@ -51,6 +51,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -410,5 +411,22 @@ public class ModularContractLogDAO
 				.productId(productId)
 				.money(Money.of(priceActual, currencyId))
 				.build();
+	}
+
+	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
+	{
+		final ICompositeQueryUpdater<I_ModCntr_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_ModCntr_Log.class)
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_PriceActual, request.price().toBigDecimal())
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Currency_ID, request.price().getCurrencyId());
+		if (request.uomId() != null)
+		{
+			queryUpdater.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID, request.uomId());
+		}
+		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, request.modularContractModuleId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, request.productId())
+				.create()
+				.update(queryUpdater);
 	}
 }
