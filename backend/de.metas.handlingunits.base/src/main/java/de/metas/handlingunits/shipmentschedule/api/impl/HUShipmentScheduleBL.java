@@ -13,7 +13,6 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -286,7 +285,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(cuHU);
 		final I_M_HU luHU = tuHU != null ? handlingUnitsBL.getLoadingUnitHU(tuHU) : null;
 
-		final IHUContext huContext = huContextFactory.createMutableHUContext(getContextAware(cuHU));
+		final ShipmentScheduleWithHUFactory shipmentScheduleWithHUFactory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContextFactory.createMutableHUContext(getContextAware(cuHU)))
+				.build();
 
 		//
 		// Iterate all QtyPicked records and update M_LU_HU_ID
@@ -302,7 +304,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			// Update LU
 			ssQtyPicked.setM_TU_HU(tuHU);
 			ssQtyPicked.setM_LU_HU(luHU);
-			ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(ssQtyPicked, huContext).updateQtyTUAndQtyLU();
+			shipmentScheduleWithHUFactory.ofQtyPickedRecord(ssQtyPicked).updateQtyTUAndQtyLU();
 
 			save(ssQtyPicked);
 		}

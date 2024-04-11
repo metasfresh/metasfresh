@@ -26,8 +26,10 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -62,10 +64,15 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -75,7 +82,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
@@ -84,6 +90,7 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -146,17 +153,35 @@ public class ShipmentScheduleWithHUService
 
 	@NonNull private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices;
 	@NonNull private final ShipmentScheduleSplitService shipmentScheduleSplitService;
-	@NonNull private final PickingJobService pickingJobService;
+	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
 	@NonNull private final HUReservationService huReservationService;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 
+		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(
+				new HUQRCodesRepository(),
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+		);
+
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				pickingJobSlotService,
+				bpartnerBL,
+				huQRCodeService
+		);
+
 		return new ShipmentScheduleWithHUService(
 				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
 				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
-				PickingJobService.newInstanceForUnitTesting(),
+				pickingJobRepository,
+				defaultPickingJobLoaderSupportingServicesFactory,
 				new HUReservationService(new HUReservationRepository())
 		);
 	}

@@ -10,6 +10,7 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -36,18 +37,20 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestRevi
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
-import de.metas.picking.api.PickingSlotId;
-import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
@@ -59,10 +62,8 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.util.Util;
-import org.compiere.Adempiere;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -88,11 +89,11 @@ public class PickingJobService
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
-	
+
 	public static PickingJobService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		
+
 		final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
@@ -100,27 +101,38 @@ public class PickingJobService
 		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				huReservationService,
+				bpartnerBL,
+				ADReferenceService.newMocked(),
+				new InventoryService(new InventoryRepository(), SourceHUsService.get())
+		);
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(
+				huQRCodesRepository,
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+		);
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				pickingJobSlotService,
+				bpartnerBL,
+				huQRCodeService
+		);
+
 		return new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
 				pickingJobSlotService,
-				new PickingCandidateService(
-						new PickingConfigRepository(),
-						pickingCandidateRepository,
-						new HuId2SourceHUsService(new HUTraceRepository()),
-						huReservationService,
-						bpartnerBL,
-						ADReferenceService.newMocked()
-				),
+				pickingCandidateService,
 				new PickingJobHUReservationService(huReservationService),
+				defaultPickingJobLoaderSupportingServicesFactory,
 				pickingConfigRepo,
-				new DefaultPickingJobLoaderSupportingServicesFactory(
-						pickingJobSlotService,
-						bpartnerBL,
-						new HUQRCodesService(
-								huQRCodesRepository,
-								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
-				)
+				ShipmentService.getInstance(),
+				huQRCodeService,
+				InventoryService.newInstanceForUnitTesting(),
+				huReservationService
 		);
 	}
 
@@ -488,6 +500,7 @@ public class PickingJobService
 
 		return job;
 	}
+
 	public boolean hasPickingJobsReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
 	{
 		return pickingJobRepository.hasReadyToReview(pickingJobIds);
@@ -498,7 +511,6 @@ public class PickingJobService
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		return pickingJobRepository.getByIsReadyToReview(pickingJobIds, loadingSupportingServices);
 	}
-
 
 	private boolean removePickingSlotAssignment(
 			@NonNull final PickingJob pickingJob,
