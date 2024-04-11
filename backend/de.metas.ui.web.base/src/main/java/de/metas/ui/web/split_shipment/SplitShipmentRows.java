@@ -22,6 +22,7 @@ import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.util.HashSet;
@@ -314,6 +315,11 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 			if (!rowIds.contains(row.getId()))
 			{
 				continue;
+			}
+
+			if (!row.isDeletable())
+			{
+				throw new AdempiereException("row is not deletable: " + row);
 			}
 
 			rowIdsToRemove.add(row.getId());
