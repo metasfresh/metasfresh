@@ -32,7 +32,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -67,7 +67,7 @@ import static de.metas.contracts.modular.ComputingMethodType.PURCHASE_ORDER_LINE
 
 @Component
 @RequiredArgsConstructor
-public class PurchaseOrderLineModularContractHandler implements IModularContractComputingMethodHandler<I_C_OrderLine>
+public class PurchaseOrderLineModularContractHandler implements ComputingMethodHandler<I_C_OrderLine>
 {
 	private static final String CREATED_FROM_PURCHASE_ORDER_LINE_DYN_ATTRIBUTE = "SourcePurchaseOrderLine";
 	private static final String INTERIM_CONTRACT_DYN_ATTRIBUTE = "InterimContract";

@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.impl.SOLineForPOModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -188,7 +188,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_C_OrderLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler<I_C_OrderLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

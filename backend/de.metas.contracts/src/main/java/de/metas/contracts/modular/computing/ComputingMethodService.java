@@ -57,7 +57,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
-import static de.metas.contracts.modular.ModelAction.REACTIVATED;
 import static de.metas.contracts.modular.ModelAction.RECREATE_LOGS;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED;
 
@@ -74,46 +73,43 @@ public class ComputingMethodService
 	// TODO add adMsg
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
 
-	public void validateAction(@NonNull final ComputingMethodRequest request)
+	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
-		final TableRecordReference tableRecordReference = request.getTableRecordReference();
-		final ModelAction action = request.getModelAction();
-		if (action.equals(RECREATE_LOGS) && tableRecordReference.getTableName().equals(I_PP_Cost_Collector.Table_Name))
+		if (action.equals(RECREATE_LOGS))
 		{
-			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).getPP_Order_ID());
-			final TableRecordReference ppOrderReference = TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId);
-
-			contractLogService.throwErrorIfProcessedLogsExistForRecord(ppOrderReference,
-																	   MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-		}
-		else if (action.equals(RECREATE_LOGS))
-		{
-			contractLogService.throwErrorIfProcessedLogsExistForRecord(tableRecordReference,
-																	   MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			if (recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name))
+			{
+				final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID())).getPP_Order_ID());
+				final TableRecordReference ppOrderRef = TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId);
+				contractLogService.throwErrorIfProcessedLogsExistForRecord(ppOrderRef, MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			}
+			else
+			{
+				contractLogService.throwErrorIfProcessedLogsExistForRecord(recordRef, MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
+			}
 		}
 		else if (!action.equals(COMPLETED))
 		{
-			contractLogService.throwErrorIfProcessedLogsExistForRecord(tableRecordReference,
-																	   MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS);
+			contractLogService.throwErrorIfProcessedLogsExistForRecord(recordRef, MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS);
 		}
 
-		switch (tableRecordReference.getTableName())
+		switch (recordRef.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
-				final SOTrx soTrx = SOTrx.ofBoolean(inoutDao.getByLineIdInTrx(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID())).isSOTrx());
-				if(soTrx.isSales() && action.equals(REACTIVATED))
+				switch (action)
 				{
-					throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-				}
-				else
-				{
-					switch (action)
+					case COMPLETED, REVERSED, RECREATE_LOGS -> {}
+					case REACTIVATED ->
 					{
-						case COMPLETED, REVERSED, REACTIVATED, RECREATE_LOGS -> {}
-						case VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
-						default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+						final SOTrx soTrx = SOTrx.ofBoolean(inoutDao.getByLineIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID())).isSOTrx());
+						if (soTrx.isSales())
+						{
+							throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+						}
 					}
+					case VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
 			case I_C_OrderLine.Table_Name ->
@@ -125,7 +121,15 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_C_Flatrate_Term.Table_Name, I_PP_Cost_Collector.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name ->
+			{
+				switch (action)
+				{
+					case COMPLETED, RECREATE_LOGS -> {}
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				}
+			}
+			case I_PP_Cost_Collector.Table_Name ->
 			{
 				switch (action)
 				{
@@ -150,13 +154,13 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			default -> throw new AdempiereException("Table " + tableRecordReference.getTableName() + " isn't supported");
+			default -> throw new AdempiereException("Table " + recordRef.getTableName() + " isn't supported");
 		}
 	}
 
 	public void validateLogs(@NonNull final List<ModularContractLogEntry> logs)
 	{
-		if (logs.isEmpty()) { return; }
+		if (logs.isEmpty()) {return;}
 
 		final ProductPrice productPriceToMatch = logs.get(0).getPriceActual();
 		Check.assumeNotNull(productPriceToMatch, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
@@ -166,10 +170,10 @@ public class ComputingMethodService
 	private void validateLog(@Nullable final ProductPrice productPrice, @NonNull final ProductPrice productPriceToMatch)
 	{
 		Check.assumeNotNull(productPrice, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
-		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch),"ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
+		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
-	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final CalculationRequest request)
+	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final ComputingRequest request)
 	{
 		return contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()

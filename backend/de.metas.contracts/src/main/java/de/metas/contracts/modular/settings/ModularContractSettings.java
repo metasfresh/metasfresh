@@ -71,13 +71,20 @@ public class ModularContractSettings
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(
-			@NonNull final ComputingMethodType handlerType,
+			@NonNull final ComputingMethodType computingMethodType,
 			@NonNull final ProductId productId)
 	{
 		return getModuleConfigs()
 				.stream()
-				.filter(config -> config.getProductId().equals(productId))
-				.filter(config -> config.isMatchingHandler(handlerType))
+				.filter(config -> config.isMatching(computingMethodType, productId))
 				.findFirst();
+	}
+
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	{
+		return moduleConfigs
+				.stream()
+				.anyMatch(config -> config.isMatching(computingMethodType));
+
 	}
 }

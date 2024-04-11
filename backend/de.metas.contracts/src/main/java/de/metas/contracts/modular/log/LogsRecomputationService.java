@@ -27,7 +27,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.ComputingMethodRequest;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.inout.IInOutDAO;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -170,8 +170,8 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> invoiceDAO
 				.retrieveLines(invoiceId)
-				.forEach(line -> modularContractService.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build()))
@@ -185,8 +185,8 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inOutDAO
 				.retrieveAllLines(inOut)
-				.forEach(line -> modularContractService.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build()))
@@ -200,8 +200,8 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> orderDAO
 				.retrieveOrderLines(order)
-				.forEach(line -> modularContractService.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build()))
@@ -214,8 +214,8 @@ public class LogsRecomputationService
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
-				.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(term))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build())
@@ -229,8 +229,8 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inventoryDAO
 				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
-				.forEach(line -> modularContractService.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build()))
@@ -243,8 +243,8 @@ public class LogsRecomputationService
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
-				.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(costCollector))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build())
@@ -258,8 +258,8 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> ppCostCollectorDAO
 				.getByOrderId(ppOrderId)
-				.forEach(ppCostCollector -> modularContractService.invokeWithModel(
-						ComputingMethodRequest.builder()
+				.forEach(ppCostCollector -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(ppCostCollector))
 								.modelAction(ModelAction.RECREATE_LOGS)
 								.build()))
@@ -274,8 +274,8 @@ public class LogsRecomputationService
 		{
 			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
 			default -> trxManager.runInNewTrx(() -> modularContractService
-					.invokeWithModel(
-							ComputingMethodRequest.builder()
+					.scheduleLogCreation(
+							DocStatusChangedEvent.builder()
 									.tableRecordReference(tableRecordReference)
 									.modelAction(ModelAction.RECREATE_LOGS)
 									.build())
@@ -289,8 +289,8 @@ public class LogsRecomputationService
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> shippingNotificationLinesList
-				.forEach(line -> modularContractService.invokeWithModel(
-						 ComputingMethodRequest.builder()
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						 DocStatusChangedEvent.builder()
 								 .tableRecordReference(TableRecordReference.of(line))
 								 .modelAction(ModelAction.RECREATE_LOGS)
 								 .build()))

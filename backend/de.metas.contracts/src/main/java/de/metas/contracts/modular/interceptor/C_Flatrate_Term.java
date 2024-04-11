@@ -28,7 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.ComputingMethodRequest;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -89,7 +89,7 @@ public class C_Flatrate_Term
 
 		final AtomicBoolean containsInterimComputingMethod = new AtomicBoolean(false);
 		settings.getModuleConfigs().forEach(moduleConfig -> {
-			if(moduleConfig.getModularContractType().isMatchingHandler(ComputingMethodType.INTERIM))
+			if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM))
 			{
 				containsInterimComputingMethod.set(true);
 			}
@@ -114,7 +114,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
 													   .modelAction(COMPLETED)
 													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
@@ -134,7 +134,7 @@ public class C_Flatrate_Term
 													 .build())
 								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
 								.build())
-				.forEach(inoutLine -> modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+				.forEach(inoutLine -> modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 																   .tableRecordReference(TableRecordReference.of(inoutLine))
 																   .modelAction(COMPLETED)
 																   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
@@ -151,7 +151,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
 													   .modelAction(COMPLETED)
 													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))

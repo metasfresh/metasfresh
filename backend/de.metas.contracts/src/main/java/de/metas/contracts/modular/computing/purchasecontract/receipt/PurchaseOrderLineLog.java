@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -157,7 +157,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
 	}

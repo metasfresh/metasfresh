@@ -24,7 +24,7 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.impl.SalesOrderLineProFormaPOModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -150,7 +150,7 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler<I
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_C_OrderLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler<I_C_OrderLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

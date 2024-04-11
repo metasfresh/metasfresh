@@ -23,29 +23,29 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ModularContractCalculationMethodHandlerFactory
+public class ModularContractComputingMethodHandlerRegistry
 {
 	@NonNull
-	private final ImmutableList<IModularContractComputingMethodHandler> knownHandlers;
+	private final ImmutableList<ComputingMethodHandler> handlers;
 
 	@NonNull
-	public Stream<IModularContractComputingMethodHandler> getApplicableHandlersFor(
+	public List<ComputingMethodHandler> getApplicableHandlersFor(
 			@NonNull final TableRecordReference tableRecordReference,
 			@NonNull final LogEntryContractType contractType)
 	{
-		return knownHandlers.stream()
-				.filter(handler -> handler.applies(tableRecordReference, contractType));
+		return handlers.stream()
+				.filter(handler -> handler.applies(tableRecordReference, contractType))
+				.collect(ImmutableList.toImmutableList());
 	}
-
 }

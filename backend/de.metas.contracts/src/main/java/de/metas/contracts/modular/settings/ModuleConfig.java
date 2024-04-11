@@ -45,8 +45,13 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
-	public boolean isMatchingHandler(@NonNull final ComputingMethodType handlerType)
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)
 	{
-		return modularContractType.isMatchingHandler(handlerType);
+		return isMatching(computingMethodType) && ProductId.equals(this.productId, productId);
+	}
+
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	{
+		return modularContractType.isMatching(computingMethodType);
 	}
 }

@@ -28,7 +28,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.ComputingMethodRequest;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -131,7 +131,7 @@ public class C_Order
 			@NonNull final ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.invokeWithModel(ComputingMethodRequest.builder()
+				.forEach(line -> contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 																		 .tableRecordReference(TableRecordReference.of(orderRecord))
 																		 .modelAction(modelAction)
 																		 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))

@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ModularContractCalculationMethodHandlerFactory;
+import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -34,15 +34,18 @@ import java.util.stream.Stream;
 
 /**
  * Implementors should be annotated with {@link org.springframework.stereotype.Component},
- * so that one instance per class is initialized and injected into {@link ModularContractCalculationMethodHandlerFactory}.
+ * so that one instance per class is initialized and injected into {@link ModularContractComputingMethodHandlerRegistry}.
  * <p>
  * At this stage I think there will be one implementation for {@link org.compiere.model.I_C_Order},
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.
  * When implementing another handler, please be sure to also add a model interceptor such as {@link de.metas.contracts.modular.interceptor.C_Order}.
  */
-public interface IModularContractComputingMethodHandler
+public interface ComputingMethodHandler
 {
-	boolean applies(@NonNull final TableRecordReference tableRecordReference, @NonNull final LogEntryContractType contractType);
+	@NonNull
+	ComputingMethodType getComputingMethodType();
+
+	boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType contractType);
 
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):
@@ -54,10 +57,13 @@ public interface IModularContractComputingMethodHandler
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference);
 
-	@NonNull
-	ComputingMethodType getComputingMethodType();
-	@NonNull
-	CalculationResponse calculate(@NonNull final CalculationRequest request);
+	default boolean isContractIdEligible(@NonNull final TableRecordReference recordRef, final FlatrateTermId contractId)
+	{
+		return streamContractIds(recordRef).anyMatch(id -> FlatrateTermId.equals(id, contractId));
+	}
 
-	default @NonNull Optional<CalculationResponse> calculateForInterim(@NonNull final CalculationRequest request) { return Optional.empty(); }
+	@NonNull
+	ComputingResponse compute(@NonNull final ComputingRequest request);
+
+	default @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request) {return Optional.empty();}
 }

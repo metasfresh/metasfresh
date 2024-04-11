@@ -129,7 +129,7 @@ class ModularContractLogHandler
 
 			return;
 		}
-		
+
 		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getComputingMethod().getComputingMethodType(), productId)
 				.orElse(null);
 		if (moduleConfig == null)
@@ -192,7 +192,7 @@ class ModularContractLogHandler
 	{
 		modularLogService.throwErrorIfProcessedLogsExistForRecord(request.getHandleLogsRequest().getTableRecordReference(), MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 
-		contractLogDAO.delete(handler.getDeleteRequestFor(request.getHandleLogsRequest()));
+		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest()));
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);
@@ -204,9 +204,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest createLogRequest)
 	{
-		final BooleanWithReason areLogsRequired = doesRecordStateRequireLogCreation(
-				createLogRequest.getHandleLogsRequest().getTableRecordReference());
-
+		final BooleanWithReason areLogsRequired = doesRecordStateRequireLogCreation(createLogRequest.getHandleLogsRequest().getTableRecordReference());
 		if (areLogsRequired.isFalse())
 		{
 			return ExplainedOptional.emptyBecause(areLogsRequired.getReason());
@@ -219,7 +217,8 @@ class ModularContractLogHandler
 	{
 		switch (tableRecordReference.getTableName())
 		{
-			case (I_C_Flatrate_Term.Table_Name) -> {
+			case (I_C_Flatrate_Term.Table_Name) ->
+			{
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(tableRecordReference.getRecord_ID()));
 				if (!DocStatus.ofCode(flatrateTermRecord.getDocStatus()).isCompleted())
 				{
@@ -228,7 +227,8 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_C_InvoiceLine.Table_Name) -> {
+			case (I_C_InvoiceLine.Table_Name) ->
+			{
 				final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecord_ID())).getC_Invoice_ID()));
 				if (!invoiceDocStatus.isCompleted())
 				{
@@ -237,7 +237,8 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_C_OrderLine.Table_Name) -> {
+			case (I_C_OrderLine.Table_Name) ->
+			{
 				final DocStatus orderDocStatus = orderBL.getDocStatus(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(tableRecordReference.getRecord_ID())));
 				if (!orderDocStatus.isCompleted())
 				{
@@ -246,7 +247,8 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_M_InOutLine.Table_Name) -> {
+			case (I_M_InOutLine.Table_Name) ->
+			{
 				final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 				final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
@@ -257,7 +259,8 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_M_Shipping_Notification.Table_Name) -> {
+			case (I_M_Shipping_Notification.Table_Name) ->
+			{
 
 				final ShippingNotification shippingNotification = notificationService
 						.getById(ShippingNotificationId.ofRepoId(tableRecordReference.getRecord_ID()));
@@ -269,7 +272,8 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.falseBecause("The M_Shipping_Notification.DocStatus is " + shippingNotification.getDocStatus());
 			}
-			case (I_I_ModCntr_Log.Table_Name) -> {
+			case (I_I_ModCntr_Log.Table_Name) ->
+			{
 				final I_I_ModCntr_Log modCntrLogImportRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
 				if (!modCntrLogImportRecord.isProcessed())
 				{
@@ -278,10 +282,10 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_M_InventoryLine.Table_Name) -> {
+			case (I_M_InventoryLine.Table_Name) ->
+			{
 				final I_M_InventoryLine inventoryLineRecord = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
 				final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID()));
-
 				if (!inventoryDocStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The M_Inventory.DocStatus is " + inventoryDocStatus);
@@ -289,18 +293,19 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_PP_Cost_Collector.Table_Name) -> {
-				if (!ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).isProcessed())
+			case (I_PP_Cost_Collector.Table_Name) ->
+			{
+				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).getDocStatus());
+				if (!docStatus.isCompleted())
 				{
-					return BooleanWithReason.falseBecause("The PP_Cost_Collector.Processed is false");
+					return BooleanWithReason.falseBecause("The PP_Cost_Collector.DocStatus is " + docStatus);
 				}
 
 				return BooleanWithReason.TRUE;
 			}
 
-
-
-			default -> {
+			default ->
+			{
 				return BooleanWithReason.falseBecause("Unsupported table " + tableRecordReference.getTableName());
 			}
 		}

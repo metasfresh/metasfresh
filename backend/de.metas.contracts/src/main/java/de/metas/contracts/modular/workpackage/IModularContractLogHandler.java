@@ -24,8 +24,9 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -35,7 +36,6 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfigId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
-import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,7 +55,7 @@ public interface IModularContractLogHandler
 	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest handleLogsRequest);
 
 	@NonNull
-	IModularContractComputingMethodHandler getComputingMethod();
+	ComputingMethodHandler getComputingMethod();
 
 	@NonNull
 	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest handleLogsRequest)
@@ -63,40 +63,16 @@ public interface IModularContractLogHandler
 		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
 	}
 
-	default boolean applies(@NonNull final HandleLogsRequest request)
-	{
-		final IModularContractComputingMethodHandler computingMethod = getComputingMethod();
+	default boolean applies(@NonNull final HandleLogsRequest ignoredRequest) {return true;}
 
-		final boolean isComputingMethodMatchingRequest = computingMethod.getClass().getName().equals(request.getHandlerClassname())
-				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
-
-		if (!isComputingMethodMatchingRequest)
-		{
-			return false;
-		}
-
-		final boolean isComputingMethodMatchingContract = getComputingMethod()
-				.streamContractIds(request.getTableRecordReference())
-				.anyMatch(contractId -> contractId.equals(request.getContractId()));
-
-		if (!isComputingMethodMatchingContract)
-		{
-			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
-			return false;
-		}
-
-		return request.getLogEntryContractType().equals(getLogEntryContractType())
-				&& request.getTableRecordReference().getTableName().equals(getSupportedTableName());
-	}
-	
 	@NonNull
 	String getSupportedTableName();
 
 	@NonNull
-	default LogEntryContractType getLogEntryContractType() { return LogEntryContractType.MODULAR_CONTRACT; }
+	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
 
 	@NonNull
-	default LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest handleLogsRequest)
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(handleLogsRequest.getTableRecordReference())
@@ -113,7 +89,7 @@ public interface IModularContractLogHandler
 		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
-		@NonNull String handlerClassname;
+		@NonNull ComputingMethodType computingMethodType;
 		@NonNull FlatrateTermInfo contractInfo;
 
 		@NonNull

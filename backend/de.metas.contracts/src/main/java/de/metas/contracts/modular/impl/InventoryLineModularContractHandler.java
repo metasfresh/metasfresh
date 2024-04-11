@@ -24,9 +24,9 @@ package de.metas.contracts.modular.impl;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.CalculationRequest;
-import de.metas.contracts.modular.computing.CalculationResponse;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
@@ -45,7 +45,7 @@ import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODU
 
 @Component
 @RequiredArgsConstructor
-public class InventoryLineModularContractHandler implements IModularContractComputingMethodHandler
+public class InventoryLineModularContractHandler implements ComputingMethodHandler
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
@@ -53,16 +53,16 @@ public class InventoryLineModularContractHandler implements IModularContractComp
 	@NonNull private final ModularContractLogService contractLogService;
 
 	@Override
-	public boolean applies(@NonNull final TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
+	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		if(!logEntryContractType.isModularContractType())
 		{
 			return false;
 		}
 
-		if(tableRecordReference.getTableName().equals(I_M_InventoryLine.Table_Name))
+		if(recordRef.getTableName().equals(I_M_InventoryLine.Table_Name))
 		{
-			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
 			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
 		}
 		return false;
@@ -82,7 +82,7 @@ public class InventoryLineModularContractHandler implements IModularContractComp
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		return null;
 	}

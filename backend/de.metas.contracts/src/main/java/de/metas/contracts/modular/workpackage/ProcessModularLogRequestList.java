@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing;
+package de.metas.contracts.modular.workpackage;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.lock.api.LockOwner;
-import de.metas.money.CurrencyId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@Builder
+import java.util.List;
+import java.util.stream.Stream;
+
 @Value
-public class CalculationRequest
+@Builder
+@Jacksonized
+public class ProcessModularLogRequestList
 {
-	@NonNull FlatrateTermId flatrateTermId;
-	@NonNull ProductId productId;
-	@NonNull CurrencyId currencyId;
-	@NonNull LockOwner lockOwner;
-	@NonNull ModularContractTypeId modularContractTypeId;
+	@NonNull List<ProcessModularLogRequest> requests;
+
+	public Stream<ProcessModularLogRequest> stream() {return requests.stream();}
 }

@@ -22,6 +22,9 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,9 +39,35 @@ class ModularContractLogHandlerRegistry
 	@NonNull
 	private final List<IModularContractLogHandler> handlers;
 
-	@NonNull Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	@NonNull
+	Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
-		return handlers.stream()
-				.filter(handler -> handler.applies(request));
+		return handlers.stream().filter(handler -> applies(handler, request));
+	}
+
+	private boolean applies(@NonNull IModularContractLogHandler handler, @NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	{
+		if (!request.getLogEntryContractType().equals(handler.getLogEntryContractType())
+				|| !request.getTableRecordReference().getTableName().equals(handler.getSupportedTableName()))
+		{
+			return false;
+		}
+
+		final ComputingMethodHandler computingMethod = handler.getComputingMethod();
+		final boolean isComputingMethodMatchingRequest = computingMethod.getComputingMethodType().equals(request.getComputingMethodType())
+				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
+		if (!isComputingMethodMatchingRequest)
+		{
+			return false;
+		}
+
+		final boolean isComputingMethodMatchingContract = computingMethod.isContractIdEligible(request.getTableRecordReference(), request.getContractId());
+		if (!isComputingMethodMatchingContract)
+		{
+			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
+			return false;
+		}
+
+		return handler.applies(request);
 	}
 }

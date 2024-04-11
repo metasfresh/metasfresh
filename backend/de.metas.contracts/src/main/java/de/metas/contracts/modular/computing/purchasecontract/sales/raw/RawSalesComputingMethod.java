@@ -24,10 +24,10 @@ package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.CalculationRequest;
-import de.metas.contracts.modular.computing.CalculationResponse;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.money.Money;
@@ -50,12 +50,12 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class RawSalesComputingMethod implements IModularContractComputingMethodHandler
+public class RawSalesComputingMethod implements ComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
+	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		return false;
 	}
@@ -73,13 +73,13 @@ public class RawSalesComputingMethod implements IModularContractComputingMethodH
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 		final List<ModularContractLogEntry> logs = new ArrayList<>();
 
-		return CalculationResponse.builder()
+		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())

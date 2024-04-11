@@ -101,7 +101,7 @@ class ModularContractSettingsDAOTest
 		assertThat(moduleConfig.getSeqNo().toInt()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
-		final ComputingMethodType handlerImpl = moduleConfig.getModularContractType().getHandlerType();
+		final ComputingMethodType handlerImpl = moduleConfig.getModularContractType().getComputingMethodType();
 		assertThat(handlerImpl).isEqualTo(INTERIM_CONTRACT);
 	}
 }

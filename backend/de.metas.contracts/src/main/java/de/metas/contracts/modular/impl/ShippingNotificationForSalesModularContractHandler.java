@@ -27,7 +27,7 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.order.OrderAndLineId;
@@ -45,7 +45,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class ShippingNotificationForSalesModularContractHandler implements IModularContractComputingMethodHandler<I_M_Shipping_NotificationLine>
+public class ShippingNotificationForSalesModularContractHandler implements ComputingMethodHandler<I_M_Shipping_NotificationLine>
 {
 	@NonNull
 	private final ModularContractProvider contractProvider;

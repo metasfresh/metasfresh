@@ -138,7 +138,7 @@ public class ModularContractSettingsDAO
 												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 												 .value(modCntrType.getValue())
 												 .name(modCntrType.getName())
-												 .handlerType(ComputingMethodType.ofNullableCode(modCntrType.getModularContractHandlerType()))
+												 .computingMethodType(ComputingMethodType.ofNullableCode(modCntrType.getModularContractHandlerType()))
 												 .build())
 					.build();
 

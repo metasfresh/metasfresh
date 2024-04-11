@@ -28,7 +28,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.ComputingMethodRequest;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import lombok.NonNull;
@@ -116,7 +116,7 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	private void createImportModCntrLog(@NonNull final I_I_ModCntr_Log record)
 	{
 
-		modularContractService.invokeWithModel(ComputingMethodRequest.builder()
+		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 													   .tableRecordReference(TableRecordReference.of(record))
 													   .modelAction(ModelAction.COMPLETED)
 													   .build()

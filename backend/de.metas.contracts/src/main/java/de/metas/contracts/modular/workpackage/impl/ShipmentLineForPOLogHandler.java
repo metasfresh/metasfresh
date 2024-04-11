@@ -26,7 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.impl.ShipmentLineForPOModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -169,7 +169,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler<I_M_InOu
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_M_InOutLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler<I_M_InOutLine> getComputingMethod()
 	{
 		return contractHandler;
 	}

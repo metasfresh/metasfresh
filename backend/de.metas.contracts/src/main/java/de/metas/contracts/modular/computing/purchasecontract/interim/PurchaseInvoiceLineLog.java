@@ -27,7 +27,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -223,7 +223,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
 	}

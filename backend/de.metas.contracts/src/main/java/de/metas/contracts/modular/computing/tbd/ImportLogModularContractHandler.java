@@ -28,10 +28,10 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.CalculationRequest;
-import de.metas.contracts.modular.computing.CalculationResponse;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -60,17 +60,17 @@ import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
 
 @Component
 @RequiredArgsConstructor
-public class ImportLogModularContractHandler implements IModularContractComputingMethodHandler
+public class ImportLogModularContractHandler implements ComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull final ModularContractLogService modularContractLogService;
 	@Override
-	public boolean applies(final @NonNull TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
+	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(tableRecordReference.getTableName().equals(I_I_ModCntr_Log.Table_Name))
+		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name))
 		{
-			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_I_ModCntr_Log.class);
+			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 			return Check.isBlank(importLogRecord.getI_ErrorMsg()) &&
 					!Objects.equals(X_I_ModCntr_Log.I_ISIMPORTED_ImportFailed, importLogRecord.getI_IsImported()) ||
 					CalendarId.ofRepoIdOrNull(importLogRecord.getC_Calendar_ID()) != null &&
@@ -98,13 +98,13 @@ public class ImportLogModularContractHandler implements IModularContractComputin
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 		final List<ModularContractLogEntry> logs = new ArrayList<>();
 
-		return CalculationResponse.builder()
+		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())

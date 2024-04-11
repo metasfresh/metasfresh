@@ -25,7 +25,7 @@ package de.metas.contracts.modular.workpackage.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.impl.SalesContractProFormaModularContractHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -158,7 +158,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_C_Flatrate_Term> getComputingMethod()
+	public @NonNull ComputingMethodHandler<I_C_Flatrate_Term> getComputingMethod()
 	{
 		return contractHandler;
 	}

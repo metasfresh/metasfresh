@@ -30,7 +30,7 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -56,7 +56,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class SalesOrderLineModularContractHandler implements IModularContractComputingMethodHandler<I_C_OrderLine>
+public class SalesOrderLineModularContractHandler implements ComputingMethodHandler<I_C_OrderLine>
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

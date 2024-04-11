@@ -27,7 +27,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.impl.PPCostCollectorModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -178,7 +178,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler<I_PP_Cost_Collector> getComputingMethod()
+	public @NonNull ComputingMethodHandler<I_PP_Cost_Collector> getComputingMethod()
 	{
 		return computingMethod;
 	}
@@ -192,7 +192,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest handleLogsRequest)
+	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		final I_PP_Cost_Collector ppCostCollector = handleLogsRequest.getModel();
 

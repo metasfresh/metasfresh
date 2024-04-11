@@ -22,20 +22,22 @@
 
 package de.metas.contracts.modular.computing;
 
-import de.metas.contracts.modular.log.ModularContractLogEntryId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.lock.api.LockOwner;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Set;
-
 @Builder
 @Value
-public class CalculationResponse
+public class ComputingRequest
 {
-	@NonNull Quantity qty;
-	@NonNull ProductPrice price;
-	@NonNull Set<ModularContractLogEntryId> ids;
+	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull ProductId productId;
+	@NonNull CurrencyId currencyId;
+	@NonNull LockOwner lockOwner;
+	@NonNull ModularContractTypeId modularContractTypeId;
 }

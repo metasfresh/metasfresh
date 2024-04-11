@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,36 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage;
+package de.metas.contracts.modular.computing;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.util.List;
+import java.util.Set;
 
-@Value
 @Builder
-@Jacksonized
-public class ProcessModularLogAggRequest
+@Value
+public class ComputingResponse
 {
-	@NonNull
-	List<ProcessRequest> requestList;
-
-	@Value
-	@Builder
-	@Jacksonized
-	public static class ProcessRequest
-	{
-		@NonNull TableRecordReference recordReference;
-		@NonNull ModelAction action;
-		@NonNull LogEntryContractType logEntryContractType;
-		@NonNull FlatrateTermId flatrateTermId;
-		@NonNull String handlerClassname;
-	}
+	@NonNull Quantity qty;
+	@NonNull ProductPrice price;
+	@NonNull Set<ModularContractLogEntryId> ids;
 }

@@ -32,7 +32,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.inout.IInOutDAO;
@@ -60,7 +60,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineForPOModularContractHandler implements IModularContractComputingMethodHandler<I_M_InOutLine>
+public class ShipmentLineForPOModularContractHandler implements ComputingMethodHandler<I_M_InOutLine>
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

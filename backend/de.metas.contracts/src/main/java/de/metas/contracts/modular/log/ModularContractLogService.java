@@ -27,6 +27,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -36,16 +37,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class ModularContractLogService
 {
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 
-	private final ModularContractLogDAO modularContractLogDAO;
-
-	public ModularContractLogService(@NonNull final ModularContractLogDAO modularContractLogDAO)
-	{
-		this.modularContractLogDAO = modularContractLogDAO;
-	}
+	@NonNull private final ModularContractLogDAO modularContractLogDAO;
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{

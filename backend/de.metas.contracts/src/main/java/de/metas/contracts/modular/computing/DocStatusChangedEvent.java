@@ -25,17 +25,20 @@ package de.metas.contracts.modular.computing;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
 @Builder
 @Value
-public class ComputingMethodRequest
+public class DocStatusChangedEvent
 {
 	@NonNull TableRecordReference tableRecordReference;
 	@NonNull ModelAction modelAction;
 	@Builder.Default
 	@NonNull ImmutableSet<LogEntryContractType> logEntryContractTypes = ImmutableSet.copyOf(LogEntryContractType.values());
+	@NonNull @Builder.Default UserId userInChargeId = Env.getLoggedUserId(); // FIXME: get rid of default!
 }

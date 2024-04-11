@@ -32,7 +32,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoice.InvoiceId;
@@ -58,7 +58,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 
 @Component
 @RequiredArgsConstructor
-public class SalesInvoiceLineModularContractHandler implements IModularContractComputingMethodHandler<I_C_InvoiceLine>
+public class SalesInvoiceLineModularContractHandler implements ComputingMethodHandler<I_C_InvoiceLine>
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

@@ -27,7 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -146,7 +146,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull IModularContractComputingMethodHandler getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return contractHandler;
 	}

@@ -35,12 +35,12 @@ public class ModularContractType
 {
 	@NonNull ModularContractTypeId id;
 	@Nullable
-	ComputingMethodType handlerType;
+	ComputingMethodType computingMethodType;
 	@Nullable String value;
 	@Nullable String name;
 
-	public boolean isMatchingHandler(@NonNull final ComputingMethodType handlerType)
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
-		return this.handlerType == handlerType;
+		return this.computingMethodType == computingMethodType;
 	}
 }

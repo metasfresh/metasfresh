@@ -25,9 +25,9 @@ package de.metas.contracts.modular.impl;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.CalculationRequest;
-import de.metas.contracts.modular.computing.CalculationResponse;
-import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -46,7 +46,7 @@ import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MOD
 
 @Component
 @RequiredArgsConstructor
-public class PPCostCollectorModularContractHandler implements IModularContractComputingMethodHandler
+public class PPCostCollectorModularContractHandler implements ComputingMethodHandler
 {
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
@@ -82,7 +82,7 @@ public class PPCostCollectorModularContractHandler implements IModularContractCo
 	}
 
 	@Override
-	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		return null;
 	}
