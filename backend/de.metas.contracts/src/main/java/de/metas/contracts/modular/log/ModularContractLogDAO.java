@@ -29,7 +29,10 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -171,6 +174,7 @@ public class ModularContractLogDAO
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
+				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.build();
 	}
 
@@ -289,6 +293,24 @@ public class ModularContractLogDAO
 		if (query.getProcessed() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
+		}
+
+		if(query.getModularContractHandlerType() != null)
+		{
+			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getModularContractHandlerType())
+					.create();
+			final IQuery<I_ModCntr_Module> moduleFilter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+					.addOnlyActiveRecordsFilter()
+					.addInSubQueryFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID, moduleTypeFilter)
+					.create();
+
+			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
+		}
+		if(query.getInvoiceCandidateId()!=null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
 		}
 
 		return sqlQueryBuilder;

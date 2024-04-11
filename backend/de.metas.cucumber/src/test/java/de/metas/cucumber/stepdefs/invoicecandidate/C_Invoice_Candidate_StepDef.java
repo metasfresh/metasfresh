@@ -164,7 +164,6 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_I
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInEffect;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInterimInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID;
@@ -871,12 +870,6 @@ public class C_Invoice_Candidate_StepDef
 					softly.assertThat(updatedInvoiceCandidate.isSOTrx()).as("IsSOTrx").isEqualTo(soTrx);
 				}
 
-				final Boolean isInterimInvoice = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsInterimInvoice);
-				if (isInterimInvoice != null)
-				{
-					softly.assertThat(updatedInvoiceCandidate.isInterimInvoice()).as("IsInterimInvoice").isEqualTo(isInterimInvoice);
-				}
-
 				final BigDecimal priceActual = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceActual);
 
 				if (priceActual != null)
@@ -1472,20 +1465,6 @@ public class C_Invoice_Candidate_StepDef
 		if (qtyDelivered != null)
 		{
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
-		}
-
-		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
-		if (Check.isNotBlank(isInterimInvoiceStr))
-		{
-			final String isInterimInvoice = DataTableUtil.nullToken2Null(isInterimInvoiceStr);
-			if (isInterimInvoice != null)
-			{
-				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, StringUtils.toBoolean(isInterimInvoice));
-			}
-			else
-			{
-				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, null);
-			}
 		}
 
 		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);

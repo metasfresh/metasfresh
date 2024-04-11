@@ -39,7 +39,7 @@ Feature: Modular contract log - Recompute
       | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier    | Name                    | M_Product_ID.Identifier     | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier       |
+      | ModCntr_Settings_ID.Identifier    | Name                    | M_Raw_Product_ID.Identifier     | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier       |
       | modCntr_settings_recompute_150923 | testSettings_07042023_0 | module_log_recompute_150923 | harvesting_calendar      | year                 | moduleLogPricingSystem_recompute_150923 |
 
     And metasfresh contains ModCntr_Types:

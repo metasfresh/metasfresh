@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1808384989L;
+	private static final long serialVersionUID = 720803797L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -1619,18 +1619,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isInOutApprovedForInvoicing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInOutApprovedForInvoicing);
-	}
-
-	@Override
-	public void setIsInterimInvoice (final boolean IsInterimInvoice)
-	{
-		set_Value (COLUMNNAME_IsInterimInvoice, IsInterimInvoice);
-	}
-
-	@Override
-	public boolean isInterimInvoice()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInterimInvoice);
 	}
 
 	@Override

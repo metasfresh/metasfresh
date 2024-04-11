@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
+import de.metas.cache.CacheMgt;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
@@ -27,6 +28,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.costing.ChargeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
@@ -93,6 +95,7 @@ import java.util.stream.Stream;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
 import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
+import static de.metas.contracts.model.X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -1036,6 +1039,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
+		CacheMgt.get().reset(I_C_Flatrate_Term.Table_Name, flatrateTerm.getC_Flatrate_Term_ID());
 	}
 
 	@Override
@@ -1221,6 +1225,17 @@ public class FlatrateDAO implements IFlatrateDAO
 		return getFlatrateTermQueryBuilder(flatrateTermFilter)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract, X_C_Flatrate_Term.TYPE_CONDITIONS_InterimInvoice)
 				.anyMatch();
+	}
+
+	@Override
+	public IQuery<I_C_Flatrate_Term> createInterimContractQuery(@NonNull final IQueryFilter<I_C_Flatrate_Term> contractFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(contractFilter)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TYPE_CONDITIONS_InterimInvoice)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.create();
 	}
 
 	@NonNull

@@ -88,7 +88,8 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Name;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_OnFlatrateTermExtend;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Conditions_StepDef
@@ -335,43 +336,54 @@ public class C_Flatrate_Conditions_StepDef
 	public void validate_cloned_ModCntr_Settings(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		final Map<String, String> tableRow = tableRows.get(0);
+		final SoftAssertions assertions = new SoftAssertions();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String clonedSettingsIdentifier = tableRow.get(COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
+			assertions.assertThat(clonedSettingsIdentifier).as(COLUMNNAME_ModCntr_Settings_ID + " is mandatory").isNotBlank();
 
-		final String clonedSettingsIdentifier = tableRow.get(COLUMNNAME_ModCntr_Settings_ID + "." + TABLECOLUMN_IDENTIFIER);
-		assertThat(clonedSettingsIdentifier).as(COLUMNNAME_ModCntr_Settings_ID + " is mandatory").isNotBlank();
+			final I_ModCntr_Settings clonedSettings = modCntrSettingsTable.get(clonedSettingsIdentifier);
+			assertions.assertThat(clonedSettings).isNotNull();
 
-		final I_ModCntr_Settings clonedSettings = modCntrSettingsTable.get(clonedSettingsIdentifier);
-		assertThat(clonedSettings).isNotNull();
+			//name
+			final String name = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
+			assertions.assertThat(clonedSettings.getName()).isEqualTo(name);
 
-		//name
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
-		assertThat(clonedSettings.getName()).isEqualTo(name);
+			// product
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			assertions.assertThat(productIdentifier).as(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID + " is a mandatory column").isNotBlank();
 
-		// product
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		assertThat(productIdentifier).as(I_ModCntr_Settings.COLUMNNAME_M_Product_ID + " is a mandatory column").isNotBlank();
+			final I_M_Product product = productTable.get(productIdentifier);
+			assertions.assertThat(product).isNotNull();
+			assertions.assertThat(clonedSettings.getM_Raw_Product_ID()).isEqualTo(product.getM_Product_ID());
 
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(product).isNotNull();
-		assertThat(clonedSettings.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
+			// year & calendar
+			final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
+			assertions.assertThat(yearIdentifier).as(I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " is a mandatory column").isNotBlank();
 
-		// year & calendar
-		final String yearIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Settings.COLUMNNAME_C_Year_ID + "." + TABLECOLUMN_IDENTIFIER);
-		assertThat(yearIdentifier).as(I_ModCntr_Settings.COLUMNNAME_C_Year_ID + " is a mandatory column").isNotBlank();
+			final I_C_Year year = yearTable.get(yearIdentifier);
+			assertions.assertThat(year).isNotNull();
+			assertions.assertThat(clonedSettings.getC_Year_ID()).isEqualTo(year.getC_Year_ID());
+			assertions.assertThat(clonedSettings.getC_Calendar_ID()).isEqualTo(year.getC_Calendar_ID());
 
-		final I_C_Year year = yearTable.get(yearIdentifier);
-		assertThat(year).isNotNull();
-		assertThat(clonedSettings.getC_Year_ID()).isEqualTo(year.getC_Year_ID());
-		assertThat(clonedSettings.getC_Calendar_ID()).isEqualTo(year.getC_Calendar_ID());
+			// Pricing system
+			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(pricingSystemIdentifier))
+			{
+				final I_M_PricingSystem pricingSystem = pricingSysTable.get(pricingSystemIdentifier);
+				assertions.assertThat(clonedSettings.getM_PricingSystem_ID()).isEqualTo(pricingSystem.getM_PricingSystem_ID());
+			}
 
-		// ModCntr_Modules
-		final int clonedModulesCounter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, clonedSettings.getModCntr_Settings_ID())
-				.create()
-				.count();
+			// ModCntr_Modules
+			final int clonedModulesCounter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, clonedSettings.getModCntr_Settings_ID())
+					.create()
+					.count();
 
-		assertThat(clonedModulesCounter).isEqualTo(1);
+			assertions.assertThat(clonedModulesCounter).isEqualTo(1);
+			assertions.assertAll();
+		}
 	}
 
 	@And("^the C_Flatrate_Conditions identified by (.*) is (completed)$")

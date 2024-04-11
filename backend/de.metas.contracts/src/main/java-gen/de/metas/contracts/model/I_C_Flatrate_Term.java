@@ -1,9 +1,8 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -316,8 +315,7 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Term_Master_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term_Master();
 
 	void setC_Flatrate_Term_Master(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term_Master);
 
@@ -342,8 +340,7 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_FlatrateTerm_Next_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getC_FlatrateTerm_Next();
 
 	void setC_FlatrateTerm_Next(@Nullable de.metas.contracts.model.I_C_Flatrate_Term C_FlatrateTerm_Next);
 
@@ -370,8 +367,7 @@ public interface I_C_Flatrate_Term
 	 */
 	int getC_Flatrate_Transition_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
 	@Deprecated
 	void setC_Flatrate_Transition(@Nullable de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
@@ -399,6 +395,31 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_ChangeOrCancelTerm = new ModelColumn<>(I_C_Flatrate_Term.class, "ChangeOrCancelTerm", null);
 	String COLUMNNAME_ChangeOrCancelTerm = "ChangeOrCancelTerm";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	@Nullable org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(@Nullable org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
 	 * Set Contract Status.
@@ -557,7 +578,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_RfQResponseLine_ID(int C_RfQResponseLine_ID);
+	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
 
 	/**
 	 * Get RfQ Response Line.
@@ -580,7 +601,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_TaxCategory_ID(int C_TaxCategory_ID);
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	/**
 	 * Get Tax Category.
@@ -882,6 +903,31 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_ExtendTerm = "ExtendTerm";
 
 	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	@Nullable org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(@Nullable org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1014,8 +1060,8 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1024,8 +1070,8 @@ public interface I_C_Flatrate_Term
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1121,8 +1167,7 @@ public interface I_C_Flatrate_Term
 	 */
 	int getM_AttributeSetInstance_ID();
 
-	@Nullable
-	org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
@@ -1137,7 +1182,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setModular_Flatrate_Term_ID(int Modular_Flatrate_Term_ID);
+	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
 
 	/**
 	 * Get Modular Contract.
@@ -1149,8 +1194,7 @@ public interface I_C_Flatrate_Term
 	 */
 	int getModular_Flatrate_Term_ID();
 
-	@Nullable
-	de.metas.contracts.model.I_C_Flatrate_Term getModular_Flatrate_Term();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Term getModular_Flatrate_Term();
 
 	void setModular_Flatrate_Term(@Nullable de.metas.contracts.model.I_C_Flatrate_Term Modular_Flatrate_Term);
 
@@ -1250,7 +1294,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPlannedQtyPerUnit(BigDecimal PlannedQtyPerUnit);
+	void setPlannedQtyPerUnit (BigDecimal PlannedQtyPerUnit);
 
 	/**
 	 * Get Qty per UOM.
@@ -1271,7 +1315,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPMM_Product_ID(int PMM_Product_ID);
+	void setPMM_Product_ID (int PMM_Product_ID);
 
 	/**
 	 * Get Supply Product.
@@ -1355,7 +1399,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing(boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -1376,7 +1420,7 @@ public interface I_C_Flatrate_Term
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQtyPlanned_NextYear(BigDecimal QtyPlanned_NextYear);
+	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
 
 	/**
 	 * Get Qty Next Year.

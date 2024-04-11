@@ -2364,6 +2364,9 @@ public class FlatrateBL implements IFlatrateBL
 
 		setPricingSystemTaxCategAndIsTaxIncluded(orderLine, newTerm);
 
+		newTerm.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		newTerm.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
+
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);
@@ -2438,7 +2441,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
-		final ProductId productId = ProductId.ofRepoId(settings.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(settings.getM_Raw_Product_ID());
 		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
 															   .yearAndCalendarId(yearAndCalendarId)
 															   .productId(productId)
