@@ -275,5 +275,5 @@ public interface IFlatrateDAO extends ISingletonService
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 
-	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 }

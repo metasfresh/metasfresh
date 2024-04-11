@@ -15,6 +15,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -177,5 +178,11 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	default ImmutableList<Object> getRecordsToLock(@NonNull final I_C_Flatrate_Term term)
 	{
 		return ImmutableList.of(term);
+	}
+
+	@NonNull
+	default ProductId getProductId(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		return ProductId.ofRepoId(term.getM_Product_ID());
 	}
 }

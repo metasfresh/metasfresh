@@ -81,7 +81,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicingGroup (java.lang.String InvoicingGroup);
+	void setInvoicingGroup (String InvoicingGroup);
 
 	/**
 	 * Get Invoicing group.
@@ -90,7 +90,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getInvoicingGroup();
+	String getInvoicingGroup();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_ModCntr_Module.class, "InvoicingGroup", null);
 	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
@@ -119,7 +119,29 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bausteine.
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -128,7 +150,7 @@ public interface I_ModCntr_Module
 	void setModCntr_Module_ID (int ModCntr_Module_ID);
 
 	/**
-	 * Get Bausteine.
+	 * Get Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -157,11 +179,11 @@ public interface I_ModCntr_Module
 	 */
 	int getModCntr_Settings_ID();
 
-	de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings();
+	I_ModCntr_Settings getModCntr_Settings();
 
-	void setModCntr_Settings(de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings);
+	void setModCntr_Settings(I_ModCntr_Settings ModCntr_Settings);
 
-	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Settings.class);
+	ModelColumn<I_ModCntr_Module, I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", I_ModCntr_Settings.class);
 	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
@@ -182,34 +204,12 @@ public interface I_ModCntr_Module
 	 */
 	int getModCntr_Type_ID();
 
-	de.metas.contracts.model.I_ModCntr_Type getModCntr_Type();
+	I_ModCntr_Type getModCntr_Type();
 
-	void setModCntr_Type(de.metas.contracts.model.I_ModCntr_Type ModCntr_Type);
+	void setModCntr_Type(I_ModCntr_Type ModCntr_Type);
 
-	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Type_ID", de.metas.contracts.model.I_ModCntr_Type.class);
+	ModelColumn<I_ModCntr_Module, I_ModCntr_Type> COLUMN_ModCntr_Type_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Type_ID", I_ModCntr_Type.class);
 	String COLUMNNAME_ModCntr_Type_ID = "ModCntr_Type_ID";
-
-	/**
-	 * Set Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_ID();
-
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Name.
@@ -218,7 +218,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setName (String Name);
 
 	/**
 	 * Get Name.
@@ -227,7 +227,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	String getName();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Module.class, "Name", null);
 	String COLUMNNAME_Name = "Name";

@@ -2783,10 +2783,10 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	 * Reference name: InvoicingGroup
 	 */
 	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
-	/** Leistung = Leistung */
-	public static final String INVOICINGGROUP_Leistung = "Leistung";
-	/** Kosten = Kosten */
-	public static final String INVOICINGGROUP_Kosten = "Kosten";
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
 	@Override
 	public void setInvoicingGroup (final @Nullable String InvoicingGroup)
 	{

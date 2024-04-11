@@ -22,11 +22,9 @@
 
 package de.metas.contracts.finalinvoice.workpackage;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.common.util.Check;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
@@ -41,11 +39,11 @@ public class FinalInvoiceWorkPackageProcessor extends WorkpackageProcessorAdapte
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		final List<I_C_Flatrate_Term> modularContracts = retrieveAllItems(I_C_Flatrate_Term.class);
+		final List<TableRecordReference> modularContracts = retrieveItems(TableRecordReference.class);
 
 		Check.assume(modularContracts.size() == 1, "Only one contract can be enqueued per workpackage !");
 
-		createInvoiceForModelService.generateIcsAndInvoices(ImmutableList.of(TableRecordReference.of(modularContracts.get(0))));
+		createInvoiceForModelService.generateIcsAndInvoices(modularContracts);
 
 		return Result.SUCCESS;
 	}

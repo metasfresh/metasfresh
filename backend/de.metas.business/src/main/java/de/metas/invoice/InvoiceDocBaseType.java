@@ -49,9 +49,6 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	 */
 	@Deprecated
 	AVInvoice(DocBaseType.InterneRechnungLieferant, SOTrx.PURCHASE, false),
-
-	FinalInvoice(DocBaseType.FinalInvoice, SOTrx.PURCHASE, false),
-	FinalCreditMemo(DocBaseType.FinalCreditMemo, SOTrx.PURCHASE, true),
 	;
 
 	@Getter

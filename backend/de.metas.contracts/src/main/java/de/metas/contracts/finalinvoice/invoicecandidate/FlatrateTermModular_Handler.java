@@ -50,6 +50,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
@@ -65,12 +66,14 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.emptyIterator;
 
@@ -191,6 +194,16 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		return SystemTime.asInstant();
 	}
 
+	@Override
+	@NonNull
+	public ProductId getProductId(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
+	{
+		return Optional.ofNullable(ProductId.ofRepoIdOrNull(ic.getM_Product_ID()))
+				.orElseThrow(() -> new AdempiereException("Product cannot be missing at this point !")
+						.appendParametersToMessage()
+						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));
+	}
+
 	@NonNull
 	private I_C_Invoice_Candidate createCandidateFor(
 			@NonNull final I_C_Flatrate_Term modularContract,
@@ -277,11 +290,13 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		if (total.signum() >= 0)
 		{
-			queryBuilder.docBaseType(InvoiceDocBaseType.FinalInvoice.getDocBaseType());
+			queryBuilder.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+					.docSubType(X_C_DocType.DOCSUBTYPE_FinalInvoice);
 		}
 		else
 		{
-			queryBuilder.docBaseType(InvoiceDocBaseType.FinalCreditMemo.getDocBaseType());
+			queryBuilder.docBaseType(InvoiceDocBaseType.VendorCreditMemo.getDocBaseType())
+					.docSubType(X_C_DocType.DOCSUBTYPE_FinalCreditMemo);
 		}
 
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(queryBuilder.build());

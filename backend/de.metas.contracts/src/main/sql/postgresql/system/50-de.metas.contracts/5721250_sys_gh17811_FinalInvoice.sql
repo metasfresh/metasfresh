@@ -96,85 +96,250 @@ INSERT INTO C_Queue_Processor (AD_Client_ID,AD_Org_ID,C_Queue_Processor_ID,Creat
 INSERT INTO C_Queue_Processor_Assign (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,C_Queue_Processor_Assign_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540107,540120,540077,TO_TIMESTAMP('2024-04-05 16:59:28.852','YYYY-MM-DD HH24:MI:SS.US'),100,'Y',TO_TIMESTAMP('2024-04-05 16:59:28.852','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
--- Run mode: SWING_CLIENT
-
--- Reference: C_DocType DocBaseType
--- Value: FPI
--- ValueName: FinalPurchaseInvoice
--- 2024-04-09T10:18:18.194Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543655,183,TO_TIMESTAMP('2024-04-09 13:18:17.978','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Final Purchase Invoice',TO_TIMESTAMP('2024-04-09 13:18:17.978','YYYY-MM-DD HH24:MI:SS.US'),100,'FPI','FinalPurchaseInvoice')
-;
-
--- 2024-04-09T10:18:18.211Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543655 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
-
--- Reference: C_DocType DocBaseType
--- Value: FCM
--- ValueName: FinalCreditMemo
--- 2024-04-09T10:18:58.311Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543656,183,TO_TIMESTAMP('2024-04-09 13:18:58.153','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Final Credit Memo',TO_TIMESTAMP('2024-04-09 13:18:58.153','YYYY-MM-DD HH24:MI:SS.US'),100,'FCM','FinalCreditMemo')
-;
-
--- 2024-04-09T10:18:58.315Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543656 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
-
--- Run mode: WEBUI
-
--- 2024-04-09T10:37:02.812Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541119,TO_TIMESTAMP('2024-04-09 13:37:02.799','YYYY-MM-DD HH24:MI:SS.US'),100,'FPI',1,'de.metas.swat',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Final Invoice','Final Invoice',TO_TIMESTAMP('2024-04-09 13:37:02.799','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2024-04-09T10:37:02.849Z
-INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541119 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
-;
-
--- 2024-04-09T10:37:02.856Z
-INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541119 AND rol.IsManual='N')
-;
-
--- 2024-04-09T10:37:06.796Z
-UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2024-04-09 13:37:06.796','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541119
-;
-
--- 2024-04-09T10:37:11.435Z
-UPDATE C_DocType SET DocNoSequence_ID=555719,Updated=TO_TIMESTAMP('2024-04-09 13:37:11.435','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541119
-;
-
--- 2024-04-09T10:37:28.116Z
-UPDATE C_DocType SET AD_PrintFormat_ID=1000012,Updated=TO_TIMESTAMP('2024-04-09 13:37:28.116','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541119
-;
-
--- Run mode: WEBUI
-
--- 2024-04-09T10:39:12.005Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541120,TO_TIMESTAMP('2024-04-09 13:39:12.001','YYYY-MM-DD HH24:MI:SS.US'),100,'FCM',1,'de.metas.swat',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Final Credit Memo','Final Credit Memo',TO_TIMESTAMP('2024-04-09 13:39:12.001','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- 2024-04-09T10:39:12.011Z
-INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541120 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
-;
-
--- 2024-04-09T10:39:12.013Z
-INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541120 AND rol.IsManual='N')
-;
-
--- 2024-04-09T10:39:14.735Z
-UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2024-04-09 13:39:14.734','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541120
-;
-
--- 2024-04-09T10:39:18.952Z
-UPDATE C_DocType SET AD_PrintFormat_ID=1000015,Updated=TO_TIMESTAMP('2024-04-09 13:39:18.952','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541120
-;
-
--- 2024-04-09T10:39:55.446Z
-UPDATE C_DocType SET DocNoSequence_ID=555719,Updated=TO_TIMESTAMP('2024-04-09 13:39:55.446','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541120
-;
-
 -- Run mode: WEBUI
 
 -- 2024-04-09T18:15:58.338Z
 INSERT INTO C_AggregationItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,C_Aggregation_ID,C_AggregationItem_ID,Created,CreatedBy,EntityType,IsActive,Type,Updated,UpdatedBy) VALUES (1000000,579362,1000000,1000000,540097,TO_TIMESTAMP('2024-04-09 21:15:58.29','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.invoicecandidate','Y','COL',TO_TIMESTAMP('2024-04-09 21:15:58.29','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Run mode: SWING_CLIENT
+
+-- Reference: C_DocType SubType
+-- Value: FI
+-- ValueName: Final Invoice
+-- 2024-04-11T13:42:45.276Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543657,148,TO_TIMESTAMP('2024-04-11 16:42:44.993','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Final Invoice',TO_TIMESTAMP('2024-04-11 16:42:44.993','YYYY-MM-DD HH24:MI:SS.US'),100,'FI','Final Invoice')
+;
+
+-- 2024-04-11T13:42:45.300Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543657 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference Item: C_DocType SubType -> FI_Final Invoice
+-- 2024-04-11T13:43:01.147Z
+UPDATE AD_Ref_List_Trl SET Name='Endabrechnung',Updated=TO_TIMESTAMP('2024-04-11 16:43:01.147','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543657
+;
+
+-- Reference Item: C_DocType SubType -> FI_Final Invoice
+-- 2024-04-11T13:43:03.015Z
+UPDATE AD_Ref_List_Trl SET Name='Endabrechnung',Updated=TO_TIMESTAMP('2024-04-11 16:43:03.015','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543657
+;
+
+-- 2024-04-11T13:43:03.027Z
+UPDATE AD_Ref_List SET Name='Endabrechnung' WHERE AD_Ref_List_ID=543657
+;
+
+-- Reference Item: C_DocType SubType -> FI_Final Invoice
+-- 2024-04-11T13:43:07.625Z
+UPDATE AD_Ref_List_Trl SET Name='Endabrechnung',Updated=TO_TIMESTAMP('2024-04-11 16:43:07.625','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543657
+;
+
+-- Reference Item: C_DocType SubType -> FI_Final Invoice
+-- 2024-04-11T13:43:09.104Z
+UPDATE AD_Ref_List_Trl SET Name='Endabrechnung',Updated=TO_TIMESTAMP('2024-04-11 16:43:09.104','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Ref_List_ID=543657
+;
+
+-- Reference: C_DocType SubType
+-- Value: FCM
+-- ValueName: Final Credit Memo
+-- 2024-04-11T13:43:30.027Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543658,148,TO_TIMESTAMP('2024-04-11 16:43:29.893','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Final Credit Memo',TO_TIMESTAMP('2024-04-11 16:43:29.893','YYYY-MM-DD HH24:MI:SS.US'),100,'FCM','Final Credit Memo')
+;
+
+-- 2024-04-11T13:43:30.029Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543658 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference Item: C_DocType SubType -> FCM_Final Credit Memo
+-- 2024-04-11T13:43:36.050Z
+UPDATE AD_Ref_List_Trl SET Name='Endgültige Gutschrift',Updated=TO_TIMESTAMP('2024-04-11 16:43:36.05','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543658
+;
+
+-- Reference Item: C_DocType SubType -> FCM_Final Credit Memo
+-- 2024-04-11T13:43:37.599Z
+UPDATE AD_Ref_List_Trl SET Name='Endgültige Gutschrift',Updated=TO_TIMESTAMP('2024-04-11 16:43:37.599','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543658
+;
+
+-- 2024-04-11T13:43:37.600Z
+UPDATE AD_Ref_List SET Name='Endgültige Gutschrift' WHERE AD_Ref_List_ID=543658
+;
+
+-- Reference Item: C_DocType SubType -> FCM_Final Credit Memo
+-- 2024-04-11T13:43:41.479Z
+UPDATE AD_Ref_List_Trl SET Name='Endgültige Gutschrift',Updated=TO_TIMESTAMP('2024-04-11 16:43:41.479','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543658
+;
+
+-- Reference Item: C_DocType SubType -> FCM_Final Credit Memo
+-- 2024-04-11T13:43:42.980Z
+UPDATE AD_Ref_List_Trl SET Name='Endgültige Gutschrift',Updated=TO_TIMESTAMP('2024-04-11 16:43:42.98','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Ref_List_ID=543658
+;
+
+-- Run mode: SWING_CLIENT
+
+-- Name: C_DocSubType Compatible
+-- 2024-04-11T13:47:27.884Z
+UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueName IN (''AQ'', ''AP'', ''Healthcare_CH-EA'', ''Healthcare_CH-GM'', ''Healthcare_CH-KV'', ''Healthcare_CH-KT'', ''RD'', ''LS'', ''CorrectionInvoice'')) OR (''@DocBaseType@''=''ARC'' AND AD_Ref_List.Value IN (''CQ'', ''CR'',''CS'', ''RI'', ''RC'')) OR (''@DocBaseType@''=''API'' AND (AD_Ref_List.Value IN (''QI'', ''VI'', ''SI'', ''FI'') OR AD_Ref_List.ValueName IN (''CommissionSettlement''))) OR (''@DocBaseType@''=''MOP'' AND AD_Ref_List.Value IN (''QI'', ''VI'')) OR (''@DocBaseType@'' = ''MMI'' AND AD_Ref_List.Value in (''MD'', ''VIY'', ''ISD'', ''IOD'')) OR (''@DocBaseType@''=''SDD'' AND AD_Ref_List.Value = ''NAR'') OR (''@DocBaseType@''=''SDC'' AND AD_Ref_List.Value = ''NAR'') OR (''@DocBaseType@''= ''CMB'' AND AD_Ref_List.VALUE IN (''CB'', ''BS'')) OR (''@DocBaseType@''=''POO'' AND AD_Ref_List.Value = ''MED'') OR (''@DocBaseType@'' NOT IN (''API'', ''ARI'', ''ARC'', ''MOP'') AND AD_Ref_List.Value NOT IN (''AQ'', ''AP'', ''CQ'', ''CR'', ''QI'', ''MED'')) /* fallback for the rest of the entries */',Updated=TO_TIMESTAMP('2024-04-11 16:47:27.883','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540219
+;
+
+-- Run mode: WEBUI
+
+-- 2024-04-11T13:55:47.103Z
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541121,TO_TIMESTAMP('2024-04-11 16:55:47.085','YYYY-MM-DD HH24:MI:SS.US'),100,'API',1,'de.metas.contracts',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Final Invoice','Final Invoice',TO_TIMESTAMP('2024-04-11 16:55:47.085','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-04-11T13:55:47.137Z
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541121 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
+;
+
+-- 2024-04-11T13:55:47.141Z
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541121 AND rol.IsManual='N')
+;
+
+-- 2024-04-11T13:56:18.890Z
+UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2024-04-11 16:56:18.89','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- 2024-04-11T13:56:20.717Z
+UPDATE C_DocType SET DocNoSequence_ID=555719,Updated=TO_TIMESTAMP('2024-04-11 16:56:20.717','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- 2024-04-11T13:56:32.004Z
+UPDATE C_DocType SET AD_PrintFormat_ID=1000012,Updated=TO_TIMESTAMP('2024-04-11 16:56:32.004','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- 2024-04-11T13:56:57.043Z
+UPDATE C_DocType SET DocSubType='FI',Updated=TO_TIMESTAMP('2024-04-11 16:56:57.043','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- Run mode: WEBUI
+
+-- 2024-04-11T13:58:09.196Z
+UPDATE C_DocType SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2024-04-11 16:58:09.196','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541121
+;
+
+-- Run mode: WEBUI
+
+-- 2024-04-11T14:03:53.344Z
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541122,TO_TIMESTAMP('2024-04-11 17:03:53.342','YYYY-MM-DD HH24:MI:SS.US'),100,'APC',1,'de.metas.contracts',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Final Credit Memo','Final Credit Memo',TO_TIMESTAMP('2024-04-11 17:03:53.342','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-04-11T14:03:53.349Z
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541122 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
+;
+
+-- 2024-04-11T14:03:53.350Z
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541122 AND rol.IsManual='N')
+;
+
+-- 2024-04-11T14:03:55.740Z
+UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2024-04-11 17:03:55.74','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;
+
+-- 2024-04-11T14:04:12.316Z
+UPDATE C_DocType SET DocNoSequence_ID=555719,Updated=TO_TIMESTAMP('2024-04-11 17:04:12.316','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;
+
+-- 2024-04-11T14:04:20.051Z
+UPDATE C_DocType SET AD_PrintFormat_ID=1000015,Updated=TO_TIMESTAMP('2024-04-11 17:04:20.051','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;
+
+-- 2024-04-11T14:04:25.480Z
+UPDATE C_DocType SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2024-04-11 17:04:25.48','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;
+
+-- 2024-04-11T14:04:39.405Z
+UPDATE C_DocType SET DocSubType='FCM',Updated=TO_TIMESTAMP('2024-04-11 17:04:39.405','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541122
+;
+
+-- Reference: InvoicingGroup
+-- Value: Service
+-- ValueName: Service
+-- 2024-04-11T14:51:28.746Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543659,541742,TO_TIMESTAMP('2024-04-11 17:51:28.591','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Service',TO_TIMESTAMP('2024-04-11 17:51:28.591','YYYY-MM-DD HH24:MI:SS.US'),100,'Service','Service')
+;
+
+-- 2024-04-11T14:51:28.749Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543659 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference: InvoicingGroup
+-- Value: Leistung
+-- ValueName: Leistung
+-- 2024-04-11T15:00:28.578Z
+DELETE FROM  AD_Ref_List_Trl WHERE AD_Ref_List_ID=543498
+;
+
+-- 2024-04-11T15:00:28.586Z
+DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=543498
+;
+
+-- Reference Item: InvoicingGroup -> Service_Service
+-- 2024-04-11T15:00:34.044Z
+UPDATE AD_Ref_List_Trl SET Name='Leistung',Updated=TO_TIMESTAMP('2024-04-11 18:00:34.044','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543659
+;
+
+-- Reference Item: InvoicingGroup -> Service_Service
+-- 2024-04-11T15:00:35.695Z
+UPDATE AD_Ref_List_Trl SET Name='Leistung',Updated=TO_TIMESTAMP('2024-04-11 18:00:35.695','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543659
+;
+
+-- 2024-04-11T15:00:35.695Z
+UPDATE AD_Ref_List SET Name='Leistung' WHERE AD_Ref_List_ID=543659
+;
+
+-- Reference Item: InvoicingGroup -> Service_Service
+-- 2024-04-11T15:00:37.398Z
+UPDATE AD_Ref_List_Trl SET Name='Leistung',Updated=TO_TIMESTAMP('2024-04-11 18:00:37.398','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543659
+;
+
+-- Reference Item: InvoicingGroup -> Service_Service
+-- 2024-04-11T15:00:39.043Z
+UPDATE AD_Ref_List_Trl SET Name='Leistung',Updated=TO_TIMESTAMP('2024-04-11 18:00:39.043','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Ref_List_ID=543659
+;
+
+-- Reference: InvoicingGroup
+-- Value: Costs
+-- ValueName: Kosten
+-- 2024-04-11T15:01:04.212Z
+DELETE FROM  AD_Ref_List_Trl WHERE AD_Ref_List_ID=543499
+;
+
+-- 2024-04-11T15:01:04.214Z
+DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=543499
+;
+
+-- Reference: InvoicingGroup
+-- Value: Costs
+-- ValueName: Costs
+-- 2024-04-11T15:01:18.073Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,543660,541742,TO_TIMESTAMP('2024-04-11 18:01:17.947','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Costs',TO_TIMESTAMP('2024-04-11 18:01:17.947','YYYY-MM-DD HH24:MI:SS.US'),100,'Costs','Costs')
+;
+
+-- 2024-04-11T15:01:18.075Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543660 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference Item: InvoicingGroup -> Costs_Costs
+-- 2024-04-11T15:01:24.262Z
+UPDATE AD_Ref_List_Trl SET Name='Kosten',Updated=TO_TIMESTAMP('2024-04-11 18:01:24.262','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543660
+;
+
+-- Reference Item: InvoicingGroup -> Costs_Costs
+-- 2024-04-11T15:01:26.056Z
+UPDATE AD_Ref_List_Trl SET Name='Kosten',Updated=TO_TIMESTAMP('2024-04-11 18:01:26.056','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543660
+;
+
+-- 2024-04-11T15:01:26.057Z
+UPDATE AD_Ref_List SET Name='Kosten' WHERE AD_Ref_List_ID=543660
+;
+
+-- Reference Item: InvoicingGroup -> Costs_Costs
+-- 2024-04-11T15:01:28.173Z
+UPDATE AD_Ref_List_Trl SET Name='Kosten',Updated=TO_TIMESTAMP('2024-04-11 18:01:28.173','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543660
+;
+
+-- Reference Item: InvoicingGroup -> Costs_Costs
+-- 2024-04-11T15:01:29.804Z
+UPDATE AD_Ref_List_Trl SET Name='Kosten',Updated=TO_TIMESTAMP('2024-04-11 18:01:29.803','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='it_IT' AND AD_Ref_List_ID=543660
 ;
 

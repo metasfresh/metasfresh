@@ -22,7 +22,7 @@
 
 package de.metas.contracts.finalinvoice.process;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.finalinvoice.workpackage.FinalInvoiceEnqueuer;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -35,6 +35,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 
 public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecondition
@@ -66,19 +68,20 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	protected String doIt() throws Exception
 	{
 		final UserId userInChargeId = getUserId();
+		final TableRecordReferenceSet referenceSet = TableRecordReferenceSet.of(getSelectedModularContracts());
 
-		getSelectedModularContractRecords()
-				.forEach(modularContract -> finalInvoiceEnqueuer.enqueueNow(modularContract, userInChargeId));
+		finalInvoiceEnqueuer.enqueueNow(referenceSet, userInChargeId);
 
 		return MSG_OK;
 	}
 
 	@NonNull
-	private ImmutableList<I_C_Flatrate_Term> getSelectedModularContractRecords()
+	private ImmutableSet<TableRecordReference> getSelectedModularContracts()
 	{
 		return retrieveActiveSelectedRecordsQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract)
-				.create()
-				.listImmutable(I_C_Flatrate_Term.class);
+				.iterateAndStream()
+				.map(record -> TableRecordReference.of(I_C_Flatrate_Term.Table_Name, record.getC_Flatrate_Term_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -23,11 +23,12 @@
 package de.metas.contracts.finalinvoice.workpackage;
 
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
 import static org.compiere.util.Env.getCtx;
@@ -39,21 +40,28 @@ public class FinalInvoiceEnqueuer
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public void enqueueNow(
-			@NonNull final I_C_Flatrate_Term modularContract,
+			@NonNull final TableRecordReferenceSet tableRecordReferences,
 			@NonNull final UserId userId)
 	{
-		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(modularContract, userId));
+		trxManager.runInThreadInheritedTrx(() -> tableRecordReferences.forEach(id -> enqueueNow(id, userId)));
+	}
+
+	private void enqueueNow(
+			@NonNull final TableRecordReference referenceToBeEnqueued,
+			@NonNull final UserId userId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(referenceToBeEnqueued, userId));
 	}
 
 	private void enqueueInTrx(
-			@NonNull final I_C_Flatrate_Term modularContract,
+			@NonNull final TableRecordReference referenceToBeEnqueued,
 			@NonNull final UserId userId)
 	{
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), FinalInvoiceWorkPackageProcessor.class)
 				.newWorkPackage()
 				// ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
-				.addElement(modularContract)
+				.addElement(referenceToBeEnqueued)
 				.setUserInChargeId(userId)
 				.buildAndEnqueue();
 	}

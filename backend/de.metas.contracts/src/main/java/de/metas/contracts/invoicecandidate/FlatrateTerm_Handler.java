@@ -5,7 +5,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
 import de.metas.contracts.subscription.invoicecandidatehandler.FlatrateTermSubscription_Handler;
@@ -47,6 +46,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public FlatrateTerm_Handler()
 	{
@@ -198,19 +198,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		if (term.getType_Conditions().equals(X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract))
-		{
-			ic.setQtyOrdered(calculateQtyOrdered.toBigDecimal());
-		}
-		else
-		{
-			final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+		final ProductId productId = handler.getProductId(term, ic);
 
-			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-			final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
-			ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
-		}
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
 	}
 
 	/**

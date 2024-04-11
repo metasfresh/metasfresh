@@ -367,14 +367,12 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		// ** API
 		else if (DocBaseType.APInvoice.equals(docBaseType)
 				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
-				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType)   // metas-ts: treating invoice for recurrent payment like AP invoice
-				|| InvoiceDocBaseType.FinalInvoice.getDocBaseType().equals(docBaseType)) // treating final invoice like AP invoice
+				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}
 		// APC
-		else if (DocBaseType.APCreditMemo.equals(docBaseType)
-				|| InvoiceDocBaseType.FinalCreditMemo.getDocBaseType().equals(docBaseType))
+		else if (DocBaseType.APCreditMemo.equals(docBaseType))
 		{
 			return createFacts_PurchaseCreditMemo(as);
 		}
