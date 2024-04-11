@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import de.metas.handlingunits.IHUContext;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -12,7 +13,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -20,8 +22,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -71,8 +71,8 @@ public class ShipmentScheduleWithHUTests
 
 	private LUTUProducerDestinationTestSupport testSupport;
 
-	private IHUContext huContext;
-
+	private ShipmentScheduleWithHUFactory factory;
+	
 	private StockQtyAndUOMQty ninetyNineNoCatch;
 
 	@BeforeEach
@@ -86,7 +86,10 @@ public class ShipmentScheduleWithHUTests
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		this.factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting())
+				.huContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.build();
 
 		ninetyNineNoCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(new BigDecimal("99"), productId);
 	}
@@ -99,9 +102,7 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Completed);
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleWithoutHu(
-						huContext,
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory.ofShipmentScheduleWithoutHu(
 						schedule,
 						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -121,9 +122,8 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Reversed);
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory
 				.ofShipmentScheduleWithoutHu(
-						huContext,
 						schedule,
 						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -143,9 +143,8 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Drafted);
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory
 				.ofShipmentScheduleWithoutHu(
-						huContext,
 						schedule,
 						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -165,9 +164,8 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Voided);
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory
 				.ofShipmentScheduleWithoutHu(
-						huContext,
 						schedule,
 						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -187,9 +185,8 @@ public class ShipmentScheduleWithHUTests
 		final I_M_InOut io = createInOut(X_M_InOut.DOCSTATUS_Closed);
 		final I_M_InOutLine iol = createInOutLine(io, new BigDecimal(2));
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory
 				.ofShipmentScheduleWithoutHu(
-						huContext,
 						schedule,
 						ninetyNineNoCatch,
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
@@ -212,10 +209,7 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = createHU(typeLU);
 		final I_M_HU tu = createHU(typeTU);
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory.ofQtyPickedRecord(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -237,10 +231,7 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = createHU(typeLU);
 		final I_M_HU tu = createHU(typeTU);
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory.ofQtyPickedRecord(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -261,10 +252,7 @@ public class ShipmentScheduleWithHUTests
 		final I_M_HU lu = luAndTU.getLeft();
 		final I_M_HU tu = luAndTU.getRight();
 
-		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = ShipmentScheduleWithHU
-				.ofShipmentScheduleQtyPicked(
-						createShipmentScheduleQtyPicked(schedule, iol, lu, tu),
-						huContext)
+		final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked = factory.ofQtyPickedRecord(createShipmentScheduleQtyPicked(schedule, iol, lu, tu))
 				.setM_InOutLine(iol)
 				.setM_InOut(io)
 				.getShipmentScheduleQtyPicked();
@@ -288,6 +276,7 @@ public class ShipmentScheduleWithHUTests
 		return hu;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private IPair<I_M_HU, I_M_HU> createLUAndTU(final int qtyTU)
 	{
 		final I_M_HU lu = testSupport.createLU(qtyTU, 5);
@@ -340,6 +329,7 @@ public class ShipmentScheduleWithHUTests
 		return io;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_ShipmentSchedule createScheduleWithQtyOrderedLUandQtyOrderedTU(
 			final int qtyOrderedLU,
 			final int qtyOrderedTU)

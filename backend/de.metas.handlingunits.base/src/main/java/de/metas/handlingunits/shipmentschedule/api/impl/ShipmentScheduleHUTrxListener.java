@@ -12,6 +12,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -85,7 +87,11 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// Link VHU to shipment schedule
 		final boolean anonymousHuPickedOnTheFly = false;
 		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, huContext, anonymousHuPickedOnTheFly);
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(huContext)
+				.build();
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, vhu, factory, anonymousHuPickedOnTheFly);
 	}
 
 	private I_M_ShipmentSchedule findShipmentSchedule(final I_M_HU_Trx_Line trxLine)
@@ -191,8 +197,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 			return;
 		}
 
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final I_M_HU tuHU = hu;
+		@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU tuHU = hu;
 		Services.get(IHUShipmentScheduleBL.class).updateAllocationLUForTU(tuHU);
 	}
 }
