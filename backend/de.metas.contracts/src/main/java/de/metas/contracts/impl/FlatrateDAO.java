@@ -1213,7 +1213,7 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		if (request.getProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, request.getProductId());
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductId());
 		}
 
 		return queryBuilder.create();
