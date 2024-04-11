@@ -2,11 +2,17 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -17,6 +23,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -28,15 +35,26 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -44,6 +62,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +89,52 @@ public class PickingJobService
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUReservationService huReservationService;
+
+	public static PickingJobService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+
+		final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
+		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
+				new PickingConfigRepository(),
+				pickingCandidateRepository,
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				huReservationService,
+				bpartnerBL,
+				ADReferenceService.newMocked(),
+				new InventoryService(new InventoryRepository(), SourceHUsService.get())
+		);
+		final HUQRCodesService huQRCodeService = new HUQRCodesService(
+				huQRCodesRepository,
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+				new QRCodeConfigurationService(new QRCodeConfigurationRepository())
+		);
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				pickingJobSlotService,
+				bpartnerBL,
+				huQRCodeService
+		);
+
+		return new PickingJobService(
+				pickingJobRepository,
+				new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
+				pickingJobSlotService,
+				pickingCandidateService,
+				new PickingJobHUReservationService(huReservationService),
+				defaultPickingJobLoaderSupportingServicesFactory,
+				pickingConfigRepo,
+				ShipmentService.getInstance(),
+				huQRCodeService,
+				InventoryService.newInstanceForUnitTesting(),
+				huReservationService
+		);
+	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
@@ -435,6 +500,7 @@ public class PickingJobService
 
 		return job;
 	}
+
 	public boolean hasPickingJobsReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
 	{
 		return pickingJobRepository.hasReadyToReview(pickingJobIds);
@@ -445,7 +511,6 @@ public class PickingJobService
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
 		return pickingJobRepository.getByIsReadyToReview(pickingJobIds, loadingSupportingServices);
 	}
-
 
 	private boolean removePickingSlotAssignment(
 			@NonNull final PickingJob pickingJob,

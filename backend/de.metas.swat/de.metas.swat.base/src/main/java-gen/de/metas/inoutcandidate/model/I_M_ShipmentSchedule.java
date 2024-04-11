@@ -1069,7 +1069,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
-	 * Set Delivery Stop.
+	 * Set Delivery Stopped.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1078,7 +1078,7 @@ public interface I_M_ShipmentSchedule
 	void setIsDeliveryStop (boolean IsDeliveryStop);
 
 	/**
-	 * Get Delivery Stop.
+	 * Get Delivery Stopped.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1234,6 +1234,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_Calculated_ID (int M_HU_PI_Item_Product_Calculated_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_Calculated_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Item_Product_Calculated_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Item_Product_Calculated_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID = "M_HU_PI_Item_Product_Calculated_ID";
 
 	/**
 	 * Set Packing Instruction.
@@ -1471,7 +1492,7 @@ public interface I_M_ShipmentSchedule
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1481,7 +1502,7 @@ public interface I_M_ShipmentSchedule
 	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1493,7 +1514,7 @@ public interface I_M_ShipmentSchedule
 	 * Set Alt. Warehouse.
 	 * Lager oder Ort für Dienstleistung
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1503,7 +1524,7 @@ public interface I_M_ShipmentSchedule
 	 * Get Alt. Warehouse.
 	 * Lager oder Ort für Dienstleistung
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1512,7 +1533,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
-	 * Set Nr of order line candidates with the same PO ref.
+	 * Set No. of purchase order lines w/ same reference.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1521,7 +1542,7 @@ public interface I_M_ShipmentSchedule
 	void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
 
 	/**
-	 * Get Nr of order line candidates with the same PO ref.
+	 * Get No. of purchase order lines w/ same reference.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1554,7 +1575,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
 
 	/**
-	 * Set Pick From Order.
+	 * Set Pick from Manufacturing Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1563,7 +1584,7 @@ public interface I_M_ShipmentSchedule
 	void setPickFrom_Order_ID (int PickFrom_Order_ID);
 
 	/**
-	 * Get Pick From Order.
+	 * Get Pick from Manufacturing Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

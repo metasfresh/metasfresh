@@ -49,8 +49,7 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * @param anonymousHuPickedOnTheFly true if the HU was picked on the fly for the shipment process
 	 * @return qtyPicked record for this addition
 	 */
-	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext, final boolean anonymousHuPickedOnTheFly);
-
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, ShipmentScheduleWithHUFactory factory, final boolean anonymousHuPickedOnTheFly);
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link ShipmentScheduleWithHU}s.
 	 */

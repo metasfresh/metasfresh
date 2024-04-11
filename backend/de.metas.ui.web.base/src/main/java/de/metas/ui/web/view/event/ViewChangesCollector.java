@@ -9,7 +9,10 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import de.metas.websocket.sender.WebsocketSender;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -101,27 +104,19 @@ public class ViewChangesCollector implements IAutoCloseable
 		return new ViewChangesCollector(autoflush);
 	}
 
-	public static IAutoCloseable currentOrNewThreadLocalCollector()
+	public static ViewChangesCollectorAutoCloseable currentOrNewThreadLocalCollector()
 	{
-		final ViewChangesCollector currentCollector = THREADLOCAL.get();
-		if (currentCollector != null)
-		{
-			return currentCollector::flush;
-		}
-		else
-		{
-			final ViewChangesCollector newCollector = new ViewChangesCollector(false);
-			THREADLOCAL.set(newCollector);
-			return () -> {
-				newCollector.close();
-				THREADLOCAL.remove();
-			};
-		}
+		return new ViewChangesCollectorAutoCloseable(THREADLOCAL, null);
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(ViewChangesCollector.class);
+	public static ViewChangesCollectorAutoCloseable currentOrNewThreadLocalCollector(@NonNull ViewId contextViewId)
+	{
+		return new ViewChangesCollectorAutoCloseable(THREADLOCAL, contextViewId);
+	}
 
-	private static final transient ThreadLocal<ViewChangesCollector> THREADLOCAL = new ThreadLocal<>();
+	private static final Logger logger = LogManager.getLogger(ViewChangesCollector.class);
+
+	private static final ThreadLocal<ViewChangesCollector> THREADLOCAL = new ThreadLocal<>();
 
 	private transient WebsocketSender _websocketSender; // lazy
 
@@ -129,6 +124,8 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final LinkedHashMap<ViewId, ViewChanges> viewChangesMap = new LinkedHashMap<>();
+
+	@Nullable @Getter(AccessLevel.PACKAGE) @Setter(AccessLevel.PACKAGE) private ViewId contextViewId = null;
 
 	private static final boolean DEBUG = false;
 	@Nullable private final String createdStackTrace;
@@ -139,7 +136,7 @@ public class ViewChangesCollector implements IAutoCloseable
 		this(false); // autoflush=false
 	}
 
-	private ViewChangesCollector(final boolean autoflush)
+	ViewChangesCollector(final boolean autoflush)
 	{
 		this.autoflush = autoflush;
 		this.createdStackTrace = DEBUG ? Trace.toOneLineStackTraceString() : null;
@@ -186,9 +183,22 @@ public class ViewChangesCollector implements IAutoCloseable
 		return viewChangesMap.computeIfAbsent(viewId, ViewChanges::new);
 	}
 
+	public void collectFullyChanged()
+	{
+		if (contextViewId != null)
+		{
+			collectFullyChanged(contextViewId);
+		}
+	}
+
 	public void collectFullyChanged(@NonNull final IView view)
 	{
-		viewChanges(view).setFullyChanged();
+		collectFullyChanged(view.getViewId());
+	}
+
+	public void collectFullyChanged(@NonNull final ViewId viewId)
+	{
+		viewChanges(viewId).setFullyChanged();
 
 		autoflushIfEnabled();
 	}
@@ -223,7 +233,12 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	public void collectRowChanged(@NonNull final IView view, final DocumentId rowId)
 	{
-		viewChanges(view).addChangedRowId(rowId);
+		collectRowChanged(view.getViewId(), rowId);
+	}
+
+	public void collectRowChanged(@NonNull final ViewId viewId, final DocumentId rowId)
+	{
+		viewChanges(viewId).addChangedRowId(rowId);
 
 		autoflushIfEnabled();
 	}
@@ -261,7 +276,7 @@ public class ViewChangesCollector implements IAutoCloseable
 		return null;
 	}
 
-	private void flush()
+	void flush()
 	{
 		final ImmutableList<ViewChanges> changesList = getAndClean();
 		if (changesList.isEmpty())

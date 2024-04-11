@@ -49,17 +49,15 @@ public class DimensionTest
 		@Test
 		void empty_fallbackTo_fullyPopulated()
 		{
-			Dimension empty = Dimension.builder().build();
 			final Dimension fullyPopulated = newFullyPopulatedDimension();
-			assertThat(empty.fallbackTo(fullyPopulated)).isSameAs(fullyPopulated);
+			assertThat(Dimension.EMPTY.fallbackTo(fullyPopulated)).isSameAs(fullyPopulated);
 		}
 
 		@Test
 		void fullyPopulated_fallbackTo_empty()
 		{
-			Dimension empty = Dimension.builder().build();
 			final Dimension fullyPopulated = newFullyPopulatedDimension();
-			assertThat(fullyPopulated.fallbackTo(empty)).isSameAs(fullyPopulated);
+			assertThat(fullyPopulated.fallbackTo(Dimension.EMPTY)).isSameAs(fullyPopulated);
 		}
 
 		@Test

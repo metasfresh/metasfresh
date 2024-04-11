@@ -28,18 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
-import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -55,7 +44,6 @@ import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -110,25 +98,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			final PickingJobRepository pickingJobRepository = new PickingJobRepository();
-			final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
-			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-			final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
-			final DefaultPickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
-					pickingJobSlotService,
-					bpartnerBL,
-					new HUQRCodesService(
-							huQRCodesRepository,
-							new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-							new QRCodeConfigurationService(new QRCodeConfigurationRepository()))
-			);
-			return new ShipmentServiceTestImpl(
-					new ShipmentScheduleWithHUService(
-							new HUReservationService(new HUReservationRepository()),
-							pickingJobRepository,
-							pickingJobLoaderSupportingServicesFactory
-					)
-			);
+			return new ShipmentServiceTestImpl(ShipmentScheduleWithHUService.newInstanceForUnitTesting());
 		}
 		else
 		{

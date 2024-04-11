@@ -23,6 +23,8 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCan
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -74,6 +76,7 @@ public class ProcessPickingCandidatesCommand
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
 	private final IHUPPOrderBL ppOrderService = Services.get(IHUPPOrderBL.class);
+	private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices = ShipmentScheduleWithHUSupportingServices.getInstance();
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	//
@@ -217,6 +220,11 @@ public class ProcessPickingCandidatesCommand
 			@NonNull final Quantity qtyPicked,
 			@NonNull final IHUContext huContext)
 	{
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(shipmentScheduleWithHUSupportingServices)
+				.huContext(huContext)
+				.build();
+
 		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 
 		final boolean anonymousHuPickedOnTheFly = false;
@@ -228,7 +236,7 @@ public class ProcessPickingCandidatesCommand
 						qtyPicked,
 						hu),
 				hu,
-				huContext,
+				factory,
 				anonymousHuPickedOnTheFly);
 	}
 
