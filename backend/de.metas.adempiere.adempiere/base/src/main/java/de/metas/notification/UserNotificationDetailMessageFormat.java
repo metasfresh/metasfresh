@@ -1,14 +1,13 @@
 package de.metas.notification;
 
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.slf4j.Logger;
-
 import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -38,10 +37,9 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@SuppressWarnings("serial")
 final class UserNotificationDetailMessageFormat extends EventMessageFormatTemplate
 {
-	public static final UserNotificationDetailMessageFormat newInstance()
+	public static UserNotificationDetailMessageFormat newInstance()
 	{
 		return new UserNotificationDetailMessageFormat();
 	}
@@ -69,6 +67,12 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 			return "<" + recordRef.getRecord_ID() + ">";
 		}
 
+		if(record == null)
+		{
+			logger.info("Failed retrieving record for " + recordRef);
+			return "<" + recordRef.getRecord_ID() + ">";
+		}
+		
 		final String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		return documentNo;
 	}

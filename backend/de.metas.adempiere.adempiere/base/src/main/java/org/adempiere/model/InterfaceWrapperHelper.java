@@ -1259,7 +1259,7 @@ public class InterfaceWrapperHelper
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
+	public static <ModelType> ModelType getModelValue(@NonNull final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
 		if (POWrapper.isHandled(model))
 		{
