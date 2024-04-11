@@ -15,6 +15,10 @@ Feature: Clone Modular Contract Term
       | y2022                | 2022       | harvesting_calendar      |
       | y2023                | 2023       | harvesting_calendar      |
 
+    And metasfresh contains M_PricingSystems
+      | Identifier    | Name           | Value         | OPT.Description | OPT.IsActive |
+      | priceSystem_1 | pricingSysName | pricingSysVal | pricingSysDesc  | true         |
+
   @Id:S0300_100
   @from:cucumber
   Scenario: Happy flow - clone a Modular Contract Term -> new cloned Contract Term with Settings had the new harvest year
@@ -29,8 +33,8 @@ Feature: Clone Modular Contract Term
       | contract_module_product | contract_module_product_17072023_1 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product     | harvesting_calendar      | y2022                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
@@ -53,8 +57,8 @@ Feature: Clone Modular Contract Term
       | clonedModularContractTerm_2022      | modularContractTerm_2022_2023 | ModularContract | Ex                       | DR            | clonedModCntr_settings_1             |
 
     And validate cloned ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Year_ID.Identifier |
-      | clonedModCntr_settings_1       | modCntr_settings_toclone | contract_module_product | y2023                |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem.Identifier |
+      | clonedModCntr_settings_1       | modCntr_settings_toclone | contract_module_product     | y2023                | priceSystem_1                  |
 
   @Id:S0300_200
   @from:cucumber
@@ -68,8 +72,8 @@ Feature: Clone Modular Contract Term
       | contract_module_product | contract_module_product_17072023_2 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product | harvesting_calendar      | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_toclone       | modCntr_settings_toclone | contract_module_product     | harvesting_calendar      | y2022                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |

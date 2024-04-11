@@ -33,8 +33,6 @@ import de.metas.contracts.modular.IModularContractTypeHandler;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractHandlerType;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
@@ -47,7 +45,7 @@ import java.util.stream.Stream;
 import static de.metas.contracts.modular.ModularContractHandlerType.INTERIM_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ModularContractSettingsDAOTest
 {
@@ -72,7 +70,7 @@ class ModularContractSettingsDAOTest
 		settingsRecord.setC_Calendar(calendarRecord);
 		settingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		settingsRecord.setName("ModCntr_Settings");
-		settingsRecord.setM_Product_ID(30);
+		settingsRecord.setM_Raw_Product_ID(30);
 		settingsRecord.setM_PricingSystem_ID(40);
 		saveRecord(settingsRecord);
 
