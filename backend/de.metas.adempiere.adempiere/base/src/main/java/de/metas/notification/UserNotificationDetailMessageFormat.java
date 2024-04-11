@@ -4,6 +4,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.event.EventMessageFormatTemplate;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -52,10 +53,10 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 	}
 
 	@Override
-	protected String formatTableRecordReference(final ITableRecordReference recordRef)
+	protected String formatTableRecordReference(@NonNull final ITableRecordReference recordRef)
 	{
 		// Retrieve the record
-		Object record;
+		final Object record;
 		try
 		{
 			final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
