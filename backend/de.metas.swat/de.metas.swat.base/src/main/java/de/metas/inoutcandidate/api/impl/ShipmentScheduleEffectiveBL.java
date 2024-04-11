@@ -51,7 +51,10 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
@@ -228,10 +231,22 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public ZonedDateTime getDeliveryDate(final I_M_ShipmentSchedule sched)
 	{
-		return TimeUtil.asZonedDateTime(
-				CoalesceUtil.coalesceSuppliers(
-						sched::getDeliveryDate_Override,
-						sched::getDeliveryDate));
+		return getDeliveryDateAsTimestamp(sched)
+				.map(TimeUtil::asZonedDateTime)
+				.orElse(null);
+	}
+
+	@NonNull
+	public static Optional<LocalDate> getDeliveryDateAsLocalDate(final I_M_ShipmentSchedule sched)
+	{
+		return getDeliveryDateAsTimestamp(sched)
+				.map(ts -> ts.toLocalDateTime().toLocalDate());
+	}
+
+	@NonNull
+	public static Optional<Timestamp> getDeliveryDateAsTimestamp(final I_M_ShipmentSchedule sched)
+	{
+		return CoalesceUtil.optionalOfFirstNonNullSupplied(sched::getDeliveryDate_Override, sched::getDeliveryDate);
 	}
 
 	@Override

@@ -116,9 +116,19 @@ public class AttributeSetInstanceId implements RepoIdAware
 	@Nullable
 	public AttributeSetInstanceId asRegularOrNull() {return isRegular() ? this : null;}
 
-	/** Note that currently, according to this method, "NONE" ist not equal to an emptpy ASI */
+	/**
+	 * Note that currently, according to this method, "NONE" ist not equal to an emptpy ASI
+	 */
 	public static boolean equals(@Nullable final AttributeSetInstanceId id1, @Nullable final AttributeSetInstanceId id2)
 	{
 		return Objects.equals(id1, id2);
+	}
+
+	public void assertRegular()
+	{
+		if (!isRegular())
+		{
+			throw new AdempiereException("Expected regular ASI but got " + this);
+		}
 	}
 }
