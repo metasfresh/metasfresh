@@ -127,7 +127,7 @@ public class SplitShipmentRow implements IViewRow
 		return !isProcessed();
 	}
 
-	@Nullable
+	@NonNull
 	public LocalDate getDeliveryDateNotNull()
 	{
 		return Check.assumeNotNull(getDeliveryDate(), "expected deliveryDate to be set: {}", this);
