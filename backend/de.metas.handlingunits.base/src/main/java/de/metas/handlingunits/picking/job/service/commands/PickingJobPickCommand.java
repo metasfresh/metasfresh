@@ -56,7 +56,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -73,12 +72,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -89,9 +86,6 @@ import java.util.Optional;
 
 public class PickingJobPickCommand
 {
-	private final Logger logger = LogManager.getLogger(PickingJobPickCommand.class);
-
-	private final static String SYS_CONFIG_SKIP_PICKED_HU_VALIDATION = "PickingJobPickCommand.SYS_CONFIG_SKIP_PICKED_HU_VALIDATION";
 	private final static AdMessageKey HU_CANNOT_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.HU_CANNOT_BE_PICKED_ERROR_MSG");
 	//
 	// Services
@@ -103,7 +97,6 @@ public class PickingJobPickCommand
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 
 	@NonNull private final PickingJobRepository pickingJobRepository;
@@ -589,12 +582,6 @@ public class PickingJobPickCommand
 
 	private void validatePickedHU()
 	{
-		if (sysConfigBL.getBooleanValue(SYS_CONFIG_SKIP_PICKED_HU_VALIDATION, false))
-		{
-			logger.warn("Picked HU is not validated due to '{}' sys config", SYS_CONFIG_SKIP_PICKED_HU_VALIDATION);
-			return;
-		}
-
 		final HuId huIdToBePicked = getHuIdToBePicked();
 
 		// Accept destroyed HUs because in case of createInventoryForMissingQty we will create a new HU out of the blue
