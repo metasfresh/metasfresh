@@ -136,5 +136,3 @@ ORDER BY r.bp_value,
 $$
 ;
 
-
-
