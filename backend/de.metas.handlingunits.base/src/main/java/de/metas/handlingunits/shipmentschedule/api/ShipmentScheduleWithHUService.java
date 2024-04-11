@@ -64,17 +64,19 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplitRepository;
+import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -90,11 +92,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -112,15 +116,16 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentScheduleWithHUService
 {
-
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleWithHUService.class);
 
 	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly";
 
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -128,16 +133,24 @@ public class ShipmentScheduleWithHUService
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-	private final PickingJobService pickingJobService;
-	private final HUReservationService huReservationService;
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices;
+	@NonNull private final ShipmentScheduleSplitService shipmentScheduleSplitService;
+	@NonNull private final PickingJobService pickingJobService;
+	@NonNull private final HUReservationService huReservationService;
 
-	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService, @NonNull final PickingJobService pickingJobService)
+	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
-		this.pickingJobService = pickingJobService;
-		this.huReservationService = huReservationService;
+		Adempiere.assertUnitTestMode();
+
+		return new ShipmentScheduleWithHUService(
+				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
+				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
+				PickingJobService.newInstanceForUnitTesting(),
+				new HUReservationService(new HUReservationRepository())
+		);
 	}
 
 	@Value
@@ -178,23 +191,30 @@ public class ShipmentScheduleWithHUService
 	{
 		final ImmutableList.Builder<ShipmentScheduleWithHU> candidates = ImmutableList.builder();
 
-		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
-		final IHUContext huContext = request.getHuContext();
+		final ShipmentScheduleWithHUFactory factory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(shipmentScheduleWithHUSupportingServices)
+				.huContext(request.getHuContext())
+				.build();
 
-		final I_M_ShipmentSchedule scheduleRecord = Services.get(IShipmentSchedulePA.class).getById(request.getShipmentScheduleId());
+		final M_ShipmentSchedule_QuantityTypeToUse quantityType = request.getQuantityType();
+
+		final I_M_ShipmentSchedule scheduleRecord = shipmentSchedulePA.getById(request.getShipmentScheduleId());
 
 		switch (quantityType)
 		{
 			case TYPE_QTY_TO_DELIVER:
-				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, request.isOnTheFlyPickToPackingInstructions(), huContext));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, request.isOnTheFlyPickToPackingInstructions(), factory));
 				break;
 			case TYPE_PICKED_QTY:
-				final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createAndValidateCandidatesForPick(huContext, scheduleRecord, quantityType);
+				final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createAndValidateCandidatesForPick(factory, scheduleRecord, quantityType);
 				candidates.addAll(candidatesForPick);
 				break;
 			case TYPE_BOTH:
-				candidates.addAll(createShipmentScheduleWithHUForPick(scheduleRecord, huContext, quantityType));
-				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, request.isOnTheFlyPickToPackingInstructions(), huContext));
+				candidates.addAll(createShipmentScheduleWithHUForPick(scheduleRecord, factory, quantityType));
+				candidates.addAll(createShipmentSchedulesWithHUForQtyToDeliver(scheduleRecord, request.getQuantityToDeliverOverride(), quantityType, request.isOnTheFlyPickToPackingInstructions(), factory));
+				break;
+			case TYPE_SPLIT_SHIPMENT:
+				candidates.addAll(createShipmentScheduleWithHUForSplitShipments(scheduleRecord, factory));
 				break;
 			default:
 				throw new AdempiereException("Unexpected QuantityType=" + quantityType + "; CreateCandidatesRequest=" + request);
@@ -265,7 +285,7 @@ public class ShipmentScheduleWithHUService
 			@Nullable final Quantity quantityToDeliverOverride,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse,
 			final boolean pickAccordingToPackingInstruction,
-			@NonNull final IHUContext huContext)
+			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
@@ -275,13 +295,13 @@ public class ShipmentScheduleWithHUService
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
-		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(huContext);
+		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
 		if (pickAvailableHUsOnTheFly)
 		{
 			final IProductBL productBL = Services.get(IProductBL.class);
 			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext));
+				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, factory));
 			}
 			else
 			{
@@ -312,8 +332,7 @@ public class ShipmentScheduleWithHUService
 					.uomQty(catchQtyOverride)
 					.build();
 
-			result.add(ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-					huContext, //
+			result.add(factory.ofShipmentScheduleWithoutHu(
 					scheduleRecord,
 					stockQtyAndCatchQty,
 					quantityTypeToUse));
@@ -352,7 +371,7 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final Quantity qtyToDeliver,
 			final boolean pickAccordingToPackingInstruction,
-			@NonNull final IHUContext huContext)
+			@NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -375,7 +394,7 @@ public class ShipmentScheduleWithHUService
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID());
-		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, huContext);
+		final List<ShipmentScheduleWithHU> alreadyPickedOnTheFlyButNotDelivered = getAlreadyPickedOnTheFlyButNotDelivered(shipmentScheduleId, factory);
 
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
@@ -438,7 +457,7 @@ public class ShipmentScheduleWithHUService
 						scheduleRecord,
 						qtys,
 						newHURecord,
-						huContext,
+						factory,
 						anonymousTuPickedOnTheFly));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
 			}
@@ -556,11 +575,11 @@ public class ShipmentScheduleWithHUService
 	}
 
 	private Collection<? extends ShipmentScheduleWithHU> createAndValidateCandidatesForPick(
-			final IHUContext huContext,
+			@NonNull final ShipmentScheduleWithHUFactory factory,
 			final I_M_ShipmentSchedule schedule,
 			final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse)
 	{
-		final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createShipmentScheduleWithHUForPick(schedule, huContext, quantityTypeToUse);
+		final Collection<? extends ShipmentScheduleWithHU> candidatesForPick = createShipmentScheduleWithHUForPick(schedule, factory, quantityTypeToUse);
 
 		if (Check.isEmpty(candidatesForPick))
 		{
@@ -576,15 +595,14 @@ public class ShipmentScheduleWithHUService
 				return Collections.emptyList();
 			}
 			Loggables.withLogger(logger, Level.WARN).addLog("Shipment schedule has no I_M_ShipmentSchedule_QtyPicked records (or these records have inactive HUs); M_ShipmentSchedule={}", schedule);
-			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoQtyPicked);
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException(MSG_NoQtyPicked);
 		}
 		return candidatesForPick;
 	}
 
 	private Collection<? extends ShipmentScheduleWithHU> createShipmentScheduleWithHUForPick(
 			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final IHUContext huContext,
+			@NonNull final ShipmentScheduleWithHUFactory factory,
 			@NonNull final M_ShipmentSchedule_QuantityTypeToUse quantityType)
 	{
 		List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = retrieveQtyPickedRecords(schedule);
@@ -620,7 +638,7 @@ public class ShipmentScheduleWithHUService
 			//
 			// Create ShipmentSchedule+HU candidate and add it to our list
 			final ShipmentScheduleWithHU candidate = //
-					ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedWithHuContext(qtyPickedRecordHU, huContext, quantityType);
+					factory.ofQtyPickedRecord(qtyPickedRecordHU, quantityType);
 			candidatesForPick.add(candidate);
 		}
 
@@ -666,6 +684,22 @@ public class ShipmentScheduleWithHUService
 		}
 
 		return unshippedHUs;
+	}
+
+	private Collection<? extends ShipmentScheduleWithHU> createShipmentScheduleWithHUForSplitShipments(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final ShipmentScheduleWithHUFactory factory)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+		final List<ShipmentScheduleSplit> shipmentScheduleSplits = shipmentScheduleSplitService.getByShipmentScheduleId(shipmentScheduleId);
+		if (shipmentScheduleSplits.isEmpty())
+		{
+			throw new AdempiereException("No shipment schedule split records defined");
+		}
+
+		return shipmentScheduleSplits.stream()
+				.map(split -> factory.ofSplit(schedule, split))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -914,11 +948,11 @@ public class ShipmentScheduleWithHUService
 	}
 
 	@NonNull
-	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final IHUContext huContext)
+	private List<ShipmentScheduleWithHU> getAlreadyPickedOnTheFlyButNotDelivered(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final ShipmentScheduleWithHUFactory factory)
 	{
 		return shipmentScheduleAllocDAO.retrievePickedOnTheFlyAndNotDelivered(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
-				.map(pickedLine -> ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(pickedLine, huContext))
+				.map(factory::ofQtyPickedRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 

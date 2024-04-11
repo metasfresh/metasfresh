@@ -27,6 +27,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.ContractSpecificPrice;
 import de.metas.invoicecandidate.NewInvoiceCandidate;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -38,6 +39,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
@@ -78,51 +80,69 @@ public class ManualCandidateService
 		final BPartnerLocation location = bpartnerComp.extractLocation(newIC.getBillPartnerInfo().getBpartnerLocationId()).get();
 		final CountryId countryId = countryDAO.getCountryIdByCountryCode(location.getCountryCode());
 
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IEditablePricingContext pricingContext = pricingBL
-				.createInitialContext(
-						newIC.getOrgId(),
-						newIC.getProductId(),
-						newIC.getBillPartnerInfo().getBpartnerId(),
-						newIC.getQtyOrdered().getStockQty(),
-						newIC.getSoTrx())
-				.setCountryId(countryId)
-				.setPriceDate(newIC.getDateOrdered())
-				.setFailIfNotCalculated();
-		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+		final ContractSpecificPrice contractSpecificPrice = newIC.getContractSpecificPrice();
 
-		candidate.pricingSystemId(pricingResult.getPricingSystemId());
-		candidate.priceListVersionId(pricingResult.getPriceListVersionId());
-
-		final ProductPrice priceEntered = ProductPrice.builder()
-				.money(Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId()))
-				.productId(pricingResult.getProductId())
-				.uomId(pricingResult.getPriceUomId())
-				.build();
-		candidate.priceEntered(priceEntered);
-		candidate.discount(pricingResult.getDiscount());
-
-		candidate.priceEnteredOverride(priceEnteredOverride);
-		candidate.discountOverride(discountOverride);
+		final TaxCategoryId taxCategoryId;
+		if (contractSpecificPrice != null)
+		{
+			taxCategoryId = contractSpecificPrice.getTaxCategoryId();
+			candidate.priceEntered(contractSpecificPrice.getProductPrice());
+			candidate.priceActual(contractSpecificPrice.getProductPrice());
+			candidate.pricingSystemId((contractSpecificPrice.getPricingSystemId()));
+			candidate.discount(Percent.ZERO);
 
 
-		final BigDecimal priceActualBD = pricingResult.getDiscount()
-				.subtractFromBase(
-						pricingResult.getPriceStd(),
-						pricingResult.getPrecision().toInt());
-		final ProductPrice priceActual = ProductPrice.builder()
-				.money(Money.of(priceActualBD, pricingResult.getCurrencyId()))
-				.productId(pricingResult.getProductId())
-				.uomId(pricingResult.getPriceUomId())
-				.build();
-		candidate.priceActual(priceActual);
+		}
+		else
+		{
+			final IPricingBL pricingBL = Services.get(IPricingBL.class);
+			final IEditablePricingContext pricingContext = pricingBL
+					.createInitialContext(
+							newIC.getOrgId(),
+							newIC.getProductId(),
+							newIC.getBillPartnerInfo().getBpartnerId(),
+							newIC.getQtyOrdered().getStockQty(),
+							newIC.getSoTrx())
+					.setCountryId(countryId)
+					.setPriceDate(newIC.getDateOrdered())
+					.setFailIfNotCalculated();
+
+			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+
+			candidate.pricingSystemId(pricingResult.getPricingSystemId());
+			candidate.priceListVersionId(pricingResult.getPriceListVersionId());
+
+			final ProductPrice priceEntered = ProductPrice.builder()
+					.money(Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId()))
+					.productId(pricingResult.getProductId())
+					.uomId(pricingResult.getPriceUomId())
+					.build();
+			candidate.priceEntered(priceEntered);
+			candidate.discount(pricingResult.getDiscount());
+
+			candidate.priceEnteredOverride(priceEnteredOverride);
+			candidate.discountOverride(discountOverride);
+
+			final BigDecimal priceActualBD = pricingResult.getDiscount()
+					.subtractFromBase(
+							pricingResult.getPriceStd(),
+							pricingResult.getPrecision().toInt());
+			final ProductPrice priceActual = ProductPrice.builder()
+					.money(Money.of(priceActualBD, pricingResult.getCurrencyId()))
+					.productId(pricingResult.getProductId())
+					.uomId(pricingResult.getPriceUomId())
+					.build();
+			candidate.priceActual(priceActual);
+
+			taxCategoryId = pricingResult.getTaxCategoryId();
+		}
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				newIC,
-				pricingResult.getTaxCategoryId(),
+				taxCategoryId,
 				newIC.getProductId().getRepoId(),
 				TimeUtil.asTimestamp(newIC.getDateOrdered(), timeZone), // shipDate
 				newIC.getOrgId(),

@@ -2356,6 +2356,9 @@ public class FlatrateBL implements IFlatrateBL
 
 		setPricingSystemTaxCategAndIsTaxIncluded(orderLine, newTerm);
 
+		newTerm.setC_Harvesting_Calendar_ID(order.getC_Harvesting_Calendar_ID());
+		newTerm.setHarvesting_Year_ID(order.getHarvesting_Year_ID());
+
 		newTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Waiting);
 		newTerm.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Drafted);
 		newTerm.setDocAction(X_C_Flatrate_Term.DOCACTION_Complete);

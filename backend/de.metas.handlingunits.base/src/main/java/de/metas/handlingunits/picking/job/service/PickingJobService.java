@@ -3,7 +3,12 @@ package de.metas.handlingunits.picking.job.service;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.dao.ValueRestriction;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -11,6 +16,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -22,18 +28,27 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -71,6 +86,41 @@ public class PickingJobService
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.pickingConfigRepo = pickingConfigRepo;
 		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
+	}
+	
+	public static PickingJobService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		
+		final PickingConfigRepositoryV2 pickingConfigRepo = new PickingConfigRepositoryV2();
+		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
+		final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final HUQRCodesRepository huQRCodesRepository = new HUQRCodesRepository();
+		return new PickingJobService(
+				pickingJobRepository,
+				new PickingJobLockService(new SqlShipmentScheduleLockRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())),
+				pickingJobSlotService,
+				new PickingCandidateService(
+						new PickingConfigRepository(),
+						pickingCandidateRepository,
+						new HuId2SourceHUsService(new HUTraceRepository()),
+						huReservationService,
+						bpartnerBL,
+						ADReferenceService.newMocked()
+				),
+				new PickingJobHUReservationService(huReservationService),
+				pickingConfigRepo,
+				new DefaultPickingJobLoaderSupportingServicesFactory(
+						pickingJobSlotService,
+						bpartnerBL,
+						new HUQRCodesService(
+								huQRCodesRepository,
+								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+				)
+		);
 	}
 
 	public PickingJob getById(final PickingJobId pickingJobId)

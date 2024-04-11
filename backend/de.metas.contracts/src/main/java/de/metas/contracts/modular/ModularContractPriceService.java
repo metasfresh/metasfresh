@@ -49,6 +49,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -91,14 +92,23 @@ public class ModularContractPriceService
 		}
 
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+
+		final Optional<ModuleConfig> interimContractModule = settings.getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatchingHandler(ModularContractHandlerType.MATERIAL_RECEIPT_LINE_INTERIM))
+				.findFirst();
+
+		if (interimContractModule.isEmpty())
+		{
+			// there is no module for interim prices
+			return;
+		}
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		for (final ModuleConfig config : settings.getInterimInvoiceConfigs())
-		{
-			final ProductId productId = settings.getRawProductId();
-			setProductDataOnPricingContext(productId, pricingContextTemplate);
-			createModCntrSpecificPrices(flatrateTermRecord, config, pricingContextTemplate);
-		}
+		final ProductId productId = settings.getRawProductId();
+		setProductDataOnPricingContext(productId, pricingContextTemplate);
+		createModCntrSpecificPrices(flatrateTermRecord, interimContractModule.get(), pricingContextTemplate);
+
 	}
 
 	private void setProductDataOnPricingContext(final ProductId productId, final IEditablePricingContext pricingContextTemplate)
@@ -130,6 +140,7 @@ public class ModularContractPriceService
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID(), flatrateTermRecord.getBill_Location_ID());
 		final CountryId countryId = partnerDAO.getCountryId(bpartnerLocationId);
 		return pricingBL.createPricingContext()
+				.setOrgId(orgId)
 				.setFailIfNotCalculated()
 				.setSOTrx(settings.getSoTrx())
 				.setPricingSystemId(settings.getPricingSystemId())
