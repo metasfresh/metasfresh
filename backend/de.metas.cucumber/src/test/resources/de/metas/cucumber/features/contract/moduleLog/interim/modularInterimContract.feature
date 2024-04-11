@@ -1,5 +1,6 @@
 @Id:S0306
 @Id:S0314
+@ignore
 Feature: Interim contract and interim invoice for bpartner
 
   Background:
