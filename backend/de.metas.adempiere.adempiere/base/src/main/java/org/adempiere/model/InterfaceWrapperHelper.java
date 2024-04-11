@@ -481,7 +481,6 @@ public class InterfaceWrapperHelper
 	 * Mark the model as staled. It means that it needs to be reloaded first in case some values need to be retrieved.
 	 * <p>
 	 * NOTE: this method is currently refreshing the model right away, because we did not implement it.
-	 *
 	 */
 	public static void markStaled(final Object model)
 	{
@@ -1203,14 +1202,14 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static <T> T getValueOrNull(final Object model, final String columnName)
+	public static <T> T getValueOrNull(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <T> Optional<T> getValue(final Object model, final String columnName)
+	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1219,7 +1218,7 @@ public class InterfaceWrapperHelper
 	}
 
 	@NonNull
-	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	public static <T> Optional<T> getValueOptional(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
@@ -1243,14 +1242,14 @@ public class InterfaceWrapperHelper
 	 * @deprecated Favor using the actual getters. It's easier to trace/debug later.
 	 */
 	@Deprecated
-	public static <T> T getValueOverrideOrValue(final Object model, final String columnName)
+	public static <T> T getValueOverrideOrValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
 		final boolean useOverrideColumnIfAvailable = true;
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	private static <T> T getValue(final Object model,
+	private static <T> T getValue(@NonNull final Object model,
 								  final String columnName,
 								  final boolean throwExIfColumnNotFound,
 								  final boolean useOverrideColumnIfAvailable)
@@ -1258,7 +1257,7 @@ public class InterfaceWrapperHelper
 		return helpers.getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <ModelType> ModelType getModelValue(final Object model, final String columnName, final Class<ModelType> columnModelType)
+	public static <ModelType> ModelType getModelValue(@NonNull final Object model, final String columnName, final Class<ModelType> columnModelType)
 	{
 		if (POWrapper.isHandled(model))
 		{
