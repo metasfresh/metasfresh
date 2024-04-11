@@ -76,13 +76,12 @@ class MultiSelect extends Component {
           {dataSource.map((item) => (
             <div className="form-group" key={item.key}>
               <div key={item.key} className="row">
-                <div className=" col-sm-6 float-left">
+                <div className=" col-sm-10 float-left">
                   <label className="form-control-label" title={item.caption}>
                     {item.caption}
                   </label>
                 </div>
-
-                <div className="col-sm-6 float-right">
+                <div className="col-sm-1 float-right">
                   <label className="input-checkbox">
                     <input
                       type="checkbox"
