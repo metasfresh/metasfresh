@@ -45,6 +45,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InventoryLine;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
@@ -124,7 +125,7 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_C_Flatrate_Term.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name, I_PP_Cost_Collector.Table_Name ->
 			{
 				switch (action)
 				{
@@ -140,20 +141,12 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_PP_Cost_Collector.Table_Name ->
+			case I_M_InventoryLine.Table_Name ->
 			{
 				switch (action)
 				{
-					case COMPLETED -> {}
-					case RECREATE_LOGS ->
-					{
-						final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(tableRecordReference.getRecord_ID())).getPP_Order_ID());
-						final TableRecordReference ppOrderReference = TableRecordReference.of(I_PP_Order.Table_Name,
-																							  ppOrderId);
-
-						contractLogService.throwErrorIfProcessedLogsExistForRecord(ppOrderReference,
-																				   MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-					}
+					case COMPLETED, REVERSED, VOIDED, RECREATE_LOGS -> {}
+					case REACTIVATED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}

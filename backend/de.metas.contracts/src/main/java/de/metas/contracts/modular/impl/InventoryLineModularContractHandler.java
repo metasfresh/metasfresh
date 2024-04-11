@@ -24,15 +24,17 @@ package de.metas.contracts.modular.impl;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContract_Constants;
+import de.metas.contracts.modular.computing.CalculationRequest;
+import de.metas.contracts.modular.computing.CalculationResponse;
 import de.metas.contracts.modular.computing.IModularContractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryLineId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InventoryLine;
 import org.springframework.stereotype.Component;
@@ -40,58 +42,48 @@ import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class InventoryLineModularContractHandler implements IModularContractComputingMethodHandler<I_M_InventoryLine>
+public class InventoryLineModularContractHandler implements IModularContractComputingMethodHandler
 {
 	private static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.ReactivateNotAllowed");
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
 	@NonNull private final ModularContractLogService contractLogService;
 
-	@NonNull
 	@Override
-	public Class<I_M_InventoryLine> getType()
+	public boolean applies(@NonNull final TableRecordReference tableRecordReference, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		return I_M_InventoryLine.class;
-	}
-
-	@Override
-	public boolean applies(@NonNull final I_M_InventoryLine inventoryLine)
-	{
-		return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
-	}
-
-	@Override
-	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
-	{
-		return logEntryContractType.isModularContractType();
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_M_InventoryLine inventoryLine)
-	{
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
-	}
-
-	public void validateAction(
-			@NonNull final I_M_InventoryLine model,
-			@NonNull final ModelAction action)
-	{
-		switch (action)
+		if(!logEntryContractType.isModularContractType())
 		{
-			case COMPLETED, REVERSED, VOIDED -> {}
-			case REACTIVATED -> throw new AdempiereException(MSG_REACTIVATE_NOT_ALLOWED);
-			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
-																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+			return false;
 		}
+
+		if(tableRecordReference.getTableName().equals(I_M_InventoryLine.Table_Name))
+		{
+			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
+		}
+		return false;
+	}
+
+	@Override
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference tableRecordReference)
+	{
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(tableRecordReference.getRecord_ID()));
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
 	}
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return INVENTORY_LINE_MODULAR;
+	}
+
+	@Override
+	public @NonNull CalculationResponse calculate(final @NonNull CalculationRequest request)
+	{
+		return null;
 	}
 }
