@@ -28,6 +28,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
 @Builder
 public class ViewHeaderProperties
@@ -37,6 +39,20 @@ public class ViewHeaderProperties
 	@NonNull
 	@Singular
 	ImmutableList<ViewHeaderPropertiesGroup> groups;
+
+	public static ViewHeaderProperties ofEntries(@NonNull final List<ViewHeaderProperty> entries)
+	{
+		if (entries.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		return builder()
+				.group(ViewHeaderPropertiesGroup.builder()
+						.entries(entries)
+						.build())
+				.build();
+	}
 
 	public boolean isEmpty()
 	{

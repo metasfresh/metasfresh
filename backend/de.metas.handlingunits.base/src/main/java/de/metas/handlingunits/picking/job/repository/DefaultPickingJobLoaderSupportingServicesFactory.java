@@ -4,9 +4,11 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import lombok.NonNull;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 @Service
+@Primary
 public class DefaultPickingJobLoaderSupportingServicesFactory implements PickingJobLoaderSupportingServicesFactory
 {
 	@NonNull private final PickingJobSlotService pickingJobSlotService;
