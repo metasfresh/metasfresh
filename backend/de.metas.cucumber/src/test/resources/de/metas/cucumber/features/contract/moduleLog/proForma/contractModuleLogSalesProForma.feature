@@ -133,7 +133,7 @@ Feature: Modular contract log for proForma Sales Order
       | huItemSOProduct                    | huPiItemPM                 | modularContract_prod_S0315 | 10  | 2022-02-01 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier     | Name                               | M_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
+      | ModCntr_Settings_ID.Identifier     | Name                               | M_Raw_Product_ID.Identifier    | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
       | modCntr_proForma_PO_settings_S0315 | modCntr_proForma_PO_settings_S0315 | modularContract_prod_S0315 | harvesting_calendar      | year_2022            | moduleLogPS                       | false       |
       | modCntr_proForma_SO_settings_S0315 | modCntr_proForma_SO_settings_S0315 | modularContract_prod_S0315 | harvesting_calendar      | year_2022            | moduleLogPS                       | true        |
 

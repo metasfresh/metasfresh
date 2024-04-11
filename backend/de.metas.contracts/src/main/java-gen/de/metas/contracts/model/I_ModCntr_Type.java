@@ -79,7 +79,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -88,7 +88,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -121,7 +121,7 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -130,7 +130,7 @@ public interface I_ModCntr_Type
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

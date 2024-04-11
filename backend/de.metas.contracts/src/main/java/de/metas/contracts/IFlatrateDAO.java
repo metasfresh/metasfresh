@@ -51,6 +51,7 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
@@ -268,6 +269,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_C_Flatrate_Term> getModularFlatrateTermsByQuery(@NonNull ModularFlatrateTermQuery modularFlatrateTermQuery);
+
+	IQuery<I_C_Flatrate_Term> createInterimContractQuery(@NonNull IQueryFilter<I_C_Flatrate_Term> contractFilter);
 
 	Stream<I_C_Flatrate_Term> stream(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 

@@ -27,7 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfigId;
+import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -104,7 +104,7 @@ public class LogEntryCreateRequest
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
-	ModuleConfigId configId;
+	ModuleConfigAndSettingsId configId;
 
 	@Nullable
 	ProductPrice priceActual;
@@ -135,7 +135,7 @@ public class LogEntryCreateRequest
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ModularContractTypeId modularContractTypeId,
-			@NonNull final ModuleConfigId configId,
+			@NonNull final ModuleConfigAndSettingsId configId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)

@@ -31,9 +31,13 @@ Feature: Calculation of Modular Contract Transition
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_10242023_1 |
 
+    And metasfresh contains M_PricingSystems
+      | Identifier    | Name           | Value         | OPT.Description | OPT.IsActive |
+      | priceSystem_1 | pricingSysName | pricingSysVal | pricingSysDesc  | true         |
+
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                        | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_1             | modCntr_settings_10242023_1 | contract_module_product | calendar_1               | y2022                |
+      | ModCntr_Settings_ID.Identifier | Name                        | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | modCntr_settings_10242023_1 | contract_module_product     | calendar_1               | y2022                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |
@@ -91,9 +95,13 @@ Feature: Calculation of Modular Contract Transition
       | Identifier              | Name                               |
       | contract_module_product | contract_module_product_10242023_2 |
 
+    And metasfresh contains M_PricingSystems
+      | Identifier    | Name           | Value         | OPT.Description | OPT.IsActive |
+      | priceSystem_1 | pricingSysName | pricingSysVal | pricingSysDesc  | true         |
+
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                        | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier |
-      | modCntr_settings_1             | modCntr_settings_10242023_2 | contract_module_product | calendar_1               | y2021                |
+      | ModCntr_Settings_ID.Identifier | Name                        | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | modCntr_settings_10242023_2 | contract_module_product     | calendar_1               | y2021                | priceSystem_1                     |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                     | Value                    | ModularContractHandlerType |

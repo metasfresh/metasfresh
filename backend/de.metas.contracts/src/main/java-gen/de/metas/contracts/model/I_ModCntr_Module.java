@@ -119,7 +119,7 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bausteine.
+	 * Set Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -128,7 +128,7 @@ public interface I_ModCntr_Module
 	void setModCntr_Module_ID (int ModCntr_Module_ID);
 
 	/**
-	 * Get Bausteine.
+	 * Get Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +142,7 @@ public interface I_ModCntr_Module
 	/**
 	 * Set Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -151,32 +151,32 @@ public interface I_ModCntr_Module
 	/**
 	 * Get Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getModCntr_Settings_ID();
 
-	de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings();
+	de.metas.contracts.model.I_ModCntr_Log getModCntr_Settings();
 
-	void setModCntr_Settings(de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings);
+	void setModCntr_Settings(de.metas.contracts.model.I_ModCntr_Log ModCntr_Settings);
 
-	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Settings> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Settings.class);
+	ModelColumn<I_ModCntr_Module, de.metas.contracts.model.I_ModCntr_Log> COLUMN_ModCntr_Settings_ID = new ModelColumn<>(I_ModCntr_Module.class, "ModCntr_Settings_ID", de.metas.contracts.model.I_ModCntr_Log.class);
 	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

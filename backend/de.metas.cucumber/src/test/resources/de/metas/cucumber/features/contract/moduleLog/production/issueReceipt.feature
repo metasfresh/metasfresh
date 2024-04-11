@@ -43,7 +43,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | locator                 | locator_07212023_1 | warehouse                 |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:

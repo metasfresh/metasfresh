@@ -68,7 +68,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_100 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_100 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_100 | modCntr_ship_settings_S0303_100 | modularContract_prod_S0303_100 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |
@@ -188,7 +188,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_200 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_200 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_200 | modCntr_ship_settings_S0303_200 | modularContract_prod_S0303_200 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |
@@ -296,7 +296,7 @@ Feature: Modular contract log from shipment (PO)
       | modularPP_PO | moduleLogPLV_PO                   | modularContract_prod_S0303_300 | 5.00     | PCE               | Normal                        |
       | modularPP_SO | moduleLogPLV_SO                   | modularContract_prod_S0303_300 | 10.00    | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier  | Name                            | M_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier  | Name                            | M_Raw_Product_ID.Identifier        | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_ship_settings_S0303_300 | modCntr_ship_settings_S0303_300 | modularContract_prod_S0303_300 | harvesting_calendar      | year_2023            | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier  | SeqNo | Name    | M_Product_ID.Identifier        | InvoicingGroup | ModCntr_Settings_ID.Identifier  | ModCntr_Type_ID.Identifier |

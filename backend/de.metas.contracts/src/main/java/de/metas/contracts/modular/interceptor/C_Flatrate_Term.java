@@ -25,6 +25,7 @@ package de.metas.contracts.modular.interceptor;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.impl.PurchaseOrderLineModularContractHandler;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
@@ -53,6 +54,8 @@ public class C_Flatrate_Term
 	private final BPartnerInterimContractService bPartnerInterimContractService;
 	private final ModularContractService modularContractService;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractPriceService modularContractPriceService;
+
 	private final IInterimFlatrateTermService interimInvoiceFlatrateTermBL = Services.get(IInterimFlatrateTermService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -82,16 +85,16 @@ public class C_Flatrate_Term
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
-											flatrateTermRecord.getStartDate(),
-											flatrateTermRecord.getEndDate(),
-											(interimContract) -> {
-												if (sourcePurchaseOrderLine == null)
-												{
-													return;
-												}
+				flatrateTermRecord.getStartDate(),
+				flatrateTermRecord.getEndDate(),
+				(interimContract) -> {
+					if (sourcePurchaseOrderLine == null)
+					{
+						return;
+					}
 
-												PurchaseOrderLineModularContractHandler.crossLinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
-											});
+					PurchaseOrderLineModularContractHandler.crossLinkInterimContractAndSourcePurchaseOrderLine(interimContract, sourcePurchaseOrderLine);
+				});
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -112,7 +115,6 @@ public class C_Flatrate_Term
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.INTERIM);
 	}
 
-
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void onModularContractComplete(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
@@ -123,4 +125,28 @@ public class C_Flatrate_Term
 
 		modularContractService.invokeWithModel(flatrateTermRecord, COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
 	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void createInterimContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
+		if (!typeConditions.isInterimContractType())
+		{
+			return;
+		}
+		modularContractPriceService.createInterimContractSpecificPricesFor(flatrateTermRecord);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void createModularContractSpecificPrices(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
+		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
+		if (!typeConditions.isModularContractType())
+		{
+			return;
+		}
+
+		modularContractPriceService.createModularContractSpecificPricesFor(flatrateTermRecord);
+	}
+
 }

@@ -41,7 +41,7 @@ Feature: Modular contract log from inventory
       | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                    | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_500     | testSettings_07042023_0 | module_log_S0282_500    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_500  |
 
     And metasfresh contains ModCntr_Types:
@@ -132,7 +132,7 @@ Feature: Modular contract log from inventory
       | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                         | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                         | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_600_1   | modCntr_settings_S0282_600_1 | module_log_S0282_600    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_600  |
 
     And metasfresh contains ModCntr_Types:
@@ -228,7 +228,7 @@ Feature: Modular contract log from inventory
       | year                 | 2022       | harvesting_calendar      |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                     | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | ModCntr_Settings_ID.Identifier | Name                     | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
       | modCntr_settings_S0282_700_1   | testSettings_S0282_700_1 | module_log_S0282_700    | harvesting_calendar      | year                 | moduleLogPricingSystem_S0282_700  |
 
     And metasfresh contains ModCntr_Types:
