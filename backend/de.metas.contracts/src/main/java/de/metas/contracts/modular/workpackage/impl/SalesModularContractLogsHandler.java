@@ -142,6 +142,7 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler<I_C_
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(productId)
+											.productName(request.getProductName())
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
 											.producerBPartnerId(billBPartnerId)
 											.invoicingBPartnerId(billBPartnerId)

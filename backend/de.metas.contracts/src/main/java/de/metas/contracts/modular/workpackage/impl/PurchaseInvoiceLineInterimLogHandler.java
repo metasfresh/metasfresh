@@ -190,6 +190,7 @@ public class PurchaseInvoiceLineInterimLogHandler implements IModularContractLog
 						.invoicingBPartnerId(invoiceBpartnerId)
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
+						.productName(createLogRequest.getProductName())
 						.documentType(LogEntryDocumentType.INTERIM_INVOICE)
 						.contractType(LogEntryContractType.INTERIM)
 						.soTrx(SOTrx.PURCHASE)

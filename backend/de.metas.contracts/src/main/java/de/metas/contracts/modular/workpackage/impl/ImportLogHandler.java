@@ -58,7 +58,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -140,6 +139,7 @@ class ImportLogHandler implements IModularContractLogHandler<I_I_ModCntr_Log>
 				.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(record.getBill_BPartner_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.productName(createLogRequest.getProductName())
 				.quantity(Quantity.ofNullable(record.getQty(), uomDAO.getById(record.getC_UOM_ID())))
 				.priceActual(productPrice)
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))

@@ -95,6 +95,7 @@ public class ModularContractLogDAO
 		final I_ModCntr_Log log = newInstance(I_ModCntr_Log.class);
 		log.setC_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getContractId()));
 		log.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+		log.setProductName(request.getProductName());
 		log.setAD_Table_ID(request.getReferencedRecord().getAD_Table_ID());
 		log.setRecord_ID(request.getReferencedRecord().getRecord_ID());
 		log.setCollectionPoint_BPartner_ID(BPartnerId.toRepoId(request.getCollectionPointBPartnerId()));
