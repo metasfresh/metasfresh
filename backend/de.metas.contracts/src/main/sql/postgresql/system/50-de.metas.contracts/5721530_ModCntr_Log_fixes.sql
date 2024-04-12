@@ -1,5 +1,27 @@
 -- Run mode: SWING_CLIENT
 
+-- Field: Log für modulare Verträge(541711,de.metas.contracts) -> Contract Module Log(547012,de.metas.contracts) -> Produktname
+-- Column: ModCntr_Log.ProductName
+-- 2024-04-10T09:03:32.946Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588088,727822,0,547012,0,TO_TIMESTAMP('2024-04-10 12:03:32.656','YYYY-MM-DD HH24:MI:SS.US'),100,'Name des Produktes',0,'de.metas.contracts',0,'Y','Y','Y','N','N','N','N','N','N','Produktname',0,10,0,1,1,TO_TIMESTAMP('2024-04-10 12:03:32.656','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-04-10T09:03:32.957Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=727822 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-04-10T09:03:32.990Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2659)
+;
+
+-- 2024-04-10T09:03:33.006Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=727822
+;
+
+-- 2024-04-10T09:03:33.008Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(727822)
+;
+
 -- Element: InvoicingGroup
 -- 2024-04-12T07:20:35.846Z
 UPDATE AD_Element_Trl SET Name='Invoice Line Group', PrintName='Invoice Line Group',Updated=TO_TIMESTAMP('2024-04-12 10:20:35.846','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=582427 AND AD_Language='en_US'
