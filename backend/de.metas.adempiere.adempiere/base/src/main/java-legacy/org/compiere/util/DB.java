@@ -1004,10 +1004,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-							   final Object[] params,
-							   final String trxName,
-							   final int timeOut,
-							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+													final Object[] params,
+													final String trxName,
+													final int timeOut,
+													final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -2507,7 +2507,7 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
-					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2525,11 +2525,11 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
-													   1, // increment
-													   1, // minvalue
-													   Integer.MAX_VALUE, // maxvalue
-													   1000000, // start
-													   ITrx.TRXNAME_ThreadInherited);
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2572,7 +2572,7 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
-										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
 		}
 	}
 
@@ -2800,7 +2800,6 @@ public class DB
 		return retrieveRows(sql, sqlParamsList, loader);
 	}
 
-
 	@NonNull
 	public static <T> ImmutableSet<T> retrieveUniqueRows(
 			@NonNull final CharSequence sql,
@@ -2810,6 +2809,17 @@ public class DB
 		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
 		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
 		return rows.build();
+	}
+
+	public void forFirstRowIfAny(
+			@NonNull final String sql,
+			@Nullable final List<Object> sqlParams,
+			@NonNull final ResultSetConsumer consumer)
+	{
+		retrieveFirstRowOrNull(sql, sqlParams, (rs) -> {
+			consumer.accept(rs);
+			return null;
+		});
 	}
 
 	public <T> T retrieveFirstRowOrNull(
