@@ -147,6 +147,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 											.invoicingBPartnerId(bPartnerId)
 											.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.documentType(LogEntryDocumentType.SALES_ORDER)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)

@@ -55,6 +55,9 @@ public class LogEntryCreateRequest
 	ProductId productId;
 
 	@NonNull
+	String productName;
+
+	@NonNull
 	TableRecordReference referencedRecord;
 
 	@Nullable
@@ -118,6 +121,7 @@ public class LogEntryCreateRequest
 	public LogEntryCreateRequest(
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@NonNull final String productName,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final LogSubEntryId subEntryId,
 			@Nullable final BPartnerId collectionPointBPartnerId,
@@ -140,6 +144,7 @@ public class LogEntryCreateRequest
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)
 	{
+		this.productName = productName;
 		if (amount != null && priceActual != null)
 		{
 			amount.assertCurrencyId(priceActual.getCurrencyId());

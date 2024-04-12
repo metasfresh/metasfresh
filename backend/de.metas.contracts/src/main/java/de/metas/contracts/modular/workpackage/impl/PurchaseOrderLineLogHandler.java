@@ -132,6 +132,7 @@ class PurchaseOrderLineLogHandler implements IModularContractLogHandler<I_C_Orde
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
 											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))

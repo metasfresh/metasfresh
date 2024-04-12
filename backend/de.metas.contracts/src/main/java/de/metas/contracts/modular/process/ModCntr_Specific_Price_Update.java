@@ -22,13 +22,22 @@
 
 package de.metas.contracts.modular.process;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
+import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 
@@ -36,6 +45,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ModCntr_Specific_Price_Update extends JavaProcess implements IProcessPrecondition
 {
+	private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	;
+
 	@Param(parameterName = "Price")
 	private BigDecimal p_price;
 
@@ -64,6 +76,19 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 		specificPrice.setC_Currency_ID(p_C_Currency_ID);
 		saveRecord(specificPrice);
 
+		updateModCntrLogPrices(specificPrice);
+
 		return MSG_OK;
+	}
+
+	private void updateModCntrLogPrices(final I_ModCntr_Specific_Price specificPrice)
+	{
+		contractLogService.updatePrice(ModCntrLogPriceUpdateRequest.builder()
+				.uomId(UomId.ofRepoId(specificPrice.getC_UOM_ID()))
+				.flatrateTermId(FlatrateTermId.ofRepoId(specificPrice.getC_Flatrate_Term_ID()))
+				.modularContractModuleId(ModularContractModuleId.ofRepoId(specificPrice.getModCntr_Module_ID()))
+				.productId(ProductId.ofRepoId(specificPrice.getM_Product_ID()))
+				.price(Money.of(specificPrice.getPrice(), CurrencyId.ofRepoId(specificPrice.getC_Currency_ID())))
+				.build());
 	}
 }
