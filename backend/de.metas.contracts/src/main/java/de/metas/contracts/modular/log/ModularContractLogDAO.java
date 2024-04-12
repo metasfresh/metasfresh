@@ -395,7 +395,7 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_ModCntr_Log> getModularContractLogRecords(@NonNull final ModularContractLogQuery query)
+	public ImmutableList<I_ModCntr_Log> list(@NonNull final ModularContractLogQuery query)
 	{
 		return toSqlQuery(query)
 				.create()

@@ -22,13 +22,15 @@
 
 package de.metas.contracts.finalinvoice.workpackage;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
 import static org.compiere.util.Env.getCtx;
@@ -40,28 +42,30 @@ public class FinalInvoiceEnqueuer
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public void enqueueNow(
-			@NonNull final TableRecordReferenceSet tableRecordReferences,
+			@NonNull final ImmutableSet<FlatrateTermId> termIds,
 			@NonNull final UserId userId)
 	{
-		trxManager.runInThreadInheritedTrx(() -> tableRecordReferences.forEach(id -> enqueueNow(id, userId)));
+		trxManager.runInThreadInheritedTrx(() -> termIds.forEach(id -> enqueueNow(id, userId)));
 	}
 
 	private void enqueueNow(
-			@NonNull final TableRecordReference referenceToBeEnqueued,
+			@NonNull final FlatrateTermId termId,
 			@NonNull final UserId userId)
 	{
-		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(referenceToBeEnqueued, userId));
+		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(termId, userId));
 	}
 
 	private void enqueueInTrx(
-			@NonNull final TableRecordReference referenceToBeEnqueued,
+			@NonNull final FlatrateTermId termId,
 			@NonNull final UserId userId)
 	{
+		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Flatrate_Term.Table_Name, termId);
+		
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), FinalInvoiceWorkPackageProcessor.class)
 				.newWorkPackage()
 				// ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
-				.addElement(referenceToBeEnqueued)
+				.addElement(tableRecordReference)
 				.setUserInChargeId(userId)
 				.buildAndEnqueue();
 	}

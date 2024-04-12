@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -42,6 +41,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -50,7 +50,6 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
@@ -63,17 +62,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Collections.emptyIterator;
 
@@ -81,6 +77,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 {
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
@@ -181,27 +178,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 				.billable(true)
 				.build();
 
-		recordsToLock.addAll(modularContractLogDAO.getModularContractLogRecords(query)
+		recordsToLock.addAll(modularContractLogDAO.list(query)
 									 .stream()
 									 .collect(ImmutableList.toImmutableList()));
 
 		return recordsToLock.build();
-	}
-
-	@Override
-	public Instant calculateDateOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
-	{
-		return SystemTime.asInstant();
-	}
-
-	@Override
-	@NonNull
-	public ProductId getProductId(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
-	{
-		return Optional.ofNullable(ProductId.ofRepoIdOrNull(ic.getM_Product_ID()))
-				.orElseThrow(() -> new AdempiereException("Product cannot be missing at this point !")
-						.appendParametersToMessage()
-						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));
 	}
 
 	@NonNull
@@ -244,7 +225,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final TaxCategoryId taxCategoryId)
 	{
-		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBpartnerLocationAndCapture(invoiceCandidate);
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true); 
 		final OrgId orgId = OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID());
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceCandidate.isSOTrx());
 
@@ -299,14 +280,8 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 					.docSubType(X_C_DocType.DOCSUBTYPE_FinalCreditMemo);
 		}
 
-		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(queryBuilder.build());
-		if (docTypeIdOrNull == null)
-		{
-			throw new AdempiereException("Fail to retrieve docType for query.")
-					.appendParametersToMessage()
-					.setParameter("DocTypeQuery", queryBuilder.build());
-		}
+		final DocTypeId docTypeId = docTypeBL.getDocTypeId(queryBuilder.build());
 
-		invoiceCandidate.setC_DocTypeInvoice_ID(docTypeIdOrNull.getRepoId());
+		invoiceCandidate.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 	}
 }

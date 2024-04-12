@@ -179,10 +179,4 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	{
 		return ImmutableList.of(term);
 	}
-
-	@NonNull
-	default ProductId getProductId(@NonNull final I_C_Flatrate_Term term, @NonNull final I_C_Invoice_Candidate ic)
-	{
-		return ProductId.ofRepoId(term.getM_Product_ID());
-	}
 }
