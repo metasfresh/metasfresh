@@ -77,13 +77,18 @@ class MultiSelect extends Component {
             <div className="form-group" key={item.key}>
               <div key={item.key} className="row">
                 <div className=" col-sm-10 float-left">
-                  <label className="form-control-label" title={item.caption}>
+                  <label
+                    className="form-control-label"
+                    title={item.caption}
+                    htmlFor={'chk_' + item.key}
+                  >
                     {item.caption}
                   </label>
                 </div>
                 <div className="col-sm-1 float-right">
                   <label className="input-checkbox">
                     <input
+                      id={'chk_' + item.key}
                       type="checkbox"
                       onChange={() => this.selectItem(item.key, item.caption)}
                       checked={
