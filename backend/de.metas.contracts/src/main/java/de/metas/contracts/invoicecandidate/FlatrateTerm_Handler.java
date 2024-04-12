@@ -20,6 +20,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
@@ -30,6 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
@@ -198,7 +200,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+		final ProductId productId = Optional.ofNullable(ProductId.ofRepoIdOrNull(ic.getM_Product_ID()))
+				.orElseThrow(() -> new AdempiereException("Product cannot be missing at this point !")
+						.appendParametersToMessage()
+						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));
 
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
 		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
