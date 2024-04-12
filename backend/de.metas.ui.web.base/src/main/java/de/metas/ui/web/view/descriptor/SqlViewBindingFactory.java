@@ -145,6 +145,7 @@ public class SqlViewBindingFactory
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
 		final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors = entityDescriptor.getIncludedEntities()
 				.stream()
+				.filter(includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.isAssignableFrom(includedEntityDescriptor.getDataBinding()))
 				.collect(ImmutableMap.toImmutableMap(
 						DocumentEntityDescriptor::getDetailId,
 						includedEntityDescriptor -> SqlDocumentEntityDataBindingDescriptor.cast(includedEntityDescriptor.getDataBinding())
