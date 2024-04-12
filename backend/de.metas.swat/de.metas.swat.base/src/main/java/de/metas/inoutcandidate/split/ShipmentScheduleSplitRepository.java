@@ -131,6 +131,6 @@ public class ShipmentScheduleSplitRepository
 		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Split.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID, ids)
 				.create()
-				.delete();
+				.delete(true);
 	}
 }

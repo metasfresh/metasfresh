@@ -268,7 +268,9 @@ public class TaxDAO implements ITaxDAO
 			{
 				throw new AdempiereException("Multiple taxes have the same seqNo: C_Tax_ID=" + TaxId.toRepoId(firstTax.getTaxId()) + " and C_Tax_ID=" + TaxId.toRepoId(secondTax.getTaxId()))
 						.appendParametersToMessage()
-						.setParameter("taxQuery", taxQuery);
+						.setParameter("taxQuery", taxQuery)
+						.setParameter("firstTax", firstTax)
+						.setParameter("secondTax", secondTax);
 			}
 			Loggables.withLogger(logger, Level.INFO).addLog("Multiple C_Tax records {} match the search criteria. Returning the first record based on seqNo.", getTaxIds(taxes));
 		}
