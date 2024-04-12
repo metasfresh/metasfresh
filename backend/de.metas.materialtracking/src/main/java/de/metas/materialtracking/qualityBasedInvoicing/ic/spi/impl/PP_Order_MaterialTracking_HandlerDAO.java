@@ -47,14 +47,12 @@ public class PP_Order_MaterialTracking_HandlerDAO
 
 	/**
 	 * Gets a filter which accepts only those {@link I_PP_Order}s which are invoiceable.
-	 *
+	 * <p>
 	 * More precisely, manufacturing orders which:
 	 * <ul>
 	 * <li>reference a M_Material_Tracking and
 	 * <li>are closed
 	 * </ul>
-	 *
-	 * @return
 	 */
 	private IQueryFilter<I_PP_Order> getPP_OrderInvoiceableFilter(final Object contextProvider)
 	{

@@ -76,15 +76,19 @@ class MultiSelect extends Component {
           {dataSource.map((item) => (
             <div className="form-group" key={item.key}>
               <div key={item.key} className="row">
-                <div className=" col-sm-6 float-left">
-                  <label className="form-control-label" title={item.caption}>
+                <div className=" col-sm-11 float-left col-label">
+                  <label
+                    className="form-control-label"
+                    title={item.caption}
+                    htmlFor={'chk_' + item.key}
+                  >
                     {item.caption}
                   </label>
                 </div>
-
-                <div className="col-sm-6 float-right">
+                <div className="col-sm-1 float-right col-chk">
                   <label className="input-checkbox">
                     <input
+                      id={'chk_' + item.key}
                       type="checkbox"
                       onChange={() => this.selectItem(item.key, item.caption)}
                       checked={

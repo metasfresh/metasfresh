@@ -68,6 +68,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -804,6 +805,13 @@ public class ProductDAO implements IProductDAO
 				queryBL
 						.createQueryBuilder(I_M_InOutLine.class)
 						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL // Even if a product was not yet ordered/delivered/invoiced, it might be a component and thus end up in a cost-detail..
+						.createQueryBuilder(I_M_CostDetail.class)
+						.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productId.getRepoId())
 						.addOnlyActiveRecordsFilter()
 						.create()
 						.anyMatch();
