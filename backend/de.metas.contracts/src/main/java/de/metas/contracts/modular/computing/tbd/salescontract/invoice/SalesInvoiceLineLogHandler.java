@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,14 +20,13 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.salescontract.invoice;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -37,12 +36,11 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
@@ -59,18 +57,15 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_InvoiceLine>
+class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnReverse.Description");
@@ -85,40 +80,28 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
 	@NonNull
-	private final SalesInvoiceLineModularContractHandler contractHandler;
+	private final SalesInvoiceLineModularContractHandler computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
+
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_InvoiceLine> request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		return I_C_InvoiceLine.Table_Name;
+	}
+	
+	@Override
+	public @NonNull ComputingMethodHandler getComputingMethod()
+	{
+		return computingMethod;
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_InvoiceLine model)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final DocStatus invoiceDocStatus = invoiceBL.getDocStatus(InvoiceId.ofRepoId(model.getC_Invoice_ID()));
-
-		if (!invoiceDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Invoice.DocStatus is " + invoiceDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_InvoiceLine> createLogRequest)
-	{
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper
-				.create(createLogRequest.getHandleLogsRequest().getModel(), de.metas.adempiere.model.I_C_InvoiceLine.class);
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final I_C_Flatrate_Term contract = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
@@ -140,7 +123,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
-						.referencedRecord(TableRecordReference.of(I_C_InvoiceLine.Table_Name, invoiceLine.getC_InvoiceLine_ID()))
+						.referencedRecord(recordRef)
 						.contractId(createLogRequest.getContractId())
 						.collectionPointBPartnerId(bpartnerId)
 						.producerBPartnerId(bpartnerId)
@@ -148,7 +131,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.warehouseId(WarehouseId.ofRepoId(invoice.getM_Warehouse_ID()))
 						.productId(productId)
 						.documentType(LogEntryDocumentType.SALES_INVOICE)
-						.contractType(LogEntryContractType.MODULAR_CONTRACT)
+						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
 						.processed(false)
 						.quantity(qtyEntered)
@@ -165,10 +148,10 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_InvoiceLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final TableRecordReference invoiceLineRef = TableRecordReference.of(I_C_InvoiceLine.Table_Name,
-																			handleLogsRequest.getModel().getC_InvoiceLine_ID());
+		final TableRecordReference invoiceLineRef = handleLogsRequest.getTableRecordReference();
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
@@ -177,7 +160,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());
 
-		final ProductId productId = ProductId.ofRepoId(handleLogsRequest.getModel().getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
@@ -189,12 +172,6 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
 		);
-	}
-
-	@Override
-	public @NonNull ComputingMethodHandler<I_C_InvoiceLine> getComputingMethod()
-	{
-		return contractHandler;
 	}
 
 	@NonNull

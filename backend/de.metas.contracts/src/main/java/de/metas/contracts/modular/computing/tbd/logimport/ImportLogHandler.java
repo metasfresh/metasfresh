@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -67,18 +66,12 @@ class ImportLogHandler implements IModularContractLogHandler
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@NonNull
-	private final ImportLogModularContractHandler contractHandler;
+	private final ImportLogModularContractHandler computingMethod;
 
 	@Override
-	public LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case REVERSED -> LogAction.REVERSE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		};
+		return I_I_ModCntr_Log.Table_Name;
 	}
 
 	@Nullable
@@ -102,7 +95,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	public ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final CreateLogRequest createLogRequest)
 	{
-		final int logId = createLogRequest.getHandleLogsRequest().getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName());
+		final int logId = createLogRequest.getRecordRef().getRecordIdAssumingTableName(getSupportedTableName());
 		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
 		final YearId harvestingYearId = YearId.ofRepoIdOrNull(record.getHarvesting_Year_ID());
 
@@ -148,7 +141,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	@Override
 	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
-		return contractHandler;
+		return computingMethod;
 	}
 
 	@Override
@@ -159,11 +152,4 @@ class ImportLogHandler implements IModularContractLogHandler
 		return Optional.of(record.getM_Product_ID())
 				.map(ProductId::ofRepoId);
 	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_I_ModCntr_Log.Table_Name;
-	}
-
 }

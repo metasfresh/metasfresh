@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.impl;
+package de.metas.contracts.modular.computing.tbd.salescontract.invoice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
@@ -30,12 +30,12 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
@@ -54,76 +54,67 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_MODULAR;
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
 @Component
 @RequiredArgsConstructor
-public class SalesInvoiceLineModularContractHandler implements ComputingMethodHandler<I_C_InvoiceLine>
+public class SalesInvoiceLineModularContractHandler implements ComputingMethodHandler
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	@NonNull private final ModularContractLogService contractLogService;
-
 	@Override
-	public @NonNull Class<I_C_InvoiceLine> getType()
+	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		return I_C_InvoiceLine.class;
+		if(recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name) && logEntryContractType.isModularContractType())
+		{
+			final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
+			final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+			if (soTrx.isPurchase())
+			{
+				return false;
+			}
+
+			final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID());
+			if (harvestingCalendarId == null)
+			{
+				return false;
+			}
+
+			final YearId harvestingYearId = YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID());
+			if (harvestingYearId == null)
+			{
+				return false;
+			}
+
+			final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
+					.map(warehouseBL::getBPartnerId)
+					.orElse(null);
+
+			if (warehousePartnerId == null)
+			{
+				return false;
+			}
+
+			final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
+					.calendarId(harvestingCalendarId)
+					.yearId(harvestingYearId)
+					.bPartnerId(warehousePartnerId)
+					.soTrx(SOTrx.PURCHASE)
+					.typeConditions(TypeConditions.MODULAR_CONTRACT)
+					.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
+					.build();
+
+			return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
+		}
+		return false;
 	}
 
 	@Override
-	public boolean applies(final @NonNull I_C_InvoiceLine invoiceLine)
+	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
-		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
-		if (soTrx.isPurchase())
-		{
-			return false;
-		}
-
-		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(invoice.getC_Harvesting_Calendar_ID());
-		if (harvestingCalendarId == null)
-		{
-			return false;
-		}
-
-		final YearId harvestingYearId = YearId.ofRepoIdOrNull(invoice.getHarvesting_Year_ID());
-		if (harvestingYearId == null)
-		{
-			return false;
-		}
-
-		final BPartnerId warehousePartnerId = Optional.ofNullable(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
-				.map(warehouseBL::getBPartnerId)
-				.orElse(null);
-
-		if (warehousePartnerId == null)
-		{
-			return false;
-		}
-
-		final ModularFlatrateTermQuery modularFlatrateTermQuery = ModularFlatrateTermQuery.builder()
-				.calendarId(harvestingCalendarId)
-				.yearId(harvestingYearId)
-				.bPartnerId(warehousePartnerId)
-				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.productId(ProductId.ofRepoId(invoiceLine.getM_Product_ID()))
-				.build();
-
-		return flatrateBL.isModularContractInProgress(modularFlatrateTermQuery);
-	}
-
-	@Override
-	public boolean applies(final @NonNull LogEntryContractType logEntryContractType)
-	{
-		return logEntryContractType.isModularContractType();
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final I_C_InvoiceLine invoiceLine)
-	{
+		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
 
 		return flatrateBL.streamModularFlatrateTermIdsByQuery(
@@ -137,26 +128,18 @@ public class SalesInvoiceLineModularContractHandler implements ComputingMethodHa
 						.build());
 	}
 
+	@Override
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
+	{
+		return null;
+	}
+
 	private BPartnerId extractWarehousePartnerId(final I_C_Invoice invoice)
 	{
 		final WarehouseId warehouseId = WarehouseId.optionalOfRepoId(invoice.getM_Warehouse_ID())
 				.orElseThrow(() -> new AdempiereException("WarehouseId should not be null at this stage!"));
 
 		return warehouseBL.getBPartnerId(warehouseId);
-	}
-
-	@Override
-	public void validateAction(final @NonNull I_C_InvoiceLine model, final @NonNull ModelAction action)
-	{
-		switch (action)
-		{
-			case COMPLETED, REVERSED ->
-			{
-			}
-			case RECREATE_LOGS -> contractLogService.throwErrorIfProcessedLogsExistForRecord(TableRecordReference.of(model),
-																							 MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
-			default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		}
 	}
 
 	@Override

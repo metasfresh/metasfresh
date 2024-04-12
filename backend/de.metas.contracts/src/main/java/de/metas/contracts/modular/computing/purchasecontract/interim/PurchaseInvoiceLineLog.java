@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -63,7 +62,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
@@ -104,21 +102,21 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		return I_C_InvoiceLine.Table_Name;
+	}
+
+	@Override
+	public @NonNull LogEntryContractType getLogEntryContractType()
+	{
+		return LogEntryContractType.INTERIM;
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference tableRecordReference = createLogRequest.getHandleLogsRequest().getTableRecordReference();
+		final TableRecordReference tableRecordReference = createLogRequest.getRecordRef();
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
 
@@ -226,17 +224,5 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_InvoiceLine.Table_Name;
-	}
-
-	@Override
-	public @NonNull LogEntryContractType getLogEntryContractType()
-	{
-		return LogEntryContractType.INTERIM;
 	}
 }

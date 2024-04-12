@@ -75,15 +75,9 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	private final SalesContractProFormaModularContractHandler computingMethod;
 
 	@Override
-	@NonNull
-	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		};
+		return I_C_Flatrate_Term.Table_Name;
 	}
 
 	@Override
@@ -148,11 +142,5 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_Flatrate_Term.Table_Name;
 	}
 }

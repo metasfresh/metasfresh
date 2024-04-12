@@ -25,7 +25,6 @@ package de.metas.contracts.modular.workpackage.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -54,7 +53,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -78,18 +76,6 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
-	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
-	}
-
-	@Override
 	public @NonNull String getSupportedTableName()
 	{
 		return I_M_Shipping_NotificationLine.Table_Name;
@@ -98,7 +84,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = createLogRequest.getHandleLogsRequest().getTableRecordReference();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
 		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final I_M_Shipping_Notification notification = notificationService.getRecordById(ShippingNotificationId.ofRepoId(notificationLine.getM_Shipping_Notification_ID()));
 

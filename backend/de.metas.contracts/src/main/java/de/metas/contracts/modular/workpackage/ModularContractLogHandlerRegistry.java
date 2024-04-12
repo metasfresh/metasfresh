@@ -24,7 +24,6 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -45,7 +44,7 @@ class ModularContractLogHandlerRegistry
 		return handlers.stream().filter(handler -> applies(handler, request));
 	}
 
-	private boolean applies(@NonNull IModularContractLogHandler handler, @NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	private boolean applies(@NonNull final IModularContractLogHandler handler, @NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		if (!request.getLogEntryContractType().equals(handler.getLogEntryContractType())
 				|| !request.getTableRecordReference().getTableName().equals(handler.getSupportedTableName()))

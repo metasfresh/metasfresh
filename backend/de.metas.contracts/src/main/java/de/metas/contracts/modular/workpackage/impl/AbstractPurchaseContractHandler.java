@@ -77,18 +77,6 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
-	@NonNull
-	public LogAction getLogAction(@NonNull final HandleLogsRequest request)
-	{
-		return switch (request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-			default -> throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-		};
-	}
-
-	@Override
 	public @NonNull String getSupportedTableName()
 	{
 		return I_C_Flatrate_Term.Table_Name;

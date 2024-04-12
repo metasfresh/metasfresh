@@ -44,6 +44,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
@@ -159,7 +160,15 @@ public class ComputingMethodService
 			{
 				switch (action)
 				{
-					case COMPLETED, REVERSED, RECREATE_LOGS-> {}
+					case COMPLETED, REVERSED, RECREATE_LOGS -> {}
+					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+				}
+			}
+			case I_C_InvoiceLine.Table_Name ->
+			{
+				switch (action)
+				{
+					case COMPLETED, REVERSED, RECREATE_LOGS -> {}
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}

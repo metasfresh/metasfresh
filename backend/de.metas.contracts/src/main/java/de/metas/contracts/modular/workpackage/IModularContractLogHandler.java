@@ -46,7 +46,13 @@ import java.util.Optional;
 
 public interface IModularContractLogHandler
 {
-	LogAction getLogAction(@NonNull HandleLogsRequest request);
+	default boolean applies(@NonNull final HandleLogsRequest ignoredRequest) {return true;}
+
+	@NonNull
+	String getSupportedTableName();
+
+	@NonNull
+	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
 
 	@NonNull
 	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest createLogRequest);
@@ -62,14 +68,6 @@ public interface IModularContractLogHandler
 	{
 		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
 	}
-
-	default boolean applies(@NonNull final HandleLogsRequest ignoredRequest) {return true;}
-
-	@NonNull
-	String getSupportedTableName();
-
-	@NonNull
-	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
 
 	@NonNull
 	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
@@ -112,13 +110,11 @@ public interface IModularContractLogHandler
 		{
 			return handleLogsRequest.getContractId();
 		}
-	}
 
-	enum LogAction
-	{
-		CREATE,
-		REVERSE,
-		RECOMPUTE
+		public TableRecordReference getRecordRef()
+		{
+			return handleLogsRequest.getTableRecordReference();
+		}
 	}
 
 	@Value

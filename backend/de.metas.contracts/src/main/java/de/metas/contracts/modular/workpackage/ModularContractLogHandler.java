@@ -110,7 +110,7 @@ class ModularContractLogHandler
 
 	}
 
-	private <T> void handleLogs(
+	private void handleLogs(
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
@@ -142,7 +142,7 @@ class ModularContractLogHandler
 			return;
 		}
 
-		final IModularContractLogHandler.LogAction action = handler.getLogAction(request);
+		final LogAction action = getLogAction(request);
 
 		final Supplier<IModularContractLogHandler.CreateLogRequest> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
 				.builder()
@@ -161,7 +161,24 @@ class ModularContractLogHandler
 		}
 	}
 
-	private <T> void createLogs(
+	private LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	{
+		return switch(request.getModelAction())
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+		};
+	}
+
+	enum LogAction
+	{
+		CREATE,
+		REVERSE,
+		RECOMPUTE
+	}
+
+	private void createLogs(
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
@@ -174,7 +191,7 @@ class ModularContractLogHandler
 								explanation.getDefaultValue()));
 	}
 
-	private <T> void reverseLogs(
+	private void reverseLogs(
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
@@ -188,7 +205,7 @@ class ModularContractLogHandler
 								explanation.getDefaultValue()));
 	}
 
-	private <T> void recreateLogs(
+	private void recreateLogs(
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
@@ -206,7 +223,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.CreateLogRequest createLogRequest)
 	{
-		final BooleanWithReason areLogsRequired = doesRecordStateRequireLogCreation(createLogRequest.getHandleLogsRequest().getTableRecordReference());
+		final BooleanWithReason areLogsRequired = doesRecordStateRequireLogCreation(createLogRequest.getRecordRef());
 		if (areLogsRequired.isFalse())
 		{
 			return ExplainedOptional.emptyBecause(areLogsRequired.getReason());
