@@ -81,7 +81,7 @@ public class TaxDAO implements ITaxDAO
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
-	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -273,7 +273,9 @@ public class TaxDAO implements ITaxDAO
 			{
 				throw new AdempiereException("Multiple taxes have the same seqNo: C_Tax_ID=" + TaxId.toRepoId(firstTax.getTaxId()) + " and C_Tax_ID=" + TaxId.toRepoId(secondTax.getTaxId()))
 						.appendParametersToMessage()
-						.setParameter("taxQuery", taxQuery);
+						.setParameter("taxQuery", taxQuery)
+						.setParameter("firstTax", firstTax)
+						.setParameter("secondTax", secondTax);
 			}
 			Loggables.withLogger(logger, Level.INFO).addLog("Multiple C_Tax records {} match the search criteria. Returning the first record based on seqNo.", getTaxIds(taxes));
 		}

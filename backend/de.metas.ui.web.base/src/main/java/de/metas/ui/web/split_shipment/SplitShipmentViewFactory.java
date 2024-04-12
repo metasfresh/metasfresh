@@ -1,6 +1,8 @@
 package de.metas.ui.web.split_shipment;
 
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Split;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -23,8 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 @RequiredArgsConstructor
 public class SplitShipmentViewFactory implements IViewFactory
 {
-	public static final String WINDOWID_String = "splitShipments";
-	public static final WindowId WINDOWID = WindowId.fromJson(WINDOWID_String);
+	static final String WINDOWID_String = "splitShipments";
+	private static final WindowId WINDOWID = WindowId.fromJson(WINDOWID_String);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final SplitShipmentRowsService rowsService;
@@ -36,7 +38,7 @@ public class SplitShipmentViewFactory implements IViewFactory
 
 		return ViewLayout.builder()
 				.setWindowId(WINDOWID)
-				.setCaption("Split shipments") // TODO TRL
+				.setCaption(TranslatableStrings.adElementOrMessage(I_M_ShipmentSchedule_Split.COLUMNNAME_M_ShipmentSchedule_Split_ID))
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
