@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
-import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
@@ -56,11 +55,9 @@ import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -73,7 +70,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
-import org.slf4j.Logger;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -370,11 +366,6 @@ public class ViewRestController
 				.build();
 	}
 
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
-	}
-
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	@Deprecated
@@ -428,7 +419,7 @@ public class ViewRestController
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	@Deprecated
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_FilterId) final String filterId,
@@ -445,7 +436,7 @@ public class ViewRestController
 	}
 
 	@PostMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_FilterId) final String filterId,
@@ -462,13 +453,13 @@ public class ViewRestController
 		{
 			return view
 					.getFilterParameterDropdown(filterId, parameterName, ctx)
-					.transform(this::toJSONLookupValuesList);
+					.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 		}
 		catch (final Exception ex)
 		{
 			// NOTE: don't propagate exceptions because some of them are thrown because not all parameters are provided (standard use case)
 			final String adLanguage = userSession.getAD_Language();
-			return JSONLookupValuesList.error(JsonErrors.ofThrowable(ex, adLanguage));
+			return JSONLookupValuesPage.error(JsonErrors.ofThrowable(ex, adLanguage));
 		}
 	}
 
