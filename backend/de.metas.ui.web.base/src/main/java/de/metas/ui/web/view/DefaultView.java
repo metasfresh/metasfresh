@@ -471,7 +471,7 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
 		assertNotClosed();
 
@@ -479,8 +479,7 @@ public final class DefaultView implements IEditableView
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx)
-				.getValues();
+				.findEntities(ctx);
 	}
 
 	@Override
