@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Spinner from '../app/SpinnerOverlay';
+import counterpart from 'counterpart';
 
 class MultiSelect extends Component {
   constructor(props) {
@@ -65,7 +66,7 @@ class MultiSelect extends Component {
   };
 
   render() {
-    const { loading } = this.props;
+    const { loading, hasMoreResults } = this.props;
     const { data, checkedItems } = this.state;
     const dataSource = data.length > 0 ? data : this.props.options;
 
@@ -103,6 +104,9 @@ class MultiSelect extends Component {
               </div>
             </div>
           ))}
+          {hasMoreResults && (
+            <div>({counterpart.translate('widget.lookup.hasMoreResults')})</div>
+          )}
         </div>
       </div>
     );
