@@ -121,6 +121,7 @@ const GetQuantityDialog = ({
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
         lotNo: qrCode.lotNo,
+        productNo: qrCode.productNo,
         isDone: false,
       });
     },
