@@ -111,7 +111,7 @@ const GetQuantityDialog = ({
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
       }
       if (qrCode.weightNetUOM !== catchWeightUom) {
-        throw { messageKey: 'activities.picking.qrCode.differentUOM' };
+        throw { messageKey: 'activities.picking.qrcode.differentUOM' };
       }
 
       // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
