@@ -65,7 +65,7 @@ public class ProcessModularLogsEnqueuer
 	@NonNull
 	private final ModularLogCreateStatusService createStatusService;
 
-	public void enqueueAfterCommit(@NonNull ProcessModularLogsEnqueuer.EnqueueRequest request)
+	public void enqueueAfterCommit(@NonNull final ProcessModularLogsEnqueuer.EnqueueRequest request)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
 				ProcessModularLogsEnqueuer.class.getSimpleName(),
@@ -131,7 +131,7 @@ public class ProcessModularLogsEnqueuer
 	private static ProcessModularLogRequestList buildProcessModularLogAggRequest(@NonNull final List<EnqueueRequest> enqueueRequestList)
 	{
 		return ProcessModularLogRequestList.builder()
-				.requestList(enqueueRequestList.stream()
+				.requests(enqueueRequestList.stream()
 						.map(request -> ProcessModularLogRequest.builder()
 								.logEntryContractType(request.logEntryContractType())
 								.flatrateTermId(request.flatrateTermId())
