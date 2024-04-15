@@ -26,18 +26,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class ModularContractComputingMethodHandlerRegistry
 {
 	@NonNull
 	private final ImmutableList<ComputingMethodHandler> handlers;
+
+	public ModularContractComputingMethodHandlerRegistry(@NonNull final List<ComputingMethodHandler> knownHandlers)
+	{
+		this.handlers = ImmutableList.copyOf(knownHandlers);
+	}
 
 	@NonNull
 	public List<ComputingMethodHandler> getApplicableHandlersFor(
