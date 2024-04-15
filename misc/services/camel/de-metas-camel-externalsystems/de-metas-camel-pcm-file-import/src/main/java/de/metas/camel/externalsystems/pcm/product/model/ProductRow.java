@@ -7,7 +7,7 @@ import org.apache.camel.dataformat.bindy.annotation.DataField;
 
 import java.math.BigDecimal;
 
-@CsvRecord(separator = ",", skipField = true)
+@CsvRecord(separator = ";", skipField = true)
 @Getter
 @ToString
 public class ProductRow
