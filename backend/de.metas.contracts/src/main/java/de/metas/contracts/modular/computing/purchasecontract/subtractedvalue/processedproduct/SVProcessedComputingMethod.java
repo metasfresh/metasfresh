@@ -24,10 +24,9 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.pr
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.money.Money;
@@ -53,7 +52,7 @@ import java.util.stream.Stream;
 public class SVProcessedComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final ComputingMethodService computingMethodService;
+
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
