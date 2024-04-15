@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
 import lombok.NonNull;
@@ -36,9 +37,10 @@ class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 
 	public PurchaseModularContractLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractService modularContractService,
 			@NonNull final ReceiptComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository);
+		super(modCntrInvoicingGroupRepository, modularContractService);
 		this.computingMethod = computingMethod;
 	}
 

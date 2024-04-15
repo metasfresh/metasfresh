@@ -25,6 +25,8 @@ package de.metas.contracts.modular.log;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.lock.api.LockOwner;
+import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -41,6 +43,8 @@ public class ModularContractLogQuery
 	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable ModularContractTypeId modularContractTypeId;
 	@Nullable Boolean processed;
-	@Nullable Boolean isBillable;
+	@Nullable Boolean billable;
+	@Nullable ModularContractHandlerType modularContractHandlerType;
+	@Nullable InvoiceCandidateId invoiceCandidateId;
 	@Nullable LockOwner lockOwner;
 }

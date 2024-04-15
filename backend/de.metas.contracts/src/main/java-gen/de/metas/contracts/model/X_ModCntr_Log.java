@@ -1,31 +1,10 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Log
  *  @author metasfresh (generated) 
@@ -34,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1279073714L;
+	private static final long serialVersionUID = 1362182317L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -545,6 +524,18 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getProducer_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Producer_BPartner_ID);
+	}
+
+	@Override
+	public void setProductName (final java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
 	@Override

@@ -24,6 +24,8 @@ package de.metas.contracts.modular.interim.invoice.command;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -79,6 +81,9 @@ public class InterimInvoiceFlatrateTermCreateCommand
 	@NonNull
 	private final I_C_Flatrate_Term modularContract;
 
+	@NonNull
+	private final YearAndCalendarId yearAndCalendarId;
+
 	@Builder
 	public InterimInvoiceFlatrateTermCreateCommand(
 			@Nullable final BPartnerId bpartnerId,
@@ -87,7 +92,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 			@NonNull final Instant dateFrom,
 			@NonNull final Instant dateTo,
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final FlatrateTermId modulareFlatrateTermId)
+			@NonNull final FlatrateTermId modulareFlatrateTermId,
+			@NonNull final YearAndCalendarId yearAndCalendarId)
 	{
 		final OrderLineRepository orderLineRepository = SpringContextHolder.instance.getBean(OrderLineRepository.class);
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -103,6 +109,7 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		this.modulareFlatrateTermId = modulareFlatrateTermId;
 		this.product = productDAO.getById(this.productId);
 		this.modularContract = flatrateBL.getById(modulareFlatrateTermId);
+		this.yearAndCalendarId = yearAndCalendarId;
 	}
 
 	public void execute()
@@ -143,6 +150,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 		flatrateTermRecord.setDeliveryRule(modularContract.getDeliveryRule());
 		flatrateTermRecord.setDeliveryViaRule(modularContract.getDeliveryViaRule());
 		flatrateTermRecord.setC_Currency_ID(modularContract.getC_Currency_ID());
+		flatrateTermRecord.setC_Harvesting_Calendar_ID(yearAndCalendarId.calendarId().getRepoId());
+		flatrateTermRecord.setHarvesting_Year_ID(yearAndCalendarId.yearId().getRepoId());
 
 		flatrateBL.save(flatrateTermRecord);
 		flatrateBL.complete(flatrateTermRecord);

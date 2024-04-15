@@ -106,6 +106,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.referencedRecord(recordRef)
 											.collectionPointBPartnerId(bPartnerId)
 											.producerBPartnerId(bPartnerId)

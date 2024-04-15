@@ -116,6 +116,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.referencedRecord(TableRecordReference.of(I_M_InventoryLine.Table_Name, inventoryLine.getM_InventoryLine_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.collectionPointBPartnerId(collectionPointBPartnerId)

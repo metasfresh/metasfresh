@@ -29,7 +29,10 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -49,6 +52,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -93,6 +97,7 @@ public class ModularContractLogDAO
 		final I_ModCntr_Log log = newInstance(I_ModCntr_Log.class);
 		log.setC_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getContractId()));
 		log.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+		log.setProductName(request.getProductName());
 		log.setAD_Table_ID(request.getReferencedRecord().getAD_Table_ID());
 		log.setRecord_ID(request.getReferencedRecord().getRecord_ID());
 		log.setCollectionPoint_BPartner_ID(BPartnerId.toRepoId(request.getCollectionPointBPartnerId()));
@@ -173,6 +178,7 @@ public class ModularContractLogDAO
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
+				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.build();
 	}
 
@@ -302,6 +308,24 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
+		if(query.getModularContractHandlerType() != null)
+		{
+			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getModularContractHandlerType())
+					.create();
+			final IQuery<I_ModCntr_Module> moduleFilter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+					.addOnlyActiveRecordsFilter()
+					.addInSubQueryFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID, moduleTypeFilter)
+					.create();
+
+			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
+		}
+		if(query.getInvoiceCandidateId()!=null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
+		}
+
 		if (query.getIsBillable() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, query.getIsBillable());
@@ -409,5 +433,22 @@ public class ModularContractLogDAO
 				.productId(productId)
 				.money(Money.of(priceActual, currencyId))
 				.build();
+	}
+
+	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
+	{
+		final ICompositeQueryUpdater<I_ModCntr_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_ModCntr_Log.class)
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_PriceActual, request.price().toBigDecimal())
+				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Currency_ID, request.price().getCurrencyId());
+		if (request.uomId() != null)
+		{
+			queryUpdater.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID, request.uomId());
+		}
+		queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, request.modularContractModuleId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, request.productId())
+				.create()
+				.update(queryUpdater);
 	}
 }

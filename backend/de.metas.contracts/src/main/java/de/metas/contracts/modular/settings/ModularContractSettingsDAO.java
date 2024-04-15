@@ -119,8 +119,10 @@ public class ModularContractSettingsDAO
 				.id(modularContractSettingsId)
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
-				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(settingsRecord.getM_PricingSystem_ID()))
-				.productId(ProductId.ofRepoId(settingsRecord.getM_Product_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
+				.rawProductId(ProductId.ofRepoId(settingsRecord.getM_Raw_Product_ID()))
+				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
+				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()));
 
@@ -129,7 +131,7 @@ public class ModularContractSettingsDAO
 			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
 
 			final ModuleConfig moduleConfig = ModuleConfig.builder()
-					.id(ModuleConfigId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
+					.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
 					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
@@ -164,7 +166,7 @@ public class ModularContractSettingsDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Product_ID, query.productId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.productId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.soTrx().toBoolean())
 				.anyMatch();
 	}

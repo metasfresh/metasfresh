@@ -120,6 +120,11 @@ public class NewInvoiceCandidate
 	@Nullable
 	FlatrateTermId flatrateTermId;
 
+	@Nullable
+	ContractSpecificPrice contractSpecificPrice;
+
+
+
 	private NewInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
@@ -152,7 +157,8 @@ public class NewInvoiceCandidate
 			final boolean isInterimInvoice,
 			@NonNull final ILCandHandlerId handlerId,
 			final boolean isManual,
-			@Nullable final FlatrateTermId flatrateTermId)
+			@Nullable final FlatrateTermId flatrateTermId,
+			@Nullable final ContractSpecificPrice contractSpecificPrice)
 	{
 		this.orgId = orgId;
 
@@ -186,7 +192,7 @@ public class NewInvoiceCandidate
 		this.handlerId = handlerId;
 		this.isManual = isManual;
 		this.flatrateTermId = flatrateTermId;
-
+		this.contractSpecificPrice = contractSpecificPrice;
 		if (priceEnteredOverride != null)
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))

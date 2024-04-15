@@ -2209,27 +2209,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
 
 	/**
-	 * Set Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsInterimInvoice (boolean IsInterimInvoice);
-
-	/**
-	 * Get Interim Invoice.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isInterimInvoice();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInterimInvoice = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInterimInvoice", null);
-	String COLUMNNAME_IsInterimInvoice = "IsInterimInvoice";
-
-	/**
 	 * Set Invoicing error.
 	 *
 	 * <br>Type: YesNo
@@ -2408,8 +2387,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2418,8 +2397,8 @@ public interface I_C_Invoice_Candidate
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2634,6 +2613,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
+	 * Set Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModCntr_Module_ID (int ModCntr_Module_ID);
+
+	/**
+	 * Get Modules.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModCntr_Module_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ModCntr_Module_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ModCntr_Module_ID", null);
+	String COLUMNNAME_ModCntr_Module_ID = "ModCntr_Module_ID";
 
 	/**
 	 * Set Price List Version.

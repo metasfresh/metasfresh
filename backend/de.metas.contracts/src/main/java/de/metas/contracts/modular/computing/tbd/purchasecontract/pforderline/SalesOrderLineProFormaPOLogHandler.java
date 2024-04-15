@@ -103,6 +103,7 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 											.invoicingBPartnerId(billBPartnerId)
 											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)

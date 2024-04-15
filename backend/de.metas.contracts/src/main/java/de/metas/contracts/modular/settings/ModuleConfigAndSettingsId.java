@@ -24,7 +24,6 @@ package de.metas.contracts.modular.settings;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
@@ -34,40 +33,39 @@ import javax.annotation.Nullable;
 
 @Value
 @RepoIdAwares.SkipTest
-public class ModuleConfigId implements RepoIdAware
+public class ModuleConfigAndSettingsId implements RepoIdAware
 {
-	int repoId;
+	ModularContractModuleId modularContractModuleId;
 	ModularContractSettingsId modularContractSettingsId;
 
 	@JsonCreator
-	public static ModuleConfigId ofRepoId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)
+	public static ModuleConfigAndSettingsId ofRepoId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)
 	{
-		return new ModuleConfigId(modularContractSettingsId, repoId);
+		return new ModuleConfigAndSettingsId(modularContractSettingsId, ModularContractModuleId.ofRepoId(repoId));
 	}
 
-	public static ModuleConfigId ofRepoId(final int modularContractSettingsId, final int repoId)
+	public static ModuleConfigAndSettingsId ofRepoId(final int modularContractSettingsId, final int repoId)
 	{
-		return new ModuleConfigId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), repoId);
+		return new ModuleConfigAndSettingsId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), ModularContractModuleId.ofRepoId(repoId));
 	}
 
 	@Nullable
-	public static ModuleConfigId ofRepoIdOrNull(final Integer modularContractSettingsId, final Integer repoId)
+	public static ModuleConfigAndSettingsId ofRepoIdOrNull(final Integer modularContractSettingsId, final Integer repoId)
 	{
 		return modularContractSettingsId != null && modularContractSettingsId > 0
 				&& repoId != null && repoId > 0
-				? new ModuleConfigId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), repoId) : null;
+				? new ModuleConfigAndSettingsId(ModularContractSettingsId.ofRepoId(modularContractSettingsId), ModularContractModuleId.ofRepoId(repoId)) : null;
 	}
 
-	private ModuleConfigId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)
+	private ModuleConfigAndSettingsId(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		this.modularContractSettingsId = modularContractSettingsId;
-		this.repoId = Check.assumeGreaterThanZero(repoId, "moduleConfigId");
+		this.modularContractModuleId = modularContractModuleId;
 	}
 
-	@Override
 	@JsonValue
 	public int getRepoId()
 	{
-		return repoId;
+		return modularContractModuleId.getRepoId();
 	}
 }

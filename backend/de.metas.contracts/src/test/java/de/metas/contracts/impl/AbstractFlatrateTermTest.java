@@ -17,8 +17,16 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.ModularContractHandlerFactory;
+import de.metas.contracts.modular.ModularContractPriceRepository;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
+import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
@@ -73,6 +81,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -155,6 +164,12 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
+
+		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO()));
+		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractHandlerFactory(Collections.emptyList()),
+																		 new ModularContractSettingsDAO(),
+																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+																		 new ModularContractPriceRepository()));
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 

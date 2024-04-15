@@ -175,6 +175,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 						.invoicingBPartnerId(invoiceBpartnerId)
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
+						.productName(createLogRequest.getProductName())
 						.documentType(LogEntryDocumentType.INTERIM_INVOICE)
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)

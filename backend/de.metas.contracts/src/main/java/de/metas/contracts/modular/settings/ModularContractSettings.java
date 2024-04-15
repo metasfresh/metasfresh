@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
@@ -53,14 +54,18 @@ public class ModularContractSettings
 	@NonNull
 	YearAndCalendarId yearAndCalendarId;
 
-	@Nullable
+	@NonNull
 	PricingSystemId pricingSystemId;
 
 	/**
 	 * Basically, purchase order line with this product may start the contract-frenzy.
 	 */
 	@NonNull
-	ProductId productId;
+	ProductId rawProductId;
+	@Nullable
+	ProductId processedProductId;
+	@Nullable
+	ProductId coProductId;
 
 	@NonNull
 	@Singular
@@ -68,6 +73,22 @@ public class ModularContractSettings
 
 	@NonNull
 	SOTrx soTrx;
+
+	public List<ModuleConfig> getModularContractConfigs()
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(moduleConfig -> !moduleConfig.isInterimInvoiceHandler())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<ModuleConfig> getInterimInvoiceConfigs()
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(ModuleConfig::isInterimInvoiceHandler)
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(

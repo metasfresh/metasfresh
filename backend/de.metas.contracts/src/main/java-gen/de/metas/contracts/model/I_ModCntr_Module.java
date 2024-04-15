@@ -75,7 +75,7 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Invoicing group.
+	 * Set Invoice Line Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -84,7 +84,7 @@ public interface I_ModCntr_Module
 	void setInvoicingGroup (java.lang.String InvoicingGroup);
 
 	/**
-	 * Get Invoicing group.
+	 * Get Invoice Line Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -119,7 +119,7 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Bausteine.
+	 * Set Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -128,7 +128,7 @@ public interface I_ModCntr_Module
 	void setModCntr_Module_ID (int ModCntr_Module_ID);
 
 	/**
-	 * Get Bausteine.
+	 * Get Modules.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +142,7 @@ public interface I_ModCntr_Module
 	/**
 	 * Set Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -151,7 +151,7 @@ public interface I_ModCntr_Module
 	/**
 	 * Get Modular Contract Settings.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -165,18 +165,18 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_ModCntr_Settings_ID = "ModCntr_Settings_ID";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
