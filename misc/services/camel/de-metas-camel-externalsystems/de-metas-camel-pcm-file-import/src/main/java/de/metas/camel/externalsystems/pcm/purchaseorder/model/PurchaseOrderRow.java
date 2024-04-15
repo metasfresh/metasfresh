@@ -8,7 +8,7 @@ import org.apache.camel.dataformat.bindy.annotation.DataField;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-@CsvRecord(separator = ",", skipField = true)
+@CsvRecord(separator = ";", skipField = true)
 @Getter
 @ToString
 public class PurchaseOrderRow
