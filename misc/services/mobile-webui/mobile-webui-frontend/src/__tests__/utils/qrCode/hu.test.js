@@ -72,17 +72,33 @@ describe('huQRCodes tests', () => {
         weightNet: 2427.425,
       });
     });
-    it('Leich+Mehl standard', () => {
-      // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
-      const code = 'LMQ#1#123.456#13.12.2024#lot3';
-      expect(parseQRCodeString(code)).toEqual({
-        code,
-        displayable: '123.456',
-        weightNet: 123.456,
-        weightNetUOM: 'kg',
-        isTUToBePickedAsWhole: true,
-        bestBeforeDate: '2024-12-13',
-        lotNo: 'lot3',
+    describe('Leich+Mehl', () => {
+      it('standard', () => {
+        // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+        const code = 'LMQ#1#123.456#13.12.2024#lot3';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '123.456',
+          weightNet: 123.456,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          bestBeforeDate: '2024-12-13',
+          lotNo: 'lot3',
+        });
+      });
+      it('with productNo', () => {
+        // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+        const code = 'LMQ#1#123.456#13.12.2024#lot3#productNo88';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '123.456',
+          weightNet: 123.456,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          bestBeforeDate: '2024-12-13',
+          lotNo: 'lot3',
+          productNo: 'productNo88',
+        });
       });
     });
   });
