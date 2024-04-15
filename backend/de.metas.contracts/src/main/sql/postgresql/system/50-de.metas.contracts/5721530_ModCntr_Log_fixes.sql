@@ -87,6 +87,17 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-12 13:55:27.4
 ;
 
 UPDATE modcntr_log l
+SET productName = '-'
+FROM m_product p
+;
+
+UPDATE modcntr_log l
+SET productName = name
+FROM m_product p
+WHERE l.m_product_id = p.m_product_id
+;
+
+UPDATE modcntr_log l
 SET productName= name
 FROM modcntr_module m
 WHERE l.modcntr_module_id = m.modcntr_module_id
