@@ -23,17 +23,17 @@
 package de.metas.contracts.finalinvoice.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
@@ -50,6 +50,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
@@ -62,6 +63,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
@@ -81,6 +83,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@Override
 	public String getConditionsType()
@@ -121,19 +124,18 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		icRecord.setDiscount(BigDecimal.ZERO);
 
+		final TaxId taxId = getTaxId(icRecord, term);
+		icRecord.setC_Tax_ID(taxId.getRepoId());
+
+		//price 
+		{
+			setPriceRelatedData(icRecord, term);
+		}
+
 		//invoice docType
 		{
 			setC_DocTypeInvoice(icRecord);
 		}
-
-		// final TaxId taxId = getTaxId(icRecord, TaxCategoryId.ofRepoId(1));	// todo: get tax category from contract specific prices
-		icRecord.setC_Tax_ID(TaxId.ofRepoId(1000073).getRepoId());
-
-		icRecord.setC_Currency_ID(CurrencyId.ofRepoId(318).getRepoId());    // todo: take it from contract specific price
-		icRecord.setPriceActual(BigDecimal.ONE);    // todo: take it from computing method
-		icRecord.setPrice_UOM_ID(UomId.EACH.getRepoId()); // todo: take it from contract specific price
-
-		icRecord.setPriceEntered(BigDecimal.ONE); // todo: same as price actual
 	}
 
 	@Override
@@ -216,23 +218,51 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		invoiceCandidate.setC_Harvesting_Calendar_ID(yearAndCalendarId.calendarId().getRepoId());
 		//
 		invoiceCandidate.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+		//
+		invoiceCandidate.setModCntr_Module_ID(moduleConfig.getId().getModularContractModuleId().getRepoId());
 
 		return invoiceCandidate;
+	}
+
+	private void setPriceRelatedData(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@NonNull final I_C_Flatrate_Term term)
+	{
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.optionalOfRepoId(icRecord.getModCntr_Module_ID())
+				.orElseThrow(() -> new AdempiereException("Modular Contract Module cannot be missing at this point !")
+						.appendParametersToMessage()
+						.setParameter("C_Flatrate_Term_ID", flatrateTermId.getRepoId()));
+
+		final ProductPrice productPrice = modularContractService.getContractSpecificPrice(modularContractModuleId, flatrateTermId);
+
+		icRecord.setC_Currency_ID(CurrencyId.toRepoId(productPrice.getCurrencyId()));
+		icRecord.setPriceActual(productPrice.toBigDecimal());
+		icRecord.setPriceEntered(productPrice.toBigDecimal());
+		icRecord.setPrice_UOM_ID(UomId.toRepoId(productPrice.getUomId()));
 	}
 
 	@NonNull
 	private TaxId getTaxId(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
-			@NonNull final TaxCategoryId taxCategoryId)
+			@NonNull final I_C_Flatrate_Term term)
 	{
-		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true); 
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.optionalOfRepoId(invoiceCandidate.getModCntr_Module_ID())
+				.orElseThrow(() -> new AdempiereException("Modular Contract Module cannot be missing at this point !")
+						.appendParametersToMessage()
+						.setParameter("C_Flatrate_Term_ID", flatrateTermId.getRepoId()));
+
+		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, flatrateTermId);
+
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true);
 		final OrgId orgId = OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID());
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceCandidate.isSOTrx());
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
 											 .orgId(orgId)
 											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
-											 .dateOfInterest(invoiceCandidate.getDeliveryDate())
+											 .dateOfInterest(invoiceCandidate.getDateOrdered())
 											 .soTrx(soTrx)
 											 .taxCategoryId(taxCategoryId)
 											 .build());
@@ -242,7 +272,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 			throw TaxNotFoundException.builder()
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(soTrx.toBoolean())
-					.billDate(invoiceCandidate.getDeliveryDate())
+					.billDate(invoiceCandidate.getDateOrdered())
 					.orgId(orgId)
 					.build();
 		}
@@ -250,19 +280,9 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		return tax.getTaxId();
 	}
 
-	@NonNull
-	private BPartnerLocationAndCaptureId getBpartnerLocationAndCapture(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
-	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceCandidate.getBill_BPartner_ID());
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidate.getBill_Location_ID());
-
-		return BPartnerLocationAndCaptureId.of(bPartnerLocationId);
-	}
-
 	private void setC_DocTypeInvoice(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		// todo: compute the total based on contract specific prices
-		final BigDecimal total = BigDecimal.TEN;
+		final BigDecimal total = invoiceCandidate.getQtyEntered().multiply(invoiceCandidate.getPriceEntered()); 
 
 		final DocTypeQuery.DocTypeQueryBuilder queryBuilder = DocTypeQuery.builder()
 				.adClientId(invoiceCandidate.getAD_Client_ID())

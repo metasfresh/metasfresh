@@ -200,7 +200,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		final ProductId productId = Optional.ofNullable(ProductId.ofRepoIdOrNull(ic.getM_Product_ID()))
+		final ProductId productId = ProductId.optionalOfRepoId(ic.getM_Product_ID())
 				.orElseThrow(() -> new AdempiereException("Product cannot be missing at this point !")
 						.appendParametersToMessage()
 						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));

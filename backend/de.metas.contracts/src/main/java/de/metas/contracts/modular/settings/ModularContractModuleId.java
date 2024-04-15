@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 public class ModularContractModuleId implements RepoIdAware
@@ -47,6 +49,12 @@ public class ModularContractModuleId implements RepoIdAware
 	public static ModularContractModuleId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new ModularContractModuleId(repoId) : null;
+	}
+
+	@NonNull
+	public static Optional<ModularContractModuleId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	private ModularContractModuleId(final int repoId)
