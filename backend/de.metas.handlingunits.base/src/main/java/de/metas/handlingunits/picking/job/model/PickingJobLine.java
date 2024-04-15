@@ -51,6 +51,7 @@ public class PickingJobLine
 	@NonNull PickingJobLineId id;
 
 	@NonNull ProductId productId;
+	@NonNull String productNo;
 	@NonNull ITranslatableString productName;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
@@ -65,7 +66,7 @@ public class PickingJobLine
 	@Builder(toBuilder = true)
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
-			@NonNull final ProductId productId,
+			@NonNull final ProductId productId, final @NonNull String productNo,
 			@NonNull final ITranslatableString productName,
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
@@ -76,6 +77,7 @@ public class PickingJobLine
 	{
 		this.id = id;
 		this.productId = productId;
+		this.productNo = productNo;
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
