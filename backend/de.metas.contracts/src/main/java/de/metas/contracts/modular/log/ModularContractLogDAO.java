@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -236,15 +237,17 @@ public class ModularContractLogDAO
 			@NonNull final ModularContractLogQuery query,
 			final boolean isBillable)
 	{
-		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
-		sqlQuery.updateDirectly()
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_IsBillable, isBillable)
-				.setExecuteDirectly(true)
-				.execute();
+		final Optional<I_ModCntr_Log> logOptional = lastRecord(query);
+		if(logOptional.isPresent())
+		{
+			final I_ModCntr_Log log = logOptional.get();
+			log.setIsBillable(isBillable);
+			save(log);
 
-		CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
-				I_ModCntr_Log.Table_Name,
-				sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					ImmutableSet.of(ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID()))));
+		}
 	}
 
 	public boolean anyMatch(@NonNull final ModularContractLogQuery query)
