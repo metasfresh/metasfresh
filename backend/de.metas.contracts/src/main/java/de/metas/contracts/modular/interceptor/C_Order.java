@@ -47,6 +47,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -131,11 +132,13 @@ public class C_Order
 			@NonNull final ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-																		 .tableRecordReference(TableRecordReference.of(orderRecord))
-																		 .modelAction(modelAction)
-																		 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
-																		 .build())
+				.forEach(line -> contractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(orderRecord))
+								.modelAction(modelAction)
+								.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
 				);
 	}
 

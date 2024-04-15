@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,10 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.tbd.salescontract.orderline;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
-import de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -33,9 +31,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -44,6 +40,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -55,7 +52,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -67,7 +63,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
+class SOLineForSOLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SOLineForSOLogHandler.OnComplete.Description");
 
@@ -84,34 +80,16 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_C_OrderLine> request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		return I_C_OrderLine.Table_Name;
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_C_OrderLine model)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(model.getC_Order_ID()));
-
-		if (!orderDocStatus.isCompleted())
-		{
-			return BooleanWithReason.falseBecause("The C_Order.DocStatus is " + orderDocStatus);
-		}
-
-		return BooleanWithReason.TRUE;
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_C_OrderLine> createLogRequest)
-	{
-		final I_C_OrderLine orderLine = createLogRequest.getHandleLogsRequest().getModel();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
@@ -157,13 +135,13 @@ class SOLineForSOLogHandler implements IModularContractLogHandler<I_C_OrderLine>
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_C_OrderLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler<I_C_OrderLine> getComputingMethod()
+	public @NonNull ComputingMethodHandler getComputingMethod()
 	{
 		return contractHandler;
 	}

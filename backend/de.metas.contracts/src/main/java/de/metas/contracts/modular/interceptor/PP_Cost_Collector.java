@@ -22,12 +22,16 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +52,12 @@ public class PP_Cost_Collector
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Cost_Collector.COLUMNNAME_Processed)
 	public void afterProcessed(@NonNull final I_PP_Cost_Collector orderCostCollector)
 	{
-		contractService.invokeWithModel(orderCostCollector, orderCostCollector.isProcessed() ? COMPLETED : REACTIVATED, LogEntryContractType.MODULAR_CONTRACT);
+		contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
+													.tableRecordReference(TableRecordReference.of(orderCostCollector))
+													.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+													.modelAction(orderCostCollector.isProcessed() ? COMPLETED : REACTIVATED)
+													.userInChargeId(Env.getLoggedUserId())
+													.build()
+		);
 	}
 }

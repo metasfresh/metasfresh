@@ -49,6 +49,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderId;
@@ -174,6 +175,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build()))
 		);
 	}
@@ -189,6 +191,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build()))
 		);
 	}
@@ -204,6 +207,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build()))
 		);
 	}
@@ -218,6 +222,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(term))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build())
 				);
 	}
@@ -233,6 +238,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build()))
 				);
 	}
@@ -247,6 +253,7 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(costCollector))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build())
 				);
 	}
@@ -262,22 +269,24 @@ public class LogsRecomputationService
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(ppCostCollector))
 								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
 								.build()))
 		);
 	}
 
-	private void recomputeForRecord(@NonNull final TableRecordReference tableRecordReference)
+	private void recomputeForRecord(@NonNull final TableRecordReference recordRef)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		switch (tableRecordReference.getTableName())
+		switch (recordRef.getTableName())
 		{
-			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
+			case I_PP_Order.Table_Name -> recomputeForPPOrder(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
 			default -> trxManager.runInNewTrx(() -> modularContractService
 					.scheduleLogCreation(
 							DocStatusChangedEvent.builder()
-									.tableRecordReference(tableRecordReference)
+									.tableRecordReference(recordRef)
 									.modelAction(ModelAction.RECREATE_LOGS)
+									.userInChargeId(Env.getLoggedUserId())
 									.build())
 				);
 		}
@@ -293,6 +302,7 @@ public class LogsRecomputationService
 						 DocStatusChangedEvent.builder()
 								 .tableRecordReference(TableRecordReference.of(line))
 								 .modelAction(ModelAction.RECREATE_LOGS)
+								 .userInChargeId(Env.getLoggedUserId())
 								 .build()))
 				);
 	}

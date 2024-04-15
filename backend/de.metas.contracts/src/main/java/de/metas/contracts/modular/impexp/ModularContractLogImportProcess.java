@@ -36,9 +36,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -83,7 +83,7 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	}
 
 	@Override
-	protected I_I_ModCntr_Log retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	protected I_I_ModCntr_Log retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_ModCntr_Log(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -117,9 +117,10 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	{
 
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-													   .tableRecordReference(TableRecordReference.of(record))
-													   .modelAction(ModelAction.COMPLETED)
-													   .build()
+														   .tableRecordReference(TableRecordReference.of(record))
+														   .modelAction(ModelAction.COMPLETED)
+														   .userInChargeId(Env.getLoggedUserId())
+														   .build()
 		);
 	}
 

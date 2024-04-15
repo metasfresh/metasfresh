@@ -30,7 +30,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 
 @Builder
 @Value
@@ -40,5 +39,5 @@ public class DocStatusChangedEvent
 	@NonNull ModelAction modelAction;
 	@Builder.Default
 	@NonNull ImmutableSet<LogEntryContractType> logEntryContractTypes = ImmutableSet.copyOf(LogEntryContractType.values());
-	@NonNull @Builder.Default UserId userInChargeId = Env.getLoggedUserId(); // FIXME: get rid of default!
+	@NonNull UserId userInChargeId;
 }

@@ -47,6 +47,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -115,10 +116,11 @@ public class C_Flatrate_Term
 		}
 
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
-													   .modelAction(COMPLETED)
-													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
-													   .build());
+														   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+														   .modelAction(COMPLETED)
+														   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+														   .userInChargeId(Env.getLoggedUserId())
+														   .build());
 
 		createMissingInterimReceiptLogs(flatrateTermRecord);
 	}
@@ -135,10 +137,11 @@ public class C_Flatrate_Term
 								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
 								.build())
 				.forEach(inoutLine -> modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-																   .tableRecordReference(TableRecordReference.of(inoutLine))
-																   .modelAction(COMPLETED)
-																   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
-																   .build())
+																						 .tableRecordReference(TableRecordReference.of(inoutLine))
+																						 .modelAction(COMPLETED)
+																						 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+																						 .userInChargeId(Env.getLoggedUserId())
+																						 .build())
 				);
 	}
 
@@ -152,10 +155,11 @@ public class C_Flatrate_Term
 		}
 
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-													   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
-													   .modelAction(COMPLETED)
-													   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
-													   .build()
+														   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+														   .modelAction(COMPLETED)
+														   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+														   .userInChargeId(Env.getLoggedUserId())
+														   .build()
 		);
 
 	}
