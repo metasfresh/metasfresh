@@ -92,6 +92,8 @@ FROM modcntr_module m
 WHERE l.modcntr_module_id = m.modcntr_module_id
 ;
 
+COMMIT;
+
 -- 2024-04-12T11:02:15.177Z
 INSERT INTO t_alter_column values('modcntr_log','ProductName','VARCHAR(255)',null,null)
 ;
