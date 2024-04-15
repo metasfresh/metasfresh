@@ -134,7 +134,7 @@ public class C_Order
 		orderDAO.retrieveOrderLines(orderRecord)
 				.forEach(line -> contractService.scheduleLogCreation(
 						DocStatusChangedEvent.builder()
-								.tableRecordReference(TableRecordReference.of(orderRecord))
+								.tableRecordReference(TableRecordReference.of(line))
 								.modelAction(modelAction)
 								.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
 								.userInChargeId(Env.getLoggedUserId())
