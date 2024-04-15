@@ -67,6 +67,7 @@ public class GetBPartnerFromFileRouteBuilder extends IdAwareRouteBuilder
 			.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 			.split(body().tokenize("\n"))
 				.streaming()
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.filter(new SkipFirstLinePredicate())
 				.doTry()
 					.unmarshal(new BindyCsvDataFormat(BPartnerRow.class))

@@ -62,6 +62,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.split(body().tokenize("\n"))
 					.streaming()
+					.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 					.filter(new SkipFirstLinePredicate())
 					.doTry()
 						.unmarshal(new BindyCsvDataFormat(PurchaseOrderRow.class))

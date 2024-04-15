@@ -39,6 +39,7 @@ public class PInstanceUtil
 		if (externalSystemRequest.getAdPInstanceId() != null)
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, externalSystemRequest.getAdPInstanceId().getValue());
+			exchange.getIn().setHeader(ExternalSystemCamelConstants.HEADER_PINSTANCE_ID, externalSystemRequest.getAdPInstanceId().getValue());
 		}
 	}
 }
