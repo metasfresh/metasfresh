@@ -82,7 +82,8 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(request.getHandleLogsRequest().getTableRecordReference().getRecord_ID()));
+		final TableRecordReference recordRef = request.getRecordRef();
+		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InOutLine.Table_Name)));
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
@@ -144,7 +145,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+											.referencedModel(request.getTableRecordReference())
 											.flatrateTermId(request.getContractId())
 											.description(description)
 											.logEntryContractType(getLogEntryContractType())
