@@ -78,7 +78,7 @@ public class ModularContractSettings
 	{
 		return getModuleConfigs()
 				.stream()
-				.filter(moduleConfig -> !moduleConfig.isInterimInvoiceHandler())
+				.filter(moduleConfig -> !moduleConfig.isInterimComputingMethod())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -86,7 +86,7 @@ public class ModularContractSettings
 	{
 		return getModuleConfigs()
 				.stream()
-				.filter(ModuleConfig::isInterimInvoiceHandler)
+				.filter(ModuleConfig::isInterimComputingMethod)
 				.collect(ImmutableList.toImmutableList());
 	}
 

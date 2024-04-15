@@ -26,7 +26,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -92,7 +92,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	}
 	
 	@Override
-	public @NonNull ComputingMethodHandler getComputingMethod()
+	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
 	}

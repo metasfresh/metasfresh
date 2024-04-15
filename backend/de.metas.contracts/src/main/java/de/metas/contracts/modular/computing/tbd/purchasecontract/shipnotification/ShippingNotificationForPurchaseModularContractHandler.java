@@ -26,7 +26,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -49,7 +49,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATI
 
 @Component
 @RequiredArgsConstructor
-public class ShippingNotificationForPurchaseModularContractHandler implements ComputingMethodHandler
+public class ShippingNotificationForPurchaseModularContractHandler implements IComputingMethodHandler
 {
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ShippingNotificationService notificationService;

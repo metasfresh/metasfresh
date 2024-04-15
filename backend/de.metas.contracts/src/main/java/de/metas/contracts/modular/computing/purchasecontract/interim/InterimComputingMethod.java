@@ -28,7 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
@@ -71,7 +71,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class InterimComputingMethod implements ComputingMethodHandler
+public class InterimComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);

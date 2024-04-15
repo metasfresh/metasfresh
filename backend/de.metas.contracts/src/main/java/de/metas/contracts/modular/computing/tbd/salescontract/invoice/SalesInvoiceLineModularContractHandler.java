@@ -30,7 +30,7 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -57,7 +57,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_
 
 @Component
 @RequiredArgsConstructor
-public class SalesInvoiceLineModularContractHandler implements ComputingMethodHandler
+public class SalesInvoiceLineModularContractHandler implements IComputingMethodHandler
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);

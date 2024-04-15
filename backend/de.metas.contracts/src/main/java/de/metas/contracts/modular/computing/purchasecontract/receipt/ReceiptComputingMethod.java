@@ -28,7 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
@@ -67,7 +67,7 @@ import static de.metas.contracts.modular.ComputingMethodType.RECEIPT;
 
 @Component
 @RequiredArgsConstructor
-public class ReceiptComputingMethod implements ComputingMethodHandler
+public class ReceiptComputingMethod implements IComputingMethodHandler
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);

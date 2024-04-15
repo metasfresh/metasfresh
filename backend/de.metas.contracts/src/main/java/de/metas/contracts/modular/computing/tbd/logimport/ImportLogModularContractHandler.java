@@ -28,7 +28,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
@@ -60,7 +60,7 @@ import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
 
 @Component
 @RequiredArgsConstructor
-public class ImportLogModularContractHandler implements ComputingMethodHandler
+public class ImportLogModularContractHandler implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;

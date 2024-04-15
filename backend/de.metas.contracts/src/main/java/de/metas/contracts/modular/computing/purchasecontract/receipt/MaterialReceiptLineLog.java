@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import lombok.NonNull;
@@ -45,7 +45,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler getComputingMethod()
+	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
 	}

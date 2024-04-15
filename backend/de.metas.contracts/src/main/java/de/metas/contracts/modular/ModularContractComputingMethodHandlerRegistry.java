@@ -23,7 +23,7 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,15 +35,15 @@ import java.util.List;
 public class ModularContractComputingMethodHandlerRegistry
 {
 	@NonNull
-	private final ImmutableList<ComputingMethodHandler> handlers;
+	private final ImmutableList<IComputingMethodHandler> handlers;
 
-	public ModularContractComputingMethodHandlerRegistry(@NonNull final List<ComputingMethodHandler> knownHandlers)
+	public ModularContractComputingMethodHandlerRegistry(@NonNull final List<IComputingMethodHandler> knownHandlers)
 	{
 		this.handlers = ImmutableList.copyOf(knownHandlers);
 	}
 
 	@NonNull
-	public List<ComputingMethodHandler> getApplicableHandlersFor(
+	public List<IComputingMethodHandler> getApplicableHandlersFor(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final LogEntryContractType contractType)
 	{

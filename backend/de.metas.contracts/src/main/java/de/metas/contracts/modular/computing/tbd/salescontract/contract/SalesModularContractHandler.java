@@ -27,7 +27,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -49,7 +49,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_MODULAR_CONTR
 
 @Component
 @RequiredArgsConstructor
-public class SalesModularContractHandler implements ComputingMethodHandler
+public class SalesModularContractHandler implements IComputingMethodHandler
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);

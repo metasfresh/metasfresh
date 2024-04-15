@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.workpackage;
 
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ class ModularContractLogHandlerRegistry
 			return false;
 		}
 
-		final ComputingMethodHandler computingMethod = handler.getComputingMethod();
+		final IComputingMethodHandler computingMethod = handler.getComputingMethod();
 		final boolean isComputingMethodMatchingRequest = computingMethod.getComputingMethodType().equals(request.getComputingMethodType())
 				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
 		if (!isComputingMethodMatchingRequest)

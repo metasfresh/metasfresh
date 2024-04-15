@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.purchasecontract.pforderline;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -128,7 +128,7 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler getComputingMethod()
+	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
 		return contractHandler;
 	}

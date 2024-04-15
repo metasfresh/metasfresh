@@ -26,7 +26,7 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -61,7 +61,7 @@ public interface IModularContractLogHandler
 	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest handleLogsRequest);
 
 	@NonNull
-	ComputingMethodHandler getComputingMethod();
+	IComputingMethodHandler getComputingMethod();
 
 	@NonNull
 	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest handleLogsRequest)

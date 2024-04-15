@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.pr
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
@@ -50,7 +50,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class SVProcessedComputingMethod implements ComputingMethodHandler
+public class SVProcessedComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ComputingMethodService computingMethodService;
@@ -63,7 +63,7 @@ public class SVProcessedComputingMethod implements ComputingMethodHandler
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return null;
+		return Stream.empty();
 	}
 
 	@Override

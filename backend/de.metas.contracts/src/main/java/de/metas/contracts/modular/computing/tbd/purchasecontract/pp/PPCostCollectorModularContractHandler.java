@@ -25,7 +25,7 @@ package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -46,7 +46,7 @@ import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MOD
 
 @Component
 @RequiredArgsConstructor
-public class PPCostCollectorModularContractHandler implements ComputingMethodHandler
+public class PPCostCollectorModularContractHandler implements IComputingMethodHandler
 {
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);

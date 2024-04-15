@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.computing.tbd.salescontract.shipnotification;
 
-import de.metas.contracts.modular.computing.ComputingMethodHandler;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
@@ -48,7 +48,7 @@ public class ShippingNotificationForSalesContractLogsHandler extends AbstractShi
 	}
 
 	@Override
-	public @NonNull ComputingMethodHandler getComputingMethod()
+	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
 	}

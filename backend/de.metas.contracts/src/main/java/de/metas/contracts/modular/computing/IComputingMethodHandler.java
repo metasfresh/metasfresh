@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  * one for {@link de.metas.inout.model.I_M_InOut} and so on.
  * When implementing another handler, please be sure to also add a model interceptor such as {@link de.metas.contracts.modular.interceptor.C_Order}.
  */
-public interface ComputingMethodHandler
+public interface IComputingMethodHandler
 {
 	@NonNull
 	ComputingMethodType getComputingMethodType();
