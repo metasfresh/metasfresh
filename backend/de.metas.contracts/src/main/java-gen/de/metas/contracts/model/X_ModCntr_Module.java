@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1320773050L;
+	private static final long serialVersionUID = 1918625418L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -56,21 +56,6 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
-	}
-
-	@Override
-	public int getM_Product_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
 	public void setModCntr_Module_ID (final int ModCntr_Module_ID)
 	{
 		if (ModCntr_Module_ID < 1) 
@@ -86,15 +71,15 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_Log getModCntr_Settings()
+	public de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class);
 	}
 
 	@Override
-	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Log ModCntr_Settings)
+	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Log.class, ModCntr_Settings);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class, ModCntr_Settings);
 	}
 
 	@Override
@@ -137,6 +122,21 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	public int getModCntr_Type_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Type_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
 	@Override
