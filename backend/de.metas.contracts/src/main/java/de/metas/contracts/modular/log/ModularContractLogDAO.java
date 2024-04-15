@@ -308,11 +308,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
-		if(query.getModularContractHandlerType() != null)
+		if(query.getComputingMethodType() != null)
 		{
 			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getModularContractHandlerType())
+					.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodType())
 					.create();
 			final IQuery<I_ModCntr_Module> moduleFilter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 					.addOnlyActiveRecordsFilter()
@@ -326,9 +326,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
 		}
 
-		if (query.getIsBillable() != null)
+		if (query.getBillable() != null)
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, query.getIsBillable());
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, query.getBillable());
 		}
 
 		if (query.getLockOwner() != null)

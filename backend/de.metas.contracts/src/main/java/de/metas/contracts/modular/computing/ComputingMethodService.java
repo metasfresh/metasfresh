@@ -198,7 +198,7 @@ public class ComputingMethodService
 						.flatrateTermId(request.getFlatrateTermId())
 						.modularContractTypeId(request.getModularContractTypeId())
 						.processed(false)
-						.isBillable(true)
+						.billable(true)
 						.lockOwner(request.getLockOwner())
 						.build()
 		);

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.interim;
 
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -37,9 +38,10 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractService contractService,
 			@NonNull final InterimComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository);
+		super(modCntrInvoicingGroupRepository, contractService);
 		this.computingMethod = computingMethod;
 	}
 
