@@ -339,7 +339,7 @@ public class HandlingUnitsService
 				.orElse(null);
 	}
 
-	private static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
+	public static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
 	{
 		final JsonDisplayableQRCode rendered = qrCode.toRenderedJson();
 		return JsonHUQRCode.builder()

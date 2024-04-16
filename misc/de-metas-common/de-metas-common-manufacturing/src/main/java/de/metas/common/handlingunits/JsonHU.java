@@ -39,7 +39,7 @@ import java.util.List;
 @Jacksonized
 public class JsonHU
 {
-	@NonNull String id;
+	@Nullable String id;
 	@NonNull String huStatus;
 	@NonNull String huStatusCaption;
 
@@ -95,7 +95,7 @@ public class JsonHU
 	Boolean isDisposalPending;
 
 	public JsonHU(
-			@NonNull final String id,
+			@Nullable final String id,
 			@NonNull final String huStatus,
 			@NonNull final String huStatusCaption,
 			@NonNull final String displayName,

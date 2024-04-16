@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -44,4 +45,9 @@ public class JsonGetSingleHUResponse
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonGetSingleHUResponseBuilder {}
+
+	public static JsonGetSingleHUResponse ofResult(@NonNull final JsonHU result)
+	{
+		return builder().result(result).build();
+	}
 }

@@ -39,13 +39,10 @@ const HUManagerScreen = () => {
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-    // .catch((axiosError) => ({
-    //   error: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
-    // }));
   };
 
   const onResolvedResult = (result) => {
-    console.log('onResolvedResult', { result });
+    //console.log('onResolvedResult', { result });
     const { handlingUnitInfo } = result;
     dispatch(handlingUnitLoaded({ handlingUnitInfo }));
   };
@@ -71,14 +68,14 @@ const HUManagerScreen = () => {
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
   useEffect(() => {
-    if (handlingUnitInfo && !clearanceStatuses.length) {
+    if (handlingUnitInfo?.id && !clearanceStatuses.length) {
       api
         .getAllowedClearanceStatusesRequest({ huId: handlingUnitInfo.id })
         .then((statuses) => mergeClearanceStatuses(statuses));
     }
   }, [handlingUnitInfo]);
 
-  if (handlingUnitInfo && handlingUnitInfo.id) {
+  if (handlingUnitInfo) {
     return (
       <>
         {clearanceModalDisplayed ? (
@@ -91,19 +88,29 @@ const HUManagerScreen = () => {
         ) : null}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
         <div className="pt-3 section">
-          <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
-          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
-          <ButtonWithIndicator
-            caption={trl('huManager.action.setClearance.buttonCaption')}
-            onClick={onSetClearanceClick}
-          />
+          {handlingUnitInfo?.id && (
+            <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
+          )}
+          {handlingUnitInfo?.id && (
+            <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
+          )}
+          {handlingUnitInfo?.id && (
+            <ButtonWithIndicator
+              caption={trl('huManager.action.setClearance.buttonCaption')}
+              onClick={onSetClearanceClick}
+            />
+          )}
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
     );
   } else {
     return (
-      <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onResolvedResult} />
+      <BarcodeScannerComponent
+        continuousRunning={true}
+        resolveScannedBarcode={resolveScannedBarcode}
+        onResolvedResult={onResolvedResult}
+      />
     );
   }
 };
