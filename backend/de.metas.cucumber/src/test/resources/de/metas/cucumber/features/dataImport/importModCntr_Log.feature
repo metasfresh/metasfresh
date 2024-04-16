@@ -58,7 +58,7 @@ Feature: Import Modular Contract Logs via DataImportRestController
       | modCntr_settings_1             | testSettings_06292023_2 | importProduct           | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                | Value               | ModularContractHandlerType |
-      | modCntr_type_PO            | modCntr_type_PO     | modCntr_type_PO     | PurchaseOrderLine_Modular  |
+      | modCntr_type_PO            | modCntr_type_PO     | modCntr_type_PO     | Receipt                    |
       | modCntr_type_Import        | modCntr_type_Import | modCntr_type_Import | ImportLog                  |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
