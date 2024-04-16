@@ -27,11 +27,7 @@ import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
 import de.metas.camel.externalsystems.pcm.ExternalId;
 import de.metas.camel.externalsystems.pcm.purchaseorder.model.PurchaseOrderRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.v2.JsonPrice;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
-import de.metas.common.rest_api.v2.JsonQuantity;
-import de.metas.common.rest_api.v2.JsonVendor;
+import de.metas.common.rest_api.v2.*;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.Builder;
@@ -40,16 +36,11 @@ import lombok.Value;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.DEFAULT_CURRENCY_CODE;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.DEFAULT_UOM_X12DE355_CODE;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.EUROPE_BERLIN;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.LOCAL_DATE_FORMATTER;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.LOCAL_DATE_TIME_FORMATTER;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.*;
 
 @Value
 @Builder
@@ -110,7 +101,7 @@ public class PurchaseOrderUpsertProcessor implements Processor
 											 .map(PurchaseOrderUpsertProcessor::parseDateTime)
 											 .orElse(null))
 				.purchaseDatePromised(Optional.ofNullable(StringUtils.trimBlankToNull(purchaseOrderRow.getDatePromised()))
-											  .map(PurchaseOrderUpsertProcessor::parseDate)
+											  .map(PurchaseOrderUpsertProcessor::parseDateTime)
 											  .orElse(null))
 				.build();
 
@@ -134,12 +125,5 @@ public class PurchaseOrderUpsertProcessor implements Processor
 	{
 		final LocalDateTime localDateTime = LocalDateTime.parse(dateString, LOCAL_DATE_TIME_FORMATTER);
 		return localDateTime.atZone(EUROPE_BERLIN);
-	}
-
-	@NonNull
-	private static ZonedDateTime parseDate(@NonNull final String dateString)
-	{
-		final LocalDate localDate = LocalDate.parse(dateString, LOCAL_DATE_FORMATTER);
-		return localDate.atStartOfDay(EUROPE_BERLIN);
 	}
 }
