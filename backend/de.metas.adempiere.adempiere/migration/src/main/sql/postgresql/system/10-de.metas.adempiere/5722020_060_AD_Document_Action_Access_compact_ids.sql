@@ -12,7 +12,7 @@ ALTER TABLE AD_Document_Action_Access
 -- Update ID 
 UPDATE AD_Document_Action_Access t -- intermediate unique violations are ignored now
 SET AD_Document_Action_Access_ID = t1.new_id
-FROM (SELECT AD_Document_Action_Access_ID, ROW_NUMBER() OVER (ORDER BY AD_Document_Action_Access_ID) AS new_id FROM AD_Document_Action_Access) t1
+FROM (SELECT AD_Document_Action_Access_ID, 1000000 - 1 + ROW_NUMBER() OVER (ORDER BY AD_Document_Action_Access_ID) AS new_id FROM AD_Document_Action_Access) t1
 WHERE t.AD_Document_Action_Access_ID = t1.AD_Document_Action_Access_ID
 ;
 
