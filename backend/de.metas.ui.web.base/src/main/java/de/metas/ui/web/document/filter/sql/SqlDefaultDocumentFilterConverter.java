@@ -115,7 +115,10 @@ public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilte
 				continue;
 			}
 
-			final DetailId includedTabId = ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()).getTabId();
+			final DetailId includedTabId = filterParam.getFieldName() != null
+					? ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()).getTabId()
+					: null;
+			
 			final SqlOptions sqlOpts = includedTabId == null
 					? sqlOptsParam
 					: SqlOptions.usingTableAlias(includedTabId.getTableAlias());

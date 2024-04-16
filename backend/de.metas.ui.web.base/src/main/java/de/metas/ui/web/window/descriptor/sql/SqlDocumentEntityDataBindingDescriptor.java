@@ -72,6 +72,11 @@ public final class SqlDocumentEntityDataBindingDescriptor implements DocumentEnt
 		return (SqlDocumentEntityDataBindingDescriptor)descriptor;
 	}
 
+	public static boolean isAssignableFrom(@Nullable final DocumentEntityDataBindingDescriptor descriptor)
+	{
+		return descriptor instanceof SqlDocumentEntityDataBindingDescriptor;
+	}
+
 	private static final String TABLEALIAS_Master = "master";
 
 	public static final String FIELDNAME_Version = "Updated";
