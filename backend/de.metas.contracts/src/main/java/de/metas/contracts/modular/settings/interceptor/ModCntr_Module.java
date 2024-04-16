@@ -79,7 +79,7 @@ public class ModCntr_Module
 		{
 			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
 					.setParameter("ProductId: ", type.getM_Product_ID())
-					.setParameter("ComputinhMethodType: ", type.getModCntr_Type().getName());
+					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
 		}
 	}
 
