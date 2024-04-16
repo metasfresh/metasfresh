@@ -1,16 +1,15 @@
 package org.adempiere.mm.attributes.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.createOld;
-
+import com.google.common.base.Objects;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
-import com.google.common.base.Objects;
-
-import de.metas.util.Check;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 
 /*
  * #%L
@@ -34,15 +33,17 @@ import lombok.NonNull;
  * #L%
  */
 
+@Component
 @Interceptor(I_M_AttributeValue.class)
 public class M_AttributeValue
 {
-	public static final M_AttributeValue INSTANCE = new M_AttributeValue();
-
 	public M_AttributeValue()
 	{
 	}
 
+	/**
+	 * Note: no user-friendly msg needed, because the column is not updatable.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_AttributeValue.COLUMNNAME_Value)
 	public void preventAttributeValueChange(@NonNull final I_M_AttributeValue attributeValue)
 	{
@@ -51,7 +52,7 @@ public class M_AttributeValue
 
 		Check.errorUnless(
 				Objects.equal(newValue, oldValue),
-				"M_AttributeValue.Value may not be updated because it might be relevant for our storage; oldValue={}; newValue={}; attributevalue={}",
+				"M_AttributeValue.Value may not be updated because it's rendered into ASI-strings and might be relevant for our storage; oldValue={}; newValue={}; attributevalue={}",
 				oldValue, newValue, attributeValue);
 	}
 
