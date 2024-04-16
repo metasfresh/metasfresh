@@ -45,11 +45,6 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
-	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)
-	{
-		return isMatching(computingMethodType) && ProductId.equals(this.productId, productId);
-	}
-
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return modularContractType.isMatching(computingMethodType);

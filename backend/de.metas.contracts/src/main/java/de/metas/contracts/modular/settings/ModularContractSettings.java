@@ -35,7 +35,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 @Value
 @Builder
@@ -74,14 +73,12 @@ public class ModularContractSettings
 	SOTrx soTrx;
 
 	@NonNull
-	public Optional<ModuleConfig> getModuleConfig(
-			@NonNull final ComputingMethodType computingMethodType,
-			@NonNull final ProductId productId)
+	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleConfigs()
 				.stream()
-				.filter(config -> config.isMatching(computingMethodType, productId))
-				.findFirst();
+				.filter(config -> config.isMatching(computingMethodType))
+				.toList();
 	}
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
@@ -89,6 +86,5 @@ public class ModularContractSettings
 		return moduleConfigs
 				.stream()
 				.anyMatch(config -> config.isMatching(computingMethodType));
-
 	}
 }

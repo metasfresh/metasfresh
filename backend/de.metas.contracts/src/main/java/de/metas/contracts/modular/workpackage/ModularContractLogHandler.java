@@ -49,7 +49,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
 import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationId;
 import de.metas.shippingnotification.ShippingNotificationLineId;
@@ -123,18 +122,8 @@ class ModularContractLogHandler
 			return;
 		}
 
-		final ProductId productId = handler.getProductId(request).orElse(null);
-		if (productId == null)
-		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("No Product found for contractId: {}! no logs will be created!", request.getContractId());
-
-			return;
-		}
-
-		final ModuleConfig moduleConfig = settings.getModuleConfig(handler.getComputingMethod().getComputingMethodType(), productId)
-				.orElse(null);
-		if (moduleConfig == null)
+		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigs(handler.getComputingMethod().getComputingMethodType());
+		if (moduleConfigs.isEmpty())
 		{
 			Loggables.withLogger(logger, Level.DEBUG)
 					.addLog("No ModuleConfig found for contractId: {} and settingsId: {}! no logs will be created!", request.getContractId(), settings.getId());
@@ -144,21 +133,24 @@ class ModularContractLogHandler
 
 		final LogAction action = getLogAction(request);
 
-		final Supplier<IModularContractLogHandler.CreateLogRequest> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
-				.builder()
-				.handleLogsRequest(request)
-				.modularContractSettings(settings)
-				.productName(moduleConfig.getName())
-				.configId(moduleConfig.getId())
-				.typeId(moduleConfig.getModularContractType().getId())
-				.build();
-
-		switch (action)
+		for(final ModuleConfig moduleConfig : moduleConfigs)
 		{
-			case CREATE -> createLogs(handler, buildCreateRequest.get());
-			case REVERSE -> reverseLogs(handler, request);
-			case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
-			default -> throw new AdempiereException("Unknown action: " + action);
+			final Supplier<IModularContractLogHandler.CreateLogRequest> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
+					.builder()
+					.handleLogsRequest(request)
+					.modularContractSettings(settings)
+					.productName(moduleConfig.getName())
+					.configId(moduleConfig.getId())
+					.typeId(moduleConfig.getModularContractType().getId())
+					.build();
+
+			switch (action)
+			{
+				case CREATE -> createLogs(handler, buildCreateRequest.get());
+				case REVERSE -> reverseLogs(handler, request);
+				case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
+				default -> throw new AdempiereException("Unknown action: " + action);
+			}
 		}
 	}
 
