@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.settings;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
@@ -73,22 +72,6 @@ public class ModularContractSettings
 
 	@NonNull
 	SOTrx soTrx;
-
-	public List<ModuleConfig> getModularContractConfigs()
-	{
-		return getModuleConfigs()
-				.stream()
-				.filter(moduleConfig -> !moduleConfig.isInterimComputingMethod())
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public List<ModuleConfig> getInterimInvoiceConfigs()
-	{
-		return getModuleConfigs()
-				.stream()
-				.filter(ModuleConfig::isInterimComputingMethod)
-				.collect(ImmutableList.toImmutableList());
-	}
 
 	@NonNull
 	public Optional<ModuleConfig> getModuleConfig(

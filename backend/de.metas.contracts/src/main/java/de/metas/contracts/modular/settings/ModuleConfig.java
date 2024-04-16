@@ -54,9 +54,4 @@ public class ModuleConfig
 	{
 		return modularContractType.isMatching(computingMethodType);
 	}
-
-	public boolean isInterimComputingMethod()
-	{
-		return modularContractType.isMatching(ComputingMethodType.INTERIM);
-	}
 }
