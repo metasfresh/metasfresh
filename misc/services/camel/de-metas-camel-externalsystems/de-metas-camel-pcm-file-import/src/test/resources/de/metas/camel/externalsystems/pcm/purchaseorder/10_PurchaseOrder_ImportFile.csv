@@ -1,3 +1,3 @@
 MID;BsID;BsNr;Dat;DatLief;LID;BsPosNr;ArtId;Menge;BEPreis;BEHMenge;BEHEinheit;ArchBE1
-warehouseIdentifier_1;extHeader_1;poRef_1;;;bpartnerIdentifier_1;extLine_1;prodIdentifier_1;10;5.64;;;
-warehouseIdentifier_2;extHeader_2;poRef_2;;;bpartnerIdentifier_2;extLine_2;prodIdentifier_2;12.598;7;;;
+warehouseIdentifier_1;extHeader_1;poRef_1;;;bpartnerIdentifier_1;extLine_1;prodIdentifier_1;10;5,64;;;
+warehouseIdentifier_2;extHeader_2;poRef_2;;;bpartnerIdentifier_2;extLine_2;prodIdentifier_2;12,598;7;;;
