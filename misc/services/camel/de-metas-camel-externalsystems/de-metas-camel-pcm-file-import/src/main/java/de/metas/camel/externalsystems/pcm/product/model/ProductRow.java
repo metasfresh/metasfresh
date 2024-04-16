@@ -1,5 +1,6 @@
 package de.metas.camel.externalsystems.pcm.product.model;
 
+import de.metas.camel.externalsystems.common.CamelProcessorUtil;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
@@ -31,5 +32,10 @@ public class ProductRow
 	private String ean;
 
 	@DataField(pos = 7)
-	private BigDecimal taxRate;
+	private String taxRate;
+
+	public BigDecimal getTaxRate()
+	{
+		return CamelProcessorUtil.parseGermanNumberString(taxRate);
+	}
 }
