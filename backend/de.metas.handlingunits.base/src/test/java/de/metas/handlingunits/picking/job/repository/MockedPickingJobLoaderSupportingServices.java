@@ -74,6 +74,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public String getProductNo(@NonNull final ProductId productId)
+	{
+		return "productNo-" + productId.getRepoId();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
