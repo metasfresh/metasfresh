@@ -173,6 +173,11 @@ public interface IAttributeDAO extends ISingletonService
 		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
 	}
 
+	default I_M_Attribute getAttributeByCode(@NonNull final AttributeCode attributeCode)
+	{
+		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
+	}
+
 	/**
 	 * @return attribute; never return null
 	 */
