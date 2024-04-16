@@ -12,7 +12,7 @@ ALTER TABLE AD_Task_Access
 -- Update ID 
 UPDATE AD_Task_Access t -- intermediate unique violations are ignored now
 SET AD_Task_Access_ID = t1.new_id
-FROM (SELECT AD_Task_Access_ID, ROW_NUMBER() OVER (ORDER BY AD_Task_Access_ID) AS new_id FROM AD_Task_Access) t1
+FROM (SELECT AD_Task_Access_ID, 1000000 - 1 + ROW_NUMBER() OVER (ORDER BY AD_Task_Access_ID) AS new_id FROM AD_Task_Access) t1
 WHERE t.AD_Task_Access_ID = t1.AD_Task_Access_ID
 ;
 
