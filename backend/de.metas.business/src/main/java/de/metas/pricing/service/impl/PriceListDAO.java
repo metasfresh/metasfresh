@@ -259,7 +259,7 @@ public class PriceListDAO implements IPriceListDAO
 		final ImmutableSet<PriceListId> priceListIds = retrievePriceListsCollectionByPricingSystemId(pricingSystemId).filterAndListIds(soTrx);
 		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
 				.addInArrayFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID,priceListIds)
-				.andCollect(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_ProductPrice.class)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_ProductPrice.class)
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsActive, true)
 				.create()
