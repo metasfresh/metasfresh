@@ -6,6 +6,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -28,7 +29,7 @@ public class HUQRCodeGenerateRequest
 			final int count,
 			@NonNull final HuPackingInstructionsId huPackingInstructionsId,
 			@NonNull final ProductId productId,
-			@NonNull final List<Attribute> attributes)
+			@NonNull @Singular("_attribute") final List<Attribute> attributes)
 	{
 		Check.assumeGreaterThanZero(count, "count");
 
@@ -36,6 +37,34 @@ public class HUQRCodeGenerateRequest
 		this.huPackingInstructionsId = huPackingInstructionsId;
 		this.productId = productId;
 		this.attributes = ImmutableList.copyOf(attributes);
+	}
+
+	//
+	//
+	//
+
+	@SuppressWarnings("unused")
+	public static class HUQRCodeGenerateRequestBuilder
+	{
+		public HUQRCodeGenerateRequestBuilder attribute(@NonNull AttributeId attributeId, @Nullable String valueString)
+		{
+			return _attribute(Attribute.builder().attributeId(attributeId).valueString(valueString).build());
+		}
+
+		public HUQRCodeGenerateRequestBuilder attribute(@NonNull AttributeId attributeId, @Nullable BigDecimal valueNumber)
+		{
+			return _attribute(Attribute.builder().attributeId(attributeId).valueNumber(valueNumber).build());
+		}
+
+		public HUQRCodeGenerateRequestBuilder attribute(@NonNull AttributeId attributeId, @Nullable LocalDate valueDate)
+		{
+			return _attribute(Attribute.builder().attributeId(attributeId).valueDate(valueDate).build());
+		}
+
+		public HUQRCodeGenerateRequestBuilder attribute(@NonNull AttributeId attributeId, @Nullable AttributeValueId valueListId)
+		{
+			return _attribute(Attribute.builder().attributeId(attributeId).valueListId(valueListId).build());
+		}
 	}
 
 	//
