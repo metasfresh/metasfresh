@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interceptor;
+package de.metas.contracts.modular.settings.interceptor;
 
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;

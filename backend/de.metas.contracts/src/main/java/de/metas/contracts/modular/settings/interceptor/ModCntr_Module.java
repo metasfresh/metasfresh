@@ -23,9 +23,13 @@
 package de.metas.contracts.modular.settings.interceptor;
 
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -39,8 +43,15 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ModCntr_Module
 {
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 	public static final AdMessageKey MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = AdMessageKey.of("ModCntr_Settings_cannot_be_changed");
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
+	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
+	{
+		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(moduleRecord.getModCntr_Settings_ID()));
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateSettingsNotUsedAlready(@NonNull final I_ModCntr_Module type)
@@ -50,6 +61,25 @@ public class ModCntr_Module
 		if (modularContractSettingsDAO.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
 		{
 			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
+	public void validateModuleComputingMethodsUnique(@NonNull final I_ModCntr_Module type)
+	{
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
+		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(type.getModCntr_Module_ID());
+
+		final boolean hasAlreadyComputingTypeAndProduct = modularContractSettingsDAO.getById(modularContractSettingsId).getModuleConfigs().stream()
+				.filter(moduleConfig -> !moduleConfig.getId().getModularContractModuleId().equals(modularContractModuleId))
+				.filter(moduleConfig -> moduleConfig.isMatching(ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType())))
+				.anyMatch(moduleConfig -> moduleConfig.getProductId().equals(ProductId.ofRepoId(type.getM_Product_ID())));
+
+		if(hasAlreadyComputingTypeAndProduct)
+		{
+			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
+					.setParameter("ProductId: ", type.getM_Product_ID())
+					.setParameter("ComputinhMethodType: ", type.getModCntr_Type().getName());
 		}
 	}
 
