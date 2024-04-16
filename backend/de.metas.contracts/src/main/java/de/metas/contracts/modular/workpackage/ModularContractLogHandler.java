@@ -140,16 +140,19 @@ class ModularContractLogHandler
 					.handleLogsRequest(request)
 					.modularContractSettings(settings)
 					.productName(moduleConfig.getName())
-					.configId(moduleConfig.getId())
+					.moduleConfig(moduleConfig)
 					.typeId(moduleConfig.getModularContractType().getId())
 					.build();
 
-			switch (action)
+			if(handler.applies(buildCreateRequest.get()))
 			{
-				case CREATE -> createLogs(handler, buildCreateRequest.get());
-				case REVERSE -> reverseLogs(handler, request);
-				case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
-				default -> throw new AdempiereException("Unknown action: " + action);
+				switch (action)
+				{
+					case CREATE -> createLogs(handler, buildCreateRequest.get());
+					case REVERSE -> reverseLogs(handler, request);
+					case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
+					default -> throw new AdempiereException("Unknown action: " + action);
+				}
 			}
 		}
 	}

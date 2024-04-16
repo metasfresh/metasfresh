@@ -66,7 +66,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class PPCostCollectorLogHandler implements IModularContractLogHandler
+public class PPCostCollectorLog implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
 	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
@@ -94,6 +94,17 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler
 	public @NonNull String getSupportedTableName()
 	{
 		return I_PP_Cost_Collector.Table_Name;
+	}
+
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		final TableRecordReference recordRef = request.getRecordRef();
+		if(recordRef.getTableName().equals(getSupportedTableName()))
+		{
+			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
+			return request.getModuleConfig().getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
+		}
+		return false;
 	}
 
 	@Override

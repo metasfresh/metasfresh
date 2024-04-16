@@ -67,6 +67,6 @@ class ModularContractLogHandlerRegistry
 			return false;
 		}
 
-		return handler.applies(request);
+		return true;
 	}
 }

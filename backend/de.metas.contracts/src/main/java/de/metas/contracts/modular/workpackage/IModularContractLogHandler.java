@@ -33,6 +33,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
@@ -46,7 +47,7 @@ import java.util.Optional;
 
 public interface IModularContractLogHandler
 {
-	default boolean applies(@NonNull final HandleLogsRequest ignoredRequest) {return true;}
+	default boolean applies(@NonNull final CreateLogRequest ignoredRequest) {return true;}
 
 	@NonNull
 	String getSupportedTableName();
@@ -104,17 +105,22 @@ public interface IModularContractLogHandler
 		@NonNull HandleLogsRequest handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
 		@NonNull String productName;
-		@NonNull ModuleConfigAndSettingsId configId;
+		@NonNull ModuleConfig moduleConfig;
 		@NonNull ModularContractTypeId typeId;
 
-		public FlatrateTermId getContractId()
+		public @NonNull FlatrateTermId getContractId()
 		{
 			return handleLogsRequest.getContractId();
 		}
 
-		public TableRecordReference getRecordRef()
+		public @NonNull TableRecordReference getRecordRef()
 		{
 			return handleLogsRequest.getTableRecordReference();
+		}
+
+		public @NonNull ModuleConfigAndSettingsId getConfigId()
+		{
+			return moduleConfig.getId();
 		}
 	}
 
