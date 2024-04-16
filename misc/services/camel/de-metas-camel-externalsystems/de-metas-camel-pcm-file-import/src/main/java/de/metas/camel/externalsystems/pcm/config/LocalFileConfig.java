@@ -70,6 +70,8 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 		final StringBuilder fileEndpoint = new StringBuilder("file://");
 		fileEndpoint.append(rootLocation)
 				.append("?")
+				.append("charset=utf-8")
+				.append("&")
 				.append("delay=").append(pollingFrequency.toMillis())
 				.append("&")
 				.append("move=").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
