@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
@@ -64,22 +65,35 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE, ModelValidator.TYPE_BEFORE_NEW })
-	public void validateModuleComputingMethodsUnique(@NonNull final I_ModCntr_Module type)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
+	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module type)
 	{
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
 		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(type.getModCntr_Module_ID());
+		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType());
+		final ModularContractSettings settings = modularContractSettingsDAO.getById(modularContractSettingsId);
+		final ProductId productId = ProductId.ofRepoId(type.getM_Product_ID());
 
-		final boolean hasAlreadyComputingTypeAndProduct = modularContractSettingsDAO.getById(modularContractSettingsId).getModuleConfigs().stream()
-				.filter(moduleConfig -> !moduleConfig.getId().getModularContractModuleId().equals(modularContractModuleId))
-				.filter(moduleConfig -> moduleConfig.isMatching(ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType())))
-				.anyMatch(moduleConfig -> moduleConfig.getProductId().equals(ProductId.ofRepoId(type.getM_Product_ID())));
+		final boolean hasAlreadyComputingTypeAndProduct = settings.getModuleConfigs().stream()
+				.filter(moduleConfig -> !ModularContractModuleId.equals(moduleConfig.getId().getModularContractModuleId(), modularContractModuleId))
+				.filter(moduleConfig -> moduleConfig.isMatching(computingMethodType))
+				.anyMatch(moduleConfig -> ProductId.equals(moduleConfig.getProductId(), productId));
 
 		if(hasAlreadyComputingTypeAndProduct)
 		{
 			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
 					.setParameter("ProductId: ", type.getM_Product_ID())
 					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
+		}
+
+		switch(computingMethodType)
+		{
+			case RECEIPT -> {
+				if(!ProductId.equals(settings.getRawProductId(), productId))
+				{
+					throw new AdempiereException("For this ComputingMethodType the raw product needs to be used");
+				}
+			}
 		}
 	}
 
