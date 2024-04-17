@@ -117,7 +117,7 @@ public class ModCntr_Module
 
 		switch(computingMethodType)
 		{
-			case RECEIPT -> {
+			case Receipt -> {
 				if(!ProductId.equals(settings.getRawProductId(), productId))
 				{
 					throw new AdempiereException("For this ComputingMethodType the raw product needs to be used");

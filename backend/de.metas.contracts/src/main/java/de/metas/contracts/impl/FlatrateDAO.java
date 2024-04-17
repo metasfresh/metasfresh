@@ -1230,6 +1230,13 @@ public class FlatrateDAO implements IFlatrateDAO
 				.anyMatch();
 	}
 
+	@NonNull
+	private IQueryBuilder<I_C_Flatrate_Term> getFlatrateTermQueryBuilder(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.filter(flatrateTermFilter);
+	}
+
 	@Override
 	public IQuery<I_C_Flatrate_Term> createInterimContractQuery(@NonNull final IQueryFilter<I_C_Flatrate_Term> contractFilter)
 	{
@@ -1239,13 +1246,6 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TYPE_CONDITIONS_InterimInvoice)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.create();
-	}
-
-	@NonNull
-	private IQueryBuilder<I_C_Flatrate_Term> getFlatrateTermQueryBuilder(@NonNull final IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(flatrateTermFilter);
 	}
 
 	@Override

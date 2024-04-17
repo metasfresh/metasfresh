@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.AddValueOnInterim;
 
 @Component
 @RequiredArgsConstructor
@@ -93,6 +93,6 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IC
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR;
+		return AddValueOnInterim;
 	}
 }

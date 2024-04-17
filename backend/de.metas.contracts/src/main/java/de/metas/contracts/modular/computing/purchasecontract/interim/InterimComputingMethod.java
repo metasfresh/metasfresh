@@ -28,10 +28,10 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
@@ -140,7 +140,7 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ComputingMethodType.INTERIM;
+		return ComputingMethodType.INTERIM_CONTRACT;
 	}
 
 	@Override

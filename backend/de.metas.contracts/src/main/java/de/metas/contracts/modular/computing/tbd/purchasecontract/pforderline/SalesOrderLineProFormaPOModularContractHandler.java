@@ -31,9 +31,9 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.ProForma;
 
 @Component
 @RequiredArgsConstructor
@@ -139,6 +139,6 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IComputin
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR;
+		return ProForma;
 	}
 }

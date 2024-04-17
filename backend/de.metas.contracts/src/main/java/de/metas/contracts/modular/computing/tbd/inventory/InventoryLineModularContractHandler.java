@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.DefinitiveInvoice;
 
 @Component
 @RequiredArgsConstructor
@@ -73,7 +73,7 @@ public class InventoryLineModularContractHandler implements IComputingMethodHand
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return INVENTORY_LINE_MODULAR;
+		return DefinitiveInvoice;
 	}
 
 	@Override

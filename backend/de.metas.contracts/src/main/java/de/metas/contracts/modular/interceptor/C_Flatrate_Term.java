@@ -93,7 +93,7 @@ public class C_Flatrate_Term
 
 		final AtomicBoolean containsInterimComputingMethod = new AtomicBoolean(false);
 		settings.getModuleConfigs().forEach(moduleConfig -> {
-			if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM))
+			if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
 			{
 				containsInterimComputingMethod.set(true);
 			}

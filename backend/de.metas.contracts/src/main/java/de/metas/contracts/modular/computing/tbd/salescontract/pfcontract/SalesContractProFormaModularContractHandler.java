@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_CONTRACT_PRO_FORMA_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.ProForma;
 
 @Component
 @RequiredArgsConstructor
@@ -99,6 +99,6 @@ public class SalesContractProFormaModularContractHandler implements IComputingMe
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_CONTRACT_PRO_FORMA_MODULAR;
+		return ProForma;
 	}
 }

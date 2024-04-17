@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
 
 @Component
 @RequiredArgsConstructor
@@ -77,7 +77,7 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return PPCOSTCOLLECTOR_MODULAR;
+		return SalesOnProcessedProduct;
 	}
 
 	@Override

@@ -63,7 +63,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.RECEIPT;
+import static de.metas.contracts.modular.ComputingMethodType.Receipt;
 
 @Component
 @RequiredArgsConstructor
@@ -80,7 +80,7 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return RECEIPT;
+		return Receipt;
 	}
 
 	@Override

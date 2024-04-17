@@ -101,7 +101,7 @@ public class InterimInvoiceCandidateService
 	{
 		final ModularContractLogQuery queryLogsToInvoice = ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.computingMethodType(ComputingMethodType.INTERIM)
+				.computingMethodType(ComputingMethodType.INTERIM_CONTRACT)
 				.contractType(LogEntryContractType.INTERIM)
 				.processed(false)
 				.billable(true)

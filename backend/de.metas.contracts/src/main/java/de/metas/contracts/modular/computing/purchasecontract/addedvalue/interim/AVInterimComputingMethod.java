@@ -65,9 +65,9 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 	}
 
 	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return null;
+		public @NonNull ComputingMethodType getComputingMethodType()
+		{
+			return ComputingMethodType.AddValueOnInterim;
 	}
 
 	@Override
@@ -76,6 +76,7 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 		final List<ModularContractLogEntry> logs = new ArrayList<>();
+
 
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))

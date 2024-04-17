@@ -221,7 +221,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.computingMethodType(ComputingMethodType.INTERIM)
+				.computingMethodType(ComputingMethodType.INTERIM_CONTRACT)
 				.contractType(LogEntryContractType.INTERIM)
 				.processed(true)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
