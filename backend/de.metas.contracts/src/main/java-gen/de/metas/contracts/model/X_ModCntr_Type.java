@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1572720216L;
+	private static final long serialVersionUID = 461464793L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -135,7 +135,7 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	/** SubtractValueOnInterim = SubtractValueOnInterim */
 	public static final String MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim = "SubtractValueOnInterim";
 	@Override
-	public void setModularContractHandlerType (final @Nullable java.lang.String ModularContractHandlerType)
+	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);
 	}
