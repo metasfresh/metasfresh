@@ -141,27 +141,36 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
 			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		try
-		{
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = getByIdSupplier(() -> {
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
 			if (globalQRCode != null)
 			{
 				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode)
-						.map(huId -> toSingleHUResponseEntity(huId, request.isIncludeAllowedClearanceStatuses()))
-						.orElseGet(() -> toSingleHUResponseEntityOfNewHU(huQRCode));
+				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
 			}
 			else
 			{
-				final HuId huId = HuId.ofHUValue(request.getQrCode());
-				return toSingleHUResponseEntity(huId, request.isIncludeAllowedClearanceStatuses());
+				return HuId.ofHUValue(request.getQrCode());
 			}
+		}, request.isIncludeAllowedClearanceStatuses());
 
-		}
-		catch (Exception ex)
+		//
+		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
+		if (responseEntity.getStatusCode() == HttpStatus.NOT_FOUND)
 		{
-			return toBadRequestResponseEntity(ex);
+			try
+			{
+				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode());
+				final JsonHU jsonHU = toNewJsonHU(huQRCode);
+				return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(jsonHU));
+			}
+			catch (Exception ex)
+			{
+				return toBadRequestResponseEntity(ex);
+			}
 		}
+
+		return responseEntity;
 	}
 
 	@GetMapping("/byId/{M_HU_ID}")
@@ -169,14 +178,14 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		try
-		{
-			return toSingleHUResponseEntity(HuId.ofRepoId(huRepoId), false);
-		}
-		catch (final Exception e)
-		{
-			return toBadRequestResponseEntity(e);
-		}
+		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
+	}
+
+	@NonNull
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
+	{
+		final boolean getAllowedClearanceStatuses = false;
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -191,76 +200,13 @@ public class HandlingUnitsRestController
 				throw new AdempiereException("No HU found");
 			}
 
-			return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage))));
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+					.result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
+					.build());
 		}
 		catch (final Exception ex)
 		{
 			return toBadRequestResponseEntity(ex);
-		}
-	}
-
-	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntityOfNewHU(@NonNull final HUQRCode huQRCode)
-	{
-		try
-		{
-			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
-			final I_M_Product product = productBL.getById(huQRCode.getProduct().getId());
-			final String uom = productBL.getStockUOM(product).getUOMSymbol();
-
-			final JsonHU jsonHU = JsonHU.builder()
-					.id(null)
-					.huStatus(X_M_HU.HUSTATUS_Planning)
-					.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Planning).translate(adLanguage))
-					.displayName(huQRCode.getPackingInfo().getCaption())
-					.qrCode(HandlingUnitsService.toJsonHUQRCode(huQRCode))
-					.warehouseValue(null)
-					.locatorValue(null)
-					.product(JsonHUProduct.builder()
-							.productValue(product.getValue())
-							.productName(product.getName())
-							.qty("0")
-							.uom(uom)
-							.build())
-					.attributes2(JsonHUAttributes.builder()
-							.list(huQRCode.getAttributes().stream()
-									.map(this::toJsonHUAttribute)
-									.collect(ImmutableList.toImmutableList()))
-							.build())
-					.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
-					.build();
-
-			return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(jsonHU));
-		}
-		catch (Exception ex)
-		{
-			return toBadRequestResponseEntity(ex);
-		}
-	}
-
-	private JsonHUAttribute toJsonHUAttribute(final HUQRCodeAttribute huQRCodeAttribute)
-	{
-		final AttributeCode attributeCode = huQRCodeAttribute.getCode();
-		final I_M_Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
-		return JsonHUAttribute.builder()
-				.code(attributeCode.getCode())
-				.caption(attribute.getName())
-				.value(huQRCodeAttribute.getValueRendered())
-				.build();
-	}
-
-	private static JsonHUType toJsonHUType(@NonNull HUQRCodeUnitType huUnitType)
-	{
-		switch (huUnitType)
-		{
-			case LU:
-				return JsonHUType.LU;
-			case TU:
-				return JsonHUType.TU;
-			case VHU:
-				return JsonHUType.CU;
-			default:
-				throw new AdempiereException("Unknown HU Unit Type: " + huUnitType);
 		}
 	}
 
@@ -371,10 +317,27 @@ public class HandlingUnitsRestController
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
+		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
+	}
+
+	@NonNull
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
 		try
 		{
-			final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
-			return toSingleHUResponseEntity(huId, false);
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
+
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+					.result(handlingUnitsService
+							.getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+							.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
+					.build());
 		}
 		catch (final Exception e)
 		{
@@ -382,14 +345,60 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private @NonNull ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final HuId huId, final boolean getAllowedClearanceStatuses)
+	private JsonHU toNewJsonHU(final @NonNull HUQRCode huQRCode)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
-		final JsonHU result = handlingUnitsService.getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
-				.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
+		final I_M_Product product = productBL.getById(huQRCode.getProduct().getId());
+		final String uom = productBL.getStockUOM(product).getUOMSymbol();
 
-		return ResponseEntity.ok(JsonGetSingleHUResponse.ofResult(result));
+		return JsonHU.builder()
+				.id(null)
+				.huStatus(X_M_HU.HUSTATUS_Planning)
+				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Planning).translate(adLanguage))
+				.displayName(huQRCode.getPackingInfo().getCaption())
+				.qrCode(HandlingUnitsService.toJsonHUQRCode(huQRCode))
+				.warehouseValue(null)
+				.locatorValue(null)
+				.product(JsonHUProduct.builder()
+						.productValue(product.getValue())
+						.productName(product.getName())
+						.qty("0")
+						.uom(uom)
+						.build())
+				.attributes2(JsonHUAttributes.builder()
+						.list(huQRCode.getAttributes().stream()
+								.map(this::toJsonHUAttribute)
+								.collect(ImmutableList.toImmutableList()))
+						.build())
+				.jsonHUType(toJsonHUType(huQRCode.getPackingInfo().getHuUnitType()))
+				.build();
+	}
+
+	private JsonHUAttribute toJsonHUAttribute(final HUQRCodeAttribute huQRCodeAttribute)
+	{
+		final AttributeCode attributeCode = huQRCodeAttribute.getCode();
+		final I_M_Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
+		return JsonHUAttribute.builder()
+				.code(attributeCode.getCode())
+				.caption(attribute.getName())
+				.value(huQRCodeAttribute.getValueRendered())
+				.build();
+	}
+
+	private static JsonHUType toJsonHUType(@NonNull HUQRCodeUnitType huUnitType)
+	{
+		switch (huUnitType)
+		{
+			case LU:
+				return JsonHUType.LU;
+			case TU:
+				return JsonHUType.TU;
+			case VHU:
+				return JsonHUType.CU;
+			default:
+				throw new AdempiereException("Unknown HU Unit Type: " + huUnitType);
+		}
 	}
 
 	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
@@ -397,4 +406,5 @@ public class HandlingUnitsRestController
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
 	}
+
 }
