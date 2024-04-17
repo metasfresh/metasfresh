@@ -27,7 +27,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -40,7 +39,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -130,9 +128,8 @@ public class ModularContractLogService
 	private void validateLogPrice(@Nullable final ProductPrice productPrice, @NonNull final ProductPrice productPriceToMatch)
 	{
 		Check.assumeNotNull(productPrice, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
-		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch),"ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
+		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
-
 
 	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final ModularContractLogEntry log)
 	{
@@ -148,5 +145,10 @@ public class ModularContractLogService
 				.stockQty(stockQuantity)
 				.uomQty(log.getQuantity())
 				.build();
+	}
+
+	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
+	{
+		modularContractLogDAO.updatePrice(request);
 	}
 }

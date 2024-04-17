@@ -134,6 +134,7 @@ class InterimContractLogsHandler implements IModularContractLogHandler<I_C_Flatr
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(modularContractId)
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, createLogRequest.getContractId()))
 											.producerBPartnerId(modularContractLogEntry.getProducerBPartnerId())
 											.invoicingBPartnerId(modularContractLogEntry.getInvoicingBPartnerId())

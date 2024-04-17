@@ -136,6 +136,7 @@ public interface IModularContractLogHandler<T>
 	{
 		@NonNull HandleLogsRequest<T> handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
+		@NonNull String productName;
 		@NonNull ModuleConfigAndSettingsId configId;
 		@NonNull ModularContractTypeId typeId;
 

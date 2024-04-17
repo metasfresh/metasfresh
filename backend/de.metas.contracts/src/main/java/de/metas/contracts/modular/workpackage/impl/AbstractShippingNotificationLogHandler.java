@@ -129,6 +129,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.invoicingBPartnerId(wrapper.getBPartnerId())
 											.warehouseId(wrapper.getWarehouseId())
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.documentType(LogEntryDocumentType.SHIPPING_NOTIFICATION)
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(getSOTrx())

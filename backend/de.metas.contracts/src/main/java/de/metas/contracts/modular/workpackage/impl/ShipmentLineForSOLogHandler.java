@@ -138,6 +138,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler<I_M_InOu
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
+											.productName(createLogRequest.getProductName())
 											.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouse.getC_BPartner_ID()))
 											.producerBPartnerId(bPartnerId)
