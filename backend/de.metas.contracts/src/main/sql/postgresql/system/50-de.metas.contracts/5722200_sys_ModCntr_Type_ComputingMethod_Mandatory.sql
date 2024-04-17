@@ -1,14 +1,5 @@
 
 
-create table backup.ModCntr_Type_BKP_17042024 as select * from modcntr_type;
-
-UPDATE modcntr_type set modularcontracthandlertype='PurchaseOrderLine_Modular', description = description || ' set to a deprecated computing method to avoid null values' 
-WHERE modularcontracthandlertype is null;
-
-
-
-
-
 -- Column: ModCntr_Type.ModularContractHandlerType
 -- 2024-04-17T14:08:07.678Z
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-17 17:08:07.678','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587541
