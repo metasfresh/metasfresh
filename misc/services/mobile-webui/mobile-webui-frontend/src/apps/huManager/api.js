@@ -2,6 +2,7 @@ import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
 import { toQRCodeString } from '../../utils/qrCode/hu';
+import { toLocatorQRCodeString } from '../../utils/qrCode/locator';
 
 const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
@@ -55,12 +56,14 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
   });
 }
 
-export const changeQty = ({ huId, huQRCode, description, qty }) => {
+export const changeQty = ({ huId, huQRCode, description, qty, locatorQRCode }) => {
   return axios
-    .put(`${huAPIBasePath}/byId/${huId}/qty`, {
+    .put(`${huAPIBasePath}/qty`, {
+      huId,
       huQRCode: toQRCodeString(huQRCode),
-      qty: qty,
-      description: description,
+      qty,
+      description,
+      locatorQRCode: locatorQRCode ? toLocatorQRCodeString(locatorQRCode) : null,
       splitOneIfAggregated: true,
     })
     .then(unboxAxiosResponse)

@@ -62,6 +62,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -325,10 +326,15 @@ public class HandlingUnitsRestController
 			@PathVariable("M_HU_ID") final int huId,
 			@RequestBody @NonNull final JsonHUQtyChangeRequest request)
 	{
-		final HuId huWithChangedQty = handlingUnitsService.updateQty(HuId.ofRepoId(huId), request);
-		return getByIdSupplier(() -> huWithChangedQty);
+		return changeHUQty(request.withHuIdAndValidate(HuId.ofRepoId(huId)));
 	}
 
+	@PutMapping("/qty")
+	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
+	{
+		final HuId huId = handlingUnitsService.updateQty(request);
+		return getByIdSupplier(() -> huId);
+	}
 
 	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
@@ -359,8 +365,8 @@ public class HandlingUnitsRestController
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
-		final I_M_Product product = productBL.getById(huQRCode.getProduct().getId());
-		final String uom = productBL.getStockUOM(product).getUOMSymbol();
+		final I_M_Product product = productBL.getById(huQRCode.getProductId());
+		final I_C_UOM uom = productBL.getStockUOM(product);
 
 		return JsonHU.builder()
 				.id(null)
@@ -374,7 +380,7 @@ public class HandlingUnitsRestController
 						.productValue(product.getValue())
 						.productName(product.getName())
 						.qty("0")
-						.uom(uom)
+						.uom(uom.getX12DE355())
 						.build())
 				.attributes2(JsonHUAttributes.builder()
 						.list(huQRCode.getAttributes().stream()

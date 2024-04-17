@@ -24,6 +24,9 @@
     "setClearance": {
       "buttonCaption": "Change HU clearance"
     },
+    "setCurrentLocator": {
+      "buttonCaption": "Change current locator"
+    },
     "changeQty": {
       "buttonCaption": "Change qty",
       "qtyLabel": "Qty",

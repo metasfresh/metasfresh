@@ -24,6 +24,9 @@
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"
     },
+    "setCurrentLocator": {
+      "buttonCaption": "Change current locator"
+    },
     "changeQty": {
       "buttonCaption": "Menge verändern",
       "qtyLabel": "Menge",
