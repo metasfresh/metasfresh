@@ -9,7 +9,7 @@ import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
-import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
@@ -23,6 +23,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
@@ -32,22 +33,15 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Service
+@RequiredArgsConstructor
 public class PPOrderIssueScheduleService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
-	private final InventoryService inventoryService;
+	private final HUQtyService huQtyService;
 
 	public static final AdMessageKey MSG_AlreadyIssued = AdMessageKey.of("de.metas.handlingunits.pporder.AlreadyIssuedError");
-
-	public PPOrderIssueScheduleService(
-			@NonNull final PPOrderIssueScheduleRepository issueScheduleRepository,
-			@NonNull final InventoryService inventoryService)
-	{
-		this.issueScheduleRepository = issueScheduleRepository;
-		this.inventoryService = inventoryService;
-	}
 
 	public ImmutableList<PPOrderIssueSchedule> getByOrderId(final PPOrderId ppOrderId)
 	{
@@ -150,7 +144,7 @@ public class PPOrderIssueScheduleService
 		Weightables.updateWeightNet(targetWeight);
 
 		WeightHUCommand.builder()
-				.inventoryService(inventoryService)
+				.huQtyService(huQtyService)
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)

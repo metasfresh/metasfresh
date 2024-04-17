@@ -15,12 +15,20 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
+import { toastError } from '../../../utils/toast';
+import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+
+const MODALS = {
+  CHANGE_QTY: 'CHANGE_QTY',
+  CLEARANCE_STATUS: 'CLEARANCE_STATUS',
+};
 
 const HUManagerScreen = () => {
   const dispatch = useDispatch();
   const history = useHistory();
-  const [clearanceModalDisplayed, toggleClearanceModal] = useState(false);
   const [clearanceStatuses, setClearanceStatuses] = useState([]);
+  const [modalToDisplay, setModalToDisplay] = useState('');
+  const [changeQtyAllowed, setChangeQtyAllowed] = useState(false);
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -64,6 +72,20 @@ const HUManagerScreen = () => {
       toggleClearanceModal(false);
     });
   };
+  const onChangeQtySubmit = ({ qty, description }) => {
+    api
+      .changeQty({
+        huId: handlingUnitInfo.id,
+        huQRCode: handlingUnitInfo.qrCode,
+        description: description,
+        qty: qty,
+      })
+      .then(() => {
+        dispatch(clearLoadedData());
+      })
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => toggleChangeQtyModal(false));
+  };
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
@@ -75,15 +97,51 @@ const HUManagerScreen = () => {
     }
   }, [handlingUnitInfo]);
 
+  useEffect(() => {
+    const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+    setChangeQtyAllowed(isSingleStorage);
+  }, [handlingUnitInfo]);
+
+  const toggleChangeQtyModal = (showModal) => {
+    setModalToDisplay(showModal ? MODALS.CHANGE_QTY : '');
+  };
+
+  const toggleClearanceModal = (showModal) => {
+    setModalToDisplay(showModal ? MODALS.CLEARANCE_STATUS : '');
+  };
+
+  const computeInitialQtyForChangeModal = () => {
+    const isSingleStorage = handlingUnitInfo && handlingUnitInfo.products && handlingUnitInfo.products.length === 1;
+    if (!isSingleStorage) {
+      toastError({ plainMessage: 'huManager.action.changeQty.allowedOnlyForSingleProducts' });
+      return 0;
+    }
+
+    const totalQty = Number(handlingUnitInfo.products[0].qty);
+    if (handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1) {
+      return totalQty / handlingUnitInfo.numberOfAggregatedHUs;
+    } else {
+      return totalQty;
+    }
+  };
+
   if (handlingUnitInfo) {
     return (
       <>
-        {clearanceModalDisplayed ? (
+        {modalToDisplay === MODALS.CLEARANCE_STATUS ? (
           <ClearanceDialog
             onCloseDialog={() => toggleClearanceModal(false)}
             onClearanceChange={onClearanceChange}
             clearanceStatuses={clearanceStatuses}
             handlingUnitInfo={handlingUnitInfo}
+          />
+        ) : null}
+        {modalToDisplay === MODALS.CHANGE_QTY ? (
+          <ChangeHUQtyDialog
+            currentQty={computeInitialQtyForChangeModal()}
+            uom={handlingUnitInfo.products[0].uom}
+            onCloseDialog={() => toggleChangeQtyModal(false)}
+            onSubmit={onChangeQtySubmit}
           />
         ) : null}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
@@ -98,6 +156,12 @@ const HUManagerScreen = () => {
             <ButtonWithIndicator
               caption={trl('huManager.action.setClearance.buttonCaption')}
               onClick={onSetClearanceClick}
+            />
+          )}
+          {changeQtyAllowed && (
+            <ButtonWithIndicator
+              caption={trl('huManager.action.changeQty.buttonCaption')}
+              onClick={() => toggleChangeQtyModal(true)}
             />
           )}
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />

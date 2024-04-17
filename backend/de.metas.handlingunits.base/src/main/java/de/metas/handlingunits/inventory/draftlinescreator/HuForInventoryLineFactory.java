@@ -59,7 +59,7 @@ public class HuForInventoryLineFactory
 			@NonNull final HuForInventoryLineBuilder huForInventoryLineBuilder,
 			@NonNull final IHUProductStorage huProductStorage)
 	{
-		final AttributesKey attributesKey = handlingUnitsBL.getStorageRelevantAttributesKey(huProductStorage.getM_HU());
+		final AttributesKey attributesKey = handlingUnitsBL.getAttributesKeyForInventory(huProductStorage.getM_HU());
 		final Quantity qty = huProductStorage.getQty();
 		
 		return huForInventoryLineBuilder

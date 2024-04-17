@@ -54,3 +54,15 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
     clearanceNote,
   });
 }
+
+export const changeQty = ({ huId, huQRCode, description, qty }) => {
+  return axios
+    .put(`${huAPIBasePath}/byId/${huId}/qty`, {
+      huQRCode: toQRCodeString(huQRCode),
+      qty: qty,
+      description: description,
+      splitOneIfAggregated: true,
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
