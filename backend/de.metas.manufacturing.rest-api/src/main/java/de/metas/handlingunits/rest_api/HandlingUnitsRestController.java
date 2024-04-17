@@ -169,14 +169,14 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
-	}
-
-	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
-	{
-		final boolean getAllowedClearanceStatuses = false;
-		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
+		try
+		{
+			return toSingleHUResponseEntity(HuId.ofRepoId(huRepoId), false);
+		}
+		catch (final Exception e)
+		{
+			return toBadRequestResponseEntity(e);
+		}
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -371,21 +371,10 @@ public class HandlingUnitsRestController
 		// IMPORTANT: don't retrieve by ID because the ID might be different
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
-		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
-	}
-
-	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
-	{
 		try
 		{
-			final HuId huId = huIdSupplier.get();
-			if (huId == null)
-			{
-				return ResponseEntity.notFound().build();
-			}
-
-			return toSingleHUResponseEntity(huId, getAllowedClearanceStatuses);
+			final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+			return toSingleHUResponseEntity(huId, false);
 		}
 		catch (final Exception e)
 		{
@@ -406,9 +395,6 @@ public class HandlingUnitsRestController
 	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-				.error(JsonErrors.ofThrowable(e, adLanguage))
-				.build());
+		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
 	}
-
 }

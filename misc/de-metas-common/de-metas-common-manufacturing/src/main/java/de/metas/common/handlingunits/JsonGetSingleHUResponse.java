@@ -50,4 +50,10 @@ public class JsonGetSingleHUResponse
 	{
 		return builder().result(result).build();
 	}
+
+	public static JsonGetSingleHUResponse ofError(@NonNull final JsonErrorItem error)
+	{
+		return builder().error(error).build();
+	}
+
 }
