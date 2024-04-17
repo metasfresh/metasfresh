@@ -27,7 +27,11 @@ import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
 import de.metas.camel.externalsystems.pcm.ExternalId;
 import de.metas.camel.externalsystems.pcm.purchaseorder.model.PurchaseOrderRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.v2.*;
+import de.metas.common.rest_api.v2.JsonPrice;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
+import de.metas.common.rest_api.v2.JsonQuantity;
+import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.Builder;
@@ -40,7 +44,11 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.*;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.GetPurchaseOrderFromFileRouteBuilder.PROPERTY_CURRENT_CSV_ROW;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.DEFAULT_CURRENCY_CODE;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.DEFAULT_UOM_X12DE355_CODE;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.EUROPE_BERLIN;
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.LOCAL_DATE_TIME_FORMATTER;
 
 @Value
 @Builder
@@ -63,8 +71,10 @@ public class PurchaseOrderUpsertProcessor implements Processor
 						.jsonPurchaseCandidateCreateRequest(upsertRequest)
 						.build())
 				.orElse(null);
-
+	
 		exchange.getIn().setBody(poCamelRequest);
+		
+		exchange.setProperty(PROPERTY_CURRENT_CSV_ROW, poRow); // needed in case of problems
 	}
 
 	@NonNull
