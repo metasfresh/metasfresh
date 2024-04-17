@@ -123,6 +123,13 @@ public class ModCntr_Module
 					throw new AdempiereException("For this ComputingMethodType the raw product needs to be used");
 				}
 			}
+			case AddValueOnProcessedProduct -> {
+				if(!ProductId.equals(settings.getProcessedProductId(), productId))
+				{
+					throw new AdempiereException("For this ComputingMethodType the processed product needs to be used");
+
+				}
+			}
 		}
 	}
 

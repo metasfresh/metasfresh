@@ -47,8 +47,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_SO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_SO_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class ShipmentLineForSOModularContractHandler implements IComputingMethodHandler
@@ -60,13 +64,13 @@ public class ShipmentLineForSOModularContractHandler implements IComputingMethod
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SHIPMENT_LINE_FOR_SO_MODULAR;
+		return SHIPMENT_LINE_FOR_SO_MODULAR_DEPRECATED;
 	}
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_M_InOutLine.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_M_InOutLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_M_InOutLine inOutLineRecord = inOutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_M_InOut inOutRecord = inOutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
@@ -83,7 +87,7 @@ public class ShipmentLineForSOModularContractHandler implements IComputingMethod
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_M_InOutLine.Table_Name))
+		if (recordRef.getTableName().equals(I_M_InOutLine.Table_Name))
 		{
 			final I_M_InOutLine inOutLineRecord = inOutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));

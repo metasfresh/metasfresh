@@ -59,6 +59,10 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class SalesProFormaModularContractLogsHandler implements IModularContractLogHandler

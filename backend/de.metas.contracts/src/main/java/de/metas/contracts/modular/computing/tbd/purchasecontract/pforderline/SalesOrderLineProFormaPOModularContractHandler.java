@@ -53,8 +53,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.ProForma;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class SalesOrderLineProFormaPOModularContractHandler implements IComputingMethodHandler
@@ -67,7 +71,7 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IComputin
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_C_OrderLine orderLineRecord = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
@@ -107,7 +111,7 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IComputin
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
 		{
 			final I_C_OrderLine orderLineRecord = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
@@ -139,6 +143,6 @@ public class SalesOrderLineProFormaPOModularContractHandler implements IComputin
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ProForma;
+		return SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR_DEPRECATED;
 	}
 }

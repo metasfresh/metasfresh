@@ -53,8 +53,12 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class SalesInvoiceLineModularContractHandler implements IComputingMethodHandler
@@ -66,7 +70,7 @@ public class SalesInvoiceLineModularContractHandler implements IComputingMethodH
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLine.getC_Invoice_ID()));
@@ -145,6 +149,6 @@ public class SalesInvoiceLineModularContractHandler implements IComputingMethodH
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_INVOICE_LINE_MODULAR;
+		return SALES_INVOICE_LINE_MODULAR_DEPRECATED;
 	}
 }

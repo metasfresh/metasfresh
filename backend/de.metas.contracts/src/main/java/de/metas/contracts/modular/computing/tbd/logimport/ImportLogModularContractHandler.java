@@ -28,10 +28,9 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -56,19 +55,23 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
+import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class ImportLogModularContractHandler implements IComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull final ModularContractLogService modularContractLogService;
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 			return Check.isBlank(importLogRecord.getI_ErrorMsg()) &&
@@ -83,7 +86,7 @@ public class ImportLogModularContractHandler implements IComputingMethodHandler
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name))
+		if (recordRef.getTableName().equals(I_I_ModCntr_Log.Table_Name))
 		{
 			final I_I_ModCntr_Log importLogRecord = InterfaceWrapperHelper.load(recordRef.getRecord_ID(), I_I_ModCntr_Log.class);
 			return Stream.of(FlatrateTermId.ofRepoId(importLogRecord.getC_Flatrate_Term_ID()));
@@ -94,7 +97,7 @@ public class ImportLogModularContractHandler implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return IMPORT_LOG;
+		return IMPORT_LOG_DEPRECATED;
 	}
 
 	@Override

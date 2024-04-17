@@ -26,9 +26,9 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
@@ -45,8 +45,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.AddValueOnInterim;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class ShippingNotificationForPurchaseModularContractHandler implements IComputingMethodHandler
@@ -59,7 +63,7 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IC
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)
 	{
-		if(recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name) && contractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name) && contractType.isModularContractType())
 		{
 			final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order order = orderBL.getById(OrderId.ofRepoId(notificationLine.getC_Order_ID()));
@@ -74,7 +78,7 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IC
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		if (recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 			final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(notificationLine.getC_Order_ID(), notificationLine.getC_OrderLine_ID());
@@ -93,6 +97,6 @@ public class ShippingNotificationForPurchaseModularContractHandler implements IC
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return AddValueOnInterim;
+		return SHIPPING_NOTIFICATION_FOR_PURCHASE_MODULAR_DEPRECATED;
 	}
 }

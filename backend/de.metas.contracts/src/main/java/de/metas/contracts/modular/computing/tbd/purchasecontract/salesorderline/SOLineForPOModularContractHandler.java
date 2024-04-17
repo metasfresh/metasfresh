@@ -54,8 +54,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SO_LINE_FOR_PO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SO_LINE_FOR_PO_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class SOLineForPOModularContractHandler implements IComputingMethodHandler
@@ -70,13 +74,13 @@ public class SOLineForPOModularContractHandler implements IComputingMethodHandle
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SO_LINE_FOR_PO_MODULAR;
+		return SO_LINE_FOR_PO_MODULAR_DEPRECATED;
 	}
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
@@ -116,7 +120,7 @@ public class SOLineForPOModularContractHandler implements IComputingMethodHandle
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
 		{
 			final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(),

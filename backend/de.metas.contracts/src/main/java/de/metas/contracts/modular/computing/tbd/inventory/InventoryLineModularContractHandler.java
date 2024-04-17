@@ -24,9 +24,9 @@ package de.metas.contracts.modular.computing.tbd.inventory;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryLineId;
@@ -39,8 +39,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.DefinitiveInvoice;
+import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class InventoryLineModularContractHandler implements IComputingMethodHandler
@@ -50,12 +54,12 @@ public class InventoryLineModularContractHandler implements IComputingMethodHand
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(!logEntryContractType.isModularContractType())
+		if (!logEntryContractType.isModularContractType())
 		{
 			return false;
 		}
 
-		if(recordRef.getTableName().equals(I_M_InventoryLine.Table_Name))
+		if (recordRef.getTableName().equals(I_M_InventoryLine.Table_Name))
 		{
 			final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
 			return FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()) != null;
@@ -73,7 +77,7 @@ public class InventoryLineModularContractHandler implements IComputingMethodHand
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return DefinitiveInvoice;
+		return INVENTORY_LINE_MODULAR_DEPRECATED;
 	}
 
 	@Override

@@ -60,6 +60,10 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class ShipmentLineForSOLogHandler implements IModularContractLogHandler

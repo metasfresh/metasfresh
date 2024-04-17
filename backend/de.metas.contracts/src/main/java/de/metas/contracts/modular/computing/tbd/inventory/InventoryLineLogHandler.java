@@ -59,6 +59,11 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.util.Optional;
 
+
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class InventoryLineLogHandler implements IModularContractLogHandler

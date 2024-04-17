@@ -25,9 +25,9 @@ package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,8 +42,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
+import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class PPCostCollectorModularContractHandler implements IComputingMethodHandler
@@ -56,7 +60,7 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			return ppOrderBL.isModularOrder(PPOrderId.ofRepoId(ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID())).getPP_Order_ID()));
 		}
@@ -67,7 +71,7 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	@NonNull
 	public Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name))
+		if (recordRef.getTableName().equals(I_PP_Cost_Collector.Table_Name))
 		{
 			return contractProvider.streamModularPurchaseContractsForPPOrder(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
 		}
@@ -77,7 +81,7 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SalesOnProcessedProduct;
+		return PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
 	}
 
 	@Override

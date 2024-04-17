@@ -63,6 +63,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class SalesInvoiceLineLogHandler implements IModularContractLogHandler
@@ -84,13 +88,19 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
+	@NonNull
+	private static Quantity extractQtyEntered(final @NonNull I_C_InvoiceLine invoiceLine)
+	{
+		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
+		return Quantitys.create(invoiceLine.getQtyEntered(), uomId);
+	}
 
 	@Override
 	public @NonNull String getSupportedTableName()
 	{
 		return I_C_InvoiceLine.Table_Name;
 	}
-	
+
 	@Override
 	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
@@ -173,12 +183,5 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build()
 		);
-	}
-
-	@NonNull
-	private static Quantity extractQtyEntered(final @NonNull I_C_InvoiceLine invoiceLine)
-	{
-		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
-		return Quantitys.create(invoiceLine.getQtyEntered(), uomId);
 	}
 }

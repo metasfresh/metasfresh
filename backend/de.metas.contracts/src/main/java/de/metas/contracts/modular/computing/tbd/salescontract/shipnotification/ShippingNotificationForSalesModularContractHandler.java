@@ -40,8 +40,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_SALES_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_SALES_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class ShippingNotificationForSalesModularContractHandler implements IComputingMethodHandler
@@ -54,10 +58,11 @@ public class ShippingNotificationForSalesModularContractHandler implements IComp
 	{
 		return recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name);
 	}
+
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		if (recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 			final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(notificationLine.getC_Order_ID(), notificationLine.getC_OrderLine_ID());
@@ -76,6 +81,6 @@ public class ShippingNotificationForSalesModularContractHandler implements IComp
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SHIPPING_NOTIFICATION_FOR_SALES_MODULAR;
+		return SHIPPING_NOTIFICATION_FOR_SALES_MODULAR_DEPRECATED;
 	}
 }

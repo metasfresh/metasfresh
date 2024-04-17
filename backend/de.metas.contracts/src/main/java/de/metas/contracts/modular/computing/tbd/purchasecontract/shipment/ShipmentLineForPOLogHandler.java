@@ -55,6 +55,10 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class ShipmentLineForPOLogHandler implements IModularContractLogHandler
@@ -132,7 +136,6 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 	{
 		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InOutLine.Table_Name)));
-
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 

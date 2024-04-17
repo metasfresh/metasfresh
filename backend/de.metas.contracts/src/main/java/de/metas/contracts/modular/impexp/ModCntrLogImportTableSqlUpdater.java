@@ -31,14 +31,12 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
@@ -89,8 +87,6 @@ public class ModCntrLogImportTableSqlUpdater
 {
 	private static final Logger logger = LogManager.getLogger(ModCntrLogImportTableSqlUpdater.class);
 	private final static String targetTableName = I_I_ModCntr_Log.Table_Name;
-
-	private final ModularContractSettingsDAO settingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 
 	public void updateModularImportTable(@NonNull final ImportRecordsSelection selection)
 	{
@@ -151,7 +147,7 @@ public class ModCntrLogImportTableSqlUpdater
 		final String sqlContractModuleId = "SELECT m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
 				+ " FROM " + I_ModCntr_Module.Table_Name + " m"
 				+ " INNER JOIN " + I_ModCntr_Type.Table_Name + " t on m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID + " = t." + I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID
-				+ " AND t." + I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType + " = '" + ComputingMethodType.IMPORT_LOG + "'"
+				+ " AND t." + I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType + " = '" + ComputingMethodType.IMPORT_LOG_DEPRECATED + "'"
 				+ " INNER JOIN " + I_ModCntr_Settings.Table_Name + " s ON m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID + " = s." + I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID
 				+ " WHERE i." + COLUMNNAME_M_Product_ID + " = m." + I_ModCntr_Module.COLUMNNAME_M_Product_ID
 				+ " AND i." + COLUMNNAME_Harvesting_Year_ID + " = s." + I_ModCntr_Settings.COLUMNNAME_C_Year_ID
@@ -278,103 +274,103 @@ public class ModCntrLogImportTableSqlUpdater
 
 		// DateTrx
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_DateTrx)
-				.errorMessage(COLUMNNAME_DateTrx + " is Mandatory !")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_DateTrx)
+								   .errorMessage(COLUMNNAME_DateTrx + " is Mandatory !")
+								   .build());
 		// C_Calendar_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_C_Calendar_ID)
-				.errorMessage(COLUMNNAME_C_Calendar_ID + " No Calendar Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_C_Calendar_ID)
+								   .errorMessage(COLUMNNAME_C_Calendar_ID + " No Calendar Match!")
+								   .build());
 
 		// Harvesting_Year_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_Harvesting_Year_ID)
-				.linkColumnName(COLUMNNAME_FiscalYear)
-				.errorMessage(COLUMNNAME_Harvesting_Year_ID + " No Harvesting Year Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_Harvesting_Year_ID)
+								   .linkColumnName(COLUMNNAME_FiscalYear)
+								   .errorMessage(COLUMNNAME_Harvesting_Year_ID + " No Harvesting Year Match!")
+								   .build());
 
 		// ModCnr_Module_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
-				.errorMessage(COLUMNNAME_ModCntr_Module_ID + " is Mandatory!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_ModCntr_Module_ID)
+								   .errorMessage(COLUMNNAME_ModCntr_Module_ID + " is Mandatory!")
+								   .build());
 
 		// C_Flatrate_Term_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_C_Flatrate_Term_ID)
-				.linkColumnName(COLUMNNAME_DocumentNo)
-				.errorMessage(COLUMNNAME_C_Flatrate_Term_ID + " No C_Flatrate_Term Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_C_Flatrate_Term_ID)
+								   .linkColumnName(COLUMNNAME_DocumentNo)
+								   .errorMessage(COLUMNNAME_C_Flatrate_Term_ID + " No C_Flatrate_Term Match!")
+								   .build());
 
 		// CollectionPoint_BPartner_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_CollectionPoint_BPartner_ID)
-				.linkColumnName(COLUMNNAME_CollectionPointValue)
-				.errorMessage(COLUMNNAME_CollectionPoint_BPartner_ID + " No CollectionPoint (Business Partner) Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_CollectionPoint_BPartner_ID)
+								   .linkColumnName(COLUMNNAME_CollectionPointValue)
+								   .errorMessage(COLUMNNAME_CollectionPoint_BPartner_ID + " No CollectionPoint (Business Partner) Match!")
+								   .build());
 
 		// Producer_BPartner_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_Producer_BPartner_ID)
-				.linkColumnName(COLUMNNAME_BPartnerValue)
-				.errorMessage(COLUMNNAME_Producer_BPartner_ID + " No Producer (Business Partner) Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_Producer_BPartner_ID)
+								   .linkColumnName(COLUMNNAME_BPartnerValue)
+								   .errorMessage(COLUMNNAME_Producer_BPartner_ID + " No Producer (Business Partner) Match!")
+								   .build());
 
 		// Bill_BPartner_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_Bill_BPartner_ID)
-				.linkColumnName(COLUMNNAME_BPartnerValue)
-				.errorMessage(COLUMNNAME_Bill_BPartner_ID + " No Bill Partner (Business Partner) Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_Bill_BPartner_ID)
+								   .linkColumnName(COLUMNNAME_BPartnerValue)
+								   .errorMessage(COLUMNNAME_Bill_BPartner_ID + " No Bill Partner (Business Partner) Match!")
+								   .build());
 
 		// M_Product_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_M_Product_ID)
-				.linkColumnName(COLUMNNAME_ProductValue)
-				.errorMessage(COLUMNNAME_M_Product_ID + " No Product Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_M_Product_ID)
+								   .linkColumnName(COLUMNNAME_ProductValue)
+								   .errorMessage(COLUMNNAME_M_Product_ID + " No Product Match!")
+								   .build());
 
 		// C_UOM_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_C_UOM_ID)
-				.linkColumnName(COLUMNNAME_UOMSymbol)
-				.errorMessage(COLUMNNAME_C_UOM_ID + " No UOM Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_C_UOM_ID)
+								   .linkColumnName(COLUMNNAME_UOMSymbol)
+								   .errorMessage(COLUMNNAME_C_UOM_ID + " No UOM Match!")
+								   .build());
 
 		// Price_UOM_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_Price_UOM_ID)
-				.linkColumnName(COLUMNNAME_PriceUOM)
-				.errorMessage(COLUMNNAME_C_UOM_ID + " No Price UOM Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_Price_UOM_ID)
+								   .linkColumnName(COLUMNNAME_PriceUOM)
+								   .errorMessage(COLUMNNAME_C_UOM_ID + " No Price UOM Match!")
+								   .build());
 
 		// C_Currency_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_C_Currency_ID)
-				.linkColumnName(COLUMNNAME_ISO_Code)
-				.errorMessage(COLUMNNAME_C_Currency_ID + " No Currency Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_C_Currency_ID)
+								   .linkColumnName(COLUMNNAME_ISO_Code)
+								   .errorMessage(COLUMNNAME_C_Currency_ID + " No Currency Match!")
+								   .build());
 
 		// M_Warehouse_ID
 		updateErrorMessage(DBUpdateErrorMessageRequest.builder()
-				.selection(selection)
-				.mandatoryColumnName(COLUMNNAME_M_Warehouse_ID)
-				.linkColumnName(COLUMNNAME_WarehouseName)
-				.errorMessage(COLUMNNAME_M_Warehouse_ID + " No Warehouse Match!")
-				.build());
+								   .selection(selection)
+								   .mandatoryColumnName(COLUMNNAME_M_Warehouse_ID)
+								   .linkColumnName(COLUMNNAME_WarehouseName)
+								   .errorMessage(COLUMNNAME_M_Warehouse_ID + " No Warehouse Match!")
+								   .build());
 
 		// Qty
 		updateQtyErrormessage(selection);

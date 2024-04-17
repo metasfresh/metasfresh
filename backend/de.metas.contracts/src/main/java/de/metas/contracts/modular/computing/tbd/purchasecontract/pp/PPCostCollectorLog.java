@@ -64,6 +64,10 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class PPCostCollectorLog implements IModularContractLogHandler
@@ -99,7 +103,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
-		if(recordRef.getTableName().equals(getSupportedTableName()))
+		if (recordRef.getTableName().equals(getSupportedTableName()))
 		{
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
 			return request.getModuleConfig().getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));

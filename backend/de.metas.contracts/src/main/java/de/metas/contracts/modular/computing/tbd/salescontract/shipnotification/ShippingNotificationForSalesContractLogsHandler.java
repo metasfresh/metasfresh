@@ -31,6 +31,10 @@ import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 public class ShippingNotificationForSalesContractLogsHandler extends AbstractShippingNotificationLogHandler
 {

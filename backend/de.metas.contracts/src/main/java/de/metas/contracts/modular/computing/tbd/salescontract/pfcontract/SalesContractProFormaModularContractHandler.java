@@ -27,9 +27,9 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -45,8 +45,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.ProForma;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_CONTRACT_PRO_FORMA_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class SalesContractProFormaModularContractHandler implements IComputingMethodHandler
@@ -58,7 +62,7 @@ public class SalesContractProFormaModularContractHandler implements IComputingMe
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_C_Flatrate_Term.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_C_Flatrate_Term.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 			if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
@@ -82,7 +86,7 @@ public class SalesContractProFormaModularContractHandler implements IComputingMe
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_C_Flatrate_Term.Table_Name))
+		if (recordRef.getTableName().equals(I_C_Flatrate_Term.Table_Name))
 		{
 			final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 			return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(flatrateTermRecord.getC_Flatrate_Term_ID()));
@@ -99,6 +103,6 @@ public class SalesContractProFormaModularContractHandler implements IComputingMe
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ProForma;
+		return SALES_CONTRACT_PRO_FORMA_MODULAR_DEPRECATED;
 	}
 }

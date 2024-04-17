@@ -63,6 +63,10 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 class SOLineForPOLogHandler implements IModularContractLogHandler
@@ -116,7 +120,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
-		
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(recordRef)
 											.contractId(createLogRequest.getContractId())

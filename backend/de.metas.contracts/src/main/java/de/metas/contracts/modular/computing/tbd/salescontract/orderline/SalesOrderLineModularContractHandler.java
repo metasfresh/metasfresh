@@ -45,8 +45,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_MODULAR_DEPRECATED;
 
+/**
+ * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
+ */
+@Deprecated
 @Component
 @RequiredArgsConstructor
 public class SalesOrderLineModularContractHandler implements IComputingMethodHandler
@@ -59,7 +63,7 @@ public class SalesOrderLineModularContractHandler implements IComputingMethodHan
 	@Override
 	public boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name) && logEntryContractType.isModularContractType())
 		{
 			final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
@@ -71,7 +75,7 @@ public class SalesOrderLineModularContractHandler implements IComputingMethodHan
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		if(recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
+		if (recordRef.getTableName().equals(I_C_OrderLine.Table_Name))
 		{
 			final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
 			final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID());
@@ -89,6 +93,6 @@ public class SalesOrderLineModularContractHandler implements IComputingMethodHan
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_ORDER_LINE_MODULAR;
+		return SALES_ORDER_LINE_MODULAR_DEPRECATED;
 	}
 }
