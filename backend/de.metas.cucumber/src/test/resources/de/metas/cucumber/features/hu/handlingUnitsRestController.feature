@@ -7,17 +7,17 @@ Feature: Handling unit rest controller
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-01-03T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-
-  Scenario: retrieve HU by id and update HU attributes EPs validation
-    Given metasfresh contains M_Products:
-      | Identifier | Value     | Name      |
-      | huProduct  | huProduct | huProduct |
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And load M_Locator:
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
+
+  Scenario: retrieve HU by id and update HU attributes EPs validation
+    Given metasfresh contains M_Products:
+      | Identifier | Value     | Name      |
+      | huProduct  | huProduct | huProduct |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -132,13 +132,7 @@ Feature: Handling unit rest controller
     Given metasfresh contains M_Products:
       | Identifier | Value     | Name      |
       | huProduct  | huProduct | huProduct |
-    And load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
-    And load M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
-      | locatorHauptlager       | warehouseStd              | Hauptlager |
-
+  
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
       | huPackingLU           | huPackingLU     |
@@ -231,14 +225,7 @@ Feature: Handling unit rest controller
 
 
   Scenario: Set clearance status by QRCode on aggregated TU
-    Given load M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value        |
-      | warehouseStd              | StdWarehouse |
-    And load M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
-      | locatorHauptlager       | warehouseStd              | Hauptlager |
-
-    And metasfresh contains M_Products:
+    Given metasfresh contains M_Products:
       | Identifier      | Value           | Name            |
       | purchaseProduct | purchaseProduct | purchaseProduct |
 
