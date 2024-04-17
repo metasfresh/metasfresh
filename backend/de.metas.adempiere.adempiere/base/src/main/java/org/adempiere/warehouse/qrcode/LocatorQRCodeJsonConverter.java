@@ -11,6 +11,7 @@ import org.adempiere.warehouse.qrcode.v1.JsonConverterV1;
 @UtilityClass
 public class LocatorQRCodeJsonConverter
 {
+	// note to dev: keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/utils/qrCode/locator.js
 	public static GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("LOC");
 
 	public static String toGlobalQRCodeJsonString(final LocatorQRCode qrCode)
