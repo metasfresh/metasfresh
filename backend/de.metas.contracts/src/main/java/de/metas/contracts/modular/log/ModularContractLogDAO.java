@@ -109,6 +109,7 @@ public class ModularContractLogDAO
 		log.setContractType(request.getContractType().getCode());
 		log.setIsSOTrx(request.getSoTrx().isSales());
 		log.setProcessed(request.isProcessed());
+		log.setIsBillable(request.isBillable());
 		log.setDateTrx(request.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
 
 		final InvoiceCandidateId invoiceCandidateId = request.getInvoiceCandidateId();
