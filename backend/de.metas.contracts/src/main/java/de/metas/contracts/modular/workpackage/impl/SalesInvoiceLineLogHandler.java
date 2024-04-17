@@ -147,6 +147,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler<I_C_Invoi
 						.invoicingBPartnerId(bpartnerId)
 						.warehouseId(WarehouseId.ofRepoId(invoice.getM_Warehouse_ID()))
 						.productId(productId)
+						.productName(createLogRequest.getProductName())
 						.documentType(LogEntryDocumentType.SALES_INVOICE)
 						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.soTrx(SOTrx.PURCHASE)

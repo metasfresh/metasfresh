@@ -156,6 +156,7 @@ public class PPCostCollectorLogHandler implements IModularContractLogHandler<I_P
 											.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
 											.subEntryId(LogSubEntryId.ofCostCollectorId(PPCostCollectorId.ofRepoId(ppCostCollector.getPP_Cost_Collector_ID())))
 											.productId(productId)
+											.productName(createLogRequest.getProductName())
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
 											.documentType(LogEntryDocumentType.PRODUCTION)

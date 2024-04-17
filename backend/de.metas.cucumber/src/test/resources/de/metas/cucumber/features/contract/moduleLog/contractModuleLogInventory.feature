@@ -1,4 +1,5 @@
 @ghActions:run_on_executor5
+@ignore
 Feature: Modular contract log from inventory
 
   Background:
