@@ -83,6 +83,11 @@ public class HUQRCode implements IHUQRCode
 				.build();
 	}
 
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
+	}
+
 	private static String extractPrintableTopText(final HUQRCode qrCode)
 	{
 		final StringBuilder result = new StringBuilder();
@@ -115,10 +120,5 @@ public class HUQRCode implements IHUQRCode
 	private static String extractPrintableBottomText(final HUQRCode qrCode)
 	{
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
-	}
-
-	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
-	{
-		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
 	}
 }
