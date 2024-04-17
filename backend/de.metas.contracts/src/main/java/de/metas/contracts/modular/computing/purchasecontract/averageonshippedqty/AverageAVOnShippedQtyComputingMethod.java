@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.manufacturing.calibration;
+package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -49,9 +49,10 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class PPCalibrationComputingMethod implements IComputingMethodHandler
+public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
@@ -67,7 +68,7 @@ public class PPCalibrationComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ComputingMethodType.ReductionCalibration;
+		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
 	}
 
 	@Override

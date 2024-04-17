@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.manufacturing.calibration;
+package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
@@ -49,7 +49,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class PPCalibrationComputingMethod implements IComputingMethodHandler
+public class SVInterimComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	@Override
@@ -67,7 +67,7 @@ public class PPCalibrationComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ComputingMethodType.ReductionCalibration;
+		return ComputingMethodType.SubtractValueOnInterim;
 	}
 
 	@Override

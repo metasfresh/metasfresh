@@ -68,7 +68,7 @@ public class SVRawComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null;
+		return ComputingMethodType.SubtractValueOnRawProduct;
 	}
 
 	@Override

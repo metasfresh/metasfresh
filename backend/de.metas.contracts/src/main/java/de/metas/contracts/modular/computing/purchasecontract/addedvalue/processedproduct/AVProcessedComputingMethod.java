@@ -68,7 +68,7 @@ public class AVProcessedComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null;
+		return ComputingMethodType.AddValueOnProcessedProduct;
 	}
 
 	@Override
