@@ -132,7 +132,7 @@ Feature: Handling unit rest controller
     Given metasfresh contains M_Products:
       | Identifier | Value     | Name      |
       | huProduct  | huProduct | huProduct |
-  
+
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
       | huPackingLU           | huPackingLU     |
@@ -340,3 +340,65 @@ Feature: Handling unit rest controller
       | processedLU        | LU         | processedTU | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 0                     | A        |
       | processedTU        | TU         |             | purchaseProduct      | purchaseProduct       | 9            | PCE          | warehouseStd              | locatorHauptlager       | 1                     | A        |
 
+
+  Scenario: Get a non-existing HU by QR Code
+    Given metasfresh contains M_Products:
+      | Identifier | Value                 | Name                 | REST.Context |
+      | product    | testNewHUQRCode Value | testNewHUQRCode Name | M_Product_ID |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID | Value        | Name            | REST.Context |
+      | TU         | My TU @Date@ | My TU Name - PI | M_HU_PI_ID   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                 | HU_UnitType | IsCurrent |
+      | TU                            | TU                    | My TU Name - current | TU          | Y         |
+
+    And put REST context variables
+      | Name   | Value                                                                                                                                                                                                                                                                                                                                                  |
+      | qrCode | HU#1#{\"id\":\"246d30ad0476a373263b777b41b2-09054\",\"packingInfo\":{\"huUnitType\":\"TU\",\"packingInstructionsId\":@M_HU_PI_ID@,\"caption\":\"My TU Name - current\"},\"product\":{\"id\":@M_Product_ID@,\"code\":\"testNewHUQRCode Value\",\"name\":\"testNewHUQRCode Name\"},\"attributes\":[{\"code\":\"Lot-Nummer\",\"displayName\":\"Lot-Nummer\",\"value\":\"aaa\"}]} |
+
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/material/handlingunits/byQRCode' and fulfills with '200' status code
+      """
+      {
+        "qrCode": "@qrCode@"
+      }
+      """
+    Then the metasfresh REST-API responds with
+      """
+      {
+          "result": {
+              "id": null,
+              "huStatus": "P",
+              "huStatusCaption": "Geplant",
+              "displayName": "My TU Name - current",
+              "qrCode": {
+                  "code": "@qrCode@",
+                  "displayable": "09054"
+              },
+              "numberOfAggregatedHUs": 0,
+              "products": [
+                  {
+                      "productValue": "testNewHUQRCode Value",
+                      "productName": "testNewHUQRCode Name",
+                      "qty": "0",
+                      "uom": "Stk"
+                  }
+              ],
+              "attributes": {
+                  "Lot-Nummer": "aaa"
+              },
+              "attributes2": {
+                  "list": [
+                      {
+                          "code": "Lot-Nummer",
+                          "caption": "Lot-Nummer",
+                          "value": "aaa"
+                      }
+                  ]
+              },
+              "clearanceStatus": null,
+              "clearanceNote": null,
+              "jsonHUType": "TU",
+              "includedHUs": null
+          }
+      }
+      """
