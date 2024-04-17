@@ -69,8 +69,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -81,6 +83,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -405,26 +408,46 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public HuId updateQty(@NonNull final HuId huId, @NonNull final JsonHUQtyChangeRequest request)
+	public HuId updateQty(@NonNull final JsonHUQtyChangeRequest request)
 	{
-		return trxManager.callInThreadInheritedTrx(() -> updateQtyInTrx(huId, request));
+		return trxManager.callInThreadInheritedTrx(() -> updateQtyInTrx(request));
 	}
 
 	@NonNull
-	private HuId updateQtyInTrx(@NonNull final HuId huId, @NonNull final JsonHUQtyChangeRequest request)
+	private HuId updateQtyInTrx(@NonNull final JsonHUQtyChangeRequest request)
 	{
-		final HUQRCode huqrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
-		huQRCodeService.assertQRCodeAssignedToHU(huqrCode, huId);
+		boolean isSplitOneIfAggregated = request.isSplitOneIfAggregated();
+		HuId huId = request.getHuId();
+		LocatorId locatorId = null;
+		if (huId == null)
+		{
+			huId = huQRCodeService.getHuIdByQRCodeIfExists(qrCode).orElse(null);
+			if (huId == null)
+			{
+				locatorId = Optional.ofNullable(request.getLocatorQRCode())
+						.map(locatorQRCode -> LocatorQRCode.ofGlobalQRCodeJsonString(locatorQRCode).getLocatorId())
+						.orElseThrow(() -> new AdempiereException("No locator provided"));
+
+				isSplitOneIfAggregated = false;
+			}
+		}
+		else
+		{
+			huQRCodeService.assertQRCodeAssignedToHU(qrCode, huId);
+		}
 
 		final Quantity qty = Quantitys.create(request.getQty().getQty(), X12DE355.ofCode(request.getQty().getUomCode()));
 
-		final HuId huIdToUpdate = request.isSplitOneIfAggregated()
-				? huTransformService.extractToTopLevel(huId, huqrCode)
+		HuId huIdToUpdate = huId != null && isSplitOneIfAggregated
+				? huTransformService.extractToTopLevel(huId, qrCode)
 				: huId;
 
 		final Inventory inventory = huQtyService.updateQty(UpdateHUQtyRequest.builder()
 				.huId(huIdToUpdate)
+				.huQRCode(qrCode)
+				.locatorId(locatorId)
 				.qty(qty)
 				.description(request.getDescription())
 				.build());
@@ -432,7 +455,11 @@ public class HandlingUnitsService
 		if (inventory != null)
 		{
 			final HuId inventoryHuId = CollectionUtils.singleElement(inventory.getHuIds());
-			if (!HuId.equals(inventoryHuId, huIdToUpdate))
+			if (huIdToUpdate == null)
+			{
+				huIdToUpdate = inventoryHuId;
+			}
+			else if (!HuId.equals(inventoryHuId, huIdToUpdate))
 			{
 				throw new AdempiereException("The 'inventoried' HU must match the hu to update!")
 						.appendParametersToMessage()
@@ -441,7 +468,7 @@ public class HandlingUnitsService
 			}
 		}
 
-		if (!HuId.equals(huId, huIdToUpdate))
+		if (huId != null && !HuId.equals(huId, huIdToUpdate))
 		{
 			final I_M_HU splitHU = handlingUnitsBL.getById(huIdToUpdate);
 			final I_M_HU initialParentHU = handlingUnitsBL.getTopLevelParent(huId);
