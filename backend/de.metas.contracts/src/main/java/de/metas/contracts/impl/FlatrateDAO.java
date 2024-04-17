@@ -1273,6 +1273,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.filter(filter)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.create()
 				.anyMatch();
 	}
