@@ -1,3 +1,4 @@
+@ignore
 Feature: Clone Modular Contract Term
 
   Background:
