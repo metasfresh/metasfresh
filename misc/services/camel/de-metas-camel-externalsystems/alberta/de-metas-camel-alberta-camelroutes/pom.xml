@@ -18,7 +18,7 @@
         <spring-boot.version>2.7.11</spring-boot.version>
         <camel.version>3.14.7</camel.version>
         <smooks.version>1.7.1</smooks.version>
-        <jackson.version>2.12.1</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <!--
             3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
