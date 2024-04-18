@@ -52,12 +52,15 @@ import java.util.Objects;
 @AllArgsConstructor
 public class ModCntr_Module
 {
+	public static final AdMessageKey MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = AdMessageKey.of("ModCntr_Settings_cannot_be_changed");
+	private static final AdMessageKey productNotInPS = AdMessageKey.of("de.metas.pricing.ProductNotInPriceSystem");
+	private static final AdMessageKey ERROR_ComputingMethodRequiresRawProduct = AdMessageKey.of("ComputingMethodTypeRequiresRawProduct");
+	private static final AdMessageKey ERROR_ComputingMethodRequiresProcessedProduct = AdMessageKey.of("ComputingMethodTypeRequiresProcessedProduct");
+	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
-	public static final AdMessageKey MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED = AdMessageKey.of("ModCntr_Settings_cannot_be_changed");
-	private static final AdMessageKey productNotInPS = AdMessageKey.of("de.metas.pricing.ProductNotInPriceSystem");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
@@ -108,28 +111,40 @@ public class ModCntr_Module
 				.filter(moduleConfig -> moduleConfig.isMatching(computingMethodType))
 				.anyMatch(moduleConfig -> ProductId.equals(moduleConfig.getProductId(), productId));
 
-		if(hasAlreadyComputingTypeAndProduct)
+		if (hasAlreadyComputingTypeAndProduct)
 		{
 			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
 					.setParameter("ProductId: ", type.getM_Product_ID())
 					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
 		}
 
-		switch(computingMethodType)
+		switch (computingMethodType)
 		{
-			case Receipt -> {
-				if(!ProductId.equals(settings.getRawProductId(), productId))
+			case Receipt, SalesOnRawProduct ->
+			{
+				if (!ProductId.equals(settings.getRawProductId(), productId))
 				{
-					throw new AdempiereException("For this ComputingMethodType the raw product needs to be used");
+					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);
 				}
 			}
-			case AddValueOnProcessedProduct -> {
-				if(!ProductId.equals(settings.getProcessedProductId(), productId))
+
+			case SalesOnProcessedProduct ->
+			{
+				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
-					throw new AdempiereException("For this ComputingMethodType the processed product needs to be used");
+					throw new AdempiereException(ERROR_ComputingMethodRequiresProcessedProduct);
 
 				}
 			}
+			case CoProduct, ReductionCalibration ->
+			{
+				if (!ProductId.equals(settings.getProcessedProductId(), productId))
+				{
+					throw new AdempiereException(ERROR_ComputingMethodRequiresCoProduct);
+
+				}
+			}
+
 		}
 	}
 
