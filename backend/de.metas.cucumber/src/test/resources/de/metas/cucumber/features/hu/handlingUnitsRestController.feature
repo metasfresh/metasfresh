@@ -380,7 +380,7 @@ Feature: Handling unit rest controller
                       "productValue": "testNewHUQRCode Value",
                       "productName": "testNewHUQRCode Name",
                       "qty": "0",
-                      "uom": "Stk"
+                      "uom": "PCE"
                   }
               ],
               "attributes": {
