@@ -85,8 +85,8 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
-		final TableRecordReference tableRecordReference = request.getHandleLogsRequest().getTableRecordReference();
-		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(I_C_Flatrate_Term.Table_Name));
+		final TableRecordReference tableRecordReference = request.getRecordRef();
+		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(getSupportedTableName()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
 		final I_C_Flatrate_Term modularContractRecord;
 		final boolean isInterimContract;

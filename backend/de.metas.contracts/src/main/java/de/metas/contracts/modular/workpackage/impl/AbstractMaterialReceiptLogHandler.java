@@ -83,7 +83,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
-		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InOutLine.Table_Name)));
+		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
@@ -135,7 +135,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.HandleLogsRequest request)
 	{
-		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getTableRecordReference().getRecordIdAssumingTableName(I_M_InOutLine.Table_Name));
+		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName()));
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(inOutLineId);
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
