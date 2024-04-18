@@ -4,17 +4,21 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Function;
 
 @Value
 public class HUQRCodeGenerateRequest
@@ -65,6 +69,13 @@ public class HUQRCodeGenerateRequest
 		{
 			return _attribute(Attribute.builder().attributeId(attributeId).valueListId(valueListId).build());
 		}
+
+		public HUQRCodeGenerateRequestBuilder lotNo(@Nullable final String lotNo, @NonNull final Function<AttributeCode, AttributeId> getAttributeIdByCode)
+		{
+			final AttributeId attributeId = getAttributeIdByCode.apply(AttributeConstants.ATTR_LotNumber);
+			return attribute(attributeId, StringUtils.trimBlankToNull(lotNo));
+		}
+
 	}
 
 	//

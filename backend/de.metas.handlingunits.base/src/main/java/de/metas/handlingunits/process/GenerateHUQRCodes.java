@@ -10,8 +10,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
@@ -40,7 +38,7 @@ public class GenerateHUQRCodes extends JavaProcess
 						.count(labelsCount)
 						.huPackingInstructionsId(huPackingInstructionsId)
 						.productId(productId)
-						.attribute(attributeDAO.getAttributeIdByCode(AttributeConstants.ATTR_LotNumber), StringUtils.trimBlankToNull(lotNo))
+						.lotNo(lotNo, attributeDAO::getAttributeIdByCode)
 						.build());
 
 		final QRCodePDFResource pdf = huQRCodesService.createPDF(qrCodes);
