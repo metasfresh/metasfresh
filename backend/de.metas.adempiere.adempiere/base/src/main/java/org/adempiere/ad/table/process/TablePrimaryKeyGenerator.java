@@ -16,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -320,7 +319,7 @@ class TablePrimaryKeyGenerator
 			return ImmutableList.of();
 		}
 
-		if (!migrationLogger.isLogTableName(tableName, ClientId.SYSTEM))
+		if (!migrationLogger.isLogTableName(tableName))
 		{
 			return ImmutableList.of();
 		}
