@@ -708,6 +708,225 @@ DELETE FROM  AD_Ref_List_Trl WHERE AD_Ref_List_ID=543674
 DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=543674
 ;
 
+-- Reference Item: Computing Methods -> AddValueOnInterim_AddValueOnInterim
+-- 2024-04-18T10:58:55.179Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 12:58:55.179','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543676
+;
 
+-- Reference Item: Computing Methods -> AddValueOnInterim_AddValueOnInterim
+-- 2024-04-18T11:12:54.251Z
+UPDATE AD_Ref_List_Trl SET Description='Wert zu Vorfinanzierung hinzufügen', IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 13:12:54.251','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543676
+;
 
+-- Reference Item: Computing Methods -> AddValueOnInterim_AddValueOnInterim
+-- 2024-04-18T11:13:20.884Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert zu Vorfinanzierung hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:13:20.884','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543676
+;
 
+-- 2024-04-18T11:13:20.885Z
+UPDATE AD_Ref_List SET Name='Wert zu Vorfinanzierung hinzufügen' WHERE AD_Ref_List_ID=543676
+;
+
+-- Reference Item: Computing Methods -> AddValueOnProcessedProduct_AddValueOnProcessedProduct
+-- 2024-04-18T11:14:32.529Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 13:14:32.529','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543670
+;
+
+-- Reference Item: Computing Methods -> AddValueOnProcessedProduct_AddValueOnProcessedProduct
+-- 2024-04-18T11:14:59.093Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert zu verarbeiteten Produkt hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:14:59.093','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543670
+;
+
+-- Reference Item: Computing Methods -> AddValueOnProcessedProduct_AddValueOnProcessedProduct
+-- 2024-04-18T11:15:07.878Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert zu verarbeiteten Produkt hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:15:07.878','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543670
+;
+
+-- 2024-04-18T11:15:07.880Z
+UPDATE AD_Ref_List SET Name='Wert zu verarbeiteten Produkt hinzufügen' WHERE AD_Ref_List_ID=543670
+;
+
+-- Reference Item: Computing Methods -> AddValueOnRawProduct_AddValueOnRawProduct
+-- 2024-04-18T11:41:00.163Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 13:41:00.163','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543669
+;
+
+-- Reference Item: Computing Methods -> AddValueOnRawProduct_AddValueOnRawProduct
+-- 2024-04-18T11:41:20.370Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert zu Rohprodukt hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:41:20.37','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543669
+;
+
+-- Reference Item: Computing Methods -> AddValueOnRawProduct_AddValueOnRawProduct
+-- 2024-04-18T11:41:31.837Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert zu Rohprodukt hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:41:31.837','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543669
+;
+
+-- 2024-04-18T11:41:31.838Z
+UPDATE AD_Ref_List SET Name='Wert zu Rohprodukt hinzufügen' WHERE AD_Ref_List_ID=543669
+;
+
+-- Reference Item: Computing Methods -> AverageAddedValueOnShippedQuantity_AverageAddedValueOnShippedQuantity
+-- 2024-04-18T11:51:06.825Z
+UPDATE AD_Ref_List_Trl SET Description='Durchschnittlichen Wert zu gelieferter Menge hinzufügen', IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 13:51:06.825','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543675
+;
+
+-- Reference Item: Computing Methods -> AverageAddedValueOnShippedQuantity_AverageAddedValueOnShippedQuantity
+-- 2024-04-18T11:51:15.930Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Durchschnittlichen Wert zu gelieferter Menge hinzufügen',Updated=TO_TIMESTAMP('2024-04-18 13:51:15.93','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543675
+;
+
+-- 2024-04-18T11:51:15.930Z
+UPDATE AD_Ref_List SET Name='Durchschnittlichen Wert zu gelieferter Menge hinzufügen' WHERE AD_Ref_List_ID=543675
+;
+
+-- Reference Item: Computing Methods -> CoProduct_CoProduct
+-- 2024-04-18T12:00:28.674Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:00:28.674','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543668
+;
+
+-- Reference Item: Computing Methods -> CoProduct_CoProduct
+-- 2024-04-18T12:00:41.298Z
+UPDATE AD_Ref_List_Trl SET Description='Kuppelprodukt', IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:00:41.298','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543668
+;
+
+-- Reference Item: Computing Methods -> CoProduct_CoProduct
+-- 2024-04-18T12:00:59.854Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Kuppelprodukt',Updated=TO_TIMESTAMP('2024-04-18 14:00:59.854','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543668
+;
+
+-- 2024-04-18T12:00:59.855Z
+UPDATE AD_Ref_List SET Name='Kuppelprodukt' WHERE AD_Ref_List_ID=543668
+;
+
+-- Reference Item: Computing Methods -> DefinitiveInvoice_DefinitiveInvoice
+-- 2024-04-18T12:01:18.742Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:01:18.742','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543665
+;
+
+-- Reference Item: Computing Methods -> DefinitiveInvoice_DefinitiveInvoice
+-- 2024-04-18T12:01:39.053Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Schluss-Schlussabrechnung',Updated=TO_TIMESTAMP('2024-04-18 14:01:39.053','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543665
+;
+
+-- Reference Item: Computing Methods -> DefinitiveInvoice_DefinitiveInvoice
+-- 2024-04-18T12:01:44.294Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Schluss-Schlussabrechnung',Updated=TO_TIMESTAMP('2024-04-18 14:01:44.294','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543665
+;
+
+-- 2024-04-18T12:01:44.296Z
+UPDATE AD_Ref_List SET Name='Schluss-Schlussabrechnung' WHERE AD_Ref_List_ID=543665
+;
+
+-- Reference Item: Computing Methods -> ReductionCalibration_ReductionCalibration
+-- 2024-04-18T12:08:21.166Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:08:21.166','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543672
+;
+
+-- Reference Item: Computing Methods -> ReductionCalibration_ReductionCalibration
+-- 2024-04-18T12:08:46.976Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Reduzierung Kalibrierung',Updated=TO_TIMESTAMP('2024-04-18 14:08:46.976','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543672
+;
+
+-- Reference Item: Computing Methods -> ReductionCalibration_ReductionCalibration
+-- 2024-04-18T12:08:54.311Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Reduzierung Kalibrierung',Updated=TO_TIMESTAMP('2024-04-18 14:08:54.311','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543672
+;
+
+-- 2024-04-18T12:08:54.312Z
+UPDATE AD_Ref_List SET Name='Reduzierung Kalibrierung' WHERE AD_Ref_List_ID=543672
+;
+
+-- Reference Item: Computing Methods -> SalesOnProcessedProduct_SalesOnProcessedProduct
+-- 2024-04-18T12:09:23.316Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:09:23.316','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543667
+;
+
+-- Reference Item: Computing Methods -> SalesOnProcessedProduct_SalesOnProcessedProduct
+-- 2024-04-18T12:09:48.405Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Verkauf verarbeitetes Produkt',Updated=TO_TIMESTAMP('2024-04-18 14:09:48.405','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543667
+;
+
+-- Reference Item: Computing Methods -> SalesOnProcessedProduct_SalesOnProcessedProduct
+-- 2024-04-18T12:10:00.899Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Verkauf verarbeitetes Produkt',Updated=TO_TIMESTAMP('2024-04-18 14:10:00.899','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543667
+;
+
+-- 2024-04-18T12:10:00.901Z
+UPDATE AD_Ref_List SET Name='Verkauf verarbeitetes Produkt' WHERE AD_Ref_List_ID=543667
+;
+
+-- Reference Item: Computing Methods -> SalesOnRawProduct_SalesOnRawProduct
+-- 2024-04-18T12:14:36.614Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:14:36.614','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543666
+;
+
+-- Reference Item: Computing Methods -> SalesOnRawProduct_SalesOnRawProduct
+-- 2024-04-18T12:14:56.648Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Verkauf Rohprodukt',Updated=TO_TIMESTAMP('2024-04-18 14:14:56.648','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543666
+;
+
+-- Reference Item: Computing Methods -> SalesOnRawProduct_SalesOnRawProduct
+-- 2024-04-18T12:15:02.911Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Verkauf Rohprodukt',Updated=TO_TIMESTAMP('2024-04-18 14:15:02.91','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543666
+;
+
+-- 2024-04-18T12:15:02.911Z
+UPDATE AD_Ref_List SET Name='Verkauf Rohprodukt' WHERE AD_Ref_List_ID=543666
+;
+
+-- Reference Item: Computing Methods -> StorageCost_StorageCost
+-- 2024-04-18T12:15:37.567Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:15:37.567','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543673
+;
+
+-- Reference Item: Computing Methods -> StorageCost_StorageCost
+-- 2024-04-18T12:15:55.135Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Lagerkosten',Updated=TO_TIMESTAMP('2024-04-18 14:15:55.135','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543673
+;
+
+-- Reference Item: Computing Methods -> StorageCost_StorageCost
+-- 2024-04-18T12:16:03.461Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Lagerkosten',Updated=TO_TIMESTAMP('2024-04-18 14:16:03.461','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543673
+;
+
+-- 2024-04-18T12:16:03.462Z
+UPDATE AD_Ref_List SET Name='Lagerkosten' WHERE AD_Ref_List_ID=543673
+;
+
+-- Reference Item: Computing Methods -> SubtractValueOnInterim_SubtractValueOnInterim
+-- 2024-04-18T12:16:44.100Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:16:44.1','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543677
+;
+
+-- Reference Item: Computing Methods -> SubtractValueOnInterim_SubtractValueOnInterim
+-- 2024-04-18T12:17:02.634Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert von Vorfinanzierung abziehen',Updated=TO_TIMESTAMP('2024-04-18 14:17:02.634','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543677
+;
+
+-- Reference Item: Computing Methods -> SubtractValueOnInterim_SubtractValueOnInterim
+-- 2024-04-18T12:17:08.552Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wert von Vorfinanzierung abziehen',Updated=TO_TIMESTAMP('2024-04-18 14:17:08.552','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543677
+;
+
+-- 2024-04-18T12:17:08.553Z
+UPDATE AD_Ref_List SET Name='Wert von Vorfinanzierung abziehen' WHERE AD_Ref_List_ID=543677
+;
+
+-- Reference Item: Computing Methods -> Receipt_Receipt
+-- 2024-04-18T12:28:13.889Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-04-18 14:28:13.889','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543663
+;
+
+-- Reference Item: Computing Methods -> Receipt_Receipt
+-- 2024-04-18T12:28:31.873Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wareneingang',Updated=TO_TIMESTAMP('2024-04-18 14:28:31.873','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543663
+;
+
+-- Reference Item: Computing Methods -> Receipt_Receipt
+-- 2024-04-18T12:29:01.212Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Wareneingang',Updated=TO_TIMESTAMP('2024-04-18 14:29:01.212','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543663
+;
+
+-- 2024-04-18T12:29:01.214Z
+UPDATE AD_Ref_List SET Name='Wareneingang' WHERE AD_Ref_List_ID=543663
+;
