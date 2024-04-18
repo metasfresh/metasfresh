@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -51,5 +52,13 @@ public class APIResponse
 	{
 		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 		return mapper.readValue(content, type);
+	}
+
+	public int getByJsonPathAsInt(@NonNull final String jsonPath) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		JsonNode rootNode = mapper.readTree(content);
+		JsonNode node = rootNode.at(jsonPath);
+		return node.asInt();
 	}
 }

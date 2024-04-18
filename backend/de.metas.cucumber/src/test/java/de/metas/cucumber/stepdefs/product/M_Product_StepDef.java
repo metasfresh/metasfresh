@@ -113,7 +113,6 @@ public class M_Product_StepDef
 
 	@And("no product with value {string} exists")
 	public void noProductWithCodeCodeExists(final String value)
-
 	{
 		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
@@ -324,7 +323,7 @@ public class M_Product_StepDef
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
 		productTable.putOrReplace(recordIdentifier, productRecord);
 
-		restTestContext.setVariableFromRow(rowObj, productRecord::getM_Product_ID);
+		restTestContext.setIntVariableFromRow(rowObj, productRecord::getM_Product_ID);
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)

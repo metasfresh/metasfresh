@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -33,12 +34,13 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 @Data
 public class TestContext
 {
 	private static final String ROW_FieldName = "REST.Context";
-	
+
 	private APIResponse apiResponse;
 	private String requestPayload;
 	private Map<String, String> httpHeaders;
@@ -56,16 +58,44 @@ public class TestContext
 		return apiResponse.getContentAs(type);
 	}
 
-	public void setVariableFromRow(@NonNull final DataTableRow row, @NonNull final IntSupplier valueSupplier)
+	public void setIntVariableFromRow(@NonNull final DataTableRow row, @NonNull final IntSupplier valueSupplier)
 	{
-		row.getAsOptionalString(ROW_FieldName)
-				.ifPresent(restVariableName -> setVariable(restVariableName, valueSupplier.getAsInt()));
+		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> setVariable(restVariableName, valueSupplier.getAsInt()));
+	}
 
+	public void setIdVariableFromRow(@NonNull final DataTableRow row, @NonNull final RepoIdAware id)
+	{
+		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> setVariable(restVariableName, id.getRepoId()));
+	}
+
+	public void setIdVariableFromRow(@NonNull final DataTableRow row, @NonNull final Supplier<? extends RepoIdAware> idSupplier)
+	{
+		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> {
+			final RepoIdAware id = idSupplier.get();
+			if (id != null)
+			{
+				setVariable(restVariableName, id.getRepoId());
+			}
+			else
+			{
+				setVariableToNull(restVariableName);
+			}
+		});
+	}
+
+	public void setStringVariableFromRow(@NonNull final DataTableRow row, @NonNull final Supplier<String> valueSupplier)
+	{
+		row.getAsOptionalString(ROW_FieldName).ifPresent(restVariableName -> setVariable(restVariableName, valueSupplier.get()));
 	}
 
 	public void setVariable(@NonNull String name, int valueInt)
 	{
 		setVariable(name, String.valueOf(valueInt));
+	}
+
+	public void setVariableToNull(@NonNull String name)
+	{
+		variables.put(name, null);
 	}
 
 	public void setVariable(@NonNull String name, @Nullable String value)

@@ -73,7 +73,7 @@ public class M_HU_PI_StepDef
 					.orElseGet(() -> row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID))
 					.putOrReplace(huPiTable, huPiRecord);
 			
-			restTestContext.setVariableFromRow(row, huPiRecord::getM_HU_PI_ID);
+			restTestContext.setIntVariableFromRow(row, huPiRecord::getM_HU_PI_ID);
 		});
 	}
 
