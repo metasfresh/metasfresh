@@ -44,6 +44,7 @@ public class JsonPickingJobLine
 {
 	@NonNull String pickingLineId;
 	@NonNull String productId;
+	@NonNull String productNo;
 	@NonNull String caption;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -62,6 +63,7 @@ public class JsonPickingJobLine
 		return builder()
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
+				.productNo(line.getProductNo())
 				.caption(line.getProductName().translate(adLanguage))
 				.uom(line.getQtyToPick().getUOMSymbol())
 				.qtyToPick(line.getQtyToPick().toBigDecimal())

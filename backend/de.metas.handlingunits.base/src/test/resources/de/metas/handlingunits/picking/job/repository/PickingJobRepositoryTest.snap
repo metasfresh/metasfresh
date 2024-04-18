@@ -24,6 +24,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "isManuallyClosed" : false,
     "productId" : 6,
     "productName" : "productName-6",
+    "productNo" : "productNo-6",
     "progress" : "NOT_STARTED",
     "qtyToPick" : "100 Ea",
     "salesOrderAndLineId" : {
