@@ -41,4 +41,5 @@ public class InsertRemoteIssueRequest
 	@Nullable String sourceMethodName;
 	@Nullable String issueCategory;
 	@Nullable String stacktrace;
+	@Nullable String frontendUrl;
 }
