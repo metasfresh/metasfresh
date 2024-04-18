@@ -1,12 +1,12 @@
 package de.metas.camel.externalsystems.pcm.config;
 
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Optional;
 
 @Value
 @Builder
@@ -78,7 +78,10 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 				.append("&")
 				.append("moveFailed=").append(errorFilesFolder).append("/").append(seenFileRenamePattern);
 
-		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> fileEndpoint.append("&").append("antInclude=").append(filePattern));
+		if(Check.isNotBlank(includeFilePattern))
+		{
+			fileEndpoint.append("&").append("antInclude=").append(includeFilePattern);
+		}
 
 		return fileEndpoint.toString();
 	}

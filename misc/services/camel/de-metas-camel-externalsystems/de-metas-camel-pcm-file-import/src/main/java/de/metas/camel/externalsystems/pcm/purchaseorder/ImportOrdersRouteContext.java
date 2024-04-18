@@ -33,16 +33,27 @@ import java.util.Set;
 public class ImportOrdersRouteContext
 {
 	boolean doNotProcessAtAll = false;
-		
+
 	/**
 	 * Using Linked hash set to preserve order
 	 */
 	final LinkedHashSet<JsonExternalId> purchaseCandidatesToProcess = new LinkedHashSet<>();
 
 	final Set<JsonExternalId> purchaseCandidatesWithError = new HashSet<>();
-	
+
 	void doNotProcessAtAll()
 	{
 		doNotProcessAtAll = true;
+	}
+
+	public void addAll(final ImportOrdersRouteContext other)
+	{
+		purchaseCandidatesToProcess.addAll(other.getPurchaseCandidatesToProcess());
+		purchaseCandidatesWithError.addAll(other.getPurchaseCandidatesWithError());
+
+		if (other.isDoNotProcessAtAll())
+		{
+			doNotProcessAtAll = true;
+		}
 	}
 }
