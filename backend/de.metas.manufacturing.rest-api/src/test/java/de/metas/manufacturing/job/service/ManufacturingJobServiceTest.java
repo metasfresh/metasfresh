@@ -4,6 +4,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
@@ -34,7 +35,7 @@ class ManufacturingJobServiceTest
 
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				InventoryService.newInstanceForUnitTesting()
+				new HUQtyService(InventoryService.newInstanceForUnitTesting())
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(

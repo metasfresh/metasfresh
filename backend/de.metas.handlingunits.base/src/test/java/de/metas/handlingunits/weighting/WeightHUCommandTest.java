@@ -1,6 +1,7 @@
 package de.metas.handlingunits.weighting;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.handlingunits.HUItemType;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -46,7 +48,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -71,12 +72,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -86,7 +87,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(AdempiereTestWatcher.class)
 public class WeightHUCommandTest
 {
-	private InventoryService inventoryService;
+	private HUQtyService huQtyService;
 	private HUTestHelper helper;
 
 	@BeforeEach
@@ -94,7 +95,8 @@ public class WeightHUCommandTest
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
 
-		this.inventoryService = InventoryService.newInstanceForUnitTesting();
+		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
+		this.huQtyService = new HUQtyService(inventoryService);
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
@@ -134,7 +136,7 @@ public class WeightHUCommandTest
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory.getCode())
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.name("inventory")
 				.build());
@@ -260,7 +262,7 @@ public class WeightHUCommandTest
 	private void weight(final HuId huId, PlainWeightable targetWeight)
 	{
 		WeightHUCommand.builder()
-				.inventoryService(inventoryService)
+				.huQtyService(huQtyService)
 				.huId(huId)
 				.targetWeight(targetWeight)
 				.build()

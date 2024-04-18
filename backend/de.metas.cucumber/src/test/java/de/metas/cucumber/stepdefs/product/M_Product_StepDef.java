@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -82,6 +83,7 @@ public class M_Product_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_Product_Category_StepDefData productCategoryTable;
 	private final AD_Org_StepDefData orgTable;
+	private final TestContext restTestContext;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
@@ -93,12 +95,14 @@ public class M_Product_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_Product_Category_StepDefData productCategoryTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
 		this.productCategoryTable = productCategoryTable;
 		this.orgTable = orgTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@Given("metasfresh contains M_Products:")
@@ -109,7 +113,6 @@ public class M_Product_StepDef
 
 	@And("no product with value {string} exists")
 	public void noProductWithCodeCodeExists(final String value)
-
 	{
 		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
@@ -319,6 +322,8 @@ public class M_Product_StepDef
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
 		productTable.putOrReplace(recordIdentifier, productRecord);
+
+		restTestContext.setIntVariableFromRow(rowObj, productRecord::getM_Product_ID);
 	}
 
 	private void locate_product_by_external_identifier(@NonNull final Map<String, String> tableRow)
