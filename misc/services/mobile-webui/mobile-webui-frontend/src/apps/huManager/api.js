@@ -58,7 +58,7 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
 
 export const changeQty = ({ huId, huQRCode, description, qty, locatorQRCode }) => {
   return axios
-    .put(`${huAPIBasePath}/qty`, {
+    .post(`${huAPIBasePath}/qty`, {
       huId,
       huQRCode: toQRCodeString(huQRCode),
       qty,
