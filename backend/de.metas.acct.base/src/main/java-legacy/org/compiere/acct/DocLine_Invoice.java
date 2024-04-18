@@ -120,11 +120,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	@Override
 	protected InvoiceAccountProviderExtension createAccountProviderExtension()
 	{
-		final InvoiceAndLineId invoiceAndLineId = getInvoiceLineId();
+		final InvoiceAndLineId invoiceAndLineId = getInvoiceAndLineId();
 		return getDoc().createInvoiceAccountProviderExtension(invoiceAndLineId);
 	}
 
-	public InvoiceAndLineId getInvoiceLineId()
+	public InvoiceAndLineId getInvoiceAndLineId()
 	{
 		final InvoiceId invoiceId = getDoc().getInvoiceId();
 		return InvoiceAndLineId.ofRepoId(invoiceId, get_ID());
@@ -266,7 +266,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	{
 		if (_costAmountMatched == null)
 		{
-			this._costAmountMatched = matchInvoiceService.getCostAmountMatched(getInvoiceLineId())
+			this._costAmountMatched = matchInvoiceService.getCostAmountMatched(getInvoiceAndLineId())
 					.orElseGet(() -> Money.zero(getCurrencyId()));
 		}
 		return _costAmountMatched;

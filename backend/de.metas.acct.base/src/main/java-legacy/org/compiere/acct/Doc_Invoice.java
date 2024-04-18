@@ -921,7 +921,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		final Set<InvoiceAndLineId> invoiceAndLineIds = new HashSet<>();
 		for (final DocLine_Invoice line : getDocLines())
 		{
-			invoiceAndLineIds.add(line.getInvoiceLineId());
+			invoiceAndLineIds.add(line.getInvoiceAndLineId());
 		}
 
 		// 08643

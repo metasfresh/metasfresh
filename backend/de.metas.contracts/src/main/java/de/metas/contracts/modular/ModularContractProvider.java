@@ -41,6 +41,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -58,8 +59,8 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -143,12 +144,10 @@ public class ModularContractProvider
 		{
 			return Stream.empty();
 		}
-
-		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, Objects.requireNonNull(TimeUtil.asInstant(inOutRecord.getMovementDate()))));
+		final Instant movementDate = TimeUtil.asInstant(inOutRecord.getMovementDate());
+		Check.assumeNotNull(movementDate, "Instant Movement Date of receipt shouldn't be null");
+		return Stream.ofNullable(flatrateBL.getInterimContractIdByModularContractIdAndDate(modularFlatrateTermId, movementDate));
 	}
-
-
-
 
 	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForPPOrder(@NonNull final PPCostCollectorId ppCostCollectorId)

@@ -16,8 +16,7 @@ public class MatchInvQuery
 {
 	@Builder.Default boolean onlyActive = true;
 	@Nullable MatchInvType type;
-	@Nullable
-	InvoiceAndLineId invoiceAndLineId;
+	@Nullable InvoiceAndLineId invoiceAndLineId;
 	@Nullable InOutId inoutId;
 	@Nullable InOutLineId inoutLineId;
 	@Nullable InOutCostId inoutCostId;

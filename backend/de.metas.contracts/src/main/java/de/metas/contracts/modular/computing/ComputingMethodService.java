@@ -72,7 +72,6 @@ public class ComputingMethodService
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
-	// TODO add adMsg
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)

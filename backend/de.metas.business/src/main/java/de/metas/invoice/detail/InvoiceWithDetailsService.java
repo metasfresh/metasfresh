@@ -55,11 +55,14 @@ public class InvoiceWithDetailsService
 
 			if (reversedDetail.getC_InvoiceLine_ID() > 0)
 			{
-				reversedDetail.setC_InvoiceLine_ID(invoiceDAO
-						.retrieveReversalLine(invoiceDAO
-										.retrieveLineById(InvoiceAndLineId.ofRepoId(detail.getC_Invoice_ID(),
-																					detail.getC_InvoiceLine_ID())),
-								reversalInvoiceId.getRepoId()).getC_InvoiceLine_ID());
+				reversedDetail.setC_InvoiceLine_ID(
+						invoiceDAO.retrieveReversalLine(
+								invoiceDAO.retrieveLineById(
+										InvoiceAndLineId.ofRepoId(
+											detail.getC_Invoice_ID(),
+											detail.getC_InvoiceLine_ID())),
+										reversalInvoiceId.getRepoId())
+								.getC_InvoiceLine_ID());
 			}
 			reversedDetail.setC_Invoice_ID(reversalInvoiceId.getRepoId());
 			InterfaceWrapperHelper.save(reversedDetail);
