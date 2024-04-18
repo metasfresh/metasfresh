@@ -17,7 +17,7 @@ import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
-import { parseLocatorQRCodeString } from '../../../utils/qrCode/locator';
+import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -112,14 +112,12 @@ const HUManagerScreen = () => {
           />
         )}
         {modalToDisplay === MODALS.SCAN_CURRENT_LOCATOR && (
-          <BarcodeScannerComponent
-            continuousRunning={true}
-            onResolvedResult={({ scannedBarcode }) => {
-              const locatorQRCode = parseLocatorQRCodeString(scannedBarcode);
-              console.log('', { locatorQRCode, scannedBarcode });
+          <ChangeCurrentLocatorDialog
+            onOK={(locatorQRCode) => {
               setCurrentLocatorQRCode(locatorQRCode);
               setModalToDisplay('');
             }}
+            onClose={() => setModalToDisplay('')}
           />
         )}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
