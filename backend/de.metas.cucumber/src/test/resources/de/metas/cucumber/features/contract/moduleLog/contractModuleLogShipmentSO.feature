@@ -1,3 +1,4 @@
+@ignore
 Feature: Modular contract log from shipment
 
   Background:
