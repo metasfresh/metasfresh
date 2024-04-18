@@ -49,6 +49,7 @@ public class LMQRCode implements IHUQRCode
 	@NonNull BigDecimal weightInKg;
 	@Nullable LocalDate bestBeforeDate;
 	@Nullable String lotNumber;
+	@Nullable String productNo;
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{

@@ -58,6 +58,7 @@ const PickLineScanScreen = () => {
     activity,
     caption,
     productId,
+    productNo,
     qtyToPick,
     qtyPicked,
     qtyToPickRemaining,
@@ -69,13 +70,18 @@ const PickLineScanScreen = () => {
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
-    (scannedBarcode) => convertScannedBarcodeToResolvedResult({ scannedBarcode, expectedProductId: productId }),
-    [productId]
+    (scannedBarcode) =>
+      convertScannedBarcodeToResolvedResult({
+        scannedBarcode,
+        expectedProductId: productId,
+        expectedProductNo: productNo,
+      }),
+    [productId, productNo]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
-  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, onClose });
+  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, expectedProductNo: productNo, onClose });
 
   return (
     <ScanHUAndGetQtyComponent
@@ -108,6 +114,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     activity,
     caption: line?.caption,
     productId: line.productId,
+    productNo: line.productNo,
     qtyToPick: line.qtyToPick,
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
@@ -118,18 +125,26 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId, expectedProductNo }) => {
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
-  //console.log('resolveScannedBarcode', { parsedHUQRCode });
+  console.log('resolveScannedBarcode', { parsedHUQRCode, scannedBarcode, expectedProductId, expectedProductNo });
 
-  if (parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
+  if (expectedProductId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
+    throw trl('activities.picking.notEligibleHUBarcode');
+  }
+
+  if (
+    expectedProductNo != null &&
+    parsedHUQRCode.productNo != null &&
+    String(parsedHUQRCode.productNo) !== expectedProductNo
+  ) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
   return convertQRCodeObjectToResolvedResult(parsedHUQRCode);
 };
 
-export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
+const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   const result = {};
 
   if (qrCodeObj.weightNet != null) {
@@ -143,11 +158,11 @@ export const convertQRCodeObjectToResolvedResult = (qrCodeObj) => {
   result['bestBeforeDate'] = qrCodeObj.bestBeforeDate;
   result['lotNo'] = qrCodeObj.lotNo;
 
-  //console.log('resolveScannedBarcode', { result, qrCodeObj });
+  console.log('resolveScannedBarcode', { result, qrCodeObj });
   return result;
 };
 
-export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
+const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   const history = useHistory();
   const isGotoPickingJobOnClose = useBooleanSetting('PickLineScanScreen.gotoPickingJobOnClose', true);
 
@@ -187,7 +202,7 @@ export const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next 
   };
 };
 
-export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null, onClose }) => {
+const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null, expectedProductNo, onClose }) => {
   const dispatch = useDispatch();
 
   return ({
@@ -201,6 +216,7 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
     isTUToBePickedAsWhole = false,
     bestBeforeDate = null,
     lotNo = null,
+    productNo,
     isDone = true,
     resolvedBarcodeData,
     ...others
@@ -219,9 +235,14 @@ export const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam 
       bestBeforeDate,
       isShowLotNo,
       lotNo,
+      productNo,
       isDone,
       ...others,
     });
+
+    if (expectedProductNo && productNo && String(expectedProductNo) !== String(productNo)) {
+      throw { messageKey: 'activities.picking.qrcode.differentProduct', context: { expectedProductNo, productNo } };
+    }
 
     return postStepPicked({
       wfProcessId,

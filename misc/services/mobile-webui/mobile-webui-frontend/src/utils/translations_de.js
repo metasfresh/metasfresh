@@ -103,6 +103,7 @@ const translations = {
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Pickingzeile überein',
       },
     },
     distribution: {
