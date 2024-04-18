@@ -54,7 +54,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SO_LINE_FOR_PO_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SO_LINE_FOR_PO_MODULAR_DEPRECATED;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
@@ -74,7 +74,7 @@ public class SOLineForPOModularContractHandler implements IComputingMethodHandle
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SO_LINE_FOR_PO_MODULAR;
+		return SO_LINE_FOR_PO_MODULAR_DEPRECATED;
 	}
 
 	@Override

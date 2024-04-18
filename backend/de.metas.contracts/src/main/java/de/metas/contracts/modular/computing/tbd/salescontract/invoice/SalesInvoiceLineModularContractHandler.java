@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_MODULAR_DEPRECATED;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
@@ -149,6 +149,6 @@ public class SalesInvoiceLineModularContractHandler implements IComputingMethodH
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_INVOICE_LINE_MODULAR;
+		return SALES_INVOICE_LINE_MODULAR_DEPRECATED;
 	}
 }

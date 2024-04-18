@@ -42,7 +42,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
@@ -81,7 +81,7 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return PPCOSTCOLLECTOR_MODULAR;
+		return PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
 	}
 
 	@Override

@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR;
+import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODULAR_DEPRECATED;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
@@ -77,7 +77,7 @@ public class InventoryLineModularContractHandler implements IComputingMethodHand
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return INVENTORY_LINE_MODULAR;
+		return INVENTORY_LINE_MODULAR_DEPRECATED;
 	}
 
 	@Override

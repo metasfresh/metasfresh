@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_MODULAR_CONTRACT;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_MODULAR_CONTRACT_DEPRECATED;
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
  */
@@ -61,7 +61,7 @@ public class SalesModularContractHandler implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_MODULAR_CONTRACT;
+		return SALES_MODULAR_CONTRACT_DEPRECATED;
 	}
 
 	@Override
