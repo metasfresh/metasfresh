@@ -39,6 +39,8 @@ public interface PickingJobLoaderSupportingServices
 
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
 
+	String getProductNo(@NonNull ProductId productId);
+
 	ITranslatableString getProductName(@NonNull ProductId productId);
 
 	String getLocatorName(@NonNull LocatorId locatorId);

@@ -486,13 +486,16 @@ class PickingJobLoaderAndSaver
 
 	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record)
 	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = loadingSupportingServices();
+
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
 
 		return PickingJobLine.builder()
 				.id(pickingJobLineId)
 				.productId(productId)
-				.productName(loadingSupportingServices().getProductName(productId))
+				.productNo(loadingSupportingServices.getProductNo(productId))
+				.productName(loadingSupportingServices.getProductName(productId))
 				.qtyToPick(Quantitys.create(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))

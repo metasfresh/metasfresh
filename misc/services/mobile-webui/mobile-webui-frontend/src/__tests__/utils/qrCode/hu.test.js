@@ -1,4 +1,5 @@
 import { parseQRCodeString, toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../../utils/qrCode/hu';
+import { setupCounterpart } from '../../../utils/translations';
 
 describe('huQRCodes tests', () => {
   describe('toQRCodeDisplayable', () => {
@@ -48,14 +49,16 @@ describe('huQRCodes tests', () => {
   });
   describe('parseQRCode', () => {
     it('unknown type', () => {
+      setupCounterpart();
       const code =
         'UNKNOWN_TYPE#1#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
-      expect(() => parseQRCodeString(code)).toThrow(/Invalid global QR code/);
+      expect(() => parseQRCodeString(code)).toThrow(/Invalid QR Code/);
     });
     it('unknown version', () => {
+      setupCounterpart();
       const code =
         'HU#UNKNOWN_VERSION#{"id":"0de63cbd34708add7a9afbb423d0-05650","packingInfo":{"huUnitType":"LU","packingInstructionsId":1000006,"caption":"Euro Palette"},"product":{"id":1000001,"code":"2680","name":"Sternflow 11 Raps"},"attributes":[]}';
-      expect(() => parseQRCodeString(code)).toThrow(/Invalid global QR code/);
+      expect(() => parseQRCodeString(code)).toThrow(/Invalid QR Code/);
     });
     it('standard test', () => {
       const code =
@@ -72,17 +75,33 @@ describe('huQRCodes tests', () => {
         weightNet: 2427.425,
       });
     });
-    it('Leich+Mehl standard', () => {
-      // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
-      const code = 'LMQ#1#123.456#13.12.2024#lot3';
-      expect(parseQRCodeString(code)).toEqual({
-        code,
-        displayable: '123.456',
-        weightNet: 123.456,
-        weightNetUOM: 'kg',
-        isTUToBePickedAsWhole: true,
-        bestBeforeDate: '2024-12-13',
-        lotNo: 'lot3',
+    describe('Leich+Mehl', () => {
+      it('standard', () => {
+        // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+        const code = 'LMQ#1#123.456#13.12.2024#lot3';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '123.456',
+          weightNet: 123.456,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          bestBeforeDate: '2024-12-13',
+          lotNo: 'lot3',
+        });
+      });
+      it('with productNo', () => {
+        // IMPORTANT: keep in sync with de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCodeTest
+        const code = 'LMQ#1#123.456#13.12.2024#lot3#productNo88';
+        expect(parseQRCodeString(code)).toEqual({
+          code,
+          displayable: '123.456',
+          weightNet: 123.456,
+          weightNetUOM: 'kg',
+          isTUToBePickedAsWhole: true,
+          bestBeforeDate: '2024-12-13',
+          lotNo: 'lot3',
+          productNo: 'productNo88',
+        });
       });
     });
   });
