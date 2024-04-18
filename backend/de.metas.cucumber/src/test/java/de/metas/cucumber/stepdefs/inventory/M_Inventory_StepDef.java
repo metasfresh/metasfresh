@@ -193,8 +193,8 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		row.getAsOptionalIdentifier(I_M_Inventory.COLUMNNAME_M_Inventory_ID)
-				.ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
+		row.getAsOptionalIdentifier(I_M_Inventory.COLUMNNAME_M_Inventory_ID).ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
+		row.getAsOptionalIdentifier().ifPresent(inventoryIdentifier -> inventoryTable.put(inventoryIdentifier, inventoryRecord));
 	}
 
 	private void addNewInventoryLine(@NonNull final DataTableRow row)
@@ -231,6 +231,7 @@ public class M_Inventory_StepDef
 		saveRecord(inventoryLine);
 
 		row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID).ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
+		row.getAsOptionalIdentifier().ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
 	}
 
 	private void createM_Inventory(@NonNull final DataTableRow row)
