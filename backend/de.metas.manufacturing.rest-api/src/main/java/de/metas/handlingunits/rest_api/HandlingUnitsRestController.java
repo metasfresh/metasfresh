@@ -329,7 +329,7 @@ public class HandlingUnitsRestController
 		return changeHUQty(request.withHuIdAndValidate(HuId.ofRepoId(huId)));
 	}
 
-	@PutMapping("/qty")
+	@PostMapping("/qty")
 	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
 	{
 		final HuId huId = handlingUnitsService.updateQty(request);
