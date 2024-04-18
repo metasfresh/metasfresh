@@ -12,6 +12,9 @@
     "LocalFileProcessedDirectory": "processedDirectory",
     "LocalFileErroredDirectory": "errorDirectory",
     "LocalFilePollingFrequencyInMs": "1000",
-    "LocalFileProductFileNamePattern": "doesntmatter"
+    "LocalFilePurchaseOrderFileNamePattern": "purchaseOrderFileNamePattern",
+    "LocalFileProductFileNamePattern": "productFileNamePattern",
+    "LocalFilePartnerFileNamePattern": "bPartnerFileNamePattern",
+    "LocalFileWarehouseFileNamePattern": "warehouseFileNamePattern"
   }
 }
