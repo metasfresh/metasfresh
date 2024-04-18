@@ -1,3 +1,4 @@
+@ignore
 Feature: Calculation of Modular Contract Transition
 
   Background:

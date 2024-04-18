@@ -26,7 +26,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.inout.IInOutDAO;
@@ -41,10 +41,12 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -117,10 +119,13 @@ public class M_InOut
 			@NonNull final I_M_InOut inOutRecord,
 			@NonNull final ModelAction modelAction)
 	{
-		inOutDAO.retrieveAllLines(inOutRecord).forEach(line -> {
-			contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT);
-			contractService.invokeWithModel(line, modelAction, LogEntryContractType.INTERIM);
-		});
+		inOutDAO.retrieveAllLines(inOutRecord).forEach(line -> contractService.scheduleLogCreation(
+				DocStatusChangedEvent.builder()
+						.tableRecordReference(TableRecordReference.of(line))
+						.modelAction(modelAction)
+						.userInChargeId(Env.getLoggedUserId())
+						.build())
+		);
 	}
 
 	private void propagateHarvestingDetails(@NonNull final I_M_InOutLine inOutLineRecord)

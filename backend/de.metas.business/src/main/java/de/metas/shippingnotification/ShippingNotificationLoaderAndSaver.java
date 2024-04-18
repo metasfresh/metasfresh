@@ -56,6 +56,7 @@ class ShippingNotificationLoaderAndSaver
 	private final HashMap<ShippingNotificationId, I_M_Shipping_Notification> headersById = new HashMap<>();
 	private final HashSet<ShippingNotificationId> headerIdsToAvoidSaving = new HashSet<>();
 	private final HashMap<ShippingNotificationId, ArrayList<I_M_Shipping_NotificationLine>> linesByHeaderId = new HashMap<>();
+	private final HashMap<ShippingNotificationLineId, I_M_Shipping_NotificationLine> linesByLineId = new HashMap<>();
 
 	public void addToCacheAndAvoidSaving(@NonNull final I_M_Shipping_Notification record)
 	{
@@ -81,6 +82,18 @@ class ShippingNotificationLoaderAndSaver
 		final I_M_Shipping_Notification headerRecord = getHeaderRecordById(id);
 		final List<I_M_Shipping_NotificationLine> lineRecords = getLineRecords(id);
 		return fromRecord(headerRecord, lineRecords);
+	}
+
+	@NonNull
+	public I_M_Shipping_NotificationLine getLineRecordByLineId(@NonNull final ShippingNotificationLineId id)
+	{
+		return linesByLineId.computeIfAbsent(id, this::retrieveLineRecordByLineId);
+	}
+
+	@NonNull
+	public I_M_Shipping_NotificationLine retrieveLineRecordByLineId(@NonNull final ShippingNotificationLineId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_M_Shipping_NotificationLine.class);
 	}
 
 	@NonNull

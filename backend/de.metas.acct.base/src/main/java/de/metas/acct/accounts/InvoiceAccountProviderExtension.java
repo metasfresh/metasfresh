@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
@@ -7,7 +8,7 @@ import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.acct.AccountTypeName;
 import de.metas.invoice.acct.InvoiceAcct;
 import de.metas.organization.OrgId;
@@ -16,7 +17,6 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
-import de.metas.acct.Account;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	@NonNull private final IAccountDAO accountDAO;
 	@NonNull private final InvoiceAcct invoiceAccounts;
 	@NonNull final ClientId clientId;
-	@Nullable private final InvoiceLineId invoiceLineId;
+	@Nullable private final InvoiceAndLineId invoiceAndLineId;
 
 	@Builder
 	private InvoiceAccountProviderExtension(
@@ -34,17 +34,17 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 			//
 			@NonNull final InvoiceAcct invoiceAccounts,
 			@NonNull final ClientId clientId,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
 		this.accountDAO = accountDAO;
-		if (invoiceLineId != null)
+		if (invoiceAndLineId != null)
 		{
-			invoiceLineId.assertInvoiceId(invoiceAccounts.getInvoiceId());
+			invoiceAndLineId.assertInvoiceId(invoiceAccounts.getInvoiceId());
 		}
 
 		this.invoiceAccounts = invoiceAccounts;
 		this.clientId = clientId;
-		this.invoiceLineId = invoiceLineId;
+		this.invoiceAndLineId = invoiceAndLineId;
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	{
 		final AccountTypeName accountTypeName = AccountTypeName.ofColumnName(acctType.getColumnName());
 
-		return invoiceAccounts.getElementValueId(acctSchemaId, accountTypeName, invoiceLineId)
+		return invoiceAccounts.getElementValueId(acctSchemaId, accountTypeName, invoiceAndLineId)
 				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
 				.map(id -> Account.of(id, acctType.getColumnName()));
 	}

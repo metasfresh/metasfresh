@@ -18,8 +18,8 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
@@ -190,7 +190,7 @@ public class InvoiceToExportFactory
 		{
 			final InvoiceLine invoiceLine = InvoiceLine
 					.builder()
-					.id(InvoiceLineId.ofRepoId(lineRecord.getC_Invoice_ID(), lineRecord.getC_InvoiceLine_ID()))
+					.id(InvoiceAndLineId.ofRepoId(lineRecord.getC_Invoice_ID(), lineRecord.getC_InvoiceLine_ID()))
 					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
 					.productId(ProductId.ofRepoId(lineRecord.getM_Product_ID()))
 					.externalIds(ExternalIdsUtil.splitExternalIds(lineRecord.getExternalIds()))

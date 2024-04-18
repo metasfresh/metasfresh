@@ -22,6 +22,8 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,13 +36,37 @@ import java.util.stream.Stream;
 class ModularContractLogHandlerRegistry
 {
 	@NonNull
-	private final List<IModularContractLogHandler<?>> handlers;
+	private final List<IModularContractLogHandler> handlers;
 
-	@NonNull <T> Stream<IModularContractLogHandler<T>> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest<T> request)
+	@NonNull
+	Stream<IModularContractLogHandler> streamHandlers(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
-		return handlers.stream()
-				.filter(handler -> handler.getType().isAssignableFrom(request.getModel().getClass()))
-				.map(handler -> (IModularContractLogHandler<T>)handler)
-				.filter(handler -> handler.applies(request));
+		return handlers.stream().filter(handler -> applies(handler, request));
+	}
+
+	private boolean applies(@NonNull final IModularContractLogHandler handler, @NonNull final IModularContractLogHandler.HandleLogsRequest request)
+	{
+		if (!request.getLogEntryContractType().equals(handler.getLogEntryContractType())
+				|| !request.getTableRecordReference().getTableName().equals(handler.getSupportedTableName()))
+		{
+			return false;
+		}
+
+		final IComputingMethodHandler computingMethod = handler.getComputingMethod();
+		final boolean isComputingMethodMatchingRequest = computingMethod.getComputingMethodType().equals(request.getComputingMethodType())
+				&& computingMethod.applies(request.getTableRecordReference(), request.getLogEntryContractType());
+		if (!isComputingMethodMatchingRequest)
+		{
+			return false;
+		}
+
+		final boolean isComputingMethodMatchingContract = computingMethod.isContractIdEligible(request.getTableRecordReference(), request.getContractId());
+		if (!isComputingMethodMatchingContract)
+		{
+			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
+			return false;
+		}
+
+		return true;
 	}
 }

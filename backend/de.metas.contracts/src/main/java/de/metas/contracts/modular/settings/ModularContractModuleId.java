@@ -32,6 +32,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Objects;
 
 @Value
 public class ModularContractModuleId implements RepoIdAware
@@ -67,5 +68,10 @@ public class ModularContractModuleId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final ModularContractModuleId o1, @Nullable final ModularContractModuleId o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

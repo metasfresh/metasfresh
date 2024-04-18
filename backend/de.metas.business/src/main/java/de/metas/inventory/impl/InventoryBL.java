@@ -6,6 +6,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -192,10 +193,18 @@ public class InventoryBL implements IInventoryBL
 	}
 	
 	@NonNull
+	@Override
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
 		return Optional.ofNullable(inventoryDAO.getById(inventoryId))
 				.orElseThrow(() -> new AdempiereException("No record found for " + inventoryId));
+	}
+
+	@NonNull
+	@Override
+	public I_M_InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return inventoryDAO.getLineById(inventoryLineId);
 	}
 
 	@Override

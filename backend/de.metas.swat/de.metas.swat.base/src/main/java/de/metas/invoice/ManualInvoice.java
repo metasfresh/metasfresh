@@ -152,7 +152,7 @@ public class ManualInvoice
 	}
 
 	@NonNull
-	public InvoiceLineId getRepoIdByExternalLineId(@NonNull final String externalLineId)
+	public InvoiceAndLineId getRepoIdByExternalLineId(@NonNull final String externalLineId)
 	{
 		return Optional.ofNullable(externalLineId2Line.get(externalLineId))
 				.map(ManualInvoiceLine::getId)

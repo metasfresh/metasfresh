@@ -1,8 +1,7 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -145,19 +144,19 @@ public interface I_ModCntr_Type
 	 * Set Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModularContractHandlerType (@Nullable java.lang.String ModularContractHandlerType);
+	void setModularContractHandlerType (java.lang.String ModularContractHandlerType);
 
 	/**
 	 * Get Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getModularContractHandlerType();
+	java.lang.String getModularContractHandlerType();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
 	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";

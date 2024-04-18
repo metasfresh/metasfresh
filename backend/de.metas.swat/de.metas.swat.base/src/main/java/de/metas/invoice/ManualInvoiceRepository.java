@@ -88,10 +88,10 @@ class ManualInvoiceRepository
 	}
 
 	public void applyAndSave(
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final Consumer<I_C_InvoiceLine> updateInvoiceLine)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = getLineRecordByIdNotNull(invoiceLineId);
+		final I_C_InvoiceLine invoiceLineRecord = getLineRecordByIdNotNull(invoiceAndLineId);
 
 		updateInvoiceLine.accept(invoiceLineRecord);
 
@@ -112,13 +112,13 @@ class ManualInvoiceRepository
 	}
 
 	@NonNull
-	private I_C_InvoiceLine getLineRecordByIdNotNull(final @NonNull InvoiceLineId invoiceLineId)
+	private I_C_InvoiceLine getLineRecordByIdNotNull(final @NonNull InvoiceAndLineId invoiceAndLineId)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.load(invoiceLineId, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.load(invoiceAndLineId, I_C_InvoiceLine.class);
 
 		if (invoiceLineRecord == null)
 		{
-			throw new AdempiereException("No C_InvoiceLine record found for id: " + invoiceLineId);
+			throw new AdempiereException("No C_InvoiceLine record found for id: " + invoiceAndLineId);
 		}
 
 		return invoiceLineRecord;
@@ -194,7 +194,7 @@ class ManualInvoiceRepository
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return ManualInvoiceLine.builder()
-				.id(InvoiceLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
+				.id(InvoiceAndLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 				.externalLineId(invoiceLineRecord.getExternalIds())
 				.line(invoiceLineRecord.getLine())
 				.lineDescription(invoiceLineRecord.getDescription())

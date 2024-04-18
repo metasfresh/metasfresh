@@ -35,6 +35,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -160,6 +161,8 @@ public interface IInvoiceBL extends ISingletonService
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
 	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

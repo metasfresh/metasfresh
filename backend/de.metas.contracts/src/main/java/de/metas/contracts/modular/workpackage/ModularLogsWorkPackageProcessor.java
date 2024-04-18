@@ -42,7 +42,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
@@ -83,34 +82,33 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	}
 
 	@NonNull
-	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
+	private List<IModularContractLogHandler.HandleLogsRequest> getRequestList()
 	{
-		final ProcessModularLogAggRequest processModularLogAggRequest = getRequestListParam();
+		final ProcessModularLogRequestList requests = getRequestListParam();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
-		final Map<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> contractId2Record = new HashMap<>();
+		final HashMap<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> contractId2Record = new HashMap<>();
 
-		return processModularLogAggRequest.getRequestList()
-				.stream()
+		return requests.stream()
 				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
-						.model(processRequest.getRecordReference().getModel())
+						.tableRecordReference(processRequest.getRecordReference())
 						.logEntryContractType(processRequest.getLogEntryContractType())
 						.modelAction(processRequest.getAction())
 						.workPackageId(workPackageId)
-						.handlerClassname(processRequest.getHandlerClassname())
+						.computingMethodType(processRequest.getComputingMethodType())
 						.contractInfo(contractId2Record.computeIfAbsent(processRequest.getFlatrateTermId(), this::loadFlatrateTermInfo))
 						.build())
 				.toList();
 	}
 
 	@NonNull
-	private ProcessModularLogAggRequest getRequestListParam()
+	private ProcessModularLogRequestList getRequestListParam()
 	{
 		final String requestsToProcess = getParameters().getParameterAsString(Params.REQUESTS_TO_PROCESS.name());
 
 		return Optional.ofNullable(requestsToProcess)
-				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogAggRequest.class))
+				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogRequestList.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
 						.setParameter("wpParameterName", Params.REQUESTS_TO_PROCESS.name()));

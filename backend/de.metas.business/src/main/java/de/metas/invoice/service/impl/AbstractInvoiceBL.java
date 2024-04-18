@@ -70,6 +70,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -203,6 +204,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceAndLineId);
 	}
 
 	@Override
@@ -1843,8 +1850,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// Create M_MatchInv reversal records, linked to reversal invoice line and original inout line.
 			final Timestamp reversalDateInvoiced = reversalInvoice.getDateInvoiced();
-			final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
-			matchInvoiceService.createReversals(invoiceLineId, reversalLine, reversalDateInvoiced);
+			final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
+			matchInvoiceService.createReversals(invoiceAndLineId, reversalLine, reversalDateInvoiced);
 		}
 	}
 

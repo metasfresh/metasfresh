@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -525264008L;
+	private static final long serialVersionUID = 461464793L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -63,51 +63,79 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 
 	/** 
 	 * ModularContractHandlerType AD_Reference_ID=541838
-	 * Reference name: Modular Contract Type Handler
+	 * Reference name: Computing Methods
 	 */
 	public static final int MODULARCONTRACTHANDLERTYPE_AD_Reference_ID=541838;
-	/** Interim_Contract = Interim_Contract */
-	public static final String MODULARCONTRACTHANDLERTYPE_Interim_Contract = "Interim_Contract";
-	/** InventoryLine_Modular = InventoryLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_InventoryLine_Modular = "InventoryLine_Modular";
-	/** MaterialReceiptLine_Interim = MaterialReceiptLine_Interim */
-	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Interim = "MaterialReceiptLine_Interim";
-	/** MaterialReceiptLine_Modular = MaterialReceiptLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Modular = "MaterialReceiptLine_Modular";
-	/** PPCostCollector_Modular = PPCostCollector_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_PPCostCollector_Modular = "PPCostCollector_Modular";
-	/** PurchaseInvoiceLine_Interim = PurchaseInvoiceLine_Interim */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseInvoiceLine_Interim = "PurchaseInvoiceLine_Interim";
-	/** PurchaseModularContract = PurchaseModularContract */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseModularContract = "PurchaseModularContract";
-	/** PurchaseOrderLine_Modular = PurchaseOrderLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseOrderLine_Modular = "PurchaseOrderLine_Modular";
-	/** SOLineForPO_Modular = SOLineForPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SOLineForPO_Modular = "SOLineForPO_Modular";
-	/** SalesContractProForma_Modular = SalesContractProForma_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesContractProForma_Modular = "SalesContractProForma_Modular";
-	/** SalesInvoiceLine_Modular = SalesInvoiceLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesInvoiceLine_Modular = "SalesInvoiceLine_Modular";
-	/** SalesModularContract = SalesModularContract */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesModularContract = "SalesModularContract";
-	/** SalesOrderLine_Modular = SalesOrderLine_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLine_Modular = "SalesOrderLine_Modular";
-	/** SalesOrderLineProForma_Modular = SalesOrderLineProForma_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProForma_Modular = "SalesOrderLineProForma_Modular";
-	/** SalesOrderLineProFormaPO_Modular = SalesOrderLineProFormaPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProFormaPO_Modular = "SalesOrderLineProFormaPO_Modular";
-	/** ShipmentLineForPO_Modular = ShipmentLineForPO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForPO_Modular = "ShipmentLineForPO_Modular";
-	/** ShipmentLineForSO_Modular = ShipmentLineForSO_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForSO_Modular = "ShipmentLineForSO_Modular";
-	/** ShippingNotificationForPurchase_Modular = ShippingNotificationForPurchase_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular = "ShippingNotificationForPurchase_Modular";
-	/** ShippingNotificationForSales_Modular = ShippingNotificationForSales_Modular */
-	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular = "ShippingNotificationForSales_Modular";
-	/** ImportLog = ImportLog */
-	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog = "ImportLog";
+	/** Interim_Contract = Interim */
+	public static final String MODULARCONTRACTHANDLERTYPE_Interim_Contract = "Interim";
+	/** InventoryLine_Modular_NotUsed = InventoryLine_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_InventoryLine_Modular_NotUsed = "InventoryLine_Modular";
+	/** MaterialReceiptLine_Interim_NotUsed = MaterialReceiptLine_Interim */
+	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Interim_NotUsed = "MaterialReceiptLine_Interim";
+	/** MaterialReceiptLine_Modular_NotUsed = MaterialReceiptLine_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_MaterialReceiptLine_Modular_NotUsed = "MaterialReceiptLine_Modular";
+	/** PPCostCollector_Modular_NotUsed = PPCostCollector_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_PPCostCollector_Modular_NotUsed = "PPCostCollector_Modular";
+	/** PurchaseInvoiceLine_Interim_NotUsed = PurchaseInvoiceLine_Interim */
+	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseInvoiceLine_Interim_NotUsed = "PurchaseInvoiceLine_Interim";
+	/** PurchaseModularContract_NotUsed = PurchaseModularContract */
+	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseModularContract_NotUsed = "PurchaseModularContract";
+	/** PurchaseOrderLine_Modular_NotUsed = PurchaseOrderLine_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_PurchaseOrderLine_Modular_NotUsed = "PurchaseOrderLine_Modular";
+	/** SOLineForPO_Modular_NotUsed = SOLineForPO_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_SOLineForPO_Modular_NotUsed = "SOLineForPO_Modular";
+	/** SalesContractProForma_Modular_NotUsed = SalesContractProForma_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesContractProForma_Modular_NotUsed = "SalesContractProForma_Modular";
+	/** SalesInvoiceLine_Modular_NotUsed = SalesInvoiceLine_Modular_NotUsed */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesInvoiceLine_Modular_NotUsed = "SalesInvoiceLine_Modular_NotUsed";
+	/** SalesModularContract_NotUsed = SalesModularContract */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesModularContract_NotUsed = "SalesModularContract";
+	/** SalesOrderLine_Modular_NotUsed = SalesOrderLine_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLine_Modular_NotUsed = "SalesOrderLine_Modular";
+	/** SalesOrderLineProForma_Modular_NotUsed = SalesOrderLineProForma_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProForma_Modular_NotUsed = "SalesOrderLineProForma_Modular";
+	/** SalesOrderLineProFormaPO_Modular_NotUsed = SalesOrderLineProFormaPO_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOrderLineProFormaPO_Modular_NotUsed = "SalesOrderLineProFormaPO_Modular";
+	/** ShipmentLineForPO_Modular_NotUsed = ShipmentLineForPO_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForPO_Modular_NotUsed = "ShipmentLineForPO_Modular";
+	/** ShipmentLineForSO_Modular_NotUsed = ShipmentLineForSO_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_ShipmentLineForSO_Modular_NotUsed = "ShipmentLineForSO_Modular";
+	/** ShippingNotificationForPurchase_Modular_NotUsed = ShippingNotificationForPurchase_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForPurchase_Modular_NotUsed = "ShippingNotificationForPurchase_Modular";
+	/** ShippingNotificationForSales_Modular_NotUsed = ShippingNotificationForSales_Modular */
+	public static final String MODULARCONTRACTHANDLERTYPE_ShippingNotificationForSales_Modular_NotUsed = "ShippingNotificationForSales_Modular";
+	/** ImportLog_NotUsed = ImportLog */
+	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed = "ImportLog";
+	/** Receipt = Receipt */
+	public static final String MODULARCONTRACTHANDLERTYPE_Receipt = "Receipt";
+	/** ProForma = ProForma */
+	public static final String MODULARCONTRACTHANDLERTYPE_ProForma = "ProForma";
+	/** DefinitiveInvoice = DefinitiveInvoice */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoice = "DefinitiveInvoice";
+	/** SalesOnRawProduct = SalesOnRawProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct = "SalesOnRawProduct";
+	/** SalesOnProcessedProduct = SalesOnProcessedProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnProcessedProduct = "SalesOnProcessedProduct";
+	/** CoProduct = CoProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_CoProduct = "CoProduct";
+	/** AddValueOnRawProduct = AddValueOnRawProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_AddValueOnRawProduct = "AddValueOnRawProduct";
+	/** AddValueOnProcessedProduct = AddValueOnProcessedProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_AddValueOnProcessedProduct = "AddValueOnProcessedProduct";
+	/** SubtractValueOnRawProduct = SubtractValueOnRawProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_SubtractValueOnRawProduct = "SubtractValueOnRawProduct";
+	/** ReductionCalibration = ReductionCalibration */
+	public static final String MODULARCONTRACTHANDLERTYPE_ReductionCalibration = "ReductionCalibration";
+	/** StorageCost = StorageCost */
+	public static final String MODULARCONTRACTHANDLERTYPE_StorageCost = "StorageCost";
+	/** AverageAddedValueOnShippedQuantity = AverageAddedValueOnShippedQuantity */
+	public static final String MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity = "AverageAddedValueOnShippedQuantity";
+	/** AddValueOnInterim = AddValueOnInterim */
+	public static final String MODULARCONTRACTHANDLERTYPE_AddValueOnInterim = "AddValueOnInterim";
+	/** SubtractValueOnInterim = SubtractValueOnInterim */
+	public static final String MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim = "SubtractValueOnInterim";
 	@Override
-	public void setModularContractHandlerType (final @Nullable java.lang.String ModularContractHandlerType)
+	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);
 	}
