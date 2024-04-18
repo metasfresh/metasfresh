@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_SALES_MODULAR_DEPRECATED;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPPING_NOTIFICATION_FOR_SALES_MODULAR;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
@@ -81,6 +81,6 @@ public class ShippingNotificationForSalesModularContractHandler implements IComp
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SHIPPING_NOTIFICATION_FOR_SALES_MODULAR_DEPRECATED;
+		return SHIPPING_NOTIFICATION_FOR_SALES_MODULAR;
 	}
 }

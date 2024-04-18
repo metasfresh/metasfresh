@@ -47,7 +47,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_SO_MODULAR_DEPRECATED;
+import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_SO_MODULAR;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
@@ -64,7 +64,7 @@ public class ShipmentLineForSOModularContractHandler implements IComputingMethod
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SHIPMENT_LINE_FOR_SO_MODULAR_DEPRECATED;
+		return SHIPMENT_LINE_FOR_SO_MODULAR;
 	}
 
 	@Override

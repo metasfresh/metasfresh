@@ -147,7 +147,7 @@ public class ModCntrLogImportTableSqlUpdater
 		final String sqlContractModuleId = "SELECT m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID
 				+ " FROM " + I_ModCntr_Module.Table_Name + " m"
 				+ " INNER JOIN " + I_ModCntr_Type.Table_Name + " t on m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID + " = t." + I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID
-				+ " AND t." + I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType + " = '" + ComputingMethodType.IMPORT_LOG_DEPRECATED + "'"
+				+ " AND t." + I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType + " = '" + ComputingMethodType.IMPORT_LOG + "'"
 				+ " INNER JOIN " + I_ModCntr_Settings.Table_Name + " s ON m." + I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID + " = s." + I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID
 				+ " WHERE i." + COLUMNNAME_M_Product_ID + " = m." + I_ModCntr_Module.COLUMNNAME_M_Product_ID
 				+ " AND i." + COLUMNNAME_Harvesting_Year_ID + " = s." + I_ModCntr_Settings.COLUMNNAME_C_Year_ID

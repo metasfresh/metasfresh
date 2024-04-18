@@ -45,7 +45,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PRO_FORMA_MODULAR_DEPRECATED;
+import static de.metas.contracts.modular.ComputingMethodType.SALES_ORDER_LINE_PRO_FORMA_MODULAR;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.salescontract
@@ -101,6 +101,6 @@ public class SalesOrderLineProFormaModularContractHandler implements IComputingM
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return SALES_ORDER_LINE_PRO_FORMA_MODULAR_DEPRECATED;
+		return SALES_ORDER_LINE_PRO_FORMA_MODULAR;
 	}
 }

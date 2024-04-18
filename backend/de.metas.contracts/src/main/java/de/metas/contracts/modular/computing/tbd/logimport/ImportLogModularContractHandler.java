@@ -55,7 +55,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG_DEPRECATED;
+import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG;
 
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
@@ -97,7 +97,7 @@ public class ImportLogModularContractHandler implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return IMPORT_LOG_DEPRECATED;
+		return IMPORT_LOG;
 	}
 
 	@Override
