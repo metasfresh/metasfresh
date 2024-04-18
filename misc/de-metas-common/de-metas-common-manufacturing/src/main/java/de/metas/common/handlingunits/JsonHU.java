@@ -40,8 +40,8 @@ import java.util.List;
 public class JsonHU
 {
 	@Nullable String id;
-	@NonNull String huStatus;
-	@NonNull String huStatusCaption;
+	@Nullable String huStatus;
+	@Nullable String huStatusCaption;
 
 	@NonNull String displayName;
 
@@ -96,8 +96,8 @@ public class JsonHU
 
 	public JsonHU(
 			@Nullable final String id,
-			@NonNull final String huStatus,
-			@NonNull final String huStatusCaption,
+			@Nullable final String huStatus,
+			@Nullable final String huStatusCaption,
 			@NonNull final String displayName,
 			@Nullable final JsonHUQRCode qrCode,
 			@Nullable final String warehouseValue,

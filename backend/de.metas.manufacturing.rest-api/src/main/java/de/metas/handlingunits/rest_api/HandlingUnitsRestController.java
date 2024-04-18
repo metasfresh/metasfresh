@@ -48,7 +48,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.v2.JsonErrors;
@@ -363,15 +362,12 @@ public class HandlingUnitsRestController
 
 	private JsonHU toNewJsonHU(final @NonNull HUQRCode huQRCode)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
 		final I_M_Product product = productBL.getById(huQRCode.getProductId());
 		final I_C_UOM uom = productBL.getStockUOM(product);
 
 		return JsonHU.builder()
 				.id(null)
-				.huStatus(X_M_HU.HUSTATUS_Planning)
-				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Planning).translate(adLanguage))
+				.huStatusCaption("-")
 				.displayName(huQRCode.getPackingInfo().getCaption())
 				.qrCode(HandlingUnitsService.toJsonHUQRCode(huQRCode))
 				.warehouseValue(null)
