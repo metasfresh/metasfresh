@@ -23,6 +23,7 @@
 package de.metas.externalsystem.process;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -33,6 +34,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
 import de.metas.externalsystem.pcm.ExternalSystemPCMConfig;
 import de.metas.externalsystem.pcm.ExternalSystemPCMConfigId;
 import de.metas.externalsystem.pcm.InvokePCMService;
+import de.metas.organization.OrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -44,6 +46,7 @@ import java.util.Map;
 public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 {
 	private final InvokePCMService invokePCMService = SpringContextHolder.instance.getBean(InvokePCMService.class);
+	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
@@ -71,9 +74,11 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 	protected Map<String, String> extractExternalSystemParameters(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
 	{
 		final ExternalSystemPCMConfig pcmConfig = ExternalSystemPCMConfig.cast(externalSystemParentConfig.getChildConfig());
+		final OrgId orgId = pcmConfig.getOrgId();
 
-		final BPartnerLocationId orgBPartnerLocationId = orgDAO.getOrgInfoById(getOrgId()).getOrgBPartnerLocationId();
-		Check.assumeNotNull(orgBPartnerLocationId, "Organisation Business Partner Location ID cannot be missing");
+		final BPartnerLocationId orgBPartnerLocationId = orgDAO.getOrgInfoById(orgId).getOrgBPartnerLocationId();
+
+		Check.assumeNotNull(orgBPartnerLocationId, "AD_Org_ID={} needs to have an Organisation Business Partner Location ID", OrgId.toRepoId(orgId));
 
 		return invokePCMService.getParameters(pcmConfig, externalRequest, orgBPartnerLocationId.getBpartnerId());
 	}
@@ -97,5 +102,14 @@ public class InvokePCMAction extends AlterExternalSystemServiceStatusAction
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_ProCareManagement.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	@Override
+	protected String getOrgCode(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
+	{
+		final ExternalSystemPCMConfig pcmConfig = ExternalSystemPCMConfig.cast(externalSystemParentConfig.getChildConfig());
+		final OrgId orgId = pcmConfig.getOrgId();
+
+		return orgDAO.getById(orgId).getValue();
 	}
 }
