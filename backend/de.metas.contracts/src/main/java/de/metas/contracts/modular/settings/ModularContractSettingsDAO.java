@@ -150,7 +150,7 @@ public class ModularContractSettingsDAO
 		return result.build();
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateConditions(final ModularContractSettingsId modCntrSettingsId)
+	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)

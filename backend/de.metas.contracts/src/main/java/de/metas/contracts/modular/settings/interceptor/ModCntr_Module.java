@@ -27,7 +27,6 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -59,7 +58,6 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
@@ -73,7 +71,7 @@ public class ModCntr_Module
 	{
 		final ModularContractSettingsId modCntrSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
 
-		if (modularContractSettingsDAO.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
+		if (modularContractSettingsBL.isSettingsUsedInCompletedFlatrateConditions(modCntrSettingsId))
 		{
 			throw new AdempiereException(MOD_CNTR_SETTINGS_CANNOT_BE_CHANGED);
 		}
@@ -82,7 +80,7 @@ public class ModCntr_Module
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateSettings(@NonNull final I_ModCntr_Module record)
 	{
-		final ModularContractSettings settings = modularContractSettingsDAO.getById(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
+		final ModularContractSettings settings = modularContractSettingsBL.getById(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
 
 		validateProductInPS(ProductId.ofRepoIdOrNull(record.getM_Product_ID()), settings.getPricingSystemId(), settings.getSoTrx());
 	}
@@ -103,7 +101,7 @@ public class ModCntr_Module
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
 		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(type.getModCntr_Module_ID());
 		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType());
-		final ModularContractSettings settings = modularContractSettingsDAO.getById(modularContractSettingsId);
+		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
 		final ProductId productId = ProductId.ofRepoId(type.getM_Product_ID());
 
 		final boolean hasAlreadyComputingTypeAndProduct = settings.getModuleConfigs().stream()
