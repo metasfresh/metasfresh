@@ -367,8 +367,8 @@ Feature: Handling unit rest controller
       {
           "result": {
               "id": null,
-              "huStatus": "P",
-              "huStatusCaption": "Geplant",
+              "huStatus": null,
+              "huStatusCaption": "-",
               "displayName": "My TU Name - current",
               "qrCode": {
                   "code": "@qrCode@",
@@ -402,3 +402,4 @@ Feature: Handling unit rest controller
           }
       }
       """
+
