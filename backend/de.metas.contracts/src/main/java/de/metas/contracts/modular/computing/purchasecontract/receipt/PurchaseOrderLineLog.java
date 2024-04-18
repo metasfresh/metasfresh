@@ -86,7 +86,8 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(createLogRequest.getRecordRef().getRecord_ID()));
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -110,7 +111,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
-											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+											.referencedRecord(recordRef)
 											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))

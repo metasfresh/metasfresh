@@ -54,7 +54,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	@Deprecated SHIPMENT_LINE_FOR_PO_MODULAR_DEPRECATED(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShipmentLineForPO_Modular_NotUsed),
 	@Deprecated SHIPMENT_LINE_FOR_SO_MODULAR_DEPRECATED(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ShipmentLineForSO_Modular_NotUsed),
 	@Deprecated IMPORT_LOG_DEPRECATED(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed),
-	//TODO deactivate/remove old and add new in refList
+
 	INTERIM_CONTRACT(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Interim_Contract),
 	Receipt(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Receipt),
 	ProForma(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ProForma),
@@ -70,7 +70,9 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	AverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity),
 	AddValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnInterim),
 	SubtractValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim);
+
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
+
 	@Getter
 	@NonNull
 	private final String code;

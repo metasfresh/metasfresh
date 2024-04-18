@@ -56,7 +56,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
  */
@@ -146,14 +145,5 @@ class ImportLogHandler implements IModularContractLogHandler
 	public @NonNull IComputingMethodHandler getComputingMethod()
 	{
 		return computingMethod;
-	}
-
-	@Override
-	public @NonNull Optional<ProductId> getProductId(final @NonNull HandleLogsRequest handleLogsRequest)
-	{
-		final int logId = handleLogsRequest.getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName());
-		final I_I_ModCntr_Log record = InterfaceWrapperHelper.load(logId, I_I_ModCntr_Log.class);
-		return Optional.of(record.getM_Product_ID())
-				.map(ProductId::ofRepoId);
 	}
 }

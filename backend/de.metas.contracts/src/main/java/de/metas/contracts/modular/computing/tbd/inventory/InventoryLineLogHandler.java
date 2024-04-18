@@ -81,6 +81,18 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Override
+	public @NonNull IComputingMethodHandler getComputingMethod()
+	{
+		return computingMethod;
+	}
+
+	@Override
+	public @NonNull String getSupportedTableName()
+	{
+		return I_M_InventoryLine.Table_Name;
+	}
+
+	@Override
 	@NonNull
 	public ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final CreateLogRequest createLogRequest)
@@ -127,7 +139,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 											.collectionPointBPartnerId(collectionPointBPartnerId)
 											.warehouseId(warehouseId)
 											.documentType(LogEntryDocumentType.INVENTORY)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(quantity)
 											.transactionDate(transactionDate)
@@ -157,17 +169,5 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 											.flatrateTermId(handleLogsRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 											.build());
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InventoryLine.Table_Name;
 	}
 }

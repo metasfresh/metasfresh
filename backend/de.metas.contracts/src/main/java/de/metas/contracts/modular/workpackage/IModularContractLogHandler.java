@@ -43,7 +43,6 @@ import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 public interface IModularContractLogHandler
 {
@@ -63,12 +62,6 @@ public interface IModularContractLogHandler
 
 	@NonNull
 	IComputingMethodHandler getComputingMethod();
-
-	@NonNull
-	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest handleLogsRequest)
-	{
-		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
-	}
 
 	@NonNull
 	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
