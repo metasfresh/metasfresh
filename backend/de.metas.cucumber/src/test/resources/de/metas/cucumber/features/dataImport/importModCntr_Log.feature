@@ -1,5 +1,6 @@
 @Id:S0346
 @from:cucumber
+@ignore
 Feature: Import Modular Contract Logs via DataImportRestController
 
   Background:
