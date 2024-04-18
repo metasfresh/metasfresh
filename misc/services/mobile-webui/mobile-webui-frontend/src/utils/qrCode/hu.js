@@ -27,6 +27,7 @@ export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
 
 const ATTR_productId = 'productId';
+const ATTR_productNo = 'productNo';
 const ATTR_weightNet = 'weightNet';
 const ATTR_weightNetUOM = 'weightNetUOM';
 const ATTR_bestBeforeDate = 'bestBeforeDate';
@@ -237,6 +238,9 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   }
   if (parts.length >= 3) {
     result[ATTR_lotNo] = parts[2];
+  }
+  if (parts.length >= 4) {
+    result[ATTR_productNo] = parts[3];
   }
 
   return result;

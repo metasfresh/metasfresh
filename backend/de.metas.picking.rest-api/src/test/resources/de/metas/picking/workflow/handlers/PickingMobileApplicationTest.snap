@@ -22,6 +22,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -148,6 +149,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -352,6 +354,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -478,6 +481,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -690,6 +694,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -816,6 +821,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -1028,6 +1034,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1154,6 +1161,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -1358,6 +1366,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1488,6 +1497,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "DONE",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -1737,6 +1747,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -1867,6 +1878,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "DONE",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -2124,6 +2136,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2244,6 +2257,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2370,6 +2384,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "DONE",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -2613,6 +2628,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -2739,6 +2755,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "DONE",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -2988,6 +3005,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -3197,6 +3215,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -3323,6 +3342,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -3535,6 +3555,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -3661,6 +3682,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "IN_PROGRESS",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -3896,6 +3918,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4016,6 +4039,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4142,6 +4166,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -4346,6 +4371,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -4472,6 +4498,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -4684,6 +4711,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -4893,6 +4921,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -5019,6 +5048,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -5231,6 +5261,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
                   "manuallyClosed": false,
                   "pickingLineId": "1000000",
                   "productId": "1000000",
+                  "productNo": "P1",
                   "qtyToPick": 100.000,
                   "steps": [
                     {
@@ -5357,6 +5388,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "IN_PROGRESS",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {

@@ -26,10 +26,9 @@ SELECT
                                          ELSE 'ERROR EAN_DocType'::TEXT
                                      END)
             WHEN 'ARC'::BPChar THEN (CASE
-
-                /* CQ => "GS - Lieferdifferenz"; CS => "GS - Retoure" */
+                /* CQ => "GS - Delivery-Difference"; CS => "GS - Retoure"; CR => Price-Difference */
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType) IN ('CQ','CS') THEN '381'
-                                         WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='CR' THEN '83'::TEXT
+                                         WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType)='CR' THEN '83'
                                                                                                                         ELSE 'ERROR EAN_DocType'::TEXT
                                      END)
                                ELSE 'ERROR EAN_DocType'::TEXT

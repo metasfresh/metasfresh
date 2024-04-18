@@ -32,6 +32,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -247,6 +248,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -470,6 +472,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -731,6 +734,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "DONE",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
@@ -985,6 +989,7 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
             "isManuallyClosed": false,
             "productId": 1000000,
             "productName": "P1",
+            "productNo": "P1",
             "progress": "NOT_STARTED",
             "qtyToPick": "100.000 Kg",
             "salesOrderAndLineId": {
