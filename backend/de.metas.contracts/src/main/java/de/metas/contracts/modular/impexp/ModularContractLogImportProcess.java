@@ -28,16 +28,17 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -82,7 +83,7 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 	}
 
 	@Override
-	protected I_I_ModCntr_Log retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	protected I_I_ModCntr_Log retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_ModCntr_Log(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -114,7 +115,13 @@ public class ModularContractLogImportProcess extends SimpleImportProcessTemplate
 
 	private void createImportModCntrLog(@NonNull final I_I_ModCntr_Log record)
 	{
-		modularContractService.invokeWithModel(record, ModelAction.COMPLETED, LogEntryContractType.MODULAR_CONTRACT);
+
+		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
+														   .tableRecordReference(TableRecordReference.of(record))
+														   .modelAction(ModelAction.COMPLETED)
+														   .userInChargeId(Env.getLoggedUserId())
+														   .build()
+		);
 	}
 
 }

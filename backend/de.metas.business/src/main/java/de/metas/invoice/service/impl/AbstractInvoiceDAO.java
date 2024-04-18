@@ -19,6 +19,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -129,7 +130,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public I_C_InvoiceLine retrieveLineById(final InvoiceLineId invoiceLineId)
+	public I_C_InvoiceLine retrieveLineById(final InvoiceAndLineId invoiceAndLineId)
+	{
+		return load(invoiceAndLineId, I_C_InvoiceLine.class);
+	}
+
+	@Override
+	public I_C_InvoiceLine retrieveLineById(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		return load(invoiceLineId, I_C_InvoiceLine.class);
 	}
@@ -444,9 +451,9 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceLineId invoiceLineId)
+	public org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
-		return loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+		return loadOutOfTrx(invoiceAndLineId, I_C_InvoiceLine.class);
 	}
 
 	@Override
@@ -470,11 +477,11 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)
+	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		final IQueryBL queryBL = this.queryBL;
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceAndLineId)
 				.create()
 				.list();
 	}
@@ -622,13 +629,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id)
+	public Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id)
 	{
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, id)
 				.create()
-				.listIds(lineId -> InvoiceLineId.ofRepoId(id, lineId));
+				.listIds(lineId -> InvoiceAndLineId.ofRepoId(id, lineId));
 	}
 
 	private boolean matchesDocType(@NonNull final I_C_Invoice serviceFeeInvoiceCandidate, @Nullable final DocBaseAndSubType targetDocType)

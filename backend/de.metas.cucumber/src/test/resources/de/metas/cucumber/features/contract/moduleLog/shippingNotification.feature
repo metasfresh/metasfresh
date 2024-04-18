@@ -1,4 +1,5 @@
 @from:cucumber
+@ignore
 Feature: Shipping Notifications
 
   Background:

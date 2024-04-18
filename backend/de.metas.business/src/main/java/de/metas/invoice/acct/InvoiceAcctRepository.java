@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -77,7 +77,7 @@ public class InvoiceAcctRepository
 	private static InvoiceAcctRuleMatcher toRuleMatcher(final I_C_Invoice_Acct record)
 	{
 		return InvoiceAcctRuleMatcher.builder()
-				.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.accountTypeName(AccountTypeName.ofNullableColumnName(record.getAccountName()))
 				.build();
@@ -113,7 +113,7 @@ public class InvoiceAcctRepository
 	private void updateRecordFromRuleMatcher(@NonNull I_C_Invoice_Acct record, @NonNull final InvoiceAcctRuleMatcher from)
 	{
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
-		record.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(from.getInvoiceLineId()));
+		record.setC_InvoiceLine_ID(InvoiceAndLineId.toRepoId(from.getInvoiceAndLineId()));
 		record.setAccountName(from.getAccountTypeName() != null ? from.getAccountTypeName().getColumnName() : null);
 	}
 }

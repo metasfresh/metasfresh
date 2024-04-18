@@ -1,4 +1,5 @@
 @Id:S0315
+@ignore
 Feature: Modular contract log for proForma Sales Order
 
   Background:

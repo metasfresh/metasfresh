@@ -3,7 +3,7 @@ package de.metas.ui.web.invoice.match_inout_costs;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.edi.model.I_C_Order;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -45,13 +45,13 @@ class InOutCostsViewDataService
 
 	public InOutCostsViewData getData(
 			@NonNull final SOTrx soTrx,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@Nullable final DocumentFilter filter)
 	{
 		return InOutCostsViewData.builder()
 				.viewDataService(this)
 				.soTrx(soTrx)
-				.invoiceLineId(invoiceLineId)
+				.invoiceAndLineId(invoiceAndLineId)
 				.filter(filter)
 				.build();
 	}
@@ -78,9 +78,9 @@ class InOutCostsViewDataService
 				.build();
 	}
 
-	public Amount getInvoiceLineOpenAmount(final InvoiceLineId invoiceLineId)
+	public Amount getInvoiceLineOpenAmount(final InvoiceAndLineId invoiceAndLineId)
 	{
-		final Money invoiceLineOpenAmt = orderCostService.getInvoiceLineOpenAmt(invoiceLineId);
+		final Money invoiceLineOpenAmt = orderCostService.getInvoiceLineOpenAmt(invoiceAndLineId);
 		return moneyService.toAmount(invoiceLineOpenAmt);
 	}
 }

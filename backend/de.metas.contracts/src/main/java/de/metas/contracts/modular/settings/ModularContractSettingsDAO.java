@@ -34,7 +34,7 @@ import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -140,7 +140,7 @@ public class ModularContractSettingsDAO
 												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 												 .value(modCntrType.getValue())
 												 .name(modCntrType.getName())
-												 .handlerType(ModularContractHandlerType.ofNullableCode(modCntrType.getModularContractHandlerType()))
+												 .computingMethodType(ComputingMethodType.ofNullableCode(modCntrType.getModularContractHandlerType()))
 												 .build())
 					.build();
 
@@ -150,7 +150,7 @@ public class ModularContractSettingsDAO
 		return result.build();
 	}
 
-	public boolean isSettingsUsedInCompletedFlatrateConditions(final ModularContractSettingsId modCntrSettingsId)
+	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addEqualsFilter(I_ModCntr_Settings.COLUMN_ModCntr_Settings_ID, modCntrSettingsId)

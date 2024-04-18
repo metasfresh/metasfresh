@@ -61,6 +61,11 @@ public class ShippingNotificationRepository
 		return newLoaderAndSaver().getHeaderRecordById(id);
 	}
 
+	public I_M_Shipping_NotificationLine getLineRecordByLineId(@NonNull final ShippingNotificationLineId id)
+	{
+		return newLoaderAndSaver().getLineRecordByLineId(id);
+	}
+
 	public Collection<I_M_Shipping_Notification> getRecordsByIds(final Set<ShippingNotificationId> shippingNotificationIds)
 	{
 		return newLoaderAndSaver().getHeaderRecordsByIds(shippingNotificationIds).values();

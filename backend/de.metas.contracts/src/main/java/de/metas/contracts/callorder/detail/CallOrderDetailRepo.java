@@ -29,8 +29,8 @@ import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.contracts.model.I_C_CallOrderDetail;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -142,9 +142,9 @@ public class CallOrderDetailRepo
 			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMNNAME_M_InOutLine_ID, query.getInOutLineId());
 		}
 
-		if (query.getInvoiceLineId() != null)
+		if (query.getInvoiceAndLineId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMN_C_InvoiceLine_ID, query.getInvoiceLineId());
+			queryBuilder.addEqualsFilter(I_C_CallOrderDetail.COLUMN_C_InvoiceLine_ID, query.getInvoiceAndLineId());
 		}
 
 		return queryBuilder.create()
@@ -181,7 +181,7 @@ public class CallOrderDetailRepo
 			final CallOrderDetailData.InvoiceDetail invoiceDetail = detailData.getInvoiceDetail();
 
 			record.setC_Invoice_ID(invoiceDetail.getInvoiceId().getRepoId());
-			record.setC_InvoiceLine_ID(invoiceDetail.getInvoiceLineId().getRepoId());
+			record.setC_InvoiceLine_ID(invoiceDetail.getInvoiceAndLineId().getRepoId());
 			record.setQtyInvoicedInUOM(invoiceDetail.getQtyInvoiced().toBigDecimal());
 			record.setC_UOM_ID(invoiceDetail.getQtyInvoiced().getUomId().getRepoId());
 		}
@@ -231,7 +231,7 @@ public class CallOrderDetailRepo
 
 			return builder
 					.invoiceId(InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID()))
-					.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+					.invoiceAndLineId(InvoiceAndLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
 					.qtyInvoiced(qtyInvoicedInUOM)
 					.build();
 		}
