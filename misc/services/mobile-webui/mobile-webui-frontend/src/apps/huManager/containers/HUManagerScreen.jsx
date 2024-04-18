@@ -30,6 +30,7 @@ const HUManagerScreen = () => {
   const history = useHistory();
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
+  const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
 
   const { url } = useRouteMatch();
   useEffect(() => {
@@ -44,7 +45,7 @@ const HUManagerScreen = () => {
   const onResolvedResult = (result) => {
     //console.log('onResolvedResult', { result });
     const { handlingUnitInfo } = result;
-    dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+    setHandlingUnitInfo(handlingUnitInfo);
   };
 
   const onDisposeClick = () => {
@@ -69,12 +70,10 @@ const HUManagerScreen = () => {
         qty: qty,
         locatorQRCode: currentLocatorQRCode,
       })
-      .then(() => dispatch(clearLoadedData()))
+      .then(setHandlingUnitInfo)
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setModalToDisplay(''));
   };
-
-  const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
   const clearanceStatuses = useClearanceStatuses({
     huId: handlingUnitInfo?.id,
@@ -162,6 +161,15 @@ const HUManagerScreen = () => {
       />
     );
   }
+};
+
+const useHandlingUnitInfo = () => {
+  const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
+
+  const dispatch = useDispatch();
+  const setHandlingUnitInfo = (handlingUnitInfo) => dispatch(handlingUnitLoaded({ handlingUnitInfo }));
+
+  return [handlingUnitInfo, setHandlingUnitInfo];
 };
 
 const useClearanceStatuses = ({ huId, huClearanceStatus }) => {
