@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1222059933L;
+	private static final long serialVersionUID = -1401493274L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -1311,5 +1311,39 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
+	}
+
+	/**
+	 * InvoicingGroup AD_Reference_ID=541742
+	 * Reference name: InvoicingGroup
+	 */
+	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
+	@Override
+	public void setInvoicingGroup (final @Nullable java.lang.String InvoicingGroup)
+	{
+		set_Value (COLUMNNAME_InvoicingGroup, InvoicingGroup);
+	}
+
+	@Override
+	public java.lang.String getInvoicingGroup()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
+	}
+
+
+	@Override
+	public void setProductName (final @Nullable java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName()
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 }

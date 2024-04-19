@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 public class ModularContractType
 {
 	@NonNull ModularContractTypeId id;
-	@Nullable ComputingMethodType computingMethodType;
+	@NonNull ComputingMethodType computingMethodType;
 	@Nullable String value;
 	@Nullable String name;
 

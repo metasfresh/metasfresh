@@ -3,6 +3,7 @@ package de.metas.contracts.invoicecandidate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
@@ -12,6 +13,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lock.api.LockOwner;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -19,6 +21,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
@@ -28,6 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
@@ -44,13 +49,15 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public FlatrateTerm_Handler()
 	{
 		this(ImmutableList.<ConditionTypeSpecificInvoiceCandidateHandler>of(
 				new FlatrateTermSubscription_Handler(),
 				new FlatrateTermRefund_Handler(),
-				new FlatrateTermInterimInvoice_Handler()));
+				new FlatrateTermInterimInvoice_Handler(),
+				new FlatrateTermModular_Handler()));
 	}
 
 	public FlatrateTerm_Handler(
@@ -114,7 +121,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForTerm(term);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForTerm(term, request.getLockOwner());
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
 	}
 
@@ -147,7 +154,9 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	private List<I_C_Invoice_Candidate> createCandidatesForTerm(@NonNull final I_C_Flatrate_Term term)
+	private List<I_C_Invoice_Candidate> createCandidatesForTerm(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final LockOwner lockOwner)
 	{
 		if (HandlerTools.isCancelledContract(term))
 		{
@@ -155,7 +164,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		}
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = handler.createInvoiceCandidates(term);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = handler.createInvoiceCandidates(term, lockOwner);
 
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
@@ -194,9 +203,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final ProductId productId = ProductId.optionalOfRepoId(ic.getM_Product_ID())
+				.orElseThrow(() -> new AdempiereException("Product cannot be missing at this point !")
+						.appendParametersToMessage()
+						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));
 
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
 		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
@@ -255,7 +265,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void postSave(@NonNull final InvoiceCandidateGenerateResult result)
 	{
-		for (final I_C_Invoice_Candidate ic: result.getC_Invoice_Candidates())
+		for (final I_C_Invoice_Candidate ic : result.getC_Invoice_Candidates())
 		{
 			final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 			final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
@@ -264,4 +274,13 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		}
 	}
 
+	@Override
+	@NonNull
+	public ImmutableList<Object> getRecordsToLock(@NonNull final Object model)
+	{
+		final I_C_Flatrate_Term modularContract = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
+
+		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(modularContract); 
+		return handler.getRecordsToLock(modularContract);
+	}
 }

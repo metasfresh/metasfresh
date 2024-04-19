@@ -159,8 +159,8 @@ Feature: accounting-purchase-harvesting-feature
       | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
       | plv_1      | pl_1                      | purchaseOrder-PLV_06022023_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | moduleLogPP  | plv_1                             | product_PO_05082023_1   | 2.00     | PCE               | Normal                        |
+      | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | moduleLogPP | plv_1                             | product_PO_05082023_1   | 2.00     | PCE               | Normal                        |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
@@ -188,14 +188,14 @@ Feature: accounting-purchase-harvesting-feature
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1   | harvesting_calendar      | y2022                | ps_1                              |
+      | modCntr_settings_1             | testSettings_05072023_1 | product_PO_05082023_1       | harvesting_calendar      | y2022                | ps_1                              |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name              | Value             | ModularContractHandlerType |
-      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | Receipt  |
-      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | Receipt  |
+      | modCntr_type_1             | poLine_05072023_1 | poLine_05072023_1 | Receipt                    |
+      | modCntr_type_2             | mrLine_05072023_1 | mrLine_05072023_1 | Receipt                    |
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name                  | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
-      | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Kosten         | modCntr_settings_1             | modCntr_type_1             |
+      | modCntr_module_1             | 10    | moduleTest_05072023_1 | product_PO_05082023_1   | Costs          | modCntr_settings_1             | modCntr_type_1             |
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
       | moduleLogConditions                 | moduleLogConditions_po_05072023_1 | ModularContract | ps_1                              | Ex                       | modCntr_settings_1                 |

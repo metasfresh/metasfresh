@@ -29,6 +29,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Optional;
+
 @Value
 @Builder
 public class ModuleConfig
@@ -48,5 +50,13 @@ public class ModuleConfig
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return modularContractType.isMatching(computingMethodType);
+	}
+
+	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
+
+	@NonNull
+	public ComputingMethodType getComputingMethodType()
+	{
+		return modularContractType.getComputingMethodType();
 	}
 }

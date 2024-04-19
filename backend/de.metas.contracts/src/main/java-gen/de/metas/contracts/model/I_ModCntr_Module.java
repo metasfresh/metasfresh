@@ -81,7 +81,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicingGroup (java.lang.String InvoicingGroup);
+	void setInvoicingGroup (String InvoicingGroup);
 
 	/**
 	 * Get Invoice Line Group.
@@ -90,7 +90,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getInvoicingGroup();
+	String getInvoicingGroup();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_ModCntr_Module.class, "InvoicingGroup", null);
 	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
@@ -218,7 +218,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setName (String Name);
 
 	/**
 	 * Get Name.
@@ -227,7 +227,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	String getName();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Module.class, "Name", null);
 	String COLUMNNAME_Name = "Name";

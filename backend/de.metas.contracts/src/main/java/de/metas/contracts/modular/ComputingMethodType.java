@@ -69,7 +69,10 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	StorageCost(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_StorageCost),
 	AverageAddedValueOnShippedQuantity(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AverageAddedValueOnShippedQuantity),
 	AddValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_AddValueOnInterim),
-	SubtractValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim);
+	SubtractValueOnInterim(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim),
+	AvCo("AvCo"),	// Methods not needed in this increment
+	SvCo("SvCo"),
+	SvProcessed("SvProcessed");
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 

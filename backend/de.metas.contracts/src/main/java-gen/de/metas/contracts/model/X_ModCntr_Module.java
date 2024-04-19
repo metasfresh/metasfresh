@@ -39,18 +39,18 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	 * Reference name: InvoicingGroup
 	 */
 	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
-	/** Leistung = Leistung */
-	public static final String INVOICINGGROUP_Leistung = "Leistung";
-	/** Kosten = Kosten */
-	public static final String INVOICINGGROUP_Kosten = "Kosten";
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
 	@Override
-	public void setInvoicingGroup (final java.lang.String InvoicingGroup)
+	public void setInvoicingGroup (final String InvoicingGroup)
 	{
 		set_Value (COLUMNNAME_InvoicingGroup, InvoicingGroup);
 	}
 
 	@Override
-	public java.lang.String getInvoicingGroup() 
+	public String getInvoicingGroup() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
 	}
@@ -140,13 +140,13 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}

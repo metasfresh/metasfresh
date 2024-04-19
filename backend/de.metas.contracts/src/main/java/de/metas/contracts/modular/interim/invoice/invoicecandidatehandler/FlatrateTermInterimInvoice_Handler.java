@@ -46,6 +46,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductPrice;
@@ -74,7 +75,6 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@Override
@@ -105,7 +105,9 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
+	public List<I_C_Invoice_Candidate> createInvoiceCandidates(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final LockOwner lockOwner)
 	{
 		return ImmutableList.of(createInterimIC(term));
 	}

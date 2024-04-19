@@ -4124,4 +4124,49 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Invoicing group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingGroup (@Nullable String InvoicingGroup);
+
+	/**
+	 * Get Invoicing group.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getInvoicingGroup();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_C_Invoice_Candidate.class, "InvoicingGroup", null);
+	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
+
+
+	/**
+	 * Set Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductName (@Nullable String ProductName);
+
+	/**
+	 * Get Product Name.
+	 * Name of the Product
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getProductName();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductName = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
 }

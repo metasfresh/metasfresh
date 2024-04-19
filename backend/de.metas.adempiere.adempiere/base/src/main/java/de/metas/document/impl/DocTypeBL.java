@@ -62,6 +62,13 @@ public class DocTypeBL implements IDocTypeBL
 
 	@Override
 	@NonNull
+	public DocTypeId getDocTypeId(@NonNull final DocTypeQuery docTypeQuery)
+	{
+		return docTypesRepo.getDocTypeId(docTypeQuery);
+	}
+
+	@Override
+	@NonNull
 	public ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
 		return docTypesRepo.getDocTypeIdsByInvoicingPoolId(docTypeInvoicingPoolId);

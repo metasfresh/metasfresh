@@ -34,10 +34,11 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -46,21 +47,17 @@ public class ModularContractPriceRepository
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Nullable
+	@NonNull
 	public ModCntrSpecificPrice retrievePriceForProductAndContract(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, modularContractModuleId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-
-				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
-				.map(ModularContractPriceRepository::fromDB)
-				.orElse(null);
+		return retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
+				.orElseThrow(() -> new AdempiereException("No Price found for Product and Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractModuleId", modularContractModuleId.getRepoId())
+						.setParameter("ContractId", flatrateTermId.getRepoId()));
 	}
 
-	public boolean isSpecificPricesExistforFlatrateTermId(@NonNull final FlatrateTermId flatrateTermId)
+	public boolean isSpecificPricesExistForFlatrateTermId(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
@@ -82,6 +79,21 @@ public class ModularContractPriceRepository
 		price.setSeqNo(modCntrSpecificPrice.seqNo().toInt());
 
 		saveRecord(price);
+	}
+
+	@NonNull
+	private Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
+			@NonNull final ModularContractModuleId modularContractModuleId,
+			@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, modularContractModuleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+
+				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
+				.map(ModularContractPriceRepository::fromDB);
 	}
 
 	@NonNull
