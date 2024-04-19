@@ -23,11 +23,15 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.Check;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -35,12 +39,13 @@ import java.util.List;
 @Service
 public class ModularContractComputingMethodHandlerRegistry
 {
-	@NonNull
-	private final ImmutableList<IComputingMethodHandler> handlers;
+	@NonNull private static final Logger logger = LogManager.getLogger(ModularContractComputingMethodHandlerRegistry.class);
+	@NonNull private final ImmutableMap<ComputingMethodType, IComputingMethodHandler> handlersByType;
 
 	public ModularContractComputingMethodHandlerRegistry(@NonNull final List<IComputingMethodHandler> knownHandlers)
 	{
-		this.handlers = ImmutableList.copyOf(knownHandlers);
+		this.handlersByType = Maps.uniqueIndex(knownHandlers, IComputingMethodHandler::getComputingMethodType);
+		logger.info("Handlers: {}", this.handlersByType);
 	}
 
 	@NonNull
@@ -48,7 +53,7 @@ public class ModularContractComputingMethodHandlerRegistry
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final LogEntryContractType contractType)
 	{
-		return handlers.stream()
+		return handlersByType.values().stream()
 				.filter(handler -> handler.applies(recordRef, contractType))
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -56,13 +61,11 @@ public class ModularContractComputingMethodHandlerRegistry
 	@NonNull
 	public IComputingMethodHandler getApplicableHandlerFor(@NonNull final ComputingMethodType computingMethodType)
 	{
-		final ImmutableList<IComputingMethodHandler> computingMethodHandlers = handlers.stream()
-				.filter(handler -> handler.getComputingMethodType() == computingMethodType)
-				.collect(ImmutableList.toImmutableList());
-
-		Check.assumeNotEmpty(computingMethodHandlers, "No computing method found for type {} !", computingMethodType.getCode());
-		Check.assume(computingMethodHandlers.size() == 1, "Only one computing method with type {} shall exist!", computingMethodType.getCode());
-
-		return computingMethodHandlers.get(0);
+		final IComputingMethodHandler handler = handlersByType.get(computingMethodType);
+		if (handler == null)
+		{
+			throw new AdempiereException("No handler found for " + computingMethodType);
+		}
+		return handler;
 	}
 }
