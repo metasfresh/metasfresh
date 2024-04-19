@@ -28,9 +28,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @EqualsAndHashCode
@@ -58,10 +60,18 @@ public final class QtyTU implements Comparable<QtyTU>
 		return ofInt(bd.intValueExact());
 	}
 
-	@JsonCreator
+	@NonNull
 	public static QtyTU ofString(@NonNull final String stringValue)
 	{
 		return ofInt(NumberUtils.asInt(stringValue));
+	}
+
+	@JsonCreator
+	@Nullable
+	public static QtyTU ofNullableString(@Nullable final String stringValue)
+	{
+		final String stringValueNorm = StringUtils.trimBlankToNull(stringValue);
+		return stringValueNorm != null ? ofString(stringValueNorm) : null;
 	}
 
 	public static final QtyTU ZERO = new QtyTU(0);
