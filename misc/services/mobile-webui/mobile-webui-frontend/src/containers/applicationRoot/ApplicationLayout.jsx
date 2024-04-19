@@ -16,15 +16,11 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   // If the required process was not loaded,
   // then redirect to home
   const redirectToHome = isWFProcessRequiredButNotLoaded();
-  if (redirectToHome) {
-    useEffect(() => {
-      if (redirectToHome) {
-        history.push('/');
-      }
-    }, [redirectToHome]);
-
-    return null;
-  }
+  useEffect(() => {
+    if (redirectToHome) {
+      history.push('/');
+    }
+  }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });
   const homeLocation = useHomeLocation();
@@ -36,6 +32,9 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     document.title = caption;
   }, [caption]);
 
+  if (redirectToHome) {
+    return null;
+  }
   return (
     <div className="app-container">
       <div className="app-header">
