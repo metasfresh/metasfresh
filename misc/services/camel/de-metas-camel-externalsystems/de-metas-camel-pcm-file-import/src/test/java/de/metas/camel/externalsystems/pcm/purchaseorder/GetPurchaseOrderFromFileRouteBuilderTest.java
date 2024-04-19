@@ -103,9 +103,9 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId(), externalSystemStartRequest);
 
 		prepareSyncRouteForTesting(true,
-				mockUpsertPurchaseCandicateProcessor,
-				mockProcessPurchaseCandicatesProcessor,
-				LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(externalSystemStartRequest));
+								   mockUpsertPurchaseCandicateProcessor,
+								   mockProcessPurchaseCandicatesProcessor,
+								   LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(externalSystemStartRequest));
 
 		final PurchaseCandidateCamelRequest purchaseOrderUpsertCamelRequest_20 = loadJSON(this, JSON_UPSERT_PURCHASE_ORDER_REQUEST_20, PurchaseCandidateCamelRequest.class);
 		final PurchaseCandidateCamelRequest purchaseOrderUpsertCamelRequest_30 = loadJSON(this, JSON_UPSERT_PURCHASE_ORDER_REQUEST_30, PurchaseCandidateCamelRequest.class);
@@ -130,13 +130,30 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	/**
-	 * Tests mostly the file-component, to make sure that it ignores an order-file if there are still master data file lying around 
+	 * Tests mostly the file-component, to make sure that it ignores an order-file if there are still master data file lying around
 	 */
 	@Test
 	public void masterDataFileExists_SyncPurchaseOrders_LocalFile() throws Exception
 	{
-		// ..assuming that we run within de-metas-camel-pcm-file-import.
+		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
 		final Path path = Paths.get("src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/masterDataFileExists");
+		test_NothingCreated(path);
+	}
+
+	/**
+	 * Tests mostly the file-component, to make sure that it ignores an order-file if there are still master data file lying around
+	 */
+	@Test
+	public void csvFileWithError_SyncPurchaseOrders_LocalFile() throws Exception
+	{
+		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
+		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/csvFileWithError";
+		final Path path = Paths.get(rootFolderStr);
+		test_NothingCreated(path);
+	}
+
+	private void test_NothingCreated(@NonNull final Path path) throws Exception
+	{
 		final File requestRootFolder = path.toFile();
 		assertThat(requestRootFolder).isDirectory();
 
@@ -165,18 +182,16 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId(), startRequest);
 
 		// cant set this up this earlier, because they route that we modify exists only now
-		prepareSyncRouteForTesting( false, 
-									mockUpsertPurchaseCandicateProcessor,
-									mockProcessPurchaseCandicatesProcessor,
-									LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(startRequest));
+		prepareSyncRouteForTesting(false,
+								   mockUpsertPurchaseCandicateProcessor,
+								   mockProcessPurchaseCandicatesProcessor,
+								   LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(startRequest));
 
 		//then
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 		assertThat(mockUpsertPurchaseCandicateProcessor.called).isEqualTo(0);
 		assertThat(mockProcessPurchaseCandicatesProcessor.called).isEqualTo(0);
-
-		
 	}
 
 	@Test
