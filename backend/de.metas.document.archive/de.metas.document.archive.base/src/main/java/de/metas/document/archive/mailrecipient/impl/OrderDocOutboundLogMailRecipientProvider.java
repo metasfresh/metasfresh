@@ -75,11 +75,22 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		if (orderUserRecordId > 0)
 		{
 			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderUserRecordId));
-			if (!Check.isEmpty(orderUser.getEmailAddress(), true))
+			if (!Check.isBlank(orderUser.getEmailAddress()))
 			{
 				return Optional.of(orderUser);
 			}
 		}
+
+		final int billingUserRecordId = orderRecord.getBill_User_ID();
+		if (billingUserRecordId > 0)
+		{
+			final DocOutBoundRecipient orderBillingUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billingUserRecordId));
+			if (!Check.isBlank(orderBillingUser.getEmailAddress()))
+			{
+				return Optional.of(orderBillingUser);
+			}
+		}
+
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 
@@ -89,6 +100,7 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+						.onlyActive(true)
 						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
 		if (billContact != null)
