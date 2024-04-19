@@ -13,6 +13,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lock.api.LockOwner;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -120,7 +121,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Flatrate_Term term = request.getModel(I_C_Flatrate_Term.class);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForTerm(term);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = createCandidatesForTerm(term, request.getLockOwner());
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidates);
 	}
 
@@ -153,7 +154,9 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	private List<I_C_Invoice_Candidate> createCandidatesForTerm(@NonNull final I_C_Flatrate_Term term)
+	private List<I_C_Invoice_Candidate> createCandidatesForTerm(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final LockOwner lockOwner)
 	{
 		if (HandlerTools.isCancelledContract(term))
 		{
@@ -161,7 +164,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		}
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		final List<I_C_Invoice_Candidate> invoiceCandidates = handler.createInvoiceCandidates(term);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = handler.createInvoiceCandidates(term, lockOwner);
 
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{

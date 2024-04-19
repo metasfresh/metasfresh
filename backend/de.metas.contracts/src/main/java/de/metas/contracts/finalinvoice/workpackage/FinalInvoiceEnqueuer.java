@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,6 +35,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import static de.metas.ordercandidate.api.impl.OLCandUpdater.PARAM_C_BPARTNER_LOCATION_MAP;
 import static org.compiere.util.Env.getCtx;
 
 @Service
@@ -43,21 +46,24 @@ public class FinalInvoiceEnqueuer
 
 	public void enqueueNow(
 			@NonNull final ImmutableSet<FlatrateTermId> termIds,
-			@NonNull final UserId userId)
+			@NonNull final UserId userId,
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		trxManager.runInThreadInheritedTrx(() -> termIds.forEach(id -> enqueueNow(id, userId)));
+		trxManager.runInThreadInheritedTrx(() -> termIds.forEach(id -> enqueueNow(id, userId, invoicingParams)));
 	}
 
 	private void enqueueNow(
 			@NonNull final FlatrateTermId termId,
-			@NonNull final UserId userId)
+			@NonNull final UserId userId,
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(termId, userId));
+		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(termId, userId, invoicingParams));
 	}
 
 	private void enqueueInTrx(
 			@NonNull final FlatrateTermId termId,
-			@NonNull final UserId userId)
+			@NonNull final UserId userId,
+			@NonNull final InvoicingParams invoicingParams)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Flatrate_Term.Table_Name, termId);
 		
@@ -65,6 +71,7 @@ public class FinalInvoiceEnqueuer
 				.newWorkPackage()
 				// ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
+				.parameters(invoicingParams.toMap())
 				.addElement(tableRecordReference)
 				.setUserInChargeId(userId)
 				.buildAndEnqueue();

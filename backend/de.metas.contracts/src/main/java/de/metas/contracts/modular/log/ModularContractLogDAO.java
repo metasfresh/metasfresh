@@ -51,6 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -292,9 +293,9 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, query.getContractType().getCode());
 		}
 
-		if (query.getEntryId() != null)
+		if (!Check.isEmpty(query.getEntryIds()))
 		{
-			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.getEntryId());
+			sqlQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.getEntryIds());
 		}
 
 		if (query.getFlatrateTermId() != null)

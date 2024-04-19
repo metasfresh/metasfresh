@@ -23,6 +23,7 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.Check;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import lombok.NonNull;
@@ -50,5 +51,18 @@ public class ModularContractComputingMethodHandlerRegistry
 		return handlers.stream()
 				.filter(handler -> handler.applies(recordRef, contractType))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public IComputingMethodHandler getApplicableHandlerFor(@NonNull final ComputingMethodType computingMethodType)
+	{
+		final ImmutableList<IComputingMethodHandler> computingMethodHandlers = handlers.stream()
+				.filter(handler -> handler.getComputingMethodType() == computingMethodType)
+				.collect(ImmutableList.toImmutableList());
+
+		Check.assumeNotEmpty(computingMethodHandlers, "No computing method found for type {} !", computingMethodType.getCode());
+		Check.assume(computingMethodHandlers.size() == 1, "Only one computing method with type {} shall exist!", computingMethodType.getCode());
+
+		return computingMethodHandlers.get(0);
 	}
 }

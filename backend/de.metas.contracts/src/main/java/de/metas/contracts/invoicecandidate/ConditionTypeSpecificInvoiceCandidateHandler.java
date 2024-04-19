@@ -12,10 +12,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -164,7 +164,9 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	@NonNull CandidatesAutoCreateMode isMissingInvoiceCandidate(@NonNull I_C_Flatrate_Term flatrateTerm);
 
-	default List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
+	default List<I_C_Invoice_Candidate> createInvoiceCandidates(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final LockOwner lockOwner)
 	{
 		return Collections.singletonList(HandlerTools.createIcAndSetCommonFields(term));
 	}

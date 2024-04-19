@@ -28,10 +28,13 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
@@ -39,7 +42,6 @@ public class ModularContractLogQuery
 {
 	@Nullable TableRecordReferenceSet referenceSet;
 	@Nullable LogEntryContractType contractType;
-	@Nullable ModularContractLogEntryId entryId;
 	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable ModularContractTypeId modularContractTypeId;
 	@Nullable Boolean processed;
@@ -47,4 +49,13 @@ public class ModularContractLogQuery
 	@Nullable ComputingMethodType computingMethodType;
 	@Nullable InvoiceCandidateId invoiceCandidateId;
 	@Nullable LockOwner lockOwner;
+	@Nullable @Singular Set<ModularContractLogEntryId> entryIds;
+	
+	@NonNull
+	public static ModularContractLogQuery ofEntryIds(@NonNull final Set<ModularContractLogEntryId> entryIds)
+	{
+		return ModularContractLogQuery.builder()
+				.entryIds(entryIds)
+				.build();
+	}
 }

@@ -26,6 +26,8 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.common.util.Check;
 import de.metas.invoicecandidate.api.CreateInvoiceForModelService;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
@@ -43,8 +45,14 @@ public class FinalInvoiceWorkPackageProcessor extends WorkpackageProcessorAdapte
 
 		Check.assume(modularContracts.size() == 1, "Only one contract can be enqueued per workpackage !");
 
-		createInvoiceForModelService.generateIcsAndInvoices(modularContracts);
+		createInvoiceForModelService.generateIcsAndInvoices(modularContracts, getInvoicingParams());
 
 		return Result.SUCCESS;
+	}
+
+	@NonNull
+	private InvoicingParams getInvoicingParams()
+	{
+		return InvoicingParams.ofParams(getParameters());
 	}
 }

@@ -30,6 +30,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -70,7 +71,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 		final UserId userInChargeId = getUserId();
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = getSelectedModularContractIds();
 
-		finalInvoiceEnqueuer.enqueueNow(selectedModularContractIds, userInChargeId);
+		finalInvoiceEnqueuer.enqueueNow(selectedModularContractIds, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
 	}
@@ -83,5 +84,11 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
+	}
+
+	@NonNull
+	private InvoicingParams getInvoicingParams()
+	{
+		return InvoicingParams.ofParams(getParameterAsIParams());
 	}
 }
