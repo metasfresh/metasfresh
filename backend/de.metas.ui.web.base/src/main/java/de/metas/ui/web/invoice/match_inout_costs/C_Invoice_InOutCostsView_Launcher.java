@@ -1,8 +1,8 @@
 package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
@@ -53,12 +53,12 @@ public class C_Invoice_InOutCostsView_Launcher extends JavaProcess implements IP
 	protected String doIt()
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
-		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(invoiceId, getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
+		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceId, getSingleSelectedIncludedRecordIds(I_C_InvoiceLine.class));
 
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final SOTrx soTrx = SOTrx.ofBoolean(invoice.isSOTrx());
 
-		final IView view = viewsRepo.createView(inOutCostsViewFactory.createViewRequest(soTrx, invoiceLineId));
+		final IView view = viewsRepo.createView(inOutCostsViewFactory.createViewRequest(soTrx, invoiceAndLineId));
 		final ViewId viewId = view.getViewId();
 
 		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()

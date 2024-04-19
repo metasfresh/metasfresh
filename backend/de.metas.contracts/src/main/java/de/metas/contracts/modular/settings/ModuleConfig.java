@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -45,14 +45,8 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
-	public boolean isMatchingHandler(@NonNull final ModularContractHandlerType handlerType)
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
-		return modularContractType.isMatchingHandler(handlerType);
-	}
-
-	public boolean isInterimInvoiceHandler()
-	{
-		//FIXME adi consider introducing a flag on ModCntr_Type or even hardcoded in whatever replaces de.metas.contracts.modular.ModularContractHandlerType
-		return name.toLowerCase().contains("interim");
+		return modularContractType.isMatching(computingMethodType);
 	}
 }

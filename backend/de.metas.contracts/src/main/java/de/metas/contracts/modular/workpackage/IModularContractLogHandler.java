@@ -24,104 +24,65 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
-import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
-public interface IModularContractLogHandler<T>
+public interface IModularContractLogHandler
 {
-	LogAction getLogAction(@NonNull HandleLogsRequest<T> request);
-
-	BooleanWithReason doesRecordStateRequireLogCreation(@NonNull T model);
+	default boolean applies(@NonNull final CreateLogRequest ignoredRequest) {return true;}
 
 	@NonNull
-	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest<T> createLogRequest);
+	String getSupportedTableName();
 
 	@NonNull
-	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest<T> handleLogsRequest);
+	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
 
 	@NonNull
-	IModularContractTypeHandler<T> getModularContractTypeHandler();
+	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest createLogRequest);
 
 	@NonNull
-	default Optional<ProductId> getProductId(@NonNull final HandleLogsRequest<T> handleLogsRequest)
-	{
-		return Optional.ofNullable(handleLogsRequest.getContractInfo().getProductId());
-	}
-
-	default boolean applies(@NonNull final HandleLogsRequest<T> request)
-	{
-		final IModularContractTypeHandler<T> contractTypeHandler = getModularContractTypeHandler();
-
-		final boolean isHandlerMatchingRequest = contractTypeHandler.getClass().getName().equals(request.getHandlerClassname())
-				&& contractTypeHandler.applies(request.getLogEntryContractType())
-				&& contractTypeHandler.applies(request.getModel());
-
-		if (!isHandlerMatchingRequest)
-		{
-			return false;
-		}
-
-		final boolean isHandlerMatchingContract = getModularContractTypeHandler()
-				.streamContractIds(request.getModel())
-				.anyMatch(contractId -> contractId.equals(request.getContractId()));
-
-		if (!isHandlerMatchingContract)
-		{
-			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
-		}
-
-		return isHandlerMatchingContract;
-	}
+	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest handleLogsRequest);
 
 	@NonNull
-	default Class<T> getType()
-	{
-		return getModularContractTypeHandler().getType();
-	}
+	IComputingMethodHandler getComputingMethod();
 
 	@NonNull
-	default LogEntryDeleteRequest getDeleteRequestFor(@NonNull final HandleLogsRequest<T> handleLogsRequest)
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(handleLogsRequest.getModelRef())
+				.referencedModel(handleLogsRequest.getTableRecordReference())
 				.flatrateTermId(handleLogsRequest.getContractId())
-				.logEntryContractType(handleLogsRequest.getLogEntryContractType())
+				.logEntryContractType(getLogEntryContractType())
 				.build();
 	}
 
 	@Value
 	@Builder
-	class HandleLogsRequest<T>
+	class HandleLogsRequest
 	{
-		@NonNull T model;
+		@NonNull TableRecordReference tableRecordReference;
 		@NonNull LogEntryContractType logEntryContractType;
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
-		@NonNull String handlerClassname;
+		@NonNull ComputingMethodType computingMethodType;
 		@NonNull FlatrateTermInfo contractInfo;
-
-		public TableRecordReference getModelRef()
-		{
-			return TableRecordReference.of(model);
-		}
 
 		@NonNull
 		public FlatrateTermId getContractId()
@@ -132,25 +93,28 @@ public interface IModularContractLogHandler<T>
 
 	@Value
 	@Builder
-	class CreateLogRequest<T>
+	class CreateLogRequest
 	{
-		@NonNull HandleLogsRequest<T> handleLogsRequest;
+		@NonNull HandleLogsRequest handleLogsRequest;
 		@NonNull ModularContractSettings modularContractSettings;
 		@NonNull String productName;
-		@NonNull ModuleConfigAndSettingsId configId;
+		@NonNull ModuleConfig moduleConfig;
 		@NonNull ModularContractTypeId typeId;
 
-		public FlatrateTermId getContractId()
+		public @NonNull FlatrateTermId getContractId()
 		{
 			return handleLogsRequest.getContractId();
 		}
-	}
 
-	enum LogAction
-	{
-		CREATE,
-		REVERSE,
-		RECOMPUTE
+		public @NonNull TableRecordReference getRecordRef()
+		{
+			return handleLogsRequest.getTableRecordReference();
+		}
+
+		public @NonNull ModuleConfigAndSettingsId getConfigId()
+		{
+			return moduleConfig.getId();
+		}
 	}
 
 	@Value

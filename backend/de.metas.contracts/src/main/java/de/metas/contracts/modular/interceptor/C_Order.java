@@ -22,15 +22,22 @@
 
 package de.metas.contracts.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -40,7 +47,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.REACTIVATED;
@@ -55,28 +65,23 @@ import static de.metas.contracts.modular.ModelAction.VOIDED;
  */
 @Component
 @Interceptor(I_C_Order.class)
+@RequiredArgsConstructor
 public class C_Order
 {
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
-
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed_PurchaseOrder");
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	private final ModularContractService contractService;
-	private final ModularContractLogDAO contractLogDAO;
-
-	public C_Order(
-			@NonNull final ModularContractService contractService,
-			@NonNull final ModularContractLogDAO contractLogDAO)
-	{
-		this.contractService = contractService;
-		this.contractLogDAO = contractLogDAO;
-	}
+	@NonNull private final ModularContractService contractService;
+	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void afterComplete(@NonNull final I_C_Order orderRecord)
 	{
+		createModularContractIfRequired(orderRecord);
 		invokeHandlerForEachLine(orderRecord, COMPLETED);
 	}
 
@@ -127,7 +132,64 @@ public class C_Order
 			@NonNull final ModelAction modelAction)
 	{
 		orderDAO.retrieveOrderLines(orderRecord)
-				.forEach(line -> contractService.invokeWithModel(line, modelAction, LogEntryContractType.MODULAR_CONTRACT));
+				.forEach(line -> contractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(modelAction)
+								.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+				);
+	}
+
+	private void createModularContractIfRequired(final @NonNull I_C_Order orderRecord)
+	{
+		orderDAO.retrieveOrderLines(orderRecord)
+				.forEach(this::createModularContractIfRequiredForEachLine);
+	}
+
+	private void createModularContractIfRequiredForEachLine(final @NonNull I_C_OrderLine orderLine)
+	{
+		if (!isModularContractLine(orderLine))
+		{
+			return;
+		}
+
+		if (flatrateBL.existsTermForOrderLine(orderLine))
+		{
+			return;
+		}
+
+		final ConditionsId conditionsId = ConditionsId.ofRepoId(orderLine.getC_Flatrate_Conditions_ID());
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsIdOrNull(conditionsId);
+		if (settings == null)
+		{
+			return;
+		}
+
+		validateContractSettingEligible(settings, conditionsId);
+
+		final I_C_Flatrate_Term modularContract = flatrateBL.createContractForOrderLine(orderLine);
+		flatrateBL.complete(modularContract);
+	}
+
+	private boolean isModularContractLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
+				.map(flatrateBL::isModularContract)
+				.orElse(false);
+	}
+
+	private void validateContractSettingEligible(@NonNull final ModularContractSettings settings, @NonNull final ConditionsId conditionsId)
+	{
+		if (settings.getModuleConfigs().isEmpty())
+		{
+			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
+					.appendParametersToMessage()
+					.setParameter("ConditionsId", conditionsId)
+					.setParameter("SettingsId", settings.getId())
+					.markAsUserValidationError();
+		}
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })

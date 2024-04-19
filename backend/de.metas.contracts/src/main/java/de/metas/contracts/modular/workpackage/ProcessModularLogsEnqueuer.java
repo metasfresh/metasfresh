@@ -30,7 +30,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.IModularContractTypeHandler;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
@@ -44,7 +44,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -66,31 +65,17 @@ public class ProcessModularLogsEnqueuer
 	@NonNull
 	private final ModularLogCreateStatusService createStatusService;
 
-	public void enqueueAfterCommit(
-			@NonNull final IModularContractTypeHandler<?> handler,
-			@NonNull final TableRecordReference recordReference,
-			@NonNull final ModelAction action,
-			@NonNull final FlatrateTermId flatrateTermId,
-			@NonNull final LogEntryContractType logEntryContractType)
+	public void enqueueAfterCommit(@NonNull final ProcessModularLogsEnqueuer.EnqueueRequest request)
 	{
 		trxManager.accumulateAndProcessAfterCommit(
 				ProcessModularLogsEnqueuer.class.getSimpleName(),
-				ImmutableList.of(
-						EnqueueRequest.builder()
-								.recordReference(recordReference)
-								.action(action)
-								.logEntryContractType(logEntryContractType)
-								.userInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
-								.flatrateTermId(flatrateTermId)
-								.handlerClassname(handler.getClass().getName())
-								.build()
-				),
+				ImmutableList.of(request),
 				this::enqueueAllNow);
 	}
 
 	private void enqueueAllNow(@NonNull final List<EnqueueRequest> requests)
 	{
-		//dev-note: a new transaction is needed as the work packages are enqueued after the next commit
+		//dev-note: a new transaction is needed as the work packages are enqueued after the next commit,
 		// and we are already passed that point in the current trx
 		trxManager.runInNewTrx(() -> enqueueAllInNewTrx(requests));
 	}
@@ -132,29 +117,29 @@ public class ProcessModularLogsEnqueuer
 	}
 
 	@Builder
-	private record EnqueueRequest(
+	public record EnqueueRequest(
 			@NonNull TableRecordReference recordReference,
 			@NonNull ModelAction action,
 			@NonNull LogEntryContractType logEntryContractType,
 			@NonNull FlatrateTermId flatrateTermId,
-			@NonNull String handlerClassname,
+			@NonNull ComputingMethodType computingMethodType,
 			@Nullable UserId userInChargeId)
 	{
 	}
 
 	@NonNull
-	private static ProcessModularLogAggRequest buildProcessModularLogAggRequest(@NonNull final List<EnqueueRequest> enqueueRequestList)
+	private static ProcessModularLogRequestList buildProcessModularLogAggRequest(@NonNull final List<EnqueueRequest> enqueueRequestList)
 	{
-		return ProcessModularLogAggRequest.builder()
-				.requestList(enqueueRequestList.stream()
-									 .map(request -> ProcessModularLogAggRequest.ProcessRequest.builder()
-											 .logEntryContractType(request.logEntryContractType())
-											 .flatrateTermId(request.flatrateTermId())
-											 .handlerClassname(request.handlerClassname())
-											 .recordReference(request.recordReference())
-											 .action(request.action())
-											 .build())
-									 .collect(ImmutableList.toImmutableList()))
+		return ProcessModularLogRequestList.builder()
+				.requests(enqueueRequestList.stream()
+						.map(request -> ProcessModularLogRequest.builder()
+								.logEntryContractType(request.logEntryContractType())
+								.flatrateTermId(request.flatrateTermId())
+								.computingMethodType(request.computingMethodType())
+								.recordReference(request.recordReference())
+								.action(request.action())
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 }

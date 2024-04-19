@@ -36,6 +36,7 @@ import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.DocStatus;
 import de.metas.forex.ForexContractId;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -166,6 +167,8 @@ public interface IInvoiceBL extends ISingletonService
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
 

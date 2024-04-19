@@ -28,8 +28,8 @@ import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -120,14 +120,14 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	@Override
 	protected InvoiceAccountProviderExtension createAccountProviderExtension()
 	{
-		final InvoiceLineId invoiceLineId = getInvoiceLineId();
-		return getDoc().createInvoiceAccountProviderExtension(invoiceLineId);
+		final InvoiceAndLineId invoiceAndLineId = getInvoiceAndLineId();
+		return getDoc().createInvoiceAccountProviderExtension(invoiceAndLineId);
 	}
 
-	public InvoiceLineId getInvoiceLineId()
+	public InvoiceAndLineId getInvoiceAndLineId()
 	{
 		final InvoiceId invoiceId = getDoc().getInvoiceId();
-		return InvoiceLineId.ofRepoId(invoiceId, get_ID());
+		return InvoiceAndLineId.ofRepoId(invoiceId, get_ID());
 	}
 
 	public final I_C_InvoiceLine getC_InvoiceLine()
@@ -266,7 +266,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	{
 		if (_costAmountMatched == null)
 		{
-			this._costAmountMatched = matchInvoiceService.getCostAmountMatched(getInvoiceLineId())
+			this._costAmountMatched = matchInvoiceService.getCostAmountMatched(getInvoiceAndLineId())
 					.orElseGet(() -> Money.zero(getCurrencyId()));
 		}
 		return _costAmountMatched;

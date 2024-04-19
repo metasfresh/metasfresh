@@ -25,7 +25,6 @@ package de.metas.contracts.modular.workpackage.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
-import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -36,7 +35,6 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
@@ -46,8 +44,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.shippingnotification.ShippingNotification;
 import de.metas.shippingnotification.ShippingNotificationId;
+import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
@@ -55,7 +53,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -65,49 +62,30 @@ import java.time.ZoneId;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
-public abstract class AbstractShippingNotificationLogHandler implements IModularContractLogHandler<I_M_Shipping_NotificationLine>
+public abstract class AbstractShippingNotificationLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnReverse.Description");
 
-	private final ShippingNotificationService notificationService;
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ShippingNotificationService notificationService;
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModularContractLogDAO contractLogDAO;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
-	public LogAction getLogAction(@NonNull final HandleLogsRequest<I_M_Shipping_NotificationLine> request)
+	public @NonNull String getSupportedTableName()
 	{
-		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				};
+		return I_M_Shipping_NotificationLine.Table_Name;
 	}
 
 	@Override
-	public BooleanWithReason doesRecordStateRequireLogCreation(@NonNull final I_M_Shipping_NotificationLine model)
+	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final ShippingNotification shippingNotification = notificationService
-				.getById(ShippingNotificationId.ofRepoId(model.getM_Shipping_Notification_ID()));
-
-		if (shippingNotification.getDocStatus().isCompletedOrClosed())
-		{
-			return BooleanWithReason.TRUE;
-		}
-
-		return BooleanWithReason.falseBecause("The M_Shipping_Notification.DocStatus is " + shippingNotification.getDocStatus());
-	}
-
-	@Override
-	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest<I_M_Shipping_NotificationLine> createLogRequest)
-	{
-		final I_M_Shipping_NotificationLine notificationLine = createLogRequest.getHandleLogsRequest().getModel();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 		final I_M_Shipping_Notification notification = notificationService.getRecordById(ShippingNotificationId.ofRepoId(notificationLine.getM_Shipping_Notification_ID()));
 
 		final NotificationAndLineWrapper wrapper = new NotificationAndLineWrapper(notification, notificationLine);
@@ -131,7 +109,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
 											.documentType(LogEntryDocumentType.SHIPPING_NOTIFICATION)
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractType(getLogEntryContractType())
 											.soTrx(getSOTrx())
 											.processed(false)
 											.quantity(quantity)
@@ -145,9 +123,10 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest<I_M_Shipping_NotificationLine> handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final I_M_Shipping_NotificationLine notificationLine = handleLogsRequest.getModel();
+		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final TableRecordReference notificationLineRef = TableRecordReference.of(notificationLine);
 
