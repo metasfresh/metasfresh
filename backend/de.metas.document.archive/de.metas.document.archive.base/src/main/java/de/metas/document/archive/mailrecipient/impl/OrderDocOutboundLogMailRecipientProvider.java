@@ -38,6 +38,7 @@ import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
@@ -87,6 +88,9 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 		final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final I_C_BPartner bpartnerPO =  bpartnerBL.getById(bpartnerId);
+
 		final int orderUserRecordId = orderRecord.getAD_User_ID();
 		if (orderUserRecordId > 0)
 		{
@@ -107,20 +111,34 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			{
 				return Optional.of(orderUser.withEmailAddress(locationEmail));
 			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(orderUser.withEmailAddress(bpartnerPO.getEMail()));
+			}
 		}
 
 		final int billingUserRecordId = orderRecord.getBill_User_ID();
 		if (billingUserRecordId > 0)
 		{
 			final DocOutBoundRecipient orderBillingUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billingUserRecordId));
+
+			if (Check.isNotBlank(orderEmail))
+			{
+				return Optional.of(orderBillingUser.withEmailAddress(orderEmail));
+			}
+
 			if (!Check.isBlank(orderBillingUser.getEmailAddress()))
 			{
 				return Optional.of(orderBillingUser);
 			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(orderBillingUser.withEmailAddress(bpartnerPO.getEMail()));
+			}
 		}
 
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 
 		final User billContact = bpartnerBL.retrieveContactOrNull(
 				IBPartnerBL.RetrieveContactRequest
@@ -149,6 +167,11 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
+			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(bpartnerPO.getEMail()));
 			}
 		}
 
