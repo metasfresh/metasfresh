@@ -74,12 +74,9 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 	@Override
 	public void configure()
 	{
-		final String purchaseOrderFileEndpointURI = fileEndpointConfig.getPurchaseOrderFileEndpoint();
-		final FileEndpoint fileEndpoint = getContext().getEndpoint(purchaseOrderFileEndpointURI, FileEndpoint.class);
-		fileEndpoint.setProcessStrategy(new GetPurchaseOrderFromFileProcessStrategy(fileEndpointConfig, pInstanceLogger));
-
 		//@formatter:off
-		from(fileEndpoint)
+		from(fileEndpointConfig.getPurchaseOrderFileEndpoint())
+				.routePolicy(new StallWhileMasterdataFilesExistPolicy(fileEndpointConfig, pInstanceLogger))
 				.id(routeId)
 				.streamCaching()
 				.log("Purchase Order Sync Route Started with Id=" + routeId)
