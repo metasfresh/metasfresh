@@ -30,7 +30,7 @@ import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -221,7 +221,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.modularContractHandlerType(ModularContractHandlerType.MATERIAL_RECEIPT_LINE_INTERIM)
+				.computingMethodType(ComputingMethodType.INTERIM_CONTRACT)
 				.contractType(LogEntryContractType.INTERIM)
 				.processed(true)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))

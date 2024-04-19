@@ -35,7 +35,7 @@ import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarch
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -247,7 +247,7 @@ class CommissionInstanceRepositoryTest
 	@Test
 	void getByDocumentId_InvoiceLineId()
 	{
-		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(10, 15);
+		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(10, 15);
 
 		final ConfigData configData = TestCommissionConfig.builder()
 				.orgId(orgId)
@@ -264,7 +264,7 @@ class CommissionInstanceRepositoryTest
 
 		TestCommissionInstance.builder()
 				.orgId(orgId)
-				.invoiceLineId(invoiceLineId)
+				.invoiceAndLineId(invoiceAndLineId)
 				.pointsBase_Forecasted("0")
 				.pointsBase_Invoiceable("0")
 				.pointsBase_Invoiced("100")
@@ -285,7 +285,7 @@ class CommissionInstanceRepositoryTest
 				.createCommissionData();
 
 		// invoke the method under test
-		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceLineId));
+		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceAndLineId));
 
 		assertThat(result).isPresent();
 		expect.serializer("orderedJson").toMatchSnapshot(result.get());

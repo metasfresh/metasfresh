@@ -156,7 +156,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				//									//							.netWeightInKg()
 				//									//							.customsValue()
 				//									//							.invoiceId()
-				//									//							.invoiceLineId()
+				//									//							.invoiceAndLineId()
 				//									.build())
 				//							.internationalDelivery(true)
 				//							.build();

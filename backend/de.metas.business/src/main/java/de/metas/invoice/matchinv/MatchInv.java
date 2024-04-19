@@ -2,8 +2,8 @@ package de.metas.invoice.matchinv;
 
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -32,7 +32,7 @@ public class MatchInv
 {
 	@NonNull MatchInvId id;
 
-	@NonNull InvoiceLineId invoiceLineId;
+	@NonNull InvoiceAndLineId invoiceAndLineId;
 	@NonNull InOutAndLineId inoutLineId;
 
 	@NonNull ClientAndOrgId clientAndOrgId;
@@ -54,7 +54,7 @@ public class MatchInv
 	@Builder
 	private MatchInv(
 			@NonNull final MatchInvId id,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final InOutAndLineId inoutLineId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final SOTrx soTrx,
@@ -69,7 +69,7 @@ public class MatchInv
 			@Nullable final MatchInvCostPart costPart)
 	{
 		this.id = id;
-		this.invoiceLineId = invoiceLineId;
+		this.invoiceAndLineId = invoiceAndLineId;
 		this.inoutLineId = inoutLineId;
 		this.clientAndOrgId = clientAndOrgId;
 		this.soTrx = soTrx;
@@ -92,7 +92,7 @@ public class MatchInv
 		}
 	}
 
-	public InvoiceId getInvoiceId() {return invoiceLineId.getInvoiceId();}
+	public InvoiceId getInvoiceId() {return invoiceAndLineId.getInvoiceId();}
 
 	public InOutId getInOutId() {return inoutLineId.getInOutId();}
 

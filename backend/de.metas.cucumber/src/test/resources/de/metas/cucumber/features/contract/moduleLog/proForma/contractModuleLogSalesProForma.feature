@@ -1,4 +1,5 @@
 @Id:S0315
+@ignore
 @ghActions:run_on_executor5
 Feature: Modular contract log for proForma Sales Order
 

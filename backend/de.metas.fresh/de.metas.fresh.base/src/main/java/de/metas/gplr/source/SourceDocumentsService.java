@@ -47,8 +47,8 @@ import de.metas.inout.location.adapter.DocumentDeliveryLocationAdapter;
 import de.metas.inout.location.adapter.DocumentLocationAdapter;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.impl.InvoiceDAO;
 import de.metas.lang.SOTrx;
@@ -191,7 +191,7 @@ public class SourceDocumentsService
 		final List<I_C_Order> purchaseOrders = orderBL.getPurchaseOrdersBySalesOrderId(salesOrderId)
 				.stream()
 				.filter(purchaseOrder -> DocStatus.ofNullableCodeOrUnknown(purchaseOrder.getDocStatus()).isCompleted())
-				.collect(Collectors.toList());
+				.toList();
 		final Set<OrderId> purchaseOrderIds = purchaseOrders.stream()
 				.map(purchaseOrder -> OrderId.ofRepoId(purchaseOrder.getC_Order_ID()))
 				.collect(ImmutableSet.toImmutableSet());
@@ -437,7 +437,7 @@ public class SourceDocumentsService
 	private SourceInvoiceLine toSourceInvoiceLine(final I_C_InvoiceLine invoiceLine, final CurrencyCode currencyCode)
 	{
 		return SourceInvoiceLine.builder()
-				.id(InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
+				.id(InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID()))
 				.priceFC(Amount.of(invoiceLine.getPriceActual(), currencyCode))
 				.lineNetAmtFC(Amount.of(invoiceLine.getLineNetAmt(), currencyCode))
 				.taxAmtFC(Amount.of(invoiceLine.getTaxAmtInfo(), currencyCode))

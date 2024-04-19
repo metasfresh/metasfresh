@@ -23,10 +23,8 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.ModularContractHandlerType;
-import de.metas.cucumber.stepdefs.AD_JavaClass_StepDefData;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -64,7 +62,7 @@ public class ModCntr_Type_StepDef
 	{
 		final String value = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Value);
 		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_Name);
-		final ModularContractHandlerType handlerType = ModularContractHandlerType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
+		final ComputingMethodType handlerType = ComputingMethodType.ofCode(DataTableUtil.extractStringForColumnName(tableRow, I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType));
 
 		final I_ModCntr_Type modCntrTypeRecord = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.addOnlyActiveRecordsFilter()

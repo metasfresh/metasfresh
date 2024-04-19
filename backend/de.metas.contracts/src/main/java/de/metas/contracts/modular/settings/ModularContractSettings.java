@@ -22,9 +22,8 @@
 
 package de.metas.contracts.modular.settings;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.contracts.modular.ModularContractHandlerType;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -36,7 +35,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 
 @Value
 @Builder
@@ -74,31 +72,19 @@ public class ModularContractSettings
 	@NonNull
 	SOTrx soTrx;
 
-	public List<ModuleConfig> getModularContractConfigs()
-	{
-		return getModuleConfigs()
-				.stream()
-				.filter(moduleConfig -> !moduleConfig.isInterimInvoiceHandler())
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	public List<ModuleConfig> getInterimInvoiceConfigs()
-	{
-		return getModuleConfigs()
-				.stream()
-				.filter(ModuleConfig::isInterimInvoiceHandler)
-				.collect(ImmutableList.toImmutableList());
-	}
-
 	@NonNull
-	public Optional<ModuleConfig> getModuleConfig(
-			@NonNull final ModularContractHandlerType handlerType,
-			@NonNull final ProductId productId)
+	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleConfigs()
 				.stream()
-				.filter(config -> config.getProductId().equals(productId))
-				.filter(config -> config.isMatchingHandler(handlerType))
-				.findFirst();
+				.filter(config -> config.isMatching(computingMethodType))
+				.toList();
+	}
+
+	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	{
+		return moduleConfigs
+				.stream()
+				.anyMatch(config -> config.isMatching(computingMethodType));
 	}
 }
