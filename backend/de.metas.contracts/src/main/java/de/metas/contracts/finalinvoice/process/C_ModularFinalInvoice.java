@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.finalinvoice.workpackage.FinalInvoiceEnqueuer;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
@@ -80,7 +80,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	private ImmutableSet<FlatrateTermId> getSelectedModularContractIds()
 	{
 		return retrieveActiveSelectedRecordsQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
