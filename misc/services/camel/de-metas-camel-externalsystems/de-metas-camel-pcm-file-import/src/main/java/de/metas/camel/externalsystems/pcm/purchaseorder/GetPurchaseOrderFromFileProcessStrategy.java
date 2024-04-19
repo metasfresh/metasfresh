@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +45,7 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.EnumSet;
 
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_FOUND_MASTER_DATA_FILE;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_FOUND_MASTER_DATA_FILENAME;
@@ -77,7 +79,8 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 		try
 		{ // we could have the following with less lines, but IMO this way it's easier to debug
 			final Path rootLocation = Paths.get(fileEndpointConfig.getRootLocation());
-			Files.walkFileTree(rootLocation, new SimpleFileVisitor<>()
+			final EnumSet<FileVisitOption> options = EnumSet.noneOf(FileVisitOption.class);
+			final SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<>()
 			{
 				@Override
 				public FileVisitResult visitFile(@NonNull final Path currentFile, final BasicFileAttributes attrs)
@@ -100,7 +103,8 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 
 					return FileVisitResult.CONTINUE;
 				}
-			});
+			};
+			Files.walkFileTree(rootLocation, options, 0, visitor);
 
 			final Path masterDataFile = exchange.getProperty(PROPERTY_FOUND_MASTER_DATA_FILENAME, Path.class);
 			final boolean atLEastOneFileFound = masterDataFile != null;
