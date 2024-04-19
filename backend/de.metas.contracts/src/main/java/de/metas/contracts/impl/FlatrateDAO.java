@@ -1267,14 +1267,26 @@ public class FlatrateDAO implements IFlatrateDAO
 				.stream();
 	}
 
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	{
+		return createModularContractQuery(queryBuilder)
+				.listIds(FlatrateTermId::ofRepoId);
+	}
+
 	@Override
 	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.filter(filter)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, X_C_Flatrate_Term.TYPE_CONDITIONS_ModularContract)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.create()
+		return createModularContractQuery(getFlatrateTermQueryBuilder(filter))
 				.anyMatch();
+	}
+
+	@NonNull
+	private IQuery<I_C_Flatrate_Term> createModularContractQuery(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	{
+		return queryBuilder
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.create();
 	}
 }

@@ -26,9 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.finalinvoice.workpackage.FinalInvoiceEnqueuer;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.process.IProcessPrecondition;
@@ -69,21 +67,12 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	protected String doIt() throws Exception
 	{
 		final UserId userInChargeId = getUserId();
-		final ImmutableSet<FlatrateTermId> selectedModularContractIds = getSelectedModularContractIds();
+		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
+				.getModularContractIds(retrieveActiveSelectedRecordsQueryBuilder(I_C_Flatrate_Term.class));
 
 		finalInvoiceEnqueuer.enqueueNow(selectedModularContractIds, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
-	}
-
-	@NonNull
-	private ImmutableSet<FlatrateTermId> getSelectedModularContractIds()
-	{
-		return retrieveActiveSelectedRecordsQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TypeConditions.MODULAR_CONTRACT.getCode())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, DocStatus.Completed)
-				.create()
-				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull

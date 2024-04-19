@@ -28,25 +28,18 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 @Value
 @Builder
 public class ModularContractType
 {
 	@NonNull ModularContractTypeId id;
-	@Nullable ComputingMethodType computingMethodType;
+	@NonNull ComputingMethodType computingMethodType;
 	@Nullable String value;
 	@Nullable String name;
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return this.computingMethodType == computingMethodType;
-	}
-	
-	@NonNull
-	public Optional<ComputingMethodType> getComputingMethodType()
-	{
-		return Optional.ofNullable(computingMethodType);
 	}
 }

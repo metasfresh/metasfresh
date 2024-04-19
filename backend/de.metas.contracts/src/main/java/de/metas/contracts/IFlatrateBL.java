@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermRequest.FlatrateTermBillPartnerRequest;
@@ -45,6 +46,7 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -277,4 +279,7 @@ public interface IFlatrateBL extends ISingletonService
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 
 	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+
+	@NonNull
+	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryBuilder<I_C_Flatrate_Term> queryBuilder);
 }

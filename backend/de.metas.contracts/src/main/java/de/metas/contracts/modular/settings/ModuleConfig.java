@@ -55,5 +55,8 @@ public class ModuleConfig
 	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
 
 	@NonNull
-	public Optional<ComputingMethodType> getComputingMethodType() {return modularContractType.getComputingMethodType();}
+	public ComputingMethodType getComputingMethodType()
+	{
+		return modularContractType.getComputingMethodType();
+	}
 }

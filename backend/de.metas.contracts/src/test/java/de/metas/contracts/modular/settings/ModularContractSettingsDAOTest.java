@@ -100,6 +100,6 @@ class ModularContractSettingsDAOTest
 		assertThat(moduleConfig.getSeqNo().toInt()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
-		assertThat(moduleConfig.getModularContractType().getComputingMethodType()).contains(INTERIM_CONTRACT);
+		assertThat(moduleConfig.getComputingMethodType()).isEqualTo(INTERIM_CONTRACT);
 	}
 }

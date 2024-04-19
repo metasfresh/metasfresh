@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
-import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
@@ -57,6 +56,7 @@ import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -92,6 +92,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private	final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
@@ -253,15 +254,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID());
 		final ModuleConfig moduleConfig = createInvoiceCandidateRequest.getModuleConfig();
 
-		final ComputingMethodType computingMethodType = moduleConfig.getComputingMethodType()
-				.orElseThrow(() -> new AdempiereException("No Computing Method Type found for ModuleConfig !")
-						.appendParametersToMessage()
-						.setParameter("ModuleConfigId", moduleConfig.getId().getRepoId()));
-
 		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
 				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
 						.appendParametersToMessage()
 						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+
+		final ComputingMethodType computingMethodType = moduleConfig.getComputingMethodType();
 
 		final IComputingMethodHandler computingMethodHandler = modularContractComputingMethods.getApplicableHandlerFor(computingMethodType);
 		final ComputingRequest request = ComputingRequest.builder()
@@ -274,7 +272,10 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		final ComputingResponse response = computingMethodHandler.compute(request);
 
+		final UomId stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
+
 		Check.assumeEquals(currencyId, response.getPrice().getCurrencyId());
+		Check.assumeEquals(stockUomId, response.getQty().getUomId());
 
 		return response;
 	}
