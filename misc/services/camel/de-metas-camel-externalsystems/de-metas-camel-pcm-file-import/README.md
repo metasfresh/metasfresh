@@ -22,7 +22,7 @@
 * `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
 * `JsonExternalSystemRequest.parameters.TaxCategoryMappings` - a Map between `C_TaxCategory.InternalName` and the rates set in the `Tax Category Mapping` sub-tab. The tax rates have to be separated by `,`.
-* `JsonExternalSystemRequest.parameters.BPartnerId`
+* `JsonExternalSystemRequest.parameters.BPartnerId` - the partner to use when upserting warehouse-locations
 
 ## **Pro Care Management => metasfresh product**
 
@@ -152,7 +152,12 @@ Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
 First, the local file consumer must be configured using `ExternalSystem_Config_ProCareManagement_LocalFile` and started by invoking the `ProCareManagement-startPurchaseOrderSyncLocalFile` dedicated route. In order to stop the consumer, the `ProCareManagement-stopPurchaseOrderSyncLocalFile` route must be invoked.
 
-In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+- 💡 In order to update the consumer configuration, you have to first stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+- 💡 Purchase-Candidate files are only processed if there are no masterdata files in the root folder.
+In other words: if the root folder contains files with match any of `ProductFileNamePattern`, `PartnerFileNamePattern` or `WarehouseFileNamePattern`, then the files matched by `PurchaseOrderFileNamePattern` are ignored.
+- 💡 After a CSV-file is processed, the created purchase candidates are processed, i.e. purchase orders are created, **unless**
+  - if a CSV-row could not be processed into a purchase order candidate, then the rows with the same `externalHeaderId` are **not** processed. If the `externalHeaderId` can'T be parsed from the CSV-file, then none of the purchase candidate is processed.
+
 
 Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 

@@ -58,9 +58,10 @@ public class UpsertPurchaseCandidateProcessor implements Processor
 	@NonNull PInstanceLogger pInstanceLogger;
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final PurchaseOrderRow poRow = exchange.getIn().getBody(PurchaseOrderRow.class);
+		exchange.setProperty(PROPERTY_CURRENT_CSV_ROW, poRow); // needed in case of problems
 
 		final PurchaseCandidateCamelRequest poCamelRequest = mapRowToRequestItem(poRow)
 				.map(item -> JsonPurchaseCandidateCreateRequest
@@ -73,8 +74,6 @@ public class UpsertPurchaseCandidateProcessor implements Processor
 				.orElse(null);
 	
 		exchange.getIn().setBody(poCamelRequest);
-		
-		exchange.setProperty(PROPERTY_CURRENT_CSV_ROW, poRow); // needed in case of problems
 	}
 
 	@NonNull

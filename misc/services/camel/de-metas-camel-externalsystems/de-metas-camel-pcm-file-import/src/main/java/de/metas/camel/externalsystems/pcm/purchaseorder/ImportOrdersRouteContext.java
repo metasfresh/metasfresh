@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.pcm.purchaseorder;
 
 import de.metas.common.rest_api.common.JsonExternalId;
 import lombok.Data;
+import lombok.NonNull;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -32,7 +33,7 @@ import java.util.Set;
 @Data
 public class ImportOrdersRouteContext
 {
-	boolean doNotProcessAtAll = false;
+	boolean errorInUnknownRow = false;
 
 	/**
 	 * Using Linked hash set to preserve order
@@ -41,19 +42,24 @@ public class ImportOrdersRouteContext
 
 	final Set<JsonExternalId> purchaseCandidatesWithError = new HashSet<>();
 
-	void doNotProcessAtAll()
+	void errorInUnknownRow()
 	{
-		doNotProcessAtAll = true;
+		errorInUnknownRow = true;
 	}
 
-	public void addAll(final ImportOrdersRouteContext other)
+	public void addAll(@NonNull final ImportOrdersRouteContext other)
 	{
 		purchaseCandidatesToProcess.addAll(other.getPurchaseCandidatesToProcess());
 		purchaseCandidatesWithError.addAll(other.getPurchaseCandidatesWithError());
 
-		if (other.isDoNotProcessAtAll())
+		if (other.errorInUnknownRow)
 		{
-			doNotProcessAtAll = true;
+			errorInUnknownRow = true;
 		}
+	}
+
+	public boolean isDoNotProcessAtAll()
+	{
+		return errorInUnknownRow || purchaseCandidatesToProcess.isEmpty();
 	}
 }

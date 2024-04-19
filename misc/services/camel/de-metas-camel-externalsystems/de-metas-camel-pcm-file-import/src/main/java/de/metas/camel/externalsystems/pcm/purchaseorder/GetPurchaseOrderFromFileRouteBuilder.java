@@ -4,7 +4,6 @@ import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
 import de.metas.camel.externalsystems.pcm.SkipFirstLinePredicate;
 import de.metas.camel.externalsystems.pcm.config.LocalFileConfig;
@@ -15,21 +14,22 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.file.FileEndpoint;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_CURRENT_CSV_ROW;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.UPSERT_ORDER_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -85,7 +85,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 				.log("Purchase Order Sync Route Started with Id=" + routeId)
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.split(body().tokenize("\n"), new GetPurchaseOrderFromFileRouteAggregationStrategy())
-					//.streaming()
+					.streaming()
 					.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 					.filter(new SkipFirstLinePredicate())
 					.doTry()
@@ -103,7 +103,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 					.endDoTry()
 					.doCatch(Throwable.class)
 						.process(this::updateContextAfterError)
-						.to(direct(MF_ERROR_ROUTE_ID))
+						.to(direct(ERROR_WRITE_TO_ADISSUE))
 					.end()
 				.end().end() // split
 				.process(this::enqueueCandidatesProcessor)
@@ -141,9 +141,13 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 		final PurchaseOrderRow csvRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
 
-		if (csvRow == null)
+		final Exception ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		final RuntimeCamelException augmentedEx = new RuntimeCamelException("Exception processing file " + exchange.getIn().getHeader(Exchange.FILE_NAME_ONLY) + " and row '" + csvRow + "'", ex);
+		exchange.setProperty(Exchange.EXCEPTION_CAUGHT, augmentedEx);
+
+		if (csvRow == null || Check.isBlank(csvRow.getExternalHeaderId()))
 		{
-			importOrdersRouteContext.doNotProcessAtAll();
+			importOrdersRouteContext.errorInUnknownRow();
 			return;
 		}
 
@@ -154,8 +158,13 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 	private void enqueueCandidatesProcessor(@NonNull final Exchange exchange)
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext =
-				ProcessorHelper.getPropertyOrThrowError(exchange, PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
+
+		if (importOrdersRouteContext.isDoNotProcessAtAll())
+		{
+			final Object fileName = exchange.getIn().getHeader(Exchange.FILE_NAME_ONLY);
+			throw new RuntimeCamelException("No purchase order candidates from file " + fileName.toString() + " can be imported to metasfresh");
+		}
 
 		final JsonPurchaseCandidatesRequest.JsonPurchaseCandidatesRequestBuilder builder = JsonPurchaseCandidatesRequest.builder();
 
