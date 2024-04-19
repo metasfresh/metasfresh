@@ -80,50 +80,52 @@ public class StallWhileMasterdataFilesExistPolicy extends RoutePolicySupport
 		final PathMatcher warehouseFileMatcher = fileSystem.getPathMatcher("glob:" + fileEndpointConfig.getFileNamePatternWarehouse());
 		final PathMatcher productFileMatcher = fileSystem.getPathMatcher("glob:" + fileEndpointConfig.getFileNamePatternProduct());
 
-		try
-		{ // we could have the following with less lines, but IMO this way it's easier to debug
-			final Path rootLocation = Paths.get(fileEndpointConfig.getRootLocation());
-			final EnumSet<FileVisitOption> options = EnumSet.noneOf(FileVisitOption.class);
-			final Path[] existingMasterDataFile = new Path[1];
-			final SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<>()
+		final Path rootLocation = Paths.get(fileEndpointConfig.getRootLocation());
+		final EnumSet<FileVisitOption> options = EnumSet.noneOf(FileVisitOption.class);
+		final Path[] existingMasterDataFile = new Path[1];
+		final SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<>()
+		{
+			@Override
+			public FileVisitResult visitFile(@NonNull final Path currentFile, final BasicFileAttributes attrs)
 			{
-				@Override
-				public FileVisitResult visitFile(@NonNull final Path currentFile, final BasicFileAttributes attrs)
+				if (bpartnerFileMatcher.matches(currentFile.getFileName()))
 				{
-					if (bpartnerFileMatcher.matches(currentFile.getFileName()))
-					{
-						existingMasterDataFile[0] = currentFile;
-						return FileVisitResult.TERMINATE;
-					}
-					if (warehouseFileMatcher.matches(currentFile.getFileName()))
-					{
-						existingMasterDataFile[0] = currentFile;
-						return FileVisitResult.TERMINATE;
-					}
-					if (productFileMatcher.matches(currentFile.getFileName()))
-					{
-						existingMasterDataFile[0] = currentFile;
-						return FileVisitResult.TERMINATE;
-					}
-
-					return FileVisitResult.CONTINUE;
+					existingMasterDataFile[0] = currentFile;
+					return FileVisitResult.TERMINATE;
 				}
-			};
-			Files.walkFileTree(rootLocation, options, 1, visitor); // maxDepth=1 means to check the folder and it's included files
+				if (warehouseFileMatcher.matches(currentFile.getFileName()))
+				{
+					existingMasterDataFile[0] = currentFile;
+					return FileVisitResult.TERMINATE;
+				}
+				if (productFileMatcher.matches(currentFile.getFileName()))
+				{
+					existingMasterDataFile[0] = currentFile;
+					return FileVisitResult.TERMINATE;
+				}
 
-			final boolean atLEastOneFileFound = existingMasterDataFile[0] != null;
-			if (atLEastOneFileFound)
-			{
-				final String fileName = exchange.getIn().getBody(GenericFile.class).getFileName();
-				pInstanceLogger.logMessage("There is at least the masterdata file " + existingMasterDataFile[0].getFileName() + " which has to be processed first => stall the processing of orders file " + fileName + " for now");
+				return FileVisitResult.CONTINUE;
 			}
-
-			return atLEastOneFileFound;
+		};
+		
+		try
+		{
+			Files.walkFileTree(rootLocation, options, 1, visitor); // maxDepth=1 means to check the folder and its included files
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeCamelException("Caught exception while checking for existing master data files", e);
 		}
+
+		final boolean atLEastOneFileFound = existingMasterDataFile[0] != null;
+		if (atLEastOneFileFound)
+		{
+			final String fileName = exchange.getIn().getBody(GenericFile.class).getFileName();
+			pInstanceLogger.logMessage("There is at least the masterdata file " + existingMasterDataFile[0].getFileName() + " which has to be processed first => stall the processing of orders file " + fileName + " for now");
+		}
+
+		return atLEastOneFileFound;
+
 	}
 
 	@Override
