@@ -47,9 +47,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
 
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_FOUND_MASTER_DATA_FILE;
-import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_FOUND_MASTER_DATA_FILENAME;
-
 /**
  * Don't process orders files if there are master data files.
  */
@@ -63,7 +60,11 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 	PInstanceLogger pInstanceLogger;
 
 	@Override
-	public boolean begin(final GenericFileOperations operations, final GenericFileEndpoint endpoint, final Exchange exchange, final GenericFile file) throws Exception
+	public boolean begin(
+			final GenericFileOperations operations, 
+			final GenericFileEndpoint endpoint, 
+			@NonNull final Exchange exchange, 
+			@NonNull final GenericFile file) throws Exception
 	{
 		final boolean defaultResult = super.begin(operations, endpoint, exchange, file);
 		if (!defaultResult)
@@ -80,6 +81,7 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 		{ // we could have the following with less lines, but IMO this way it's easier to debug
 			final Path rootLocation = Paths.get(fileEndpointConfig.getRootLocation());
 			final EnumSet<FileVisitOption> options = EnumSet.noneOf(FileVisitOption.class);
+			final Path[] existingMasterDataFile = new Path[1];
 			final SimpleFileVisitor<Path> visitor = new SimpleFileVisitor<>()
 			{
 				@Override
@@ -87,17 +89,17 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 				{
 					if (bpartnerFileMatcher.matches(currentFile.getFileName()))
 					{
-						exchange.setProperty(PROPERTY_FOUND_MASTER_DATA_FILENAME, currentFile);
+						existingMasterDataFile[0] = currentFile;
 						return FileVisitResult.TERMINATE;
 					}
 					if (warehouseFileMatcher.matches(currentFile.getFileName()))
 					{
-						exchange.setProperty(PROPERTY_FOUND_MASTER_DATA_FILENAME, currentFile);
+						existingMasterDataFile[0] = currentFile;
 						return FileVisitResult.TERMINATE;
 					}
 					if (productFileMatcher.matches(currentFile.getFileName()))
 					{
-						exchange.setProperty(PROPERTY_FOUND_MASTER_DATA_FILENAME, currentFile);
+						existingMasterDataFile[0] = currentFile;
 						return FileVisitResult.TERMINATE;
 					}
 
@@ -106,13 +108,11 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 			};
 			Files.walkFileTree(rootLocation, options, 0, visitor);
 
-			final Path masterDataFile = exchange.getProperty(PROPERTY_FOUND_MASTER_DATA_FILENAME, Path.class);
-			final boolean atLEastOneFileFound = masterDataFile != null;
+			final boolean atLEastOneFileFound = existingMasterDataFile[0] != null;
 			if (atLEastOneFileFound)
 			{
-				pInstanceLogger.logMessage("There is at least the masterdata file " + masterDataFile.getFileName() + " which has to be processed first => ignoring orders file " + file.getFileName() + " for now");
-
-				exchange.setProperty(PROPERTY_FOUND_MASTER_DATA_FILE, atLEastOneFileFound);
+				pInstanceLogger.logMessage("There is at least the masterdata file " + existingMasterDataFile[0].getFileName() + " which has to be processed first => ignoring orders file " + file.getFileName() + " for now");
+				
 				return false;
 			}
 

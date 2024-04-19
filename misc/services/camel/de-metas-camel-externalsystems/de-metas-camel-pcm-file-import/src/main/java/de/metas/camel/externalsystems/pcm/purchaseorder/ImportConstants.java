@@ -37,7 +37,5 @@ public interface ImportConstants
 	String ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID = "GetPurchaseOrderFromFileRouteBuilder.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID";
 
 	String PROPERTY_CURRENT_CSV_ROW = "CurrentCsvRow";
-	String PROPERTY_FOUND_MASTER_DATA_FILENAME = "FoundMasterDataFileName";
-	String PROPERTY_FOUND_MASTER_DATA_FILE = "FoundMasterDataFile";
 	String PROPERTY_IMPORT_ORDERS_CONTEXT = "ImportOrdersContext";
 }
