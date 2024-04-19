@@ -135,7 +135,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	@Override
 	public Quantity calculateQtyEntered(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
+		final UomId uomId = UomId.ofRepoId(invoiceCandidateRecord.getC_UOM_ID());
 
 		return Quantitys.create(invoiceCandidateRecord.getQtyEntered(), uomId);
 	}
