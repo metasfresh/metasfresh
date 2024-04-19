@@ -869,7 +869,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_M_HU_PI getPI(@NonNull final HUPIItemProductId huPIItemProductId)
 	{
-		final I_M_HU_PI_Item_Product huPIItemProduct = huPIItemProductDAO.getById(huPIItemProductId);
+		final I_M_HU_PI_Item_Product huPIItemProduct = huPIItemProductDAO.getRecordById(huPIItemProductId);
 		final HuPackingInstructionsItemId packingInstructionsItemId = HuPackingInstructionsItemId.ofRepoId(huPIItemProduct.getM_HU_PI_Item_ID());
 		return getPI(packingInstructionsItemId);
 	}

@@ -434,7 +434,7 @@ import java.util.Map;
 				}
 				else
 				{
-					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(receiveUsingHUPIItemProductId);
+					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getRecordById(receiveUsingHUPIItemProductId);
 					final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 					final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, getProductId(), uom);
 

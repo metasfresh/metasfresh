@@ -526,7 +526,7 @@ public class ShipmentScheduleWithHUService
 			}
 			else
 			{
-				final I_M_HU_PI_Item_Product huPIItemProduct = hupiItemProductDAO.getById(piItemProductId);
+				final I_M_HU_PI_Item_Product huPIItemProduct = hupiItemProductDAO.getRecordById(piItemProductId);
 				newHURecords = new ArrayList<>();
 				for (final I_M_HU newCU : newCURecords)
 				{

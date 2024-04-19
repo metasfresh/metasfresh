@@ -593,7 +593,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
-				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
+				? Services.get(IHUPIItemProductDAO.class).getRecordById(piItemProductId)
 				: null;
 	}
 

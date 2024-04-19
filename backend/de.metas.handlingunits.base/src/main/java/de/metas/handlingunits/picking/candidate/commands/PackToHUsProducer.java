@@ -216,7 +216,7 @@ public class PackToHUsProducer
 		}
 		else if (packToSpec.getTuPackingInstructionsId() != null)
 		{
-			final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(packToSpec.getTuPackingInstructionsId());
+			final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getRecordById(packToSpec.getTuPackingInstructionsId());
 			final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
 			packingInstructionsId = handlingUnitsBL.getPackingInstructionsId(piItemId);
 			tuCapacity = getCapacity(tuPIItemProduct);
