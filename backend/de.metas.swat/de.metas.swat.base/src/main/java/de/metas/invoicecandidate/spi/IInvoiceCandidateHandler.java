@@ -307,6 +307,12 @@ public interface IInvoiceCandidateHandler
 	default void setWarehouseId(@NonNull final I_C_Invoice_Candidate ic) {}
 
 	default void setHarvestingDetails(@NonNull final I_C_Invoice_Candidate ic) {}
+	
+	@NonNull
+	default ImmutableList<Object> getRecordsToLock(@NonNull final Object model)
+	{
+		return ImmutableList.of(model);
+	}
 
 	/**
 	 * Price and tax info calculation result.

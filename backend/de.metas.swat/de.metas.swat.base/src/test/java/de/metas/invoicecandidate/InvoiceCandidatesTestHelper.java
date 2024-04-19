@@ -4,6 +4,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lock.api.LockOwner;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 
@@ -56,7 +57,8 @@ public class InvoiceCandidatesTestHelper
 		while (models.hasNext())
 		{
 			final Object model = models.next();
-			final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(handler, model));
+			final LockOwner lockOwner = LockOwner.newOwner("InvoiceCandidatesTestHelper" + "#generateInvoiceCandidates");
+			final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(handler, model, lockOwner));
 			invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 		}
 

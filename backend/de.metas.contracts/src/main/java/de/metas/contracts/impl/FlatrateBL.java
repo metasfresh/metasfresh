@@ -24,6 +24,7 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
@@ -127,6 +128,8 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -2382,6 +2385,19 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
 
 		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
+	}
+
+	@Override
+	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	{
+		return flatrateDAO.isExistsModularContract(selectedContractsFilter);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	{
+		return flatrateDAO.getModularContractIds(queryBuilder);
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)

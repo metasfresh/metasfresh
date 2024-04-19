@@ -1,5 +1,6 @@
 package de.metas.contracts.invoicecandidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -11,6 +12,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -162,7 +164,9 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	@NonNull CandidatesAutoCreateMode isMissingInvoiceCandidate(@NonNull I_C_Flatrate_Term flatrateTerm);
 
-	default List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
+	default List<I_C_Invoice_Candidate> createInvoiceCandidates(
+			@NonNull final I_C_Flatrate_Term term,
+			@NonNull final LockOwner lockOwner)
 	{
 		return Collections.singletonList(HandlerTools.createIcAndSetCommonFields(term));
 	}
@@ -170,5 +174,11 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 	default void postSave(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//NOOP
+	}
+
+	@NonNull
+	default ImmutableList<Object> getRecordsToLock(@NonNull final I_C_Flatrate_Term term)
+	{
+		return ImmutableList.of(term);
 	}
 }
