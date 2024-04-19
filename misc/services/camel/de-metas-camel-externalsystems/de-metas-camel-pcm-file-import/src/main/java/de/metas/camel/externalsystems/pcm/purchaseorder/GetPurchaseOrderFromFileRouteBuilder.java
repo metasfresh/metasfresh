@@ -101,7 +101,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 							.endChoice()
 						.end()
 					.endDoTry()
-					.doCatch(RuntimeException.class)
+					.doCatch(Throwable.class)
 						.process(this::updateContextAfterError)
 						.to(direct(ERROR_WRITE_TO_ADISSUE))
 					.end()
