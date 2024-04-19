@@ -40,7 +40,6 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
-import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.document.DocTypeId;
@@ -119,7 +118,18 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final LockOwner lockOwner)
 	{
-		return createModularICs(term, lockOwner);
+		final var modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		final var requestTemplate = CreateInvoiceCandidateRequest.builder()
+				.modularContract(term)
+				//.moduleConfig(module)
+				.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
+				.pricingSystemId(modularContractSettings.getPricingSystemId())
+				.lockOwner(lockOwner);
+
+		return modularContractSettings.getModuleConfigs()
+				.stream()
+				.map(module -> createCandidateFor(requestTemplate.moduleConfig(module).build()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -179,29 +189,6 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	}
 
 	@NonNull
-	private List<I_C_Invoice_Candidate> createModularICs(
-			@NonNull final I_C_Flatrate_Term modularContract,
-			@NonNull final LockOwner lockOwner)
-	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID()));
-		final YearAndCalendarId yearAndCalendarId = modularContractSettings.getYearAndCalendarId();
-		final PricingSystemId pricingSystemId = modularContractSettings.getPricingSystemId();
-
-		final ImmutableList.Builder<I_C_Invoice_Candidate> invoiceCandidatesAll = ImmutableList.builder();
-
-		modularContractSettings.getModuleConfigs()
-				.forEach(module -> invoiceCandidatesAll.add(createCandidateFor(CreateInvoiceCandidateRequest.builder()
-						.modularContract(modularContract)
-						.moduleConfig(module)
-						.yearAndCalendarId(yearAndCalendarId)
-						.pricingSystemId(pricingSystemId)
-						.lockOwner(lockOwner)
-						.build())));
-
-		return invoiceCandidatesAll.build();
-	}
-
-	@NonNull
 	private I_C_Invoice_Candidate createCandidateFor(@NonNull final CreateInvoiceCandidateRequest createInvoiceCandidateRequest)
 	{
 		final I_C_Flatrate_Term modularContract = createInvoiceCandidateRequest.getModularContract();
@@ -237,10 +224,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		final ComputingResponse computingResponse = getComputingMethodResponse(createInvoiceCandidateRequest);
 
-		//price 
-		{
-			setPriceAndQty(invoiceCandidate, computingResponse);
-		}
+		setPriceAndQty(invoiceCandidate, computingResponse);
 
 		trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
 				InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
@@ -277,7 +261,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
 				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
 						.appendParametersToMessage()
-						.setParameter("ModularContractId", modularContract.getC_Flatrate_Term_ID()));
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
 
 		final IComputingMethodHandler computingMethodHandler = modularContractComputingMethods.getApplicableHandlerFor(computingMethodType);
 		final ComputingRequest request = ComputingRequest.builder()
