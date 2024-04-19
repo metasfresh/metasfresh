@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -49,6 +50,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
@@ -277,4 +279,9 @@ public interface IFlatrateDAO extends ISingletonService
 	
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
+
+	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+
+	@NonNull
+	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryBuilder<I_C_Flatrate_Term> queryBuilder);
 }

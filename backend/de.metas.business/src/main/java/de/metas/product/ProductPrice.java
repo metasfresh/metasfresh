@@ -56,11 +56,13 @@ public class ProductPrice
 		return money;
 	}
 
+	@NonNull
 	public BigDecimal toBigDecimal()
 	{
 		return money.toBigDecimal();
 	}
 
+	@NonNull
 	public CurrencyId getCurrencyId()
 	{
 		return money.getCurrencyId();

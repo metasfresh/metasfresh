@@ -67,7 +67,7 @@ public class ModularContractPriceService
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
-		if (modularContractPriceRepository.isSpecificPricesExistforFlatrateTermId(flatrateTermId))
+		if (modularContractPriceRepository.isSpecificPricesExistForFlatrateTermId(flatrateTermId))
 		{
 			return;
 		}
@@ -86,7 +86,7 @@ public class ModularContractPriceService
 	public void createInterimContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
-		if (modularContractPriceRepository.isSpecificPricesExistforFlatrateTermId(flatrateTermId))
+		if (modularContractPriceRepository.isSpecificPricesExistForFlatrateTermId(flatrateTermId))
 		{
 			return;
 		}

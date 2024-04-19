@@ -114,6 +114,7 @@ public class ModularContractService
 		return modularContractSettings.getPricingSystemId();
 	}
 
+	@NonNull
 	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
@@ -121,6 +122,7 @@ public class ModularContractService
 		return modCntrSpecificPrice.taxCategoryId();
 	}
 
+	@NonNull
 	public ProductPrice getContractSpecificPrice(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
 		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
