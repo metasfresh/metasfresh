@@ -27,13 +27,11 @@ import de.metas.camel.externalsystems.pcm.config.LocalFileConfig;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
+import org.apache.camel.Route;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.file.GenericFile;
-import org.apache.camel.component.file.GenericFileEndpoint;
-import org.apache.camel.component.file.GenericFileOperations;
-import org.apache.camel.component.file.strategy.GenericFileProcessStrategySupport;
+import org.apache.camel.support.RoutePolicySupport;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -46,32 +44,37 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 /**
- * Don't process orders files if there are master data files.
+ * Don't process order files while there are master data files.
  */
 @RequiredArgsConstructor
-public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessStrategySupport<File>
+public class StallWhileMasterdataFilesExistPolicy extends RoutePolicySupport
 {
 	@NonNull
-	LocalFileConfig fileEndpointConfig;
+	private final LocalFileConfig fileEndpointConfig;
 
 	@NonNull
-	PInstanceLogger pInstanceLogger;
+	private final PInstanceLogger pInstanceLogger;
+
+	private final AtomicBoolean stopWaitLoop = new AtomicBoolean(false);
 
 	@Override
-	public boolean begin(
-			final GenericFileOperations operations, 
-			final GenericFileEndpoint endpoint, 
-			@NonNull final Exchange exchange, 
-			@NonNull final GenericFile file) throws Exception
+	public void onExchangeBegin(@NonNull final Route route, @NonNull final Exchange exchange)
 	{
-		final boolean defaultResult = super.begin(operations, endpoint, exchange, file);
-		if (!defaultResult)
+		stopWaitLoop.set(false);
+		boolean masterDataFileExists = checkForMasterDataFiles(exchange);
+		while (masterDataFileExists && !stopWaitLoop.get())
 		{
-			return false;
+			LockSupport.parkNanos(fileEndpointConfig.getPollingFrequency().toNanos());
+			masterDataFileExists = checkForMasterDataFiles(exchange);
 		}
+	}
 
+	private boolean checkForMasterDataFiles(@NonNull final Exchange exchange)
+	{
 		final FileSystem fileSystem = FileSystems.getDefault();
 		final PathMatcher bpartnerFileMatcher = fileSystem.getPathMatcher("glob:" + fileEndpointConfig.getFileNamePatternBPartner());
 		final PathMatcher warehouseFileMatcher = fileSystem.getPathMatcher("glob:" + fileEndpointConfig.getFileNamePatternWarehouse());
@@ -106,21 +109,26 @@ public class GetPurchaseOrderFromFileProcessStrategy extends GenericFileProcessS
 					return FileVisitResult.CONTINUE;
 				}
 			};
-			Files.walkFileTree(rootLocation, options, 0, visitor);
+			Files.walkFileTree(rootLocation, options, 1, visitor); // maxDepth=1 means to check the folder and it's included files
 
 			final boolean atLEastOneFileFound = existingMasterDataFile[0] != null;
 			if (atLEastOneFileFound)
 			{
-				pInstanceLogger.logMessage("There is at least the masterdata file " + existingMasterDataFile[0].getFileName() + " which has to be processed first => ignoring orders file " + file.getFileName() + " for now");
-				
-				return false;
+				final String fileName = exchange.getIn().getBody(GenericFile.class).getFileName();
+				pInstanceLogger.logMessage("There is at least the masterdata file " + existingMasterDataFile[0].getFileName() + " which has to be processed first => stall the processing of orders file " + fileName + " for now");
 			}
 
-			return true; // the super-class said yes and we did not find any masterdata file
+			return atLEastOneFileFound;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeCamelException("Caught exception while checking for existing master data files", e);
 		}
+	}
+
+	@Override
+	protected void doStop()
+	{
+		stopWaitLoop.set(true);
 	}
 }

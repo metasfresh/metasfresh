@@ -29,7 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.TestUtil.loadJSON;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID;
@@ -89,23 +89,13 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	@Test
 	public void happyFlow_SyncPurchaseOrders_LocalFile() throws Exception
 	{
-		final JsonExternalSystemRequest externalSystemStartRequest = loadJSON(this, JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE, JsonExternalSystemRequest.class);
+		final JsonExternalSystemRequest startRequest = loadJSON(this, JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE, JsonExternalSystemRequest.class);
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertPurchaseCandicateProcessor mockUpsertPurchaseCandicateProcessor = new MockUpsertPurchaseCandicateProcessor();
 		final MockProcessPurchaseCandicatesProcessor mockProcessPurchaseCandicatesProcessor = new MockProcessPurchaseCandicatesProcessor();
 
 		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId());
-
-		context.start();
-
-		//when
-		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId(), externalSystemStartRequest);
-
-		prepareSyncRouteForTesting(true,
-								   mockUpsertPurchaseCandicateProcessor,
-								   mockProcessPurchaseCandicatesProcessor,
-								   LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(externalSystemStartRequest));
 
 		final PurchaseCandidateCamelRequest purchaseOrderUpsertCamelRequest_20 = loadJSON(this, JSON_UPSERT_PURCHASE_ORDER_REQUEST_20, PurchaseCandidateCamelRequest.class);
 		final PurchaseCandidateCamelRequest purchaseOrderUpsertCamelRequest_30 = loadJSON(this, JSON_UPSERT_PURCHASE_ORDER_REQUEST_30, PurchaseCandidateCamelRequest.class);
@@ -117,11 +107,24 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		final MockEndpoint purchaseOrderProcessMockEndpoint = getMockEndpoint(MOCK_PROCESS_PURCHASE_CANDIDATES);
 		purchaseOrderProcessMockEndpoint.expectedBodiesReceived(purchaseOrderProcessCamelRequest_40);
 
+		final MockEndpoint errorMockEndpoint = getMockEndpoint(MOCK_ERROR_CONSUMER);
+		errorMockEndpoint.expectedMessageCount(0);
+		
+		context.start();
+
+		//when
+		template.sendBody("direct:" + purchaseOrderServiceRouteBuilder.getStartPurchaseOrderRouteId(), startRequest);
+
+		prepareSyncRouteForTesting(true,
+								   mockUpsertPurchaseCandicateProcessor,
+								   mockProcessPurchaseCandicatesProcessor,
+								   LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(startRequest));
+
 		final InputStream purchaseOrderImportFile = this.getClass().getResourceAsStream(PURCHASE_ORDER_SAMPLE_RESOURCE_PATH);
 
 		//and
 		template.sendBodyAndHeader("direct:" + PURCHASE_ORDER_SYNC_DIRECT_ROUTE_ENDPOINT, purchaseOrderImportFile, Exchange.FILE_NAME_ONLY, PURCHASE_ORDER_IMPORT_FILE_CSV);
-
+		
 		//then
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
@@ -130,18 +133,28 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	/**
-	 * Tests mostly the file-component, to make sure that it ignores an order-file if there are still master data file lying around
+	 * Tests mostly {@link StallWhileMasterdataFilesExistPolicy}, to make sure that it ignores an order-file if there are still master data file lying around
+	 * <p>
+	 * Note: actually lets the route under test read the input file from disk    
 	 */
 	@Test
 	public void masterDataFileExists_SyncPurchaseOrders_LocalFile() throws Exception
 	{
 		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
-		final Path path = Paths.get("src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/masterDataFileExists");
+		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/masterDataFileExists";
+		final Path path = Paths.get(rootFolderStr);
+
+		final MockEndpoint errorMockEndpoint = getMockEndpoint(MOCK_ERROR_CONSUMER);
+		errorMockEndpoint.expectedMessageCount(0);
+		
 		test_NothingCreated(path);
+
+		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();
+		assertThat(new File(rootFolderStr + "/errorDirectory")).doesNotExist();
 	}
 
 	/**
-	 * Tests mostly the file-component, to make sure that it ignores an order-file if there are still master data file lying around
+	 * Note: actually lets the route under test read the input file from disk.
 	 */
 	@Test
 	public void csvFileWithError_SyncPurchaseOrders_LocalFile() throws Exception
@@ -149,7 +162,14 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 		// ..assuming that we run within the de-metas-camel-pcm-file-import folder
 		final String rootFolderStr = "src/test/resources/de/metas/camel/externalsystems/pcm/purchaseorder/csvFileWithError";
 		final Path path = Paths.get(rootFolderStr);
+
+		final MockEndpoint errorMockEndpoint = getMockEndpoint(MOCK_ERROR_CONSUMER);
+		errorMockEndpoint.expectedMessageCount(1);
+
 		test_NothingCreated(path);
+		
+		assertThat(new File(rootFolderStr + "/errorDirectory")).isNotEmptyDirectory();
+		assertThat(new File(rootFolderStr + "/processedDirectory")).doesNotExist();
 	}
 
 	private void test_NothingCreated(@NonNull final Path path) throws Exception
@@ -204,7 +224,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 
 		final JsonExternalSystemRequest startExternalSystemRequest = loadJSON(this, JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE, JsonExternalSystemRequest.class);
 		final JsonExternalSystemRequest stopExternalSystemRequest = loadJSON(this, JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE, JsonExternalSystemRequest.class);
-
+		
 		final String routeId = LocalFilePurchaseOrderSyncServicePCMRouteBuilder.getPurchaseOrdersFromLocalFileRouteId(stopExternalSystemRequest);
 
 		context.start();
@@ -239,7 +259,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 	private void prepareSyncRouteForTesting(
 			final boolean replaceFileEndpoint,
 			@NonNull final MockUpsertPurchaseCandicateProcessor mockUpsertPurchaseCandicateProcessor,
-			final MockProcessPurchaseCandicatesProcessor mockProcessPurchaseCandicatesProcessor,
+			@NonNull final MockProcessPurchaseCandicatesProcessor mockProcessPurchaseCandicatesProcessor,
 			@NonNull final String purchaseOrderSyncRouteId) throws Exception
 	{
 		AdviceWith.adviceWith(context, purchaseOrderSyncRouteId,
@@ -258,7 +278,7 @@ public class GetPurchaseOrderFromFileRouteBuilderTest extends CamelTestSupport
 										  .to(MOCK_PROCESS_PURCHASE_CANDIDATES)
 										  .process(mockProcessPurchaseCandicatesProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_ERROR_ROUTE_ID)
+								  advice.interceptSendToEndpoint("direct:" + ERROR_WRITE_TO_ADISSUE)
 										  .skipSendToOriginalEndpoint()
 										  .to(MOCK_ERROR_CONSUMER)
 										  .process(exchange -> {
