@@ -30,14 +30,12 @@ public interface ImportConstants
 	String DEFAULT_UOM_X12DE355_CODE = "PCE";
 	String DEFAULT_CURRENCY_CODE = "EUR";
 	ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
-	DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
 	String UPSERT_ORDER_PROCESSOR_ID = "GetPurchaseOrderFromFileRouteBuilder.UPSERT_ORDER_PROCESSOR_ID";
 	String UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID = "GetPurchaseOrderFromFileRouteBuilder.UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID";
 	String ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID = "GetPurchaseOrderFromFileRouteBuilder.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID";
 
 	String PROPERTY_CURRENT_CSV_ROW = "CurrentCsvRow";
-	String PROPERTY_FOUND_MASTER_DATA_FILENAME = "FoundMasterDataFileName";
-	String PROPERTY_FOUND_MASTER_DATA_FILE = "FoundMasterDataFile";
 	String PROPERTY_IMPORT_ORDERS_CONTEXT = "ImportOrdersContext";
 }

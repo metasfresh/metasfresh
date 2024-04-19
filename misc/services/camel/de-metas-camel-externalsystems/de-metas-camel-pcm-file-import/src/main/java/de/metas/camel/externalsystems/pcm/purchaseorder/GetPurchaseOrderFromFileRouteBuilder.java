@@ -22,7 +22,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.file.FileEndpoint;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
@@ -74,12 +73,9 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 	@Override
 	public void configure()
 	{
-		final String purchaseOrderFileEndpointURI = fileEndpointConfig.getPurchaseOrderFileEndpoint();
-		final FileEndpoint fileEndpoint = getContext().getEndpoint(purchaseOrderFileEndpointURI, FileEndpoint.class);
-		fileEndpoint.setProcessStrategy(new GetPurchaseOrderFromFileProcessStrategy(fileEndpointConfig, pInstanceLogger));
-
 		//@formatter:off
-		from(fileEndpoint)
+		from(fileEndpointConfig.getPurchaseOrderFileEndpoint())
+				.routePolicy(new StallWhileMasterdataFilesExistPolicy(fileEndpointConfig, pInstanceLogger))
 				.id(routeId)
 				.streamCaching()
 				.log("Purchase Order Sync Route Started with Id=" + routeId)
