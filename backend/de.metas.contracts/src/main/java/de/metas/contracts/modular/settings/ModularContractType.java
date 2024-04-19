@@ -45,7 +45,7 @@ public class ModularContractType
 	}
 	
 	@NonNull
-	public Optional<ComputingMethodType> getOptionalComputingMethodType()
+	public Optional<ComputingMethodType> getComputingMethodType()
 	{
 		return Optional.ofNullable(computingMethodType);
 	}

@@ -79,6 +79,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -158,7 +159,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 	@Override
 	@NonNull
-	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		return IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
 	}
@@ -275,7 +276,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularContract.getC_Flatrate_Term_ID());
 		final ModuleConfig moduleConfig = createInvoiceCandidateRequest.getModuleConfig();
 
-		final ComputingMethodType computingMethodType = moduleConfig.getModularContractType().getOptionalComputingMethodType()
+		final ComputingMethodType computingMethodType = moduleConfig.getComputingMethodType()
 				.orElseThrow(() -> new AdempiereException("No Computing Method Type found for ModuleConfig !")
 						.appendParametersToMessage()
 						.setParameter("ModuleConfigId", moduleConfig.getId().getRepoId()));
@@ -291,7 +292,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 				.productId(moduleConfig.getProductId())
 				.currencyId(currencyId)
 				.lockOwner(createInvoiceCandidateRequest.getLockOwner())
-				.modularContractTypeId(moduleConfig.getModularContractType().getId())
+				.modularContractTypeId(moduleConfig.getModularContractTypeId())
 				.build();
 
 		final ComputingResponse response = computingMethodHandler.compute(request);
@@ -368,20 +369,10 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	@Builder
 	private static class CreateInvoiceCandidateRequest
 	{
-		@NonNull
-		I_C_Flatrate_Term modularContract;
-
-		@NonNull
-		ModuleConfig moduleConfig;
-
-		@NonNull
-		YearAndCalendarId yearAndCalendarId;
-
-		@NonNull
-		PricingSystemId pricingSystemId;
-
-		@NonNull
-		LockOwner lockOwner;
+		@NonNull I_C_Flatrate_Term modularContract;
+		@NonNull ModuleConfig moduleConfig;
+		@NonNull YearAndCalendarId yearAndCalendarId;
+		@NonNull PricingSystemId pricingSystemId;
+		@NonNull LockOwner lockOwner;
 	}
-
 }

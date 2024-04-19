@@ -29,7 +29,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.ComputingMethodType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
@@ -101,7 +100,6 @@ class ModularContractSettingsDAOTest
 		assertThat(moduleConfig.getSeqNo().toInt()).isEqualTo(10);
 		assertThat(moduleConfig.getProductId().getRepoId()).isEqualTo(130);
 
-		final ComputingMethodType handlerImpl = moduleConfig.getModularContractType().getComputingMethodType();
-		assertThat(handlerImpl).isEqualTo(INTERIM_CONTRACT);
+		assertThat(moduleConfig.getModularContractType().getComputingMethodType()).contains(INTERIM_CONTRACT);
 	}
 }
