@@ -68,7 +68,7 @@ public class SVCoComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null; // Method not needed in this increment
+		return ComputingMethodType.SvCo; // Method not needed in this increment
 	}
 
 	@Override

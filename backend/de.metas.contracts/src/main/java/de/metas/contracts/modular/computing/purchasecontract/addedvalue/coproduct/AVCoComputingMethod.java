@@ -67,7 +67,7 @@ public class AVCoComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null; // Method not needed in this increment
+		return ComputingMethodType.AvCo; // Method not needed in this increment
 	}
 
 	@Override

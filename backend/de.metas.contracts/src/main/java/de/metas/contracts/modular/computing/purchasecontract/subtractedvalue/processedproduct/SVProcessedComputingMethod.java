@@ -68,7 +68,7 @@ public class SVProcessedComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return null; // Method not needed in this increment
+		return ComputingMethodType.SvProcessed; // Method not needed in this increment
 	}
 
 	@Override
