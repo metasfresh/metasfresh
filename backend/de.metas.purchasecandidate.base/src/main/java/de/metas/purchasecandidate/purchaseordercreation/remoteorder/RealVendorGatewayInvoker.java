@@ -164,7 +164,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 		return orgId;
 	}
 
-	private static Map<Integer, I_C_UOM> extractUOMsMap(Collection<PurchaseCandidate> purchaseCandidates)
+	private static Map<Integer, I_C_UOM> extractUOMsMap(@NonNull final Collection<PurchaseCandidate> purchaseCandidates)
 	{
 		return purchaseCandidates.stream()
 				.map(PurchaseCandidate::getQtyToPurchase)
