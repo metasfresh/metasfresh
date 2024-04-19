@@ -25,9 +25,9 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.file.FileEndpoint;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ERROR_WRITE_TO_ADISSUE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_CURRENT_CSV_ROW;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.UPSERT_ORDER_PROCESSOR_ID;
@@ -103,7 +103,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 					.endDoTry()
 					.doCatch(RuntimeException.class)
 						.process(this::updateContextAfterError)
-						.to(direct(MF_ERROR_ROUTE_ID))
+						.to(direct(ERROR_WRITE_TO_ADISSUE))
 					.end()
 				.end().end() // split
 				.process(this::enqueueCandidatesProcessor)
@@ -138,8 +138,13 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 	private void updateContextAfterError(@NonNull final Exchange exchange)
 	{
 		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
+
 		final PurchaseOrderRow csvRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
-		
+
+		final Exception ex = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
+		final RuntimeCamelException augmentedEx = new RuntimeCamelException("Exception processing file " + exchange.getIn().getHeader(Exchange.FILE_NAME_ONLY) + " and row '" + csvRow + "'", ex);
+		exchange.setProperty(Exchange.EXCEPTION_CAUGHT, augmentedEx);
+
 		if (csvRow == null || Check.isBlank(csvRow.getExternalHeaderId()))
 		{
 			importOrdersRouteContext.errorInUnknownRow();
@@ -158,7 +163,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 		if (importOrdersRouteContext.isDoNotProcessAtAll())
 		{
 			final Object fileName = exchange.getIn().getHeader(Exchange.FILE_NAME_ONLY);
-			throw new RuntimeCamelException("Not purchase order candidates from file "+fileName.toString()+ " can be imported to metasfresh");
+			throw new RuntimeCamelException("No purchase order candidates from file " + fileName.toString() + " can be imported to metasfresh");
 		}
 
 		final JsonPurchaseCandidatesRequest.JsonPurchaseCandidatesRequestBuilder builder = JsonPurchaseCandidatesRequest.builder();
