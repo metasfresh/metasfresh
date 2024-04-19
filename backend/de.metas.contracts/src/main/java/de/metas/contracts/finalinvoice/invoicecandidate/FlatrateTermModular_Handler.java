@@ -168,21 +168,14 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	@NonNull
 	public ImmutableList<Object> getRecordsToLock(@NonNull final I_C_Flatrate_Term term)
 	{
-		final ImmutableList.Builder<Object> recordsToLock = ImmutableList.builder();
-
-		recordsToLock.add(term);
-
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-				.processed(false)
-				.billable(true)
+		return ImmutableList.builder()
+				.add(term)
+				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
+						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+						.processed(false)
+						.billable(true)
+						.build()))
 				.build();
-
-		recordsToLock.addAll(modularContractLogDAO.list(query)
-									 .stream()
-									 .collect(ImmutableList.toImmutableList()));
-
-		return recordsToLock.build();
 	}
 
 	@NonNull
@@ -198,12 +191,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		modularContractSettings.getModuleConfigs()
 				.forEach(module -> invoiceCandidatesAll.add(createCandidateFor(CreateInvoiceCandidateRequest.builder()
-																					   .modularContract(modularContract)
-																					   .moduleConfig(module)
-																					   .yearAndCalendarId(yearAndCalendarId)
-																					   .pricingSystemId(pricingSystemId)
-																					   .lockOwner(lockOwner)
-																					   .build())));
+						.modularContract(modularContract)
+						.moduleConfig(module)
+						.yearAndCalendarId(yearAndCalendarId)
+						.pricingSystemId(pricingSystemId)
+						.lockOwner(lockOwner)
+						.build())));
 
 		return invoiceCandidatesAll.build();
 	}
@@ -250,7 +243,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		}
 
 		trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-																			 InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+				InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
 
 		return invoiceCandidate;
 	}
@@ -320,12 +313,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceCandidate.isSOTrx());
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
-											 .orgId(orgId)
-											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
-											 .dateOfInterest(invoiceCandidate.getDateOrdered())
-											 .soTrx(soTrx)
-											 .taxCategoryId(taxCategoryId)
-											 .build());
+				.orgId(orgId)
+				.bPartnerLocationId(bPartnerLocationAndCaptureId)
+				.dateOfInterest(invoiceCandidate.getDateOrdered())
+				.soTrx(soTrx)
+				.taxCategoryId(taxCategoryId)
+				.build());
 
 		if (tax == null)
 		{
