@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
@@ -49,7 +50,7 @@ public class ModularContractLogQuery
 	@Nullable ComputingMethodType computingMethodType;
 	@Nullable InvoiceCandidateId invoiceCandidateId;
 	@Nullable LockOwner lockOwner;
-	@Nullable @Singular Set<ModularContractLogEntryId> entryIds;
+	@NonNull @Singular ImmutableSet<ModularContractLogEntryId> entryIds;
 	
 	@NonNull
 	public static ModularContractLogQuery ofEntryIds(@NonNull final Set<ModularContractLogEntryId> entryIds)
