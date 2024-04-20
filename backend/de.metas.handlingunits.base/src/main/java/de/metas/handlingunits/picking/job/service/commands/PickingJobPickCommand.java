@@ -6,7 +6,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUStatusBL;
@@ -165,7 +164,6 @@ public class PickingJobPickCommand
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
-				.huCapacityBL(Services.get(IHUCapacityBL.class))
 				.uomConversionBL(uomConversionBL)
 				.inventoryService(inventoryService)
 				.contextPickingJobId(pickingJob.getId())
