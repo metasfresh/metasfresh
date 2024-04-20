@@ -34,6 +34,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @EqualsAndHashCode
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -55,9 +56,15 @@ public final class QtyTU implements Comparable<QtyTU>
 		}
 	}
 
+	@NonNull
 	public static QtyTU ofBigDecimal(@NonNull final BigDecimal bd)
 	{
 		return ofInt(bd.intValueExact());
+	}
+
+	public static Optional<QtyTU> optionalOfBigDecimal(@Nullable final BigDecimal bd)
+	{
+		return Optional.ofNullable(bd).map(QtyTU::ofBigDecimal);
 	}
 
 	@NonNull
@@ -111,4 +118,32 @@ public final class QtyTU implements Comparable<QtyTU>
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
 	public boolean isPositive() {return intValue > 0;}
+
+	public QtyTU add(@NonNull final QtyTU toAdd)
+	{
+		if (this.intValue == 0)
+		{
+			return toAdd;
+		}
+		else if (toAdd.intValue == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(this.intValue + toAdd.intValue);
+		}
+	}
+
+	public QtyTU subtractOrZero(@NonNull final QtyTU toSubtract)
+	{
+		if (toSubtract.intValue == 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(Math.max(this.intValue - toSubtract.intValue, 0));
+		}
+	}
 }
