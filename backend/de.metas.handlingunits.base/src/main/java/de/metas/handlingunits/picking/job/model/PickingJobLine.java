@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
@@ -53,6 +55,7 @@ public class PickingJobLine
 	@NonNull ProductId productId;
 	@NonNull String productNo;
 	@NonNull ITranslatableString productName;
+	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
@@ -66,8 +69,10 @@ public class PickingJobLine
 	@Builder(toBuilder = true)
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
-			@NonNull final ProductId productId, final @NonNull String productNo,
+			@NonNull final ProductId productId,
+			@NonNull final String productNo,
 			@NonNull final ITranslatableString productName,
+			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
@@ -79,6 +84,7 @@ public class PickingJobLine
 		this.productId = productId;
 		this.productNo = productNo;
 		this.productName = productName;
+		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
