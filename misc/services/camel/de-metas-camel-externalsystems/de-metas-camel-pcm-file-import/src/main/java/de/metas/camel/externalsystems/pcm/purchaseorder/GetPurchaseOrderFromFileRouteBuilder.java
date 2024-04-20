@@ -10,9 +10,7 @@ import de.metas.camel.externalsystems.pcm.config.LocalFileConfig;
 import de.metas.camel.externalsystems.pcm.purchaseorder.model.PurchaseOrderRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.common.util.Check;
 import lombok.Builder;
@@ -119,15 +117,12 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 	private void updateContextAfterSuccess(@NonNull final Exchange exchange)
 	{
 		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
-
-		final JsonPurchaseCandidateResponse jsonPurchaseCandidateResponse = exchange.getIn().getBody(JsonPurchaseCandidateResponse.class);
-		for (final JsonPurchaseCandidate purchaseCandidates : jsonPurchaseCandidateResponse.getPurchaseCandidates())
+		
+		final PurchaseOrderRow purchaseOrderRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
+		final JsonExternalId externalHeaderId = JsonExternalId.of(purchaseOrderRow.getExternalHeaderId());
+		if (!importOrdersRouteContext.getPurchaseCandidatesWithError().contains(externalHeaderId))
 		{
-			final JsonExternalId externalHeaderId = purchaseCandidates.getExternalHeaderId();
-			if (!importOrdersRouteContext.getPurchaseCandidatesWithError().contains(externalHeaderId))
-			{
-				importOrdersRouteContext.getPurchaseCandidatesToProcess().add(externalHeaderId);
-			}
+			importOrdersRouteContext.getPurchaseCandidatesToProcess().add(externalHeaderId);
 		}
 	}
 
