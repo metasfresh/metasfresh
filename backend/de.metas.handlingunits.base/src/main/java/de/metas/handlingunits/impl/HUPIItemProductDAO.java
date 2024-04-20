@@ -30,6 +30,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -47,6 +48,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -96,13 +98,15 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		return fromRecord(record);
 	}
 
-	private static HUPIItemProduct fromRecord(final I_M_HU_PI_Item_Product record)
+	public static HUPIItemProduct fromRecord(final I_M_HU_PI_Item_Product record)
 	{
 		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return HUPIItemProduct.builder()
 				.id(HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID()))
 				.name(trls.getColumnTrl(I_M_HU_PI_Item_Product.COLUMNNAME_Name, record.getName()))
+				.description(StringUtils.trimBlankToNull(record.getDescription()))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
