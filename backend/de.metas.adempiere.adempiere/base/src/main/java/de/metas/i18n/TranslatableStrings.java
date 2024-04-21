@@ -15,6 +15,7 @@ import org.compiere.util.DisplayType;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
@@ -233,12 +234,12 @@ public class TranslatableStrings
 		return builder().append(amount).build();
 	}
 
-	public NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
+	public ITranslatableString number(final BigDecimal valueBD, final int displayType)
 	{
 		return NumberTranslatableString.of(valueBD, displayType);
 	}
 
-	public NumberTranslatableString number(final int valueInt)
+	public ITranslatableString number(final int valueInt)
 	{
 		return NumberTranslatableString.of(valueInt);
 	}
@@ -252,27 +253,32 @@ public class TranslatableStrings
 				.build();
 	}
 
-	public DateTimeTranslatableString date(@NonNull final java.util.Date date)
+	public ITranslatableString date(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDate(date);
 	}
 
-	public DateTimeTranslatableString date(@NonNull final LocalDate date)
+	public ITranslatableString date(@NonNull final LocalDate date)
 	{
 		return DateTimeTranslatableString.ofDate(date);
 	}
 
-	public DateTimeTranslatableString date(@NonNull final Object obj, final int displayType)
+	public ITranslatableString date(@NonNull final Object obj, final int displayType)
 	{
 		return DateTimeTranslatableString.ofObject(obj, displayType);
 	}
 
-	public DateTimeTranslatableString dateAndTime(@NonNull final ZonedDateTime date)
+	public ITranslatableString dateAndTime(@NonNull final LocalDateTime date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
 
-	public DateTimeTranslatableString dateAndTime(@NonNull final java.util.Date date)
+	public ITranslatableString dateAndTime(@NonNull final ZonedDateTime date)
+	{
+		return DateTimeTranslatableString.ofDateTime(date);
+	}
+
+	public ITranslatableString dateAndTime(@NonNull final java.util.Date date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
@@ -301,7 +307,7 @@ public class TranslatableStrings
 		}
 	}
 
-	public ForwardingTranslatableString forwardingTo(@NonNull final Supplier<ITranslatableString> delegateSupplier)
+	public ITranslatableString forwardingTo(@NonNull final Supplier<ITranslatableString> delegateSupplier)
 	{
 		return new ForwardingTranslatableString(delegateSupplier);
 	}

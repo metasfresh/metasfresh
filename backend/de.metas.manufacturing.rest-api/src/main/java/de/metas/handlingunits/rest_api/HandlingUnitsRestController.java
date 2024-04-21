@@ -320,6 +320,7 @@ public class HandlingUnitsRestController
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 
+	@Deprecated
 	@PutMapping("/byId/{M_HU_ID}/qty")
 	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(
 			@PathVariable("M_HU_ID") final int huId,
