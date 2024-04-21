@@ -56,7 +56,17 @@ export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanc
   });
 }
 
-export const changeQty = ({ huId, huQRCode, description, qty, locatorQRCode }) => {
+export const changeQty = ({
+  huId,
+  huQRCode,
+  description,
+  qty,
+  locatorQRCode,
+  setBestBeforeDate,
+  bestBeforeDate,
+  setLotNo,
+  lotNo,
+}) => {
   return axios
     .post(`${huAPIBasePath}/qty`, {
       huId,
@@ -65,6 +75,10 @@ export const changeQty = ({ huId, huQRCode, description, qty, locatorQRCode }) =
       description,
       locatorQRCode: locatorQRCode ? toLocatorQRCodeString(locatorQRCode) : null,
       splitOneIfAggregated: true,
+      setBestBeforeDate,
+      bestBeforeDate,
+      setLotNo,
+      lotNo,
     })
     .then(unboxAxiosResponse)
     .then((response) => response.result);

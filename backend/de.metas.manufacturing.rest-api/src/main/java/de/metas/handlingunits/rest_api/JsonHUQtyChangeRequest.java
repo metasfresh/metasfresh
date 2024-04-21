@@ -1,5 +1,6 @@
 package de.metas.handlingunits.rest_api;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
@@ -7,7 +8,9 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.lang.Nullable;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder(toBuilder = true)
@@ -19,8 +22,14 @@ public class JsonHUQtyChangeRequest
 	@NonNull JsonQuantity qty;
 	@Nullable String description;
 	boolean splitOneIfAggregated;
-	
+
 	@Nullable String locatorQRCode;
+
+	boolean setBestBeforeDate;
+	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
+
+	boolean setLotNo;
+	@Nullable String lotNo;
 
 	public JsonHUQtyChangeRequest withHuIdAndValidate(@NonNull final HuId huId)
 	{
