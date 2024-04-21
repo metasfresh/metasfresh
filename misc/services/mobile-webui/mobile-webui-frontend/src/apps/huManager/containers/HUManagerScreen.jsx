@@ -18,6 +18,7 @@ import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
+import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -61,7 +62,7 @@ const HUManagerScreen = () => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })) //
       .finally(() => setModalToDisplay(''));
   };
-  const onChangeQtySubmit = ({ qty, description }) => {
+  const onChangeQtySubmit = ({ qty, setBestBeforeDate, bestBeforeDate, setLotNo, lotNo, description }) => {
     api
       .changeQty({
         huId: handlingUnitInfo.id,
@@ -69,6 +70,10 @@ const HUManagerScreen = () => {
         description: description,
         qty: qty,
         locatorQRCode: currentLocatorQRCode,
+        setBestBeforeDate,
+        bestBeforeDate,
+        setLotNo,
+        lotNo,
       })
       .then(setHandlingUnitInfo)
       .catch((axiosError) => toastError({ axiosError }))
@@ -106,7 +111,10 @@ const HUManagerScreen = () => {
           <ChangeHUQtyDialog
             currentQty={singleStorageQty}
             uom={singleStorageUom}
-            currentLocatorQRCode={currentLocatorQRCode}
+            isShowBestBeforeDate={!isExistingHU}
+            bestBeforeDate={getBestBeforeDate(handlingUnitInfo)}
+            isShowLotNo={!isExistingHU}
+            lotNo={getLotNo(handlingUnitInfo)}
             onSubmit={onChangeQtySubmit}
             onCloseDialog={() => setModalToDisplay('')}
           />
@@ -206,6 +214,19 @@ const computeSingleStorageQtyAndUOM = (handlingUnitInfo) => {
     qty,
     uom: handlingUnitInfo.products[0].uom,
   };
+};
+
+const getBestBeforeDate = (handlingUnitInfo) => {
+  return getAttributeValue(handlingUnitInfo, HU_ATTRIBUTE_BestBeforeDate);
+};
+const getLotNo = (handlingUnitInfo) => {
+  return getAttributeValue(handlingUnitInfo, HU_ATTRIBUTE_LotNo);
+};
+
+const getAttributeValue = (handlingUnitInfo, attributeCode) => {
+  const attributesList = handlingUnitInfo?.attributes2?.list ?? [];
+  const attribute = attributesList.find((attribute) => attribute.code === attributeCode);
+  return attribute?.value;
 };
 
 export default HUManagerScreen;

@@ -45,6 +45,7 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.UpdateHUQtyRequest;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
@@ -68,6 +69,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
@@ -475,7 +477,34 @@ public class HandlingUnitsService
 			huTransformService.tusToExistingLU(ImmutableList.of(splitHU), initialParentHU);
 		}
 
+		if (huIdToUpdate != null)
+		{
+			updateHUAttributes(huIdToUpdate, request);
+		}
+
 		return huIdToUpdate;
+	}
+
+	private void updateHUAttributes(@NonNull final HuId huId, @NonNull final JsonHUQtyChangeRequest request)
+	{
+		if (!request.isSetBestBeforeDate() && !request.isSetLotNo())
+		{
+			return;
+		}
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext();
+		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		huAttributes.setSaveOnChange(true);
+
+		if (request.isSetBestBeforeDate())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate());
+		}
+		if (request.isSetLotNo())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, request.getLotNo());
+		}
 	}
 
 	@NonNull
