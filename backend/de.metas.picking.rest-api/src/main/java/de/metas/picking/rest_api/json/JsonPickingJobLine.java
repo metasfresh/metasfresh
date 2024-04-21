@@ -24,6 +24,7 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.i18n.ITranslatableString;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -46,8 +47,12 @@ public class JsonPickingJobLine
 	@NonNull String productId;
 	@NonNull String productNo;
 	@NonNull String caption;
+	@NonNull PickingUnit pickingUnit;
+	@NonNull String packingItemName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
+	@NonNull BigDecimal qtyPickedOrRejected;
+	@NonNull BigDecimal qtyRemainingToPick;
 	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean allowPickingAnyHU;
@@ -60,13 +65,37 @@ public class JsonPickingJobLine
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
+		final String uom;
+		final BigDecimal qtyToPick;
+		final BigDecimal qtyPickedOrRejected;
+		final BigDecimal qtyRemainingToPick;
+		final PickingUnit pickingUnit = line.getPickingUnit();
+		if (pickingUnit.isTU())
+		{
+			uom = "TU";
+			qtyRemainingToPick = line.getQtyRemainingToPickTUs().toBigDecimal();
+			qtyToPick = line.getQtyToPickTUs().toBigDecimal();
+			qtyPickedOrRejected = line.getQtyPickedTUs().toBigDecimal();
+		}
+		else
+		{
+			uom = line.getQtyToPick().getUOMSymbol();
+			qtyToPick = line.getQtyToPick().toBigDecimal();
+			qtyPickedOrRejected = line.getQtyPickedOrRejected().toBigDecimal();
+			qtyRemainingToPick = line.getQtyRemainingToPick().toBigDecimal();
+		}
+
 		return builder()
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
 				.caption(line.getProductName().translate(adLanguage))
-				.uom(line.getQtyToPick().getUOMSymbol())
-				.qtyToPick(line.getQtyToPick().toBigDecimal())
+				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
+				.pickingUnit(pickingUnit)
+				.uom(uom)
+				.qtyToPick(qtyToPick)
+				.qtyPickedOrRejected(qtyPickedOrRejected)
+				.qtyRemainingToPick(qtyRemainingToPick)
 				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
 				.steps(line.getSteps()
 						.stream()

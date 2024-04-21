@@ -42,6 +42,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -65,6 +66,13 @@ public class PickingJobLine
 
 	// computed values
 	@NonNull PickingJobProgress progress;
+	//
+	@NonNull PickingUnit pickingUnit;
+	@NonNull Quantity qtyPickedOrRejected;
+	@NonNull Quantity qtyRemainingToPick;
+	@Nullable QtyTU qtyToPickTUs; // not null if pickingUnit==TU
+	@Nullable QtyTU qtyPickedTUs;// not null if pickingUnit==TU
+	@Nullable QtyTU qtyRemainingToPickTUs;// not null if pickingUnit==TU
 
 	@Builder(toBuilder = true)
 	private PickingJobLine(
@@ -92,7 +100,42 @@ public class PickingJobLine
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
-		this.progress = computeProgress(steps, isManuallyClosed);
+		this.pickingUnit = computePickingUnit(this.catchUomId, this.packingInfo);
+		this.qtyPickedOrRejected = computeQtyPickedOrRejected(steps).orElseGet(qtyToPick::toZero);
+		this.qtyRemainingToPick = this.qtyToPick.subtract(qtyPickedOrRejected).toZeroIfNegative();
+
+		if (this.pickingUnit.isTU())
+		{
+			this.qtyToPickTUs = this.packingInfo.computeQtyTUsOfTotalCUs(this.qtyToPick, this.productId);
+			this.qtyPickedTUs = this.packingInfo.computeQtyTUsOfTotalCUs(this.qtyPickedOrRejected, this.productId);
+			this.qtyRemainingToPickTUs = this.qtyToPickTUs.subtractOrZero(qtyPickedTUs);
+		}
+		else
+		{
+			this.qtyToPickTUs = null;
+			this.qtyPickedTUs = null;
+			this.qtyRemainingToPickTUs = null;
+		}
+
+		this.progress = computeProgress(this.steps, this.isManuallyClosed);
+	}
+
+	private static PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
+	{
+		// If catch weight, always pick at CU level because user has to weight the products
+		if (catchUomId != null)
+		{
+			return PickingUnit.CU;
+		}
+
+		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
+	}
+
+	private static Optional<Quantity> computeQtyPickedOrRejected(@NonNull ImmutableList<PickingJobStep> steps)
+	{
+		return steps.stream()
+				.map(PickingJobStep::getQtyPickedOrRejected)
+				.reduce(Quantity::add);
 	}
 
 	private static PickingJobProgress computeProgress(@NonNull ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)

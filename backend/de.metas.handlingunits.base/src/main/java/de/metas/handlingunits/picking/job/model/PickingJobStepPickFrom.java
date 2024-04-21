@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.handlingunits.HuId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -11,6 +12,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -27,9 +29,15 @@ public class PickingJobStepPickFrom
 
 	public WarehouseId getPickFromWarehouseId() {return getPickFromLocatorId().getWarehouseId();}
 
+	public Optional<Quantity> getQtyPickedOrRejected()
+	{
+		return Optional.ofNullable(pickedTo != null ? pickedTo.getQtyPickedOrRejected() : null);
+	}
+
 	public HuId getPickFromHUId() {return getPickFromHU().getId();}
 
 	public boolean isPicked() {return pickedTo != null;}
+
 	public boolean isNotPicked() {return pickedTo == null;}
 
 	public void assertPicked()
