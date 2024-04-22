@@ -1292,9 +1292,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@NonNull
-	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return createModularContractQuery(queryBuilder)
+		return createModularContractQuery(getFlatrateTermQueryBuilder(queryFilter))
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 

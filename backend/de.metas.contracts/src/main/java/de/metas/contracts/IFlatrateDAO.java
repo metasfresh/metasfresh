@@ -51,7 +51,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
@@ -290,5 +289,5 @@ public interface IFlatrateDAO extends ISingletonService
 	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryBuilder<I_C_Flatrate_Term> queryBuilder);
+	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }
