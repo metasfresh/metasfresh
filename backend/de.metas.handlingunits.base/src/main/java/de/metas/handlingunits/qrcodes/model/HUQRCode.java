@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.product.ProductId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,6 +48,13 @@ public class HUQRCode implements IHUQRCode
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
 	}
 
+	@Nullable
+	public static HUQRCode fromNullableGlobalQRCodeJsonString(@Nullable final String qrCodeString)
+	{
+		final String qrCodeStringNorm = StringUtils.trimBlankToNull(qrCodeString);
+		return qrCodeStringNorm != null ? fromGlobalQRCodeJsonString(qrCodeStringNorm) : null;
+	}
+
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
 
 	public static HUQRCode fromGlobalQRCode(@NonNull final GlobalQRCode globalQRCode)
@@ -83,6 +92,11 @@ public class HUQRCode implements IHUQRCode
 				.build();
 	}
 
+	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
+	{
+		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
+	}
+
 	private static String extractPrintableTopText(final HUQRCode qrCode)
 	{
 		final StringBuilder result = new StringBuilder();
@@ -117,8 +131,7 @@ public class HUQRCode implements IHUQRCode
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
 
-	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
-	{
-		return HUQRCodeJsonConverter.isTypeMatching(globalQRCode);
-	}
+	public ProductId getProductId() {return getProduct().getId();}
+
+	public HuPackingInstructionsId getPackingInstructionsId() {return getPackingInfo().getPackingInstructionsId();}
 }

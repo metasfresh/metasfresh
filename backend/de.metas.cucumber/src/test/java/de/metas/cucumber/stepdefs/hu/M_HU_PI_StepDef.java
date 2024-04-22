@@ -24,11 +24,13 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -38,16 +40,13 @@ import static de.metas.handlingunits.model.I_M_HU_PI.COLUMNNAME_Name;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class M_HU_PI_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final M_HU_PI_StepDefData huPiTable;
-
-	public M_HU_PI_StepDef(@NonNull final M_HU_PI_StepDefData huPiTable)
-	{
-		this.huPiTable = huPiTable;
-	}
+	@NonNull private final M_HU_PI_StepDefData huPiTable;
+	@NonNull private final TestContext restTestContext;
 
 	@And("metasfresh contains M_HU_PI:")
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
@@ -73,6 +72,8 @@ public class M_HU_PI_StepDef
 			row.getAsOptionalIdentifier()
 					.orElseGet(() -> row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID))
 					.putOrReplace(huPiTable, huPiRecord);
+			
+			restTestContext.setIntVariableFromRow(row, huPiRecord::getM_HU_PI_ID);
 		});
 	}
 

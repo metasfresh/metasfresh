@@ -28,6 +28,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 
@@ -444,12 +445,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -465,12 +466,12 @@ public class ProcessExecutionResult
 					.map(recordId -> TableRecordReference.of(tableName, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(adWindowId)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(adWindowId)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -483,12 +484,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.records(records)
-									.adWindowId(null)
-									.target(OpenTarget.GridView)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.records(records)
+					.adWindowId(null)
+					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -511,12 +512,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -529,12 +530,12 @@ public class ProcessExecutionResult
 		else
 		{
 			setRecordToOpen(RecordsToOpen.builder()
-									.record(record)
-									.adWindowId(adWindowId)
-									.target(target)
-									.targetTab(targetTab)
-									.automaticallySetReferencingDocumentPaths(true)
-									.build());
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(targetTab)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
 		}
 	}
 
@@ -559,13 +560,19 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
+	public void setReportData(@NonNull final Resource data)
+	{
+		final String filename = Check.assumeNotNull(data.getFilename(), "Resource shall have the filename set: {}", data);
+		setReportData(data, filename, MimeType.getMimeType(data.getFilename()));
+	}
+
 	public void setReportData(@NonNull final Resource data, @Nullable final String filename, final String contentType)
 	{
 		setReportData(ReportResultData.builder()
-							  .reportData(data)
-							  .reportFilename(filename)
-							  .reportContentType(contentType)
-							  .build());
+				.reportData(data)
+				.reportFilename(filename)
+				.reportContentType(contentType)
+				.build());
 	}
 
 	public void setReportData(@NonNull final File file)

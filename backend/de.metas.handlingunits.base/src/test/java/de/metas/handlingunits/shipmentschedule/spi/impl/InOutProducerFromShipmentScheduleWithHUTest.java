@@ -420,7 +420,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		private void createDocType(final DocBaseAndSubType docBaseAndSubType)
 		{
 			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType());
+			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
 			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
 			saveRecord(docTypeRecord);
 		}

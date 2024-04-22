@@ -28,7 +28,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -39,10 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
-import java.util.List;
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
@@ -69,20 +64,16 @@ public class M_Warehouse_StepDef
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String value = row.getAsString(COLUMNNAME_Value);
 
 			final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
 					.addEqualsFilter(COLUMNNAME_Value, value)
 					.create()
 					.firstOnlyNotNull(I_M_Warehouse.class);
 
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			warehouseTable.put(warehouseIdentifier, warehouseRecord);
-		}
+			row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID).put(warehouseTable, warehouseRecord);
+		});
 	}
 
 	@And("metasfresh contains M_Warehouse:")
