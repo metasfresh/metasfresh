@@ -11,6 +11,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -97,7 +98,7 @@ public class WarehouseDAO implements IWarehouseDAO
 			.initialCapacity(10)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
-	
+
 	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.<Integer, WarehouseRoutingsIndex>builder()
 			.tableName(I_M_Warehouse_Routing.Table_Name)
 			.initialCapacity(1)
@@ -802,4 +803,17 @@ public class WarehouseDAO implements IWarehouseDAO
 				.create()
 				.listIds(WarehouseId::ofRepoId);
 	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId)
+	{
+		return getClientAndOrgIdByLocatorId(locatorId.getWarehouseId());
+	}
+
+	public ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return ClientAndOrgId.ofClientAndOrg(warehouse.getAD_Client_ID(), warehouse.getAD_Org_ID());
+	}
+
 }

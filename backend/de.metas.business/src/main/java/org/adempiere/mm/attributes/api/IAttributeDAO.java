@@ -153,7 +153,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
 
-	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
+	@NonNull
+	AttributeId getAttributeIdByCode(AttributeCode attributeCode);
 
 	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
 
@@ -168,6 +169,11 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return attribute; never return null
 	 */
 	default I_M_Attribute retrieveAttributeByValue(@NonNull final AttributeCode attributeCode)
+	{
+		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
+	}
+
+	default I_M_Attribute getAttributeByCode(@NonNull final AttributeCode attributeCode)
 	{
 		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
 	}
