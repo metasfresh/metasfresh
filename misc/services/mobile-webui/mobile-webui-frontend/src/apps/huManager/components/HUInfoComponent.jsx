@@ -44,7 +44,12 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
         {handlingUnitInfo.attributes2 &&
           handlingUnitInfo.attributes2.list &&
           handlingUnitInfo.attributes2.list.map((attribute) => (
-            <AttributeRow key={attribute.code} caption={attribute.caption} value={attribute.value} />
+            <AttributeRow
+              key={attribute.code}
+              caption={attribute.caption}
+              value={attribute.value}
+              valueDisplay={attribute.valueDisplay}
+            />
           ))}
       </tbody>
     </table>
@@ -102,7 +107,8 @@ ProductInfoRows.propTypes = {
   }).isRequired,
 };
 
-const AttributeRow = ({ caption, value }) => {
+const AttributeRow = ({ caption, value, valueDisplay }) => {
+  console.log('row', { caption, value, valueDisplay });
   // hide rows with empty values
   if (value == null) {
     return null;
@@ -111,7 +117,7 @@ const AttributeRow = ({ caption, value }) => {
   return (
     <tr>
       <th>{caption}</th>
-      <td>{value}</td>
+      <td>{`${valueDisplay ?? value}`}</td>
     </tr>
   );
 };
@@ -119,4 +125,5 @@ const AttributeRow = ({ caption, value }) => {
 AttributeRow.propTypes = {
   caption: PropTypes.string.isRequired,
   value: PropTypes.any,
+  valueDisplay: PropTypes.any,
 };
