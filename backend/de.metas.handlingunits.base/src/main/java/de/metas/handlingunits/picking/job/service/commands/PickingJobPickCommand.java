@@ -9,7 +9,6 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
@@ -73,7 +72,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -96,10 +94,8 @@ public class PickingJobPickCommand
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	@NonNull private final HUTransformService huTransformService = HUTransformService.newInstance();
 
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
@@ -433,18 +429,36 @@ public class PickingJobPickCommand
 		trxManager.assertThreadInheritedTrxExists();
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing();
 
-		final List<I_M_HU> packedHUs = isPickWholeTU
-				? ImmutableList.of(pickWholeTU(productId, huContext, pickFromHU.getId()))
-				: packToHUsProducer.packToHU(
-				huContext,
-				pickFromHU.getId(),
-				packToInfo,
-				productId,
-				qtyToPickCUs,
-				catchWeight,
-				lineId.toTableRecordReference(),
-				checkIfAlreadyPacked,
-				createInventoryForMissingQty);
+		final List<I_M_HU> packedHUs;
+		if (pickingUnit.isTU())
+		{
+			final QtyTU qtyToPickTUs = Check.assumeNotNull(this.qtyToPickTUs, "qtyToPickTUs is set");
+			Check.assume(qtyToPickTUs.isPositive(), "qtyToPickTUs is positive");
+
+			final I_M_HU pickFromHURecord = handlingUnitsBL.getById(pickFromHU.getId());
+			if (handlingUnitsBL.isVirtual(pickFromHURecord))
+			{
+				packedHUs = pickCUsAndPackTo(productId, huContext, pickFromHU.getId(), packToInfo);
+			}
+			else
+			{
+				packedHUs = pickWholeTUs(productId, huContext, pickFromHURecord, qtyToPickTUs);
+			}
+		}
+		else
+		{
+			pickingUnit.assertIsCU();
+
+			if (isPickWholeTU)
+			{
+				final I_M_HU pickFromHURecord = handlingUnitsBL.getById(pickFromHU.getId());
+				packedHUs = pickWholeTUs(productId, huContext, pickFromHURecord, QtyTU.ONE);
+			}
+			else
+			{
+				packedHUs = pickCUsAndPackTo(productId, huContext, pickFromHU.getId(), packToInfo);
+			}
+		}
 
 		if (packedHUs.isEmpty())
 		{
@@ -543,41 +557,60 @@ public class PickingJobPickCommand
 				.build();
 	}
 
-	private I_M_HU pickWholeTU(
+	private List<I_M_HU> pickWholeTUs(
 			@NonNull final ProductId productId,
 			@NonNull final IHUContext huContext,
-			@NonNull final HuId pickFromHUId)
+			@NonNull final I_M_HU pickFromHU,
+			@NonNull final QtyTU qtyToPickTUs)
 	{
-		Check.assume(isPickWholeTU, "isPickWholeTU must be true");
+		final HUTransformService huTransformService = HUTransformService.newInstance(huContext);
 
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-
-		if (handlingUnitsBL.isLoadingUnit(pickFromHU))
+		//final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
+		final List<I_M_HU> packedHUs;
+		if (qtyToPickTUs.isOne() && HUType.TransportUnit == handlingUnitsBL.getHUUnitType(pickFromHU))
 		{
-			final I_M_HU firstIncludedTU = handlingUnitsDAO.retrieveIncludedHUs(pickFromHU)
-					.stream()
-					.filter(huStatusBL::isStatusActive)
-					.filter(includedHU -> HUType.TransportUnit == HUType.ofCodeOrNull(handlingUnitsBL.getEffectivePIVersion(includedHU).getHU_UnitType()))
-					.filter(includedTU -> huContext.getHUStorageFactory().isSingleProductStorageMatching(includedTU, productId))
-					.findFirst()
-					.orElseThrow(() -> new AdempiereException("No included HU found for LU=" + pickFromHU.getM_HU_ID()));
-
-			final I_M_HU splitOutTURecord = huTransformService.splitOutTURecord(firstIncludedTU);
-			handlingUnitsBL.setHUStatus(splitOutTURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
-
-			return splitOutTURecord;
-		}
-		else if (HUType.TransportUnit == HUType.ofCodeOrNull(handlingUnitsBL.getEffectivePIVersion(pickFromHU).getHU_UnitType()))
-		{
-			final I_M_HU splitOutTURecord = huTransformService.splitOutTURecord(pickFromHU);
-			handlingUnitsBL.setHUStatus(splitOutTURecord, PlainContextAware.newWithThreadInheritedTrx(), X_M_HU.HUSTATUS_Picked);
-
-			return splitOutTURecord;
+			final I_M_HU packedHU = huTransformService.splitOutTURecord(pickFromHU);
+			packedHUs = ImmutableList.of(packedHU);
 		}
 		else
 		{
-			throw new AdempiereException("CUs are not supported when isPickWholeTU=true");
+			packedHUs = huTransformService.husToNewTUs(
+					HUTransformService.HUsToNewTUsRequest.builder()
+							.sourceHU(pickFromHU)
+							.qtyTU(qtyToPickTUs)
+							.expectedProductId(productId)
+							.build());
 		}
+
+		if (packedHUs.size() != qtyToPickTUs.toInt())
+		{
+			throw new AdempiereException("Not enough TUs found") // TODO trl
+					.setParameter("qtyToPickTUs", qtyToPickTUs)
+					.setParameter("packedHUs.size", packedHUs.size())
+					.setParameter("packedHUs", packedHUs);
+		}
+
+		handlingUnitsBL.setHUStatus(packedHUs, huContext, X_M_HU.HUSTATUS_Picked);
+
+		return packedHUs;
+	}
+
+	private List<I_M_HU> pickCUsAndPackTo(
+			@NonNull final ProductId productId,
+			@NonNull final IHUContext huContext,
+			@NonNull final HuId pickFromHUId,
+			@NonNull final PackToHUsProducer.PackToInfo packToInfo)
+	{
+		return packToHUsProducer.packToHU(
+				huContext,
+				pickFromHUId,
+				packToInfo,
+				productId,
+				qtyToPickCUs,
+				catchWeight,
+				lineId.toTableRecordReference(),
+				checkIfAlreadyPacked,
+				createInventoryForMissingQty);
 	}
 
 	private static PickingJobStepPickedToHU toPickingJobStepPickedToHU(final PickedToHU pickedHU)
