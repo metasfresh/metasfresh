@@ -6,6 +6,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -294,7 +295,7 @@ class PickingMobileApplicationTest
 								.pickingStepId(steps.get(0).getId().getAsString())
 								.type(JsonPickingStepEvent.EventType.PICK)
 								.huQRCode(toQRCodeString(lu1))
-								.qtyPicked(new BigDecimal("75"))
+								.qtyPicked(QtyTU.THREE.toBigDecimal()) // 3x25kg
 								.build()
 				);
 				wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());
@@ -314,7 +315,7 @@ class PickingMobileApplicationTest
 								.pickingStepId(steps.get(1).getId().getAsString())
 								.type(JsonPickingStepEvent.EventType.PICK)
 								.huQRCode(toQRCodeString(lu2))
-								.qtyPicked(new BigDecimal("25"))
+								.qtyPicked(QtyTU.ONE.toBigDecimal()) // 1x25kg
 								.build()
 				);
 				wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());
@@ -362,8 +363,8 @@ class PickingMobileApplicationTest
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu1))
-										.qtyPicked(new BigDecimal("25"))
-										.qtyRejected(new BigDecimal("50"))
+										.qtyPicked(QtyTU.ONE.toBigDecimal()) // 1x25kg
+										.qtyRejected(QtyTU.TWO.toBigDecimal()) // 2x25kg
 										.qtyRejectedReasonCode("damaged")
 										.build(),
 								JsonPickingStepEvent.builder()
@@ -373,8 +374,8 @@ class PickingMobileApplicationTest
 										.pickingStepId(steps.get(0).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu2))
-										.qtyPicked(new BigDecimal("25"))
-										.qtyRejected(new BigDecimal("25"))
+										.qtyPicked(QtyTU.ONE.toBigDecimal()) // 1x25kg
+										.qtyRejected(QtyTU.ONE.toBigDecimal()) // 1x25kg
 										.qtyRejectedReasonCode("damaged")
 										.build(),
 								//
@@ -386,7 +387,7 @@ class PickingMobileApplicationTest
 										.pickingStepId(steps.get(1).getId().getAsString())
 										.type(JsonPickingStepEvent.EventType.PICK)
 										.huQRCode(toQRCodeString(lu2))
-										.qtyPicked(new BigDecimal("25"))
+										.qtyPicked(QtyTU.ONE.toBigDecimal()) // 1x25kg
 										.build()
 						))
 						.build());
@@ -437,7 +438,7 @@ class PickingMobileApplicationTest
 							.pickingStepId(steps.get(0).getId().getAsString())
 							.type(JsonPickingStepEvent.EventType.PICK)
 							.huQRCode(toQRCodeString(lu1))
-							.qtyPicked(new BigDecimal("75"))
+							.qtyPicked(QtyTU.THREE.toBigDecimal()) // 3x25kg
 							.build());
 			wfProcess = workflowRestController.getWFProcessById(wfProcess.getId());
 			record_WFProcess_PickingJob_AllHUs("After pick 1", wfProcess);
