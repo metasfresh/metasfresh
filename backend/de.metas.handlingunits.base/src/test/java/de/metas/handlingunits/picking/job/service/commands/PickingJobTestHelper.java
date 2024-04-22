@@ -354,7 +354,7 @@ public class PickingJobTestHelper
 			@NonNull final LUPackingInstructions luPackingInstructions,
 			@NonNull final String totalQtyCU)
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = huTestHelper.huPIItemProductBL().getById(luPackingInstructions.getTuPackingInstructionId());
+		final I_M_HU_PI_Item_Product tuPIItemProduct = huTestHelper.huPIItemProductBL().getRecordById(luPackingInstructions.getTuPackingInstructionId());
 
 		final I_M_HU lu = huTestHelper.newLUs()
 				.huContext(huTestHelper.createMutableHUContextOutOfTransaction())

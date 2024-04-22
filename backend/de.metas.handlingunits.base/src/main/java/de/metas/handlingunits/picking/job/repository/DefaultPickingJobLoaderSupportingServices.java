@@ -3,7 +3,10 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -53,6 +56,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final HUQRCodesService huQRCodeService;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
@@ -148,6 +152,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
 
+	}
+
+	@Override
+	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		return huPIItemProductBL.getById(huPIItemProductId);
 	}
 
 	@Override

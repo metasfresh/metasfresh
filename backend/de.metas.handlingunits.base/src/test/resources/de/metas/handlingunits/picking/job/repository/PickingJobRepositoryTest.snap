@@ -22,10 +22,21 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   "lines" : [ {
     "id" : 1000000,
     "isManuallyClosed" : false,
+    "packingInfo" : {
+      "allowAnyProduct" : true,
+      "finiteTU" : false,
+      "id" : 6789,
+      "infiniteCapacity" : true,
+      "name" : "infinite-6789",
+      "piItemId" : 123
+    },
+    "pickingUnit" : "CU",
     "productId" : 6,
     "productName" : "productName-6",
     "productNo" : "productNo-6",
     "progress" : "NOT_STARTED",
+    "qtyPickedOrRejected" : "0 Ea",
+    "qtyRemainingToPick" : "100 Ea",
     "qtyToPick" : "100 Ea",
     "salesOrderAndLineId" : {
       "orderId" : 2,
@@ -89,8 +100,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             }
           }
         },
-        "progress" : "NOT_STARTED",
-        "qtyPickedSum" : null
+        "progress" : "NOT_STARTED"
       },
       "productId" : 6,
       "productName" : "productName-6",

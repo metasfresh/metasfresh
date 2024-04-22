@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -323,7 +324,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		//
 		// Packing
-		packageable.packToHUPIItemProductId(record.getPackTo_HU_PI_Item_Product_ID());
+		packageable.packToHUPIItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getPackTo_HU_PI_Item_Product_ID()));
 
 		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
 		packageable.lockedBy(lockedBy);

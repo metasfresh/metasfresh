@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.handlingunits.HuId;
@@ -60,7 +61,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
 public class M_HU_Attribute_StepDef
@@ -155,33 +156,50 @@ public class M_HU_Attribute_StepDef
 
 	private void validateHUAttribute(@NonNull final DataTableRow row)
 	{
-		final int huId = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).lookupIn(huTable).getM_HU_ID();
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-		assertThat(huRecord).isNotNull();
+		final List<StepDefDataIdentifier> huIdentifiers = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).toCommaSeparatedList();
+		assertThat(huIdentifiers).as("M_HU_ID").isNotEmpty();
 
-		final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
-		final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
-		SharedTestContext.put("attributeCode", attributeCode);
+		for (final StepDefDataIdentifier huIdentifier : huIdentifiers)
+		{
+			SharedTestContext.put("huIdentifier", huIdentifier);
 
-		final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeCode);
+			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
+			SharedTestContext.put("huId", huId);
 
-		final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
-		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
-		assertThat(huAttribute).as("M_HU_Attribute exists").isNotNull();
-		SharedTestContext.put("huAttribute", () -> toString(huAttribute));
+			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			assertThat(huRecord).isNotNull();
 
-		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
-				.ifPresent(valueString -> {
-					final String valueStringNorm = !valueString.equalsIgnoreCase("-") ? valueString : null;
-					assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
-				});
-		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
-				.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber));
-		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
-				.ifPresent(valueString -> {
-					final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
-					assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).as("ValueDate").isEqualTo(valueDate);
-				});
+			final String attributeCodeString = row.getAsString(I_M_Attribute.COLUMNNAME_M_Attribute_ID + "." + I_M_Attribute.COLUMNNAME_Value);
+			final AttributeCode attributeCode = AttributeCode.ofString(attributeCodeString);
+			SharedTestContext.put("attributeCode", attributeCode);
+
+			final I_M_Attribute attributeRecord = attributeDAO.retrieveAttributeByValue(attributeCode);
+
+			final AttributeId attributeId = AttributeId.ofRepoId(attributeRecord.getM_Attribute_ID());
+			final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, attributeId);
+			assertThat(huAttribute).as("M_HU_Attribute exists").isNotNull();
+			SharedTestContext.put("huAttribute", () -> toString(huAttribute));
+
+			row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
+					.ifPresent(valueString -> {
+						final String valueStringNorm = !valueString.equalsIgnoreCase("-") ? valueString : null;
+						assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
+					});
+			row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
+					.ifPresent(valueNumber -> {
+						assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber);
+					});
+			row.getAsOptionalBoolean(I_M_HU_Attribute.COLUMNNAME_ValueNumber + ".IsNull")
+					.ifPresent(expectedIsNull -> {
+						final boolean actualIsNull = InterfaceWrapperHelper.isNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+						assertThat(expectedIsNull).as("ValueNumber.IsNull").isEqualTo(actualIsNull);
+					});
+			row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
+					.ifPresent(valueString -> {
+						final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
+						assertThat(TimeUtil.asLocalDate(huAttribute.getValueDate())).as("ValueDate").isEqualTo(valueDate);
+					});
+		}
 	}
 
 	private static String toString(final I_M_HU_Attribute huAttribute)

@@ -7,7 +7,7 @@ export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolera
 
   const { qtyEffectiveStr, uomEffective } = formatQtyToHumanReadable({ qty, uom, precision });
 
-  let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
+  let result = `${qtyEffectiveStr}${uomEffective ? ' ' + uomEffective : ''}`;
 
   if (tolerance != null && typeof tolerance === 'object') {
     if (tolerance.percentage != null) {

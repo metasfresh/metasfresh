@@ -16,17 +16,18 @@ Feature: mobileUI Picking tests
       | 200.0      | 200.0       | Y         |
 
     And metasfresh contains M_Products:
-      | Identifier         | Name                      | OPT.X12DE355 |
-      | catchWeightProduct | catchWeightProduct @Date@ | PCE          |
-      | regularProduct     | regularProduct @Date@     | PCE          |
+      | Identifier         | X12DE355 |
+      | catchWeightProduct | PCE      |
+      | regularTUProduct   | PCE      |
+      | regularCUProduct   | PCE      |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | catchWeightProduct      | PCE                    | KGM                  | 0.10         | Y                        |
 
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID | Name      |
-      | TU         | TU @Date@ |
-      | LU         | LU @Date@ |
+      | M_HU_PI_ID |
+      | TU         |
+      | LU         |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name | HU_UnitType | IsCurrent |
       | TU                            | TU                    | TU   | TU          | Y         |
@@ -38,7 +39,7 @@ Feature: mobileUI Picking tests
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | TUx4_CatchWeightProduct            | TU                         | catchWeightProduct      | 4   | 2000-01-01 |
-      | TUx4_RegularProduct                | TU                         | regularProduct          | 4   | 2000-01-01 |
+      | TUx4_RegularTUProduct              | TU                         | regularTUProduct        | 4   | 2000-01-01 |
 
 
     And metasfresh contains M_PricingSystems
@@ -53,7 +54,8 @@ Feature: mobileUI Picking tests
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID.X12DE355 | InvoicableQtyBasedOn | C_TaxCategory_ID.InternalName |
       | PLV                    | catchWeightProduct | 5.0      | KGM               | CatchWeight          | Normal                        |
-      | PLV                    | regularProduct     | 5.0      | PCE               | Nominal              | Normal                        |
+      | PLV                    | regularTUProduct   | 6.0      | PCE               | Nominal              | Normal                        |
+      | PLV                    | regularCUProduct   | 7.0      | PCE               | Nominal              | Normal                        |
 
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  |
@@ -72,13 +74,25 @@ Feature: mobileUI Picking tests
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | line1                         | catchWeightProduct      | 0       | 100      | PCE          |
-      | inventory                 | line2                         | regularProduct          | 0       | 100      | PCE          |
+      | inventory                 | line2                         | regularTUProduct        | 0       | 1000     | PCE          |
+      | inventory                 | line3                         | regularCUProduct        | 0       | 100      | PCE          |
     And complete inventory with inventoryIdentifier 'inventory'
     And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | line1                         | catchWeightHU      |
-      | line2                         | regularProductHU   |
+      | M_InventoryLine_ID | M_HU_ID            |
+      | line1              | catchWeightHU      |
+      | line2              | regularTUProductHU |
+      | line3              | regularCUProductHU |
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 # ######################################################################################################################
 # ######################################################################################################################
 # ######################################################################################################################
@@ -124,6 +138,185 @@ Feature: mobileUI Picking tests
       | asi1                      | Lot-Nummer        | 500                   |
 
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Pick TUs from LU with aggregated TUs
+    When transform CU to new LU
+      | sourceCU           | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
+      | regularTUProductHU | pickFromAggregatedLU | TU       | 4           | 10          |
+    And M_HU are validated:
+      | M_HU_ID              | HUStatus |
+      | pickFromAggregatedLU | A        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | regularTUProduct        | 160        | TUx4_RegularTUProduct                  |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And pick lines
+      | PickingLine.byProduct | PickFromHU           | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | regularTUProduct      | pickFromAggregatedLU | 3         | 1           | N                     | 2027-03-01     | 9876  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 4         | -      | 1     | tu1        | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | tu2        | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | tu3        | 0     | -          | N         |
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | tu1     | S        |
+      | tu2     | S        |
+      | tu3     | S        |
+
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 4         | -      | 1     | tu1        | 1     | lu         | Y         | shipmentLine   |
+      |                   |              | 4         | -      | 1     | tu2        | 1     | lu         | Y         | shipmentLine   |
+      |                   |              | 4         | -      | 1     | tu3        | 1     | lu         | Y         | shipmentLine   |
+
+    And validate the created shipment lines by id
+      | Identifier   | M_Product_ID     | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | shipmentLine | regularTUProduct | 12          |                   | 3            | TUx4_RegularTUProduct   | asi                       |
+
+    And M_HU are validated:
+      | M_HU_ID | HUStatus |
+      | tu1     | E        |
+      | tu2     | E        |
+      | tu3     | E        |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID     | M_Attribute_ID.Value | Value | ValueDate  |
+      | tu1,tu2,tu3 | HU_BestBeforeDate    |       | 2027-03-01 |
+      | lu          | HU_BestBeforeDate    |       | 2027-03-01 |
+      | tu1,tu2,tu3 | Lot-Nummer           | 9876  |            |
+      | lu          | Lot-Nummer           | 9876  |            |
+
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
+      | asi                       | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
+      | asi                       | Lot-Nummer        | 9876                  |
+
+    
+
+    
+    
+    
+    
+    
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Pick TUs from LU with TUs (not-aggregated)
+    When transform CU to new TUs
+      | sourceCU           | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs                                              |
+      | regularTUProductHU | 20    | TUx4_RegularTUProduct   | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 |
+    And aggregate TUs to new LU
+      | sourceTUs                                                   | newLUs     |
+      | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 | pickFromLU |
+    And M_HU are validated:
+      | M_HU_ID                                                     | HUStatus | Parent     |
+      | pickFromLU                                                  | A        | -          |
+      | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 | A        | pickFromLU |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2024-03-26  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | regularTUProduct        | 160        | TUx4_RegularTUProduct                  |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | regularTUProduct      | pickFromLU | 3         | 1           | N                     | 2027-03-01     | 9876  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID  | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 4         | -      | 1     | pickFromTU1 | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | pickFromTU2 | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | pickFromTU3 | 0     | -          | N         |
+    And M_HU are validated:
+      | M_HU_ID                             | HUStatus | Parent     |
+      | pickFromLU                          | A        | -          |
+      | pickFromTU1,pickFromTU2,pickFromTU3 | S        | -          |
+      | pickFromTU4,pickFromTU5             | A        | pickFromLU |
+
+    And complete picking job
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | shipmentSchedule                 | shipment              | CO            |
+
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID  | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 4         | -      | 1     | pickFromTU1 | 1     | lu         | Y         | shipmentLine   |
+      |                   |              | 4         | -      | 1     | pickFromTU2 | 1     | lu         | Y         | shipmentLine   |
+      |                   |              | 4         | -      | 1     | pickFromTU3 | 1     | lu         | Y         | shipmentLine   |
+
+    And validate the created shipment lines by id
+      | Identifier   | M_Product_ID     | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
+      | shipmentLine | regularTUProduct | 12          |                   | 3            | TUx4_RegularTUProduct   | asi                       |
+
+    And M_HU are validated:
+      | M_HU_ID     | HUStatus | Parent |
+      | lu          | E        | -      |
+      | pickFromTU1 | E        | lu     |
+      | pickFromTU2 | E        | lu     |
+      | pickFromTU3 | E        | lu     |
+
+    And M_HU_Attribute is validated
+      | M_HU_ID                             | M_Attribute_ID.Value | Value | ValueDate  |
+      | pickFromLU                          | HU_BestBeforeDate    |       | -          |
+      | pickFromTU1,pickFromTU2,pickFromTU3 | HU_BestBeforeDate    |       | 2027-03-01 |
+      | lu                                  | HU_BestBeforeDate    |       | 2027-03-01 |
+      | pickFromLU                          | Lot-Nummer           | -     |            |
+      | pickFromTU1,pickFromTU2,pickFromTU3 | Lot-Nummer           | 9876  |            |
+      | lu                                  | Lot-Nummer           | 9876  |            |
+
+    And validate M_AttributeInstance:
+      | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
+      | asi                       | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
+      | asi                       | Lot-Nummer        | 9876                  |
+
+
+    
+    
+    
+    
+    
+    
+    
 # ######################################################################################################################
 # ######################################################################################################################
 # ######################################################################################################################
@@ -135,13 +328,15 @@ Feature: mobileUI Picking tests
       | salesOrder | true    | customer                 | 2024-03-26  |
     And metasfresh contains C_OrderLines:
       | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | salesOrder            | line1      | catchWeightProduct      | 12         | TUx4_CatchWeightProduct                |
-      | salesOrder            | line2      | regularProduct          | 10         | TUx4_RegularProduct                    |
+      | salesOrder            | L1         | catchWeightProduct      | 12         | TUx4_CatchWeightProduct                |
+      | salesOrder            | L2         | regularTUProduct        | 400        | TUx4_RegularTUProduct                  |
+      | salesOrder            | L3         | regularCUProduct        | 9          |                                        |
     And the order identified by salesOrder is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier               | C_OrderLine_ID.Identifier | IsToRecompute |
-      | sched_CatchWeightProduct | line1                     | N             |
-      | sched_RegularProduct     | line2                     | N             |
+      | sched_CatchWeightProduct | L1                        | N             |
+      | sched_RegularTUProduct   | L2                        | N             |
+      | sched_RegularCUProduct   | L3                        | N             |
     And start picking job for sales order identified by salesOrder
 
     And scan picking slot identified by 200.0
@@ -157,106 +352,122 @@ Feature: mobileUI Picking tests
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.107#08.11.2025#506 |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.108#08.11.2025#507 |
     And pick lines
-      | PickingLine.byProduct | PickFromHU       | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
-      | regularProduct        | regularProductHU | 9         | 1           | N                     | 2027-03-01     | 9876  |
+      | PickingLine.byProduct | PickFromHU         | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | regularTUProduct      | regularTUProductHU | 9         | 1           | N                     | 2027-03-01     | 9876  |
+    And pick lines
+      | PickingLine.byProduct | PickFromHU         | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
+      | regularCUProduct      | regularCUProductHU | 9         | 1           | N                     | 2028-03-01     | 10876 |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_CatchWeightProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
-      | 0.101             | KGM          | 1         | cu1    | 0     | -          | 0     | -          | N         |
-      | 0.102             | KGM          | 1         | cu2    | 0     | -          | 0     | -          | N         |
-      | 0.103             | KGM          | 1         | cu3    | 0     | -          | 0     | -          | N         |
-      | 0.104             | KGM          | 1         | cu4    | 0     | -          | 0     | -          | N         |
-      | 0.105             | KGM          | 1         | cu5    | 0     | -          | 0     | -          | N         |
-      | 0.106             | KGM          | 1         | cu6    | 0     | -          | 0     | -          | N         |
-      | 0.107             | KGM          | 1         | cu7    | 0     | -          | 0     | -          | N         |
-      | 0.108             | KGM          | 1         | cu8    | 0     | -          | 0     | -          | N         |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularProduct
+      | 0.101             | KGM          | 1         | L1_cu1 | 0     | -          | 0     | -          | N         |
+      | 0.102             | KGM          | 1         | L1_cu2 | 0     | -          | 0     | -          | N         |
+      | 0.103             | KGM          | 1         | L1_cu3 | 0     | -          | 0     | -          | N         |
+      | 0.104             | KGM          | 1         | L1_cu4 | 0     | -          | 0     | -          | N         |
+      | 0.105             | KGM          | 1         | L1_cu5 | 0     | -          | 0     | -          | N         |
+      | 0.106             | KGM          | 1         | L1_cu6 | 0     | -          | 0     | -          | N         |
+      | 0.107             | KGM          | 1         | L1_cu7 | 0     | -          | 0     | -          | N         |
+      | 0.108             | KGM          | 1         | L1_cu8 | 0     | -          | 0     | -          | N         |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularTUProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
-      |                   |              | 9         | cu9    | 0     | -          | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu1     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu2     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu3     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu4     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu5     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu6     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu7     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu8     | 0     | -          | N         |
+      |                   |              | 4         | -      | 1     | L2_tu9     | 0     | -          | N         |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularCUProduct
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed |
+      |                   |              | 9         | L3_cu1 | 0     | -          | 0     | -          | N         |
 
     And complete picking job
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | sched_CatchWeightProduct         | shipment              | CO            |
-      | sched_RegularProduct             | shipment              | CO            |
+      | sched_RegularTUProduct           | shipment              | CO            |
+      | sched_RegularCUProduct           | shipment              | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_CatchWeightProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
-      | 0.101             | KGM          | 1         | cu1    | 1     | tu1        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.102             | KGM          | 1         | cu2    | 1     | tu1        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.103             | KGM          | 1         | cu3    | 1     | tu1        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.104             | KGM          | 1         | cu4    | 1     | tu1        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.105             | KGM          | 1         | cu5    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.106             | KGM          | 1         | cu6    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.107             | KGM          | 1         | cu7    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
-      | 0.108             | KGM          | 1         | cu8    | 1     | tu2        | 1     | lu1        | Y         | shipmentLine1  |
-    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularProduct
+      | 0.101             | KGM          | 1         | L1_cu1 | 1     | L1_tu1     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.102             | KGM          | 1         | L1_cu2 | 1     | L1_tu1     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.103             | KGM          | 1         | L1_cu3 | 1     | L1_tu1     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.104             | KGM          | 1         | L1_cu4 | 1     | L1_tu1     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.105             | KGM          | 1         | L1_cu5 | 1     | L1_tu2     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.106             | KGM          | 1         | L1_cu6 | 1     | L1_tu2     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.107             | KGM          | 1         | L1_cu7 | 1     | L1_tu2     | 1     | L1_lu      | Y         | shipmentLine1  |
+      | 0.108             | KGM          | 1         | L1_cu8 | 1     | L1_tu2     | 1     | L1_lu      | Y         | shipmentLine1  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularTUProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
-      |                   |              | 9         | cu9    | 1     | tu3        | 1     | lu2        | Y         | shipmentLine2  |
-      |                   |              | -4        | cu9    | 1     | tu3        | 1     | lu2        | Y         | shipmentLine2  |
-      |                   |              | +4        | cu10   | 1     | tu4        | 1     | lu2        | Y         | shipmentLine2  |
-      |                   |              | -4        | cu9    | 1     | tu3        | 1     | lu2        | Y         | shipmentLine2  |
-      |                   |              | +4        | cu11   | 1     | tu5        | 1     | lu2        | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu1     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu2     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu3     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu4     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu5     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu6     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu7     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu8     | 1     | L2_lu      | Y         | shipmentLine2  |
+      |                   |              | 4         | -      | 1     | L2_tu9     | 1     | L2_lu      | Y         | shipmentLine2  |
+    And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_RegularCUProduct
+      | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
+      |                   |              | 9         | L3_cu1 | 0     | -          | 0     | -          | Y         | shipmentLine3  |
 
     And M_HU_Attribute is validated
       | M_HU_ID | M_Attribute_ID.Value | ValueNumber |
-      | cu1     | WeightNet            | 0.101       |
-      | cu2     | WeightNet            | 0.102       |
-      | cu3     | WeightNet            | 0.103       |
-      | cu4     | WeightNet            | 0.104       |
-      | cu5     | WeightNet            | 0.105       |
-      | cu6     | WeightNet            | 0.106       |
-      | cu7     | WeightNet            | 0.107       |
-      | cu8     | WeightNet            | 0.108       |
-      | tu1     | WeightNet            | 0.410       |
-      | tu2     | WeightNet            | 0.426       |
-      | lu1     | WeightNet            | 0.836       |
+      | L1_cu1  | WeightNet            | 0.101       |
+      | L1_cu2  | WeightNet            | 0.102       |
+      | L1_cu3  | WeightNet            | 0.103       |
+      | L1_cu4  | WeightNet            | 0.104       |
+      | L1_cu5  | WeightNet            | 0.105       |
+      | L1_cu6  | WeightNet            | 0.106       |
+      | L1_cu7  | WeightNet            | 0.107       |
+      | L1_cu8  | WeightNet            | 0.108       |
+      | L1_tu1  | WeightNet            | 0.410       |
+      | L1_tu2  | WeightNet            | 0.426       |
+      | L1_lu   | WeightNet            | 0.836       |
 
     And M_HU_Attribute is validated
-      | M_HU_ID | M_Attribute_ID.Value | ValueDate  |
+      | M_HU_ID                                                        | M_Attribute_ID.Value | ValueDate  |
       # catch weight product:
-      | cu1     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu2     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu3     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu4     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu5     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu6     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu7     | HU_BestBeforeDate    | 2025-11-08 |
-      | cu8     | HU_BestBeforeDate    | 2025-11-08 |
-      | tu1     | HU_BestBeforeDate    | 2025-11-08 |
-      | tu2     | HU_BestBeforeDate    | 2025-11-08 |
-      | lu1     | HU_BestBeforeDate    | 2025-11-08 |
-      # regular product:
-      | tu3     | HU_BestBeforeDate    | 2027-03-01 |
-      | tu4     | HU_BestBeforeDate    | 2027-03-01 |
-      | tu5     | HU_BestBeforeDate    | 2027-03-01 |
-      | lu2     | HU_BestBeforeDate    | 2027-03-01 |
+      | L1_cu1,L1_cu2,L1_cu3,L1_cu4,L1_cu5,L1_cu6,L1_cu7,L1_cu8        | HU_BestBeforeDate    | 2025-11-08 |
+      | L1_tu1                                                         | HU_BestBeforeDate    | 2025-11-08 |
+      | L1_tu2                                                         | HU_BestBeforeDate    | 2025-11-08 |
+      | L1_lu                                                          | HU_BestBeforeDate    | 2025-11-08 |
+      # regular TU product:
+      | L2_tu1,L2_tu2,L2_tu3,L2_tu4,L2_tu5,L2_tu6,L2_tu7,L2_tu8,L2_tu9 | HU_BestBeforeDate    | 2027-03-01 |
+      | L2_lu                                                          | HU_BestBeforeDate    | 2027-03-01 |
+    # regular CU product
+      | L3_cu1                                                         | HU_BestBeforeDate    | 2028-03-01 |
 
     And M_HU_Attribute is validated
-      | M_HU_ID | M_Attribute_ID.Value | Value |
+      | M_HU_ID                                                        | M_Attribute_ID.Value | Value |
       # catch weight product:
-      | cu1     | Lot-Nummer           | 500   |
-      | cu2     | Lot-Nummer           | 501   |
-      | cu3     | Lot-Nummer           | 502   |
-      | cu4     | Lot-Nummer           | 503   |
-      | cu5     | Lot-Nummer           | 504   |
-      | cu6     | Lot-Nummer           | 505   |
-      | cu7     | Lot-Nummer           | 506   |
-      | cu8     | Lot-Nummer           | 507   |
-      | tu1     | Lot-Nummer           | -     |
-      | tu2     | Lot-Nummer           | -     |
-      | lu1     | Lot-Nummer           | -     |
-      # regular product:
-      | tu3     | Lot-Nummer           | 9876  |
-      | tu4     | Lot-Nummer           | 9876  |
-      | tu5     | Lot-Nummer           | 9876  |
-      | lu2     | Lot-Nummer           | 9876  |
+      | L1_cu1                                                         | Lot-Nummer           | 500   |
+      | L1_cu2                                                         | Lot-Nummer           | 501   |
+      | L1_cu3                                                         | Lot-Nummer           | 502   |
+      | L1_cu4                                                         | Lot-Nummer           | 503   |
+      | L1_cu5                                                         | Lot-Nummer           | 504   |
+      | L1_cu6                                                         | Lot-Nummer           | 505   |
+      | L1_cu7                                                         | Lot-Nummer           | 506   |
+      | L1_cu8                                                         | Lot-Nummer           | 507   |
+      | L1_tu1                                                         | Lot-Nummer           | -     |
+      | L1_tu2                                                         | Lot-Nummer           | -     |
+      | L1_lu                                                          | Lot-Nummer           | -     |
+      # regular TU product:
+      | L2_tu1,L2_tu2,L2_tu3,L2_tu4,L2_tu5,L2_tu6,L2_tu7,L2_tu8,L2_tu9 | Lot-Nummer           | 9876  |
+      | L2_lu                                                          | Lot-Nummer           | 9876  |
+      # regular CU product:
+      | L3_cu1                                                         | Lot-Nummer           | 10876 |
 
     And validate the created shipment lines by id
       | Identifier    | M_Product_ID       | movementqty | QtyDeliveredCatch | QtyEnteredTU | M_HU_PI_Item_Product_ID | M_AttributeSetInstance_ID |
       | shipmentLine1 | catchWeightProduct | 8           | 0.836             | 2            | TUx4_CatchWeightProduct | asi1                      |
-      | shipmentLine2 | regularProduct     | 9           |                   | 3            | TUx4_RegularProduct     | asi2                      |
+      | shipmentLine2 | regularTUProduct   | 36          |                   | 9            | TUx4_RegularTUProduct   | asi2                      |
+      | shipmentLine3 | regularCUProduct   | 9           |                   | 0            |                         | asi3                      |
 
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
@@ -266,3 +477,6 @@ Feature: mobileUI Picking tests
       # shipment line 2:
       | asi2                      | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
       | asi2                      | Lot-Nummer        | 9876                  |
+      # shipment line 3:
+      | asi3                      | HU_BestBeforeDate | 2028-03-01 00:00:00.0 |
+      | asi3                      | Lot-Nummer        | 10876                 |

@@ -2,6 +2,8 @@ package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
@@ -42,6 +44,8 @@ public interface PickingJobLoaderSupportingServices
 	String getProductNo(@NonNull ProductId productId);
 
 	ITranslatableString getProductName(@NonNull ProductId productId);
+
+	HUPIItemProduct getPackingInfo(@NonNull HUPIItemProductId huPIItemProductId);
 
 	String getLocatorName(@NonNull LocatorId locatorId);
 

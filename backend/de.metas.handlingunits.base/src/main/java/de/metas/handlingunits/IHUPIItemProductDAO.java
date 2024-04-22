@@ -52,7 +52,9 @@ import java.util.Properties;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	@NonNull I_M_HU_PI_Item_Product getById(@NonNull HUPIItemProductId id);
+	HUPIItemProduct getById(@NonNull HUPIItemProductId id);
+
+	@NonNull I_M_HU_PI_Item_Product getRecordById(@NonNull HUPIItemProductId id);
 
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
