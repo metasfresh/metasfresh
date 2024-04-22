@@ -104,12 +104,7 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
 		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptLineId);
 
-		if (settings.getRawProductId().getRepoId() != inOutLineRecord.getM_Product_ID())
-		{
-			return false;
-		}
-
-		return streamContractIds(recordRef).anyMatch(contractId::equals);
+		return settings.getRawProductId().getRepoId() == inOutLineRecord.getM_Product_ID();
 	}
 
 	@Override

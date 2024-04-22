@@ -66,9 +66,9 @@ public class ModularContractService
 			{
 				final ComputingMethodType computingMethodType = handler.getComputingMethodType();
 
-				for (final FlatrateTermId flatrateTermId : handler.streamContractIds(event.getTableRecordReference()).toList())
+				for (final FlatrateTermId contractId : handler.streamContractIds(event.getTableRecordReference()).toList())
 				{
-					if (!isApplicableContract(event.getTableRecordReference(), handler, flatrateTermId))
+					if (!isApplicableContract(event.getTableRecordReference(), handler, contractId))
 					{
 						continue;
 					}
@@ -85,7 +85,7 @@ public class ModularContractService
 							.userInChargeId(event.getUserInChargeId())
 							.logEntryContractType(logEntryContractType)
 							.computingMethodType(computingMethodType)
-							.flatrateTermId(flatrateTermId)
+							.flatrateTermId(contractId)
 							.build());
 				}
 			}
@@ -95,20 +95,20 @@ public class ModularContractService
 	private boolean isApplicableContract(
 			@NonNull final TableRecordReference tableRecordReference,
 			@NonNull final IComputingMethodHandler handler,
-			@NonNull final FlatrateTermId flatrateTermId)
+			@NonNull final FlatrateTermId contractId)
 	{
-		if (!isModularOrInterimContract(flatrateTermId))
+		if (!isModularOrInterimContract(contractId))
 		{
 			return false;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(contractId);
 		if (settings == null || !settings.isMatching(handler.getComputingMethodType()))
 		{
 			return false;
 		}
 
-		return handler.isContractIdEligible(tableRecordReference, flatrateTermId, settings);
+		return handler.isContractIdEligible(tableRecordReference, contractId, settings);
 	}
 
 	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)

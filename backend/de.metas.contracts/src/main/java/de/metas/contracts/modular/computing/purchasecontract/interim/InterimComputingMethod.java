@@ -166,12 +166,13 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		final ProductPrice logProductPrice = computingMethodService.getUniqueProductPriceOrError(logs).orElse(null);
 
-		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
+		final Quantity qty = logs.stream()
+				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
+				.reduce(Quantity.zero(stockUOM), Quantity::add);
 
 		final Money money;
 		if (logProductPrice != null)

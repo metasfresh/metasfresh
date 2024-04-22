@@ -135,7 +135,7 @@ public class ModularContractProvider
 
 		return Stream.ofNullable(contractId)
 				.map(flatrateBL::getById)
-				.filter(contract -> MODULAR_CONTRACT.getCode().equals(contract.getType_Conditions()))
+				.filter(contract -> MODULAR_CONTRACT.equalsByCode(contract.getType_Conditions()))
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
 	}

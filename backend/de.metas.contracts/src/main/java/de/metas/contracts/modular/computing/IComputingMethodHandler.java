@@ -63,7 +63,7 @@ public interface IComputingMethodHandler
 			@NonNull final FlatrateTermId contractId,
 			@NonNull final ModularContractSettings settings)
 	{
-		return streamContractIds(recordRef).anyMatch(id -> FlatrateTermId.equals(id, contractId));
+		return true;
 	}
 
 	@NonNull
