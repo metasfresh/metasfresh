@@ -108,7 +108,6 @@ ProductInfoRows.propTypes = {
 };
 
 const AttributeRow = ({ caption, value, valueDisplay }) => {
-  console.log('row', { caption, value, valueDisplay });
   // hide rows with empty values
   if (value == null) {
     return null;
