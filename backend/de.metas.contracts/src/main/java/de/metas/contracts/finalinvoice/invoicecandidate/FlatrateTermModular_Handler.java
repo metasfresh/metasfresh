@@ -235,8 +235,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		setPriceAndQty(invoiceCandidate, computingResponse);
 
-		trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-				InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+		if (!computingResponse.getIds().isEmpty())
+		{
+			trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+																				 InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+		}
 
 		return invoiceCandidate;
 	}
