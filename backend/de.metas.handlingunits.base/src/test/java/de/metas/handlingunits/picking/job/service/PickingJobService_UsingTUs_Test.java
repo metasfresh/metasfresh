@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
@@ -27,11 +28,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 
+//@ExtendWith(AdempiereTestWatcher.class)
 @SuppressWarnings("OptionalGetWithoutIsPresent")
 public class PickingJobService_UsingTUs_Test
 {
@@ -141,8 +142,10 @@ public class PickingJobService_UsingTUs_Test
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
 						.huQRCode(helper.huQRCodesRepository.getFirstQRCodeByHuId(lu1).get())
-						.qtyPicked(new BigDecimal("75"))
+						.qtyPicked(QtyTU.THREE.toBigDecimal()) // 3 x 25kg
 						.build());
+
+		results.reportStep("Picking Job after Picked 1", pickingJob);
 		results.reportStepWithAllHUs("HUs after Picked 1");
 
 		pickingJob = helper.pickingJobService.processStepEvent(
@@ -153,7 +156,7 @@ public class PickingJobService_UsingTUs_Test
 						.pickFromKey(PickingJobStepPickFromKey.MAIN)
 						.eventType(PickingJobStepEventType.PICK)
 						.huQRCode(helper.huQRCodesRepository.getFirstQRCodeByHuId(lu2).get())
-						.qtyPicked(new BigDecimal("25"))
+						.qtyPicked(QtyTU.ONE.toBigDecimal()) // 1 x 25kg
 						.build());
 		results.reportStepWithAllHUs("HUs after Picked 2");
 
