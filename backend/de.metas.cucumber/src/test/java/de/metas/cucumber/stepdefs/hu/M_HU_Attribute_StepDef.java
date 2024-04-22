@@ -165,7 +165,7 @@ public class M_HU_Attribute_StepDef
 
 			final int huId = huIdentifier.lookupIn(huTable).getM_HU_ID();
 			SharedTestContext.put("huId", huId);
-			
+
 			final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
 			assertThat(huRecord).isNotNull();
 
@@ -186,7 +186,14 @@ public class M_HU_Attribute_StepDef
 						assertThat(huAttribute.getValue()).as("Value(string)").isEqualTo(valueStringNorm);
 					});
 			row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
-					.ifPresent(valueNumber -> assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber));
+					.ifPresent(valueNumber -> {
+						assertThat(huAttribute.getValueNumber()).as("ValueNumber").isEqualByComparingTo(valueNumber);
+					});
+			row.getAsOptionalBoolean(I_M_HU_Attribute.COLUMNNAME_ValueNumber + ".IsNull")
+					.ifPresent(expectedIsNull -> {
+						final boolean actualIsNull = InterfaceWrapperHelper.isNull(huAttribute, I_M_HU_Attribute.COLUMNNAME_ValueNumber);
+						assertThat(expectedIsNull).as("ValueNumber.IsNull").isEqualTo(actualIsNull);
+					});
 			row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_ValueDate)
 					.ifPresent(valueString -> {
 						final LocalDate valueDate = !valueString.equalsIgnoreCase("-") ? LocalDate.parse(valueString) : null;
