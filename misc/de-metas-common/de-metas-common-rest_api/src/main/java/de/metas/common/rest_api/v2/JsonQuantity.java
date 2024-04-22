@@ -22,7 +22,7 @@
 
 package de.metas.common.rest_api.v2;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,12 +36,13 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonQuantity
 {
-	@ApiModelProperty(position = 10, required = true)
+	@Schema(required = true)
 	@NonNull BigDecimal qty;
 
-	@ApiModelProperty(position = 20, required = true, value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
+	@Schema(required = true, //
+			description = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	@NonNull String uomCode;
 
-	@ApiModelProperty(position = 30, value = "Unit of measurement symbol; this translates to `C_UOM.UOMSymbol`.")
+	@Schema(description = "Unit of measurement symbol; this translates to `C_UOM.UOMSymbol`.")
 	@Nullable String uomSymbol;
 }

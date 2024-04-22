@@ -23,14 +23,13 @@
 package de.metas.cucumber.stepdefs.inventory;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
@@ -54,29 +53,24 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 import java.util.Map;
@@ -218,12 +212,9 @@ public class M_Inventory_StepDef
 				.orElse("not_important");
 		inventoryRecord.setDocumentNo(documentNo);
 
-		final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Inventory.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(docTypeIdentifier))
-		{
-			final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-			inventoryRecord.setC_DocType_ID(docTypeRecord.getC_DocType_ID());
-		}
+		row.getAsOptionalIdentifier(I_M_Inventory.COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::get)
+				.ifPresent(docTypeRecord -> inventoryRecord.setC_DocType_ID(docTypeRecord.getC_DocType_ID()));
 
 		saveRecord(inventoryRecord);
 
@@ -262,13 +253,9 @@ public class M_Inventory_StepDef
 		row.getAsOptionalBigDecimal(I_M_InventoryLine.COLUMNNAME_QtyInternalUse)
 				.ifPresent(inventoryLine::setQtyInternalUse);
 
-		final String modularFlatrateTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_InventoryLine.COLUMNNAME_Modular_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(modularFlatrateTermIdentifier))
-		{
-			final I_C_Flatrate_Term flatrateTerm = flatrateTermTable.get(modularFlatrateTermIdentifier);
-
-			inventoryLine.setModular_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
-		}
+		row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_Modular_Flatrate_Term_ID)
+				.map(flatrateTermTable::getId)
+				.ifPresent(modularContractId -> inventoryLine.setModular_Flatrate_Term_ID(modularContractId.getRepoId()));
 
 		saveRecord(inventoryLine);
 

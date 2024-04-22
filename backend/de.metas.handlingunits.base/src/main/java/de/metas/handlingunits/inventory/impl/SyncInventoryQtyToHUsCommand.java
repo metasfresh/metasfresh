@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inventory.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -299,7 +300,7 @@ public class SyncInventoryQtyToHUsCommand
 			final HuId createdHUId = extractSingleCreatedHUId(destination);
 			if(inventoryLineHU.getHuQRCode() != null)
 			{
-				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), createdHUId);
+				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), ImmutableSet.of(createdHUId));
 			}
 
 			sourceHUsService.addSourceHUMarkerIfCarringComponents(

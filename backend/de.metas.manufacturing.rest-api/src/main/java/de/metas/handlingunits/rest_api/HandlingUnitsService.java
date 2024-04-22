@@ -181,8 +181,9 @@ public class HandlingUnitsService
 				huContext,
 				hu,
 				loadJsonHURequest.isExcludeEmptyAttributes(),
-				loadJsonHURequest.getEmptyAttributesToInclude());
-        final JsonHUType huType = toJsonHUType(hu, adLanguage);
+				loadJsonHURequest.getEmptyAttributesToInclude(),
+				adLanguage);
+		final JsonHUType huType = toJsonHUType(hu);
 
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
@@ -573,9 +574,9 @@ public class HandlingUnitsService
 	{
 		final MoveHURequestItem moveHURequestItem = MoveHURequestItem.builder()
 				.huIdAndQRCode(HUIdAndQRCode.builder()
-									   .huId(request.getHuId())
-									   .huQRCode(request.getHuQRCode())
-									   .build())
+						.huId(request.getHuId())
+						.huQRCode(request.getHuQRCode())
+						.build())
 				.numberOfTUs(request.getNumberOfTUs())
 				.build();
 

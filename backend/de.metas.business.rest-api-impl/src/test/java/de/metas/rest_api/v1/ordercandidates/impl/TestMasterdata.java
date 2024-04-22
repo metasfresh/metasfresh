@@ -91,7 +91,7 @@ final class TestMasterdata
 		docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
 				.ctx(Env.getCtx())
 				.name(docBaseAndSubType.toString())
-				.docBaseType(docBaseAndSubType.getDocBaseType().getCode())
+				.docBaseType(docBaseAndSubType.getDocBaseType())
 				.docSubType(docBaseAndSubType.getDocSubType())
 				.glCategoryId(GLCategoryId.ofRepoId(123))
 				.build());

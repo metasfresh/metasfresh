@@ -400,18 +400,6 @@ public class HandlingUnitsRestController
 				.build());
 	}
 
-	@PutMapping("/byId/{M_HU_ID}/qty")
-	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(
-			@PathVariable("M_HU_ID") final int huId,
-			@RequestBody @NonNull final JsonHUQtyChangeRequest request)
-	{
-		final HuId huWithChangedQty = handlingUnitsService.updateQty(HuId.ofRepoId(huId), request);
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huWithChangedQty)
-				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
-				.build());
-	}
-
 	@PostMapping("/huLabels/print")
 	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
 	{
@@ -452,7 +440,11 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
 	{
 		final HuId huId = handlingUnitsService.updateQty(request);
-		return getByIdSupplier(() -> huId);
+
+		return getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.build());
 	}
 
 	@NonNull

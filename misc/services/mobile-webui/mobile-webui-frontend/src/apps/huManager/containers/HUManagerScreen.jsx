@@ -8,10 +8,10 @@ import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
-    huManagerBulkActionsLocation,
-    huManagerDisposeLocation,
-    huManagerHuLabelsLocation,
-    huManagerMoveLocation,
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
@@ -162,20 +162,20 @@ const HUManagerScreen = () => {
               onClick={() => setModalToDisplay(MODALS.SCAN_CURRENT_LOCATOR)}
             />
           )}
-            <ButtonWithIndicator
-                caption={trl('huManager.action.bulkActions.buttonCaption')}
-                onClick={onBulkActionsClick}
-            />
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
+          />
           {isAllowQtyChange && (
             <ButtonWithIndicator
               caption={trl('huManager.action.changeQty.buttonCaption')}
               onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
             />
           )}
-            <ButtonWithIndicator
-                caption={trl('huManager.action.printLabels.buttonCaption')}
-                onClick={onPrintLabelsClicked}
-            />
+          <ButtonWithIndicator
+            caption={trl('huManager.action.printLabels.buttonCaption')}
+            onClick={onPrintLabelsClicked}
+          />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
