@@ -9,6 +9,8 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 
@@ -50,6 +52,34 @@ class QtyTUTest
 		assertThat(objDeserialized).isEqualTo(QtyTUContainer.builder()
 				.value(QtyTU.ofInt(5))
 				.build());
+	}
+
+	@Nested
+	class ofInt
+	{
+		@Test
+		void zero() {assertThat(QtyTU.ofInt(0)).isSameAs(QtyTU.ZERO);}
+
+		@Test
+		void one() {assertThat(QtyTU.ofInt(1)).isSameAs(QtyTU.ONE);}
+
+		@Test
+		void two() {assertThat(QtyTU.ofInt(2)).isSameAs(QtyTU.TWO);}
+
+		@Test
+		void three() {assertThat(QtyTU.ofInt(3)).isSameAs(QtyTU.THREE);}
+
+		@Test
+		void four() {assertThat(QtyTU.ofInt(4)).isSameAs(QtyTU.FOUR);}
+
+		@ParameterizedTest
+		@ValueSource(ints = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 })
+		void testCached(int intValue)
+		{
+			final QtyTU qtyTU = QtyTU.ofInt(intValue);
+			assertThat(qtyTU).isSameAs(QtyTU.ofInt(intValue));
+			assertThat(qtyTU.toInt()).isEqualTo(intValue);
+		}
 	}
 
 	@Nested

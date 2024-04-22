@@ -42,13 +42,9 @@ public final class QtyTU implements Comparable<QtyTU>
 {
 	public static QtyTU ofInt(final int intValue)
 	{
-		if (intValue == 0)
+		if (intValue >= 0 && intValue < cache.length)
 		{
-			return ZERO;
-		}
-		else if (intValue == 1)
-		{
-			return ONE;
+			return cache[intValue];
 		}
 		else
 		{
@@ -81,8 +77,24 @@ public final class QtyTU implements Comparable<QtyTU>
 		return stringValueNorm != null ? ofString(stringValueNorm) : null;
 	}
 
-	public static final QtyTU ZERO = new QtyTU(0);
-	public static final QtyTU ONE = new QtyTU(1);
+	public static final QtyTU ZERO;
+	public static final QtyTU ONE;
+	public static final QtyTU TWO;
+	public static final QtyTU THREE;
+	public static final QtyTU FOUR;
+	private static final QtyTU[] cache = new QtyTU[] {
+			ZERO = new QtyTU(0),
+			ONE = new QtyTU(1),
+			TWO = new QtyTU(2),
+			THREE = new QtyTU(3),
+			FOUR = new QtyTU(4),
+			new QtyTU(5),
+			new QtyTU(6),
+			new QtyTU(7),
+			new QtyTU(8),
+			new QtyTU(9),
+			new QtyTU(10),
+	};
 
 	final int intValue;
 
