@@ -671,7 +671,7 @@ public class M_HU_StepDef
 			final SoftAssertions softly = new SoftAssertions();
 
 			row.getAsOptionalString(COLUMNNAME_HUStatus).ifPresent(huStatus -> softly.assertThat(huRecord.getHUStatus()).as("HUStatus").isEqualTo(huStatus));
-			row.getAsOptionalBigDecimal(COLUMNNAME_IsActive).ifPresent(isActive -> softly.assertThat(huRecord.isActive()).as("IsActive").isEqualTo(isActive));
+			row.getAsOptionalBoolean(COLUMNNAME_IsActive).ifPresent(isActive -> softly.assertThat(huRecord.isActive()).as("IsActive").isEqualTo(isActive));
 			row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
 					.map(locatorTable::getId)
 					.ifPresent(locatorId -> softly.assertThat(huRecord.getM_Locator_ID()).as("M_Locator_ID").isEqualTo(locatorId.getRepoId()));
