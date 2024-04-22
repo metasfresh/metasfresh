@@ -98,11 +98,13 @@ public final class StepDefDataIdentifier
 
 	public int getAsInt() {return NumberUtils.asInt(value);}
 
-	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(getAsString());}
+	public <T> T lookupIn(@NonNull final StepDefData<T> table) {return table.get(this);}
+
+	public <ID extends RepoIdAware> ID lookupIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table) {return table.getId(this);}
 
 	public <T> T lookupOrLoadById(@NonNull final StepDefData<T> table, @NonNull IntFunction<T> loader)
 	{
-		return table.getOptional(getAsString())
+		return table.getOptional(this)
 				.orElseGet(() -> loader.apply(getAsInt()));
 	}
 
