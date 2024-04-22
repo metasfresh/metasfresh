@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -31,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
@@ -106,4 +109,23 @@ public final class StepDefDataIdentifier
 	public <T> void put(@NonNull final StepDefData<T> table, @NonNull T record) {table.put(this, record);}
 
 	public <T> void putOrReplace(@NonNull final StepDefData<T> table, @NonNull T record) {table.putOrReplace(this, record);}
+
+	@NonNull
+	public List<StepDefDataIdentifier> toCommaSeparatedList()
+	{
+		if (!value.contains(","))
+		{
+			return ImmutableList.of(this);
+		}
+		else
+		{
+			return Splitter.on(",")
+					.trimResults()
+					.omitEmptyStrings()
+					.splitToList(value)
+					.stream()
+					.map(StepDefDataIdentifier::ofString)
+					.collect(ImmutableList.toImmutableList());
+		}
+	}
 }
