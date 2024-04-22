@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings.interceptor;
 
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.X_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -46,6 +47,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+
 @Component
 @Interceptor(I_ModCntr_Module.class)
 @AllArgsConstructor
@@ -56,8 +60,10 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresRawProduct = AdMessageKey.of("ComputingMethodTypeRequiresRawProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresProcessedProduct = AdMessageKey.of("ComputingMethodTypeRequiresProcessedProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
+
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
@@ -116,10 +122,37 @@ public class ModCntr_Module
 					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
 		}
 
+		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.getModuleConfigs()
+				.stream()
+				.filter(module -> module.isMatching(SalesOnRawProduct)
+						|| module.isMatching(SalesOnProcessedProduct))
+				.count() > 1;
+
+		if (bothSalesOnRawProductAndProcessedProductSet)
+		{
+			throw new AdempiereException("SalesOnRawProduct & SalesOnProcessedProduct cannot be both used within the same Modular Settings!")
+					.setParameter("ProductId: ", type.getM_Product_ID())
+					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
+		}
+
 		switch (computingMethodType)
 		{
-			case Receipt, SalesOnRawProduct ->
+			case Receipt ->
 			{
+				if (!ProductId.equals(settings.getRawProductId(), productId))
+				{
+					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);
+				}
+			}
+
+			case SalesOnRawProduct ->
+			{
+				if (!X_ModCntr_Module.INVOICINGGROUP_Service.equals(type.getInvoicingGroup()))
+				{
+					throw new AdempiereException("SalesOnRawProduct cannot be set for an invoicing group other than: 'Leistung'!")
+							.setParameter("InvoicingGroup: ", type.getInvoicingGroup());
+				}
+
 				if (!ProductId.equals(settings.getRawProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);

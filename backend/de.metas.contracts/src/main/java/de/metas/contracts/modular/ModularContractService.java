@@ -22,13 +22,15 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -40,6 +42,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -65,7 +68,7 @@ public class ModularContractService
 
 				for (final FlatrateTermId flatrateTermId : handler.streamContractIds(event.getTableRecordReference()).toList())
 				{
-					if (!isApplicableContract(computingMethodType, flatrateTermId))
+					if (!isApplicableContract(event.getTableRecordReference(), handler, flatrateTermId))
 					{
 						continue;
 					}
@@ -89,7 +92,10 @@ public class ModularContractService
 		}
 	}
 
-	private boolean isApplicableContract(@NonNull final ComputingMethodType computingMethodType, @NonNull final FlatrateTermId flatrateTermId)
+	private boolean isApplicableContract(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final IComputingMethodHandler handler,
+			@NonNull final FlatrateTermId flatrateTermId)
 	{
 		if (!isModularOrInterimContract(flatrateTermId))
 		{
@@ -97,7 +103,12 @@ public class ModularContractService
 		}
 
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		return settings != null && settings.isMatching(computingMethodType);
+		if (settings == null || !settings.isMatching(handler.getComputingMethodType()))
+		{
+			return false;
+		}
+
+		return handler.isContractIdEligible(tableRecordReference, flatrateTermId, settings);
 	}
 
 	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)
@@ -132,5 +143,11 @@ public class ModularContractService
 				.money(modCntrSpecificPrice.amount())
 				.uomId(modCntrSpecificPrice.uomId())
 				.build();
+	}
+
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getSettingsByContractIds(@NonNull final ImmutableSet<FlatrateTermId> contractIds)
+	{
+		return modularContractSettingsDAO.getOrLoadBy(contractIds);
 	}
 }

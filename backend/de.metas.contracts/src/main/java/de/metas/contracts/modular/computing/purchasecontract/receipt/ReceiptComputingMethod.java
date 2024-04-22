@@ -86,7 +86,10 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)
 	{
-		if (!contractType.isModularContractType()) {return false;}
+		if (!contractType.isModularContractType())
+		{
+			return false;
+		}
 
 		switch (recordRef.getTableName())
 		{
@@ -150,7 +153,7 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
-		computingMethodService.validateLogs(logs);
+		computingMethodService.getUniqueProductPriceOrError(logs);
 		final Quantity qty = logs.stream()
 				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
 				.reduce(Quantity.zero(stockUOM), Quantity::add);

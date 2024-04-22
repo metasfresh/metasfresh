@@ -23,6 +23,7 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
@@ -143,6 +144,9 @@ public interface IFlatrateDAO extends ISingletonService
 
 	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
 
+	@NonNull
+	ImmutableMap<FlatrateTermId, I_C_Flatrate_Term> getByIds(@NonNull Set<FlatrateTermId> flatrateTermIds);
+
 	/**
 	 * This method calls {@link #retrieveTerms(Properties, OrgId, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
 	 */
@@ -231,6 +235,9 @@ public interface IFlatrateDAO extends ISingletonService
 	 * Retrieve all active {@link I_C_Flatrate_Conditions} of context tenant.
 	 */
 	List<I_C_Flatrate_Conditions> retrieveConditions(Properties ctx);
+
+	@NonNull
+	ImmutableMap<ConditionsId, I_C_Flatrate_Conditions> getTermConditionsByIds(@NonNull Set<ConditionsId> conditionsIds);
 
 	int getFlatrateConditionsIdByName(String name);
 

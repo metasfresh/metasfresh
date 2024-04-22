@@ -313,7 +313,7 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
-		if(query.getComputingMethodType() != null)
+		if (query.getComputingMethodType() != null)
 		{
 			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addOnlyActiveRecordsFilter()
@@ -326,7 +326,7 @@ public class ModularContractLogDAO
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
 		}
-		if(query.getInvoiceCandidateId()!=null)
+		if (query.getInvoiceCandidateId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
 		}

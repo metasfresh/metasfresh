@@ -57,6 +57,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.RECREATE_LOGS;
@@ -175,13 +176,18 @@ public class ComputingMethodService
 		}
 	}
 
-	public void validateLogs(@NonNull final List<ModularContractLogEntry> logs)
+	@NonNull
+	public Optional<ProductPrice> getUniqueProductPriceOrError(@NonNull final List<ModularContractLogEntry> logs)
 	{
-		if (logs.isEmpty()) {return;}
+		if (logs.isEmpty())
+		{
+			return Optional.empty();
+		}
 
 		final ProductPrice productPriceToMatch = logs.get(0).getPriceActual();
 		Check.assumeNotNull(productPriceToMatch, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
 		logs.forEach(log -> validateLog(log.getPriceActual(), productPriceToMatch));
+		return Optional.of(productPriceToMatch);
 	}
 
 	private void validateLog(@Nullable final ProductPrice productPrice, @NonNull final ProductPrice productPriceToMatch)
