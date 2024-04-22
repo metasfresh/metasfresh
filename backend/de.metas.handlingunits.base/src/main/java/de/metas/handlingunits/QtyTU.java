@@ -105,6 +105,7 @@ public final class QtyTU implements Comparable<QtyTU>
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
 		return String.valueOf(intValue);
@@ -129,7 +130,11 @@ public final class QtyTU implements Comparable<QtyTU>
 
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
+	public boolean isZero() {return intValue == 0;}
+
 	public boolean isPositive() {return intValue > 0;}
+
+	public boolean isOne() {return intValue == 1;}
 
 	public QtyTU add(@NonNull final QtyTU toAdd)
 	{
@@ -144,6 +149,18 @@ public final class QtyTU implements Comparable<QtyTU>
 		else
 		{
 			return ofInt(this.intValue + toAdd.intValue);
+		}
+	}
+
+	public QtyTU subtractOrZero(@NonNull final int toSubtract)
+	{
+		if (toSubtract <= 0)
+		{
+			return this;
+		}
+		else
+		{
+			return ofInt(Math.max(this.intValue - toSubtract, 0));
 		}
 	}
 
