@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -86,12 +87,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
 	 */
 	boolean isHULoaderInProgress();
-	
+
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
 
 	List<I_M_HU> getVHUs(HuId huId);
+
+	HUType getHUUnitType(@NonNull I_M_HU hu);
 
 	ImmutableSet<HuId> getVHUIds(HuId huId);
 
@@ -281,7 +284,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable String huUnitType,
 			@Nullable BPartnerId bpartnerId);
 
-	void reactivateDestroyedHU(@NonNull I_M_HU hu,@NonNull IContextAware contextProvider);
+	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
 
 	@Builder
 	@Value
@@ -311,11 +314,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent.
 	 *
 	 * @return top level parent; never return null; more preciselly:
-	 *         <ul>
-	 *         <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
-	 *         <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
-	 *         <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
-	 *         </ul>
+	 * <ul>
+	 * <li>if given HU is a VHU, then returned LUTUCU pair will have: VHU=given HU, TU=parent TU, LU=parent LU(top level)
+	 * <li>if given HU is a TU, then returned LUTUCU pair will have: VHU=null, TU=given HU, LU=parent LU(top level)
+	 * <li>if given HU is a LU, then returned LUTUCU pair will have: VHU=null, TU=null, LU=given HU(top level)
+	 * </ul>
 	 */
 	LUTUCUPair getTopLevelParentAsLUTUCUPair(I_M_HU hu);
 
@@ -359,8 +362,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @param hu hu to check if it is picked on the fly
 	 * @return true if it is picked on the fly; false otherwise
 	 * @see the following 2 methods:
-	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
-	 *      - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#createShipmentSchedulesWithHUForQtyToDeliver
+	 * - de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService#pickHUsOnTheFly
 	 */
 	@SuppressWarnings("JavadocReference")
 	boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu);
@@ -600,6 +603,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
 
 	AttributesKey getAttributesKeyForInventory(@NonNull IAttributeSet attributeSet);
+
+	void setHUStatus(@NonNull Collection<I_M_HU> hus, @NonNull String huStatus);
+
+	void setHUStatus(@NonNull Collection<I_M_HU> hus, @NonNull IHUContext huContext, @NonNull String huStatus);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 

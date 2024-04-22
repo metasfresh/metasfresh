@@ -56,6 +56,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -912,7 +913,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
-
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
@@ -972,6 +972,24 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		return getIncludedPI(parentPIItem);
+	}
+
+	@Override
+	public HUType getHUUnitType(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU_PI_Version huPIVersion = getEffectivePIVersion(hu);
+		if (huPIVersion == null)
+		{
+			throw new AdempiereException("Cannot determine M_HU_PI_Version of " + hu);
+		}
+
+		final HUType huType = HUType.ofCodeOrNull(huPIVersion.getHU_UnitType());
+		if (huType == null)
+		{
+			throw new AdempiereException("Cannot determine HUType of " + huPIVersion);
+		}
+
+		return huType;
 	}
 
 	@Override
@@ -1066,6 +1084,30 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.orElse(AttributesKey.NONE);
 	}
 
+	@Override
+	public void setHUStatus(@NonNull final Collection<I_M_HU> hus, @NonNull final String huStatus)
+	{
+		if (hus.isEmpty())
+		{
+			return;
+		}
+
+		setHUStatus(hus, createMutableHUContext(), huStatus);
+	}
+
+	@Override
+	public void setHUStatus(@NonNull final Collection<I_M_HU> hus, @NonNull final IHUContext huContext, @NonNull final String huStatus)
+	{
+		if (hus.isEmpty())
+		{
+			return;
+		}
+
+		hus.forEach(hu -> {
+			huStatusBL.setHUStatus(huContext, hu, huStatus);
+			handlingUnitsRepo.saveHU(hu);
+		});
+	}
 
 	@Override
 	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
