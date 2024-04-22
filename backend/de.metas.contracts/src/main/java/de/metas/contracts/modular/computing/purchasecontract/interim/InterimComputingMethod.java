@@ -47,6 +47,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -145,7 +146,9 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(request.getFlatrateTermId());
+		final ProductId contractProductId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
+		final I_C_UOM stockUOM = productBL.getStockUOM(contractProductId);
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 		computingMethodService.validateLogs(logs);
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);

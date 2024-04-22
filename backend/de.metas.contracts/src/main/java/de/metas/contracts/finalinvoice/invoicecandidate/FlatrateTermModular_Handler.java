@@ -283,7 +283,16 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		final ComputingResponse response = computingMethodHandler.compute(request);
 
-		final UomId stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
+		final UomId stockUomId;
+
+		if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
+		{
+			stockUomId = productBL.getStockUOMId(modularContract.getM_Product_ID());
+		}
+		else
+		{
+			stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
+		}
 
 		Check.assumeEquals(currencyId, response.getPrice().getCurrencyId());
 		Check.assumeEquals(stockUomId, response.getQty().getUomId());
