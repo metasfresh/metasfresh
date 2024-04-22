@@ -169,7 +169,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(tableRecordReference)
-						.contractId(createLogRequest.getContractId())
+						.contractId(modularContractId)
 						.collectionPointBPartnerId(invoiceBpartnerId)
 						.producerBPartnerId(invoiceBpartnerId)
 						.invoicingBPartnerId(invoiceBpartnerId)

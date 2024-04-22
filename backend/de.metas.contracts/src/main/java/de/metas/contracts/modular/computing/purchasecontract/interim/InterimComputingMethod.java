@@ -145,18 +145,10 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		return getComputingResponse(request);
-	}
-
-	private ComputingResponse getComputingResponse(final @NonNull ComputingRequest request)
-	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 		computingMethodService.validateLogs(logs);
-
-		final Quantity qty = logs.stream()
-				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
+		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
 		final ProductPrice logProductPrice = !logs.isEmpty() ? logs.get(0).getPriceActual() : null;
 
@@ -186,6 +178,40 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
 	{
-		return Optional.of(getComputingResponse(request));
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+
+		computingMethodService.validateLogs(logs);
+
+		final Quantity qty = logs.stream()
+				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
+				.reduce(Quantity.zero(stockUOM), Quantity::add);
+
+		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
+
+		final ProductPrice logProductPrice = logs.get(0) != null ? logs.get(0).getPriceActual() : null;
+
+		final Money money;
+		if (logProductPrice != null)
+		{
+			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
+			Check.assumeEquals(stockUOM.getC_UOM_ID(), logProductPrice.getUomId().getRepoId(), "Log Price UOM and Invoice Product UOM should be the same");
+			money = logProductPrice.toMoney();
+		}
+		else
+		{
+			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
+		}
+
+		return Optional.of(ComputingResponse.builder()
+								   .ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+								   .price(ProductPrice.builder()
+												  .productId(request.getProductId())
+												  .money(money)
+												  .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+												  .build())
+								   .qty(qty)
+								   .build()
+		);
 	}
 }
