@@ -376,6 +376,11 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(ZERO, uom, ZERO, uom);
 	}
 
+	public static Quantity one(final I_C_UOM uom)
+	{
+		return new Quantity(ONE, uom, ONE, uom);
+	}
+
 	/**
 	 * @return ZERO quantity (but preserve UOMs)
 	 */
