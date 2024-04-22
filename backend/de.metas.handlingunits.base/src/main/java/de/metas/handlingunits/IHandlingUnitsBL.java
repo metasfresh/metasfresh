@@ -505,10 +505,16 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	static I_C_BPartner_Location extractBPartnerLocationOrNull(final I_M_HU hu)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
+		final BPartnerLocationId bpartnerLocationId = extractBPartnerLocationIdOrNull(hu);
 		return bpartnerLocationId != null
 				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
+	}
+
+	@Nullable
+	static BPartnerLocationId extractBPartnerLocationIdOrNull(final I_M_HU hu)
+	{
+		return BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
 	}
 
 	LocatorId getLocatorId(HuId huId);
