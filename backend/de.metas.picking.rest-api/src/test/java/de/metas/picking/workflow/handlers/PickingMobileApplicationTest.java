@@ -62,14 +62,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@ExtendWith(AdempiereTestWatcher.class)
 class PickingMobileApplicationTest
