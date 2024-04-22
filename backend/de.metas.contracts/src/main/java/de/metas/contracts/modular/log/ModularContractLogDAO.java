@@ -191,7 +191,7 @@ public class ModularContractLogDAO
 		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
 														.entryIds(Optional.ofNullable(request.id())
 																		  .map(ImmutableSet::of)
-																		  .orElse(ImmutableSet.of()))
+																		  .orElseGet(ImmutableSet::of))
 														.flatrateTermId(request.flatrateTermId())
 														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
 														.contractType(request.logEntryContractType())
