@@ -12,6 +12,7 @@ import org.compiere.util.DisplayType;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -67,6 +68,13 @@ final class DateTimeTranslatableString implements ITranslatableString
 		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
+	public static DateTimeTranslatableString ofDateTime(@NonNull final LocalDateTime localDateTime)
+	{
+		final Instant instant = localDateTime.atZone(SystemTime.zoneId()).toInstant();
+		final boolean dateTime = true;
+		return new DateTimeTranslatableString(instant, dateTime);
+	}
+
 	public static DateTimeTranslatableString ofDateTime(@NonNull final Instant instant)
 	{
 		final boolean dateTime = true;
@@ -114,6 +122,10 @@ final class DateTimeTranslatableString implements ITranslatableString
 		else if (obj instanceof LocalTime)
 		{
 			return ofTime((LocalTime)obj);
+		}
+		else if (obj instanceof LocalDateTime)
+		{
+			return ofDateTime((LocalDateTime)obj);
 		}
 		else if (obj instanceof Instant)
 		{

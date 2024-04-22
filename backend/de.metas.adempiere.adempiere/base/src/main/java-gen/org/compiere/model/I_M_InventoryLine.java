@@ -638,6 +638,29 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (@Nullable java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_InventoryLine.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
+
+	/**
 	 * Set Reverse Line.
 	 *
 	 * <br>Type: Table

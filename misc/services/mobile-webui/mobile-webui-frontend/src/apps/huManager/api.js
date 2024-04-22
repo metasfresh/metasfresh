@@ -2,6 +2,7 @@ import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
 import { toQRCodeString } from '../../utils/qrCode/hu';
+import { toLocatorQRCodeString } from '../../utils/qrCode/locator';
 
 const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
@@ -66,16 +67,32 @@ export const moveBulkHUs = ({ huQRCodes, targetQRCode }) => {
     .then((response) => response.result);
 };
 
-export const changeQty = ({ huId, huQRCode, description, qty }) => {
-  return axios
-    .put(`${huAPIBasePath}/byId/${huId}/qty`, {
-      huQRCode: toQRCodeString(huQRCode),
-      qty: qty,
-      description: description,
-      splitOneIfAggregated: true,
-    })
-    .then(unboxAxiosResponse)
-    .then((response) => response.result);
+export const changeQty = ({
+                              huId,
+                              huQRCode,
+                              description,
+                              qty,
+                              locatorQRCode,
+                              setBestBeforeDate,
+                              bestBeforeDate,
+                              setLotNo,
+                              lotNo,
+                          }) => {
+    return axios
+        .post(`${huAPIBasePath}/qty`, {
+            huId,
+            huQRCode: toQRCodeString(huQRCode),
+            qty,
+            description,
+            locatorQRCode: locatorQRCode ? toLocatorQRCodeString(locatorQRCode) : null,
+            splitOneIfAggregated: true,
+            setBestBeforeDate,
+            bestBeforeDate,
+            setLotNo,
+            lotNo,
+        })
+        .then(unboxAxiosResponse)
+        .then((response) => response.result);
 };
 
 export const printHULabels = ({ huId, huLabelProcessId, nrOfCopies }) => {

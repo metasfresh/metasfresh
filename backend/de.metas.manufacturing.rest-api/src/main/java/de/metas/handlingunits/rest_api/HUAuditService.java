@@ -100,7 +100,12 @@ public class HUAuditService implements IMasterDataExportAuditService
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
 			@Nullable final PInstanceId pInstanceId)
 	{
-		final HuId huId = HuId.ofRepoId(Integer.parseInt(jsonHU.getId()));
+		if(jsonHU.getId() == null)
+		{
+			return;
+		}
+		
+		final HuId huId = HuId.ofObject(jsonHU.getId());
 
 		final Action exportAction = parentExportAuditId != null ? Action.AlongWithParent : Action.Standalone;
 

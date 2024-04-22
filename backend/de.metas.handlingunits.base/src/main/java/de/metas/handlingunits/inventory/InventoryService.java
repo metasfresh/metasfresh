@@ -6,12 +6,15 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
@@ -69,19 +72,23 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class InventoryService
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@Getter
-	private final InventoryRepository inventoryRepository;
-	private final SourceHUsService sourceHUsService;
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull @Getter private final InventoryRepository inventoryRepository;
+	@NonNull private final SourceHUsService sourceHUsService;
+	@NonNull private final HUQRCodesService huQRCodesService;
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
 	public static InventoryService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new InventoryService(new InventoryRepository(), SourceHUsService.get());
+		return new InventoryService(
+				new InventoryRepository(),
+				SourceHUsService.get(),
+				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())
+		);
 	}
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
@@ -216,6 +223,7 @@ public class InventoryService
 		SyncInventoryQtyToHUsCommand.builder()
 				.inventoryRepository(inventoryRepository)
 				.sourceHUsService(sourceHUsService)
+				.huQRCodesService(huQRCodesService)
 				.inventory(inventory)
 				.build()
 				//

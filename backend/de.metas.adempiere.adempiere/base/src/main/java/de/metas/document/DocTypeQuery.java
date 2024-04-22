@@ -68,6 +68,17 @@ public class DocTypeQuery
 
 	public static class DocTypeQueryBuilder
 	{
+		public DocTypeQueryBuilder docBaseType(@NonNull final String docBaseType)
+		{
+			return docBaseType(DocBaseType.ofCode(docBaseType));
+		}
+
+		public DocTypeQueryBuilder docBaseType(@NonNull final DocBaseType docBaseType)
+		{
+			this.docBaseType = docBaseType;
+			return this;
+		}
+
 		public DocTypeQueryBuilder docSubTypeAny()
 		{
 			return docSubType(DOCSUBTYPE_Any);

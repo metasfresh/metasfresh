@@ -267,7 +267,7 @@ public class AttributeDAO implements IAttributeDAO
 
 	@Override
 	@NonNull
-	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
+	public AttributeId getAttributeIdByCode(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCode(attributeCode);
 	}

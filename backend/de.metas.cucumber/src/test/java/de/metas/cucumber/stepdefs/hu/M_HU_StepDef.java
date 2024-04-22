@@ -62,8 +62,9 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -75,14 +76,15 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -116,12 +118,14 @@ import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final M_Product_StepDefData productTable;
@@ -133,34 +137,15 @@ public class M_HU_StepDef
 	private final M_Locator_StepDefData locatorTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final M_HU_QRCode_StepDefData qrCodesTable;
+	private final TestContext restTestContext;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
-	private final TestContext testContext;
-
-	public M_HU_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
-			@NonNull final M_HU_PI_Version_StepDefData huPiVersionTable,
-			@NonNull final M_InventoryLine_StepDefData inventoryLineTable,
-			@NonNull final M_Locator_StepDefData locatorTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final M_HU_QRCode_StepDefData qrCodesTable,
-			@NonNull final TestContext testContext)
+	@And("all the hu data is reset")
+	public void reset_data()
 	{
-		this.productTable = productTable;
-		this.huTable = huTable;
-		this.huPiItemProductTable = huPiItemProductTable;
-		this.huPiItemTable = huPiItemTable;
-		this.huPiVersionTable = huPiVersionTable;
-		this.inventoryLineTable = inventoryLineTable;
-		this.locatorTable = locatorTable;
-		this.warehouseTable = warehouseTable;
-		this.qrCodesTable = qrCodesTable;
-		this.testContext = testContext;
+		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
@@ -230,26 +215,21 @@ public class M_HU_StepDef
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
 	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int inventoryLineId = inventoryLineTable.get(inventoryLineIdentifier).getM_InventoryLine_ID();
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
 
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final InventoryLineId inventoryLineWithHUId = InventoryLineId.ofRepoId(inventoryLineId);
-
-			final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineWithHU = load(inventoryLineWithHUId, de.metas.handlingunits.model.I_M_InventoryLine.class);
-
-			assertThat(inventoryLineWithHU).isNotNull();
-
-			final HuId huId = HuId.ofRepoId(inventoryLineWithHU.getM_HU_ID());
+			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
+			assertThat(inventoryLine).isNotNull();
+			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
 					.huId(huId)
 					.huIdentifier(huIdentifier)
 					.build()));
-		}
+
+			restTestContext.setIdVariableFromRow(row, huId);
+		});
 	}
 
 	@And("return hu from customer")
@@ -264,30 +244,23 @@ public class M_HU_StepDef
 	@And("^after not more than (.*)s, M_HUs should have$")
 	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+			final HuId huId = huTable.getId(huIdentifier);
 
 			final LoadHURequest.LoadHURequestBuilder requestBuilder = LoadHURequest.builder()
-					.huId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.huId(huId)
 					.huIdentifier(huIdentifier);
 
-			final String huStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_HUStatus);
-			if (EmptyUtil.isNotBlank(huStatus))
-			{
-				requestBuilder.huStatus(huStatus);
-			}
+			row.getAsOptionalString(COLUMNNAME_HUStatus).ifPresent(requestBuilder::huStatus);
+			row.getAsOptionalIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID)
+					.map(huPiItemProductTable::getId)
+					.ifPresent(requestBuilder::piItemProductId);
 
-			final String huPiItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(huPiItemProductIdentifier))
-			{
-				final I_M_HU_PI_Item_Product huPiItemProduct = huPiItemProductTable.get(huPiItemProductIdentifier);
-				requestBuilder.piItemProductId(HuId.ofRepoId(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
-			}
+			final LoadHURequest request = requestBuilder.build();
 
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(requestBuilder.build()));
-		}
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(request));
+		});
 	}
 
 	@And("transform CU to new TUs")
@@ -388,7 +361,7 @@ public class M_HU_StepDef
 				.build();
 
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		testContext.setRequestPayload(mapper.writeValueAsString(jsonHUAttributesRequest));
+		restTestContext.setRequestPayload(mapper.writeValueAsString(jsonHUAttributesRequest));
 	}
 
 	@And("^store HU endpointPath (.*) in context$")
@@ -409,16 +382,14 @@ public class M_HU_StepDef
 
 			endpointPath = endpointPath.replace(huIdentifierGroup, String.valueOf(hu.getM_HU_ID()));
 
-			testContext.setEndpointPath(endpointPath);
+			restTestContext.setEndpointPath(endpointPath);
 		}
 	}
 
 	@Then("validate \"retrieve hu\" response:")
 	public void validate_retrieve_HU_response(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
-		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-		final JsonGetSingleHUResponse getHUResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonGetSingleHUResponse.class);
+		final JsonGetSingleHUResponse getHUResponse = restTestContext.getApiResponseBodyAs(JsonGetSingleHUResponse.class);
 		final JsonHU topLevelHU = getHUResponse.getResult();
 		assertThat(topLevelHU).isNotNull();
 
@@ -478,7 +449,7 @@ public class M_HU_StepDef
 				.build();
 
 		final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		testContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
+		restTestContext.setRequestPayload(mapper.writeValueAsString(jsonSetClearanceStatusRequest));
 	}
 
 	@And("load M_HU by QR code:")
@@ -713,25 +684,22 @@ public class M_HU_StepDef
 	{
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class)
 				.addEqualsFilter(COLUMNNAME_M_HU_ID, request.getHuId());
-
 		if (EmptyUtil.isNotBlank(request.getHuStatus()))
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_HUStatus, request.getHuStatus());
 		}
-
 		if (request.getPiItemProductId() != null)
 		{
 			queryBuilder.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_Product_ID, request.getPiItemProductId());
 		}
 
-		final Optional<I_M_HU> hu = queryBuilder.create().firstOnlyOptional(I_M_HU.class);
-
-		if (!hu.isPresent())
+		final I_M_HU hu = queryBuilder.create().firstOnlyOptional(I_M_HU.class).orElse(null);
+		if (hu == null)
 		{
 			return false;
 		}
 
-		huTable.putOrReplace(request.getHuIdentifier(), hu.get());
+		huTable.putOrReplace(request.getHuIdentifier(), hu);
 
 		return true;
 	}
@@ -790,4 +758,18 @@ public class M_HU_StepDef
 
 		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
 	}
+
+	@And("load M_HU from REST response JSON path")
+	public void loadHUByRestResponseJSONPath(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String jsonPath = row.getAsString("JsonPath");
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier("M_HU_ID");
+
+			final int huRepoId = restTestContext.getApiResponse().getByJsonPathAsInt(jsonPath);
+			final I_M_HU hu = handlingUnitsBL.getById(HuId.ofRepoId(huRepoId));
+			huTable.put(huIdentifier, hu);
+		});
+	}
+
 }

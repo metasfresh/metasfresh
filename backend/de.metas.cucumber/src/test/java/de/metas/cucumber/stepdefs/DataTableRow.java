@@ -42,6 +42,7 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -393,6 +394,11 @@ public class DataTableRow
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDate `" + valueStr + "`");
 		}
+	}
+
+	public Timestamp getAsLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
 	public Instant getAsInstant(@NonNull final String columnName)
