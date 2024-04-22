@@ -63,7 +63,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -146,33 +145,20 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-		final List<ModularContractLogEntry> logs = new ArrayList<>();
-		// TODO
-
-		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
-				.build();
+		return getComputingResponse(request);
 	}
 
-	@Override
-	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
+	private ComputingResponse getComputingResponse(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
-
 		computingMethodService.validateLogs(logs);
-		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
 
-		final ProductPrice logProductPrice = logs.get(0) != null ? logs.get(0).getPriceActual() : null;
+		final Quantity qty = logs.stream()
+				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
+				.reduce(Quantity.zero(stockUOM), Quantity::add);
+
+		final ProductPrice logProductPrice = !logs.isEmpty() ? logs.get(0).getPriceActual() : null;
 
 		final Money money;
 		if (logProductPrice != null)
@@ -186,15 +172,20 @@ public class InterimComputingMethod implements IComputingMethodHandler
 			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
 		}
 
-		return Optional.of(ComputingResponse.builder()
+		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(money)
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
+							   .productId(request.getProductId())
+							   .money(money)
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
 				.qty(qty)
-				.build()
-		);
+				.build();
+	}
+
+	@Override
+	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
+	{
+		return Optional.of(getComputingResponse(request));
 	}
 }
