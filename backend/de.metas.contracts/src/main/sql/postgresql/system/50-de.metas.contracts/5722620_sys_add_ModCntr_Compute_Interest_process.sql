@@ -108,3 +108,10 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-23 21:40:59.577','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_Para_ID=542817
 ;
 
+-- Process: ModCntr_Compute_Interest(de.metas.contracts.modular.interim.invoice.process.ModCntr_Compute_Interest)
+-- Table: C_Flatrate_Term
+-- EntityType: de.metas.contracts
+-- 2024-04-23T18:43:09.248Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585386,540320,541481,TO_TIMESTAMP('2024-04-23 21:43:09.095','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y',TO_TIMESTAMP('2024-04-23 21:43:09.095','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
+;
+
