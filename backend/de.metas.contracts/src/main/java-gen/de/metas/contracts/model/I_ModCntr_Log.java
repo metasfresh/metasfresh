@@ -343,6 +343,26 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
+	 * Set Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInitial_Product_ID (int Initial_Product_ID);
+
+	/**
+	 * Get Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInitial_Product_ID();
+
+	String COLUMNNAME_Initial_Product_ID = "Initial_Product_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
