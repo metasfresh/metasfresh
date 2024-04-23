@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -986187459L;
+	private static final long serialVersionUID = -360763912L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -329,6 +329,53 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
+	public void setFacetFilterSeqNo (final int FacetFilterSeqNo)
+	{
+		set_Value (COLUMNNAME_FacetFilterSeqNo, FacetFilterSeqNo);
+	}
+
+	@Override
+	public int getFacetFilterSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_FacetFilterSeqNo);
+	}
+
+	@Override
+	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
+	{
+		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
+	}
+
+	@Override
+	public java.lang.String getFilterDefaultValue() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterDefaultValue);
+	}
+
+	/** 
+	 * FilterOperator AD_Reference_ID=541241
+	 * Reference name: FilterOperator
+	 */
+	public static final int FILTEROPERATOR_AD_Reference_ID=541241;
+	/** EqualsOrLike = E */
+	public static final String FILTEROPERATOR_EqualsOrLike = "E";
+	/** Between = B */
+	public static final String FILTEROPERATOR_Between = "B";
+	/** NotNull = N */
+	public static final String FILTEROPERATOR_NotNull = "N";
+	@Override
+	public void setFilterOperator (final @Nullable java.lang.String FilterOperator)
+	{
+		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
+	}
+
+	@Override
+	public java.lang.String getFilterOperator() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -448,6 +495,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return get_ValueAsString(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
 
+	/** 
+	 * IsFacetFilter AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISFACETFILTER_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISFACETFILTER_Yes = "Y";
+	/** No = N */
+	public static final String ISFACETFILTER_No = "N";
+	@Override
+	public void setIsFacetFilter (final @Nullable java.lang.String IsFacetFilter)
+	{
+		set_Value (COLUMNNAME_IsFacetFilter, IsFacetFilter);
+	}
+
+	@Override
+	public java.lang.String getIsFacetFilter() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFacetFilter);
+	}
+
 	@Override
 	public void setIsFieldOnly (final boolean IsFieldOnly)
 	{
@@ -515,6 +583,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
+	public void setIsOverrideFilterDefaultValue (final boolean IsOverrideFilterDefaultValue)
+	{
+		set_Value (COLUMNNAME_IsOverrideFilterDefaultValue, IsOverrideFilterDefaultValue);
+	}
+
+	@Override
+	public boolean isOverrideFilterDefaultValue() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOverrideFilterDefaultValue);
+	}
+
+	@Override
 	public void setIsReadOnly (final boolean IsReadOnly)
 	{
 		set_Value (COLUMNNAME_IsReadOnly, IsReadOnly);
@@ -536,6 +616,39 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public boolean isSameLine() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSameLine);
+	}
+
+	/** 
+	 * IsShowFilterInline AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISSHOWFILTERINLINE_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISSHOWFILTERINLINE_Yes = "Y";
+	/** No = N */
+	public static final String ISSHOWFILTERINLINE_No = "N";
+	@Override
+	public void setIsShowFilterInline (final @Nullable java.lang.String IsShowFilterInline)
+	{
+		set_Value (COLUMNNAME_IsShowFilterInline, IsShowFilterInline);
+	}
+
+	@Override
+	public java.lang.String getIsShowFilterInline() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsShowFilterInline);
+	}
+
+	@Override
+	public void setMaxFacetsToFetch (final int MaxFacetsToFetch)
+	{
+		set_Value (COLUMNNAME_MaxFacetsToFetch, MaxFacetsToFetch);
+	}
+
+	@Override
+	public int getMaxFacetsToFetch() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MaxFacetsToFetch);
 	}
 
 	@Override
@@ -573,6 +686,19 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public java.lang.String getObscureType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ObscureType);
+	}
+
+	@Override
+	public void setSelectionColumnSeqNo (final @Nullable BigDecimal SelectionColumnSeqNo)
+	{
+		set_Value (COLUMNNAME_SelectionColumnSeqNo, SelectionColumnSeqNo);
+	}
+
+	@Override
+	public BigDecimal getSelectionColumnSeqNo() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SelectionColumnSeqNo);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

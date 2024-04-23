@@ -448,6 +448,69 @@ public interface I_AD_Field
 	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
+	 * Set Facet Filter Sequence No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFacetFilterSeqNo (int FacetFilterSeqNo);
+
+	/**
+	 * Get Facet Filter Sequence No.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFacetFilterSeqNo();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_FacetFilterSeqNo = new ModelColumn<>(I_AD_Field.class, "FacetFilterSeqNo", null);
+	String COLUMNNAME_FacetFilterSeqNo = "FacetFilterSeqNo";
+
+	/**
+	 * Set Filter Default Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilterDefaultValue (@Nullable java.lang.String FilterDefaultValue);
+
+	/**
+	 * Get Filter Default Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilterDefaultValue();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_FilterDefaultValue = new ModelColumn<>(I_AD_Field.class, "FilterDefaultValue", null);
+	String COLUMNNAME_FilterDefaultValue = "FilterDefaultValue";
+
+	/**
+	 * Set Filter Operator.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilterOperator (@Nullable java.lang.String FilterOperator);
+
+	/**
+	 * Get Filter Operator.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFilterOperator();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_FilterOperator = new ModelColumn<>(I_AD_Field.class, "FilterOperator", null);
+	String COLUMNNAME_FilterOperator = "FilterOperator";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *
@@ -657,6 +720,27 @@ public interface I_AD_Field
 	String COLUMNNAME_IsExcludeFromZoomTargets = "IsExcludeFromZoomTargets";
 
 	/**
+	 * Set Facet Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsFacetFilter (@Nullable java.lang.String IsFacetFilter);
+
+	/**
+	 * Get Facet Filter.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsFacetFilter();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsFacetFilter = new ModelColumn<>(I_AD_Field.class, "IsFacetFilter", null);
+	String COLUMNNAME_IsFacetFilter = "IsFacetFilter";
+
+	/**
 	 * Set Field Only.
 	 * Label is not displayed
 	 *
@@ -747,6 +831,27 @@ public interface I_AD_Field
 	String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
+	 * Set Override Filter Default Value.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOverrideFilterDefaultValue (boolean IsOverrideFilterDefaultValue);
+
+	/**
+	 * Get Override Filter Default Value.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOverrideFilterDefaultValue();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsOverrideFilterDefaultValue = new ModelColumn<>(I_AD_Field.class, "IsOverrideFilterDefaultValue", null);
+	String COLUMNNAME_IsOverrideFilterDefaultValue = "IsOverrideFilterDefaultValue";
+
+	/**
 	 * Set readonly.
 	 * Feld / Eintrag / Berecih ist schreibgeschützt
 	 *
@@ -793,6 +898,52 @@ public interface I_AD_Field
 	String COLUMNNAME_IsSameLine = "IsSameLine";
 
 	/**
+	 * Set Show filter inline.
+	 * Renders the filter as a component (e.g. text box) directly in the filters lane
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowFilterInline (@Nullable java.lang.String IsShowFilterInline);
+
+	/**
+	 * Get Show filter inline.
+	 * Renders the filter as a component (e.g. text box) directly in the filters lane
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsShowFilterInline();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsShowFilterInline = new ModelColumn<>(I_AD_Field.class, "IsShowFilterInline", null);
+	String COLUMNNAME_IsShowFilterInline = "IsShowFilterInline";
+
+	/**
+	 * Set Maximum Facets.
+	 * Maximum number of facets to fetch
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxFacetsToFetch (int MaxFacetsToFetch);
+
+	/**
+	 * Get Maximum Facets.
+	 * Maximum number of facets to fetch
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxFacetsToFetch();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_MaxFacetsToFetch = new ModelColumn<>(I_AD_Field.class, "MaxFacetsToFetch", null);
+	String COLUMNNAME_MaxFacetsToFetch = "MaxFacetsToFetch";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
@@ -835,6 +986,27 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_ObscureType = new ModelColumn<>(I_AD_Field.class, "ObscureType", null);
 	String COLUMNNAME_ObscureType = "ObscureType";
+
+	/**
+	 * Set Selection column ordering.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSelectionColumnSeqNo (@Nullable BigDecimal SelectionColumnSeqNo);
+
+	/**
+	 * Get Selection column ordering.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSelectionColumnSeqNo();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_SelectionColumnSeqNo = new ModelColumn<>(I_AD_Field.class, "SelectionColumnSeqNo", null);
+	String COLUMNNAME_SelectionColumnSeqNo = "SelectionColumnSeqNo";
 
 	/**
 	 * Set SeqNo.
