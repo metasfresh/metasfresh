@@ -21,7 +21,7 @@ public class GenerateHUQRCodes extends JavaProcess
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
-	@Param(parameterName = I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, mandatory = true)
+	@Param(parameterName = I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
 	private HuPackingInstructionsId huPackingInstructionsId;
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID, mandatory = true)
 	private ProductId productId;
