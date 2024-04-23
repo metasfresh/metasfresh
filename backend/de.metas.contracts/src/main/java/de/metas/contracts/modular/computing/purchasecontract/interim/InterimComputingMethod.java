@@ -150,12 +150,12 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final ProductId contractProductId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
 		final I_C_UOM stockUOM = productBL.getStockUOM(contractProductId);
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
-		computingMethodService.validateLogs(logs);
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
 		final Money money = logs.stream()
-				.map((log) -> log.getAmount())
+				.map(ModularContractLogEntry::getAmount)
 				.reduce(Money.zero(request.getCurrencyId()), Money::add);
+
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
@@ -174,13 +174,6 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		final ProductPrice logProductPrice = computingMethodService.getUniqueProductPriceOrError(logs).orElse(null);
-		computingMethodService.validateLogs(logs);
-
-		final Quantity qty = logs.stream()
-				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
-
-		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
 
 		final Quantity qty = logs.stream()
 				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
