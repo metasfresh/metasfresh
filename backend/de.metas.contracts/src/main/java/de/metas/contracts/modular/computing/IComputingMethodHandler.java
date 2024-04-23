@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -57,9 +58,12 @@ public interface IComputingMethodHandler
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef);
 
-	default boolean isContractIdEligible(@NonNull final TableRecordReference recordRef, final FlatrateTermId contractId)
+	default boolean isContractIdEligible(
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final FlatrateTermId contractId,
+			@NonNull final ModularContractSettings settings)
 	{
-		return streamContractIds(recordRef).anyMatch(id -> FlatrateTermId.equals(id, contractId));
+		return true;
 	}
 
 	@NonNull

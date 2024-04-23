@@ -46,7 +46,6 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -281,5 +280,5 @@ public interface IFlatrateBL extends ISingletonService
 	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryBuilder<I_C_Flatrate_Term> queryBuilder);
+	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

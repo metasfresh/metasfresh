@@ -188,14 +188,17 @@ public class ModularContractLogDAO
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryIds(Optional.ofNullable(request.id())
-																		  .map(ImmutableSet::of)
-																		  .orElseGet(ImmutableSet::of))
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
-														.build())
+		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType());
+
+		if (request.id() != null)
+		{
+			queryBuilder.entryId(request.id());
+		}
+
+		final I_ModCntr_Log oldLog = lastRecord(queryBuilder.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
@@ -315,7 +318,7 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
-		if(query.getComputingMethodType() != null)
+		if (query.getComputingMethodType() != null)
 		{
 			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addOnlyActiveRecordsFilter()
@@ -328,7 +331,7 @@ public class ModularContractLogDAO
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
 		}
-		if(query.getInvoiceCandidateId()!=null)
+		if (query.getInvoiceCandidateId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
 		}
