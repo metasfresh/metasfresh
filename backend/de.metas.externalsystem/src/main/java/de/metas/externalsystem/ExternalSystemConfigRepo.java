@@ -1429,8 +1429,14 @@ public class ExternalSystemConfigRepo
 
 		final PCMContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(pcmConfigId).orElse(null);
 
+		final OrgId orgId = OrgId.ofRepoId(config.getAD_Org_ID());
+		
+		// we need this to find the org for the orders, warehouses etc
+		Check.errorUnless(orgId.isRegular(), "AD_Org_ID of ExternalSystem_Config_ProCareManagement_ID={0} (ExternalSystem_Config_ID={1}) may not be 0!", config.getExternalSystem_Config_ProCareManagement_ID(), config.getExternalSystem_Config_ID());
+
 		return ExternalSystemPCMConfig.builder()
 				.id(pcmConfigId)
+				.orgId(orgId)
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
 				.contentSourceLocalFile(contentSourceLocalFile)

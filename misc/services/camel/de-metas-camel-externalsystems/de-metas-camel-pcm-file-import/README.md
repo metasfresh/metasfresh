@@ -22,7 +22,7 @@
 * `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
 * `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
 * `JsonExternalSystemRequest.parameters.TaxCategoryMappings` - a Map between `C_TaxCategory.InternalName` and the rates set in the `Tax Category Mapping` sub-tab. The tax rates have to be separated by `,`.
-* `JsonExternalSystemRequest.parameters.BPartnerId`
+* `JsonExternalSystemRequest.parameters.BPartnerId` - the partner to use when upserting warehouse-locations
 
 ## **Pro Care Management => metasfresh product**
 
@@ -34,13 +34,13 @@ In order to update the consumer configuration, you have to firstly stop the cons
 
 Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
-| Column name                       | Accepted values | Description                                                                                                             |
-|-----------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------|
-| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                   |
-| Product Filename Pattern          | string          | regex used to identify Product-containing files (useful as multiple type of files are placed in the same source folder) |
-| Processed Directory               | string          | the location where the processed files will be moved                                                                    | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                            |
-| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                               |
+| Column name                       | Accepted values | Description                                                                                                                   |
+|-----------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                         |
+| Product Filename Pattern          | string          | ant-pattern used to identify Product-containing files (useful as multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                          | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                  |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                     |
 
 1. Product - all `metasfresh-column` (without a table at the beginning) values refer to `M_Product`, `C_BPartner_Product` and `M_Product_TaxCategory` columns
 
@@ -74,13 +74,13 @@ In order to update the consumer configuration, you have to firstly stop the cons
 
 Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
-| Column name                       | Accepted values | Description                                                                                                              |
-|-----------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------|
-| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                    |
-| Business Partner Filename Pattern | string          | regex used to identify BPartner-containing files (useful as multiple type of files are placed in the same source folder) |
-| Processed Directory               | string          | the location where the processed files will be moved                                                                     | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                             |
-| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                |
+| Column name                       | Accepted values | Description                                                                                                                    |
+|-----------------------------------|-----------------|--------------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                          |
+| Business Partner Filename Pattern | string          | ant-pattern used to identify BPartner-containing files (useful as multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                           | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                   |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                      |
 
 1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
 
@@ -115,13 +115,13 @@ In order to update the consumer configuration, you have to firstly stop the cons
 
 Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
-| Column name                       | Accepted values | Description                                                                                                               |
-|-----------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------|
-| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                     |
-| Warehouse Filename Pattern        | string          | regex used to identify Warehouse-containing files (useful as multiple type of files are placed in the same source folder) |
-| Processed Directory               | string          | the location where the processed files will be moved                                                                      | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                              |
-| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                 |
+| Column name                       | Accepted values | Description                                                                                                                     |
+|-----------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                           |
+| Warehouse Filename Pattern        | string          | ant-pattern used to identify Warehouse-containing files (useful as multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                            | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                    |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                       |
 
 1. BPartner - all `metasfresh-column` values refer to `C_BPartner`, `C_BPartner_Location` and `C_Location` columns
 
@@ -152,17 +152,22 @@ Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
 First, the local file consumer must be configured using `ExternalSystem_Config_ProCareManagement_LocalFile` and started by invoking the `ProCareManagement-startPurchaseOrderSyncLocalFile` dedicated route. In order to stop the consumer, the `ProCareManagement-stopPurchaseOrderSyncLocalFile` route must be invoked.
 
-In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+- 💡 In order to update the consumer configuration, you have to first stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+- 💡 Purchase-Candidate files are only processed if there are no masterdata files in the root folder.
+In other words: if the root folder contains files with match any of `ProductFileNamePattern`, `PartnerFileNamePattern` or `WarehouseFileNamePattern`, then the files matched by `PurchaseOrderFileNamePattern` are ignored.
+- 💡 After a CSV-file is processed, the created purchase candidates are processed, i.e. purchase orders are created, **unless**
+  - if a CSV-row could not be processed into a purchase order candidate, then the rows with the same `externalHeaderId` are **not** processed. If the `externalHeaderId` can'T be parsed from the CSV-file, then none of the purchase candidate is processed.
+
 
 Configs available in `ExternalSystem_Config_ProCareManagement_LocalFile`:
 
-| Column name                       | Accepted values | Description                                                                                                                        |
-|-----------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------|
-| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                              |
-| Purchase Order Filename Pattern   | string          | regex used to identify Purchase Candidate-containing files (useful as multiple type of files are placed in the same source folder) |
-| Processed Directory               | string          | the location where the processed files will be moved                                                                               | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                       |
-| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                          |
+| Column name                       | Accepted values | Description                                                                                                                              |
+|-----------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                                    |
+| Purchase Order Filename Pattern   | string          | ant-pattern used to identify Purchase Candidate-containing files (useful as multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                                     | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                             |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                                |
 
 1. Purchase Candidate - all `metasfresh-column` values refer to `C_PurchaseCandidate`
 

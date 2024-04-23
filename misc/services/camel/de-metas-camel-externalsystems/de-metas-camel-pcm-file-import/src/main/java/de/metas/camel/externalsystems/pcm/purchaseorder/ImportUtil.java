@@ -22,20 +22,23 @@
 
 package de.metas.camel.externalsystems.pcm.purchaseorder;
 
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.apache.camel.Exchange;
 
-public interface ImportConstants
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_IMPORT_ORDERS_CONTEXT;
+
+@UtilityClass
+class ImportUtil
 {
-	String DEFAULT_UOM_X12DE355_CODE = "PCE";
-	String DEFAULT_CURRENCY_CODE = "EUR";
-	ZoneId EUROPE_BERLIN = ZoneId.of("Europe/Berlin");
-	DateTimeFormatter LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
-
-	String UPSERT_ORDER_PROCESSOR_ID = "GetPurchaseOrderFromFileRouteBuilder.UPSERT_ORDER_PROCESSOR_ID";
-	String UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID = "GetPurchaseOrderFromFileRouteBuilder.UPSERT_PURCHASE_CANDIDATE_ENDPOINT_ID";
-	String ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID = "GetPurchaseOrderFromFileRouteBuilder.ENQUEUE_PURCHASE_CANDIDATES_ENDPOINT_ID";
-
-	String PROPERTY_CURRENT_CSV_ROW = "CurrentCsvRow";
-	String PROPERTY_IMPORT_ORDERS_CONTEXT = "ImportOrdersContext";
+	ImportOrdersRouteContext getOrCreateImportOrdersRouteContext(@NonNull final Exchange exchange)
+	{
+		ImportOrdersRouteContext importOrdersRouteContext = exchange.getProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+		if (importOrdersRouteContext == null)
+		{
+			importOrdersRouteContext = new ImportOrdersRouteContext();
+			exchange.setProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, importOrdersRouteContext);
+		}
+		return importOrdersRouteContext;
+	}
 }

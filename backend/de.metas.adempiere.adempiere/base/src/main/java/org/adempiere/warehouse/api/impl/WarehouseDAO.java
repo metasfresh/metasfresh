@@ -898,6 +898,8 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		saveRecord(warehouseRecord);
 
+		createDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+		
 		return ofRecord(warehouseRecord);
 	}
 	
