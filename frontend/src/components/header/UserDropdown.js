@@ -196,7 +196,9 @@ const UserDropdownPanel = ({
       />
       {isWorkplacesEnabled && (
         <UserDropdownItem
-          caption={counterpart.translate('userDropdown.changeWorkplace.caption')}
+          caption={counterpart.translate(
+            'userDropdown.changeWorkplace.caption'
+          )}
           icon={'meta-icon-settings'}
           onClick={() => {
             dispatch(openSelectCurrentWorkplaceModal());
