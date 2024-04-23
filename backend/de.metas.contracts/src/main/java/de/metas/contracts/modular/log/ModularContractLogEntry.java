@@ -34,6 +34,8 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -111,7 +113,7 @@ public class ModularContractLogEntry
 	@NonNull ModularContractModuleId modularContractModuleId;
 
 	@Builder
-	public ModularContractLogEntry(
+	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
 			@NonNull final LogEntryContractType contractType,
 			@Nullable final FlatrateTermId contractId,
@@ -166,5 +168,11 @@ public class ModularContractLogEntry
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
+	}
+
+	Quantity getQuantity(final UomId targetUomId, @NonNull QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
+		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
 	}
 }

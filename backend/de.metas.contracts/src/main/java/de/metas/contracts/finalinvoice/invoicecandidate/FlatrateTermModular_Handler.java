@@ -93,7 +93,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private	final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
@@ -190,10 +190,10 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		return ImmutableList.builder()
 				.add(term)
 				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
-						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-						.processed(false)
-						.billable(true)
-						.build()))
+														   .flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+														   .processed(false)
+														   .billable(true)
+														   .build()))
 				.build();
 	}
 
@@ -283,7 +283,18 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		final ComputingResponse response = computingMethodHandler.compute(request);
 
-		final UomId stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
+		final UomId stockUomId;
+
+		if (moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
+		{
+			// the invoice candidate will have to contain the stock UOM
+			// of the contract's product even if the M_Product_ID of the invoice candidate is different.
+			stockUomId = productBL.getStockUOMId(modularContract.getM_Product_ID());
+		}
+		else
+		{
+			stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
+		}
 
 		Check.assumeEquals(currencyId, response.getPrice().getCurrencyId());
 		Check.assumeEquals(stockUomId, response.getQty().getUomId());
@@ -309,12 +320,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceCandidate.isSOTrx());
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
-				.orgId(orgId)
-				.bPartnerLocationId(bPartnerLocationAndCaptureId)
-				.dateOfInterest(invoiceCandidate.getDateOrdered())
-				.soTrx(soTrx)
-				.taxCategoryId(taxCategoryId)
-				.build());
+											 .orgId(orgId)
+											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
+											 .dateOfInterest(invoiceCandidate.getDateOrdered())
+											 .soTrx(soTrx)
+											 .taxCategoryId(taxCategoryId)
+											 .build());
 
 		if (tax == null)
 		{
