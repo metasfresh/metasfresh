@@ -33,7 +33,7 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -64,9 +64,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -152,13 +150,14 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
+		final Money money = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId())))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
+							   .productId(request.getProductId())
+							   .money(money.negate())
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
 				.qty(qty)
 				.build();
 	}
@@ -186,14 +185,14 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		}
 
 		return Optional.of(ComputingResponse.builder()
-				.ids(logs.getIds())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(money)
-						.uomId(stockUOMId)
-						.build())
-				.qty(qty)
-				.build()
+								   .ids(logs.getIds())
+								   .price(ProductPrice.builder()
+												  .productId(request.getProductId())
+												  .money(money)
+												  .uomId(stockUOMId)
+												  .build())
+								   .qty(qty)
+								   .build()
 		);
 	}
 }
