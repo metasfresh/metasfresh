@@ -70,7 +70,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
@@ -386,12 +385,12 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
 				.map(this::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ModularContractLogEntriesList.collect());
 	}
 
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)

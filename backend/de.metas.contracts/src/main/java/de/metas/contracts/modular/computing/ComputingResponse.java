@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -29,13 +30,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Set;
-
 @Builder
 @Value
 public class ComputingResponse
 {
 	@NonNull Quantity qty;
 	@NonNull ProductPrice price;
-	@NonNull Set<ModularContractLogEntryId> ids;
+	@NonNull ImmutableSet<ModularContractLogEntryId> ids;
 }
