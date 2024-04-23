@@ -72,14 +72,26 @@ public class RepoIdAwares
 
 	public static <T extends RepoIdAware> T ofRepoId(final int repoId, final Class<T> repoIdClass)
 	{
+		return getOfRepoIdFunction(repoIdClass).apply(repoId);
+	}
+
+	public static <T extends RepoIdAware> IntFunction<T> getOfRepoIdFunction(final Class<T> repoIdClass)
+	{
 		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
-
-		@SuppressWarnings("unchecked") final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
-
-		return id;
+		//noinspection unchecked
+		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdFunction();
 	}
 
 	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return ofObject(repoIdObj, repoIdClass, ofRepoIdFunction);
+	}
+
+	public static <T extends RepoIdAware> T ofObject(
+			@NonNull final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass,
+			@NonNull final IntFunction<T> ofRepoIdFunction)
 	{
 		if (repoIdClass.isInstance(repoIdObj))
 		{
@@ -92,7 +104,33 @@ public class RepoIdAwares
 			throw Check.mkEx("Cannot convert `" + repoIdObj + "` (" + repoIdObj.getClass() + ") to " + repoIdClass.getSimpleName());
 		}
 
-		return ofRepoId(repoId, repoIdClass);
+		return ofRepoIdFunction.apply(repoId);
+	}
+
+	public static <T extends RepoIdAware> T ofObjectOrNull(
+			@Nullable final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass)
+	{
+		if (repoIdObj == null)
+		{
+			return null;
+		}
+
+		if (repoIdClass.isInstance(repoIdObj))
+		{
+			return repoIdClass.cast(repoIdObj);
+		}
+
+		final Integer repoId = NumberUtils.asIntegerOrNull(repoIdObj);
+		if (repoId == null)
+		{
+			return null;
+		}
+
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+		final IntFunction<RepoIdAware> ofRepoIdOrNullFunction = repoIdAwareDescriptor.getOfRepoIdOrNullFunction();
+		@SuppressWarnings("unchecked") final T id = (T)ofRepoIdOrNullFunction.apply(repoId);
+		return id;
 	}
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
@@ -108,9 +146,10 @@ public class RepoIdAwares
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Class<T> repoIdClass)
 	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
 		return CollectionUtils.ofCommaSeparatedList(
 				commaSeparatedStr,
-				repoIdStr -> ofObject(repoIdStr, repoIdClass));
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
 	}
 
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
