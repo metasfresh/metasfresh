@@ -153,20 +153,9 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		computingMethodService.validateLogs(logs);
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
-		final ProductPrice logProductPrice = !logs.isEmpty() ? logs.get(0).getPriceActual() : null;
-
-		final Money money;
-		if (logProductPrice != null)
-		{
-			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
-			Check.assumeEquals(stockUOM.getC_UOM_ID(), logProductPrice.getUomId().getRepoId(), "Log Price UOM and Invoice Product UOM should be the same");
-			money = logProductPrice.toMoney();
-		}
-		else
-		{
-			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
-		}
-
+		final Money money = logs.stream()
+				.map((log) -> log.getAmount())
+				.reduce(Money.zero(request.getCurrencyId()), Money::add);
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
