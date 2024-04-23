@@ -113,14 +113,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(request.getContractId());
-		if (settings == null)
-		{
-			Loggables.withLogger(logger, Level.DEBUG)
-					.addLog("No ModularContractSettings found for contractId: {}! no logs will be created!", request.getContractId());
-
-			return;
-		}
+		final ModularContractSettings settings = request.getContractInfo().getModularContractSettings();
 
 		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigs(handler.getComputingMethod().getComputingMethodType());
 		if (moduleConfigs.isEmpty())
@@ -133,7 +126,7 @@ class ModularContractLogHandler
 
 		final LogAction action = getLogAction(request);
 
-		for(final ModuleConfig moduleConfig : moduleConfigs)
+		for (final ModuleConfig moduleConfig : moduleConfigs)
 		{
 			final Supplier<IModularContractLogHandler.CreateLogRequest> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
 					.builder()
@@ -144,7 +137,7 @@ class ModularContractLogHandler
 					.typeId(moduleConfig.getModularContractType().getId())
 					.build();
 
-			if(handler.applies(buildCreateRequest.get()))
+			if (handler.applies(buildCreateRequest.get()))
 			{
 				switch (action)
 				{
@@ -159,12 +152,12 @@ class ModularContractLogHandler
 
 	private LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
-		return switch(request.getModelAction())
-		{
-			case COMPLETED -> LogAction.CREATE;
-			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
-			case RECREATE_LOGS -> LogAction.RECOMPUTE;
-		};
+		return switch (request.getModelAction())
+				{
+					case COMPLETED -> LogAction.CREATE;
+					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+					case RECREATE_LOGS -> LogAction.RECOMPUTE;
+				};
 	}
 
 	enum LogAction

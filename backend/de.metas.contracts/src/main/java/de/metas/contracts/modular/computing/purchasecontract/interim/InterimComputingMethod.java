@@ -173,6 +173,7 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
+		final ProductPrice logProductPrice = computingMethodService.getUniqueProductPriceOrError(logs).orElse(null);
 		computingMethodService.validateLogs(logs);
 
 		final Quantity qty = logs.stream()
@@ -181,7 +182,9 @@ public class InterimComputingMethod implements IComputingMethodHandler
 
 		logs.forEach((log) -> qty.add(computingMethodService.getQtyToAdd(log, request.getProductId())));
 
-		final ProductPrice logProductPrice = logs.get(0) != null ? logs.get(0).getPriceActual() : null;
+		final Quantity qty = logs.stream()
+				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
+				.reduce(Quantity.zero(stockUOM), Quantity::add);
 
 		final Money money;
 		if (logProductPrice != null)
