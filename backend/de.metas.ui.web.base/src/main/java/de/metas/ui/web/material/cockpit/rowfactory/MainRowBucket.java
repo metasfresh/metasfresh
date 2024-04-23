@@ -148,7 +148,17 @@ public class MainRowBucket
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
-		qtyStockEstimateSeqNoAtDate = cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
+		
+		// Take the minimum QtyStockEstimateSeqNo_AtDate of all MD_Cockpit records. But take 0 is equivalent to null
+		final Integer seqNoToUse = (cockpitRecord.getQtyStockEstimateSeqNo_AtDate() <= 0) ? null : cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
+		if (qtyStockEstimateSeqNoAtDate != null && seqNoToUse != null)
+		{
+			qtyStockEstimateSeqNoAtDate = Integer.min(qtyStockEstimateSeqNoAtDate, seqNoToUse);
+		}
+		else if(qtyStockEstimateSeqNoAtDate == null && seqNoToUse != null)
+		{
+			qtyStockEstimateSeqNoAtDate = seqNoToUse;
+		}
 
 		qtyInventoryCountAtDate = addToNullable(qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), uom);
 		qtyInventoryTimeAtDate = TimeUtil.max(qtyInventoryTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime_AtDate()));
