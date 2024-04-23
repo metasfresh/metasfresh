@@ -85,6 +85,7 @@ import {
   updateTableRowProperty,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
+import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -1472,6 +1473,15 @@ export function openPrintingOptionsModal({
     viewDocumentIds: [documentNo],
     dataId: documentId,
     staticModalType: 'printing',
+  });
+}
+
+export function openSelectCurrentWorkplaceModal() {
+  return openModal({
+    title: counterpart.translate('userDropdown.changeWorkplace.caption'),
+    windowId: 'selectCurrentWorkplace',
+    modalType: 'static',
+    staticModalType: STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
   });
 }
 
