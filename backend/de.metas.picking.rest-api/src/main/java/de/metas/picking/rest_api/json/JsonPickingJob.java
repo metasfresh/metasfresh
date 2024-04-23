@@ -40,6 +40,7 @@ import java.util.function.Function;
 @Jacksonized
 public class JsonPickingJob
 {
+	@NonNull JsonCompleteStatus completeStatus;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
@@ -49,6 +50,7 @@ public class JsonPickingJob
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
+				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
 				.lines(pickingJob.getLines()
 						.stream()
 						.map(line -> JsonPickingJobLine.builderFrom(line, getUOMSymbolById, jsonOpts)

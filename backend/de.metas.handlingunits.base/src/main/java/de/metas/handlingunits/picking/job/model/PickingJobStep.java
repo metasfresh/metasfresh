@@ -105,9 +105,14 @@ public class PickingJobStep
 
 	public boolean isNothingPicked() {return pickFroms.isNothingPicked();}
 
-	public Quantity getQtyPickedOrRejected()
+	public Quantity getQtyPicked()
 	{
-		return pickFroms.getQtyPickedOrRejected().orElseGet(qtyToPick::toZero);
+		return pickFroms.getQtyPicked().orElseGet(qtyToPick::toZero);
+	}
+
+	public Quantity getQtyRejected()
+	{
+		return pickFroms.getQtyRejected().orElseGet(qtyToPick::toZero);
 	}
 
 	public PickingJobStep reduceWithPickedEvent(

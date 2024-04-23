@@ -35,7 +35,8 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "productName" : "productName-6",
     "productNo" : "productNo-6",
     "progress" : "NOT_STARTED",
-    "qtyPickedOrRejected" : "0 Ea",
+    "qtyPicked" : "0 Ea",
+    "qtyRejected" : "0 Ea",
     "qtyRemainingToPick" : "100 Ea",
     "qtyToPick" : "100 Ea",
     "salesOrderAndLineId" : {

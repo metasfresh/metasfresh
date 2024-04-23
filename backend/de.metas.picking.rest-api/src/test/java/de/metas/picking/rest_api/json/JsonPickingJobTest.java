@@ -65,6 +65,7 @@ class JsonPickingJobTest
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
 		testSerializeDeserialize(JsonPickingJob.builder()
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.lines(ImmutableList.of(
 						randomJsonPickingJobLine(),
 						randomJsonPickingJobLine(),
@@ -105,6 +106,8 @@ class JsonPickingJobTest
 				.packingItemName(packingItemName)
 				.uom("uom")
 				.qtyToPick(new BigDecimal("321.456"))
+				.qtyPicked(new BigDecimal("3.04"))
+				.qtyRejected(new BigDecimal("0.40"))
 				.qtyPickedOrRejected(new BigDecimal("3.44"))
 				.qtyRemainingToPick(new BigDecimal("4.56"))
 				.catchWeightUOM("catchWeightUOM")
@@ -115,6 +118,8 @@ class JsonPickingJobTest
 						randomJsonPickingJobStep(),
 						randomJsonPickingJobStep()
 				))
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
+				.manuallyClosed(true)
 				.build();
 	}
 
@@ -122,6 +127,7 @@ class JsonPickingJobTest
 	{
 		return JsonPickingJobStep.builder()
 				.pickingStepId("pickingStepId_" + UUID.randomUUID())
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.productId("productId")
 				.productName("productName")
 				.uom("uom")

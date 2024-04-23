@@ -51,11 +51,14 @@ public class JsonPickingJobLine
 	@NonNull String packingItemName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
+	@NonNull BigDecimal qtyPicked;
+	@NonNull BigDecimal qtyRejected;
 	@NonNull BigDecimal qtyPickedOrRejected;
 	@NonNull BigDecimal qtyRemainingToPick;
 	@Nullable String catchWeightUOM;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean allowPickingAnyHU;
+	@NonNull JsonCompleteStatus completeStatus;
 	boolean manuallyClosed;
 
 	public static JsonPickingJobLineBuilder builderFrom(
@@ -67,7 +70,8 @@ public class JsonPickingJobLine
 
 		final String uom;
 		final BigDecimal qtyToPick;
-		final BigDecimal qtyPickedOrRejected;
+		final BigDecimal qtyPicked;
+		final BigDecimal qtyRejected;
 		final BigDecimal qtyRemainingToPick;
 		final PickingUnit pickingUnit = line.getPickingUnit();
 		if (pickingUnit.isTU())
@@ -75,13 +79,15 @@ public class JsonPickingJobLine
 			uom = "TU";
 			qtyRemainingToPick = line.getQtyRemainingToPickTUs().toBigDecimal();
 			qtyToPick = line.getQtyToPickTUs().toBigDecimal();
-			qtyPickedOrRejected = line.getQtyPickedTUs().toBigDecimal();
+			qtyPicked = line.getQtyPickedTUs().toBigDecimal();
+			qtyRejected = line.getQtyRejectedTUs().toBigDecimal();
 		}
 		else
 		{
 			uom = line.getQtyToPick().getUOMSymbol();
 			qtyToPick = line.getQtyToPick().toBigDecimal();
-			qtyPickedOrRejected = line.getQtyPickedOrRejected().toBigDecimal();
+			qtyPicked = line.getQtyPicked().toBigDecimal();
+			qtyRejected = line.getQtyRejected().toBigDecimal();
 			qtyRemainingToPick = line.getQtyRemainingToPick().toBigDecimal();
 		}
 
@@ -94,13 +100,16 @@ public class JsonPickingJobLine
 				.pickingUnit(pickingUnit)
 				.uom(uom)
 				.qtyToPick(qtyToPick)
-				.qtyPickedOrRejected(qtyPickedOrRejected)
+				.qtyPicked(qtyPicked)
+				.qtyRejected(qtyRejected)
+				.qtyPickedOrRejected(qtyPicked.add(qtyRejected))
 				.qtyRemainingToPick(qtyRemainingToPick)
 				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
+				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
 				.manuallyClosed(line.isManuallyClosed());
 	}
 }
