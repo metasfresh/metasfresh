@@ -149,21 +149,16 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(request.getFlatrateTermId());
 		final ProductId contractProductId = ProductId.ofRepoId(flatrateTermRecord.getM_Product_ID());
 		final I_C_UOM stockUOM = productBL.getStockUOM(contractProductId);
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
-		final Money money = logs.stream()
-				.map(ModularContractLogEntry::getAmount)
-				.reduce(Money.zero(request.getCurrencyId()), Money::add)
-				.negate();
-
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.ids(logs.getIds())
 				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(money)
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
+						.productId(request.getProductId())
+						.money(logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId())))
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
 				.qty(qty)
 				.build();
 	}
@@ -171,20 +166,18 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 
-		final ProductPrice logProductPrice = computingMethodService.getUniqueProductPriceOrError(logs).orElse(null);
+		final ProductPrice logProductPrice = logs.getUniqueProductPriceOrError().orElse(null);
 
-		final Quantity qty = logs.stream()
-				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
+		final Quantity qty = computingMethodService.getQtySum(logs, stockUOMId);
 
 		final Money money;
 		if (logProductPrice != null)
 		{
 			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
-			Check.assumeEquals(stockUOM.getC_UOM_ID(), logProductPrice.getUomId().getRepoId(), "Log Price UOM and Invoice Product UOM should be the same");
+			Check.assumeEquals(stockUOMId, logProductPrice.getUomId(), "Log Price UOM and Invoice Product UOM should be the same");
 			money = logProductPrice.toMoney();
 		}
 		else
@@ -193,14 +186,14 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		}
 
 		return Optional.of(ComputingResponse.builder()
-								   .ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
-								   .price(ProductPrice.builder()
-												  .productId(request.getProductId())
-												  .money(money)
-												  .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-												  .build())
-								   .qty(qty)
-								   .build()
+				.ids(logs.getIds())
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(money)
+						.uomId(stockUOMId)
+						.build())
+				.qty(qty)
+				.build()
 		);
 	}
 }

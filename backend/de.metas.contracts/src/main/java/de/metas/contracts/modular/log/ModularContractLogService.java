@@ -27,11 +27,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.uom.UOMConversionContext;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,7 +43,6 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,6 +53,7 @@ public class ModularContractLogService
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
 
@@ -108,16 +108,16 @@ public class ModularContractLogService
 	}
 
 	@NonNull
-	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return modularContractLogDAO.getModularContractLogEntries(query);
 	}
 
-	public void validateLogPrices(@NonNull final List<ModularContractLogEntry> logs)
+	public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)
 	{
-		if (logs.isEmpty()) { return; }
+		if (logs.isEmpty()) {return;}
 
-		final ProductPrice productPriceToMatch = logs.get(0).getPriceActual();
+		final ProductPrice productPriceToMatch = logs.getFirstPriceActual();
 		Check.assumeNotNull(productPriceToMatch, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
 		logs.forEach(log -> validateLogPrice(log.getPriceActual(), productPriceToMatch));
 	}
@@ -128,19 +128,18 @@ public class ModularContractLogService
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
-	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final ModularContractLogEntry log)
+	public StockQtyAndUOMQty getStockQtyAndQtyInUOM(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
 	{
-		final UomId stockUOMId = productBL.getStockUOMId(log.getProductId());
+		final Quantity qtyInTargetUOM = logs.getQtySum(targetUomId, uomConversionBL);
 
-		final Quantity stockQuantity = Quantitys.create(
-				log.getQuantity(),
-				UOMConversionContext.of(log.getProductId()),
-				stockUOMId);
+		final ProductId productId = logs.getSingleProductId();
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qtyInStockUOM = uomConversionBL.convertQuantityTo(qtyInTargetUOM, productId, stockUomId);
 
 		return StockQtyAndUOMQty.builder()
-				.productId(log.getProductId())
-				.stockQty(stockQuantity)
-				.uomQty(log.getQuantity())
+				.productId(productId)
+				.stockQty(qtyInStockUOM)
+				.uomQty(qtyInTargetUOM)
 				.build();
 	}
 
