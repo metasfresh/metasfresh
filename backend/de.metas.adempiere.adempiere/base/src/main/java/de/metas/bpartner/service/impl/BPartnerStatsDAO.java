@@ -105,6 +105,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		stat.setDelivery_CreditUsed(BigDecimal.ZERO);
 		stat.setActualLifeTimeValue(BigDecimal.ZERO);
 		stat.setOpenItems(BigDecimal.ZERO);
+		stat.setAD_Org_ID(partner.getAD_Org_ID());
 
 		saveRecord(stat);
 
