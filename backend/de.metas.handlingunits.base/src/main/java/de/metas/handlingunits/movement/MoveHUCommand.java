@@ -123,6 +123,7 @@ public class MoveHUCommand
 
 			if (husToMove.stream().anyMatch(tu -> !handlingUnitsBL.isVirtual(tu)))
 			{
+				// keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/apps/huManager/containers/HUManagerScreen.jsx, see isAllowMove
 				throw new AdempiereException("Expecting only CUs to be moved");
 			}
 
