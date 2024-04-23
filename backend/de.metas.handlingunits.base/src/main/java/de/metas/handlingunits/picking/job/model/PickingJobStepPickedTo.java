@@ -70,15 +70,4 @@ public class PickingJobStepPickedTo
 
 		Quantity.assertSameUOM(this.qtyPicked, this.qtyRejected != null ? this.qtyRejected.toQuantity() : null);
 	}
-
-	public Quantity getQtyPickedOrRejected()
-	{
-		Quantity qtyPickedOrRejected = qtyPicked;
-		if (qtyRejected != null)
-		{
-			qtyPickedOrRejected = qtyPickedOrRejected.add(qtyRejected.toQuantity());
-		}
-		return qtyPickedOrRejected;
-	}
-
 }

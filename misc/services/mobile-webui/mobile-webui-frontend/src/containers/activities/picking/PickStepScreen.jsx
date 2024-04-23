@@ -7,7 +7,6 @@ import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
 import { pickingStepScanScreenLocation } from '../../../routes/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
@@ -84,20 +83,7 @@ const PickStepScreen = () => {
       qtyRejected,
       qtyRejectedReasonCode: 'N',
       huQRCode: toQRCodeString(pickFrom.huQRCode),
-    }).then(() => {
-      dispatch(
-        updatePickingStepQty({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          altStepId,
-          qtyPicked: 0,
-          qtyRejected,
-          qtyRejectedReasonCode: 'N', // FIXME: hardcoded NotFound reason code
-        })
-      );
-    });
+    }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
   };
 
   const onScanButtonClick = () =>

@@ -8,10 +8,10 @@ import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from 
 import { toastError } from '../../../utils/toast';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const PickStepScanScreen = () => {
   const {
@@ -49,19 +49,8 @@ const PickStepScanScreen = () => {
       qtyRejectedReasonCode: reason,
       qtyRejected,
     })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => {
-        dispatch(
-          updatePickingStepQty({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            altStepId,
-            qtyPicked: qty,
-            qtyRejected,
-            qtyRejectedReasonCode: reason,
-          })
-        );
         history.go(-2); // go to picking line screen
       })
       .catch((axiosError) => toastError({ axiosError }));

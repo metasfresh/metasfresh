@@ -111,9 +111,19 @@ public class PickingJobStepPickFromMap
 				: this;
 	}
 
-	public Optional<Quantity> getQtyPickedOrRejected()
+	public Optional<Quantity> getQtyPicked()
+	{
+		return map.values()
+				.stream()
+				.map(pickFrom -> pickFrom.getQtyPicked().orElse(null))
+				.filter(Objects::nonNull)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<Quantity> getQtyRejected()
 	{
 		// returning only from mainPickFrom because I wanted to keep the same logic we already have in misc/services/mobile-webui/mobile-webui-frontend/src/utils/picking.js, getQtyPickedOrRejectedTotalForLine  
-		return getMainPickFrom().getQtyPickedOrRejected();
+		return getMainPickFrom().getQtyRejected();
 	}
+
 }
