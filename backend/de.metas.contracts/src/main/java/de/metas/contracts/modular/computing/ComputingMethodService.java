@@ -62,14 +62,13 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVAT
 @RequiredArgsConstructor
 public class ComputingMethodService
 {
+	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
+	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
 	@NonNull private final ModularContractLogService contractLogService;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-
-	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
-	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
@@ -184,9 +183,12 @@ public class ComputingMethodService
 						.lockOwner(request.getLockOwner())
 						.build());
 
-		logs.assertSingleProductId(request.getProductId());
-
+		if (!logs.isEmpty())
+		{
+			logs.assertSingleProductId(request.getProductId());
+		}
 		return logs;
+
 	}
 
 	public Quantity getQtySumInStockUOM(@NonNull final ModularContractLogEntriesList logs)
@@ -195,7 +197,7 @@ public class ComputingMethodService
 		return logs.getQtySum(stockUOMId, uomConversionBL);
 	}
 
-	public Quantity getQtySum(@NonNull final ModularContractLogEntriesList logs, @NonNull UomId targetUomId)
+	public Quantity getQtySum(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
 	{
 		return logs.getQtySum(targetUomId, uomConversionBL);
 	}
