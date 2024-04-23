@@ -22,22 +22,31 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
 
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.shippingnotification.ShippingNotificationLineId;
+import de.metas.shippingnotification.ShippingNotificationRepository;
+import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
@@ -52,16 +61,31 @@ import java.util.stream.Stream;
 public class SVInterimComputingMethod implements IComputingMethodHandler
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
+	@NonNull private final ModularContractProvider contractProvider;
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		return false;
+		if (!logEntryContractType.isModularContractType() || !recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		{
+			return false;
+		}
+		final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(line.getC_Order_ID()));
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(order.getHarvesting_Year_ID(), order.getC_Harvesting_Calendar_ID());
+
+		return yearAndCalendarId != null;
 	}
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return Stream.empty();
+		final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
+
+		return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
 	}
 
 	@Override
@@ -80,10 +104,10 @@ public class SVInterimComputingMethod implements IComputingMethodHandler
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
+						.productId(request.getProductId())
+						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
 				.qty(qty)
 				.build();
 	}

@@ -466,6 +466,7 @@ public class ModularContractLogDAO
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, request.modularContractModuleId())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, request.productId())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, false)
 				.create()
 				.update(queryUpdater);
 	}
