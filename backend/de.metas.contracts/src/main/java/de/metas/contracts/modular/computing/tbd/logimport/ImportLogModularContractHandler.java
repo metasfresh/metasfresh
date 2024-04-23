@@ -32,7 +32,6 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
@@ -49,10 +48,7 @@ import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG_DEPRECATED;
@@ -105,15 +101,13 @@ public class ImportLogModularContractHandler implements IComputingMethodHandler
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-		final List<ModularContractLogEntry> logs = new ArrayList<>();
 
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
 				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
+						.productId(request.getProductId())
+						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
 				.qty(qty)
 				.build();
 	}

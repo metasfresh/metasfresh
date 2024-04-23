@@ -22,6 +22,9 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,5 +40,18 @@ public class ProcessModularLogRequestList
 {
 	@NonNull List<ProcessModularLogRequest> requests;
 
-	public Stream<ProcessModularLogRequest> stream() {return requests.stream();}
+	@NonNull
+	public Stream<ProcessModularLogRequest> stream()
+	{
+		return requests.stream();
+	}
+
+	@NonNull
+	@JsonIgnore
+	public ImmutableSet<FlatrateTermId> getContractIds()
+	{
+		return requests.stream()
+				.map(ProcessModularLogRequest::getFlatrateTermId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

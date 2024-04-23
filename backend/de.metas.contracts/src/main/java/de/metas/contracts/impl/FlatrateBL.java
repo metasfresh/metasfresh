@@ -128,7 +128,6 @@ import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -2395,9 +2394,9 @@ public class FlatrateBL implements IFlatrateBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return flatrateDAO.getModularContractIds(queryBuilder);
+		return flatrateDAO.getModularContractIds(queryFilter);
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
