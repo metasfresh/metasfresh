@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import Avatar from '../app/Avatar';
 import Tooltips from '../tooltips/Tooltips';
+import { getSettingFromMEAsBoolean } from '../../utils/settings';
 
 /**
  * @file Class based component.
@@ -12,23 +13,19 @@ import Tooltips from '../tooltips/Tooltips';
  * @extends Component
  */
 class UserDropdown extends Component {
-  constructor(props) {
-    super(props);
-  }
+  handleClickOutside = () => this.closeDropdownPanel();
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  handleClickOutside = () => this.props.handleUDOpen(false);
+  openDropdownPanel = () => {
+    const { handleUDOpen } = this.props;
+    handleUDOpen(true);
+  };
 
-  /**
-   * @method handleKeyDown
-   * @summary ToDo: Describe the method
-   * @param {object} event
-   * @todo Write the documentation
-   */
+  closeDropdownPanel = () => {
+    const { handleUDOpen, toggleTooltip } = this.props;
+    handleUDOpen(false);
+    toggleTooltip('');
+  };
+
   handleKeyDown = (e) => {
     switch (e.key) {
       case 'ArrowDown': {
@@ -66,61 +63,53 @@ class UserDropdown extends Component {
     }
   };
 
-  /**
-   * @method renderPlugins
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   renderPlugins = () => {
-    const { handleUDOpen, redirect, toggleTooltip, plugins } = this.props;
-    const ret = { pluginsMenu: null, pluginsMenuLength: 0 };
+    const { plugins, redirect } = this.props;
 
-    if (plugins.length) {
-      const menuOptions = [];
+    if (!plugins || plugins.length <= 0) return null;
 
-      plugins.forEach((plugin, i) => {
-        if (plugin.userDropdownLink) {
-          ret.pluginsMenuLength = ret.pluginsMenuLength + 1;
+    const menuOptions = [];
 
-          menuOptions.push(
-            <div
-              key={`menu-item-${i}`}
-              className="user-dropdown-item"
-              onClick={() => {
-                redirect(plugin.userDropdownLink.url);
-                handleUDOpen(false);
-                toggleTooltip('');
-              }}
-              tabIndex={0}
-            >
-              <i className="meta-icon-settings" />
-              {plugin.userDropdownLink.text}
-            </div>
-          );
-        }
-      });
+    plugins.forEach((plugin, i) => {
+      if (plugin.userDropdownLink) {
+        menuOptions.push(
+          <UserDropdownItem
+            key={`menu-item-${i}`}
+            caption={plugin.userDropdownLink.text}
+            icon="meta-icon-settings"
+            onClick={() => {
+              redirect(plugin.userDropdownLink.url);
+              this.closeDropdownPanel();
+            }}
+          />
+        );
+      }
+    });
 
-      ret.pluginsMenu = menuOptions;
-    }
+    if (menuOptions.length <= 0) return null;
 
-    return ret;
+    return (
+      <>
+        <hr className="context-menu-separator" />
+        {menuOptions}
+        <hr className="context-menu-separator" />
+      </>
+    );
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
-  render() {
-    const {
-      open,
-      handleUDOpen,
-      redirect,
-      shortcut,
-      toggleTooltip,
-      tooltipOpen,
+  renderDropdownPanel = () => {
+    const { me, redirect, dispatch } = this.props;
+
+    const isShowOrg = getSettingFromMEAsBoolean(
       me,
-    } = this.props;
+      'userDropdown.showOrg',
+      false
+    );
+    const isShowRole = getSettingFromMEAsBoolean(
+      me,
+      'userDropdown.showRole',
+      true
+    );
 
     const { pluginsMenu, pluginsMenuLength } = this.renderPlugins();
 
@@ -188,6 +177,58 @@ class UserDropdown extends Component {
             </div>
           </div>
         )}
+      <div className="user-dropdown-list" onKeyDown={this.handleKeyDown}>
+          <span className="meta-text-primary">{me.fullname}</span>
+          {isShowOrg && me.orgname && <div>{me.orgname}</div>}
+          {isShowRole && me.rolename && <div>{me.rolename}</div>}
+          {isWorkplacesEnabled && currentWorkplace?.caption && (
+            <div>{currentWorkplace.caption}</div>
+          )}
+        </div>
+        <hr className="context-menu-separator" />
+        {
+          // Placeholder, empty place, to keep focus when it is
+          // not needed (e.g when mouse is in use)
+          // It is always returning back there due to ref action
+        }
+        <div
+          ref={(c) => c && c.focus()}
+          tabIndex={0}
+          className="js-selection-placeholder"
+        />
+        <UserDropdownItem
+          caption={counterpart.translate('window.settings.caption')}
+          icon="meta-icon-settings"
+          onClick={() => {
+            redirect(
+              '/window/' + me.userProfileWindowId + '/' + me.userProfileId
+            );
+            this.closeDropdownPanel();
+          }}
+        />
+        {this.renderPlugins()}
+        <UserDropdownItem
+          caption={counterpart.translate('window.logOut.caption')}
+          icon="meta-icon-logout"
+          onClick={() => {
+            redirect('/logout');
+            this.closeDropdownPanel();
+          }}
+        />
+      </div>
+    );
+  };
+
+  renderHeaderButton = () => {
+    const { open, shortcut, tooltipOpen, me } = this.props;
+    return (
+      <>
+        <div
+          className="header-item avatar-container"
+          onClick={() => this.openDropdownPanel()}
+        >
+          <Avatar id={me.avatarId} />
+        </div>
         {tooltipOpen === shortcut && !open && (
           <Tooltips
             name={shortcut}
@@ -195,32 +236,55 @@ class UserDropdown extends Component {
             type={''}
           />
         )}
+      </>
+    );
+  };
+
+  render() {
+    const { open, shortcut, toggleTooltip } = this.props;
+
+    return (
+      <div
+        className={
+          'header-item-container ' +
+          'js-not-unselect ' +
+          'pointer user-dropdown-container tooltip-parent ' +
+          (open ? 'header-item-open ' : '')
+        }
+        onMouseEnter={() => toggleTooltip(shortcut)}
+        onMouseLeave={() => toggleTooltip('')}
+      >
+        {this.renderHeaderButton()}
+        {open && this.renderDropdownPanel()}
       </div>
     );
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} open
- * @prop {*} handleUDOpen
- * @prop {*} redirect
- * @prop {*} shortcut
- * @prop {*} toggleTooltip
- * @prop {*} tooltipOpen
- * @prop {*} me
- * @prop {*} plugins
- * @todo Check props. Which proptype? Required or optional?
- */
 UserDropdown.propTypes = {
-  open: PropTypes.any,
-  handleUDOpen: PropTypes.any,
-  redirect: PropTypes.any,
-  shortcut: PropTypes.any,
-  toggleTooltip: PropTypes.any,
-  tooltipOpen: PropTypes.any,
-  me: PropTypes.any,
-  plugins: PropTypes.any,
+  open: PropTypes.bool.isRequired,
+  handleUDOpen: PropTypes.func.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  redirect: PropTypes.func.isRequired,
+  shortcut: PropTypes.string,
+  toggleTooltip: PropTypes.func.isRequired,
+  tooltipOpen: PropTypes.string,
+  me: PropTypes.object.isRequired,
+  plugins: PropTypes.array,
+};
+
+const UserDropdownItem = ({ icon, caption, onClick }) => {
+  return (
+    <div className="user-dropdown-item" onClick={onClick} tabIndex={0}>
+      <i className={icon} />
+      {caption}
+    </div>
+  );
+};
+UserDropdownItem.propTypes = {
+  icon: PropTypes.string.isRequired,
+  caption: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default onClickOutside(UserDropdown);
