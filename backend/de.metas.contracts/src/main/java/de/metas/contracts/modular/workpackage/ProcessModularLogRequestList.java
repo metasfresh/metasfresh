@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import lombok.Builder;
@@ -46,6 +47,7 @@ public class ProcessModularLogRequestList
 	}
 
 	@NonNull
+	@JsonIgnore
 	public ImmutableSet<FlatrateTermId> getContractIds()
 	{
 		return requests.stream()

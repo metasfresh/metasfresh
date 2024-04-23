@@ -188,12 +188,17 @@ public class ModularContractLogDAO
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryId(request.id())
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
-														.build())
+		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType());
+
+		if (request.id() != null)
+		{
+			queryBuilder.entryId(request.id());
+		}
+
+		final I_ModCntr_Log oldLog = lastRecord(queryBuilder.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
