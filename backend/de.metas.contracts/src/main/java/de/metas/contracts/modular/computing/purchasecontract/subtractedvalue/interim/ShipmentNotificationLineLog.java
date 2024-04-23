@@ -22,16 +22,17 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
 
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
 import de.metas.shippingnotification.ShippingNotificationService;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
 	@NonNull
@@ -45,12 +46,6 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	{
 		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO);
 		this.computingMethod = computingMethod;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 
 	@Override

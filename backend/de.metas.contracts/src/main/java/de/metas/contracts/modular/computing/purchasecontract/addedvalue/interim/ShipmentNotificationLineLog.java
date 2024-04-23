@@ -20,29 +20,37 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.interim;
+package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim;
 
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
+import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
+import de.metas.lang.SOTrx;
+import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class PurchaseInvoiceLineLog extends AbstractInterimInvoiceLineLog
+class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
-	private final InterimComputingMethod computingMethod;
+	@NonNull
+	private final AVInterimComputingMethod computingMethod;
 
-	public PurchaseInvoiceLineLog(
-			@NonNull final InterimComputingMethod computingMethod,
+	public ShipmentNotificationLineLog(
+			@NonNull final ShippingNotificationService notificationService,
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractLogDAO contractLogDAO,
-			@NonNull final ModularContractLogService modularContractLogService,
-			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
+			@NonNull final AVInterimComputingMethod computingMethod)
 	{
-		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
+		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO);
 		this.computingMethod = computingMethod;
+	}
+
+	@Override
+	public SOTrx getSOTrx()
+	{
+		return SOTrx.SALES;
 	}
 }
