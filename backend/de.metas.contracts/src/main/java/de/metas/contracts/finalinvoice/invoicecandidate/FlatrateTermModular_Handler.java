@@ -287,6 +287,8 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
 		{
+			// the invoice candidate will have to contain the stock UOM
+			// of the contract's product even if the M_Product_ID of the invoice candidate is different.
 			stockUomId = productBL.getStockUOMId(modularContract.getM_Product_ID());
 		}
 		else
