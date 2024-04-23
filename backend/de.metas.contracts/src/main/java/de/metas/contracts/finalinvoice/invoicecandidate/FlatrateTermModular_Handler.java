@@ -29,6 +29,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
@@ -172,7 +173,14 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	@NonNull
 	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		return IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
+		final ImmutableList<I_ModCntr_Log> billableLogs = modularContractLogDAO.list(ModularContractLogQuery.builder()
+																							 .flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
+																							 .processed(false)
+																							 .billable(true)
+																							 .build());
+
+		return Check.isEmpty(billableLogs) ? IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT
+				: IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
 	}
 
 	@Override
@@ -227,8 +235,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		setPriceAndQty(invoiceCandidate, computingResponse);
 
-		trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-				InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+		if (!computingResponse.getIds().isEmpty())
+		{
+			trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+																				 InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+		}
 
 		return invoiceCandidate;
 	}
