@@ -154,7 +154,8 @@ public class InterimComputingMethod implements IComputingMethodHandler
 
 		final Money money = logs.stream()
 				.map(ModularContractLogEntry::getAmount)
-				.reduce(Money.zero(request.getCurrencyId()), Money::add);
+				.reduce(Money.zero(request.getCurrencyId()), Money::add)
+				.negate();
 
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
