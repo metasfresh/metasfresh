@@ -221,7 +221,7 @@ const computeSingleStorageQtyAndUOM = (handlingUnitInfo) => {
 };
 
 const isCU = (handlingUnitInfo) => {
-  return getHUUnitType(handlingUnitInfo) == 'CU';
+  return getHUUnitType(handlingUnitInfo) === 'CU';
 };
 
 const getHUUnitType = (handlingUnitInfo) => {
