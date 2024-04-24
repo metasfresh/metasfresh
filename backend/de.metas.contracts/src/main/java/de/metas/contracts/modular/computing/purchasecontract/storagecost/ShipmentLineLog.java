@@ -118,7 +118,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 				.transactionDate(transactionDate)
 				.storageDays(storageDays)
 				.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
-				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs().toString()))
+				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configId(createLogRequest.getConfigId())
 				.invoicingGroupId(getInvoicingGroupIdOrNull(productId, transactionDate))
