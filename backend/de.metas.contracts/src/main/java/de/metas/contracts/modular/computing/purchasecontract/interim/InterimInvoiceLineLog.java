@@ -216,7 +216,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(getLogEntryContractType())
-						.contractModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build()
 		);
 	}

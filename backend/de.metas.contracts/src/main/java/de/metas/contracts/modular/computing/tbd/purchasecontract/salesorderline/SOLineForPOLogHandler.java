@@ -166,7 +166,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build());
 	}
 

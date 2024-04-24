@@ -31,6 +31,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
@@ -112,6 +113,8 @@ public interface IModularContractLogHandler
 		{
 			return moduleConfig.getId();
 		}
+
+		public ModularContractModuleId getModularContractModuleId() {return getConfigId().getModularContractModuleId();}
 	}
 
 	@Value

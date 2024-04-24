@@ -167,7 +167,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 											.referencedModel(recordRef)
 											.flatrateTermId(createLogRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+											.contractModuleId(createLogRequest.getModularContractModuleId())
 											.build());
 	}
 }
