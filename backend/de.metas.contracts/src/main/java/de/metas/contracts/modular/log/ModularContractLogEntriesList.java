@@ -87,7 +87,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
 	}
 
-	public Quantity getQtySum(@NonNull UomId targetUomId, @NonNull QuantityUOMConverter uomConverter)
+	public Quantity getQtySum(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (list.isEmpty())
 		{

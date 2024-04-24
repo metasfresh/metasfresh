@@ -175,7 +175,7 @@ public class ModularContractLogEntry
 		this.modularContractModuleId = modularContractModuleId;
 	}
 
-	Quantity getQuantity(final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
 		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
