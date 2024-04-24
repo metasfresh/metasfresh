@@ -33,6 +33,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -117,11 +118,11 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		final I_C_Invoice_Candidate invoiceCandidate = createBaseIC(term);
 
 		final DocTypeId interimInvoiceDocTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-																				  .docBaseType(DocBaseType.APInvoice)
-																				  .docSubType(X_C_DocType.DOCSUBTYPE_InterimInvoice)
-																				  .adClientId(term.getAD_Client_ID())
-																				  .adOrgId(term.getAD_Org_ID())
-																				  .build());
+				.docBaseType(DocBaseType.APInvoice)
+				.docSubType(X_C_DocType.DOCSUBTYPE_InterimInvoice)
+				.adClientId(term.getAD_Client_ID())
+				.adOrgId(term.getAD_Org_ID())
+				.build());
 		invoiceCandidate.setC_DocTypeInvoice_ID(interimInvoiceDocTypeId.getRepoId());
 
 		return invoiceCandidate;
@@ -158,14 +159,13 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
-		final List<ModularContractLogEntry> interimLogs = getInterimLogs(term, ic);
-
+		final ModularContractLogEntriesList interimLogs = getInterimLogs(term, ic);
 		if (interimLogs.isEmpty())
 		{
 			throw new AdempiereException("No logs found for the contract and invoice candidate :" + term + " , " + ic);
 		}
 
-		final ModularContractLogEntry modularContractLogEntry = interimLogs.get(0);
+		final ModularContractLogEntry modularContractLogEntry = interimLogs.getFirstEntry();
 
 		final ProductPrice productPrice = modularContractLogEntry.getPriceActual();
 
@@ -217,8 +217,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 		IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 	}
 
-	@NonNull
-	private List<ModularContractLogEntry> getInterimLogs(final @NonNull I_C_Flatrate_Term flatrateTermRecord, @NonNull final I_C_Invoice_Candidate ic)
+	private ModularContractLogEntriesList getInterimLogs(final @NonNull I_C_Flatrate_Term flatrateTermRecord, @NonNull final I_C_Invoice_Candidate ic)
 	{
 
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
@@ -228,7 +227,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 				.processed(true)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID()))
 				.build();
-		final List<ModularContractLogEntry> modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);
+		final ModularContractLogEntriesList modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);
 		modularContractLogService.validateLogPrices(modularContractLogEntries);
 
 		return modularContractLogEntries;

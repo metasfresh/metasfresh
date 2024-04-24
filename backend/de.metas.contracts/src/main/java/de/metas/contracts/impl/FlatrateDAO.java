@@ -1,6 +1,7 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
@@ -90,6 +91,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
@@ -153,6 +155,17 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Term getById(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		return load(flatrateTermId, I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<FlatrateTermId, I_C_Flatrate_Term> getByIds(@NonNull final Set<FlatrateTermId> flatrateTermIds)
+	{
+		return InterfaceWrapperHelper
+				.loadByRepoIdAwares(flatrateTermIds, I_C_Flatrate_Term.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(term -> FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()),
+													 Function.identity()));
 	}
 
 	@Override
@@ -883,6 +896,17 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	@NonNull
+	public ImmutableMap<ConditionsId, I_C_Flatrate_Conditions> getTermConditionsByIds(@NonNull final Set<ConditionsId> conditionsIds)
+	{
+		return InterfaceWrapperHelper
+				.loadByRepoIdAwares(conditionsIds, I_C_Flatrate_Conditions.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(conditions -> ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()),
+													 Function.identity()));
+	}
+
+	@Override
 	public int getFlatrateConditionsIdByName(@NonNull final String name)
 	{
 		final int flatrateConditionsId = queryBL
@@ -1288,9 +1312,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@NonNull
-	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryBuilder<I_C_Flatrate_Term> queryBuilder)
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return createModularContractQuery(queryBuilder)
+		return createModularContractQuery(getFlatrateTermQueryBuilder(queryFilter))
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 

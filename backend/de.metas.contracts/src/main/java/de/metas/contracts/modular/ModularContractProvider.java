@@ -27,7 +27,6 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -64,6 +63,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static de.metas.contracts.flatrate.TypeConditions.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Service
@@ -87,7 +87,7 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
-		return flatrateBL.getByOrderLineId(orderAndLineId.getOrderLineId(), TypeConditions.MODULAR_CONTRACT)
+		return flatrateBL.getByOrderLineId(orderAndLineId.getOrderLineId(), MODULAR_CONTRACT)
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
 	}
@@ -110,7 +110,7 @@ public class ModularContractProvider
 				.calendarId(harvestingCalendarId)
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.typeConditions(MODULAR_CONTRACT)
 				.build();
 
 		return flatrateBL.streamModularFlatrateTermsByQuery(query)
@@ -121,7 +121,7 @@ public class ModularContractProvider
 	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForPurchaseOrderLine(@NonNull final OrderLineId purchaseOrderLineId)
 	{
-		return flatrateBL.getByOrderLineId(purchaseOrderLineId, TypeConditions.MODULAR_CONTRACT)
+		return flatrateBL.getByOrderLineId(purchaseOrderLineId, MODULAR_CONTRACT)
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId)
 				.stream();
@@ -131,7 +131,13 @@ public class ModularContractProvider
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForReceiptLine(@NonNull final InOutLineId receiptInOutLineId)
 	{
 		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptInOutLineId);
-		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID()));
+		final FlatrateTermId contractId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
+
+		return Stream.ofNullable(contractId)
+				.map(flatrateBL::getById)
+				.filter(contract -> MODULAR_CONTRACT.equalsByCode(contract.getType_Conditions()))
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull

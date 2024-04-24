@@ -173,14 +173,14 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	@Override
 	public void setAD_Sequence_ID (final int AD_Sequence_ID)
 	{
-		if (AD_Sequence_ID < 1) 
+		if (AD_Sequence_ID < 1)
 			set_Value (COLUMNNAME_AD_Sequence_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
 	}
 
 	@Override
-	public int getAD_Sequence_ID() 
+	public int getAD_Sequence_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
 	}
@@ -520,12 +520,12 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isDLMPartitionBoundary() 
+	public boolean isDLMPartitionBoundary()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
 	}
 
-	/** 
+	/**
 	 * IsEncrypted AD_Reference_ID=354
 	 * Reference name: AD_Column Encrypted
 	 */
