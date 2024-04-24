@@ -42,6 +42,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -170,32 +171,52 @@ public class ModularContractProvider
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForInvoiceLine(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
+		final FlatrateTermId flatrateTermId;
 		if (invoiceLineRecord.getC_Flatrate_Term_ID() > 0)
 		{
-			return Stream.of(FlatrateTermId.ofRepoId(invoiceLineRecord.getC_Flatrate_Term_ID()));
+			flatrateTermId = FlatrateTermId.ofRepoIdOrNull(invoiceLineRecord.getC_Flatrate_Term_ID());
 		}
 		else
 		{
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
-			if (invoiceCandidates.size() != 1)
-			{
-				return Stream.empty();
-			}
 
-			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandidates.get(0);
-			final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
-			if (invoiceCandidateRecord.getAD_Table_ID() != flatrateTermTableId)
-			{
-				return Stream.empty();
-			}
+			flatrateTermId = CollectionUtils.extractSingleElement(invoiceCandidates, this::extractFlatrateTermId).orElse(null);
 
-			final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(invoiceCandidateRecord.getRecord_ID());
-			if(!flatrateBL.isModularContract(flatrateTermId))
-			{
-				return Stream.empty();
-			}
+		}
 
+		if (flatrateTermId == null)
+		{
+			return Stream.empty();
+		}
+
+		if (flatrateBL.isModularContract(flatrateTermId))
+		{
 			return Stream.of(flatrateTermId);
 		}
+		else if (flatrateBL.isInterimContract(flatrateTermId))
+		{
+			final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(flatrateTermId);
+			return Stream.of(FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID()));
+		}
+		else
+		{
+			return Stream.empty();
+		}
+	}
+
+	private Optional<FlatrateTermId> extractFlatrateTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (ic.getC_Flatrate_Term_ID() > 0)
+		{
+			return Optional.ofNullable(FlatrateTermId.ofRepoIdOrNull(ic.getC_Flatrate_Term_ID()));
+		}
+
+		final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
+		if (ic.getAD_Table_ID() == flatrateTermTableId)
+		{
+			return Optional.ofNullable(FlatrateTermId.ofRepoIdOrNull(ic.getRecord_ID()));
+		}
+
+		return Optional.empty();
 	}
 }

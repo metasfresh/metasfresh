@@ -2301,6 +2301,14 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
+	public boolean isInterimContract(@NonNull final ConditionsId conditionsId)
+	{
+		final I_C_Flatrate_Conditions conditions = flatrateDAO.getConditionsById(conditionsId);
+
+		return TypeConditions.ofCode(conditions.getType_Conditions()).isInterimContractType();
+	}
+
+	@Override
 	public I_C_Flatrate_Term createContractForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
@@ -2376,6 +2384,15 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
 
 		return isModularContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
+	}
+
+
+	@Override
+	public boolean isInterimContract(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = getById(flatrateTermId);
+
+		return isInterimContract(ConditionsId.ofRepoId(flatrateTermRecord.getC_Flatrate_Conditions_ID()));
 	}
 
 	@Override
