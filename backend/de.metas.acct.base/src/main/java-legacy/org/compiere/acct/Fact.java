@@ -256,6 +256,8 @@ public final class Fact
 
 	public CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
 
+	public boolean isAccountingCurrency(@NonNull final CurrencyId currencyId) {return getAcctSchema().isAccountingCurrency(currencyId);}
+
 	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
 		return getAcctSchema().getSchemaElements();
