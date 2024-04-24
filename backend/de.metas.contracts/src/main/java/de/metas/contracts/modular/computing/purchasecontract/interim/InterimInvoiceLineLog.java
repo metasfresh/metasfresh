@@ -195,14 +195,14 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference invoiceLineRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference invoiceLineRef = createLogRequest.getRecordRef();
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
 						.contractType(LogEntryContractType.INTERIM)
 						.build());
@@ -214,9 +214,10 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(invoiceLineRef)
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.INTERIM)
+						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build()
 		);
 	}

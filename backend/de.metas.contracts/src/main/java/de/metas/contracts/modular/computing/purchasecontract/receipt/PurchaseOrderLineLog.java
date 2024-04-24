@@ -106,7 +106,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_PO_COMPLETED, productName, quantity.abs().toString());
-		
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())
 											.productId(productId)
@@ -134,13 +134,14 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(handleLogsRequest.getTableRecordReference())
-											.flatrateTermId(handleLogsRequest.getContractId())
+											.referencedModel(createLogRequest.getRecordRef())
+											.flatrateTermId(createLogRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 											.build());
 	}
 
