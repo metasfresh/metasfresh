@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
@@ -108,31 +109,23 @@ public class ModCntr_Module
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module type)
+	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
 	{
-		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
-		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType());
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+		final I_ModCntr_Type type = record.getModCntr_Type();
+		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModularContractHandlerType());
 		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
-		final ProductId productId = ProductId.ofRepoId(type.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 
-		final boolean hasAlreadyComputingTypeAndProduct = settings.getModuleConfigs().stream()
-				.filter(moduleConfig -> ProductId.equals(moduleConfig.getProductId(), productId))
-				.filter(moduleConfig -> moduleConfig.isMatching(computingMethodType))
-				.count() > 1;
-
+		final boolean hasAlreadyComputingTypeAndProduct = settings.countMatching(computingMethodType, productId) > 1;
 		if (hasAlreadyComputingTypeAndProduct)
 		{
 			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
-					.setParameter("ProductId: ", type.getM_Product_ID())
-					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
+					.setParameter("ProductId: ", record.getM_Product_ID())
+					.setParameter("ComputingMethodType: ", type.getName());
 		}
 
-		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.getModuleConfigs()
-				.stream()
-				.filter(module -> module.isMatching(SalesOnRawProduct)
-						|| module.isMatching(SalesOnProcessedProduct))
-				.count() > 1;
-
+		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.countMatchingAnyOf(SalesOnRawProduct, SalesOnProcessedProduct) > 1;
 		if (bothSalesOnRawProductAndProcessedProductSet)
 		{
 			throw new AdempiereException(ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET);
@@ -150,7 +143,7 @@ public class ModCntr_Module
 
 			case SalesOnRawProduct ->
 			{
-				if (!InvoicingGroupType.ofCode(type.getInvoicingGroup()).isServicesType())
+				if (!InvoicingGroupType.ofCode(record.getInvoicingGroup()).isServicesType())
 				{
 					final ITranslatableString translatedValue = adReferenceService.retrieveListNameTranslatableString(
 							ReferenceId.ofRepoId(X_ModCntr_Module.INVOICINGGROUP_AD_Reference_ID),

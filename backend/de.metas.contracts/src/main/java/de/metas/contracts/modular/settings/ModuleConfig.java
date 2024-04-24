@@ -50,6 +50,12 @@ public class ModuleConfig
 		return modularContractType.isMatching(computingMethodType);
 	}
 
+	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	{
+		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
+	}
+
+
 	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
 
 	@NonNull
