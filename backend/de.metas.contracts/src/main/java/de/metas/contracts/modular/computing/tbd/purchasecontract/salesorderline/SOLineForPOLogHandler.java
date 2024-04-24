@@ -147,13 +147,13 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(handleLogsRequest.getContractId())
+																						 .flatrateTermId(createLogRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(recordRef))
 																						 .build());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
@@ -163,9 +163,10 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(recordRef)
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build());
 	}
 

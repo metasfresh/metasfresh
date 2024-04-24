@@ -135,8 +135,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 				.uomId(uomId)
 				.build();
 
-		final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(createLogRequest.getContractId());
-		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID());
+		final FlatrateTermId modularContractId = createLogRequest.getContractId();
 		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
 		final Optional<ModularContractLogEntry> modularContractLogEntryOptional = modularContractLogService.getLastModularContractLog(
 				modularContractId,
@@ -195,16 +194,16 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference invoiceLineRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference invoiceLineRef = createLogRequest.getRecordRef();
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
-						.contractType(LogEntryContractType.INTERIM)
+						.contractType(getLogEntryContractType())
 						.build());
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
@@ -214,9 +213,10 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(invoiceLineRef)
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
-						.logEntryContractType(LogEntryContractType.INTERIM)
+						.logEntryContractType(getLogEntryContractType())
+						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build()
 		);
 	}

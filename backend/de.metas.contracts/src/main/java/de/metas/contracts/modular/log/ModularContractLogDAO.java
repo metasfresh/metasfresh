@@ -190,7 +190,8 @@ public class ModularContractLogDAO
 		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.flatrateTermId(request.flatrateTermId())
 				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-				.contractType(request.logEntryContractType());
+				.contractType(request.logEntryContractType())
+				.contractModuleId(request.contractModuleId());
 
 		if (request.id() != null)
 		{
@@ -310,6 +311,11 @@ public class ModularContractLogDAO
 		if (query.getModularContractTypeId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, query.getModularContractTypeId());
+		}
+
+		if (query.getContractModuleId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, query.getContractModuleId());
 		}
 
 		if (query.getProcessed() != null)
