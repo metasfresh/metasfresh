@@ -97,7 +97,7 @@ public class ProductUpsertProcessor implements Processor
 		final JsonRequestProduct jsonRequestProduct = new JsonRequestProduct();
 
 		jsonRequestProduct.setName(product.getName());
-		jsonRequestProduct.setCode(product.getValue());
+		jsonRequestProduct.setCode(product.getValue() + "_" + product.getBpartnerIdentifier());
 		jsonRequestProduct.setDescription(StringUtils.trimBlankToNull(product.getDescription()));
 		jsonRequestProduct.setUomCode(DEFAULT_UOM_X12DE355_CODE);
 		jsonRequestProduct.setType(DEFAULT_PRODUCT_TYPE);
