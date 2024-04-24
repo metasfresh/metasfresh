@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -37,18 +36,12 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.Money;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -57,7 +50,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class RawSalesComputingMethod implements IComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -117,7 +109,7 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		if (logs.isEmpty())
 		{
-			return toZeroResponse(request);
+			return computingMethodService.toZeroResponse(request);
 		}
 
 		return ComputingResponse.builder()
@@ -127,17 +119,5 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 				.build();
 	}
 
-	private ComputingResponse toZeroResponse(final @NotNull ComputingRequest request)
-	{
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.zero(request.getCurrencyId()))
-						.uomId(stockUOMId)
-						.build())
-				.qty(Quantitys.createZero(stockUOMId))
-				.build();
-	}
+
 }

@@ -101,8 +101,10 @@ class ShipmentLineLog implements IModularContractLogHandler
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
 																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
+
 		final LocalDateAndOrgId storageDate = createLogRequest.getModularContractSettings().getStorageCostStartDate();
-		final long daysBetween = ChronoUnit.DAYS.between(transactionDate.toLocalDate(), storageDate.toLocalDate());
+		final long daysBetween = ChronoUnit.DAYS.between(storageDate.toLocalDate(), transactionDate.toLocalDate());
+		final Integer storageDays = daysBetween >= 0 ? (int) daysBetween : 0;
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
@@ -127,6 +129,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 											.quantity(quantity)
 											.amount(null)
 											.transactionDate(transactionDate)
+											.storageDays(storageDays)
 											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())

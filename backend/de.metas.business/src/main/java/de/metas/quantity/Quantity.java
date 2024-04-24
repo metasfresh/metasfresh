@@ -210,7 +210,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	@Override
 	@SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-	public boolean equals(Object obj)
+	public boolean equals(final Object obj)
 	{
 		if (this == obj)
 		{
@@ -374,11 +374,6 @@ public final class Quantity implements Comparable<Quantity>
 	public static Quantity zero(final I_C_UOM uom)
 	{
 		return new Quantity(ZERO, uom, ZERO, uom);
-	}
-
-	public static Quantity one(final I_C_UOM uom)
-	{
-		return new Quantity(ONE, uom, ONE, uom);
 	}
 
 	/**
@@ -827,7 +822,7 @@ public final class Quantity implements Comparable<Quantity>
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
 	}
 
-	public Percent percentageOf(@NonNull Quantity whole)
+	public Percent percentageOf(@NonNull final Quantity whole)
 	{
 		assertSameUOM(this, whole);
 		return Percent.of(toBigDecimal(), whole.toBigDecimal());

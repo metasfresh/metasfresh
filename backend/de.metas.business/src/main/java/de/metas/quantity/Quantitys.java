@@ -89,7 +89,7 @@ public class Quantitys
 		return Quantity.zero(uomRecord);
 	}
 
-	public Quantity one(@NonNull final UomId uomId)
+	public Quantity createOne(@NonNull final UomId uomId)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);

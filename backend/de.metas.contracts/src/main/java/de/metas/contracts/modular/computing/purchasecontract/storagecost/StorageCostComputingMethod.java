@@ -35,18 +35,18 @@ import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
@@ -99,28 +99,52 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		logs.assertUniqueProductPriceOrError();
 
-		// final Money money = logs.stream()
-		// 		.map((log) -> getMoneyToAdd(log, request.getCurrencyId()))
-		// 		.reduce(Quantity.zero(stockUOM), Quantity::add);
+		final ProductPrice logProductPrice = logs.getUniqueProductPriceOrError().orElse(null);
+
+		final Money price;
+		final UomId initialStockUOMId;
+		if (logProductPrice != null)
+		{
+			initialStockUOMId = productBL.getStockUOMId(logProductPrice.getProductId());
+			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
+			Check.assumeEquals(initialStockUOMId, logProductPrice.getUomId(), "Log Price UOM and initial product stockUOM should be the same");
+			price = logProductPrice.toMoney();
+		}
+		else
+		{
+			return computingMethodService.toZeroResponseWithQtyOne(request);
+		}
+
+		final Money money = logs.stream()
+				.map((log) -> getMoneyToAdd(log, price, initialStockUOMId))
+				.reduce(Money.of(BigDecimal.ZERO, request.getCurrencyId()), Money::add);
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.money(money)
+						.uomId(stockUOMId)
 						.build())
-				.qty(Quantity.one(stockUOM))
+				.qty(Quantitys.createOne(stockUOMId))
 				.build();
 	}
 
-	private @NonNull Money getMoneyToAdd(@NonNull final ModularContractLogEntry logEntry, @NonNull final CurrencyId currencyId)
+	private @NonNull Money getMoneyToAdd(
+			@NonNull final ModularContractLogEntry logEntry,
+			@NonNull final Money price,
+	        @NonNull final UomId initialStockUOMId)
 	{
+		final Quantity qty = logEntry.getQuantity();
+		Check.assumeNotNull(qty, "Log qty shouldn't be null");
+		Check.assumeEquals(qty.getUomId(), initialStockUOMId, "Log Price UOM and initial product stockUOM should be the same");
 
-		return null;
+		Check.assumeNotNull(logEntry.getStorageDays(), "StorageDays shouldn't be null");
+		final BigDecimal storageDays = BigDecimal.valueOf(logEntry.getStorageDays());
+
+		return price.multiply(qty.toBigDecimal()).multiply(storageDays);
 	}
 }
