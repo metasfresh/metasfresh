@@ -136,6 +136,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 																						 .build());
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(notificationLine.getM_Product_ID()), quantity.toString()));
+		final ProductId productId = ProductId.ofRepoId(notificationLine.getM_Product_ID());
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
@@ -143,6 +144,10 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 						.flatrateTermId(handleLogsRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+						.modularContractTypeId(handleLogsRequest.getContractInfo()
+													   .getModularContractSettings()
+													   .getModuleConfigOrError(handleLogsRequest.getComputingMethodType(), productId)
+													   .getModularContractTypeId())
 						.build());
 	}
 
