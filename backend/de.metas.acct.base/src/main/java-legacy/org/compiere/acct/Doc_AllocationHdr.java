@@ -819,7 +819,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Determine which currency conversion we shall use
 		final CurrencyConversionContext invoiceCurrencyConversionCtx;
-		if (line.getInvoiceC_Currency_ID() == as.getCurrencyId().getRepoId())
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
 		{
 			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
 			invoiceCurrencyConversionCtx = null;
