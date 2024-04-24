@@ -159,14 +159,14 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference invoiceLineRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference invoiceLineRef = createLogRequest.getRecordRef();
 		final I_C_InvoiceLine invoiceLine = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
 						.contractType(LogEntryContractType.MODULAR_CONTRACT)
 						.build());
@@ -178,13 +178,10 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(invoiceLineRef)
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(handleLogsRequest.getContractInfo()
-													 .getModularContractSettings()
-													 .getModuleConfigOrError(handleLogsRequest.getComputingMethodType(), productId)
-													 .getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build()
 		);
 	}
