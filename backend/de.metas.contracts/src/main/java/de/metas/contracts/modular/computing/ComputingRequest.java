@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
@@ -40,4 +41,6 @@ public class ComputingRequest
 	@NonNull CurrencyId currencyId;
 	@NonNull LockOwner lockOwner;
 	@NonNull ModuleConfig moduleConfig;
+
+	public ModularContractModuleId getModularContractModuleId() {return moduleConfig.getId().getModularContractModuleId();}
 }

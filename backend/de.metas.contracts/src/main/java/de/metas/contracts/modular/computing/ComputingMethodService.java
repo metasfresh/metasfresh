@@ -182,7 +182,7 @@ public class ComputingMethodService
 		final ModularContractLogEntriesList logs = contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getFlatrateTermId())
-						.contractModuleId(request.getModuleConfig().getId().getModularContractModuleId())
+						.contractModuleId(request.getModularContractModuleId())
 						.processed(false)
 						.billable(true)
 						.lockOwner(request.getLockOwner())
