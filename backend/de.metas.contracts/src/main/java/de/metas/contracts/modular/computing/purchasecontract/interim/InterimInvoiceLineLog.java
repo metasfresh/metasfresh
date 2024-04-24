@@ -135,8 +135,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 				.uomId(uomId)
 				.build();
 
-		final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(createLogRequest.getContractId());
-		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID());
+		final FlatrateTermId modularContractId = createLogRequest.getContractId();
 		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
 		final Optional<ModularContractLogEntry> modularContractLogEntryOptional = modularContractLogService.getLastModularContractLog(
 				modularContractId,
@@ -204,7 +203,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 				ModularContractLogQuery.builder()
 						.flatrateTermId(createLogRequest.getContractId())
 						.referenceSet(TableRecordReferenceSet.of(invoiceLineRef))
-						.contractType(LogEntryContractType.INTERIM)
+						.contractType(getLogEntryContractType())
 						.build());
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
@@ -216,7 +215,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 						.referencedModel(invoiceLineRef)
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
-						.logEntryContractType(LogEntryContractType.INTERIM)
+						.logEntryContractType(getLogEntryContractType())
 						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build()
 		);
