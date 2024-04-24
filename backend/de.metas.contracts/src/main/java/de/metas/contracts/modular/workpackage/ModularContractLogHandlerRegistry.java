@@ -68,7 +68,6 @@ class ModularContractLogHandlerRegistry
 			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
 			return false;
 		}
-
 		return true;
 	}
 }
