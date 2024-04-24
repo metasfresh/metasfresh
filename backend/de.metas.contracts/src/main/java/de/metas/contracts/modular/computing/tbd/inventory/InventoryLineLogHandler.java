@@ -59,7 +59,6 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
  */
@@ -163,11 +162,16 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 			return ExplainedOptional.emptyBecause(MessageFormat.format("InventoryId: {0} | The enqueued inventory is a reversal, the log entries are created only for the reversed inventory",
 																	   inventory.getM_Inventory_ID()));
 		}
+		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(recordRef)
 											.flatrateTermId(handleLogsRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+											.modularContractTypeId(handleLogsRequest.getContractInfo()
+																		   .getModularContractSettings()
+																		   .getModuleConfigOrError(handleLogsRequest.getComputingMethodType(), productId)
+																		   .getModularContractTypeId())
 											.build());
 	}
 }

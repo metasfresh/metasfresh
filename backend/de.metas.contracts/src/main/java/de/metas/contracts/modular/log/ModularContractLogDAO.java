@@ -190,7 +190,8 @@ public class ModularContractLogDAO
 		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.flatrateTermId(request.flatrateTermId())
 				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-				.contractType(request.logEntryContractType());
+				.contractType(request.logEntryContractType())
+				.modularContractTypeId(request.modularContractTypeId());
 
 		if (request.id() != null)
 		{

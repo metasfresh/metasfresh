@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.common.util.Check;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
@@ -32,6 +33,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -79,6 +81,27 @@ public class ModularContractSettings
 				.stream()
 				.filter(config -> config.isMatching(computingMethodType))
 				.toList();
+	}
+
+	@NonNull
+	public ModuleConfig getModuleConfigOrError(
+			@NonNull final ComputingMethodType computingMethodType,
+			@NonNull final ProductId productId)
+	{
+		final List<ModuleConfig> configs = getModuleConfigs()
+				.stream()
+				.filter(config -> ProductId.equals(productId, config.getProductId()) && config.isMatching(computingMethodType))
+				.toList();
+
+		if (configs.isEmpty())
+		{
+			throw new AdempiereException("No ModuleConfig found for computingMethodType & productId!")
+					.appendParametersToMessage()
+					.setParameter("computingMethodType", computingMethodType)
+					.setParameter("productId", productId);
+		}
+
+		return Check.singleElement(configs);
 	}
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
