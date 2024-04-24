@@ -127,7 +127,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(
-			@NonNull final HandleLogsRequest handleLogsRequest)
+			@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 	}
