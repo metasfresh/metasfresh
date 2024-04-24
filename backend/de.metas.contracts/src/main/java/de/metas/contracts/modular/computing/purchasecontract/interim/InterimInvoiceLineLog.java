@@ -72,7 +72,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class PurchaseInvoiceLineLog implements IModularContractLogHandler
+public class InterimInvoiceLineLog implements IModularContractLogHandler
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -89,7 +89,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
-	public PurchaseInvoiceLineLog(
+	public InterimInvoiceLineLog(
 			@NonNull final InterimComputingMethod computingMethod,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
@@ -128,7 +128,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
 		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId);
-		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
+		final ProductId productId = createLogRequest.getModuleConfig().getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
 				.money(priceActual)
@@ -169,7 +169,7 @@ public class PurchaseInvoiceLineLog implements IModularContractLogHandler
 		return ExplainedOptional.of(
 				LogEntryCreateRequest.builder()
 						.referencedRecord(tableRecordReference)
-						.contractId(createLogRequest.getContractId())
+						.contractId(modularContractId)
 						.collectionPointBPartnerId(invoiceBpartnerId)
 						.producerBPartnerId(invoiceBpartnerId)
 						.invoicingBPartnerId(invoiceBpartnerId)

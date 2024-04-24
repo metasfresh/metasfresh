@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -30,7 +31,6 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -51,8 +51,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -109,12 +107,12 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		// 		.reduce(Quantity.zero(stockUOM), Quantity::add);
 
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.ids(ImmutableSet.of())
 				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-							   .build())
+						.productId(request.getProductId())
+						.money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
 				.qty(Quantity.one(stockUOM))
 				.build();
 	}
