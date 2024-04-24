@@ -126,7 +126,7 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
-						.money(money)
+						.money(request.getModuleConfig().getInvoicingGroup().isCostsType() ? money.negate() : money)
 						.uomId(stockUOMId)
 						.build())
 				.qty(Quantitys.createOne(stockUOMId))

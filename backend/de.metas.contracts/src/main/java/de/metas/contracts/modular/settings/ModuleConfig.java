@@ -39,7 +39,7 @@ public class ModuleConfig
 
 	@NonNull String name;
 
-	@NonNull String invoicingGroup;
+	@NonNull InvoicingGroupType invoicingGroup;
 
 	@NonNull ProductId productId;
 

@@ -170,7 +170,7 @@ public class ModularContractSettingsDAO
 					.name(moduleRecord.getName())
 					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
 					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
-					.invoicingGroup(moduleRecord.getInvoicingGroup())
+					.invoicingGroup(InvoicingGroupType.ofCode(moduleRecord.getInvoicingGroup()))
 					.modularContractType(ModularContractType.builder()
 												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
 												 .value(modCntrType.getValue())

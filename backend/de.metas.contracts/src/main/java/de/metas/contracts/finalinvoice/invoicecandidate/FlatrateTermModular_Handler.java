@@ -221,7 +221,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		//
 		invoiceCandidate.setLine(moduleConfig.getSeqNo().toInt());
 		invoiceCandidate.setM_Product_ID(moduleConfig.getProductId().getRepoId());
-		invoiceCandidate.setInvoicingGroup(moduleConfig.getInvoicingGroup());
+		invoiceCandidate.setInvoicingGroup(moduleConfig.getInvoicingGroup().getCode());
 		invoiceCandidate.setProductName(moduleConfig.getName());
 		//
 		invoiceCandidate.setHarvesting_Year_ID(yearAndCalendarId.yearId().getRepoId());
@@ -278,7 +278,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 				.productId(moduleConfig.getProductId())
 				.currencyId(currencyId)
 				.lockOwner(createInvoiceCandidateRequest.getLockOwner())
-				.modularContractTypeId(moduleConfig.getModularContractTypeId())
+				.moduleConfig(moduleConfig)
 				.build();
 
 		final ComputingResponse response = computingMethodHandler.compute(request);

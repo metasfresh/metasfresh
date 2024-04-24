@@ -27,7 +27,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
@@ -107,19 +107,18 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module type)
 	{
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(type.getModCntr_Settings_ID());
-		final ModularContractModuleId modularContractModuleId = ModularContractModuleId.ofRepoId(type.getModCntr_Module_ID());
 		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModCntr_Type().getModularContractHandlerType());
 		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
 		final ProductId productId = ProductId.ofRepoId(type.getM_Product_ID());
 
 		final boolean hasAlreadyComputingTypeAndProduct = settings.getModuleConfigs().stream()
-				.filter(moduleConfig -> !ModularContractModuleId.equals(moduleConfig.getId().getModularContractModuleId(), modularContractModuleId))
+				.filter(moduleConfig -> ProductId.equals(moduleConfig.getProductId(), productId))
 				.filter(moduleConfig -> moduleConfig.isMatching(computingMethodType))
-				.anyMatch(moduleConfig -> ProductId.equals(moduleConfig.getProductId(), productId));
+				.count() > 1;
 
 		if (hasAlreadyComputingTypeAndProduct)
 		{
@@ -151,7 +150,7 @@ public class ModCntr_Module
 
 			case SalesOnRawProduct ->
 			{
-				if (!X_ModCntr_Module.INVOICINGGROUP_Service.equals(type.getInvoicingGroup()))
+				if (!InvoicingGroupType.ofCode(type.getInvoicingGroup()).isServicesType())
 				{
 					final ITranslatableString translatedValue = adReferenceService.retrieveListNameTranslatableString(
 							ReferenceId.ofRepoId(X_ModCntr_Module.INVOICINGGROUP_AD_Reference_ID),
