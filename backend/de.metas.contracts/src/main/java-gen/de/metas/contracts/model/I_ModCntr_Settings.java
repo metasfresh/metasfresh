@@ -2,6 +2,8 @@ package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
 
+import java.math.BigDecimal;
+
 /** Generated Interface for ModCntr_Settings
  *  @author metasfresh (generated) 
  */
@@ -26,6 +28,27 @@ public interface I_ModCntr_Settings
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Additional interest days.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAddInterestDays (BigDecimal AddInterestDays);
+
+	/**
+	 * Get Additional interest days.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getAddInterestDays();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_AddInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "AddInterestDays", null);
+	String COLUMNNAME_AddInterestDays = "AddInterestDays";
 
 	/**
 	 * Set Organisation.
@@ -129,6 +152,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_C_Year_ID = "C_Year_ID";
 
 	/**
+	 * Set Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setInterestRate (BigDecimal InterestRate);
+
+	/**
+	 * Get Interest rate.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterestRate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_InterestRate = new ModelColumn<>(I_ModCntr_Settings.class, "InterestRate", null);
+	String COLUMNNAME_InterestRate = "InterestRate";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -175,7 +219,7 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Co-Produkt.
+	 * Set Co-Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -184,7 +228,7 @@ public interface I_ModCntr_Settings
 	void setM_Co_Product_ID (int M_Co_Product_ID);
 
 	/**
-	 * Get Co-Produkt.
+	 * Get Co-Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

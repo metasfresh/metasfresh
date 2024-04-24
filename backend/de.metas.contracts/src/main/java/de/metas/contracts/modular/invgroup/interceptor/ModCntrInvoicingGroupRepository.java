@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.invgroup.interceptor;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.i18n.AdMessageKey;
@@ -33,8 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
-import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;

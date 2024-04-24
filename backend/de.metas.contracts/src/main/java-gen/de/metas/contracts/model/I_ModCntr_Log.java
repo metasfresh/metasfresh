@@ -427,11 +427,11 @@ public interface I_ModCntr_Log
 	 */
 	int getModCntr_InvoicingGroup_ID();
 
-	@Nullable org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+	@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
 
-	void setModCntr_InvoicingGroup(@Nullable org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+	void setModCntr_InvoicingGroup(@Nullable de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
 
-	ModelColumn<I_ModCntr_Log, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	ModelColumn<I_ModCntr_Log, de.metas.contracts.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Log.class, "ModCntr_InvoicingGroup_ID", de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**

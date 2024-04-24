@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.invgroup.interceptor;
 
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.product.ProductId;
@@ -29,7 +30,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 

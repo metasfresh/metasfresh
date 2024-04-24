@@ -1,9 +1,10 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_InvoicingGroup
  *  @author metasfresh (generated) 
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I_ModCntr_InvoicingGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2081377453L;
+	private static final long serialVersionUID = 2041503001L;
 
     /** Standard Constructor */
     public X_ModCntr_InvoicingGroup (final Properties ctx, final int ModCntr_InvoicingGroup_ID, @Nullable final String trxName)
@@ -35,6 +36,33 @@ public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I
 	}
 
 	@Override
+	public org.compiere.model.I_C_Calendar getC_Harvesting_Calendar()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar(final org.compiere.model.I_C_Calendar C_Harvesting_Calendar)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Harvesting_Calendar_ID, org.compiere.model.I_C_Calendar.class, C_Harvesting_Calendar);
+	}
+
+	@Override
+	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
+	{
+		if (C_Harvesting_Calendar_ID < 1) 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
+	}
+
+	@Override
+	public int getC_Harvesting_Calendar_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
+	}
+
+	@Override
 	public void setGroup_Product_ID (final int Group_Product_ID)
 	{
 		if (Group_Product_ID < 1) 
@@ -47,6 +75,33 @@ public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I
 	public int getGroup_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Group_Product_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getHarvesting_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setHarvesting_Year(final org.compiere.model.I_C_Year Harvesting_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_Harvesting_Year_ID, org.compiere.model.I_C_Year.class, Harvesting_Year);
+	}
+
+	@Override
+	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
+	{
+		if (Harvesting_Year_ID < 1) 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
+	}
+
+	@Override
+	public int getHarvesting_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
 	}
 
 	@Override
@@ -74,6 +129,19 @@ public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setTotalInterest (final BigDecimal TotalInterest)
+	{
+		set_Value (COLUMNNAME_TotalInterest, TotalInterest);
+	}
+
+	@Override
+	public BigDecimal getTotalInterest() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalInterest);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
