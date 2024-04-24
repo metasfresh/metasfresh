@@ -29,8 +29,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Optional;
-
 @Value
 @Builder
 public class ModuleConfig

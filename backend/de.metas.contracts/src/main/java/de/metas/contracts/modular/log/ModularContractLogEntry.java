@@ -96,6 +96,9 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	Integer storageDays;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -129,6 +132,7 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
@@ -161,6 +165,7 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
@@ -170,7 +175,7 @@ public class ModularContractLogEntry
 		this.modularContractModuleId = modularContractModuleId;
 	}
 
-	Quantity getQuantity(final UomId targetUomId, @NonNull QuantityUOMConverter uomConverter)
+	Quantity getQuantity(final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
 		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);

@@ -767,6 +767,27 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStorageDays (int StorageDays);
+
+	/**
+	 * Get Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getStorageDays();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_StorageDays = new ModelColumn<>(I_ModCntr_Log.class, "StorageDays", null);
+	String COLUMNNAME_StorageDays = "StorageDays";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
