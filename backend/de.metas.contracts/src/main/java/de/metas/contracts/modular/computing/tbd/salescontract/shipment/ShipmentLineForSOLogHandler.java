@@ -170,7 +170,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 											.flatrateTermId(createLogRequest.getContractId())
 											.description(description)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+											.contractModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.build());
 	}
 }

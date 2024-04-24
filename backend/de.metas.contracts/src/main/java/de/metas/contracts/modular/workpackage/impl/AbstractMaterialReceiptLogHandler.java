@@ -149,7 +149,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 											.flatrateTermId(request.getContractId())
 											.description(description)
 											.logEntryContractType(getLogEntryContractType())
-											.contractModuleId(request.getModuleConfig().getId().getModularContractModuleId())
+											.contractModuleId(request.getConfigId().getModularContractModuleId())
 											.build());
 	}
 }

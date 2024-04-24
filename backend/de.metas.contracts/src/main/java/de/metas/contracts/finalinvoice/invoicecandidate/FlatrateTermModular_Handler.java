@@ -297,6 +297,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		}
 
 		Check.assumeEquals(currencyId, response.getPrice().getCurrencyId());
+		Check.assumeEquals(stockUomId, response.getPrice().getUomId());
 		Check.assumeEquals(stockUomId, response.getQty().getUomId());
 
 		return response;
