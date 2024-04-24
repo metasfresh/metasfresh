@@ -37,6 +37,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -62,6 +64,7 @@ public class ModularContractSettingsDAO
 	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -124,7 +127,10 @@ public class ModularContractSettingsDAO
 				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
-				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()));
+				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
+				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
+																	OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
+																	orgDAO::getTimeZone));
 
 		for (final I_ModCntr_Module moduleRecord : moduleRecords)
 		{

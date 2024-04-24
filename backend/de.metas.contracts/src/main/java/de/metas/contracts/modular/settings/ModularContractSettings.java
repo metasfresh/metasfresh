@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -71,6 +72,9 @@ public class ModularContractSettings
 
 	@NonNull
 	SOTrx soTrx;
+
+	@NonNull
+	LocalDateAndOrgId storageCostStartDate;
 
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)

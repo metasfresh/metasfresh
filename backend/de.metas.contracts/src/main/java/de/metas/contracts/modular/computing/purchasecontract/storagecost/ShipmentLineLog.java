@@ -55,6 +55,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import java.time.temporal.ChronoUnit;
+
 @Component
 @RequiredArgsConstructor
 class ShipmentLineLog implements IModularContractLogHandler
@@ -99,6 +101,8 @@ class ShipmentLineLog implements IModularContractLogHandler
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
 																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
+		final LocalDateAndOrgId storageDate = createLogRequest.getModularContractSettings().getStorageCostStartDate();
+		final long daysBetween = ChronoUnit.DAYS.between(transactionDate.toLocalDate(), storageDate.toLocalDate());
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
@@ -109,6 +113,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 											.contractId(createLogRequest.getContractId())
 											.productId(moduleConfigProductId)
 											.productName(createLogRequest.getProductName())
+											.initialProductId(productId)
 											.referencedRecord(recordRef)
 											.collectionPointBPartnerId(bPartnerId)
 											.producerBPartnerId(bPartnerId)

@@ -54,6 +54,9 @@ public class LogEntryCreateRequest
 	@Nullable
 	ProductId productId;
 
+	@Nullable
+	ProductId initialProductId;
+
 	@NonNull
 	String productName;
 
@@ -121,6 +124,7 @@ public class LogEntryCreateRequest
 	public LogEntryCreateRequest(
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@Nullable final ProductId initialProductId,
 			@NonNull final String productName,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final LogSubEntryId subEntryId,
@@ -156,6 +160,7 @@ public class LogEntryCreateRequest
 		}
 
 		this.contractId = contractId;
+		this.initialProductId = initialProductId;
 		this.productId = productId;
 		this.referencedRecord = referencedRecord;
 		this.subEntryId = subEntryId;

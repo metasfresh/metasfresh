@@ -104,9 +104,9 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		computingMethodService.validateLogs(logs);
-		final Money money = logs.stream()
-				.map((log) -> getMoneyToAdd(log, request.getCurrencyId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
+		// final Money money = logs.stream()
+		// 		.map((log) -> getMoneyToAdd(log, request.getCurrencyId()))
+		// 		.reduce(Quantity.zero(stockUOM), Quantity::add);
 
 		return ComputingResponse.builder()
 				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
@@ -122,6 +122,6 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 	private @NonNull Money getMoneyToAdd(@NonNull final ModularContractLogEntry logEntry, @NonNull final CurrencyId currencyId)
 	{
 
-		return Money
+		return null;
 	}
 }
