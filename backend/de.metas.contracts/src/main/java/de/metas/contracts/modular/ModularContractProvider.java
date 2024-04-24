@@ -228,7 +228,7 @@ public class ModularContractProvider
 				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
-				.typeConditions(TypeConditions.MODULAR_CONTRACT)
+				.typeConditions(MODULAR_CONTRACT)
 				.calendarId(harvestingCalendarId)
 				.build();
 

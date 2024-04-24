@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -31,6 +30,8 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -99,15 +100,15 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		logs.assertUniqueProductPriceOrError();
 
-		computingMethodService.validateLogs(logs);
 		// final Money money = logs.stream()
 		// 		.map((log) -> getMoneyToAdd(log, request.getCurrencyId()))
 		// 		.reduce(Quantity.zero(stockUOM), Quantity::add);
 
 		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
+				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
