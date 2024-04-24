@@ -148,7 +148,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty24_CU-EAN1</EAN_CU>
         <EAN_TU>Qty24_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -175,7 +174,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty60_CU-EAN1</EAN_CU>
         <EAN_TU>Qty60_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_invoic_500_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
@@ -202,7 +200,6 @@
         <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
         <EAN_CU>Qty10_CU-EAN1</EAN_CU>
         <EAN_TU>Qty10_TU-EAN1</EAN_TU>
-        <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
     </EDI_cctop_invoic_500_v>
     <EDI_cctop_901_991_v>
         <C_Invoice_ID>1488989</C_Invoice_ID>
