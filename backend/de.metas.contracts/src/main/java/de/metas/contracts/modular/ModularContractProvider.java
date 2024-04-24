@@ -174,7 +174,7 @@ public class ModularContractProvider
 		final FlatrateTermId flatrateTermId;
 		if (invoiceLineRecord.getC_Flatrate_Term_ID() > 0)
 		{
-			flatrateTermId = FlatrateTermId.ofRepoIdOrNull(invoiceLineRecord.getC_Flatrate_Term_ID());
+			flatrateTermId = FlatrateTermId.ofRepoId(invoiceLineRecord.getC_Flatrate_Term_ID());
 		}
 		else
 		{
@@ -208,13 +208,13 @@ public class ModularContractProvider
 	{
 		if (ic.getC_Flatrate_Term_ID() > 0)
 		{
-			return Optional.ofNullable(FlatrateTermId.ofRepoIdOrNull(ic.getC_Flatrate_Term_ID()));
+			return Optional.of(FlatrateTermId.ofRepoId(ic.getC_Flatrate_Term_ID()));
 		}
 
 		final int flatrateTermTableId = getTableId(I_C_Flatrate_Term.class);
 		if (ic.getAD_Table_ID() == flatrateTermTableId)
 		{
-			return Optional.ofNullable(FlatrateTermId.ofRepoIdOrNull(ic.getRecord_ID()));
+			return Optional.of(FlatrateTermId.ofRepoId(ic.getRecord_ID()));
 		}
 
 		return Optional.empty();
