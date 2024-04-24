@@ -7,7 +7,7 @@
         "externalVersion": null,
         "externalReferenceUrl": null,
         "requestProduct": {
-          "code": "productValue",
+          "code": "productValue_bpartnerIdentifier_2",
           "codeSet": true,
           "name": "productName",
           "nameSet": true,
