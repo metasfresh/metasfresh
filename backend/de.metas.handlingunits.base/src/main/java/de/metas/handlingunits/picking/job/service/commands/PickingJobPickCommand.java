@@ -72,6 +72,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -96,13 +97,17 @@ public class PickingJobPickCommand
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
+
+	//
+	// Sysconfigs
+	private static final String SYSCONFIG_PickCUsFromCUs = "PickingJobPickCommand.PickCUsFromCUs";
+
 	//
 	// Params
 	@NonNull private final PickingJobLineId lineId;
@@ -114,6 +119,7 @@ public class PickingJobPickCommand
 	@Nullable private final QtyRejectedWithReason qtyRejectedCUs;
 	@Nullable private final Quantity catchWeight;
 	private final boolean isPickWholeTU;
+	private final boolean isPickCUsFromCUs;
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 
@@ -238,6 +244,11 @@ public class PickingJobPickCommand
 		this.bestBeforeDate = bestBeforeDate;
 		this.isSetLotNo = isSetLotNo;
 		this.lotNo = lotNo;
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		// NOTE: because picking CUs into TU is not performant at all and because this feature was not requested in this issue,
+		// we decided to turn it off and pick CUs to CUs and later, on shipment, to aggregate CUs to TU (and TUs to LU).
+		this.isPickCUsFromCUs = sysConfigBL.getBooleanValue(SYSCONFIG_PickCUsFromCUs, true);
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -422,13 +433,12 @@ public class PickingJobPickCommand
 		final LocatorId pickFromLocatorId = pickFrom.getPickFromLocatorId();
 
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(
-				step.getPackToSpec(),
+				isPickCUsFromCUs ? PackToSpec.VIRTUAL : step.getPackToSpec(),
 				pickingJob.getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
 		trxManager.assertThreadInheritedTrxExists();
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing();
-
 		final List<I_M_HU> packedHUs;
 		if (pickingUnit.isTU())
 		{
