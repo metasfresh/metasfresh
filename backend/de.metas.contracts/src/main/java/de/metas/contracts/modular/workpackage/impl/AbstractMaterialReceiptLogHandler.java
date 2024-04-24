@@ -133,9 +133,9 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.HandleLogsRequest request)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.CreateLogRequest request)
 	{
-		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getTableRecordReference().getRecordIdAssumingTableName(getSupportedTableName()));
+		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getRecordRef().getRecordIdAssumingTableName(getSupportedTableName()));
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(inOutLineId);
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
@@ -145,14 +145,11 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(request.getTableRecordReference())
+											.referencedModel(request.getRecordRef())
 											.flatrateTermId(request.getContractId())
 											.description(description)
 											.logEntryContractType(getLogEntryContractType())
-											.contractModuleId(request.getContractInfo()
-																		 .getModularContractSettings()
-																		 .getModuleConfigOrError(request.getComputingMethodType(), productId)
-																		 .getId().getModularContractModuleId())
+											.contractModuleId(request.getModuleConfig().getId().getModularContractModuleId())
 											.build());
 	}
 }

@@ -123,31 +123,27 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
 		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final TableRecordReference notificationLineRef = TableRecordReference.of(notificationLine);
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(handleLogsRequest.getContractId())
+																						 .flatrateTermId(createLogRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(notificationLineRef))
 																						 .build());
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(notificationLine.getM_Product_ID()), quantity.toString()));
-		final ProductId productId = ProductId.ofRepoId(notificationLine.getM_Product_ID());
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
 						.referencedModel(notificationLineRef)
-						.flatrateTermId(handleLogsRequest.getContractId())
+						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(handleLogsRequest.getContractInfo()
-													 .getModularContractSettings()
-													 .getModuleConfigOrError(handleLogsRequest.getComputingMethodType(), productId)
-													 .getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 						.build());
 	}
 

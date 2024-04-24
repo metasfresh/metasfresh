@@ -134,22 +134,14 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
-		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(recordRef.getIdAssumingTableName(getSupportedTableName(),
-																									  OrderLineId::ofRepoId));
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(handleLogsRequest.getTableRecordReference())
-											.flatrateTermId(handleLogsRequest.getContractId())
+											.referencedModel(createLogRequest.getRecordRef())
+											.flatrateTermId(createLogRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(handleLogsRequest.getContractInfo()
-																		 .getModularContractSettings()
-																		 .getModuleConfigOrError(handleLogsRequest.getComputingMethodType(), productId)
-																		 .getId().getModularContractModuleId())
+											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 											.build());
 	}
 
