@@ -16,7 +16,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.sql.Timestamp;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -34,7 +33,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -2271,5 +2269,24 @@ public class TimeUtil
 
 		final LocalDate localDate = asLocalDate(instant, zoneId);
 		return asEndOfDayInstant(localDate, zoneId);
+	}
+
+	public static boolean isOverlapping(
+			@Nullable final Timestamp start1,
+			@Nullable final Timestamp end1,
+			@Nullable final Timestamp start2,
+			@Nullable final Timestamp end2)
+	{
+		return isOverlapping(toInstantsRange(start1, end1), toInstantsRange(start2, end2));
+	}
+
+	public static boolean isOverlapping(@NonNull final Range<Instant> range1, @NonNull final Range<Instant> range2)
+	{
+		if (!range1.isConnected(range2))
+		{
+			return false;
+		}
+
+		return !range1.intersection(range2).isEmpty();
 	}
 }    // TimeUtil
