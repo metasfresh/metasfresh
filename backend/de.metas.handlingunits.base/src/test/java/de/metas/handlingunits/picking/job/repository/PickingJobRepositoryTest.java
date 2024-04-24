@@ -111,6 +111,7 @@ class PickingJobRepositoryTest
 								.salesOrderAndLineId(salesOrderLineId)
 								.shipmentScheduleId(shipmentScheduleId)
 								.productId(ProductId.ofRepoId(6))
+								.huPIItemProductId(HUPIItemProductId.ofRepoId(6789))
 								.qtyToPick(Quantity.of(100, uomEach))
 								.pickFromAlternatives(ImmutableSet.of(
 										PickingJobCreateRepoRequest.PickFromAlternative.of(

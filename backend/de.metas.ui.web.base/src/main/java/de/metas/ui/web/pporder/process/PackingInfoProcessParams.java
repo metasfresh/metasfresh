@@ -393,7 +393,7 @@ public class PackingInfoProcessParams
 			final HUPIItemProductId M_HU_PI_Item_Product_ID,
 			@NonNull final BigDecimal qtyTU)
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = Services.get(IHUPIItemProductDAO.class).getById(M_HU_PI_Item_Product_ID);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = Services.get(IHUPIItemProductDAO.class).getRecordById(M_HU_PI_Item_Product_ID);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 
 		lutuConfigNew.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());

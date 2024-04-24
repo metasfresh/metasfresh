@@ -11,6 +11,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import {
   getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickForLine,
   getQtyToPickRemainingForLine,
   isAllowPickingAnyHUForLine,
 } from '../../../utils/picking';
@@ -28,6 +29,8 @@ const PickLineScreen = () => {
     caption,
     allowPickingAnyHU,
     steps,
+    pickingUnit,
+    packingItemName,
     catchWeightUOM,
     qtyToPick,
     qtyPicked,
@@ -36,7 +39,7 @@ const PickLineScreen = () => {
     manuallyClosed,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
+  useHeaderUpdate({ url, caption, uom, pickingUnit, packingItemName, qtyToPick, qtyPicked });
 
   const history = useHistory();
   const onScanButtonClick = () =>
@@ -107,16 +110,18 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: line?.caption,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
-    catchWeightUOM: line.catchWeightUOM,
-    uom: line.uom,
-    qtyToPick: line.qtyToPick,
+    pickingUnit: line?.pickingUnit,
+    packingItemName: line?.packingItemName,
+    catchWeightUOM: line?.catchWeightUOM,
+    uom: line?.uom,
+    qtyToPick: getQtyToPickForLine({ line }),
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
-    manuallyClosed: line.manuallyClosed,
+    manuallyClosed: line?.manuallyClosed,
   };
 };
 
-export const useHeaderUpdate = ({ url, caption, uom, qtyToPick, qtyPicked }) => {
+export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uom, qtyToPick, qtyPicked }) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
@@ -128,6 +133,11 @@ export const useHeaderUpdate = ({ url, caption, uom, qtyToPick, qtyPicked }) => 
             caption: trl('activities.picking.PickingLine'),
             value: caption,
             bold: true,
+          },
+          {
+            caption: trl('general.PackingItemName'),
+            value: packingItemName,
+            hidden: !(pickingUnit === 'TU' && packingItemName),
           },
           {
             caption: trl('activities.picking.target'),

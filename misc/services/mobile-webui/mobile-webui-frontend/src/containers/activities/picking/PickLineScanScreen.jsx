@@ -33,6 +33,7 @@ import { useBooleanSetting } from '../../../reducers/settings';
 import {
   getNextEligibleLineToPick,
   getQtyPickedOrRejectedTotalForLine,
+  getQtyToPickForLine,
   getQtyToPickRemainingForLine,
 } from '../../../utils/picking';
 import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
@@ -59,6 +60,8 @@ const PickLineScanScreen = () => {
     caption,
     productId,
     productNo,
+    pickingUnit,
+    packingItemName,
     qtyToPick,
     qtyPicked,
     qtyToPickRemaining,
@@ -87,7 +90,9 @@ const PickLineScanScreen = () => {
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
-      qtyCaption={trl('general.QtyToPick')}
+      qtyTargetCaption={trl('general.QtyToPick')}
+      qtyCaption={trl(pickingUnit === 'TU' ? 'general.QtyTU' : 'general.Qty')}
+      packingItemName={pickingUnit === 'TU' ? packingItemName : null}
       qtyMax={qtyToPickRemaining}
       qtyTarget={qtyToPickRemaining}
       uom={uom}
@@ -115,7 +120,9 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: line?.caption,
     productId: line.productId,
     productNo: line.productNo,
-    qtyToPick: line.qtyToPick,
+    pickingUnit: line?.pickingUnit,
+    packingItemName: line?.packingItemName,
+    qtyToPick: getQtyToPickForLine({ line }),
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     uom: line.uom,

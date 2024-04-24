@@ -45,9 +45,6 @@ import {
   resetPasswordComplete,
   resetPasswordGetAvatar,
   getAvatar,
-  getUserSession,
-  getUserLang,
-  setUserLang,
   getAvailableLang,
 } from './login';
 import {
@@ -85,8 +82,6 @@ export {
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
-  getUserSession,
-  getUserLang,
   getViewAttributeDropdown,
   getViewAttributesLayoutRequest,
   getViewAttributesRequest,
@@ -113,7 +108,6 @@ export {
   resetPasswordComplete,
   resetPasswordGetAvatar,
   resetPasswordRequest,
-  setUserLang,
   startProcess,
   topActionsRequest,
 };

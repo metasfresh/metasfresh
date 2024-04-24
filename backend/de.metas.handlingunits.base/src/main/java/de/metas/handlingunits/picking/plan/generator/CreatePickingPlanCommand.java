@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -181,9 +180,7 @@ public class CreatePickingPlanCommand
 
 	private static PackToSpec extractPackToSpec(@NonNull final Packageable packageable)
 	{
-		return PackToSpec.ofTUPackingInstructionsId(
-				HUPIItemProductId.optionalOfRepoId(packageable.getPackToHUPIItemProductId())
-						.orElse(HUPIItemProductId.VIRTUAL_HU));
+		return PackToSpec.ofTUPackingInstructionsId(packageable.getPackToHUPIItemProductId());
 	}
 
 	private Stream<PickingPlanLine> createLinesAndStream(final AllocablePackageable packageable)
