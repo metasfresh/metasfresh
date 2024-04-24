@@ -49,6 +49,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -75,7 +76,12 @@ public class ModularContractPriceService
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		for (final ModuleConfig config : settings.getModuleConfigs())
+		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigs()
+				.stream()
+				.filter(config -> !config.isMatching(ComputingMethodType.INTERIM_CONTRACT))
+				.toList();
+
+		for (final ModuleConfig config : moduleConfigs)
 		{
 			final ProductId productId = config.getProductId();
 			setProductDataOnPricingContext(productId, pricingContextTemplate);
