@@ -23,7 +23,7 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,7 +38,7 @@ public record LogEntryReverseRequest(
 		@Nullable FlatrateTermId flatrateTermId,
 		@Nullable String description,
 		@NonNull LogEntryContractType logEntryContractType,
-		@NonNull ModularContractTypeId modularContractTypeId)
+		@NonNull ModularContractModuleId contractModuleId)
 {
 	public LogEntryReverseRequest
 	{
