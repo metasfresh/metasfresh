@@ -68,7 +68,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	{
 		final UserId userInChargeId = getUserId();
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
-				.getModularContractIds(retrieveActiveSelectedRecordsQueryBuilder(I_C_Flatrate_Term.class));
+				.getModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
 
 		finalInvoiceEnqueuer.enqueueNow(selectedModularContractIds, userInChargeId, getInvoicingParams());
 

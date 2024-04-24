@@ -36,13 +36,10 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
-
-import javax.annotation.Nullable;
 
 public interface IModularContractLogHandler
 {
@@ -122,6 +119,6 @@ public interface IModularContractLogHandler
 	class FlatrateTermInfo
 	{
 		@NonNull FlatrateTermId flatrateTermId;
-		@Nullable ProductId productId;
+		@NonNull ModularContractSettings modularContractSettings;
 	}
 }

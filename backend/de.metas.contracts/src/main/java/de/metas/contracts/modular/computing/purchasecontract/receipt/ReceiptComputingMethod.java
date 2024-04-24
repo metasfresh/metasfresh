@@ -33,7 +33,7 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -45,7 +45,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,14 +52,10 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.ComputingMethodType.Receipt;
@@ -86,7 +81,10 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType contractType)
 	{
-		if (!contractType.isModularContractType()) {return false;}
+		if (!contractType.isModularContractType())
+		{
+			return false;
+		}
 
 		switch (recordRef.getTableName())
 		{
@@ -147,22 +145,19 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(@NonNull final ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		logs.assertUniqueProductPriceOrError();
 
-		computingMethodService.validateLogs(logs);
-		final Quantity qty = logs.stream()
-				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.money(Money.zero(request.getCurrencyId()))
+						.uomId(stockUOMId)
 						.build())
-				.qty(qty)
+				.qty(computingMethodService.getQtySum(logs, stockUOMId))
 				.build();
 	}
 }

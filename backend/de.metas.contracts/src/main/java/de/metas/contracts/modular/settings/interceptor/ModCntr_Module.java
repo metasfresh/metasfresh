@@ -22,13 +22,17 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.X_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -46,6 +50,9 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+
 @Component
 @Interceptor(I_ModCntr_Module.class)
 @AllArgsConstructor
@@ -56,9 +63,14 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresRawProduct = AdMessageKey.of("ComputingMethodTypeRequiresRawProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresProcessedProduct = AdMessageKey.of("ComputingMethodTypeRequiresProcessedProduct");
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
+	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
+	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
+
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull private final ADReferenceService adReferenceService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
@@ -116,10 +128,38 @@ public class ModCntr_Module
 					.setParameter("ComputingMethodType: ", type.getModCntr_Type().getName());
 		}
 
+		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.getModuleConfigs()
+				.stream()
+				.filter(module -> module.isMatching(SalesOnRawProduct)
+						|| module.isMatching(SalesOnProcessedProduct))
+				.count() > 1;
+
+		if (bothSalesOnRawProductAndProcessedProductSet)
+		{
+			throw new AdempiereException(ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET);
+		}
+
 		switch (computingMethodType)
 		{
-			case Receipt, SalesOnRawProduct ->
+			case Receipt ->
 			{
+				if (!ProductId.equals(settings.getRawProductId(), productId))
+				{
+					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);
+				}
+			}
+
+			case SalesOnRawProduct ->
+			{
+				if (!X_ModCntr_Module.INVOICINGGROUP_Service.equals(type.getInvoicingGroup()))
+				{
+					final ITranslatableString translatedValue = adReferenceService.retrieveListNameTranslatableString(
+							ReferenceId.ofRepoId(X_ModCntr_Module.INVOICINGGROUP_AD_Reference_ID),
+							X_ModCntr_Module.INVOICINGGROUP_Service);
+
+					throw new AdempiereException(ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP, translatedValue);
+				}
+
 				if (!ProductId.equals(settings.getRawProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);

@@ -70,7 +70,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
@@ -188,12 +187,17 @@ public class ModularContractLogDAO
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
-		final I_ModCntr_Log oldLog = lastRecord(ModularContractLogQuery.builder()
-														.entryId(request.id())
-														.flatrateTermId(request.flatrateTermId())
-														.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-														.contractType(request.logEntryContractType())
-														.build())
+		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
+				.flatrateTermId(request.flatrateTermId())
+				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
+				.contractType(request.logEntryContractType());
+
+		if (request.id() != null)
+		{
+			queryBuilder.entryId(request.id());
+		}
+
+		final I_ModCntr_Log oldLog = lastRecord(queryBuilder.build())
 				.orElseThrow(() -> new AdempiereException("No record found for " + request));
 
 		if (oldLog.isProcessed())
@@ -313,7 +317,7 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
-		if(query.getComputingMethodType() != null)
+		if (query.getComputingMethodType() != null)
 		{
 			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addOnlyActiveRecordsFilter()
@@ -326,7 +330,7 @@ public class ModularContractLogDAO
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
 		}
-		if(query.getInvoiceCandidateId()!=null)
+		if (query.getInvoiceCandidateId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, query.getInvoiceCandidateId());
 		}
@@ -381,12 +385,12 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
 				.map(this::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ModularContractLogEntriesList.collect());
 	}
 
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)

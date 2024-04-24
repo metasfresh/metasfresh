@@ -22,12 +22,16 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CachingKeysMapper;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Module;
@@ -48,6 +52,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -55,6 +60,8 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 @Repository
 public class ModularContractSettingsDAO
@@ -62,6 +69,7 @@ public class ModularContractSettingsDAO
 	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -106,6 +114,27 @@ public class ModularContractSettingsDAO
 				.list();
 
 		return fromPOs(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords);
+	}
+
+	@NonNull
+	private ImmutableMap<ModularContractSettingsId, ModularContractSettings> loadByIds(@NonNull final Set<ModularContractSettingsId> contractSettingsIds)
+	{
+		final ImmutableListMultimap<ModularContractSettingsId, I_ModCntr_Module> settingsId2ModuleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ModCntr_Module.COLUMN_ModCntr_Settings_ID, contractSettingsIds)
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						module -> ModularContractSettingsId.ofRepoId(module.getModCntr_Settings_ID()),
+						Function.identity()));
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(contractSettingsIds, I_ModCntr_Settings.class)
+				.stream()
+				.map(settings -> {
+					final ModularContractSettingsId settingsId = ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
+					return fromPOs(settings, settingsId2ModuleRecords.get(settingsId));
+				})
+				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
 	}
 
 	@NonNull
@@ -223,6 +252,70 @@ public class ModularContractSettingsDAO
 		return id2ModularContractSettings.getOrLoad(settingsId, this::loadById);
 	}
 
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getOrLoadBy(@NonNull final Set<FlatrateTermId> termIds)
+	{
+		final ImmutableList<SettingsLookupKey> lookupKeys = termIds.stream()
+				.map(SettingsLookupKey::of)
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableMap<SettingsLookupKey, CachedSettingsId> lookupKey2CachedSettingsId = lookupKeys.stream()
+				.filter(cacheKey2SettingsId::containsKey)
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), cacheKey2SettingsId::get));
+
+		final ImmutableSet<FlatrateTermId> notCachedFlatrateTermIds = lookupKeys.stream()
+				.filter(settingsLookupKey -> !lookupKey2CachedSettingsId.containsKey(settingsLookupKey))
+				.map(SettingsLookupKey::getContractId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap.Builder<FlatrateTermId, ModularContractSettingsId> termId2SettingsIdBuilder = ImmutableMap.builder();
+		termId2SettingsIdBuilder.putAll(loadCacheFor(notCachedFlatrateTermIds));
+		lookupKey2CachedSettingsId
+				.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().getSettingsId() != null)
+				.forEach(entry -> termId2SettingsIdBuilder.put(entry.getKey().getContractId(), entry.getValue().getSettingsId()));
+		final ImmutableMap<FlatrateTermId, ModularContractSettingsId> termId2SettingsId = termId2SettingsIdBuilder.build();
+
+		final ImmutableMap<ModularContractSettingsId, ModularContractSettings> id2Settings = id2ModularContractSettings
+				.getAllOrLoad(termId2SettingsId.values(), this::loadByIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
+
+		return termId2SettingsId.entrySet()
+				.stream()
+				.map(entry -> Pair.of(entry.getKey(), id2Settings.get(entry.getValue())))
+				.collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
+	}
+
+	@NonNull
+	private ImmutableMap<FlatrateTermId, ModularContractSettingsId> loadCacheFor(@NonNull final Set<FlatrateTermId> termIds)
+	{
+		if (termIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_C_Flatrate_Term> flatrateTerms = flatrateDAO.getByIds(termIds).values().asList();
+
+		final ImmutableSet<ConditionsId> conditionsIds = flatrateTerms.stream()
+				.map(I_C_Flatrate_Term::getC_Flatrate_Conditions_ID)
+				.map(ConditionsId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableMap<ConditionsId, I_C_Flatrate_Conditions> id2Conditions = flatrateDAO.getTermConditionsByIds(conditionsIds);
+
+		return flatrateTerms.stream()
+				.map(term -> {
+					final ConditionsId conditionsId = ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID());
+					final FlatrateTermId termId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
+					final ModularContractSettingsId settingsId = loadCacheFor(id2Conditions.get(conditionsId), termId);
+					return Pair.of(termId, settingsId);
+				})
+				.filter(termId2SettingsPair -> termId2SettingsPair.getValue() != null)
+				.collect(ImmutableMap.toImmutableMap(Pair::getKey, Pair::getValue));
+	}
+
 	@Nullable
 	private ModularContractSettingsId loadCacheFor(@NonNull final FlatrateTermId termId)
 	{
@@ -243,10 +336,18 @@ public class ModularContractSettingsDAO
 	{
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.load(conditionsId, I_C_Flatrate_Conditions.class);
 
+		return loadCacheFor(conditions, termId);
+	}
+
+	@Nullable
+	private ModularContractSettingsId loadCacheFor(@NonNull final I_C_Flatrate_Conditions conditions, @Nullable final FlatrateTermId termId)
+	{
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId
 				.ofRepoIdOrNull(conditions.getModCntr_Settings_ID());
 
-		cacheKey2SettingsId.put(SettingsLookupKey.of(conditionsId), CachedSettingsId.ofNullable(modularContractSettingsId));
+		cacheKey2SettingsId.put(SettingsLookupKey.of(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())),
+								CachedSettingsId.ofNullable(modularContractSettingsId));
+
 		Optional.ofNullable(termId)
 				.map(SettingsLookupKey::of)
 				.ifPresent(termCacheKey -> cacheKey2SettingsId.put(termCacheKey, CachedSettingsId.ofNullable(modularContractSettingsId)));
