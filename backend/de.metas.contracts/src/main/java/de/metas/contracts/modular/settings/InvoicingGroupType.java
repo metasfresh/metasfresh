@@ -22,12 +22,15 @@
 
 package de.metas.contracts.modular.settings;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 
+import static de.metas.contracts.model.X_ModCntr_Module.INVOICINGGROUP_AD_Reference_ID;
 import static de.metas.contracts.model.X_ModCntr_Module.INVOICINGGROUP_Costs;
 import static de.metas.contracts.model.X_ModCntr_Module.INVOICINGGROUP_Service;
 
@@ -57,5 +60,10 @@ public enum InvoicingGroupType implements ReferenceListAwareEnum
 	public boolean isCostsType()
 	{
 		return COSTS.equals(this);
+	}
+
+	public ITranslatableString getDisplayName()
+	{
+		return TranslatableStrings.adRefList(INVOICINGGROUP_AD_Reference_ID, code);
 	}
 }

@@ -22,18 +22,16 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.contracts.model.I_ModCntr_Module;
-import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.model.X_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.modular.settings.ModularContractType;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -71,7 +69,6 @@ public class ModCntr_Module
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
-	@NonNull private final ADReferenceService adReferenceService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
@@ -109,20 +106,21 @@ public class ModCntr_Module
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
+	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record2)
 	{
-		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
-		final I_ModCntr_Type type = record.getModCntr_Type();
-		final ComputingMethodType computingMethodType = ComputingMethodType.ofCode(type.getModularContractHandlerType());
+		final ModuleConfig module = ModularContractSettingsDAO.fromRecord(record2);
+		final ModularContractSettingsId modularContractSettingsId = module.getModularContractSettingsId();
+		final ModularContractType type = module.getModularContractType();
+		final ComputingMethodType computingMethodType = type.getComputingMethodType();
 		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final ProductId productId = module.getProductId();
 
 		final boolean hasAlreadyComputingTypeAndProduct = settings.countMatching(computingMethodType, productId) > 1;
 		if (hasAlreadyComputingTypeAndProduct)
 		{
 			throw new AdempiereException("Combination of ComputingMethodType and ProductId needs to be unique")
-					.setParameter("ProductId: ", record.getM_Product_ID())
-					.setParameter("ComputingMethodType: ", type.getName());
+					.setParameter("ProductId", productId)
+					.setParameter("ComputingMethodType", type.getName());
 		}
 
 		final boolean bothSalesOnRawProductAndProcessedProductSet = settings.countMatchingAnyOf(SalesOnRawProduct, SalesOnProcessedProduct) > 1;
@@ -143,13 +141,9 @@ public class ModCntr_Module
 
 			case SalesOnRawProduct ->
 			{
-				if (!InvoicingGroupType.ofCode(record.getInvoicingGroup()).isServicesType())
+				if (!module.getInvoicingGroup().isServicesType())
 				{
-					final ITranslatableString translatedValue = adReferenceService.retrieveListNameTranslatableString(
-							ReferenceId.ofRepoId(X_ModCntr_Module.INVOICINGGROUP_AD_Reference_ID),
-							X_ModCntr_Module.INVOICINGGROUP_Service);
-
-					throw new AdempiereException(ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP, translatedValue);
+					throw new AdempiereException(ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP, InvoicingGroupType.SERVICES.getDisplayName());
 				}
 
 				if (!ProductId.equals(settings.getRawProductId(), productId))
