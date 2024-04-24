@@ -791,6 +791,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
+		// IMPORTANT: we shall write off using the same currency rate as the invoice
+		if (!fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			factLineBuilder.setCurrencyConversionCtx(line.getInvoiceCurrencyConversionCtx());
+		}
+
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
