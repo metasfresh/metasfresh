@@ -8,7 +8,6 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -165,15 +164,15 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 
 	private void assertAllUnprocessed()
 	{
-			Check.assume(!list.stream().anyMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
+			Check.assume(list.stream().noneMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
 	}
 
-	public ModularContractLogEntriesList withUnitPrice(@NonNull final ProductPrice unitPrice, @NonNull final IUOMConversionBL uomConversionBL)
+	public ModularContractLogEntriesList withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter quantityUOMConverter)
 	{
 		assertAllUnprocessed();
 		assertUniqueProductPriceOrError();
 		return list.stream()
-				.map(log -> log.withPrice(unitPrice,uomConversionBL))
+				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter))
 				.collect(collect());
 
 	}

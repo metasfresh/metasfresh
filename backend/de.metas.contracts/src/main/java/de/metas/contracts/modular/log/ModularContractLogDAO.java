@@ -186,7 +186,6 @@ public class ModularContractLogDAO
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
-				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.build();
 	}
@@ -517,11 +516,9 @@ public class ModularContractLogDAO
 		Optional.ofNullable(log.getPriceActual())
 				.ifPresent(price -> {
 					record.setPriceActual(price.toBigDecimal());
-					record.setC_UOM_ID(price.getUomId().getRepoId());
+					record.setPrice_UOM_ID(price.getUomId().getRepoId());
+					record.setC_Currency_ID(price.getCurrencyId().getRepoId());
 				});
-		Optional.ofNullable(log.getPriceUomId())
-				.map(UomId::getRepoId)
-				.ifPresent(record::setPrice_UOM_ID);
 		record.setModCntr_Module_ID(log.getModularContractModuleId().getRepoId());
 
 		saveRecord(record);

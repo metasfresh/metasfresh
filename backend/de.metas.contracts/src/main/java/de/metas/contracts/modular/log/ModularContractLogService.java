@@ -146,14 +146,14 @@ public class ModularContractLogService
 				.build();
 	}
 
-	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
+	public void updatePriceAndAmount(@NonNull final ModCntrLogPriceUpdateRequest request)
 	{
 		modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
 						.flatrateTermId(request.flatrateTermId())
 						.processed(false)
 						.contractModuleId(request.modularContractModuleId())
 						.build())
-				.withUnitPrice(request.unitPrice(),uomConversionBL));
+				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL));
 	}
 
 }

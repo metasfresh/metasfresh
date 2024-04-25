@@ -47,7 +47,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ModCntr_Specific_Price_Update extends JavaProcess implements IProcessPrecondition
 {
 	private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-	;
 
 	@Param(parameterName = "Price")
 	private BigDecimal p_price;
@@ -89,7 +88,7 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 				.money(Money.of(specificPrice.getPrice(), CurrencyId.ofRepoId(specificPrice.getC_Currency_ID())))
 				.uomId(UomId.ofRepoId(specificPrice.getC_UOM_ID()))
 				.build();
-		contractLogService.updatePrice(ModCntrLogPriceUpdateRequest.builder()
+		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
 				.unitPrice(productUnitPrice)
 				.flatrateTermId(FlatrateTermId.ofRepoId(specificPrice.getC_Flatrate_Term_ID()))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(specificPrice.getModCntr_Module_ID()))
