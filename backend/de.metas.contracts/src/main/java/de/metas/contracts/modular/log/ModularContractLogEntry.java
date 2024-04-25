@@ -188,10 +188,11 @@ public class ModularContractLogEntry
 	{
 		Check.assumeNotNull(quantity, "No quantity set for log entry {}, cannot update price and amount.", id);
 
-		final UomId priceUomId = price.getUomId();
 		return this.toBuilder()
 				.priceActual(price)
-				.amount(price.computeAmount(getQuantity(priceUomId, uomConverter)))
+				.amount(price.computeAmount(getQuantity(price.getUomId(), uomConverter)))
 				.build();
 	}
+
+
 }

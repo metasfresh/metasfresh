@@ -35,6 +35,8 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -123,7 +125,7 @@ public class LogEntryCreateRequest
 
 	boolean isBillable;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public LogEntryCreateRequest(
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
@@ -206,5 +208,23 @@ public class LogEntryCreateRequest
 	public Optional<ProductPrice> getPriceActual()
 	{
 		return Optional.ofNullable(priceActual);
+	}
+
+	@NonNull
+	public LogEntryCreateRequest withCalculateAmount(@NonNull final QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(priceActual, "No price set for LogEntryCreateRequest, cannot calculate amount.");
+		Check.assumeNotNull(productId, "No product set for LogEntryCreateRequest, cannot calculate amount.");
+
+		return this.toBuilder()
+				.amount(priceActual.computeAmount(getQuantity(priceActual.getUomId(), uomConverter)))
+				.build();
+	}
+
+	@NonNull
+	private Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(quantity, "No quantity set for LogEntryCreateRequest, cannot calculate amount.");
+		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
 	}
 }
