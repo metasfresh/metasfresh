@@ -34,11 +34,10 @@ import {
 } from './view';
 import {
   getResetPasswordInfo,
-  getUserSession,
   resetPasswordComplete,
   resetPasswordGetAvatar,
-  resetPasswordRequest,
-  setUserLang,
+  getAvatar,
+  getAvailableLang,
 } from './login';
 import {
   breadcrumbRequest,
@@ -72,7 +71,6 @@ export {
   getRowsData,
   getTabLayoutRequest,
   getTabRequest,
-  getUserSession,
   getViewAttributeDropdown,
   getViewAttributesLayoutRequest,
   getViewAttributesRequest,
@@ -94,6 +92,6 @@ export {
   resetPasswordComplete,
   resetPasswordGetAvatar,
   resetPasswordRequest,
-  setUserLang,
+  startProcess,
   topActionsRequest,
 };

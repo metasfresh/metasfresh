@@ -9,15 +9,16 @@ export const getQtyToPickForStep = ({ stepProps, altStepId }) => {
   return altStepId ? getPickFromForStep({ stepProps, altStepId }).qtyToPick : stepProps.qtyToPick;
 };
 
+export const getQtyToPickForLine = ({ line }) => {
+  return line?.qtyToPick ?? 0;
+};
+
 export const getQtyPickedOrRejectedTotalForLine = ({ line }) => {
-  return Object.values(line.steps)
-    .map((step) => step.mainPickFrom.qtyPicked + step.mainPickFrom.qtyRejected)
-    .reduce((acc, qtyPickedOrRejected) => acc + qtyPickedOrRejected, 0);
+  return line?.qtyPickedOrRejected ?? 0;
 };
 
 export const getQtyToPickRemainingForLine = ({ line }) => {
-  const qtyToPickRemaining = line.qtyToPick - getQtyPickedOrRejectedTotalForLine({ line });
-  return qtyToPickRemaining > 0 ? qtyToPickRemaining : 0;
+  return line?.qtyRemainingToPick ?? 0;
 };
 
 export const getNextEligibleLineToPick = ({ activity, productId, excludeLineId }) => {

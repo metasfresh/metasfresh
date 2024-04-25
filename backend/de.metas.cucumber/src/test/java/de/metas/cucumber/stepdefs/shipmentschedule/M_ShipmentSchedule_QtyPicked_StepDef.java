@@ -164,7 +164,11 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 
 	private void validateHuId(@NonNull final StepDefDataIdentifier expectedHuIdentifier, @Nullable final HuId actualHuId)
 	{
-		final String description = "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId;
+		final String actualHuIdentifier = actualHuId != null
+				? huTable.getFirstIdentifierById(actualHuId).map(StepDefDataIdentifier::getAsString).orElse("?NEW?")
+				: null;
+
+		final String description = "expectedHuIdentifier=" + expectedHuIdentifier + ", actualHuId=" + actualHuId + ", actualHuIdentifier=" + actualHuIdentifier;
 
 		if (expectedHuIdentifier.isNullPlaceholder())
 		{

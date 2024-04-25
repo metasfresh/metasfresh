@@ -296,7 +296,7 @@ public class CustomerReturnsWithoutHUsProducer
 
 	private I_M_HU initializeCU(@NonNull final LocatorId locatorId)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getById(HUPIItemProductId.VIRTUAL_HU);
+		final I_M_HU_PI_Item_Product piItemProduct = hupiItemProductDAO.getRecordById(HUPIItemProductId.VIRTUAL_HU);
 		final I_M_HU_PI huPI = handlingUnitsDAO.getPackingInstructionById(HuPackingInstructionsId.VIRTUAL);
 
 		return huTrxBL.createHUContextProcessorExecutor()

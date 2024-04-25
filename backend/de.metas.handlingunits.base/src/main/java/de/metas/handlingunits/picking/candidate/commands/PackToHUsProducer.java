@@ -3,10 +3,9 @@ package de.metas.handlingunits.picking.candidate.commands;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.HuPackingInstructionsItemId;
-import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -19,7 +18,6 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -53,7 +51,6 @@ public class PackToHUsProducer
 {
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
-	private final IHUCapacityBL huCapacityBL;
 	private final IUOMConversionBL uomConversionBL;
 	private final InventoryService inventoryService;
 
@@ -70,7 +67,6 @@ public class PackToHUsProducer
 	private PackToHUsProducer(
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUPIItemProductBL huPIItemProductBL,
-			@NonNull final IHUCapacityBL huCapacityBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull InventoryService inventoryService,
 			//
@@ -79,7 +75,6 @@ public class PackToHUsProducer
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.huPIItemProductBL = huPIItemProductBL;
-		this.huCapacityBL = huCapacityBL;
 		this.uomConversionBL = uomConversionBL;
 		this.inventoryService = inventoryService;
 
@@ -216,10 +211,9 @@ public class PackToHUsProducer
 		}
 		else if (packToSpec.getTuPackingInstructionsId() != null)
 		{
-			final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(packToSpec.getTuPackingInstructionsId());
-			final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_ID());
-			packingInstructionsId = handlingUnitsBL.getPackingInstructionsId(piItemId);
-			tuCapacity = getCapacity(tuPIItemProduct);
+			final HUPIItemProduct tuPIItemProduct = huPIItemProductBL.getById(packToSpec.getTuPackingInstructionsId());
+			packingInstructionsId = handlingUnitsBL.getPackingInstructionsId(tuPIItemProduct.getPiItemId());
+			tuCapacity = tuPIItemProduct.toCapacity();
 		}
 		else if (packToSpec.getGenericPackingInstructionsId() != null)
 		{
@@ -246,20 +240,6 @@ public class PackToHUsProducer
 	{
 		return this.alwaysPackEachCandidateInItsOwnHU
 				|| packingInstructionsId.isVirtual(); // if we deal with virtual handling units, pack each candidate individually (in a new VHU).
-	}
-
-	private Capacity getCapacity(@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct)
-	{
-		final ProductId productId = ProductId.optionalOfRepoId(tuPIItemProduct.getM_Product_ID())
-				.orElseThrow(() -> new AdempiereException("Product shall be set for " + tuPIItemProduct));
-
-		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
-		if (uom == null)
-		{
-			throw new AdempiereException("Cannot determine the UOM of " + tuPIItemProduct);
-		}
-
-		return huCapacityBL.getCapacity(tuPIItemProduct, productId, uom);
 	}
 
 	public IHUProducerAllocationDestination getPackToDestination(final PackToInfo packToInfo)

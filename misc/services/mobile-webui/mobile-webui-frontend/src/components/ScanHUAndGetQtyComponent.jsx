@@ -27,6 +27,8 @@ const ScanHUAndGetQtyComponent = ({
   //
   userInfo,
   qtyCaption,
+  packingItemName,
+  qtyTargetCaption,
   qtyTarget,
   qtyMax,
   lineQtyToIssue,
@@ -53,7 +55,9 @@ const ScanHUAndGetQtyComponent = ({
     lineId: null,
     userInfo,
     qtyCaption,
+    packingItemName,
     qtyTarget,
+    qtyTargetCaption,
     qtyMax,
     lineQtyToIssue,
     lineQtyIssued,
@@ -74,6 +78,8 @@ const ScanHUAndGetQtyComponent = ({
       lineId: prevState?.lineId,
       userInfo,
       qtyCaption,
+      packingItemName,
+      qtyTargetCaption,
       qtyTarget,
       qtyMax,
       lineQtyToIssue,
@@ -92,6 +98,8 @@ const ScanHUAndGetQtyComponent = ({
   }, [
     userInfo,
     qtyCaption,
+    packingItemName,
+    qtyTargetCaption,
     qtyTarget,
     qtyMax,
     lineQtyToIssue,
@@ -275,8 +283,10 @@ const ScanHUAndGetQtyComponent = ({
       return (
         <GetQuantityDialog
           userInfo={resolvedBarcodeData.userInfo}
+          qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
           uom={resolvedBarcodeData.uom}
@@ -315,8 +325,10 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Props: Qty related
   userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
+  packingItemName: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
+  qtyTargetCaption: PropTypes.string,
   lineQtyToIssue: PropTypes.number,
   lineQtyIssued: PropTypes.number,
   qtyHUCapacity: PropTypes.number,

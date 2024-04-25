@@ -1,6 +1,7 @@
 package de.metas.handlingunits.allocation.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
@@ -39,7 +40,7 @@ import java.util.TreeSet;
 
 	private final IHUContext huContext;
 	private final BPartnerId bpartnerId;
-	private final int bpartnerLocationId;
+	private final BPartnerLocationId bpartnerLocationId;
 	private final LocatorId locatorId;
 	private final String huStatus;
 
@@ -70,7 +71,7 @@ import java.util.TreeSet;
 	{
 		this.huContext = huContext;
 		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId;
+		this.bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationId);
 		this.locatorId = locatorId;
 		this.huStatus = huStatus;
 
@@ -240,21 +241,21 @@ import java.util.TreeSet;
 	{
 		//
 		// Check same BPartner
-		if (tuHU.getC_BPartner_ID() != getC_BPartner_ID())
+		if (!BPartnerId.equals(IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU), this.bpartnerId))
 		{
 			return false;
 		}
 
 		//
 		// Check same BPartner Location
-		if (tuHU.getC_BPartner_Location_ID() != this.bpartnerLocationId)
+		if (!BPartnerLocationId.equals(IHandlingUnitsBL.extractBPartnerLocationIdOrNull(tuHU), this.bpartnerLocationId))
 		{
 			return false;
 		}
 
 		//
 		// Check same Locator
-		if (!LocatorId.equalsByRepoId(tuHU.getM_Locator_ID(), getLocatorRepoId()))
+		if (!LocatorId.equalsByRepoId(tuHU.getM_Locator_ID(), LocatorId.toRepoId(locatorId)))
 		{
 			return false;
 		}
@@ -270,16 +271,6 @@ import java.util.TreeSet;
 		//
 		// Default: accept
 		return true;
-	}
-
-	private int getC_BPartner_ID()
-	{
-		return BPartnerId.toRepoId(bpartnerId);
-	}
-
-	private int getLocatorRepoId()
-	{
-		return LocatorId.toRepoId(locatorId);
 	}
 
 	void close()

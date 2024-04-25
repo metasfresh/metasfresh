@@ -587,6 +587,19 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			isDiscountExpense = !isDiscountExpense;
 		}
 
+		//
+		// Determine which currency conversion we shall use
+		final CurrencyConversionContext invoiceCurrencyConversionCtx;
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
+			invoiceCurrencyConversionCtx = null;
+		}
+		else
+		{
+			invoiceCurrencyConversionCtx = line.getInvoiceCurrencyConversionCtx();
+		}
+
 		final AmountSourceAndAcct.Builder discountAmtSourceAndAcct = AmountSourceAndAcct.builder();
 
 		final List<InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
@@ -596,12 +609,22 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final FactLine fl;
 			if (isDiscountExpense)
 			{
-				fl = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.DiscountExp, as), getCurrencyId(), discountAmt_CMAdjusted.toBigDecimal(), null);
+				fl = fact.createLine()
+						.setDocLine(line)
+						.setAccount(getBPGroupAccount(BPartnerGroupAccountType.DiscountExp, as))
+						.setAmtSource(discountAmt_CMAdjusted.toBigDecimal(), null)
+						.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+						.buildAndAdd();
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceDr()).addAmtAcct(fl.getAmtAcctDr());
 			}
 			else
 			{
-				fl = fact.createLine(line, getBPGroupAccount(BPartnerGroupAccountType.DiscountRev, as), getCurrencyId(), null, discountAmt_CMAdjusted.negate().toBigDecimal());
+				fl = fact.createLine()
+						.setDocLine(line)
+						.setAccount(getBPGroupAccount(BPartnerGroupAccountType.DiscountRev, as))
+						.setAmtSource(null, discountAmt_CMAdjusted.negate().toBigDecimal())
+						.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+						.buildAndAdd();
 				discountAmtSourceAndAcct.addAmtSource(fl.getAmtSourceCr()).addAmtAcct(fl.getAmtAcctCr());
 			}
 			if (payment != null)
@@ -656,14 +679,24 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				//
 				// Create discount fact line
 				final Money taxDiscountAmt_CMAdjusted = isCreditMemoInvoice ? taxDiscountAmt.negate() : taxDiscountAmt;
-				FactLine fl = null;
+				final FactLine fl;
 				if (isDiscountExpense)
 				{
-					fl = fact.createLine(line, account, getCurrencyId(), taxDiscountAmt_CMAdjusted.toBigDecimal(), null);
+					fl = fact.createLine()
+							.setDocLine(line)
+							.setAccount(account)
+							.setAmtSource(taxDiscountAmt_CMAdjusted, null)
+							.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+							.buildAndAdd();
 				}
 				else
 				{
-					fl = fact.createLine(line, account, getCurrencyId(), null, taxDiscountAmt_CMAdjusted.negate().toBigDecimal());
+					fl = fact.createLine()
+							.setDocLine(line)
+							.setAccount(account)
+							.setAmtSource(null, taxDiscountAmt_CMAdjusted.negate())
+							.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
+							.buildAndAdd();
 				}
 				if (fl != null)
 				{
@@ -760,6 +793,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			}
 		}
 
+		// IMPORTANT: we shall write off using the same currency rate as the invoice
+		if (!fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
+		{
+			factLineBuilder.setCurrencyConversionCtx(line.getInvoiceCurrencyConversionCtx());
+		}
+
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
@@ -788,7 +827,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Determine which currency conversion we shall use
 		final CurrencyConversionContext invoiceCurrencyConversionCtx;
-		if (line.getInvoiceC_Currency_ID() == as.getCurrencyId().getRepoId())
+		if (fact.isAccountingCurrency(line.getInvoiceCurrencyId()))
 		{
 			// use default context because the invoice is in accounting currency, so we shall have no currency gain/loss
 			invoiceCurrencyConversionCtx = null;
