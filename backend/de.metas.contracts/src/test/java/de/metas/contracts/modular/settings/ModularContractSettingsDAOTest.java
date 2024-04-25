@@ -81,7 +81,7 @@ class ModularContractSettingsDAOTest
 		moduleRecord.setModCntr_Type_ID(typeRecord.getModCntr_Type_ID());
 		moduleRecord.setM_Product_ID(130);
 		moduleRecord.setSeqNo(10);
-		moduleRecord.setInvoicingGroup("invoicingGroup");
+		moduleRecord.setInvoicingGroup("Costs");
 		saveRecord(moduleRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
