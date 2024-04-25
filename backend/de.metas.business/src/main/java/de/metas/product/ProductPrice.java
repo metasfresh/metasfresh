@@ -4,6 +4,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMPrecision;
@@ -105,6 +106,17 @@ public class ProductPrice
 
 		return Money.of(amount, money.getCurrencyId());
 	}
+
+	@NonNull
+	public Money computeAmount(@NonNull final Quantity quantity, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		final Quantity quantityInPriceUOM = uomConverter.convertQuantityTo(quantity, productId, uomId);
+		final BigDecimal amount = quantityInPriceUOM.toBigDecimal()
+				.multiply(money.toBigDecimal());
+
+		return Money.of(amount, money.getCurrencyId());
+	}
+
 
 	public ProductPrice convertToUom(
 			@NonNull final UomId toUomId,
