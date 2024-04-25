@@ -35,6 +35,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -83,12 +84,15 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 
 	private void updateModCntrLogPrices(final I_ModCntr_Specific_Price specificPrice)
 	{
-		contractLogService.updatePrice(ModCntrLogPriceUpdateRequest.builder()
+		final ProductPrice productUnitPrice = ProductPrice.builder()
+				.productId(ProductId.ofRepoId(specificPrice.getM_Product_ID()))
+				.money(Money.of(specificPrice.getPrice(), CurrencyId.ofRepoId(specificPrice.getC_Currency_ID())))
 				.uomId(UomId.ofRepoId(specificPrice.getC_UOM_ID()))
+				.build();
+		contractLogService.updatePrice(ModCntrLogPriceUpdateRequest.builder()
+				.unitPrice(productUnitPrice)
 				.flatrateTermId(FlatrateTermId.ofRepoId(specificPrice.getC_Flatrate_Term_ID()))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(specificPrice.getModCntr_Module_ID()))
-				.productId(ProductId.ofRepoId(specificPrice.getM_Product_ID()))
-				.price(Money.of(specificPrice.getPrice(), CurrencyId.ofRepoId(specificPrice.getC_Currency_ID())))
 				.build());
 	}
 }

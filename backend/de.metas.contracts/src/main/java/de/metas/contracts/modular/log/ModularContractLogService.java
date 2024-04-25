@@ -115,7 +115,10 @@ public class ModularContractLogService
 
 	public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)
 	{
-		if (logs.isEmpty()) {return;}
+		if (logs.isEmpty())
+		{
+			return;
+		}
 
 		final ProductPrice productPriceToMatch = logs.getFirstPriceActual();
 		Check.assumeNotNull(productPriceToMatch, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
@@ -145,6 +148,12 @@ public class ModularContractLogService
 
 	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
 	{
-		modularContractLogDAO.updatePrice(request);
+		modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
+						.flatrateTermId(request.flatrateTermId())
+						.processed(false)
+						.contractModuleId(request.modularContractModuleId())
+						.build())
+				.withUnitPrice(request.unitPrice(),uomConversionBL));
 	}
+
 }

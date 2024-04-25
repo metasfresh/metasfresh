@@ -54,7 +54,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -76,7 +75,7 @@ import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRA
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ModularContractLogDAO
@@ -121,17 +120,17 @@ public class ModularContractLogDAO
 
 		request.getAmount()
 				.ifPresentOrElse(amount -> {
-									 log.setAmount(amount.toBigDecimal());
-									 log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
-								 },
-								 () -> log.setAmount(null));
+							log.setAmount(amount.toBigDecimal());
+							log.setC_Currency_ID(amount.getCurrencyId().getRepoId());
+						},
+						() -> log.setAmount(null));
 
 		request.getQuantity()
 				.ifPresentOrElse(quantity -> {
-									 log.setQty(quantity.toBigDecimal());
-									 log.setC_UOM_ID(quantity.getUomId().getRepoId());
-								 },
-								 () -> log.setQty(null));
+							log.setQty(quantity.toBigDecimal());
+							log.setC_UOM_ID(quantity.getUomId().getRepoId());
+						},
+						() -> log.setQty(null));
 
 		log.setHarvesting_Year_ID(YearId.toRepoId(request.getYear()));
 		log.setDescription(request.getDescription());
@@ -144,22 +143,22 @@ public class ModularContractLogDAO
 
 		request.getPriceActual()
 				.ifPresentOrElse(priceActual -> {
-									 log.setPriceActual(priceActual.toBigDecimal());
-									 log.setPrice_UOM_ID(priceActual.getUomId().getRepoId());
-									 log.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
-								 },
-								 () -> log.setPriceActual(null));
+							log.setPriceActual(priceActual.toBigDecimal());
+							log.setPrice_UOM_ID(priceActual.getUomId().getRepoId());
+							log.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
+						},
+						() -> log.setPriceActual(null));
 
 		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
 
 		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 
-		if(request.getStorageDays() != null)
+		if (request.getStorageDays() != null)
 		{
 			log.setStorageDays(request.getStorageDays());
 		}
 
-		save(log);
+		saveRecord(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
 	}
@@ -187,6 +186,7 @@ public class ModularContractLogDAO
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.build();
 	}
@@ -214,7 +214,7 @@ public class ModularContractLogDAO
 		}
 
 		oldLog.setIsBillable(false);
-		save(oldLog);
+		saveRecord(oldLog);
 
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
 		copyValues(oldLog, reversedLog);
@@ -235,7 +235,7 @@ public class ModularContractLogDAO
 		}
 
 		reversedLog.setIsBillable(false);
-		save(reversedLog);
+		saveRecord(reversedLog);
 
 		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
 	}
@@ -252,11 +252,11 @@ public class ModularContractLogDAO
 			final boolean isBillable)
 	{
 		final Optional<I_ModCntr_Log> logOptional = lastRecord(query);
-		if(logOptional.isPresent())
+		if (logOptional.isPresent())
 		{
 			final I_ModCntr_Log log = logOptional.get();
 			log.setIsBillable(isBillable);
-			save(log);
+			saveRecord(log);
 
 			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
 					I_ModCntr_Log.Table_Name,
@@ -441,7 +441,7 @@ public class ModularContractLogDAO
 				.create()
 				.listImmutable(I_ModCntr_Log.class);
 	}
-	
+
 	@Nullable
 	private static ProductPrice extractPriceActual(@NonNull final I_ModCntr_Log record)
 	{
@@ -465,20 +465,65 @@ public class ModularContractLogDAO
 				.build();
 	}
 
-	public void updatePrice(@NonNull final ModCntrLogPriceUpdateRequest request)
+	public void save(@NonNull final ModularContractLogEntriesList logList)
 	{
-		final ICompositeQueryUpdater<I_ModCntr_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_ModCntr_Log.class)
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_PriceActual, request.price().toBigDecimal())
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Currency_ID, request.price().getCurrencyId());
-		if (request.uomId() != null)
-		{
-			queryUpdater.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Price_UOM_ID, request.uomId());
-		}
-		queryBL.createQueryBuilder(I_ModCntr_Log.class)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, request.modularContractModuleId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_M_Product_ID, request.productId())
-				.create()
-				.update(queryUpdater);
+		logList.forEach(this::save);
+	}
+
+	private void save(@NonNull final ModularContractLogEntry log)
+	{
+
+		final I_ModCntr_Log record = load(log.getId(), I_ModCntr_Log.class);
+		Optional.ofNullable(log.getContractId())
+				.map(FlatrateTermId::getRepoId)
+				.ifPresent(record::setC_Flatrate_Term_ID);
+		Optional.ofNullable(log.getProductId())
+				.map(ProductId::getRepoId)
+				.ifPresent(record::setM_Product_ID);
+		final TableRecordReference referencedRecord = log.getReferencedRecord();
+		record.setAD_Table_ID(referencedRecord.getAD_Table_ID());
+		record.setRecord_ID(referencedRecord.getRecord_ID());
+		record.setContractType(log.getContractType().getCode());
+		Optional.ofNullable(log.getCollectionPointBPartnerId())
+				.map(BPartnerId::getRepoId)
+				.ifPresent(record::setCollectionPoint_BPartner_ID);
+		Optional.ofNullable(log.getProducerBPartnerId())
+				.map(BPartnerId::getRepoId)
+				.ifPresent(record::setProducer_BPartner_ID);
+		Optional.ofNullable(log.getInvoicingBPartnerId())
+				.map(BPartnerId::getRepoId)
+				.ifPresent(record::setBill_BPartner_ID);
+		Optional.ofNullable(log.getWarehouseId())
+				.map(WarehouseId::getRepoId)
+				.ifPresent(record::setM_Warehouse_ID);
+		record.setModCntr_Log_DocumentType(log.getDocumentType().getCode());
+
+		record.setProcessed(log.isProcessed());
+		Optional.ofNullable(log.getQuantity())
+				.ifPresent(qty -> {
+					record.setQty(qty.toBigDecimal());
+					record.setC_UOM_ID(qty.getUomId().getRepoId());
+				});
+		Optional.ofNullable(log.getAmount())
+				.ifPresent(amt -> {
+					record.setAmount(amt.toBigDecimal());
+					record.setC_Currency_ID(amt.getCurrencyId().getRepoId());
+				});
+		record.setDateTrx(log.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
+		Optional.ofNullable(log.getStorageDays())
+				.ifPresentOrElse(record::setStorageDays, () -> record.setStorageDays(0));
+		record.setHarvesting_Year_ID(log.getYear().getRepoId());
+		record.setIsBillable(log.isBillable());
+		Optional.ofNullable(log.getPriceActual())
+				.ifPresent(price -> {
+					record.setPriceActual(price.toBigDecimal());
+					record.setC_UOM_ID(price.getUomId().getRepoId());
+				});
+		Optional.ofNullable(log.getPriceUomId())
+				.map(UomId::getRepoId)
+				.ifPresent(record::setPrice_UOM_ID);
+		record.setModCntr_Module_ID(log.getModularContractModuleId().getRepoId());
+
+		saveRecord(record);
 	}
 }

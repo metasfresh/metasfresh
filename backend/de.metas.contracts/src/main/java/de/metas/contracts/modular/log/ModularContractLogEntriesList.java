@@ -8,6 +8,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -162,4 +163,18 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
+	private void assertAllUnprocessed()
+	{
+			Check.assume(!list.stream().anyMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
+	}
+
+	public ModularContractLogEntriesList withUnitPrice(@NonNull final ProductPrice unitPrice, @NonNull final IUOMConversionBL uomConversionBL)
+	{
+		assertAllUnprocessed();
+		assertUniqueProductPriceOrError();
+		return list.stream()
+				.map(log -> log.withPrice(unitPrice,uomConversionBL))
+				.collect(collect());
+
+	}
 }

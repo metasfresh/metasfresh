@@ -76,6 +76,13 @@ public class ProductPrice
 				.build();
 	}
 
+	public ProductPrice withMoney(@NonNull final Money newPrice)
+	{
+		return toBuilder()
+				.money(newPrice)
+				.build();
+	}
+
 	public ProductPrice negate()
 	{
 		return this.toBuilder().money(money.negate()).build();

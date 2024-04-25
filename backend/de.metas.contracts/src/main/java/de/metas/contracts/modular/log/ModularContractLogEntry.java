@@ -35,6 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -108,6 +109,8 @@ public class ModularContractLogEntry
 	@Nullable
 	ProductPrice priceActual;
 
+	@Nullable UomId priceUomId;
+
 	@Nullable
 	InvoicingGroupId invoicingGroupId;
 
@@ -115,7 +118,7 @@ public class ModularContractLogEntry
 
 	@NonNull ModularContractModuleId modularContractModuleId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
 			@NonNull final LogEntryContractType contractType,
@@ -137,8 +140,10 @@ public class ModularContractLogEntry
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
+			@Nullable final UomId priceUomId,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			final boolean isBillable, final @NonNull ModularContractModuleId modularContractModuleId)
+			final boolean isBillable,
+			final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -170,14 +175,31 @@ public class ModularContractLogEntry
 		this.year = year;
 		this.description = description;
 		this.priceActual = priceActual;
+		this.priceUomId = priceUomId;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
 	}
 
+	@NonNull
 	Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
 		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
+	}
+
+	public ModularContractLogEntry withPrice(final @NonNull ProductPrice price, @NonNull final IUOMConversionBL uomConversionBL)
+	{
+		Check.assumeNotNull(priceActual, "No product price set for log entry {}, cannot update price.", id);
+		Check.assumeNotNull(priceUomId, "No price UOM defined for log entry {}, cannot update price.", id);
+
+		final UomId priceUomId = price.getUomId();
+		final ProductPrice priceWithUnitPriceUom = priceActual.withValueAndUomId(price.toBigDecimal(), priceUomId);
+
+		return this.toBuilder()
+				.priceActual(priceActual.withMoney(price.toMoney()))
+				.priceUomId(priceUomId)
+				.amount(priceWithUnitPriceUom.computeAmount(getQuantity(priceUomId, uomConversionBL)))
+				.build();
 	}
 }
