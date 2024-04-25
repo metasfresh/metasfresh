@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +65,11 @@ public class ModularContractPriceService
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
+	{
+		return modularContractPriceRepository.getById(id);
+	}
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
@@ -150,6 +156,11 @@ public class ModularContractPriceService
 				.setBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
 				.setCountryId(countryId)
 				.setPriceDate(InstantAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(), orgId).toLocalDate(orgDAO::getTimeZone));
+	}
+
+	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		return modularContractPriceRepository.updateById(id, mapper);
 	}
 
 }
