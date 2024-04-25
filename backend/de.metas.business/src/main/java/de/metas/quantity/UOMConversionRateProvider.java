@@ -6,7 +6,7 @@ import de.metas.uom.UomId;
 import lombok.NonNull;
 
 @FunctionalInterface
-public interface QuantityUOMConversionProvider
+public interface UOMConversionRateProvider
 {
 	UOMConversionRate getRate(@NonNull ProductId productId, @NonNull UomId fromUomId, @NonNull UomId toUomId);
 }

@@ -26,7 +26,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityUOMConversionProvider;
+import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.util.ISingletonService;
@@ -38,7 +38,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
 
-public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverter, QuantityUOMConversionProvider
+public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverter, UOMConversionRateProvider
 {
 	/**
 	 * for backward; compatibility
