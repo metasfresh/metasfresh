@@ -269,6 +269,7 @@ public class PickingJobCreateCommand
 
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(plan.getQtyToPick())
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElse(null))
@@ -290,6 +291,7 @@ public class PickingJobCreateCommand
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.productId(items.getSingleProductId())
+				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
 				.qtyToPick(items.getQtyToPick())
 				.build();
 	}

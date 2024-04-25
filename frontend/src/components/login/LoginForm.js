@@ -34,7 +34,6 @@ import PasswordRecovery from './PasswordRecovery';
 import { BAD_GATEWAY_ERROR } from '../../constants/Constants';
 import {
   checkLoginRequest,
-  getUserLang,
   login2FA,
   loginCompletionRequest,
   loginRequest,
@@ -42,6 +41,7 @@ import {
 import { LoginUserAndPasswordView } from './LoginUserAndPasswordView';
 import { Login2FAView } from './Login2FAView';
 import { RoleSelectView } from './RoleSelectView';
+import { getUserLang } from '../../api/userSession';
 
 const VIEW_USER_AND_PASSWORD = 'userAndPassword';
 const VIEW_2FA = '2fa';

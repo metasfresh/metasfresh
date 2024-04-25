@@ -280,7 +280,7 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 	{
 		this.processReceiptCandidates = false;
 		this.receiveUsingLUTUSpec = PreciseTUSpec.of(HuPackingInstructionsId.VIRTUAL,
-												   Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
+				Quantity.of(BigDecimal.ONE, qtyToReceive.getUOM()));
 
 		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive).getHus());
 	}
@@ -543,7 +543,7 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 				}
 				else
 				{
-					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getById(standardLUTUSpec.getTuPIItemProductId());
+					final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductBL.getRecordById(standardLUTUSpec.getTuPIItemProductId());
 					final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 					final Capacity tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, getProductId(), uom);
 

@@ -26,6 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonHU;
@@ -35,6 +37,7 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
@@ -42,6 +45,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -49,13 +53,22 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
@@ -64,14 +77,16 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -84,6 +99,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -115,7 +131,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -129,12 +145,15 @@ public class M_HU_StepDef
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+	private final M_HU_PI_StepDefData huPiTable;
 	private final M_InventoryLine_StepDefData inventoryLineTable;
 	private final M_Locator_StepDefData locatorTable;
 	private final M_Warehouse_StepDefData warehouseTable;
@@ -268,12 +287,10 @@ public class M_HU_StepDef
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String sourceCuIdentifier = DataTableUtil.extractStringForColumnName(row, "sourceCU." + TABLECOLUMN_IDENTIFIER);
-			final BigDecimal cuQty = DataTableUtil.extractBigDecimalForColumnName(row, "cuQty");
-			final String huPIItemProductIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		DataTableRows.of(dataTable).forEach((row) -> {
+			final StepDefDataIdentifier sourceCuIdentifier = row.getAsIdentifier("sourceCU");
+			final BigDecimal cuQty = row.getAsBigDecimal("cuQty");
+			final StepDefDataIdentifier huPIItemProductIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
 
 			final I_M_HU cuHU = huTable.get(sourceCuIdentifier);
 			assertThat(cuHU).isNotNull();
@@ -286,33 +303,49 @@ public class M_HU_StepDef
 
 			final List<I_M_HU> resultedNewTUs = HUTransformService.newInstance().cuToNewTUs(cuHU, cuQuantity, huPiItemProduct, false);
 
-			final String resultedNewTUsIdentifiers = DataTableUtil.extractStringForColumnName(row, "resultedNewTUs." + TABLECOLUMN_IDENTIFIER);
-			final List<String> tuIdentifiers = StepDefUtil.splitIdentifiers(resultedNewTUsIdentifiers);
+			final List<StepDefDataIdentifier> tuIdentifiers = row.getAsOptionalIdentifier("resultedNewTUs")
+					.map(StepDefDataIdentifier::toCommaSeparatedList)
+					.orElse(null);
+			if (tuIdentifiers != null)
+			{
+				assertThat(tuIdentifiers).hasSameSizeAs(resultedNewTUs);
+			}
 
-			final String resultedNewCUsIdentifiers = DataTableUtil.extractStringForColumnName(row, "resultedNewCUs." + TABLECOLUMN_IDENTIFIER);
-			final List<String> cuIdentifiers = StepDefUtil.splitIdentifiers(resultedNewCUsIdentifiers);
+			final List<StepDefDataIdentifier> cuIdentifiers = row.getAsOptionalIdentifier("resultedNewCUs")
+					.map(StepDefDataIdentifier::toCommaSeparatedList)
+					.orElse(null);
+			if (cuIdentifiers != null)
+			{
+				assertThat(cuIdentifiers).hasSameSizeAs(resultedNewTUs);
+			}
 
 			for (int index = 0; index < resultedNewTUs.size(); index++)
 			{
-				huTable.putOrReplace(tuIdentifiers.get(index), resultedNewTUs.get(index));
-
 				final I_M_HU currentTU = resultedNewTUs.get(index);
 
-				final I_M_HU_Item tuItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
-						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, currentTU.getM_HU_ID())
-						.orderByDescending(COLUMNNAME_M_HU_ID)
-						.create()
-						.firstNotNull(I_M_HU_Item.class);
+				if (tuIdentifiers != null)
+				{
+					huTable.putOrReplace(tuIdentifiers.get(index), currentTU);
+				}
 
-				final I_M_HU includedCU = queryBL.createQueryBuilder(I_M_HU.class)
-						.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, tuItem.getM_HU_Item_ID())
-						.orderByDescending(COLUMNNAME_M_HU_ID)
-						.create()
-						.firstNotNull(I_M_HU.class);
+				if (cuIdentifiers != null)
+				{
+					final I_M_HU_Item tuItem = queryBL.createQueryBuilder(I_M_HU_Item.class)
+							.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, currentTU.getM_HU_ID())
+							.orderByDescending(COLUMNNAME_M_HU_ID)
+							.create()
+							.firstNotNull(I_M_HU_Item.class);
 
-				huTable.putOrReplace(cuIdentifiers.get(index), includedCU);
+					final I_M_HU includedCU = queryBL.createQueryBuilder(I_M_HU.class)
+							.addEqualsFilter(COLUMN_M_HU_Item_Parent_ID, tuItem.getM_HU_Item_ID())
+							.orderByDescending(COLUMNNAME_M_HU_ID)
+							.create()
+							.firstNotNull(I_M_HU.class);
+
+					huTable.putOrReplace(cuIdentifiers.get(index), includedCU);
+				}
 			}
-		}
+		});
 	}
 
 	@And("transform TU to new LUs")
@@ -341,6 +374,93 @@ public class M_HU_StepDef
 				huTable.putOrReplace(identifiers.get(index), resultedNewLUs.get(index));
 			}
 		}
+	}
+
+	@And("aggregate TUs to new LU")
+	public void aggregateTUsToNewLU(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			huTrxBL.process(huContext -> {
+				final LULoader luLoader = new LULoader(huContext);
+
+				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
+				for (StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+				{
+					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
+					luLoader.addTU(sourceTU);
+				}
+
+				luLoader.close();
+
+				row.getAsOptionalIdentifier("newLUs")
+						.map(StepDefDataIdentifier::toCommaSeparatedList)
+						.ifPresent(newLUIdentifiers -> {
+							final List<I_M_HU> newLUs = luLoader.getLU_HUs();
+							assertThat(newLUs).hasSameSizeAs(newLUIdentifiers);
+							for (int index = 0; index < newLUs.size(); index++)
+							{
+								huTable.put(newLUIdentifiers.get(index), newLUs.get(index));
+							}
+						});
+			});
+		});
+	}
+
+	@And("transform CU to new LU")
+	public void transformCUtoNewLUs(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			huTrxBL.process(huContext -> {
+				transformCUtoNewLU(row, huContext);
+			});
+		});
+	}
+
+	private void transformCUtoNewLU(final DataTableRow row, final IHUContext huContext)
+	{
+		final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupIn(huTable);
+
+		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getStorageFactory().getStorage(sourceCU).getSingleHUProductStorage();
+		final ProductId productId = sourceCUProductStorage.getProductId();
+		final I_C_UOM uom = sourceCUProductStorage.getC_UOM();
+
+		final LUTUProducerDestination producer = new LUTUProducerDestination();
+
+		producer.setHUStatus(sourceCU.getHUStatus());
+		producer.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceCU));
+		final BPartnerLocationId bpartnerLocationId = IHandlingUnitsBL.extractBPartnerLocationIdOrNull(sourceCU);
+		if (bpartnerLocationId != null)
+		{
+			producer.setBPartnerAndLocationId(bpartnerLocationId);
+		}
+
+		final I_M_HU_PI tuPI = row.getAsIdentifier("TU_PI_ID").lookupIn(huPiTable);
+		final BigDecimal qtyCUsPerTU = row.getAsBigDecimal("QtyCUsPerTU");
+		final QtyTU qtyTUs = QtyTU.ofInt(row.getAsInt("QtyTUsPerLU"));
+		producer.setTUPI(tuPI);
+		producer.addCUPerTU(productId, qtyCUsPerTU, uom);
+		producer.setMaxTUsPerLU(qtyTUs.toInt());
+
+		final BPartnerId bpartnerId = bpartnerLocationId != null ? bpartnerLocationId.getBpartnerId() : null;
+		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
+		assertThat(luPIItem).as(() -> "LU PI Item for tuPI=" + tuPI + ", bpartnerId=" + bpartnerId).isNotNull();
+		producer.setLUItemPI(luPIItem);
+		producer.setLUPI(luPIItem.getM_HU_PI_Version().getM_HU_PI());
+		producer.setCreateTUsForRemainingQty(false);
+		producer.setMaxLUs(1);
+		HULoader.builder()
+				.source(HUListAllocationSourceDestination.of(sourceCU))
+				.destination(producer)
+				.load(AllocationUtils.builder()
+						.setHUContext(huContext)
+						.setProduct(productId)
+						.setQuantity(Quantity.of(qtyCUsPerTU.multiply(qtyTUs.toBigDecimal()), uom))
+						.setDateAsToday()
+						.setForceQtyAllocation(true)
+						.create());
+
+		final I_M_HU newLU = producer.getSingleCreatedHU().orElseThrow(() -> new AdempiereException("No LU was created"));
+		row.getAsIdentifier("newLU").put(huTable, newLU);
 	}
 
 	@And("store JsonHUAttributesRequest in context")
@@ -417,12 +537,9 @@ public class M_HU_StepDef
 	}
 
 	@And("M_HU are validated:")
-	public void validate_HU(@NonNull final DataTable table)
+	public void validateHUs(@NonNull final DataTable table)
 	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			validateHU(row);
-		}
+		DataTableRows.of(table).forEach(this::validateHU);
 	}
 
 	@Given("M_HU are disposed:")
@@ -555,25 +672,32 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void validateHU(@NonNull final Map<String, String> row)
+	private void validateHU(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final HuId huId = HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID());
-		final I_M_HU huRecord = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-		final String huDescription = huIdentifier + "/" + huId.getRepoId();
-
-		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
-
-		assertThat(huRecord).as(huDescription).isNotNull();
-		assertThat(huRecord.getHUStatus()).as(huDescription + " - HUStatus").isEqualTo(huStatus);
-		assertThat(huRecord.isActive()).as(huDescription + " - HUStatus").isEqualTo(isActive);
-
-		final String locatorIdentifier = StringUtils.trimBlankToNull(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER));
-		if (locatorIdentifier != null)
+		for (final StepDefDataIdentifier huIdentifier : row.getAsIdentifier("M_HU_ID").toCommaSeparatedList())
 		{
-			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
-			assertThat(huRecord.getM_Locator_ID()).as(huDescription + " - Locator").isEqualTo(locator.getM_Locator_ID());
+			final HuId huId = huIdentifier.lookupIdIn(huTable);
+			SharedTestContext.put("huIdentifier", huIdentifier);
+			final I_M_HU huRecord = handlingUnitsBL.getById(huId); // load it fresh!
+			SharedTestContext.put("hu", huRecord);
+
+			final SoftAssertions softly = new SoftAssertions();
+
+			row.getAsOptionalString(COLUMNNAME_HUStatus).ifPresent(huStatus -> softly.assertThat(huRecord.getHUStatus()).as("HUStatus").isEqualTo(huStatus));
+			row.getAsOptionalBoolean(COLUMNNAME_IsActive).ifPresent(isActive -> softly.assertThat(huRecord.isActive()).as("IsActive").isEqualTo(isActive));
+			row.getAsOptionalIdentifier(COLUMNNAME_M_Locator_ID)
+					.map(locatorTable::getId)
+					.ifPresent(locatorId -> softly.assertThat(huRecord.getM_Locator_ID()).as("M_Locator_ID").isEqualTo(locatorId.getRepoId()));
+			row.getAsOptionalBoolean("IsTopLevel")
+					.ifPresent(isTopLevel -> softly.assertThat(handlingUnitsBL.isTopLevel(huRecord)).as("IsTopLevel").isEqualTo(isTopLevel));
+			row.getAsOptionalIdentifier("Parent")
+					.ifPresent(parentHUIdentifier -> {
+						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
+						final HuId actualParentId = HuId.ofRepoIdOrNull(handlingUnitsDAO.retrieveParentId(huRecord));
+						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
+					});
+
+			softly.assertAll();
 		}
 	}
 

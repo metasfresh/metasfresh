@@ -31,6 +31,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -374,16 +375,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return creditMemoInvoice;
 	}
 
-	/**
-	 * Get Invoice C_Currency_ID
-	 *
-	 * @return 0 if no invoice -1 if not found
-	 */
-	public int getInvoiceC_Currency_ID()
+	@NonNull
+	public CurrencyId getInvoiceCurrencyId()
 	{
-		final I_C_Invoice invoice = getC_Invoice();
-		return invoice == null ? -1 : invoice.getC_Currency_ID();
-	}    // getInvoiceC_Currency_ID
+		final I_C_Invoice invoice = Check.assumeNotNull(getC_Invoice(), "invoice not null");
+		return CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+	}
 
 	public OrgId getInvoiceOrgId()
 	{

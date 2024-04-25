@@ -87,9 +87,9 @@ export const changeQty = ({
       locatorQRCode: locatorQRCode ? toLocatorQRCodeString(locatorQRCode) : null,
       splitOneIfAggregated: true,
       setBestBeforeDate,
-      bestBeforeDate,
+      bestBeforeDate: setBestBeforeDate ? bestBeforeDate : null,
       setLotNo,
-      lotNo,
+      lotNo: setLotNo ? lotNo : null,
     })
     .then(unboxAxiosResponse)
     .then((response) => response.result);

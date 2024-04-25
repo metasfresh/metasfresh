@@ -315,7 +315,7 @@ public class M_Product_StepDef
 		productRecord.setValue(valueAndName.getValue());
 		productRecord.setName(valueAndName.getName());
 
-		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_UOM.COLUMNNAME_X12DE355);
+		final String uomX12DE355 = rowObj.getAsOptionalString(I_C_UOM.COLUMNNAME_X12DE355).orElse(null);
 		if (Check.isNotBlank(uomX12DE355))
 		{
 			final UomId uomId = queryBL.createQueryBuilder(I_C_UOM.class)

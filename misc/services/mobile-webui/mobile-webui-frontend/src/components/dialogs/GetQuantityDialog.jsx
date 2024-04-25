@@ -11,10 +11,9 @@ import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
-import { toastError } from '../../utils/toast';
+import { toastError, toastErrorFromObj } from '../../utils/toast';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
-import { toastErrorFromObj } from '../../utils/toast';
 
 const GetQuantityDialog = ({
   readOnly = false,
@@ -22,9 +21,11 @@ const GetQuantityDialog = ({
   //
   userInfo,
   qtyTarget,
+  qtyTargetCaption,
   totalQty,
   qtyAlreadyOnScale,
   qtyCaption,
+  packingItemName,
   uom,
   qtyRejectedReasons,
   scaleDevice,
@@ -223,9 +224,9 @@ const GetQuantityDialog = ({
       <>
         <table className="table">
           <tbody>
-            {qtyCaption && (
+            {qtyTargetCaption && (
               <tr>
-                <th>{qtyCaption}</th>
+                <th>{qtyTargetCaption}</th>
                 <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
               </tr>
             )}
@@ -266,9 +267,9 @@ const GetQuantityDialog = ({
                 <div className="table-container">
                   <table className="table">
                     <tbody>
-                      {qtyCaption && (
+                      {qtyTargetCaption && (
                         <tr>
-                          <th>{qtyCaption}</th>
+                          <th>{qtyTargetCaption}</th>
                           <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                         </tr>
                       )}
@@ -281,7 +282,7 @@ const GetQuantityDialog = ({
                         ))}
                       {!hideQtyInput && (
                         <tr>
-                          <th>Qty</th>
+                          <th>{qtyCaption ?? trl('general.Qty')}</th>
                           <td>
                             <QtyInputField
                               qty={qtyInfos.toNumberOrString(qtyInfo)}
@@ -310,6 +311,12 @@ const GetQuantityDialog = ({
                               isRequestFocus={true}
                             />
                           </td>
+                        </tr>
+                      )}
+                      {packingItemName && (
+                        <tr>
+                          <th>{trl('general.PackingItemName')}</th>
+                          <td>{packingItemName}</td>
                         </tr>
                       )}
                       {scaleDevice && allowManualInput && (
@@ -450,9 +457,11 @@ GetQuantityDialog.propTypes = {
   readOnly: PropTypes.bool,
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  qtyTargetCaption: PropTypes.string,
   totalQty: PropTypes.number,
   qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
+  packingItemName: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,

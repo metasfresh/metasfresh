@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.job.model.PickingUnit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -37,6 +39,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonPickingJobTest
 {
+	private int nextLineId = 1;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		nextLineId = 0;
+	}
+
 	void testSerializeDeserialize(final JsonPickingJob obj) throws JsonProcessingException
 	{
 		System.out.println("Object: " + obj);
@@ -55,6 +65,7 @@ class JsonPickingJobTest
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
 		testSerializeDeserialize(JsonPickingJob.builder()
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.lines(ImmutableList.of(
 						randomJsonPickingJobLine(),
 						randomJsonPickingJobLine(),
@@ -81,13 +92,24 @@ class JsonPickingJobTest
 
 	private JsonPickingJobLine randomJsonPickingJobLine()
 	{
+		final int id = nextLineId++;
+
+		final PickingUnit pickingUnit = id % 2 == 0 ? PickingUnit.CU : PickingUnit.TU;
+		final String packingItemName = pickingUnit == PickingUnit.TU ? "My TU " + id : "My CU " + id;
+
 		return JsonPickingJobLine.builder()
-				.pickingLineId("pickingLineId_" + UUID.randomUUID())
+				.pickingLineId("pickingLineId_" + id)
 				.productId("productId")
 				.productNo("productNo")
 				.caption("caption")
+				.pickingUnit(pickingUnit)
+				.packingItemName(packingItemName)
 				.uom("uom")
 				.qtyToPick(new BigDecimal("321.456"))
+				.qtyPicked(new BigDecimal("3.04"))
+				.qtyRejected(new BigDecimal("0.40"))
+				.qtyPickedOrRejected(new BigDecimal("3.44"))
+				.qtyRemainingToPick(new BigDecimal("4.56"))
 				.catchWeightUOM("catchWeightUOM")
 				.allowPickingAnyHU(true)
 				.steps(ImmutableList.of(
@@ -96,6 +118,8 @@ class JsonPickingJobTest
 						randomJsonPickingJobStep(),
 						randomJsonPickingJobStep()
 				))
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
+				.manuallyClosed(true)
 				.build();
 	}
 
@@ -103,6 +127,7 @@ class JsonPickingJobTest
 	{
 		return JsonPickingJobStep.builder()
 				.pickingStepId("pickingStepId_" + UUID.randomUUID())
+				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.productId("productId")
 				.productName("productName")
 				.uom("uom")

@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,6 +63,8 @@ public class WorkplaceRepository
 		return !getMap().isEmpty();
 	}
 
+	public List<Workplace> getAllActive() {return getMap().getAllActive();}
+
 	@NonNull
 	private WorkplacesMap getMap()
 	{
@@ -94,10 +97,12 @@ public class WorkplaceRepository
 	private static class WorkplacesMap
 	{
 		private final ImmutableMap<WorkplaceId, Workplace> byId;
+		@Getter private final ImmutableList<Workplace> allActive;
 
 		WorkplacesMap(final List<Workplace> list)
 		{
 			this.byId = Maps.uniqueIndex(list, Workplace::getId);
+			this.allActive = ImmutableList.copyOf(list);
 		}
 
 		@NonNull
