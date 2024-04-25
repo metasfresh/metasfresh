@@ -68,7 +68,7 @@ public class InvokePCMService
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, pcmConfig.getValue());
 		parameters.putAll(extractContentSourceParameters(pcmConfig, externalRequest));
-		parameters.put(PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId()));
+		parameters.put(PARAM_BPARTNER_ID, String.valueOf(bPartnerId.getRepoId())); // needed for the route that imports the warehouse-csv file
 		parameters.put(PARAM_TAX_CATEGORY_MAPPINGS, getTaxCategoryMappings(pcmConfig));
 
 		return parameters;

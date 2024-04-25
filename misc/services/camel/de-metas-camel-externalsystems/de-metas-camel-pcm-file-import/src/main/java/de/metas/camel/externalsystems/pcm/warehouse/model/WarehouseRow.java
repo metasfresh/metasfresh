@@ -26,7 +26,7 @@ import lombok.Getter;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
-@CsvRecord(separator = ",", skipField = true)
+@CsvRecord(separator = ";", skipField = true)
 @Getter
 public class WarehouseRow
 {

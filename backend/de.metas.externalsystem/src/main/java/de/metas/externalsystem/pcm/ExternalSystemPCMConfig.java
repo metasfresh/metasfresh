@@ -25,6 +25,7 @@ package de.metas.externalsystem.pcm;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.pcm.source.PCMContentSourceLocalFile;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,6 +37,9 @@ import java.util.List;
 @Builder
 public class ExternalSystemPCMConfig implements IExternalSystemChildConfig
 {
+	@NonNull
+	OrgId orgId;
+	
 	@NonNull
 	ExternalSystemPCMConfigId id;
 

@@ -233,6 +233,9 @@ public interface IWarehouseDAO extends ISingletonService
 
 	void save(@NonNull Warehouse warehouse);
 
+	/**
+	 * Create a warehouse and a default locator.
+	 */
 	@NonNull
 	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
 

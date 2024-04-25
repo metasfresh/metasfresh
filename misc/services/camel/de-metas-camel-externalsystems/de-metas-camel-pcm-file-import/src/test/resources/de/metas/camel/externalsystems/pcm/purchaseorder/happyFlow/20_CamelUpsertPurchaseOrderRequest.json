@@ -16,8 +16,8 @@
         },
         "isManualDiscount": false,
         "discount": null,
-        "purchaseDatePromised": null,
-        "purchaseDateOrdered": null,
+        "purchaseDatePromised": "2024-04-15T00:00:00+02:00[Europe/Berlin]",
+        "purchaseDateOrdered": "2024-04-15T05:55:00+02:00[Europe/Berlin]",
         "vendor": {
           "bpartnerIdentifier": "ext-ProCareManagement-bpartnerIdentifier_1",
           "locationIdentifier": null,

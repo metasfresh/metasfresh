@@ -310,6 +310,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		TableRecordCacheLocal.setReferencedValue(icRecord, inOutLineRecord);
 		icRecord.setIsPackagingMaterial(inOutLineRecord.isPackagingMaterial());
+		icRecord.setExternalHeaderId(inOut.getExternalId());
 
 		// order & delivery stuff
 		final boolean callerCanCreateAdditionalICs = true; // our calling code will create further ICs if needed
@@ -636,7 +637,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
 			icRecord.setPaymentRule(order.getPaymentRule());
 			icRecord.setDateOrdered(order.getDateOrdered());
-
+			
+			if(Check.isBlank(icRecord.getExternalHeaderId()))
+			{ // only set if it wasn't already set from the M_Inout
+				icRecord.setExternalHeaderId(order.getExternalId());
+			}
+			
 			final boolean propagateToCInvoice = orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID()));
 			if (Check.isBlank(icRecord.getEMail()) && propagateToCInvoice)
 			{

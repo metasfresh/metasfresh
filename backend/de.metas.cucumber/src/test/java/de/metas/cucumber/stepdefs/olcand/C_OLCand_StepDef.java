@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
-import de.metas.common.ordercandidates.v2.response.JsonOLCand;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
@@ -73,12 +71,11 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_IMP_Processor;
-import org.compiere.model.*;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
@@ -99,7 +96,7 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalHeaderId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
@@ -494,7 +491,7 @@ public class C_OLCand_StepDef
 		assertThat(invoices).isNotEmpty();
 
 		final List<String> identifiers = StepDefUtil.splitIdentifiers(invoiceIdentifier);
-		assertThat(identifiers).hasSameSizeAs(invoices);
+		assertThat(invoices).hasSameSizeAs(identifiers);
 
 		if (invoices.size() > 1)
 		{
