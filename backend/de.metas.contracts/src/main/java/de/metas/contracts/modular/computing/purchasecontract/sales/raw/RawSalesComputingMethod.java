@@ -36,6 +36,9 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +53,9 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class RawSalesComputingMethod implements IComputingMethodHandler
 {
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
@@ -112,9 +116,12 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 			return computingMethodService.toZeroResponse(request);
 		}
 
+		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
-				.price(logs.getUniqueProductPriceOrErrorNotNull())
+				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
 				.build();
 	}

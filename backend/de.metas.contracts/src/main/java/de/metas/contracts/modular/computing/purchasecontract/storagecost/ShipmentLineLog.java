@@ -169,7 +169,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 				.referencedModel(recordRef)
 				.flatrateTermId(createLogRequest.getContractId())
-				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs().toString()))
+				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs()))
 				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 				.contractModuleId(createLogRequest.getModularContractModuleId())
 				.build());
