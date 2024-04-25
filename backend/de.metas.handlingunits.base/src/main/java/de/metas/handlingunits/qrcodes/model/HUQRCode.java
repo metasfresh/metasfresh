@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter;
+import de.metas.product.ProductId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,6 +46,13 @@ public class HUQRCode implements IHUQRCode
 	public static HUQRCode fromGlobalQRCodeJsonString(@NonNull final String qrCodeString)
 	{
 		return HUQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+	}
+
+	@Nullable
+	public static HUQRCode fromNullableGlobalQRCodeJsonString(@Nullable final String qrCodeString)
+	{
+		final String qrCodeStringNorm = StringUtils.trimBlankToNull(qrCodeString);
+		return qrCodeStringNorm != null ? fromGlobalQRCodeJsonString(qrCodeStringNorm) : null;
 	}
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode) {return HUQRCodeJsonConverter.isHandled(globalQRCode);}
@@ -121,4 +130,8 @@ public class HUQRCode implements IHUQRCode
 	{
 		return qrCode.getPackingInfo().getHuUnitType().getShortDisplayName() + " ..." + qrCode.toDisplayableQRCode();
 	}
+
+	public ProductId getProductId() {return getProduct().getId();}
+
+	public HuPackingInstructionsId getPackingInstructionsId() {return getPackingInfo().getPackingInstructionsId();}
 }

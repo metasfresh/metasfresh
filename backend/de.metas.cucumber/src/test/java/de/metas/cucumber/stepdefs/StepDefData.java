@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
@@ -61,6 +62,15 @@ public abstract class StepDefData<T>
 	public StepDefData(@Nullable final Class<T> clazz)
 	{
 		this.clazz = clazz;
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.addValue(clazz != null ? clazz.getSimpleName() : null)
+				.toString();
 	}
 
 	public void put(
@@ -214,7 +224,9 @@ public abstract class StepDefData<T>
 	public RecordDataItem<T> getRecordDataItem(@NonNull final StepDefDataIdentifier identifier)
 	{
 		final RecordDataItem<T> recordDataItem = records.get(identifier);
-		assertThat(recordDataItem).as("Missing recordDataItem for identifier=%s", identifier).isNotNull();
+		assertThat(recordDataItem)
+				.as(() -> "Missing item for identifier `" + identifier + "` in " + this + ". Available identifiers are: " + records.keySet())
+				.isNotNull();
 
 		return recordDataItem;
 	}

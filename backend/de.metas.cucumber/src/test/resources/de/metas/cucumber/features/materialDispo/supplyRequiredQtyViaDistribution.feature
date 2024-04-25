@@ -12,8 +12,7 @@ Feature: Stock shortage solved via distribution
   @from:cucumber
   @Id:S0229_100
   @Id:S0264_800
-  Scenario:
-  Create Sales Order for a product of which a stock shortage is solved via distribution, complete it
+  Scenario: Create Sales Order for a product of which a stock shortage is solved via distribution, complete it
   Distribution Order is created, validate DD_Order, DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
   Complete the Distribution Order and then validate DD_Order, DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
   Reactivate the Distribution Order and then validate DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
@@ -21,11 +20,11 @@ Feature: Stock shortage solved via distribution
   Complete the Distribution Order and then validate MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
   Void the Distribution Order and then validate MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
     Given metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_05_12_2022 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_05_12_2022 | pricing_system_value_05_12_2022 | pricing_system_description_05_12_2022 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_05_12_2022 | null            | true  | false         | 2              | true         |
@@ -36,8 +35,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_05_12_2022 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -256,8 +255,7 @@ Feature: Stock shortage solved via distribution
   @from:cucumber
   @Id:S0229_200
   @Id:S0264_900
-  Scenario:
-  Set `DDOrder_isCreateMovementOnComplete` SysConfig to true
+  Scenario: Set `DDOrder_isCreateMovementOnComplete` SysConfig to true
   Create Inventory for a product of which a stock shortage is solved via distribution and complete it
   Create Sales Order for the same product and for less qty than the inventory and complete it
   Distribution Order is created, validate DD_Order, DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
@@ -266,11 +264,11 @@ Feature: Stock shortage solved via distribution
   Set `DDOrder_isCreateMovementOnComplete` SysConfig back to false
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_06_12_2022 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_06_12_2022 | pricing_system_value_06_12_2022 | pricing_system_description_06_12_2022 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_06_12_2022 | null            | true  | false         | 2              | true         |
@@ -281,8 +279,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_06_12_2022 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -303,8 +301,8 @@ Feature: Stock shortage solved via distribution
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse_2    | 2022-07-04   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | warehouse_2    | 2022-07-04T00:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_1       | i_1                       | p_1                     | PCE          | 16       | 0       |
@@ -454,11 +452,11 @@ Feature: Stock shortage solved via distribution
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand partial available
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_28042023_0 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_28042023_0 | pricing_system_value_28042023_0 | pricing_system_description_28042023_0 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_28042023_0 | null            | true  | false         | 2              | true         |
@@ -469,8 +467,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_28042023_0 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -491,9 +489,9 @@ Feature: Stock shortage solved via distribution
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse_2    | 2022-07-04   |
-      | i_2        | warehouseStd   | 2022-07-04   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | warehouse_2    | 2022-07-04T00:00:00Z |
+      | i_2        | warehouseStd   | 2022-07-04T00:00:00Z |
     # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
@@ -647,11 +645,11 @@ Feature: Stock shortage solved via distribution
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand fully available
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_28042023_1 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_28042023_1 | pricing_system_value_28042023_1 | pricing_system_description_28042023_1 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_28042023_1 | null            | true  | false         | 2              | true         |
@@ -662,8 +660,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_28042023_1 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -684,9 +682,9 @@ Feature: Stock shortage solved via distribution
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse_2    | 2022-07-04   |
-      | i_2        | warehouseStd   | 2022-07-04   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | warehouse_2    | 2022-07-04T00:00:00Z |
+      | i_2        | warehouseStd   | 2022-07-04T00:00:00Z |
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
       | il_11      | i_1                       | p_1                     | PCE          | 16       | 0       |
@@ -734,11 +732,11 @@ Feature: Stock shortage solved via distribution
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand partial available Lot for Lot
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_28042023_2 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_28042023_2 | pricing_system_value_28042023_2 | pricing_system_description_28042023_2 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_06_12_2022 | null            | true  | false         | 2              | true         |
@@ -749,8 +747,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_28042023_2 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -771,9 +769,9 @@ Feature: Stock shortage solved via distribution
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse_2    | 2022-07-04   |
-      | i_2        | warehouseStd   | 2022-07-04   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | warehouse_2    | 2022-07-04T00:00:00Z |
+      | i_2        | warehouseStd   | 2022-07-04T00:00:00Z |
     # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
@@ -928,11 +926,11 @@ Feature: Stock shortage solved via distribution
   Scenario: Create Sales Order for a product of which a demand is solved via distribution. Demand fully available Lot for Lot
     Given set sys config boolean value true for sys config DDOrder_isCreateMovementOnComplete
     And metasfresh contains M_Products:
-      | Identifier | Name                            |
-      | p_1        | product_Distribution_28042023_3 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_28042023_3 | pricing_system_value_28042023_3 | pricing_system_description_28042023_3 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_06_12_2022 | null            | true  | false         | 2              | true         |
@@ -943,8 +941,8 @@ Feature: Stock shortage solved via distribution
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | BPartnerName_Dist_28042023_3 | N            | Y              | ps_1                          |
+      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner_1 | N            | Y              | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN          | C_BPartner_ID.Identifier |
       | location_1 | bPLocation_1 | bpartner_1               |
@@ -965,9 +963,9 @@ Feature: Stock shortage solved via distribution
       | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value      |
       | locatorHauptlager       | warehouseStd              | Hauptlager |
     And metasfresh contains M_Inventories:
-      | Identifier | M_Warehouse_ID | MovementDate |
-      | i_1        | warehouse_2    | 2022-07-04   |
-      | i_2        | warehouseStd   | 2022-07-04   |
+      | Identifier | M_Warehouse_ID | MovementDate         |
+      | i_1        | warehouse_2    | 2022-07-04T00:00:00Z |
+      | i_2        | warehouseStd   | 2022-07-04T00:00:00Z |
     # HU splitting is currently not supported, so we provide HUs fitting the resulting Quantities of DDOrders
     And metasfresh contains M_InventoriesLines:
       | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |

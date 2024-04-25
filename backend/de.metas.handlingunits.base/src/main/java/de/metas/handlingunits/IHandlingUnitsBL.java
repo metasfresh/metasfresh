@@ -54,6 +54,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -610,6 +611,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
+
+	AttributesKey getAttributesKeyForInventory(@NonNull IAttributeSet attributeSet);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 

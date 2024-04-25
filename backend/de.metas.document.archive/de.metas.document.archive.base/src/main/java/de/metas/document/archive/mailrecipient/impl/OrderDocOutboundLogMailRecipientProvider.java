@@ -95,6 +95,7 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		if (orderUserRecordId > 0)
 		{
 			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderUserRecordId));
+			if (!Check.isBlank(orderUser.getEmailAddress()))
 
 			if (Check.isNotBlank(orderEmail))
 			{
