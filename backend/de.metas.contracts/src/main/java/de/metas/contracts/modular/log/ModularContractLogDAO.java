@@ -445,7 +445,7 @@ public class ModularContractLogDAO
 	private static ProductPrice extractPriceActual(@NonNull final I_ModCntr_Log record)
 	{
 		final BigDecimal priceActual = record.getPriceActual();
-		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
+		final UomId uomId = UomId.ofRepoIdOrNull(record.getPrice_UOM_ID());
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
 		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
 
