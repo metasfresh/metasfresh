@@ -114,22 +114,11 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 				.uomId(pricePerUnitPerDay.getUomId())
 				.build();
 
-		if(UomId.equals(stockUOMId, pricePerUnitPerDay.getUomId()))
-		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
-					.price(priceWithPriceUOM)
-					.qty(Quantitys.one(stockUOMId))
-					.build();
-		}
-		else
-		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
-					.price(computingMethodService.productPriceToUOM(priceWithPriceUOM, stockUOMId))
-					.qty(Quantitys.one(stockUOMId))
-					.build();
-		}
+		return ComputingResponse.builder()
+				.ids(logs.getIds())
+				.price(computingMethodService.productPriceToUOM(priceWithPriceUOM, stockUOMId))
+				.qty(Quantitys.one(stockUOMId))
+				.build();
 	}
 
 	private Optional<ProductPrice> getPricePerUnitPerDay(@NonNull final ModularContractLogEntriesList logs)
