@@ -4,7 +4,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityUOMConversionProvider;
+import de.metas.quantity.UOMConversionRateProvider;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
@@ -109,7 +109,7 @@ public class ProductPrice
 	public ProductPrice convertToUom(
 			@NonNull final UomId toUomId,
 			@NonNull final CurrencyPrecision pricePrecision,
-			@NonNull final QuantityUOMConversionProvider uomConversionProvider)
+			@NonNull final UOMConversionRateProvider uomConversionProvider)
 	{
 		if (this.uomId.equals(toUomId))
 		{
