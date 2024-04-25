@@ -25,6 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -44,6 +45,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -75,6 +77,8 @@ class ShipmentLineLog implements IModularContractLogHandler
 	private final StorageCostComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull
+	private final ModularContractService modularContractService;
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -98,6 +102,9 @@ class ShipmentLineLog implements IModularContractLogHandler
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 		final int storageDays = computeStorageDays(createLogRequest, transactionDate);
 
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(),
+																								   createLogRequest.getContractId());
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(createLogRequest.getModuleConfig().getProductId())
@@ -117,6 +124,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 				.amount(null)
 				.transactionDate(transactionDate)
 				.storageDays(storageDays)
+				.priceActual(contractSpecificPrice)
 				.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
