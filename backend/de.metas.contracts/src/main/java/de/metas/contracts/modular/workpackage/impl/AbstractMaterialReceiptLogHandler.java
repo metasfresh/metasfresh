@@ -128,7 +128,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 											.invoicingGroupId(invoicingGroupId)
 											.isBillable(isBillable)
 											.priceActual(contractSpecificPrice)
-											.amount(contractSpecificPrice.computeAmount(quantity))
+											.amount(null)
 											.build());
 	}
 
