@@ -105,7 +105,7 @@ public class ModCntr_Module
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record2)
 	{
 		final ModuleConfig module = ModularContractSettingsDAO.fromRecord(record2);
