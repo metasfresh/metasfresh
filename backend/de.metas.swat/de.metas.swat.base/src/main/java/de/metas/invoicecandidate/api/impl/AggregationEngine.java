@@ -432,6 +432,7 @@ public final class AggregationEngine
 			invoiceHeader.setC_Incoterms_ID(icRecord.getC_Incoterms_ID());
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
+			invoiceHeader.setExternalId(icRecord.getExternalHeaderId());
 
 			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
 			{
@@ -442,10 +443,12 @@ public final class AggregationEngine
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{
-				final I_C_Order order = orderDAO.getById(orderId);
-				invoiceHeader.setExternalId(order.getExternalId());
-
 				// note that different IDs will result in null which is fine
+				final I_C_Order order = orderDAO.getById(orderId);
+				if(Check.isBlank(icRecord.getExternalHeaderId()))
+				{
+					invoiceHeader.setExternalId(order.getExternalId());
+				}
 				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
@@ -526,7 +529,7 @@ public final class AggregationEngine
 					else
 					{
 						invoiceHeader.setDocTypeInvoiceId(null, false);
-						invoiceHeader.setIsTakeDocTypeFromPool(true);
+						invoiceHeader.setTakeDocTypeFromPool(true);
 					}
 				}
 

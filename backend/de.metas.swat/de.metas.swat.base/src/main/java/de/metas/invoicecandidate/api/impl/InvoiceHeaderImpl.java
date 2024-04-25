@@ -17,6 +17,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -47,30 +48,40 @@ import java.util.Optional;
 		return new InvoiceHeaderImplBuilder();
 	}
 
+	@Setter
 	private List<IInvoiceCandAggregate> lines;
 
+	@Setter
 	private InvoiceDocBaseType docBaseType;
 
+	@Nullable
 	private String poReference;
 
+	@Nullable
 	private String eMail;
 
+	@Nullable
 	@Getter
 	@Setter
 	private InputDataSourceId inputDataSourceId;
 
+	@Setter
 	private LocalDate dateInvoiced;
 
+	@Setter
 	private LocalDate dateAcct;
 
+	@Setter
 	private LocalDate overrideDueDate;
 
 	@Getter
 	@Setter
 	private OrgId orgId;
 
+	@Setter
 	private int C_Order_ID;
 
+	@Setter
 	private int M_PriceList_ID;
 
 	@Getter
@@ -91,14 +102,20 @@ import java.util.Optional;
 	private CurrencyId currencyId;
 
 	// 04258
+	@Setter
 	private String Description;
+	
+	@Setter
 	private String DescriptionBottom;
 
-	private boolean isSOTrx;
+	@Setter
+	private SOTrx soTrx;
 
+	@Setter
 	private boolean isTakeDocTypeFromPool;
 
 	// 06630
+	@Setter
 	private int M_InOut_ID = -1;
 
 	@Nullable
@@ -107,24 +124,31 @@ import java.util.Optional;
 	@Nullable
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
 
+	@Setter
 	private boolean taxIncluded;
+	
 	private String externalId;
 
-	private PaymentTermId paymentTermId;
+	private @Nullable PaymentTermId paymentTermId;
 
-	private String paymentRule;
+	private @Nullable String paymentRule;
 
+	@Setter
 	private int C_Async_Batch_ID;
 
+	@Setter
 	private int C_Incoterms_ID;
 
+	@Setter
 	private String incotermLocation;
 
 	@Setter
 	private SectionCodeId sectionCodeId;
 
+	@Setter
 	private String invoiceAdditionalText;
 
+	@Setter
 	private boolean notShowOriginCountry;
 
 	@Setter
@@ -136,6 +160,9 @@ import java.util.Optional;
 	private ActivityId activityId;
 
 	private int C_PaymentInstruction_ID;
+	
+	@Getter
+	@Setter
 	private CountryId C_Tax_Departure_Country_ID;
 
 	@Nullable @Getter private BankAccountId bankAccountId;
@@ -169,7 +196,7 @@ import java.util.Optional;
 				+ ", OverrideDueDate=" + overrideDueDate
 				+ ", AD_Org_ID=" + OrgId.toRepoId(orgId)
 				+ ", M_PriceList_ID=" + M_PriceList_ID
-				+ ", isSOTrx=" + isSOTrx
+				+ ", soTrx=" + soTrx.toString()
 				+ ", billTo=" + billTo
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
@@ -207,6 +234,7 @@ import java.util.Optional;
 		return poReference;
 	}
 
+	@Nullable
 	@Override
 	public String getEMail()
 	{
@@ -242,50 +270,15 @@ import java.util.Optional;
 	{
 		return M_PriceList_ID;
 	}
-
-	public void setLines(final List<IInvoiceCandAggregate> lines)
-	{
-		this.lines = lines;
-	}
-
-	public void setDocBaseType(final InvoiceDocBaseType docBaseType)
-	{
-		this.docBaseType = docBaseType;
-	}
-
-	public void setPOReference(final String poReference)
+	
+	public void setPOReference(@Nullable final String poReference)
 	{
 		this.poReference = poReference;
 	}
 
-	public void setEMail(final String eMail)
+	public void setEMail(@Nullable final String eMail)
 	{
 		this.eMail = eMail;
-	}
-
-	public void setDateInvoiced(final LocalDate dateInvoiced)
-	{
-		this.dateInvoiced = dateInvoiced;
-	}
-
-	public void setDateAcct(final LocalDate dateAcct)
-	{
-		this.dateAcct = dateAcct;
-	}
-
-	public void setOverrideDueDate(final LocalDate overrideDueDate)
-	{
-		this.overrideDueDate = overrideDueDate;
-	}
-
-	public void setC_Order_ID(final int c_Order_ID)
-	{
-		C_Order_ID = c_Order_ID;
-	}
-
-	public void setM_PriceList_ID(final int M_PriceList_ID)
-	{
-		this.M_PriceList_ID = M_PriceList_ID;
 	}
 
 	@Override
@@ -300,37 +293,16 @@ import java.util.Optional;
 		return Description;
 	}
 
-	public void setDescription(final String description)
-	{
-		Description = description;
-	}
-
-	public void setDescriptionBottom(final String descriptionBottom)
-	{
-		DescriptionBottom = descriptionBottom;
-	}
-
 	@Override
 	public boolean isSOTrx()
 	{
-		return isSOTrx;
+		return soTrx.isSales();
 	}
-
-	public void setIsSOTrx(final boolean isSOTrx)
-	{
-		this.isSOTrx = isSOTrx;
-	}
-
 
 	@Override
 	public int getM_InOut_ID()
 	{
 		return M_InOut_ID;
-	}
-
-	public void setM_InOut_ID(final int M_InOut_ID)
-	{
-		this.M_InOut_ID = M_InOut_ID;
 	}
 
 	@Override
@@ -356,12 +328,6 @@ import java.util.Optional;
 		return isTakeDocTypeFromPool;
 	}
 
-	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
-	{
-		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
-	}
-
-
 	@Override
 	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
 	{
@@ -378,11 +344,6 @@ import java.util.Optional;
 	public boolean isTaxIncluded()
 	{
 		return taxIncluded;
-	}
-
-	public void setTaxIncluded(boolean taxIncluded)
-	{
-		this.taxIncluded = taxIncluded;
 	}
 
 	/**
@@ -424,6 +385,7 @@ import java.util.Optional;
 		this.paymentTermId = paymentTermId;
 	}
 
+	@Nullable
 	@Override
 	public PaymentTermId getPaymentTermId()
 	{
@@ -435,6 +397,7 @@ import java.util.Optional;
 		this.paymentRule = paymentRule;
 	}
 
+	@Nullable
 	@Override
 	public String getPaymentRule()
 	{
@@ -453,12 +416,7 @@ import java.util.Optional;
 		return C_Async_Batch_ID;
 	}
 
-	public void setC_Async_Batch_ID(final int C_Async_Batch_ID)
-	{
-		this.C_Async_Batch_ID = C_Async_Batch_ID;
-	}
-
-	public String setExternalId(String externalId)
+	public String setExternalId(final String externalId)
 	{
 		return this.externalId = externalId;
 	}
@@ -469,20 +427,10 @@ import java.util.Optional;
 		return C_Incoterms_ID;
 	}
 
-	public void setC_Incoterms_ID(final int C_Incoterms_ID)
-	{
-		this.C_Incoterms_ID = C_Incoterms_ID;
-	}
-
 	@Override
 	public String getIncotermLocation()
 	{
 		return incotermLocation;
-	}
-
-	public void setIncotermLocation(final String incotermLocation)
-	{
-		this.incotermLocation = incotermLocation;
 	}
 
 	@Override
@@ -491,7 +439,7 @@ import java.util.Optional;
 		return inputDataSourceId;
 	}
 
-	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId)
+	public void setAD_InputDataSource_ID(@Nullable final InputDataSourceId inputDataSourceId)
 	{
 		this.inputDataSourceId = inputDataSourceId;
 	}
@@ -515,16 +463,6 @@ import java.util.Optional;
 		return notShowOriginCountry;
 	}
 
-	public void setInvoiceAdditionalText(final String invoiceAdditionalText)
-	{
-		this.invoiceAdditionalText = invoiceAdditionalText;
-	}
-
-	public void setNotShowOriginCountry(final boolean notShowOriginCountry)
-	{
-		this.notShowOriginCountry = notShowOriginCountry;
-	}
-
 	@Override
 	public void setC_PaymentInstruction_ID(final int C_PaymentInstruction_ID)
 	{
@@ -537,19 +475,8 @@ import java.util.Optional;
 		return C_PaymentInstruction_ID;
 	}
 
-	public CountryId getC_Tax_Departure_Country_ID()
-	{
-		return C_Tax_Departure_Country_ID;
-	}
-
-	public void setC_Tax_Departure_Country_ID(final CountryId c_Tax_Departure_Country_ID)
-	{
-		C_Tax_Departure_Country_ID = c_Tax_Departure_Country_ID;
-	}
-
 	public void setBankAccountId(@Nullable final BankAccountId bankAccountId)
 	{
 		this.bankAccountId = bankAccountId;
 	}
-
 }
