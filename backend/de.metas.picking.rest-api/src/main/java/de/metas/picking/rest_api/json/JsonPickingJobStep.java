@@ -43,6 +43,7 @@ import java.util.function.Function;
 public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;
+	@NonNull JsonCompleteStatus completeStatus;
 
 	@NonNull String productId;
 	@NonNull String productName;
@@ -76,6 +77,7 @@ public class JsonPickingJobStep
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
+				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
 				.productId(step.getProductId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())

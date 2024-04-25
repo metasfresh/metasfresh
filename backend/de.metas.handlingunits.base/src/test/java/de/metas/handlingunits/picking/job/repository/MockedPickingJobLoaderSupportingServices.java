@@ -3,7 +3,10 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -83,6 +86,16 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
 		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
+	}
+
+	@Override
+	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		return HUPIItemProduct.builder()
+				.id(huPIItemProductId)
+				.name(TranslatableStrings.anyLanguage("infinite-" + huPIItemProductId.getRepoId()))
+				.piItemId(HuPackingInstructionsItemId.ofRepoId(123))
+				.build();
 	}
 
 	@Override

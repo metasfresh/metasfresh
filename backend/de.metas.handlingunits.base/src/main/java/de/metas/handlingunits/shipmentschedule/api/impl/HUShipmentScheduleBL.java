@@ -518,7 +518,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return null;
 		}
 
-		return huPIItemProductDAO.getById(packingMaterialId);
+		return huPIItemProductDAO.getRecordById(packingMaterialId);
 	}
 
 	@Override
@@ -590,7 +590,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductDAO.getById(tuPIItemProductId);
+		final I_M_HU_PI_Item_Product tuPIItemProduct = huPIItemProductDAO.getRecordById(tuPIItemProductId);
 		final ProductId cuProductId = ProductId.ofRepoId(schedule.getM_Product_ID());
 		final I_C_UOM cuUOM = shipmentScheduleBL.getUomOfProduct(schedule);
 
