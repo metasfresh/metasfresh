@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -59,6 +60,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -85,6 +87,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModularContractProvider modularContractProvider;
 
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
@@ -105,8 +108,10 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		final TableRecordReference tableRecordReference = createLogRequest.getRecordRef();
-		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
-		final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID()));
+		final InvoiceLineId interimInvoiceLineId = InvoiceLineId.ofRepoId(tableRecordReference.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name));
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(interimInvoiceLineId);
+		final InvoiceId interimInvoiceId = InvoiceId.ofRepoId(invoiceLineRecord.getC_Invoice_ID());
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(interimInvoiceId);
 
 		final BPartnerId invoiceBpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 
@@ -123,8 +128,10 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 				.uomId(uomId)
 				.build();
 
-		final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(createLogRequest.getContractId());
-		final FlatrateTermId modularContractId = FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID());
+		final List<FlatrateTermId> contractIds = modularContractProvider.streamModularPurchaseContractsForInvoiceLine(interimInvoiceLineId)
+				.toList();
+		Check.assumeEquals(contractIds.size(), 1, "Could not identify unique modular contract: {} for interim invoice: {} ", contractIds, interimInvoiceId);
+		final FlatrateTermId modularContractId = contractIds.get(0);
 		final I_C_Flatrate_Term modularContractRecord = flatrateBL.getById(modularContractId);
 		final Optional<ModularContractLogEntry> modularContractLogEntryOptional = modularContractLogService.getLastModularContractLog(
 				modularContractId,
