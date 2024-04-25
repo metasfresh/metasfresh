@@ -58,7 +58,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -104,7 +103,7 @@ public class ImportInvoiceCandidatesService
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 
 		final Function<BigDecimal, StockQtyAndUOMQty> createQtyInStockAndUOM = (qty) -> StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(qty, uomId),
+				Quantitys.of(qty, uomId),
 				productId,
 				uomId);
 

@@ -218,7 +218,7 @@ public class ComputingMethodService
 							   .money(Money.zero(request.getCurrencyId()))
 							   .uomId(stockUOMId)
 							   .build())
-				.qty(Quantitys.createOne(stockUOMId))
+				.qty(Quantitys.one(stockUOMId))
 				.build();
 	}
 
@@ -233,7 +233,7 @@ public class ComputingMethodService
 							   .money(Money.zero(request.getCurrencyId()))
 							   .uomId(stockUOMId)
 							   .build())
-				.qty(Quantitys.createZero(stockUOMId))
+				.qty(Quantitys.zero(stockUOMId))
 				.build();
 	}
 }

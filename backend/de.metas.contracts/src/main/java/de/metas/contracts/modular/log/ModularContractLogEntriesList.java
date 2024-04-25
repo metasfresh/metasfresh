@@ -91,13 +91,13 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	{
 		if (list.isEmpty())
 		{
-			return Quantitys.createZero(targetUomId);
+			return Quantitys.zero(targetUomId);
 		}
 
 		return list.stream()
 				.map((log) -> log.getQuantity(targetUomId, uomConverter))
 				.reduce(Quantity::add)
-				.orElseGet(() -> Quantitys.createZero(targetUomId));
+				.orElseGet(() -> Quantitys.zero(targetUomId));
 	}
 
 	public void assertSingleProductId(@NonNull final ProductId expectedProductId)

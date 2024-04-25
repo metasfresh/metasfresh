@@ -422,7 +422,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM fromUom = uomDAO.getById(quantity.getUomId());
 		final I_C_UOM toUom = uomDAO.getById(toUomId);
 
-		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.create(bigDecimal, toUomId));
+		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.of(bigDecimal, toUomId));
 	}
 
 	@Override

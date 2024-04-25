@@ -886,10 +886,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyToInvoiceOverride != null)
 		{
-			return Quantitys.create(qtyToInvoiceOverride, stockUomId);
+			return Quantitys.of(qtyToInvoiceOverride, stockUomId);
 		}
 
-		return Quantitys.create(ic.getQtyToInvoice(), stockUomId);
+		return Quantitys.of(ic.getQtyToInvoice(), stockUomId);
 	}
 
 	/**
@@ -1079,7 +1079,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
-		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
+		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.of(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
 
 		return candNetAmtToInvoiceCalc;
 	}
@@ -2663,7 +2663,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyOrdered(), productId);
+		return Quantitys.of(ic.getQtyOrdered(), productId);
 	}
 
 	@Override
@@ -2671,7 +2671,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyInvoiced(), productId);
+		return Quantitys.of(ic.getQtyInvoiced(), productId);
 	}
 
 	@Override

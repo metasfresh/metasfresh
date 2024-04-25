@@ -92,7 +92,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	private static Quantity extractQtyEntered(final @NonNull I_C_InvoiceLine invoiceLine)
 	{
 		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
-		return Quantitys.create(invoiceLine.getQtyEntered(), uomId);
+		return Quantitys.of(invoiceLine.getQtyEntered(), uomId);
 	}
 
 	@Override

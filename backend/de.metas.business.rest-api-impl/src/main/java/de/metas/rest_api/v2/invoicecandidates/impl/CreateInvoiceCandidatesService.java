@@ -232,7 +232,7 @@ public class CreateInvoiceCandidatesService
 		{
 
 			final StockQtyAndUOMQty qtyOrdered = StockQtyAndUOMQtys.createConvert(
-					Quantitys.create(item.getQtyOrdered(), uomId),
+					Quantitys.of(item.getQtyOrdered(), uomId),
 					productId,
 					uomId);
 			candidate.qtyOrdered(qtyOrdered);
@@ -245,7 +245,7 @@ public class CreateInvoiceCandidatesService
 		// qtyDelivered
 		final BigDecimal qtyDeliveredEff = coalesceNotNull(item.getQtyDelivered(), ZERO);
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(qtyDeliveredEff, uomId),
+				Quantitys.of(qtyDeliveredEff, uomId),
 				productId,
 				uomId);
 		candidate.qtyDelivered(qtyDelivered);

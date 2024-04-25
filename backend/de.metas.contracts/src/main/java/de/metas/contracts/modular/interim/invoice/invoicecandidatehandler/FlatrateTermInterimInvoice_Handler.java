@@ -95,7 +95,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	{
 		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
 
-		return Quantitys.create(invoiceCandidateRecord.getQtyEntered(), uomId);
+		return Quantitys.of(invoiceCandidateRecord.getQtyEntered(), uomId);
 	}
 
 	@Override

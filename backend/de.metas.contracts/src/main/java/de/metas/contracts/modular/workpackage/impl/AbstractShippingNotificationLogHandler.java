@@ -155,7 +155,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	{
 		public Quantity getQuantity()
 		{
-			return Quantitys.create(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
+			return Quantitys.of(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
 		}
 
 		public ProductId getProductId()

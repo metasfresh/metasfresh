@@ -379,7 +379,7 @@ public class ModularContractLogDAO
 
 	private static Quantity extractQty(@NonNull final I_ModCntr_Log record)
 	{
-		return Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+		return Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 	}
 
 	public Optional<ModularContractLogEntry> getLastModularContractLog(

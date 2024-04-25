@@ -173,7 +173,7 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 				? olCandRecord.getQtyItemCapacity()
 				: olCandRecord.getQtyItemCapacityInternal();
 		
-		return Quantitys.create(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
+		return Quantitys.of(result, ProductId.ofRepoId(olCandRecord.getM_Product_ID()));
 	}
 
 	@Override
