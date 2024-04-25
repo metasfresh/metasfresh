@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -99,10 +100,9 @@ public class SVInterimComputingMethod implements IComputingMethodHandler
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-		final List<ModularContractLogEntry> logs = new ArrayList<>();
 
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
+				.ids(ImmutableSet.of())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))

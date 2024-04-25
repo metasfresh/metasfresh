@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -30,7 +31,7 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -39,21 +40,17 @@ import de.metas.inout.InOutLineId;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
@@ -81,6 +78,7 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptLineId);
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
+		//noinspection RedundantIfStatement
 		if (inOutRecord.isSOTrx() || inOutBL.isReversal(inOutRecord))
 		{
 			return false;
@@ -116,34 +114,30 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final List<ModularContractLogEntry> logs = computingMethodService.retrieveLogsForCalculation(request);
-
-		final ProductPrice productPriceFromLogs = computingMethodService.getUniqueProductPriceOrError(logs)
-				.orElse(null);
-
-		final Quantity qty = logs.stream()
-				.map((log) -> computingMethodService.getQtyToAdd(log, request.getProductId()))
-				.reduce(Quantity.zero(stockUOM), Quantity::add);
-
-		if (qty.isPositive() && productPriceFromLogs == null)
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		if (logs.isEmpty())
 		{
-			throw new AdempiereException("Missing price for qty! See computing request = " + request);
+			return toZeroResponse(request);
 		}
 
-		final ProductPrice actualProductPrice = productPriceFromLogs != null
-				? productPriceFromLogs
-				: ProductPrice.builder()
-				.productId(request.getProductId())
-				.money(Money.of(BigDecimal.ZERO, request.getCurrencyId()))
-				.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-				.build();
-
 		return ComputingResponse.builder()
-				.ids(logs.stream().map(ModularContractLogEntry::getId).collect(Collectors.toSet()))
-				.price(actualProductPrice)
-				.qty(qty)
+				.ids(logs.getIds())
+				.price(logs.getUniqueProductPriceOrErrorNotNull())
+				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.build();
+	}
+
+	private ComputingResponse toZeroResponse(final @NotNull ComputingRequest request)
+	{
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		return ComputingResponse.builder()
+				.ids(ImmutableSet.of())
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(Money.zero(request.getCurrencyId()))
+						.uomId(stockUOMId)
+						.build())
+				.qty(Quantitys.createZero(stockUOMId))
 				.build();
 	}
 }

@@ -59,7 +59,6 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.util.Optional;
 
-
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
  */
@@ -152,9 +151,9 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
 		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(InventoryLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InventoryLine.Table_Name)));
 		final I_M_Inventory inventory = inventoryBL.getById(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
 
@@ -166,8 +165,9 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(recordRef)
-											.flatrateTermId(handleLogsRequest.getContractId())
+											.flatrateTermId(createLogRequest.getContractId())
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 											.build());
 	}
 }

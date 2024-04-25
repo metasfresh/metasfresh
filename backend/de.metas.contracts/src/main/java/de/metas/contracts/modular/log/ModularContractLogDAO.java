@@ -70,7 +70,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
@@ -191,7 +190,8 @@ public class ModularContractLogDAO
 		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.flatrateTermId(request.flatrateTermId())
 				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
-				.contractType(request.logEntryContractType());
+				.contractType(request.logEntryContractType())
+				.contractModuleId(request.contractModuleId());
 
 		if (request.id() != null)
 		{
@@ -313,6 +313,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Type_ID, query.getModularContractTypeId());
 		}
 
+		if (query.getContractModuleId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, query.getContractModuleId());
+		}
+
 		if (query.getProcessed() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
@@ -386,12 +391,12 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
-	public List<ModularContractLogEntry> getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return toSqlQuery(query)
 				.stream()
 				.map(this::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ModularContractLogEntriesList.collect());
 	}
 
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)

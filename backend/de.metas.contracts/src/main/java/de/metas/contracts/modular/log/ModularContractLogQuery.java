@@ -25,6 +25,7 @@ package de.metas.contracts.modular.log;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
@@ -45,6 +46,7 @@ public class ModularContractLogQuery
 	@Nullable LogEntryContractType contractType;
 	@Nullable FlatrateTermId flatrateTermId;
 	@Nullable ModularContractTypeId modularContractTypeId;
+	@Nullable ModularContractModuleId contractModuleId;
 	@Nullable Boolean processed;
 	@Nullable Boolean billable;
 	@Nullable ComputingMethodType computingMethodType;

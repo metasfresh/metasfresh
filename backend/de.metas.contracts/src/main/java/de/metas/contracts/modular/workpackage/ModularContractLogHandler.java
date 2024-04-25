@@ -73,7 +73,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED;
 
@@ -128,7 +127,7 @@ class ModularContractLogHandler
 
 		for (final ModuleConfig moduleConfig : moduleConfigs)
 		{
-			final Supplier<IModularContractLogHandler.CreateLogRequest> buildCreateRequest = () -> IModularContractLogHandler.CreateLogRequest
+			final IModularContractLogHandler.CreateLogRequest createLogRequest = IModularContractLogHandler.CreateLogRequest
 					.builder()
 					.handleLogsRequest(request)
 					.modularContractSettings(settings)
@@ -137,13 +136,13 @@ class ModularContractLogHandler
 					.typeId(moduleConfig.getModularContractType().getId())
 					.build();
 
-			if (handler.applies(buildCreateRequest.get()))
+			if (handler.applies(createLogRequest))
 			{
 				switch (action)
 				{
-					case CREATE -> createLogs(handler, buildCreateRequest.get());
-					case REVERSE -> reverseLogs(handler, request);
-					case RECOMPUTE -> recreateLogs(handler, buildCreateRequest.get());
+					case CREATE -> createLogs(handler, createLogRequest);
+					case REVERSE -> reverseLogs(handler, createLogRequest);
+					case RECOMPUTE -> recreateLogs(handler, createLogRequest);
 					default -> throw new AdempiereException("Unknown action: " + action);
 				}
 			}
@@ -182,7 +181,7 @@ class ModularContractLogHandler
 
 	private void reverseLogs(
 			@NonNull final IModularContractLogHandler handler,
-			@NonNull final IModularContractLogHandler.HandleLogsRequest request)
+			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		handler.createLogEntryReverseRequest(request)
 				.ifPresent(contractLogDAO::reverse)

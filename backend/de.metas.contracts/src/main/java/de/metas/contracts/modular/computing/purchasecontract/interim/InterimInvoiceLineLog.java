@@ -32,11 +32,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class PurchaseInvoiceLineLog extends AbstractInterimInvoiceLineLog
+public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
+
 	private final InterimComputingMethod computingMethod;
 
-	public PurchaseInvoiceLineLog(
+	public InterimInvoiceLineLog(
 			@NonNull final InterimComputingMethod computingMethod,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
@@ -45,4 +46,5 @@ public class PurchaseInvoiceLineLog extends AbstractInterimInvoiceLineLog
 		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
+
 }

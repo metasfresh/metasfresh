@@ -26,19 +26,18 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContract_Constants;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.util.Check;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,10 +54,6 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
-
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 import static de.metas.contracts.modular.ModelAction.RECREATE_LOGS;
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVATE_NOT_ALLOWED;
@@ -67,13 +62,13 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_REACTIVAT
 @RequiredArgsConstructor
 public class ComputingMethodService
 {
-	@NonNull private final ModularContractLogService contractLogService;
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 	private static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
 	private static final AdMessageKey MSG_ERROR_DOC_ACTION_NOT_ALLOWED_PROCESSED_LOGS = AdMessageKey.of("de.metas.contracts.modular.calculation.CalculationMethodService.DocActionNotAllowedForProcessedLogsError");
+	@NonNull private final ModularContractLogService contractLogService;
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
@@ -177,41 +172,34 @@ public class ComputingMethodService
 	}
 
 	@NonNull
-	public Optional<ProductPrice> getUniqueProductPriceOrError(@NonNull final List<ModularContractLogEntry> logs)
+	public ModularContractLogEntriesList retrieveLogsForCalculation(@NonNull final ComputingRequest request)
 	{
-		if (logs.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ProductPrice productPriceToMatch = logs.get(0).getPriceActual();
-		Check.assumeNotNull(productPriceToMatch, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
-		logs.forEach(log -> validateLog(log.getPriceActual(), productPriceToMatch));
-		return Optional.of(productPriceToMatch);
-	}
-
-	private void validateLog(@Nullable final ProductPrice productPrice, @NonNull final ProductPrice productPriceToMatch)
-	{
-		Check.assumeNotNull(productPrice, PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG);
-		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
-	}
-
-	public List<ModularContractLogEntry> retrieveLogsForCalculation(@NonNull final ComputingRequest request)
-	{
-		return contractLogService.getModularContractLogEntries(
+		final ModularContractLogEntriesList logs = contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getFlatrateTermId())
 						.modularContractTypeId(request.getModularContractTypeId())
 						.processed(false)
 						.billable(true)
 						.lockOwner(request.getLockOwner())
-						.build()
-		);
+						.build());
+
+		if (!logs.isEmpty())
+		{
+			logs.assertSingleProductId(request.getProductId());
+		}
+		return logs;
+
 	}
 
-	public Quantity getQtyToAdd(@NonNull final ModularContractLogEntry log, @NonNull final ProductId productId)
+	public Quantity getQtySumInStockUOM(@NonNull final ModularContractLogEntriesList logs)
 	{
-		Check.assumeNotNull(log.getQuantity(), "Quantity of billable modular contract log shouldn't be null");
-		return uomConversionBL.convertToProductUOM(log.getQuantity(), productId);
+		final UomId stockUOMId = productBL.getStockUOMId(logs.getSingleProductId());
+		return logs.getQtySum(stockUOMId, uomConversionBL);
 	}
+
+	public Quantity getQtySum(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
+	{
+		return logs.getQtySum(targetUomId, uomConversionBL);
+	}
+
 }
