@@ -88,6 +88,15 @@ public class ModularContractSettings
 	}
 
 	@NonNull
+	public List<ModuleConfig> getModuleConfigsWithout(@NonNull final ComputingMethodType computingMethodType)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> !config.isMatching(computingMethodType))
+				.toList();
+	}
+
+	@NonNull
 	public ModuleConfig getModuleConfigOrError(
 			@NonNull final ComputingMethodType computingMethodType,
 			@NonNull final ProductId productId)

@@ -76,10 +76,7 @@ public class ModularContractPriceService
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigs()
-				.stream()
-				.filter(config -> !config.isMatching(ComputingMethodType.INTERIM_CONTRACT))
-				.toList();
+		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigsWithout(ComputingMethodType.INTERIM_CONTRACT);
 
 		for (final ModuleConfig config : moduleConfigs)
 		{
