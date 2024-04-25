@@ -23,7 +23,9 @@
 package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -68,8 +70,10 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
@@ -466,61 +470,75 @@ public class ModularContractLogDAO
 
 	public void save(@NonNull final ModularContractLogEntriesList logList)
 	{
-		logList.forEach(this::save);
+		if (logList.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableMap<ModularContractLogEntryId, I_ModCntr_Log> recordsById = Maps.uniqueIndex(
+				InterfaceWrapperHelper.loadByRepoIdAwares(logList.getIds(), I_ModCntr_Log.class),
+				record -> ModularContractLogEntryId.ofRepoId(record.getModCntr_Log_ID())
+		);
+
+		for (final ModularContractLogEntry log : logList)
+		{
+			final I_ModCntr_Log record = recordsById.get(log.getId());
+			updateRecord(record, log, orgDAO::getTimeZone);
+			InterfaceWrapperHelper.save(record);
+		}
 	}
 
-	private void save(@NonNull final ModularContractLogEntry log)
+	private static void updateRecord(
+			@NonNull final I_ModCntr_Log record,
+			@NonNull final ModularContractLogEntry from,
+			@NonNull final Function<OrgId, ZoneId> getZoneIdByOrgId)
 	{
-
-		final I_ModCntr_Log record = load(log.getId(), I_ModCntr_Log.class);
-		Optional.ofNullable(log.getContractId())
+		Optional.ofNullable(from.getContractId())
 				.map(FlatrateTermId::getRepoId)
 				.ifPresent(record::setC_Flatrate_Term_ID);
-		Optional.ofNullable(log.getProductId())
+		Optional.ofNullable(from.getProductId())
 				.map(ProductId::getRepoId)
 				.ifPresent(record::setM_Product_ID);
-		final TableRecordReference referencedRecord = log.getReferencedRecord();
+		final TableRecordReference referencedRecord = from.getReferencedRecord();
 		record.setAD_Table_ID(referencedRecord.getAD_Table_ID());
 		record.setRecord_ID(referencedRecord.getRecord_ID());
-		record.setContractType(log.getContractType().getCode());
-		Optional.ofNullable(log.getCollectionPointBPartnerId())
+		record.setContractType(from.getContractType().getCode());
+		Optional.ofNullable(from.getCollectionPointBPartnerId())
 				.map(BPartnerId::getRepoId)
 				.ifPresent(record::setCollectionPoint_BPartner_ID);
-		Optional.ofNullable(log.getProducerBPartnerId())
+		Optional.ofNullable(from.getProducerBPartnerId())
 				.map(BPartnerId::getRepoId)
 				.ifPresent(record::setProducer_BPartner_ID);
-		Optional.ofNullable(log.getInvoicingBPartnerId())
+		Optional.ofNullable(from.getInvoicingBPartnerId())
 				.map(BPartnerId::getRepoId)
 				.ifPresent(record::setBill_BPartner_ID);
-		Optional.ofNullable(log.getWarehouseId())
+		Optional.ofNullable(from.getWarehouseId())
 				.map(WarehouseId::getRepoId)
 				.ifPresent(record::setM_Warehouse_ID);
-		record.setModCntr_Log_DocumentType(log.getDocumentType().getCode());
+		record.setModCntr_Log_DocumentType(from.getDocumentType().getCode());
 
-		record.setProcessed(log.isProcessed());
-		Optional.ofNullable(log.getQuantity())
+		record.setProcessed(from.isProcessed());
+		Optional.ofNullable(from.getQuantity())
 				.ifPresent(qty -> {
 					record.setQty(qty.toBigDecimal());
 					record.setC_UOM_ID(qty.getUomId().getRepoId());
 				});
-		Optional.ofNullable(log.getAmount())
+		Optional.ofNullable(from.getAmount())
 				.ifPresent(amt -> {
 					record.setAmount(amt.toBigDecimal());
 					record.setC_Currency_ID(amt.getCurrencyId().getRepoId());
 				});
-		record.setDateTrx(log.getTransactionDate().toTimestamp(orgDAO::getTimeZone));
-		Optional.ofNullable(log.getStorageDays())
+		record.setDateTrx(from.getTransactionDate().toTimestamp(getZoneIdByOrgId));
+		Optional.ofNullable(from.getStorageDays())
 				.ifPresentOrElse(record::setStorageDays, () -> record.setStorageDays(0));
-		record.setHarvesting_Year_ID(log.getYear().getRepoId());
-		record.setIsBillable(log.isBillable());
-		Optional.ofNullable(log.getPriceActual())
+		record.setHarvesting_Year_ID(from.getYear().getRepoId());
+		record.setIsBillable(from.isBillable());
+		Optional.ofNullable(from.getPriceActual())
 				.ifPresent(price -> {
 					record.setPriceActual(price.toBigDecimal());
 					record.setPrice_UOM_ID(price.getUomId().getRepoId());
 					record.setC_Currency_ID(price.getCurrencyId().getRepoId());
 				});
-		record.setModCntr_Module_ID(log.getModularContractModuleId().getRepoId());
-
-		saveRecord(record);
+		record.setModCntr_Module_ID(from.getModularContractModuleId().getRepoId());
 	}
 }
