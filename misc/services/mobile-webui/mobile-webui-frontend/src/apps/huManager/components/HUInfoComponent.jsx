@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 
-export const HUInfoComponent = ({ handlingUnitInfo }) => {
+export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
   const { clearanceNote } = handlingUnitInfo;
 
@@ -26,7 +26,7 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
         </tr>
         <tr>
           <th>{trl('huManager.locator')}</th>
-          <td>{handlingUnitInfo.locatorValue}</td>
+          <td>{computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })}</td>
         </tr>
         <tr>
           <th>{trl('huManager.HUStatus')}</th>
@@ -59,6 +59,7 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
 
 HUInfoComponent.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
+  currentLocatorQRCode: PropTypes.object,
 };
 
 const computeHUStatusCaption = (handlingUnitInfo) => {
@@ -67,6 +68,16 @@ const computeHUStatusCaption = (handlingUnitInfo) => {
     result += ' / ' + trl('huManager.disposePendingStatus');
   }
   return result;
+};
+
+const computeLocatorCaption = ({ handlingUnitInfo, currentLocatorQRCode }) => {
+  if (handlingUnitInfo?.locatorValue) {
+    return handlingUnitInfo.locatorValue;
+  } else if (currentLocatorQRCode?.displayable) {
+    return '(' + currentLocatorQRCode?.displayable + ')';
+  } else {
+    return '-';
+  }
 };
 
 const ProductInfoRows = ({ product }) => {

@@ -574,7 +574,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final AttributeId attrId_PurchaseOrderLine = attributesRepo.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
+			final AttributeId attrId_PurchaseOrderLine = attributesRepo.getAttributeIdByCode(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
 			initialAttributeValueDefaults.put(attrId_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 

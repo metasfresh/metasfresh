@@ -19,6 +19,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inventory.HUAggregationType;
@@ -254,7 +255,6 @@ public class InventoryRepository
 				.qtyBookFixed(Quantity.of(inventoryLineRecord.getQtyBook(), uom))
 				.storageAttributesKey(storageAttributesKey);
 
-
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);
 
@@ -328,6 +328,7 @@ public class InventoryRepository
 
 		return InventoryLineHU.builder()
 				.huId(HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID()))
+				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineRecord.getRenderedQRCode()))
 				.qtyInternalUse(qtyInternalUse)
 				.qtyBook(qtyBook)
 				.qtyCount(qtyCount)
@@ -382,6 +383,7 @@ public class InventoryRepository
 				.qtyBook(qtyBookConv)
 				.qtyCount(qtyCountConv)
 				.huId(HuId.ofRepoIdOrNull(inventoryLineHURecord.getM_HU_ID()))
+				.huQRCode(HUQRCode.fromNullableGlobalQRCodeJsonString(inventoryLineHURecord.getRenderedQRCode()))
 				.build();
 	}
 
@@ -457,10 +459,11 @@ public class InventoryRepository
 		final HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		lineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
 
-		final HuId huId = inventoryLine.isSingleHUAggregation()
-				? inventoryLine.getSingleLineHU().getHuId()
-				: null;
+		final InventoryLineHU singleLineHU = inventoryLine.isSingleHUAggregation() ? inventoryLine.getSingleLineHU() : null;
+		final HuId huId = singleLineHU != null ? singleLineHU.getHuId() : null;
+		final HUQRCode huQRCode = singleLineHU != null ? singleLineHU.getHuQRCode() : null;
 		lineRecord.setM_HU_ID(HuId.toRepoId(huId));
+		lineRecord.setRenderedQRCode(huQRCode != null ? huQRCode.toGlobalQRCodeString() : null);
 		// lineRecord.setM_HU_PI_Item_Product(null); // TODO
 		// lineRecord.setQtyTU(BigDecimal.ZERO); // TODO
 
@@ -581,6 +584,7 @@ public class InventoryRepository
 		// record.setM_InventoryLine_ID(lineId.getRepoId());
 
 		record.setM_HU_ID(HuId.toRepoId(fromLineHU.getHuId()));
+		record.setRenderedQRCode(fromLineHU.getHuQRCode() != null ? fromLineHU.getHuQRCode().toGlobalQRCodeString() : null);
 
 		updateInventoryLineHURecordQuantities(record, fromLineHU);
 	}

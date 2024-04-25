@@ -6,7 +6,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
@@ -14,7 +13,6 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.logging.LogManager;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -24,7 +22,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_M_Product;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.api.IProductBOMDAO;
 import org.slf4j.Logger;
@@ -67,9 +65,12 @@ public class SourceHUsService
 {
 	private static final Logger logger = LogManager.getLogger(SourceHUsService.class);
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+	private final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
 
 	public static SourceHUsService get()
 	{
@@ -77,19 +78,20 @@ public class SourceHUsService
 		{
 			return new SourceHUsService();
 		}
-		return Adempiere.getBean(SourceHUsService.class);
+		else
+		{
+			return SpringContextHolder.instance.getBean(SourceHUsService.class);
+		}
 	}
 
 	public List<I_M_HU> retrieveParentHusThatAreSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
-		final ISourceHuDAO sourceHusRepo = Services.get(ISourceHuDAO.class);
-
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		// this filter's real job is to collect those HUs that are flagged as "source"
 		// FIXME: avoid using filters in such a way...
 		final Predicate<I_M_HU> filter = hu -> {
-			if (sourceHusRepo.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
+			if (sourceHuDAO.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
 				sourceHUs.add(hu);
 			}
@@ -102,7 +104,6 @@ public class SourceHUsService
 				.filter(filter)
 				.build();
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 
 		return ImmutableList.copyOf(sourceHUs);
@@ -116,40 +117,37 @@ public class SourceHUsService
 		}
 
 		final List<I_M_HU> topLevelHuThatHasNoSourceHuInItsPath = retrieveTopLevelHuIfNoSourceHuIsOnThePath(huId);
+		//noinspection UnnecessaryLocalVariable
 		final boolean huIdHasAsSourceHuSomewhereAmongItsParents = topLevelHuThatHasNoSourceHuInItsPath.isEmpty();
 		return huIdHasAsSourceHuSomewhereAmongItsParents;
 	}
 
 	private List<I_M_HU> retrieveTopLevelHuIfNoSourceHuIsOnThePath(final HuId huId)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		final Predicate<I_M_HU> filterToExcludeSourceHus = currentHu -> !isSourceHu(HuId.ofRepoId(currentHu.getM_HU_ID()));
 
 		final TopLevelHusQuery query = TopLevelHusQuery.builder()
 				.includeAll(false)
 				.filter(filterToExcludeSourceHus)
-				.hus(ImmutableList.of(handlingUnitsDAO.getById(huId)))
+				.hus(ImmutableList.of(handlingUnitsBL.getById(huId)))
 				.build();
 
-		final List<I_M_HU> topLevelHuThatHasNoSourceHuInItsPath = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(query);
+		//noinspection UnnecessaryLocalVariable
+		final List<I_M_HU> topLevelHuThatHasNoSourceHuInItsPath = handlingUnitsBL.getTopLevelHUs(query);
 		return topLevelHuThatHasNoSourceHuInItsPath;
 	}
 
-	public I_M_Source_HU addSourceHuMarker(@NonNull final HuId huId)
+	public void addSourceHuMarker(@NonNull final HuId huId)
 	{
 		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
 		sourceHU.setM_HU_ID(huId.getRepoId());
 		save(sourceHU);
 
 		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
-		return sourceHU;
 	}
 
 	public boolean deleteSourceHuMarker(@NonNull final HuId huId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final int deleteCount = queryBL
 				.createQueryBuilder(I_M_Source_HU.class)
 				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
@@ -161,8 +159,6 @@ public class SourceHUsService
 
 	public void snapshotSourceHU(@NonNull final I_M_Source_HU sourceHU)
 	{
-		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
-
 		final String snapshotId = huSnapshotDAO.createSnapshot()
 				.setContext(PlainContextAware.newWithThreadInheritedTrx())
 				.addModel(sourceHU.getM_HU())
@@ -174,14 +170,13 @@ public class SourceHUsService
 
 	public void restoreHuFromSourceHuMarkerIfPossible(I_M_HU destroyedHU)
 	{
-		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
 		final I_M_Source_HU sourceHuRecord = sourceHuDAO.retrieveSourceHuMarkerOrNull(destroyedHU);
 		if (sourceHuRecord == null)
 		{
 			return;
 		}
 
-		Services.get(IHUSnapshotDAO.class).restoreHUs()
+		huSnapshotDAO.restoreHUs()
 				.addModelId(destroyedHU.getM_HU_ID())
 				.setContext(PlainContextAware.newWithThreadInheritedTrx())
 				.setDateTrx(SystemTime.asDate())
@@ -194,7 +189,7 @@ public class SourceHUsService
 
 	public void snapshotHuIfMarkedAsSourceHu(@NonNull final I_M_HU hu)
 	{
-		final I_M_Source_HU sourceHuMarker = Services.get(ISourceHuDAO.class).retrieveSourceHuMarkerOrNull(hu);
+		final I_M_Source_HU sourceHuMarker = sourceHuDAO.retrieveSourceHuMarkerOrNull(hu);
 		if (sourceHuMarker != null)
 		{
 			snapshotSourceHU(sourceHuMarker);
@@ -203,17 +198,17 @@ public class SourceHUsService
 
 	public List<I_M_Source_HU> retrieveMatchingSourceHuMarkers(@NonNull final MatchingSourceHusQuery query)
 	{
-		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHuMarkers(query);
+		return sourceHuDAO.retrieveActiveSourceHuMarkers(query);
 	}
 
 	public Set<HuId> retrieveMatchingSourceHUIds(@NonNull final MatchingSourceHusQuery query)
 	{
-		return Services.get(ISourceHuDAO.class).retrieveActiveSourceHUIds(query);
+		return sourceHuDAO.retrieveActiveSourceHUIds(query);
 	}
 
 	public boolean isSourceHu(final HuId huId)
 	{
-		return Services.get(ISourceHuDAO.class).isSourceHu(huId);
+		return sourceHuDAO.isSourceHu(huId);
 	}
 
 	/**
@@ -233,7 +228,6 @@ public class SourceHUsService
 			return;
 		}
 
-		final I_M_Product product = productDAO.getById(productId);
 		final boolean referencedInComponentOrVariant = productBOMDAO.isComponent(productId);
 		if (!referencedInComponentOrVariant)
 		{
@@ -262,8 +256,10 @@ public class SourceHUsService
 
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
-			final I_M_HU hu = Services.get(IHandlingUnitsDAO.class).getById(huId);
-			final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			
+			final I_M_HU hu = handlingUnitsBL.getById(huId);
+			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			final IHUStorage storage = storageFactory.getStorage(hu);
 
 			final ImmutableSet<ProductId> productIds = storage.getProductStorages().stream()

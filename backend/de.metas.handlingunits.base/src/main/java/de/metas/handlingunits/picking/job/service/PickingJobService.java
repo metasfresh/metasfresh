@@ -10,7 +10,6 @@ import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.common.util.Check;
 import de.metas.dao.ValueRestriction;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -44,7 +43,6 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.order.OrderId;
@@ -108,7 +106,7 @@ public class PickingJobService
 				huReservationService,
 				bpartnerBL,
 				ADReferenceService.newMocked(),
-				new InventoryService(new InventoryRepository(), SourceHUsService.get())
+				InventoryService.newInstanceForUnitTesting()
 		);
 		final HUQRCodesService huQRCodeService = new HUQRCodesService(
 				huQRCodesRepository,

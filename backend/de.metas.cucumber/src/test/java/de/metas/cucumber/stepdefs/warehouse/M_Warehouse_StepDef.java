@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -47,7 +46,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
@@ -84,28 +83,23 @@ public class M_Warehouse_StepDef
 	@And("load M_Warehouse:")
 	public void load_M_Warehouse(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String value = row.getAsString(COLUMNNAME_Value);
 
 			final I_M_Warehouse warehouseRecord = queryBL.createQueryBuilder(I_M_Warehouse.class)
 					.addEqualsFilter(COLUMNNAME_Value, value)
 					.create()
 					.firstOnlyNotNull(I_M_Warehouse.class);
 
-			final String bpartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerLocationIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
-				assertThat(bPartnerLocation).isNotNull();
-				bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
-			}
+			row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
+					.ifPresent(bpartnerLocationIdentifier -> {
+						final I_C_BPartner_Location bPartnerLocation = load(warehouseRecord.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
+						assertThat(bPartnerLocation).isNotNull();
+						bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, bPartnerLocation);
+					});
 
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			warehouseTable.putOrReplace(warehouseIdentifier, warehouseRecord);
-		}
+			row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID).put(warehouseTable, warehouseRecord);
+		});
 	}
 
 	@And("metasfresh contains M_Warehouse:")
