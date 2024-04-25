@@ -54,12 +54,12 @@ public enum InvoicingGroupType implements ReferenceListAwareEnum
 
 	public boolean isServicesType()
 	{
-		return SERVICES.equals(this);
+		return this == SERVICES;
 	}
 
 	public boolean isCostsType()
 	{
-		return COSTS.equals(this);
+		return this == COSTS;
 	}
 
 	public ITranslatableString getDisplayName()
