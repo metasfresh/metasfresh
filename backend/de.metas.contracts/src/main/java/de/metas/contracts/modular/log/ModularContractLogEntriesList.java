@@ -162,4 +162,18 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
+	private void assertAllUnprocessed()
+	{
+			Check.assume(list.stream().noneMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
+	}
+
+	public ModularContractLogEntriesList withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter quantityUOMConverter)
+	{
+		assertAllUnprocessed();
+		assertUniqueProductPriceOrError();
+		return list.stream()
+				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter))
+				.collect(collect());
+
+	}
 }

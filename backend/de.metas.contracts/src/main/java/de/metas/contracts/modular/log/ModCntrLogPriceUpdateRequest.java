@@ -24,19 +24,13 @@ package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
-import de.metas.money.Money;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
+import de.metas.product.ProductPrice;
 import lombok.Builder;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
-
 @Builder
-public record ModCntrLogPriceUpdateRequest(@NonNull Money price,
-										   @Nullable UomId uomId,
+public record ModCntrLogPriceUpdateRequest(@NonNull ProductPrice unitPrice,
 										   @NonNull FlatrateTermId flatrateTermId,
-										   @NonNull ProductId productId,
 										   @NonNull ModularContractModuleId modularContractModuleId)
 {
 }

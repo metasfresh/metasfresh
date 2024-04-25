@@ -115,7 +115,7 @@ public class ModularContractLogEntry
 
 	@NonNull ModularContractModuleId modularContractModuleId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
 			@NonNull final LogEntryContractType contractType,
@@ -138,7 +138,8 @@ public class ModularContractLogEntry
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			final boolean isBillable, final @NonNull ModularContractModuleId modularContractModuleId)
+			final boolean isBillable,
+			final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -175,9 +176,22 @@ public class ModularContractLogEntry
 		this.modularContractModuleId = modularContractModuleId;
 	}
 
-	Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	@NonNull
+	public Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
 		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
+	}
+
+	@NonNull
+	public ModularContractLogEntry withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(quantity, "No quantity set for log entry {}, cannot update price and amount.", id);
+
+		final UomId priceUomId = price.getUomId();
+		return this.toBuilder()
+				.priceActual(price)
+				.amount(price.computeAmount(getQuantity(priceUomId, uomConverter)))
+				.build();
 	}
 }
