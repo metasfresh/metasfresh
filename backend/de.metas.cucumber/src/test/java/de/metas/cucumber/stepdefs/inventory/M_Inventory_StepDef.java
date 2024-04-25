@@ -205,7 +205,7 @@ public class M_Inventory_StepDef
 
 		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		inventoryRecord.setM_Warehouse_ID(warehouseId.getRepoId());
-		inventoryRecord.setMovementDate(row.getAsLocalDateTimestamp(I_M_Inventory.COLUMNNAME_MovementDate));
+		inventoryRecord.setMovementDate(row.getAsInstantTimestamp(I_M_Inventory.COLUMNNAME_MovementDate));
 
 		final String documentNo = row.getAsOptionalString(I_M_Inventory.COLUMNNAME_DocumentNo)
 				.map(StringUtils::trimBlankToNull)
