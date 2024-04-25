@@ -152,7 +152,6 @@ public class LogEntryCreateRequest
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)
 	{
-		this.productName = productName;
 		if (amount != null && priceActual != null)
 		{
 			amount.assertCurrencyId(priceActual.getCurrencyId());
@@ -165,6 +164,7 @@ public class LogEntryCreateRequest
 
 		this.contractId = contractId;
 		this.initialProductId = initialProductId;
+		this.productName = productName;
 		this.productId = productId;
 		this.referencedRecord = referencedRecord;
 		this.subEntryId = subEntryId;

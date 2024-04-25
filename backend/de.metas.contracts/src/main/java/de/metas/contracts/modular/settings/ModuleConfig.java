@@ -45,9 +45,16 @@ public class ModuleConfig
 
 	@NonNull ModularContractType modularContractType;
 
+	public ModularContractSettingsId getModularContractSettingsId() {return id.getModularContractSettingsId();}
+
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return modularContractType.isMatching(computingMethodType);
+	}
+
+	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	{
+		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
 	}
 
 	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
