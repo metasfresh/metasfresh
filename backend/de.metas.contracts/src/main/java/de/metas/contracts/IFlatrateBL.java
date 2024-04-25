@@ -235,6 +235,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isModularContract(ConditionsId conditionsId);
 
+	boolean isInterimContract(@NonNull ConditionsId conditionsId);
+
 	I_C_Flatrate_Term createContractForOrderLine(I_C_OrderLine orderLine);
 
 	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
@@ -259,6 +261,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
+
+	boolean isInterimContract(@NonNull FlatrateTermId flatrateTermId);
 
 	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
 

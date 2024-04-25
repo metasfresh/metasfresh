@@ -148,15 +148,15 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(I_M_InOutLine.Table_Name)));
 
 		final TableRecordReference inOutLineRef = TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID());
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(handleLogsRequest.getContractId())
+																						 .flatrateTermId(createLogRequest.getContractId())
 																						 .referenceSet(TableRecordReferenceSet.of(inOutLineRef))
 																						 .build());
 
@@ -167,9 +167,10 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
 											.referencedModel(recordRef)
-											.flatrateTermId(handleLogsRequest.getContractId())
+											.flatrateTermId(createLogRequest.getContractId())
 											.description(description)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
 											.build());
 	}
 }

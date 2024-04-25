@@ -136,7 +136,7 @@ class ImportLogHandler implements IModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.HandleLogsRequest handleLogsRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.CreateLogRequest createLogRequest)
 	{
 		throw new UnsupportedOperationException();
 	}

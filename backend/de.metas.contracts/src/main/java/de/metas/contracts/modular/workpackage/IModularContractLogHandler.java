@@ -55,7 +55,7 @@ public interface IModularContractLogHandler
 	ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull CreateLogRequest createLogRequest);
 
 	@NonNull
-	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull HandleLogsRequest handleLogsRequest);
+	ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull CreateLogRequest createLogRequest);
 
 	@NonNull
 	IComputingMethodHandler getComputingMethod();
