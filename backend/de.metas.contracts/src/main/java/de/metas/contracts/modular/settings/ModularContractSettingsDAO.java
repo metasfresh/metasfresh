@@ -66,6 +66,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 @Repository
 public class ModularContractSettingsDAO
 {
@@ -393,7 +395,6 @@ public class ModularContractSettingsDAO
 
 			throw new AdempiereException("Unexpected table name=" + recordRef.getTableName());
 		}
-
 		@Override
 		public boolean isResetAll(@NonNull final TableRecordReference recordRef)
 		{
@@ -505,5 +506,13 @@ public class ModularContractSettingsDAO
 		{
 			return new CachedSettingsId(settingsId);
 		}
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		final I_ModCntr_Module module = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		return fromRecord(module);
+
 	}
 }

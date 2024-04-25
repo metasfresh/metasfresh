@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -40,7 +41,8 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -79,6 +81,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
@@ -94,8 +97,9 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	private final ModularContractSettingsBL modularContractSettingsBL = SpringContextHolder.instance.getBean(ModularContractSettingsBL.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethods = SpringContextHolder.instance.getBean(ModularContractComputingMethodHandlerRegistry.class);
@@ -120,7 +124,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final LockOwner lockOwner)
 	{
-		final var modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		final var modularContractSettings = modularContractSettingsBL.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 		final var requestTemplate = CreateInvoiceCandidateRequest.builder()
 				.modularContract(term)
 				//.moduleConfig(module)
@@ -314,7 +318,19 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 						.appendParametersToMessage()
 						.setParameter("C_Flatrate_Term_ID", flatrateTermId.getRepoId()));
 
-		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, flatrateTermId);
+		final ModularContractType moduleContractType = modularContractSettingsBL.getModuleContractType(modularContractModuleId);
+
+		final TaxCategoryId taxCategoryId;
+
+		if (!moduleContractType.isMatching(ComputingMethodType.INTERIM_CONTRACT))
+		{
+			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, flatrateTermId);
+		}
+		else
+		{
+			final FlatrateTermId interimContractId = flatrateBL.getInterimContractIdByModularContractIdAndDate(flatrateTermId, TimeUtil.asInstant(invoiceCandidate.getDateOrdered()));
+			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, interimContractId);
+		}
 
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true);
 		final OrgId orgId = OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID());
