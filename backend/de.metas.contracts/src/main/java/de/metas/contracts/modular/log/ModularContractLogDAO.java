@@ -484,7 +484,7 @@ public class ModularContractLogDAO
 		{
 			final I_ModCntr_Log record = recordsById.get(log.getId());
 			updateRecord(record, log, orgDAO::getTimeZone);
-			InterfaceWrapperHelper.save(record);
+			saveRecord(record);
 		}
 	}
 
