@@ -1,12 +1,10 @@
 import {
-  completeRequest,
   deleteRequest,
   discardNewRequest,
   formatParentUrl,
   getTabLayoutRequest,
   getTabRequest,
   getZoomIntoWindow,
-  initQuickInput,
   topActionsRequest,
 } from './window';
 import {
@@ -32,13 +30,7 @@ import {
   patchViewAttributesRequest,
   quickActionsRequest,
 } from './view';
-import {
-  getResetPasswordInfo,
-  resetPasswordComplete,
-  resetPasswordGetAvatar,
-  getAvatar,
-  getAvailableLang,
-} from './login';
+import { getResetPasswordInfo, resetPasswordComplete } from './login';
 import {
   breadcrumbRequest,
   elementPathRequest,
@@ -54,7 +46,6 @@ export {
   advSearchRequest,
   breadcrumbRequest,
   browseViewRequest,
-  completeRequest,
   createViewRequest,
   deleteRequest,
   deleteStaticFilter,
@@ -79,7 +70,6 @@ export {
   getViewRowsByIds,
   getZoomIntoWindow,
   headerPropertiesRequest,
-  initQuickInput,
   locationConfigRequest,
   locationSearchRequest,
   nodePathsRequest,
@@ -90,8 +80,5 @@ export {
   quickActionsRequest,
   rootRequest,
   resetPasswordComplete,
-  resetPasswordGetAvatar,
-  resetPasswordRequest,
-  startProcess,
   topActionsRequest,
 };

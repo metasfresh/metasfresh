@@ -694,7 +694,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					fl = fact.createLine()
 							.setDocLine(line)
 							.setAccount(account)
-							.setAmtSource(null, taxDiscountAmt_CMAdjusted.negate())
+							.setAmtSource((Money)null, taxDiscountAmt_CMAdjusted.negate())
 							.setCurrencyConversionCtx(invoiceCurrencyConversionCtx)
 							.buildAndAdd();
 				}
