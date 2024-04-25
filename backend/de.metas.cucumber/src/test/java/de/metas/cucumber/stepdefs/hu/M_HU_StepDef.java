@@ -35,7 +35,7 @@ import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -166,8 +166,7 @@ public class M_HU_StepDef
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
 
 			row.getAsOptionalIdentifier("M_HU_Parent")
@@ -224,7 +223,7 @@ public class M_HU_StepDef
 			{
 				assertThat(hu.getClearanceNote()).isEqualTo(clearanceNote);
 			}
-		}
+		});
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")

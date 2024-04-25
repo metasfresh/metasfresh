@@ -1103,7 +1103,7 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		return getDocumentChangeLog(documentPath);
+		return documentChangeLogService.getJSONDocumentChangeLog(documentPath);
 	}
 
 	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
@@ -1119,15 +1119,8 @@ public class WindowRestController
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(windowId, documentId, tabId, rowId);
-		return getDocumentChangeLog(documentPath);
-	}
-
-	private JSONDocumentChangeLog getDocumentChangeLog(final DocumentPath documentPath)
-	{
-		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
-		final JSONDocumentChangeLog json = documentChangeLogService.getJSONDocumentChangeLog(recordRef, userSession.getAD_Language());
-		json.setPath(JSONDocumentPath.ofWindowDocumentPath(documentPath));
-		return json;
+		
+		return documentChangeLogService.getJSONDocumentChangeLog(documentPath);
 	}
 
 	@GetMapping("/health")

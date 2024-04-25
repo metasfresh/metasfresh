@@ -22,12 +22,15 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.base.Splitter;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -37,36 +40,42 @@ import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @ToString
 public class DataTableRow
 {
-	final Map<String, String> map;
+	private final int lineNo; // introduced to improve logging/debugging
+	private final Map<String, String> map;
 
-	private DataTableRow(@NonNull final Map<String, String> map)
+	private static final Splitter COMMA_SEPARATED_SPLITTER = Splitter.on(",").omitEmptyStrings();
+
+	DataTableRow(
+			final int lineNo,
+			@NonNull final Map<String, String> map)
 	{
+		this.lineNo = lineNo;
 		this.map = map;
-	}
-
-	public static List<DataTableRow> toRows(@NonNull final DataTable dataTable)
-	{
-		return dataTable.asMaps()
-				.stream()
-				.map(DataTableRow::new)
-				.collect(Collectors.toList());
 	}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
-		return new DataTableRow(CollectionUtils.singleElement(dataTable.asMaps()));
+		return new DataTableRow(1, CollectionUtils.singleElement(dataTable.asMaps()));
 	}
+
+	public static DataTableRow singleRow(@NonNull final Map<String, String> map)
+	{
+		return new DataTableRow(-1, map);
+	}
+
+	public Map<String, String> asMap() {return map;}
 
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
@@ -206,4 +215,80 @@ public class DataTableRow
 		return Optional.of(Quantity.of(valueBD, uom));
 	}
 
+	public LocalDate getAsLocalDate(@NonNull final String columnName)
+	{
+		return parseLocalDate(getAsString(columnName), columnName);
+	}
+
+	public Optional<LocalDate> getAsOptionalLocalDate(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalDate(valueStr, columnName));
+	}
+
+	@NonNull
+	private static LocalDate parseLocalDate(final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return LocalDate.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDate `" + valueStr + "`");
+		}
+	}
+
+	public Instant getAsInstant(@NonNull final String columnName)
+	{
+		return parseInstant(getAsString(columnName), columnName);
+	}
+
+	@NonNull
+	private static Instant parseInstant(final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return Instant.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid Instant `" + valueStr + "`");
+		}
+	}
+
+	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	@NonNull
+	private static LocalDateTime parseLocalDateTime(final String valueStr, final String columnInfo)
+	{
+		try
+		{
+			return LocalDateTime.parse(valueStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnInfo + "` has invalid LocalDateTime `" + valueStr + "`");
+		}
+	}
+
+	public <T extends ReferenceListAwareEnum> Optional<T> getAsOptionalEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	{
+		try
+		{
+			return getAsOptionalString(columnName).map(valueStr -> ReferenceListAwareEnums.ofNullableCode(valueStr, type));
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid `" + type.getSimpleName() + "` of column `" + columnName + "`", ex);
+		}
+	}
+
+	public <T extends ReferenceListAwareEnum> T getAsEnum(@NonNull final String columnName, @NonNull Class<T> type)
+	{
+		return getAsOptionalEnum(columnName, type)
+				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
+	}
 }
