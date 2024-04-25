@@ -115,9 +115,7 @@ public class ModularContractProvider
 				.typeConditions(MODULAR_CONTRACT)
 				.build();
 
-		return flatrateBL.streamModularFlatrateTermsByQuery(query)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId);
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
 	}
 
 	@NonNull
@@ -253,8 +251,6 @@ public class ModularContractProvider
 				.calendarId(harvestingCalendarId)
 				.build();
 
-		return flatrateBL.streamModularFlatrateTermsByQuery(query)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId);
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
 	}
 }
