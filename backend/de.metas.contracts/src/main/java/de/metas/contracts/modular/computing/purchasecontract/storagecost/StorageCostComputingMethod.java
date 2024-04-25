@@ -31,7 +31,6 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -106,18 +105,31 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		}
 		Check.assumeEquals(request.getCurrencyId(), pricePerUnitPerDay.getCurrencyId(), "Log and Invoice Currency should be the same");
 
-		final Money storageCosts = computeStorageCosts(logs, pricePerUnitPerDay).orElseGet(() -> Money.zero(request.getCurrencyId()));
+		final Money storageCosts = computeStorageCosts(logs, pricePerUnitPerDay);
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		return ComputingResponse.builder()
-				.ids(logs.getIds())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(storageCosts.negateIf(request.isCostInvoicingGroup()))
-						.uomId(stockUOMId)
-						.build())
-				.qty(Quantitys.one(stockUOMId))
+		final ProductPrice priceWithPriceUOM = ProductPrice.builder()
+				.productId(request.getProductId())
+				.money(storageCosts.negateIf(request.isCostInvoicingGroup()))
+				.uomId(pricePerUnitPerDay.getUomId())
 				.build();
+
+		if(UomId.equals(stockUOMId, pricePerUnitPerDay.getUomId()))
+		{
+			return ComputingResponse.builder()
+					.ids(logs.getIds())
+					.price(priceWithPriceUOM)
+					.qty(Quantitys.one(stockUOMId))
+					.build();
+		}
+		else
+		{
+			return ComputingResponse.builder()
+					.ids(logs.getIds())
+					.price(computingMethodService.productPriceToUOM(priceWithPriceUOM, stockUOMId))
+					.qty(Quantitys.one(stockUOMId))
+					.build();
+		}
 	}
 
 	private Optional<ProductPrice> getPricePerUnitPerDay(@NonNull final ModularContractLogEntriesList logs)
@@ -127,32 +139,14 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		{
 			return Optional.empty();
 		}
-
-		final UomId initialStockUOMId = productBL.getStockUOMId(productPrice.getProductId());
-		Check.assumeEquals(initialStockUOMId, productPrice.getUomId(), "Log Price UOM and initial product stockUOM should be the same");
-
 		return Optional.of(productPrice);
 	}
 
-	private static Optional<Money> computeStorageCosts(
+	private Money computeStorageCosts(
 			@NonNull final ModularContractLogEntriesList logs,
 			@NonNull final ProductPrice pricePerUnitPerDay)
 	{
-		return logs.stream()
-				.map((log) -> computeStorageCostsForEntry(log, pricePerUnitPerDay))
-				.reduce(Money::add);
-
-	}
-
-	private static Money computeStorageCostsForEntry(
-			@NonNull final ModularContractLogEntry logEntry,
-			@NonNull final ProductPrice pricePerUnitPerDay)
-	{
-		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Log qty shouldn't be null");
-
-		final Money pricePerDay = pricePerUnitPerDay.computeAmount(qty);
-
-		final int storageDays = Check.assumeNotNull(logEntry.getStorageDays(), "StorageDays shouldn't be null");
-		return pricePerDay.multiply(storageDays);
+		final Quantity qty = computingMethodService.getQtyXStorageDaysSum(logs, pricePerUnitPerDay.getUomId());
+		return pricePerUnitPerDay.computeAmount(qty);
 	}
 }

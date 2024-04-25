@@ -62,6 +62,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return list.get(0);
 	}
 
+	@Nullable
 	public ProductPrice getFirstPriceActual()
 	{
 		return getFirstEntry().getPriceActual();
@@ -87,6 +88,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
 	}
 
+	@NonNull
 	public Quantity getQtySum(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (list.isEmpty())
@@ -98,6 +100,30 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 				.map((log) -> log.getQuantity(targetUomId, uomConverter))
 				.reduce(Quantity::add)
 				.orElseGet(() -> Quantitys.zero(targetUomId));
+	}
+
+	@NonNull
+	public Quantity getQtyXStorageDaysSum(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		if (list.isEmpty())
+		{
+			return Quantitys.zero(targetUomId);
+		}
+
+		return list.stream()
+				.map((log) -> getQtyXStorageDays(log, targetUomId, uomConverter))
+				.reduce(Quantity::add)
+				.orElseGet(() -> Quantitys.zero(targetUomId));
+	}
+
+	@NonNull
+	private Quantity getQtyXStorageDays(
+			@NonNull final ModularContractLogEntry log,
+			@NonNull final UomId targetUomId,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		return log.getQuantity(targetUomId, uomConverter)
+				.multiply(Check.assumeNotNull(log.getStorageDays(), "StorageDays shouldn't be null"));
 	}
 
 	public void assertSingleProductId(@NonNull final ProductId expectedProductId)
