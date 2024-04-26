@@ -158,7 +158,7 @@ public class ModularContractPriceService
 				.setPriceDate(InstantAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(), orgId).toLocalDate(orgDAO::getTimeZone));
 	}
 
-	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull UnaryOperator<ModCntrSpecificPrice> mapper)
+	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
 	{
 		return modularContractPriceRepository.updateById(id, mapper);
 	}

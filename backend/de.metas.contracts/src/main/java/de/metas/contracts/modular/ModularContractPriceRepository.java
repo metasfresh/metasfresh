@@ -130,14 +130,14 @@ public class ModularContractPriceRepository
 				.build();
 	}
 
-	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull UnaryOperator<ModCntrSpecificPrice> mapper)
+	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
 	{
 		final I_ModCntr_Specific_Price record = getRecordById(id);
 
 		final ModCntrSpecificPrice price = fromRecord(record);
 		final ModCntrSpecificPrice priceChanged = mapper.apply(price);
 		updateRecord(record, priceChanged);
-		saveRecord(priceChanged);
+		saveRecord(record);
 
 		return priceChanged;
 	}
