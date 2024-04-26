@@ -123,7 +123,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 		final BPartnerId invoiceBpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(invoiceLineRecord.getC_UOM_ID());
-		final Quantity qtyEntered = Quantitys.create(invoiceLineRecord.getQtyEntered(), uomId);
+		final Quantity qtyEntered = Quantitys.of(invoiceLineRecord.getQtyEntered(), uomId);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
@@ -216,7 +216,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(getLogEntryContractType())
-						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build()
 		);
 	}

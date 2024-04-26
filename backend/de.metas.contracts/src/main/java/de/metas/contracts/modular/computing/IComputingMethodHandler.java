@@ -30,7 +30,6 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -68,6 +67,4 @@ public interface IComputingMethodHandler
 
 	@NonNull
 	ComputingResponse compute(@NonNull final ComputingRequest request);
-
-	default @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request) {return Optional.empty();}
 }

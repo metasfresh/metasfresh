@@ -432,7 +432,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final Quantity result = Quantitys.create(
+		final Quantity result = Quantitys.of(
 				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
 				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);

@@ -216,7 +216,7 @@ public final class OLCand implements IProductPriceAware
 		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
-		this.qty = Quantitys.create(
+		this.qty = Quantitys.of(
 				olCandRecord.getQtyEntered(),
 				this.olCandEffectiveValuesBL.getEffectiveUomId(olCandRecord));
 

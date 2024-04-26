@@ -250,6 +250,11 @@ public class Money implements Comparable<Money>
 		return new Money(value.multiply(multiplicand), currencyId);
 	}
 
+	public Money multiply(final int multiplicand)
+	{
+		return multiply(BigDecimal.valueOf(multiplicand));
+	}
+
 	public Money multiply(@NonNull final Percent percent, @NonNull final CurrencyPrecision precision)
 	{
 		final BigDecimal newValue = percent.computePercentageOf(value, precision.toInt(), precision.getRoundingMode());

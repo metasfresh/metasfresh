@@ -153,7 +153,7 @@ public class ShipperTransportationBL implements IShipperTransportationBL
 
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(shippingPackage.getC_OrderLine_ID());
 
-		final Quantity actualLoadQty = Quantitys.create(shippingPackage.getActualLoadQty(), UomId.ofRepoId(shippingPackage.getC_UOM_ID()));
+		final Quantity actualLoadQty = Quantitys.of(shippingPackage.getActualLoadQty(), UomId.ofRepoId(shippingPackage.getC_UOM_ID()));
 
 		final CurrencyId orderLineCurrencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final Money qtyNetPriceFromOrderLine = Money.of(orderLineBL.computeQtyNetPriceFromOrderLine(orderLine, actualLoadQty),

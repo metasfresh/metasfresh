@@ -1,7 +1,6 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
 import au.com.origin.snapshots.Expect;
-
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -10,8 +9,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -58,9 +57,9 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -301,7 +300,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		@Override
 		public Optional<Quantity> computeQtyItemCapacity(@NonNull final I_C_OLCand olCand)
 		{
-			return Optional.of(Quantitys.createZero(ProductId.ofRepoId(olCand.getM_Product_ID())));
+			return Optional.of(Quantitys.zero(ProductId.ofRepoId(olCand.getM_Product_ID())));
 		}
 	}
 

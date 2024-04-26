@@ -46,6 +46,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -127,7 +129,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 											.invoicingGroupId(invoicingGroupId)
 											.isBillable(isBillable)
 											.priceActual(contractSpecificPrice)
-											.amount(contractSpecificPrice.computeAmount(quantity))
+											.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
 											.build());
 	}
 

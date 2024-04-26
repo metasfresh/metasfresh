@@ -50,7 +50,7 @@ public class PPOrderCandidateToAllocate
 	{
 		final UomId uomId = UomId.ofRepoId(candidate.getC_UOM_ID());
 
-		final Quantity openQty = Quantitys.create(candidate.getQtyToProcess(), uomId);
+		final Quantity openQty = Quantitys.of(candidate.getQtyToProcess(), uomId);
 
 		final String headerAggKey = PPOrderCandidateHeaderAggregationKeyHelper.generateHeaderAggregationKey(candidate);
 

@@ -175,7 +175,7 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Co-Produkt.
+	 * Set Co-Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -184,7 +184,7 @@ public interface I_ModCntr_Settings
 	void setM_Co_Product_ID (int M_Co_Product_ID);
 
 	/**
-	 * Get Co-Produkt.
+	 * Get Co-Product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -295,6 +295,27 @@ public interface I_ModCntr_Settings
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Settings.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStorageCostStartDate (java.sql.Timestamp StorageCostStartDate);
+
+	/**
+	 * Get Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getStorageCostStartDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_StorageCostStartDate = new ModelColumn<>(I_ModCntr_Settings.class, "StorageCostStartDate", null);
+	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
 
 	/**
 	 * Get Updated.

@@ -463,8 +463,8 @@ public class AvailableForSalesUtil
 		// Because QtyEntered is what the user can see.. (who knows, QtyOrdered might even be zero in some cases)
 		final ProductId productId = ProductId.ofRepoId(salesOrderLineRecord.getM_Product_ID());
 
-		final Quantity qtyToBeShippedInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyToBeShipped(), productId), salesOrderLineRecord);
-		final Quantity qtyOnHandInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.create(quantities.getQtyOnHandStock(), productId), salesOrderLineRecord);
+		final Quantity qtyToBeShippedInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.of(quantities.getQtyToBeShipped(), productId), salesOrderLineRecord);
+		final Quantity qtyOnHandInOrderLineUOM = orderLineBL.convertQtyToUOM(Quantitys.of(quantities.getQtyOnHandStock(), productId), salesOrderLineRecord);
 
 		// QtyToBeShippedInOrderLineUOM includes the salesOrderLineRecord.getQtyEntered().
 		// We subtract it again to make it comparable with the orderLine's qtyOrdered.

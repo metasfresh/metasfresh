@@ -481,6 +481,6 @@ class PricingContext implements IEditablePricingContext
 			return null;
 		}
 
-		return Quantitys.create(ctxQty, ctxUomId);
+		return Quantitys.of(ctxQty, ctxUomId);
 	}
 }

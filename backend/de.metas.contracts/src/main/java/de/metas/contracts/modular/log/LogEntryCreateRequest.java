@@ -54,6 +54,9 @@ public class LogEntryCreateRequest
 	@Nullable
 	ProductId productId;
 
+	@Nullable
+	ProductId initialProductId;
+
 	@NonNull
 	String productName;
 
@@ -96,6 +99,9 @@ public class LogEntryCreateRequest
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	Integer storageDays;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -117,10 +123,11 @@ public class LogEntryCreateRequest
 
 	boolean isBillable;
 
-	@Builder
+	@Builder(toBuilder = true)
 	public LogEntryCreateRequest(
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@Nullable final ProductId initialProductId,
 			@NonNull final String productName,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final LogSubEntryId subEntryId,
@@ -135,6 +142,7 @@ public class LogEntryCreateRequest
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
@@ -144,7 +152,6 @@ public class LogEntryCreateRequest
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)
 	{
-		this.productName = productName;
 		if (amount != null && priceActual != null)
 		{
 			amount.assertCurrencyId(priceActual.getCurrencyId());
@@ -156,6 +163,8 @@ public class LogEntryCreateRequest
 		}
 
 		this.contractId = contractId;
+		this.initialProductId = initialProductId;
+		this.productName = productName;
 		this.productId = productId;
 		this.referencedRecord = referencedRecord;
 		this.subEntryId = subEntryId;
@@ -170,6 +179,7 @@ public class LogEntryCreateRequest
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;

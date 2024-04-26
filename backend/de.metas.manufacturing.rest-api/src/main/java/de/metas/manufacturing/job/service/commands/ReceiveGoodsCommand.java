@@ -240,13 +240,13 @@ public class ReceiveGoodsCommand
 		if (coProductLine != null)
 		{
 			final UomId uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 		else
 		{
 			final I_PP_Order ppOrder = getPPOrder();
 			final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 	}
 

@@ -175,6 +175,6 @@ public class HU
 				.collect(ImmutableList.toImmutableList());
 
 		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
-		return Quantitys.create(qtyCU, productId);
+		return Quantitys.of(qtyCU, productId);
 	}
 }

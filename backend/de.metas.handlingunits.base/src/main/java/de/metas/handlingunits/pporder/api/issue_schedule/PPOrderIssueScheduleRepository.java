@@ -69,7 +69,7 @@ public class PPOrderIssueScheduleRepository
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyToIssue(Quantitys.create(record.getQtyToIssue(), uomId))
+				.qtyToIssue(Quantitys.of(record.getQtyToIssue(), uomId))
 				.issueFromHUId(HuId.ofRepoId(record.getIssueFrom_HU_ID()))
 				.issueFromLocatorId(LocatorId.ofRepoId(record.getIssueFrom_Warehouse_ID(), record.getIssueFrom_Locator_ID()))
 				.isAlternativeIssue(record.isAlternativeHU())
@@ -101,7 +101,7 @@ public class PPOrderIssueScheduleRepository
 	private static Quantity extractQtyIssued(final I_PP_Order_IssueSchedule record)
 	{
 		final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-		return Quantitys.create(record.getQtyIssued(), uomId);
+		return Quantitys.of(record.getQtyIssued(), uomId);
 	}
 
 	@Nullable
@@ -113,7 +113,7 @@ public class PPOrderIssueScheduleRepository
 		if (qtyReject.signum() != 0 && reasonCode != null)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getC_UOM_ID());
-			return QtyRejectedWithReason.of(Quantitys.create(qtyReject, uomId), reasonCode);
+			return QtyRejectedWithReason.of(Quantitys.of(qtyReject, uomId), reasonCode);
 		}
 		else
 		{

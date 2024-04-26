@@ -211,7 +211,7 @@ public class C_Order_CreatePOFromSOs
 				.orderId(OrderId.ofRepoId(ol.getC_Order_ID()))
 				.productId(ProductId.ofRepoId(ol.getM_Product_ID()))
 				.attributes(attributeSet)
-				.qty(Quantitys.create(ol.getQtyEntered(), UomId.ofRepoId(ol.getC_UOM_ID())))
+				.qty(Quantitys.of(ol.getQtyEntered(), UomId.ofRepoId(ol.getC_UOM_ID())))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(ol.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(BPartnerId.ofRepoId(ol.getC_BPartner_ID()))
 				.soTrx(SOTrx.SALES)

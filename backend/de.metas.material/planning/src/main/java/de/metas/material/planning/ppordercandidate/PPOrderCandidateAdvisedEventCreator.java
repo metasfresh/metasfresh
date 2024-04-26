@@ -114,7 +114,7 @@ public class PPOrderCandidateAdvisedEventCreator
 		final Quantity maxQtyPerOrder;
 		if (productPlanning.getMaxManufacturedQtyPerOrderDispo().signum() > 0 && productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID() > 0)
 		{
-			maxQtyPerOrder = Quantitys.create(
+			maxQtyPerOrder = Quantitys.of(
 					productPlanning.getMaxManufacturedQtyPerOrderDispo(),
 					UomId.ofRepoId(productPlanning.getMaxManufacturedQtyPerOrderDispo_UOM_ID()));
 		}

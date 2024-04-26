@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -68,7 +69,7 @@ public class ModularContractSettingsBL
 
 		return conditionsId;
 	}
-	
+
 	public void validateModularContractSettingsNotUsed(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		final Optional<I_C_Flatrate_Conditions> completedConditions = flatrateBL.streamCompletedConditionsBy(modularContractSettingsId)
@@ -92,4 +93,19 @@ public class ModularContractSettingsBL
 	{
 		return modularContractSettingsDAO.getById(settingsId);
 	}
+
+	@NonNull
+	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
+	{
+		return modularContractSettingsDAO.getByFlatrateTermId(contractId);
+	}
+
+	@NonNull
+	public ModularContractType getModuleContractType(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		final ModuleConfig moduleConfig = modularContractSettingsDAO.getByModuleId(modularContractModuleId);
+
+		return moduleConfig.getModularContractType();
+	}
+
 }

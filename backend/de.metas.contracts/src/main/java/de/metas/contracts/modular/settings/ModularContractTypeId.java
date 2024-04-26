@@ -49,7 +49,7 @@ public class ModularContractTypeId implements RepoIdAware
 
 	private ModularContractTypeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "modularContractTypeId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ModCntr_Type_ID");
 	}
 
 	public static int toRepoId(@Nullable final ModularContractTypeId modularContractTypeId)

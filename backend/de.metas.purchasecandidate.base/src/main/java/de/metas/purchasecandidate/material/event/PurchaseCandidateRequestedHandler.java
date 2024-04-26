@@ -138,7 +138,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
-				.qtyToPurchase(Quantitys.create(materialDescriptor.getQuantity(), product.getUomId()))
+				.qtyToPurchase(Quantitys.of(materialDescriptor.getQuantity(), product.getUomId()))
 				.salesOrderAndLineIdOrNull(orderAndLineIdOrNull)
 				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
