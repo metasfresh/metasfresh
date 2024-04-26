@@ -409,7 +409,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 						orgId,
 						productId,
 						bPartnerLocationAndCaptureId.getBpartnerId(),
-						Quantitys.create(invoiceCandidate.getQtyOrdered(), productId),
+						Quantitys.of(invoiceCandidate.getQtyOrdered(), productId),
 						soTrx)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(invoiceCandidate.getDateOrdered(), timeZone))

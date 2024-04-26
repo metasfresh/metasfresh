@@ -52,8 +52,8 @@ public class StockQtyAndUOMQtys
 	{
 		return StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.createZero(productId))
-				.uomQty(uomId != null ? Quantitys.createZero(uomId) : null)
+				.stockQty(Quantitys.zero(productId))
+				.uomQty(uomId != null ? Quantitys.zero(uomId) : null)
 				.build();
 
 		// NOTE: no need to validate(result) because we created valid (using product's stocking UOM)
@@ -78,7 +78,7 @@ public class StockQtyAndUOMQtys
 			@Nullable final BigDecimal qtyInUOM,
 			@Nullable final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUOM, productId);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -109,7 +109,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId otherUomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUOM, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUOM, productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(stockQty, UOMConversionContext.of(productId), otherUomId);
@@ -127,7 +127,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInStockUom, productId);
+		final Quantity stockQty = Quantitys.of(qtyInStockUom, productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(stockQty, UOMConversionContext.of(productId), uomId);
@@ -148,7 +148,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId)
 	{
-		final Quantity stockQty = Quantitys.create(qtyInAnyUom.toBigDecimal(), qtyInAnyUom.getUomId(), productId);
+		final Quantity stockQty = Quantitys.of(qtyInAnyUom.toBigDecimal(), qtyInAnyUom.getUomId(), productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(qtyInAnyUom, UOMConversionContext.of(productId), uomId);
@@ -170,7 +170,7 @@ public class StockQtyAndUOMQtys
 			@NonNull final ProductId productId,
 			@Nullable final Quantity uomQty)
 	{
-		final Quantity stockQty = Quantitys.create(stockQtyInAnyUom.toBigDecimal(), stockQtyInAnyUom.getUomId(), productId);
+		final Quantity stockQty = Quantitys.of(stockQtyInAnyUom.toBigDecimal(), stockQtyInAnyUom.getUomId(), productId);
 
 		return validate(
 				StockQtyAndUOMQty.builder()

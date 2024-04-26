@@ -22,45 +22,45 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class StorageCostComputingMethod implements IComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
-	{
-		return false;
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		return Stream.empty();
-	}
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final ComputingMethodService computingMethodService;
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
@@ -69,19 +69,73 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 	}
 
 	@Override
+	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	{
+		if (recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name) && logEntryContractType.isModularContractType())
+		{
+			final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+			final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+			if (orderId == null)
+			{
+				return false;
+			}
+			return inOutRecord.isSOTrx();
+		}
+		return false;
+	}
+
+	@Override
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
+	{
+		return recordRef.getIdIfTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId)
+				.map(contractProvider::streamModularPurchaseContractsForShipmentLine)
+				.orElseGet(Stream::empty);
+	}
+
+	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+
+		final ProductPrice pricePerUnitPerDay = getPricePerUnitPerDay(logs).orElse(null);
+		if (pricePerUnitPerDay == null)
+		{
+			return computingMethodService.toZeroResponseWithQtyOne(request);
+		}
+		Check.assumeEquals(request.getCurrencyId(), pricePerUnitPerDay.getCurrencyId(), "Log and Invoice Currency should be the same");
+
+		final Money storageCosts = computeStorageCosts(logs, pricePerUnitPerDay);
+
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		final ProductPrice priceWithPriceUOM = ProductPrice.builder()
+				.productId(request.getProductId())
+				.money(storageCosts.negateIf(request.isCostInvoicingGroup()))
+				.uomId(pricePerUnitPerDay.getUomId())
+				.build();
 
 		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
+				.ids(logs.getIds())
+				.price(computingMethodService.productPriceToUOM(priceWithPriceUOM, stockUOMId))
+				.qty(Quantitys.one(stockUOMId))
 				.build();
+	}
+
+	private Optional<ProductPrice> getPricePerUnitPerDay(@NonNull final ModularContractLogEntriesList logs)
+	{
+		final ProductPrice productPrice = logs.getUniqueProductPriceOrError().orElse(null);
+		if (productPrice == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(productPrice);
+	}
+
+	private Money computeStorageCosts(
+			@NonNull final ModularContractLogEntriesList logs,
+			@NonNull final ProductPrice pricePerUnitPerDay)
+	{
+		final Quantity qty = computingMethodService.getQtyXStorageDaysSum(logs, pricePerUnitPerDay.getUomId());
+		return pricePerUnitPerDay.computeAmount(qty);
 	}
 }

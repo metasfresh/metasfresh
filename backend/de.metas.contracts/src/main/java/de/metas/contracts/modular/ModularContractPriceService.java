@@ -49,7 +49,9 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 @Service
 @RequiredArgsConstructor
@@ -64,6 +66,11 @@ public class ModularContractPriceService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
+	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
+	{
+		return modularContractPriceRepository.getById(id);
+	}
+
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
@@ -75,7 +82,9 @@ public class ModularContractPriceService
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
-		for (final ModuleConfig config : settings.getModuleConfigs())
+		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigsWithout(ComputingMethodType.INTERIM_CONTRACT);
+
+		for (final ModuleConfig config : moduleConfigs)
 		{
 			final ProductId productId = config.getProductId();
 			setProductDataOnPricingContext(productId, pricingContextTemplate);
@@ -147,6 +156,11 @@ public class ModularContractPriceService
 				.setBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
 				.setCountryId(countryId)
 				.setPriceDate(InstantAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(), orgId).toLocalDate(orgDAO::getTimeZone));
+	}
+
+	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		return modularContractPriceRepository.updateById(id, mapper);
 	}
 
 }

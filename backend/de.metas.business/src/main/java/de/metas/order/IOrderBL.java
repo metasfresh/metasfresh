@@ -320,7 +320,7 @@ public interface IOrderBL extends ISingletonService
 	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
 	{
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		return Quantitys.create(orderLine.getQtyEntered(), uomId);
+		return Quantitys.of(orderLine.getQtyEntered(), uomId);
 	}
 
 	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);

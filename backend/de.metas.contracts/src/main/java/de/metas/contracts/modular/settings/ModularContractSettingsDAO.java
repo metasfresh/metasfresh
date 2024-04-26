@@ -41,6 +41,8 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -53,6 +55,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -63,19 +66,22 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 @Repository
 public class ModularContractSettingsDAO
 {
 	private final static Logger logger = LogManager.getLogger(ModularContractSettingsDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final CCache<SettingsLookupKey, CachedSettingsId> cacheKey2SettingsId = CCache.<SettingsLookupKey, CachedSettingsId>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1000)
 			.tableName(I_C_Flatrate_Conditions.Table_Name)
-			.additionalTableNamesToResetFor(ImmutableSet.of(I_C_Flatrate_Term.Table_Name))
+			.additionalTableNameToResetFor(I_C_Flatrate_Term.Table_Name)
 			.invalidationKeysMapper(new SettingsIdCachingKeysMapper())
 			.build();
 
@@ -83,7 +89,8 @@ public class ModularContractSettingsDAO
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1000)
 			.tableName(I_ModCntr_Settings.Table_Name)
-			.additionalTableNamesToResetFor(ImmutableSet.of(I_ModCntr_Module.Table_Name))
+			.additionalTableNameToResetFor(I_ModCntr_Module.Table_Name)
+			.additionalTableNameToResetFor(I_ModCntr_Type.Table_Name)
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
 
@@ -113,11 +120,11 @@ public class ModularContractSettingsDAO
 				.create()
 				.list();
 
-		return fromPOs(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords);
+		return fromRecord(InterfaceWrapperHelper.load(contractSettingsId, I_ModCntr_Settings.class), moduleRecords);
 	}
 
 	@NonNull
-	private ImmutableMap<ModularContractSettingsId, ModularContractSettings> loadByIds(@NonNull final Set<ModularContractSettingsId> contractSettingsIds)
+	private ImmutableMap<ModularContractSettingsId, ModularContractSettings> retrieveByIds(@NonNull final Set<ModularContractSettingsId> contractSettingsIds)
 	{
 		final ImmutableListMultimap<ModularContractSettingsId, I_ModCntr_Module> settingsId2ModuleRecords = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addOnlyActiveRecordsFilter()
@@ -130,22 +137,23 @@ public class ModularContractSettingsDAO
 
 		return InterfaceWrapperHelper.loadByRepoIdAwares(contractSettingsIds, I_ModCntr_Settings.class)
 				.stream()
-				.map(settings -> {
-					final ModularContractSettingsId settingsId = ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
-					return fromPOs(settings, settingsId2ModuleRecords.get(settingsId));
-				})
+				.map(settings -> fromRecord(settings, settingsId2ModuleRecords.get(extractId(settings))))
 				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
 	}
 
+	@NotNull
+	private static ModularContractSettingsId extractId(final I_ModCntr_Settings settings)
+	{
+		return ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
+	}
+
 	@NonNull
-	private ModularContractSettings fromPOs(
+	private ModularContractSettings fromRecord(
 			@NonNull final I_ModCntr_Settings settingsRecord,
 			@NonNull final List<I_ModCntr_Module> moduleRecords)
 	{
-
-		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(settingsRecord.getModCntr_Settings_ID());
-		final ModularContractSettings.ModularContractSettingsBuilder result = ModularContractSettings.builder()
-				.id(modularContractSettingsId)
+		return ModularContractSettings.builder()
+				.id(extractId(settingsRecord))
 				.orgId(OrgId.ofRepoId(settingsRecord.getAD_Org_ID()))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(settingsRecord.getC_Year_ID(), settingsRecord.getC_Calendar_ID()))
 				.pricingSystemId(PricingSystemId.ofRepoId(settingsRecord.getM_PricingSystem_ID()))
@@ -153,30 +161,38 @@ public class ModularContractSettingsDAO
 				.processedProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Processed_Product_ID()))
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
-				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()));
+				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
+				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
+						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
+						orgDAO::getTimeZone))
+				.moduleConfigs(moduleRecords.stream()
+						.map(ModularContractSettingsDAO::fromRecord)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
 
-		for (final I_ModCntr_Module moduleRecord : moduleRecords)
-		{
-			final I_ModCntr_Type modCntrType = moduleRecord.getModCntr_Type();
+	public static ModuleConfig fromRecord(@NonNull final I_ModCntr_Module record)
+	{
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
-			final ModuleConfig moduleConfig = ModuleConfig.builder()
-					.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, moduleRecord.getModCntr_Module_ID()))
-					.name(moduleRecord.getName())
-					.productId(ProductId.ofRepoId(moduleRecord.getM_Product_ID()))
-					.seqNo(SeqNo.ofInt(moduleRecord.getSeqNo()))
-					.invoicingGroup(moduleRecord.getInvoicingGroup())
-					.modularContractType(ModularContractType.builder()
-												 .id(ModularContractTypeId.ofRepoId(modCntrType.getModCntr_Type_ID()))
-												 .value(modCntrType.getValue())
-												 .name(modCntrType.getName())
-												 .computingMethodType(ComputingMethodType.ofCode(modCntrType.getModularContractHandlerType()))
-												 .build())
-					.build();
+		return ModuleConfig.builder()
+				.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_Module_ID()))
+				.name(record.getName())
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
+				.invoicingGroup(InvoicingGroupType.ofCode(record.getInvoicingGroup()))
+				.modularContractType(fromRecord(record.getModCntr_Type()))
+				.build();
+	}
 
-			result.moduleConfig(moduleConfig);
-		}
-
-		return result.build();
+	private static ModularContractType fromRecord(@NonNull final I_ModCntr_Type record)
+	{
+		return ModularContractType.builder()
+				.id(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()))
+				.value(record.getValue())
+				.name(record.getName())
+				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
+				.build();
 	}
 
 	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
@@ -278,7 +294,7 @@ public class ModularContractSettingsDAO
 		final ImmutableMap<FlatrateTermId, ModularContractSettingsId> termId2SettingsId = termId2SettingsIdBuilder.build();
 
 		final ImmutableMap<ModularContractSettingsId, ModularContractSettings> id2Settings = id2ModularContractSettings
-				.getAllOrLoad(termId2SettingsId.values(), this::loadByIds)
+				.getAllOrLoad(termId2SettingsId.values(), this::retrieveByIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
 
@@ -346,7 +362,7 @@ public class ModularContractSettingsDAO
 				.ofRepoIdOrNull(conditions.getModCntr_Settings_ID());
 
 		cacheKey2SettingsId.put(SettingsLookupKey.of(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())),
-								CachedSettingsId.ofNullable(modularContractSettingsId));
+				CachedSettingsId.ofNullable(modularContractSettingsId));
 
 		Optional.ofNullable(termId)
 				.map(SettingsLookupKey::of)
@@ -379,7 +395,6 @@ public class ModularContractSettingsDAO
 
 			throw new AdempiereException("Unexpected table name=" + recordRef.getTableName());
 		}
-
 		@Override
 		public boolean isResetAll(@NonNull final TableRecordReference recordRef)
 		{
@@ -402,8 +417,8 @@ public class ModularContractSettingsDAO
 			if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName()))
 			{
 				logger.debug("ComputeCachingKeys called for a ({},{}) that wasn't cached so far!",
-							 recordRef.getRecord_ID(),
-							 recordRef.getTableName());
+						recordRef.getRecord_ID(),
+						recordRef.getTableName());
 
 				return ImmutableSet.of();
 			}
@@ -412,8 +427,8 @@ public class ModularContractSettingsDAO
 				final FlatrateTermId contractId = recordRef.getIdAssumingTableName(I_C_Flatrate_Term.Table_Name, FlatrateTermId::ofRepoId);
 
 				logger.debug("ComputeCachingKeys called for ({},{})!",
-							 recordRef.getRecord_ID(),
-							 recordRef.getTableName());
+						recordRef.getRecord_ID(),
+						recordRef.getTableName());
 
 				return ImmutableSet.of(SettingsLookupKey.of(contractId));
 			}
@@ -448,10 +463,8 @@ public class ModularContractSettingsDAO
 	@Value
 	private static class SettingsLookupKey
 	{
-		@Nullable
-		FlatrateTermId contractId;
-		@Nullable
-		ConditionsId conditionsId;
+		@Nullable FlatrateTermId contractId;
+		@Nullable ConditionsId conditionsId;
 
 		@NonNull
 		public static SettingsLookupKey of(@NonNull final ConditionsId conditionsId)
@@ -487,12 +500,19 @@ public class ModularContractSettingsDAO
 	@Value
 	private static class CachedSettingsId
 	{
+		@Nullable ModularContractSettingsId settingsId;
+		
 		private static CachedSettingsId ofNullable(@Nullable final ModularContractSettingsId settingsId)
 		{
 			return new CachedSettingsId(settingsId);
 		}
+	}
 
-		@Nullable
-		ModularContractSettingsId settingsId;
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		final I_ModCntr_Module module = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		return fromRecord(module);
+
 	}
 }

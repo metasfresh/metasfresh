@@ -35,10 +35,12 @@ import org.compiere.model.I_C_Year;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
+
 import static de.metas.contracts.modular.ComputingMethodType.INTERIM_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ModularContractSettingsDAOTest
 {
@@ -65,6 +67,7 @@ class ModularContractSettingsDAOTest
 		settingsRecord.setName("ModCntr_Settings");
 		settingsRecord.setM_Raw_Product_ID(30);
 		settingsRecord.setM_PricingSystem_ID(40);
+		settingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
 		saveRecord(settingsRecord);
 
 		final I_ModCntr_Type typeRecord = newInstance(I_ModCntr_Type.class);
@@ -78,7 +81,7 @@ class ModularContractSettingsDAOTest
 		moduleRecord.setModCntr_Type_ID(typeRecord.getModCntr_Type_ID());
 		moduleRecord.setM_Product_ID(130);
 		moduleRecord.setSeqNo(10);
-		moduleRecord.setInvoicingGroup("invoicingGroup");
+		moduleRecord.setInvoicingGroup("Costs");
 		saveRecord(moduleRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);

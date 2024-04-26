@@ -141,7 +141,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 											.flatrateTermId(createLogRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+											.contractModuleId(createLogRequest.getModularContractModuleId())
 											.build());
 	}
 

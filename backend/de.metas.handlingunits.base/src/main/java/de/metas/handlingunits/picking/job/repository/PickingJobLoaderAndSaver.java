@@ -444,7 +444,7 @@ class PickingJobLoaderAndSaver
 				// What?
 				.productId(productId)
 				.productName(loadingSupportingServices().getProductName(productId))
-				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				//
 				// Pick From
 				.pickFroms(PickingJobStepPickFromMap.ofList(pickFroms))
@@ -530,7 +530,7 @@ class PickingJobLoaderAndSaver
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
-				? Optional.of(QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reasonCode))
+				? Optional.of(QtyRejectedWithReason.of(Quantitys.of(record.getQtyRejectedToPick(), uomId), reasonCode))
 				: Optional.empty();
 	}
 
@@ -556,7 +556,7 @@ class PickingJobLoaderAndSaver
 		return PickingJobStepPickedToHU.builder()
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
 				.actualPickedHUId(HuId.ofRepoId(record.getPicked_HU_ID()))
-				.qtyPicked(Quantitys.create(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyPicked(Quantitys.of(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.pickingCandidateId(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
 				.build();
 	}
@@ -587,7 +587,7 @@ class PickingJobLoaderAndSaver
 		final UomId uomId = UomId.ofRepoIdOrNull(record.getC_UOM_ID());
 		final QtyRejectedReasonCode reasonCode = QtyRejectedReasonCode.ofNullableCode(record.getRejectReason()).orElse(null);
 		return reasonCode != null && uomId != null
-				? Optional.of(QtyRejectedWithReason.of(Quantitys.create(record.getQtyRejectedToPick(), uomId), reasonCode))
+				? Optional.of(QtyRejectedWithReason.of(Quantitys.of(record.getQtyRejectedToPick(), uomId), reasonCode))
 				: Optional.empty();
 	}
 
@@ -684,7 +684,7 @@ class PickingJobLoaderAndSaver
 						.qrCode(getQRCode(pickFromHUId))
 						.build())
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyAvailable(Quantitys.create(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyAvailable(Quantitys.of(record.getQtyAvailable(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.build();
 	}
 }

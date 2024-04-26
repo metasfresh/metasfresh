@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.SeqNo;
@@ -34,7 +35,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
-@Builder
+@Builder(toBuilder = true)
 public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   @NonNull FlatrateTermId flatrateTermId,
 								   @NonNull Money amount,
@@ -45,4 +46,12 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   SeqNo seqNo)
 {
 
+	public ProductPrice getProductPrice()
+	{
+		return ProductPrice.builder()
+				.productId(productId())
+				.money(amount())
+				.uomId(uomId())
+				.build();
+	}
 }

@@ -26,6 +26,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.Check;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -75,11 +76,23 @@ public class ModularContractSettings
 	SOTrx soTrx;
 
 	@NonNull
+	LocalDateAndOrgId storageCostStartDate;
+
+	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatching(computingMethodType))
+				.toList();
+	}
+
+	@NonNull
+	public List<ModuleConfig> getModuleConfigsWithout(@NonNull final ComputingMethodType computingMethodType)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> !config.isMatching(computingMethodType))
 				.toList();
 	}
 
@@ -106,8 +119,22 @@ public class ModularContractSettings
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
-		return moduleConfigs
-				.stream()
-				.anyMatch(config -> config.isMatching(computingMethodType));
+		return moduleConfigs.stream().anyMatch(config -> config.isMatching(computingMethodType));
 	}
+
+	public long countMatching(@NonNull final ComputingMethodType computingMethodType, @NonNull final ProductId productId)
+	{
+		return moduleConfigs.stream()
+				.filter(config -> config.isMatching(computingMethodType) && ProductId.equals(config.getProductId(), productId))
+				.count();
+	}
+
+	public long countMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	{
+		return moduleConfigs.stream()
+				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
+				.count();
+	}
+
+
 }

@@ -225,7 +225,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(record.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(record.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else

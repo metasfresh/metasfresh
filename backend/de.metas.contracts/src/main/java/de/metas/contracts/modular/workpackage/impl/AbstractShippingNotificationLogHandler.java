@@ -143,7 +143,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build());
 	}
 
@@ -155,7 +155,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	{
 		public Quantity getQuantity()
 		{
-			return Quantitys.create(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
+			return Quantitys.of(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
 		}
 
 		public ProductId getProductId()

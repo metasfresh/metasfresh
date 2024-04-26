@@ -165,7 +165,7 @@ public class CallOrderDetailService
 	private static CallOrderDetailData buildCallOrderData(@NonNull final CallOrderSummaryId summaryId, @NonNull final I_C_OrderLine ol)
 	{
 		final UomId uomId = UomId.ofRepoId(ol.getC_UOM_ID());
-		final Quantity qtyEntered = Quantitys.create(ol.getQtyEntered(), uomId);
+		final Quantity qtyEntered = Quantitys.of(ol.getQtyEntered(), uomId);
 
 		return CallOrderDetailData
 				.builder()
