@@ -49,7 +49,7 @@ import java.math.BigDecimal;
 @UtilityClass
 public class Quantitys
 {
-	public Quantity create(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		return Quantity.of(qty, uomDao.getByX12DE355(x12DE355));

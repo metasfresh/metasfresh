@@ -179,7 +179,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			return null;
 		}
 
-		return Quantitys.create(maxManufacturedQtyPerOrderDispo, uomId);
+		return Quantitys.of(maxManufacturedQtyPerOrderDispo, uomId);
 	}
 
 	@Override

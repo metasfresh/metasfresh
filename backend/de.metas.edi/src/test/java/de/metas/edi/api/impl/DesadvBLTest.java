@@ -89,7 +89,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("9", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -122,7 +122,7 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -163,8 +163,8 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("2.5", eachUomId))
+				.stockQty(Quantitys.of("10", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("2.5", eachUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -173,7 +173,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,

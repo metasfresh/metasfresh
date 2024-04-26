@@ -725,7 +725,7 @@ public class PPOrderBL implements IPPOrderBL
 						return null;
 					}
 
-					return Quantitys.create(roundingToScale, roundingToScaleUomId);
+					return Quantitys.of(roundingToScale, roundingToScaleUomId);
 				});
 	}
 

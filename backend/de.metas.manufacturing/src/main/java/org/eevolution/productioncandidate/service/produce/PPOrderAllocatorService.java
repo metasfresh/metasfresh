@@ -113,7 +113,7 @@ public class PPOrderAllocatorService
 	private Quantity getCapacityPerProductionCycle(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
 		final UomId candidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
-		final Quantity capacityOverride = Quantitys.create(ppOrderCandidate.getCapacityPerProductionCycleOverride(),
+		final Quantity capacityOverride = Quantitys.of(ppOrderCandidate.getCapacityPerProductionCycleOverride(),
 														   candidateUomId);
 		if (capacityOverride.isPositive())
 		{

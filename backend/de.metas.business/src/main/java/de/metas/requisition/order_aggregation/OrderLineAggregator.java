@@ -31,7 +31,7 @@ class OrderLineAggregator
 		setQtyEntered(qtyEnteredNew);
 	}
 
-	private Quantity getQtyEntered() {return Quantitys.create(orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));}
+	private Quantity getQtyEntered() {return Quantitys.of(orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));}
 
 	private void setQtyEntered(Quantity qtyEntered)
 	{
