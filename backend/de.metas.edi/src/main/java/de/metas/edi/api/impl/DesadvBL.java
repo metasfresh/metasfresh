@@ -409,7 +409,7 @@ public class DesadvBL implements IDesadvBL
 		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(inOutLineStockQty.toBigDecimal());
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
-		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
+		final Quantity desadvLineQtyDelivered = Quantitys.of(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 		final Quantity newQtyDeliveredInUOM = addInOutLineQtyToDesadvLineQty(inOutLineQtyEff, desadvLineQtyDelivered, desadvLineRecord);
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM.toBigDecimal());
 
@@ -423,7 +423,7 @@ public class DesadvBL implements IDesadvBL
 		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
 		if (invoiceUomId != null)
 		{
-			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.create(desadvLineRecord.getQtyDeliveredInInvoiceUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
+			final Quantity desadvLineQtyInInvoiceUOM = Quantitys.of(desadvLineRecord.getQtyDeliveredInInvoiceUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_Invoice_ID()));
 			final Quantity newQtyDeliveredInInvoiceUOM = addInOutLineQtyToDesadvLineQty(inOutLineQtyEff, desadvLineQtyInInvoiceUOM, desadvLineRecord);
 			desadvLineRecord.setQtyDeliveredInInvoiceUOM(newQtyDeliveredInInvoiceUOM.toBigDecimal());
 		}
@@ -460,7 +460,7 @@ public class DesadvBL implements IDesadvBL
 				throw new AdempiereException("desadvLineRecord with TU-UOM C_UOM_ID=" + desadvLineQtyToAugment.getUomId().getRepoId() + " needs to have a QtyItemCapacity in order to convert the quantity")
 						.appendParametersToMessage().setParameter("desadvLineRecord", desadvLineRecord);
 			}
-			augentQtyDeliveredInUOM = Quantitys.create(
+			augentQtyDeliveredInUOM = Quantitys.of(
 					inOutLineStockQty.toBigDecimal().divide(cusPerTU, RoundingMode.CEILING),
 					desadvLineQtyToAugment.getUomId());
 		}

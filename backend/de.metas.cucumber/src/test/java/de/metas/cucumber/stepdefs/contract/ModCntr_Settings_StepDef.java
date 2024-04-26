@@ -42,6 +42,7 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -110,6 +111,7 @@ public class ModCntr_Settings_StepDef
 		modCntrSettingsRecord.setC_Calendar_ID(calendarRecord.getC_Calendar_ID());
 		modCntrSettingsRecord.setC_Year_ID(yearRecord.getC_Year_ID());
 		modCntrSettingsRecord.setIsSOTrx(isSoTrx);
+		modCntrSettingsRecord.setStorageCostStartDate(Timestamp.valueOf("2024-04-24 07:15:00"));
 
 		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Flatrate_Conditions.COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(pricingSystemIdentifier))

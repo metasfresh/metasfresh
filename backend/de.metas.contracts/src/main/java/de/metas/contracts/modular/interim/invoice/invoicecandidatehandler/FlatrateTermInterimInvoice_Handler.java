@@ -37,6 +37,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -50,6 +51,7 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -57,7 +59,9 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -74,9 +78,12 @@ import static java.util.Collections.emptyIterator;
 
 public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	@NonNull private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 
 	@Override
 	public String getConditionsType()
@@ -95,7 +102,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	{
 		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
 
-		return Quantitys.create(invoiceCandidateRecord.getQtyEntered(), uomId);
+		return Quantitys.of(invoiceCandidateRecord.getQtyEntered(), uomId);
 	}
 
 	@Override
@@ -167,16 +174,22 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final ModularContractLogEntry modularContractLogEntry = interimLogs.getFirstEntry();
 
-		final ProductPrice productPrice = modularContractLogEntry.getPriceActual();
-
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 
 		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractLogEntry.getModularContractModuleId(), flatrateTermId);
 
 		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
 
+
+		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
+		final UomId stockUOM = productBL.getStockUOMId(productPrice.getProductId());
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM,
+																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
+																			 uomConversionBL
+		);
+
 		final ContractSpecificPrice contractSpecificPrice = ContractSpecificPrice.builder()
-				.productPrice(productPrice)
+				.productPrice(productPriceToInvoice)
 				.taxCategoryId(taxCategoryId)
 				.pricingSystemId(pricingSystemId)
 				.build();

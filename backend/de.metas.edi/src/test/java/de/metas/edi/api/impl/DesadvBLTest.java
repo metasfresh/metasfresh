@@ -79,8 +79,8 @@ class DesadvBLTest
 
 		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantitys.create("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
-				.uomQty(Quantitys.create("20.5", coliUomId))
+				.stockQty(Quantitys.of("20.5", kiloUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.of("20.5", coliUomId))
 				.build();
 
 		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
@@ -131,7 +131,7 @@ class DesadvBLTest
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
-				Quantitys.create("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
+				Quantitys.of("5", kiloUomId) /* qtyCUsPerTUInStockUOM */,
 				cusPerLU,
 				coliUomId,
 				eachUomId,
@@ -150,7 +150,7 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
-	
+
 	@Test
 	void setQty_isCatchWeight_withPicking()
 	{
@@ -192,8 +192,8 @@ class DesadvBLTest
 
 		softly.assertAll();
 	}
-	
-	
+
+
 	/**
 	 * have 10PCE fitting into 1COLI and 1PCE weighing 2KGM
 	 * Create a desadvLine with 0PCE and 0COLI;
@@ -218,8 +218,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);
@@ -253,8 +253,8 @@ class DesadvBLTest
 		saveRecord(desadvLineRecord);
 
 		final StockQtyAndUOMQty inOutLineQty = StockQtyAndUOMQty.builder().productId(productId)
-				.stockQty(Quantitys.create("9", eachUomId))
-				.uomQty(Quantitys.create("20", kiloUomId)).build();
+				.stockQty(Quantitys.of("9", eachUomId))
+				.uomQty(Quantitys.of("20", kiloUomId)).build();
 
 		// when
 		desadvBL.addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null, true);

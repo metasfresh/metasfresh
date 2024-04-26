@@ -62,6 +62,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return list.get(0);
 	}
 
+	@Nullable
 	public ProductPrice getFirstPriceActual()
 	{
 		return getFirstEntry().getPriceActual();
@@ -87,17 +88,42 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getProductId);
 	}
 
-	public Quantity getQtySum(@NonNull UomId targetUomId, @NonNull QuantityUOMConverter uomConverter)
+	@NonNull
+	public Quantity getQtySum(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		if (list.isEmpty())
 		{
-			return Quantitys.createZero(targetUomId);
+			return Quantitys.zero(targetUomId);
 		}
 
 		return list.stream()
 				.map((log) -> log.getQuantity(targetUomId, uomConverter))
 				.reduce(Quantity::add)
-				.orElseGet(() -> Quantitys.createZero(targetUomId));
+				.orElseGet(() -> Quantitys.zero(targetUomId));
+	}
+
+	@NonNull
+	public Quantity getQtyXStorageDaysSum(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		if (list.isEmpty())
+		{
+			return Quantitys.zero(targetUomId);
+		}
+
+		return list.stream()
+				.map((log) -> getQtyXStorageDays(log, targetUomId, uomConverter))
+				.reduce(Quantity::add)
+				.orElseGet(() -> Quantitys.zero(targetUomId));
+	}
+
+	@NonNull
+	private Quantity getQtyXStorageDays(
+			@NonNull final ModularContractLogEntry log,
+			@NonNull final UomId targetUomId,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		return log.getQuantity(targetUomId, uomConverter)
+				.multiply(Check.assumeNotNull(log.getStorageDays(), "StorageDays shouldn't be null"));
 	}
 
 	public void assertSingleProductId(@NonNull final ProductId expectedProductId)
@@ -136,4 +162,18 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		Check.assume(productPrice.isEqualByComparingTo(productPriceToMatch), "ProductPrices of billable modular contract logs should be identical", productPrice, productPriceToMatch);
 	}
 
+	private void assertAllUnprocessed()
+	{
+			Check.assume(list.stream().noneMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
+	}
+
+	public ModularContractLogEntriesList withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter quantityUOMConverter)
+	{
+		assertAllUnprocessed();
+		assertUniqueProductPriceOrError();
+		return list.stream()
+				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter))
+				.collect(collect());
+
+	}
 }

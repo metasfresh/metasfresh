@@ -1,5 +1,6 @@
 package de.metas.organization;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -11,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
 
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -62,7 +64,18 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 	{
 		return localDateAndOrgId != null ? localDateAndOrgId.toTimestamp(orgMapper) : null;
 	}
-	
+
+	public static long daysBetween(@NonNull final LocalDateAndOrgId d1, @NonNull final LocalDateAndOrgId d2)
+	{
+		assertSameOrg(d2, d2);
+		return ChronoUnit.DAYS.between(d1.toLocalDate(), d2.toLocalDate());
+	}
+
+	private static void assertSameOrg(@NonNull final LocalDateAndOrgId d1, @NonNull final LocalDateAndOrgId d2)
+	{
+		Check.assumeEquals(d1.getOrgId(), d2.getOrgId(), "Dates have the same org: {}, {}", d1, d2);
+	}
+
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
 		return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();

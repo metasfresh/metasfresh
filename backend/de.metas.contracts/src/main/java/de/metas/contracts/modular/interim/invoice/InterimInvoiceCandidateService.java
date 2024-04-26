@@ -39,6 +39,7 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -63,7 +64,9 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -82,17 +85,19 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class InterimInvoiceCandidateService
 {
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-	private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
-	private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
-	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
+	@NonNull private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
+	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
+	@NonNull private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
 
-	private final ModularContractService modularContractService;
+	@NonNull private final ModularContractService modularContractService;
 
 	private DocTypeId interimInvoiceDocType;
 
@@ -155,14 +160,18 @@ public class InterimInvoiceCandidateService
 
 		final ModularContractLogEntry modularContractLogEntry = interimLogsToInvoice.getFirstEntry();
 
-		final ProductPrice productPrice = modularContractLogEntry.getPriceActual();
+		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM,
+																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
+																			 uomConversionBL
+		);
 
 		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractLogEntry.getModularContractModuleId(), flatrateTermId);
 
 		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
 
 		final ContractSpecificPrice contractSpecificPrice = ContractSpecificPrice.builder()
-				.productPrice(productPrice)
+				.productPrice(productPriceToInvoice)
 				.taxCategoryId(taxCategoryId)
 				.pricingSystemId(pricingSystemId)
 				.build();

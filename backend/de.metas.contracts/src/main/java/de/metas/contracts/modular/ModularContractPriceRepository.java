@@ -36,9 +36,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -46,6 +48,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ModularContractPriceRepository
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
+	{
+		final I_ModCntr_Specific_Price record = getRecordById(id);
+		return fromRecord(record);
+	}
+
+	private static I_ModCntr_Specific_Price getRecordById(final @NotNull ModCntrSpecificPriceId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_ModCntr_Specific_Price.class);
+	}
 
 	@NonNull
 	public ModCntrSpecificPrice retrievePriceForProductAndContract(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
@@ -68,21 +81,27 @@ public class ModularContractPriceRepository
 
 	public void save(@NonNull final ModCntrSpecificPrice modCntrSpecificPrice)
 	{
-		final I_ModCntr_Specific_Price price = modCntrSpecificPrice.id() != null ? InterfaceWrapperHelper.load(modCntrSpecificPrice.id(), I_ModCntr_Specific_Price.class) : InterfaceWrapperHelper.newInstance(I_ModCntr_Specific_Price.class);
-		price.setC_Flatrate_Term_ID(modCntrSpecificPrice.flatrateTermId().getRepoId());
-		price.setM_Product_ID(modCntrSpecificPrice.productId().getRepoId());
-		price.setC_TaxCategory_ID(modCntrSpecificPrice.taxCategoryId().getRepoId());
-		price.setC_Currency_ID(modCntrSpecificPrice.amount().getCurrencyId().getRepoId());
-		price.setPrice(modCntrSpecificPrice.amount().toBigDecimal());
-		price.setModCntr_Module_ID(modCntrSpecificPrice.modularContractModuleId().getRepoId());
-		price.setC_UOM_ID(modCntrSpecificPrice.uomId().getRepoId());
-		price.setSeqNo(modCntrSpecificPrice.seqNo().toInt());
+		final I_ModCntr_Specific_Price record = modCntrSpecificPrice.id() != null
+				? getRecordById(modCntrSpecificPrice.id())
+				: InterfaceWrapperHelper.newInstance(I_ModCntr_Specific_Price.class);
+		updateRecord(record, modCntrSpecificPrice);
+		saveRecord(record);
+	}
 
-		saveRecord(price);
+	private static void updateRecord(final I_ModCntr_Specific_Price record, final @NotNull ModCntrSpecificPrice from)
+	{
+		record.setC_Flatrate_Term_ID(from.flatrateTermId().getRepoId());
+		record.setM_Product_ID(from.productId().getRepoId());
+		record.setC_TaxCategory_ID(from.taxCategoryId().getRepoId());
+		record.setC_Currency_ID(from.amount().getCurrencyId().getRepoId());
+		record.setPrice(from.amount().toBigDecimal());
+		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
+		record.setC_UOM_ID(from.uomId().getRepoId());
+		record.setSeqNo(from.seqNo().toInt());
 	}
 
 	@NonNull
-	private Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
+	public Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
 			@NonNull final ModularContractModuleId modularContractModuleId,
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
@@ -93,11 +112,11 @@ public class ModularContractPriceRepository
 				.create()
 
 				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
-				.map(ModularContractPriceRepository::fromDB);
+				.map(ModularContractPriceRepository::fromRecord);
 	}
 
 	@NonNull
-	private static ModCntrSpecificPrice fromDB(@NonNull final I_ModCntr_Specific_Price modCntrSpecificPrice)
+	private static ModCntrSpecificPrice fromRecord(@NonNull final I_ModCntr_Specific_Price modCntrSpecificPrice)
 	{
 		return ModCntrSpecificPrice.builder()
 				.id(ModCntrSpecificPriceId.ofRepoId(modCntrSpecificPrice.getModCntr_Specific_Price_ID()))
@@ -109,6 +128,18 @@ public class ModularContractPriceRepository
 				.amount(Money.of(modCntrSpecificPrice.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPrice.getC_Currency_ID())))
 				.seqNo(SeqNo.ofInt(modCntrSpecificPrice.getSeqNo()))
 				.build();
+	}
+
+	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		final I_ModCntr_Specific_Price record = getRecordById(id);
+
+		final ModCntrSpecificPrice price = fromRecord(record);
+		final ModCntrSpecificPrice priceChanged = mapper.apply(price);
+		updateRecord(record, priceChanged);
+		saveRecord(record);
+
+		return priceChanged;
 	}
 
 }

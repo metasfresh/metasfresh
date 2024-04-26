@@ -246,12 +246,12 @@ public class EDIDesadvPackService
 		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
 			// we use the capacity which the goods were ordered in
-			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+			qtyCUsPerTUInStockUOM = Quantitys.of(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
 		}
 		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
 		{
 			// we make an educated guess, based on the packing-instruction's information
-			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
+			qtyCUsPerTUInStockUOM = Quantitys.of(lutuConfigurationInStockUOM.getQtyCUsPerTU(), qtyToAdd.getStockQty().getUomId());
 		}
 		else
 		{

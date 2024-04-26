@@ -29,8 +29,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.Optional;
-
 @Value
 @Builder
 public class ModuleConfig
@@ -41,15 +39,22 @@ public class ModuleConfig
 
 	@NonNull String name;
 
-	@NonNull String invoicingGroup;
+	@NonNull InvoicingGroupType invoicingGroup;
 
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
 
+	public ModularContractSettingsId getModularContractSettingsId() {return id.getModularContractSettingsId();}
+
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return modularContractType.isMatching(computingMethodType);
+	}
+
+	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
+	{
+		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
 	}
 
 	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}

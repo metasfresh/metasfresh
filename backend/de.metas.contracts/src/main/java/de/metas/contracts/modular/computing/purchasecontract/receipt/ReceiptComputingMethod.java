@@ -34,6 +34,7 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -44,6 +45,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -160,4 +162,11 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 				.qty(computingMethodService.getQtySum(logs, stockUOMId))
 				.build();
 	}
+
+	@Override
+	public @NonNull Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
+	{
+		return Stream.empty();
+	}
+
 }

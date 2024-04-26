@@ -46,6 +46,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
@@ -97,39 +99,44 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				: true;
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
-																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
+				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getConfigId().getModularContractModuleId(),
-																								   request.getContractId());
+		final ProductPrice contractSpecificPrice = getContractSpecificPrice(request);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
-											.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-											.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-											.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-											.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
-											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-											.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
-											.contractType(getLogEntryContractType())
-											.soTrx(SOTrx.PURCHASE)
-											.processed(false)
-											.quantity(quantity)
-											.transactionDate(transactionDate)
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(description)
-											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
-											.productName(request.getProductName())
-											.invoicingGroupId(invoicingGroupId)
-											.isBillable(isBillable)
-											.priceActual(contractSpecificPrice)
-											.amount(contractSpecificPrice.computeAmount(quantity))
-											.build());
+				.contractId(request.getContractId())
+				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
+				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
+				.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
+				.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
+				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+				.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
+				.contractType(getLogEntryContractType())
+				.soTrx(SOTrx.PURCHASE)
+				.processed(false)
+				.quantity(quantity)
+				.transactionDate(transactionDate)
+				.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+				.description(description)
+				.modularContractTypeId(request.getTypeId())
+				.configId(request.getConfigId())
+				.productName(request.getProductName())
+				.invoicingGroupId(invoicingGroupId)
+				.isBillable(isBillable)
+				.priceActual(contractSpecificPrice)
+				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
+				.build());
+	}
+
+	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	{
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
+				request.getContractId());
 	}
 
 	@Override
@@ -145,11 +152,11 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(request.getRecordRef())
-											.flatrateTermId(request.getContractId())
-											.description(description)
-											.logEntryContractType(getLogEntryContractType())
-											.contractModuleId(request.getModuleConfig().getId().getModularContractModuleId())
-											.build());
+				.referencedModel(request.getRecordRef())
+				.flatrateTermId(request.getContractId())
+				.description(description)
+				.logEntryContractType(getLogEntryContractType())
+				.contractModuleId(request.getModularContractModuleId())
+				.build());
 	}
 }

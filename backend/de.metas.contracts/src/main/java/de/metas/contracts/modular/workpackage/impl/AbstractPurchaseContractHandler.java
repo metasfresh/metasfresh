@@ -110,9 +110,9 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
 
-		final Quantity quantity = Quantitys.create(modularContractRecord.getPlannedQtyPerUnit(),
-												   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
-												   productId);
+		final Quantity quantity = Quantitys.of(modularContractRecord.getPlannedQtyPerUnit(),
+											   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
+											   productId);
 
 		final String productName = productBL.getProductValueAndName(productId);
 
