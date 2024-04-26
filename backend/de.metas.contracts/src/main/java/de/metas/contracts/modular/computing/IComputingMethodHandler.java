@@ -27,15 +27,19 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -51,6 +55,9 @@ import java.util.stream.Stream;
  */
 public interface IComputingMethodHandler
 {
+	ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	IProductBL productBL = Services.get(IProductBL.class);
+
 	@NonNull
 	ComputingMethodType getComputingMethodType();
 
@@ -74,10 +81,9 @@ public interface IComputingMethodHandler
 		return true;
 	}
 
-
 	default @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = Services.get(IProductBL.class).getStockUOM(request.getProductId());
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
 		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
 
 		return ComputingResponse.builder()
@@ -89,5 +95,11 @@ public interface IComputingMethodHandler
 						.build())
 				.qty(qty)
 				.build();
+	}
+
+	default @NonNull Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
+	{
+		return Stream.of(modularContractSettingsDAO.getByModuleId(moduleId)
+				.getProductId());
 	}
 }
