@@ -105,8 +105,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
-				request.getContractId());
+		final ProductPrice contractSpecificPrice = getContractSpecificPrice(request);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
@@ -132,6 +131,12 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.priceActual(contractSpecificPrice)
 				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
 				.build());
+	}
+
+	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	{
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
+				request.getContractId());
 	}
 
 	@Override

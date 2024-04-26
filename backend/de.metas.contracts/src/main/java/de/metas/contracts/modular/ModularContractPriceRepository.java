@@ -101,7 +101,7 @@ public class ModularContractPriceRepository
 	}
 
 	@NonNull
-	private Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
+	public Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
 			@NonNull final ModularContractModuleId modularContractModuleId,
 			@NonNull final FlatrateTermId flatrateTermId)
 	{
