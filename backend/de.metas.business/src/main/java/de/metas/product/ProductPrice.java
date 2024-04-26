@@ -82,6 +82,11 @@ public class ProductPrice
 		return this.toBuilder().money(money.negate()).build();
 	}
 
+	public ProductPrice negateIf(boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
 	public boolean isEqualByComparingTo(@Nullable final ProductPrice other)
 	{
 		if (other == null)
@@ -116,7 +121,6 @@ public class ProductPrice
 
 		return Money.of(amount, money.getCurrencyId());
 	}
-
 
 	public ProductPrice convertToUom(
 			@NonNull final UomId toUomId,

@@ -23,19 +23,18 @@
 package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawproduct;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.product.ProductPrice;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull
-	private final AVRawComputingMethod computingMethod;
+	@NonNull @Getter private final AVRawComputingMethod computingMethod;
 
 	public AVRawMaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
@@ -46,21 +45,11 @@ public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 		this.computingMethod = computingMethod;
 	}
 
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
 	@NonNull
 	@Override
 	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
-																								   request.getContractId()); 
-		
-		return request.getModuleConfig().isCostsType()
-				? contractSpecificPrice.negate()
-				: contractSpecificPrice;
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+				.negateIf(request.isCostsType());
 	}
 }
