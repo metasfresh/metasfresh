@@ -37,6 +37,7 @@ import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -121,6 +122,8 @@ public interface IModularContractLogHandler
 		}
 
 		public boolean isCostsType() {return moduleConfig.isCostsType();}
+
+		public ProductId getProductId() {return moduleConfig.getProductId();}
 	}
 
 	@Value

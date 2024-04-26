@@ -32,9 +32,10 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull @Getter private final AVRawComputingMethod computingMethod;
+	@NonNull private final AVRawComputingMethod computingMethod;
 
 	public AVRawMaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,

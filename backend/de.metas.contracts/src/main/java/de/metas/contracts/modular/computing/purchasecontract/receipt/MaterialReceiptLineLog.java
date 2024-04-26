@@ -23,17 +23,17 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull
-	private final ReceiptComputingMethod computingMethod;
+	@NonNull private final ReceiptComputingMethod computingMethod;
 
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
@@ -42,11 +42,5 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService);
 		this.computingMethod = computingMethod;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }
