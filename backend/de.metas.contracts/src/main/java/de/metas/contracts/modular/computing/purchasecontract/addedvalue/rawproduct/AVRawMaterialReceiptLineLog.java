@@ -56,7 +56,7 @@ public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 	@Override
 	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getConfigId().getModularContractModuleId(),
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
 																								   request.getContractId()); 
 		
 		return request.getModuleConfig().getInvoicingGroup().isCostsType()
