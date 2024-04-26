@@ -35,15 +35,15 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
-import de.metas.uom.UomId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -52,7 +52,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class AVRawComputingMethod implements IComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@NonNull private final ModularContractProvider contractProvider;
@@ -62,23 +61,27 @@ public class AVRawComputingMethod implements IComputingMethodHandler
 	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
 	{
 		if (!logEntryContractType.isModularContractType()
-				|| !recordRef.getTableName().equals(I_M_InOutLine.Table_Name))
+				|| !recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
 		{
 			return false;
 		}
 
-		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
-
+		final InOutLineId receiptLineId = getInOutLineId(recordRef);
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		return !inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
 	}
 
+	private static InOutLineId getInOutLineId(final @NotNull TableRecordReference recordRef)
+	{
+		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
+	}
+
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return contractProvider.streamModularPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+		return contractProvider.streamModularPurchaseContractsForReceiptLine(getInOutLineId(recordRef));
 	}
 
 	@Override
@@ -87,7 +90,7 @@ public class AVRawComputingMethod implements IComputingMethodHandler
 			final @NonNull FlatrateTermId contractId,
 			final @NonNull ModularContractSettings settings)
 	{
-		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
+		final InOutLineId receiptLineId = getInOutLineId(recordRef);
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
 
 		return settings.getRawProductId().getRepoId() == inOutLineRecord.getM_Product_ID();
@@ -108,13 +111,15 @@ public class AVRawComputingMethod implements IComputingMethodHandler
 			return computingMethodService.toZeroResponse(request);
 		}
 
+		final Quantity qtyInStockUOM = computingMethodService.getQtySumInStockUOM(logs);
+
 		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		final ProductPrice pricePerStockUOM = computingMethodService.productPriceToUOM(price, qtyInStockUOM.getUomId());
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
-				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
-				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.price(pricePerStockUOM)
+				.qty(qtyInStockUOM)
 				.build();
 	}
 }
