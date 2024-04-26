@@ -161,8 +161,7 @@ public class InterimInvoiceCandidateService
 		final ModularContractLogEntry modularContractLogEntry = interimLogsToInvoice.getFirstEntry();
 
 		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-		final UomId stockUomId = productBL.getStockUOMId(productIdToInvoice);
-		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUomId,
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM,
 																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
 																			 uomConversionBL
 		);
