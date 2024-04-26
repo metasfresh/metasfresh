@@ -114,7 +114,11 @@ public interface IModularContractLogHandler
 			return moduleConfig.getId();
 		}
 
-		public ModularContractModuleId getModularContractModuleId() {return getConfigId().getModularContractModuleId();}
+		@NonNull
+		public ModularContractModuleId getModularContractModuleId()
+		{
+			return getConfigId().getModularContractModuleId();
+		}
 	}
 
 	@Value

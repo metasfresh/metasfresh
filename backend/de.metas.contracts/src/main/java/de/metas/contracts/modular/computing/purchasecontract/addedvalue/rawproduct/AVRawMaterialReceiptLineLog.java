@@ -59,7 +59,7 @@ public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
 																								   request.getContractId()); 
 		
-		return request.getModuleConfig().getInvoicingGroup().isCostsType()
+		return request.getModuleConfig().isCostsType()
 				? contractSpecificPrice.negate()
 				: contractSpecificPrice;
 	}
