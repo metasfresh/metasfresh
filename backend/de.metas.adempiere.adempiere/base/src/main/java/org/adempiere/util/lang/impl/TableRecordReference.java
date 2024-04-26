@@ -395,9 +395,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return tableName;
 	}
 
+	public boolean tableNameEqualsTo(@NonNull final String expectedTableName)
+	{
+		return Objects.equals(getTableName(), expectedTableName);
+	}
+
 	public void assertTableName(@NonNull final String expectedTableName)
 	{
-		if (!Objects.equals(getTableName(), expectedTableName))
+		if (!tableNameEqualsTo(expectedTableName))
 		{
 			throw new AdempiereException("Reference is expected to have '" + expectedTableName + "' table: " + this);
 		}
@@ -440,6 +445,20 @@ public final class TableRecordReference implements ITableRecordReference
 	{
 		final int repoId = getRecordIdAssumingTableName(expectedTableName);
 		return mapper.apply(repoId);
+	}
+
+	public <T extends RepoIdAware> Optional<T> getIdIfTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		if (tableName.equals(expectedTableName))
+		{
+			return Optional.of(mapper.apply(getRecord_ID()));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Deprecated

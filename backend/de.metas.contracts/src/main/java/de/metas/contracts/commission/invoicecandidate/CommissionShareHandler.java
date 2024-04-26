@@ -210,7 +210,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						orgId,
 						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, commissionProductId),
+						Quantitys.of(ONE, commissionProductId),
 						soTrx)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))

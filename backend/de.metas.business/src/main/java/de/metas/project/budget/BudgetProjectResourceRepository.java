@@ -136,7 +136,7 @@ public class BudgetProjectResourceRepository
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceId(ResourceId.ofRepoIdOrNull(record.getS_Resource_ID()))
 				.durationUomId(durationUomId)
-				.plannedDuration(Quantitys.create(record.getPlannedDuration(), durationUomId))
+				.plannedDuration(Quantitys.of(record.getPlannedDuration(), durationUomId))
 				.plannedAmount(Money.of(record.getPlannedAmt(), currencyId))
 				.pricePerDurationUnit(Money.of(record.getPricePerTimeUOM(), currencyId))
 				.dateRange(CalendarDateRange.builder()

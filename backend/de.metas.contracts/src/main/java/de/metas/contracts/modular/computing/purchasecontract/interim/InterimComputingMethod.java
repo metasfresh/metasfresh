@@ -51,7 +51,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +63,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -160,39 +158,5 @@ public class InterimComputingMethod implements IComputingMethodHandler
 							   .build())
 				.qty(qty)
 				.build();
-	}
-
-	@Override
-	public @NonNull Optional<ComputingResponse> computeForInterim(@NonNull final ComputingRequest request)
-	{
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-
-		final ProductPrice logProductPrice = logs.getUniqueProductPriceOrError().orElse(null);
-
-		final Quantity qty = computingMethodService.getQtySum(logs, stockUOMId);
-
-		final Money money;
-		if (logProductPrice != null)
-		{
-			Check.assumeEquals(request.getCurrencyId(), logProductPrice.getCurrencyId(), "Log and Invoice Currency should be the same");
-			Check.assumeEquals(stockUOMId, logProductPrice.getUomId(), "Log Price UOM and Invoice Product UOM should be the same");
-			money = logProductPrice.toMoney();
-		}
-		else
-		{
-			money = Money.of(BigDecimal.ZERO, request.getCurrencyId());
-		}
-
-		return Optional.of(ComputingResponse.builder()
-								   .ids(logs.getIds())
-								   .price(ProductPrice.builder()
-												  .productId(request.getProductId())
-												  .money(money)
-												  .uomId(stockUOMId)
-												  .build())
-								   .qty(qty)
-								   .build()
-		);
 	}
 }

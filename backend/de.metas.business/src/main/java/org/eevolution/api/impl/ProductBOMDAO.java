@@ -640,7 +640,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(bomLine.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(bomLine.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(bomLine.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else

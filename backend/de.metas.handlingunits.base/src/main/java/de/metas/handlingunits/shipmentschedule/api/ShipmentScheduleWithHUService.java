@@ -311,7 +311,7 @@ public class ShipmentScheduleWithHUService
 		final BigDecimal qtyToDeliverOverride = scheduleId2QtyToDeliverOverride.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
 		if (qtyToDeliverOverride != null)
 		{
-			quantityToDeliverOverride = Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+			quantityToDeliverOverride = Quantitys.of(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
 
 		}
 		else

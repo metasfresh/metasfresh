@@ -297,6 +297,6 @@ public class OrderBOMLineQuantities
 
 		final BigDecimal roundedQtyBD = NumberUtils.roundToBigDecimal(qty.toBigDecimal(), roundingQty.toBigDecimal());
 
-		return Quantitys.create(roundedQtyBD, qty.getUomId());
+		return Quantitys.of(roundedQtyBD, qty.getUomId());
 	}
 }

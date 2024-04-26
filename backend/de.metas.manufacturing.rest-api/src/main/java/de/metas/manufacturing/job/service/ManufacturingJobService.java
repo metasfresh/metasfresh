@@ -597,7 +597,7 @@ public class ManufacturingJobService
 						.filter(Check::isNotBlank)
 						.map(Integer::parseInt)
 						.map(UomId::ofRepoId)
-						.map(uomId -> Quantitys.create(qtyBD, uomId)))
+						.map(uomId -> Quantitys.of(qtyBD, uomId)))
 				.orElse(null);
 
 		return ScaleDevice.builder()

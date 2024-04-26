@@ -226,8 +226,8 @@ public class DesadvLineSSCC18Generator
 			@NonNull final LUQtys luQtys)
 	{
 		final UomId stockUOMId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
-		final Quantity qtyCUsPerTU = Quantitys.create(luQtys.getQtyCUsPerTU(), stockUOMId);
-		final Quantity qtyCUsPerLU = Quantitys.create(luQtys.getQtyCUsPerLU(), stockUOMId);
+		final Quantity qtyCUsPerTU = Quantitys.of(luQtys.getQtyCUsPerTU(), stockUOMId);
+		final Quantity qtyCUsPerLU = Quantitys.of(luQtys.getQtyCUsPerLU(), stockUOMId);
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofCode(desadvLine.getInvoicableQtyBasedOn());
 		final List<I_M_InOutLine> lines = desadvBL.retrieveAllInOutLines(desadvLine);

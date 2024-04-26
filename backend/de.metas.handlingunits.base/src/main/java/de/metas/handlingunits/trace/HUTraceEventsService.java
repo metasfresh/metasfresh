@@ -280,13 +280,13 @@ public class HUTraceEventsService
 		// shortage, overage
 		if (!(qtyCountMinusBooked.signum() == 0))
 		{
-			builder.qty(Quantitys.create(qtyCountMinusBooked, uomId));
+			builder.qty(Quantitys.of(qtyCountMinusBooked, uomId));
 		}
 		// disposal, new inventory with aggregated HUs
 		else if (inventoryBL.isInternalUseInventory(inventoryLineRecord))
 		{
 			final BigDecimal qtyInternalUse = inventoryLineRecord.getQtyInternalUse();
-			builder.qty(Quantitys.create(qtyInternalUse, uomId));
+			builder.qty(Quantitys.of(qtyInternalUse, uomId));
 		}
 
 		huTraceRepository.addEvent(builder.build());
@@ -756,7 +756,7 @@ public class HUTraceEventsService
 		else
 		{
 
-			final Quantity qtyToSet = Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
+			final Quantity qtyToSet = Quantitys.of(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID()));
 
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(hu);
 			if (!productAndQty.isPresent())

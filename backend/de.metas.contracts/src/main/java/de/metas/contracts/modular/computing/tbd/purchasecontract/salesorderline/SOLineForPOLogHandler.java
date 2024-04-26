@@ -104,7 +104,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
 
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
+		final Quantity quantity = Quantitys.of(orderLine.getQtyEntered(), uomId);
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
@@ -166,7 +166,7 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build());
 	}
 

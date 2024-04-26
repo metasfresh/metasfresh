@@ -343,6 +343,26 @@ public interface I_ModCntr_Log
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
+	 * Set Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInitial_Product_ID (int Initial_Product_ID);
+
+	/**
+	 * Get Initial Product.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInitial_Product_ID();
+
+	String COLUMNNAME_Initial_Product_ID = "Initial_Product_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -745,6 +765,27 @@ public interface I_ModCntr_Log
 
 	ModelColumn<I_ModCntr_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_ModCntr_Log.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStorageDays (int StorageDays);
+
+	/**
+	 * Get Storage days.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getStorageDays();
+
+	ModelColumn<I_ModCntr_Log, Object> COLUMN_StorageDays = new ModelColumn<>(I_ModCntr_Log.class, "StorageDays", null);
+	String COLUMNNAME_StorageDays = "StorageDays";
 
 	/**
 	 * Get Updated.

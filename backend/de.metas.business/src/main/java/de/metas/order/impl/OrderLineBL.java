@@ -578,24 +578,24 @@ public class OrderLineBL implements IOrderLineBL
 				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
-			return Quantitys.create(qtyEntered, uomId);
+			return Quantitys.of(qtyEntered, uomId);
 		}
 		if (uomId == null)
 		{
 			final UomId stockUOMId = productBL.getStockUOMId(productId);
-			return Quantitys.create(qtyEntered, stockUOMId);
+			return Quantitys.of(qtyEntered, stockUOMId);
 		}
 
 		if (uomDAO.isUOMForTUs(uomId))
 		{
 			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is coming from order line's CU-TU (M_HU_PI_Item_Product)
-			return Quantitys.create(computeQtyOrderedUsingQtyItemCapacity(orderLine), productId);
+			return Quantitys.of(computeQtyOrderedUsingQtyItemCapacity(orderLine), productId);
 		}
 		else
 		{
 			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, qtyEntered, uomId);
 			// TODO check if null; but should have been checked by DefaultOLCandValidator
-			return Quantitys.create(qtyOrdered, productId);
+			return Quantitys.of(qtyOrdered, productId);
 		}
 	}
 
@@ -671,7 +671,7 @@ public class OrderLineBL implements IOrderLineBL
 			// therefore we take the detour via qtyOrdered
 			// IMPORTANT: we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
 			// and we don't want this to be our concern here
-			final Quantity targetQtyInQtockUOM = Quantitys.create(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
+			final Quantity targetQtyInQtockUOM = Quantitys.of(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
 			assume(!uomDAO.isUOMForTUs(targetQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", targetQtyInQtockUOM, orderLine);
 
 			return uomConversionBL.convertQuantityTo(targetQtyInQtockUOM, conversionCtx, targetUomId);

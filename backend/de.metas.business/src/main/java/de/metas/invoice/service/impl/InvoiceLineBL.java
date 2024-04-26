@@ -387,21 +387,21 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (priceUomId != null && uomId != null)
 		{
 
-			final Quantity qtyToConvert = Quantitys.create(qtyEntered, uomId);
+			final Quantity qtyToConvert = Quantitys.of(qtyEntered, uomId);
 			final Quantity result = uomConversionBL.convertQuantityTo(qtyToConvert, UOMConversionContext.of(productId), priceUomId);
 			logger.debug("invoice line has both Price_UOM_ID={} and C_UOM_ID={}; return result={}", priceUomId.getRepoId(), uomId.getRepoId(), result);
 			return result;
 		}
 		else if (uomId != null)
 		{
-			final Quantity result = Quantitys.create(qtyEntered, uomId);
+			final Quantity result = Quantitys.of(qtyEntered, uomId);
 			logger.debug("invoice line has Price_UOM_ID=null and C_UOM_ID={}; return result ={}", uomId.getRepoId(), result);
 			return result;
 		}
 		else if (productId != null)
 		{
 			final UomId stockUomId = productBL.getStockUOMId(productId);
-			final Quantity result = Quantitys.create(ilRecord.getQtyInvoiced(), stockUomId);
+			final Quantity result = Quantitys.of(ilRecord.getQtyInvoiced(), stockUomId);
 			logger.debug("invoice line has Price_UOM_ID=null, C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
 			return result;
 		}
@@ -567,11 +567,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@NonNull
 	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+		final Quantity qtyEntered = Quantitys.of(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
 		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
 
-		return Quantitys.create(
+		return Quantitys.of(
 				qtyEntered,
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);

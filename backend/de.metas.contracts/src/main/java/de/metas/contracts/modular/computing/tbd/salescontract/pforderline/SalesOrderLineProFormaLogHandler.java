@@ -86,7 +86,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
+		final Quantity quantity = Quantitys.of(orderLine.getQtyEntered(), uomId);
 
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));

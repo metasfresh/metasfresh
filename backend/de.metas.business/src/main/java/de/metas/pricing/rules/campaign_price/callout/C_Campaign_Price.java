@@ -139,7 +139,7 @@ public class C_Campaign_Price
 								orgId,
 								productId,
 								bpartnerId,
-								Quantitys.create(ONE, productId),
+								Quantitys.of(ONE, productId),
 								SOTrx.SALES)
 						.setCountryId(countryId)
 						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone))

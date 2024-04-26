@@ -45,7 +45,7 @@ public class ShipmentScheduleSplitRepository
 				.id(ShipmentScheduleSplitId.ofRepoId(record.getM_ShipmentSchedule_Split_ID()))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.deliveryDate(record.getDeliveryDate().toLocalDateTime().toLocalDate())
-				.qtyToDeliver(Quantitys.create(record.getQtyToDeliver(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyToDeliver(Quantitys.of(record.getQtyToDeliver(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.dimension(extractDimension(record))
 				.shipmentLineId(InOutAndLineId.ofRepoIdOrNull(record.getM_InOut_ID(), record.getM_InOutLine_ID()))
 				.processed(record.isProcessed())
