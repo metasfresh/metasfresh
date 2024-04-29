@@ -166,7 +166,8 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	@NonNull
 	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId()).negateIf(request.isCostsType());
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+				.negateIf(request.isCostsType());
 	}
 	
 	@NonNull
