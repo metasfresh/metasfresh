@@ -37,6 +37,7 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
@@ -50,11 +51,13 @@ import org.springframework.stereotype.Service;
 public class ModularContractService
 {
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
+
 
 	public void scheduleLogCreation(@NonNull final DocStatusChangedEvent event)
 	{
@@ -128,9 +131,10 @@ public class ModularContractService
 	@NonNull
 	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
-
-		return modCntrSpecificPrice.taxCategoryId();
+		return modularContractPriceRepository.retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
+				.map(ModCntrSpecificPrice::taxCategoryId)
+				// don't have a contract specific price (e.g: Receipt), default to the contract's tax category.
+				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(flatrateTermId).getC_TaxCategory_ID()));
 	}
 
 	@NonNull

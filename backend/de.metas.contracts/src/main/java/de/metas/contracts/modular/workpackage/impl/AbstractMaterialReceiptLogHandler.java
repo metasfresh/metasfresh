@@ -54,7 +54,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 public abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler
@@ -132,7 +131,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.build());
 	}
 
-	@NotNull
+	@NonNull
 	private LocalDateAndOrgId extractMovementDate(final I_M_InOut receiptRecord)
 	{
 		return LocalDateAndOrgId.ofTimestamp(receiptRecord.getMovementDate(), OrgId.ofRepoId(receiptRecord.getAD_Org_ID()), orgDAO::getTimeZone);

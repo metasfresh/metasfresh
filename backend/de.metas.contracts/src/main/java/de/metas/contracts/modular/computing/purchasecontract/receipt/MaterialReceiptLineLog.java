@@ -22,18 +22,34 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull private final ReceiptComputingMethod computingMethod;
+	@NonNull
+	private final ReceiptComputingMethod computingMethod;
+
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
@@ -42,5 +58,23 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService);
 		this.computingMethod = computingMethod;
+	}
+
+	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	{
+		final FlatrateTermId flatrateTermId = request.getContractId();
+		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);
+		final ProductId productId = request.getModularContractSettings().getRawProductId();
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
+		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
+				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(stockUOMId)
+				.money(Money.zero(currencyId))
+				.build();
 	}
 }
