@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.log;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
@@ -52,10 +53,11 @@ public class ModularContractLogService
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -153,7 +155,7 @@ public class ModularContractLogService
 						.processed(false)
 						.contractModuleId(request.modularContractModuleId())
 						.build())
-				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL));
+				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
 	}
 
 }

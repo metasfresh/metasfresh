@@ -28,6 +28,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
@@ -106,6 +107,11 @@ public class ModularContractSettingsBL
 		final ModuleConfig moduleConfig = modularContractSettingsDAO.getByModuleId(modularContractModuleId);
 
 		return moduleConfig.getModularContractType();
+	}
+
+	public boolean hasComputingMethodType(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ComputingMethodType computingMethodType)
+	{
+		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
 }
