@@ -121,9 +121,15 @@ public interface IModularContractLogHandler
 			return getConfigId().getModularContractModuleId();
 		}
 
-		public boolean isCostsType() {return moduleConfig.isCostsType();}
+		public boolean isCostsType()
+		{
+			return moduleConfig.isCostsType();
+		}
 
-		public ProductId getProductId() {return moduleConfig.getProductId();}
+		public ProductId getProductId()
+		{
+			return moduleConfig.getProductId();
+		}
 	}
 
 	@Value

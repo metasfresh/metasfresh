@@ -60,7 +60,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 		this.computingMethod = computingMethod;
 	}
 
-	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	protected @NonNull ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);

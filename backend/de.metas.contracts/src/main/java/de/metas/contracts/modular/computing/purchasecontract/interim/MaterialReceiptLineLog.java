@@ -23,14 +23,18 @@
 package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import de.metas.product.ProductId;
+import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
@@ -51,9 +55,11 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 		return LogEntryContractType.INTERIM;
 	}
 
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
+	@NonNull
+	protected ProductId getProductId(
+			@NonNull final IModularContractLogHandler.CreateLogRequest request,
+			@NonNull final I_M_InOutLine receiptLineRecord)
 	{
-		return computingMethod;
+		return ProductId.ofRepoId(receiptLineRecord.getM_Product_ID());
 	}
 }

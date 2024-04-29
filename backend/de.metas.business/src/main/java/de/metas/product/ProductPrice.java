@@ -82,7 +82,7 @@ public class ProductPrice
 		return this.toBuilder().money(money.negate()).build();
 	}
 
-	public ProductPrice negateIf(boolean condition)
+	public ProductPrice negateIf(final boolean condition)
 	{
 		return condition ? negate() : this;
 	}

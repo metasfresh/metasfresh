@@ -90,7 +90,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		final I_C_Flatrate_Term contractRecord = flatrateDAO.getById(request.getContractId());
 		final Quantity quantity = inOutBL.getQtyEntered(receiptLineRecord);
 
-		final ProductId productId = request.getProductId();
+		final ProductId productId = getProductId(request, receiptLineRecord);
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
 
@@ -108,7 +108,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
 				.productId(productId)
-				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, receiptLineId))
+				.referencedRecord(request.getRecordRef())
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
 				.producerBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
@@ -167,5 +167,13 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId());
+	}
+	
+	@NonNull
+	protected ProductId getProductId(
+			@NonNull final IModularContractLogHandler.CreateLogRequest request,
+			@NonNull final I_M_InOutLine receiptLineRecord)
+	{
+		return request.getProductId();	
 	}
 }
