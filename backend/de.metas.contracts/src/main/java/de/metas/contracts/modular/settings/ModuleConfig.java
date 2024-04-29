@@ -64,4 +64,9 @@ public class ModuleConfig
 	{
 		return modularContractType.getComputingMethodType();
 	}
+
+	public boolean isCostsType()
+	{
+		return getInvoicingGroup().isCostsType();
+	}
 }

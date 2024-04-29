@@ -72,7 +72,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@NonNull
-	private final ModularContractService modularContractService;
+	protected final ModularContractService modularContractService;
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -84,37 +84,35 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final TableRecordReference recordRef = request.getRecordRef();
-		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
-		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(request.getContractId());
-		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
+		final InOutLineId receiptLineId = getReceiptLineId(request.getRecordRef());
+		final I_M_InOutLine receiptLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
+		final I_M_InOut receiptRecord = inOutBL.getById(InOutId.ofRepoId(receiptLineRecord.getM_InOut_ID()));
+		final I_C_Flatrate_Term contractRecord = flatrateDAO.getById(request.getContractId());
+		final Quantity quantity = inOutBL.getQtyEntered(receiptLineRecord);
 
-		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final ProductId productId = getProductId(request, receiptLineRecord);
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity);
 
 		final boolean isBillable = getLogEntryContractType().isInterimContractType()
-				? inOutRecord.isInterimInvoiceable()
+				? receiptRecord.isInterimInvoiceable()
 				: true;
 
-		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
-				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
-				orgDAO::getTimeZone);
+		final LocalDateAndOrgId transactionDate = extractMovementDate(receiptRecord);
 
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = getContractSpecificPrice(request);
+		final ProductPrice contractSpecificPrice = getPriceActual(request);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
-				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
-				.referencedRecord(TableRecordReference.of(I_M_InOutLine.Table_Name, inOutLineRecord.getM_InOutLine_ID()))
-				.collectionPointBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.producerBPartnerId(BPartnerId.ofRepoId(inOutRecord.getC_BPartner_ID()))
-				.invoicingBPartnerId(BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID()))
-				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+				.productId(productId)
+				.referencedRecord(request.getRecordRef())
+				.collectionPointBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
+				.producerBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
+				.warehouseId(WarehouseId.ofRepoId(receiptRecord.getM_Warehouse_ID()))
 				.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
 				.contractType(getLogEntryContractType())
 				.soTrx(SOTrx.PURCHASE)
@@ -133,16 +131,21 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.build());
 	}
 
-	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	@NonNull
+	private LocalDateAndOrgId extractMovementDate(final I_M_InOut receiptRecord)
 	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(),
-				request.getContractId());
+		return LocalDateAndOrgId.ofTimestamp(receiptRecord.getMovementDate(), OrgId.ofRepoId(receiptRecord.getAD_Org_ID()), orgDAO::getTimeZone);
+	}
+
+	protected final InOutLineId getReceiptLineId(final TableRecordReference recordRef)
+	{
+		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.CreateLogRequest request)
 	{
-		final InOutLineId inOutLineId = InOutLineId.ofRepoId(request.getRecordRef().getRecordIdAssumingTableName(getSupportedTableName()));
+		final InOutLineId inOutLineId = getReceiptLineId(request.getRecordRef());
 		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(inOutLineId);
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
@@ -158,5 +161,20 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.logEntryContractType(getLogEntryContractType())
 				.contractModuleId(request.getModularContractModuleId())
 				.build());
+	}
+
+	@NonNull
+	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	{
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+				.negateIf(request.isCostsType());
+	}
+	
+	@NonNull
+	protected ProductId getProductId(
+			@NonNull final IModularContractLogHandler.CreateLogRequest request,
+			@NonNull final I_M_InOutLine receiptLineRecord)
+	{
+		return request.getProductId();	
 	}
 }

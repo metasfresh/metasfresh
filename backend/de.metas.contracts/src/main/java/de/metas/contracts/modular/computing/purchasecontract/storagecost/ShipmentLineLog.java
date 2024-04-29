@@ -107,7 +107,7 @@ class ShipmentLineLog implements IModularContractLogHandler
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
-				.productId(createLogRequest.getModuleConfig().getProductId())
+				.productId(createLogRequest.getProductId())
 				.productName(createLogRequest.getProductName())
 				.initialProductId(productId)
 				.referencedRecord(recordRef)

@@ -26,7 +26,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.money.CurrencyId;
@@ -36,11 +35,13 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
 	@NonNull
@@ -59,12 +60,8 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 	}
 
 	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
-	protected @NonNull ProductPrice getContractSpecificPrice(final @NonNull CreateLogRequest request)
+	@NonNull
+	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);
