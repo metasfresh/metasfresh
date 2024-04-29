@@ -55,6 +55,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 		return LogEntryContractType.INTERIM;
 	}
 
+	@Override
 	@NonNull
 	protected ProductId getProductId(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,

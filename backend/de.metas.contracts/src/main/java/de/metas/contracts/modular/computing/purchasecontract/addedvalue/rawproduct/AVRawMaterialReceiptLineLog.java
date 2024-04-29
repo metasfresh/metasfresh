@@ -24,9 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawprod
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
-import de.metas.product.ProductPrice;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -44,13 +42,5 @@ public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService);
 		this.computingMethod = computingMethod;
-	}
-
-	@NonNull
-	@Override
-	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
 	}
 }

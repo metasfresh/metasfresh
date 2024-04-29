@@ -26,7 +26,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.money.CurrencyId;
@@ -60,7 +59,9 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 		this.computingMethod = computingMethod;
 	}
 
-	protected @NonNull ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	@Override
+	@NonNull
+	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);
