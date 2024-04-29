@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.sales.raw;
+package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawproduct;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -31,13 +31,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Getter
-public class RawSalesMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
+public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull private final RawSalesComputingMethod computingMethod;
+	@NonNull private final AVRawComputingMethod computingMethod;
 
-	public RawSalesMaterialReceiptLineLog(
+	public AVRawMaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final RawSalesComputingMethod computingMethod,
+			@NonNull final AVRawComputingMethod computingMethod,
 			@NonNull final ModularContractService modularContractService)
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService);
