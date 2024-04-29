@@ -106,7 +106,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 		if (recordRef.getTableName().equals(getSupportedTableName()))
 		{
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
-			return request.getModuleConfig().getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
+			return request.getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 		}
 		return false;
 	}

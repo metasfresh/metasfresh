@@ -41,6 +41,7 @@ import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -131,7 +132,21 @@ public interface IModularContractLogHandler
 			return moduleConfig.getId();
 		}
 
-		public ModularContractModuleId getModularContractModuleId() {return getConfigId().getModularContractModuleId();}
+		@NonNull
+		public ModularContractModuleId getModularContractModuleId()
+		{
+			return getConfigId().getModularContractModuleId();
+		}
+
+		public boolean isCostsType()
+		{
+			return moduleConfig.isCostsType();
+		}
+
+		public ProductId getProductId()
+		{
+			return moduleConfig.getProductId();
+		}
 	}
 
 	@Value
