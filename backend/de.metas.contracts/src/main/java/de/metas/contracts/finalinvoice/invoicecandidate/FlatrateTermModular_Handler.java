@@ -329,7 +329,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		else
 		{
 			final FlatrateTermId interimContractId = flatrateBL.getInterimContractIdByModularContractIdAndDate(flatrateTermId, TimeUtil.asInstant(invoiceCandidate.getDateOrdered()));
-
+			//TODO check if correct tax is used, should be tax for settingsLine product on final invoice IC IMHO
 			//interimContractId can be null, if ComputingMethodType.INTERIM_CONTRACT is present, but no interim contract was created (in this case the price will always be 0)
 			final FlatrateTermId contractToUse = interimContractId != null ? interimContractId : flatrateTermId;
 			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, contractToUse);
