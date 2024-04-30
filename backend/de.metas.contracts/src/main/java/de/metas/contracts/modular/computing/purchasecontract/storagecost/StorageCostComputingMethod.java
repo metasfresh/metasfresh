@@ -108,15 +108,15 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		final Money storageCosts = computeStorageCosts(logs, pricePerUnitPerDay);
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		final ProductPrice priceWithPriceUOM = ProductPrice.builder()
+		final ProductPrice priceWithStockUOM = ProductPrice.builder()
 				.productId(request.getProductId())
 				.money(storageCosts.negateIf(request.isCostInvoicingGroup()))
-				.uomId(pricePerUnitPerDay.getUomId())
+				.uomId(stockUOMId)
 				.build();
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
-				.price(computingMethodService.productPriceToUOM(priceWithPriceUOM, stockUOMId))
+				.price(priceWithStockUOM)
 				.qty(Quantitys.one(stockUOMId))
 				.build();
 	}
