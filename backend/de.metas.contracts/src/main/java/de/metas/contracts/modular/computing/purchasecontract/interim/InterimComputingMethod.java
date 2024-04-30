@@ -49,6 +49,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -56,7 +57,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
@@ -141,18 +141,18 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		final Money money = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
 		final BigDecimal qtyBD = money.isZero() ? BigDecimal.ZERO : BigDecimal.ONE;
-		final Quantity qty = Quantity.of(qtyBD, stockUOM);
+		final Quantity qty = Quantitys.of(qtyBD, stockUOMId);
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 							   .productId(request.getProductId())
 							   .money(money.negate())
-							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .uomId(stockUOMId)
 							   .build())
 				.qty(qty)
 				.build();
