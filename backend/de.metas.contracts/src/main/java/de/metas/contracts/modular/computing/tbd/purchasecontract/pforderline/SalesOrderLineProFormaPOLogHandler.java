@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.tbd.purchasecontract.pforderline;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -47,6 +46,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -72,12 +72,10 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	private final SalesOrderLineProFormaPOModularContractHandler contractHandler;
+	@Getter @NonNull private final SalesOrderLineProFormaPOModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO;
 
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_OrderLine.Table_Name;
-	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -108,7 +106,7 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
-											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
+											.documentType(getLogEntryDocumentType())
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
@@ -129,11 +127,5 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return contractHandler;
 	}
 }

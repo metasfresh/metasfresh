@@ -26,7 +26,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -55,6 +54,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -74,37 +74,25 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnReverse.Description");
 
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final ModularContractLogDAO contractLogDAO;
-	@NonNull
-	private final SalesInvoiceLineModularContractHandler computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@Getter @NonNull private final SalesInvoiceLineModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_INVOICE;
+
 
 	@NonNull
 	private static Quantity extractQtyEntered(final @NonNull I_C_InvoiceLine invoiceLine)
 	{
 		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
 		return Quantitys.of(invoiceLine.getQtyEntered(), uomId);
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_InvoiceLine.Table_Name;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 
 	@Override
@@ -141,7 +129,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 						.warehouseId(WarehouseId.ofRepoId(invoice.getM_Warehouse_ID()))
 						.productId(productId)
 						.productName(createLogRequest.getProductName())
-						.documentType(LogEntryDocumentType.SALES_INVOICE)
+						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
 						.processed(false)

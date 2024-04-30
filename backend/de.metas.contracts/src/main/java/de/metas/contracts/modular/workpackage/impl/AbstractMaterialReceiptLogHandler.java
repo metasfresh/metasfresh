@@ -48,6 +48,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -61,24 +62,18 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
 
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull protected final ModularContractService modularContractService;
 
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 
-	@NonNull
-	protected final ModularContractService modularContractService;
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InOutLine.Table_Name;
-	}
+	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
@@ -113,7 +108,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.producerBPartnerId(BPartnerId.ofRepoId(receiptRecord.getC_BPartner_ID()))
 				.invoicingBPartnerId(BPartnerId.ofRepoId(contractRecord.getBill_BPartner_ID()))
 				.warehouseId(WarehouseId.ofRepoId(receiptRecord.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.MATERIAL_RECEIPT)
+				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)

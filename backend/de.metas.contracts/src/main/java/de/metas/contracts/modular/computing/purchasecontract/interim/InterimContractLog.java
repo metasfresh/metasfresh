@@ -22,17 +22,21 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.interim;
 
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+@Getter
 @Component
 class InterimContractLog extends AbstractPurchaseContractHandler
 {
 	@NonNull private final InterimComputingMethod computingMethod;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.CONTRACT_PREFINANCING;
+	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
 
 	public InterimContractLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
@@ -40,17 +44,5 @@ class InterimContractLog extends AbstractPurchaseContractHandler
 	{
 		super(modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
-	}
-
-	@Override
-	public @NonNull LogEntryContractType getLogEntryContractType()
-	{
-		return LogEntryContractType.INTERIM;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

@@ -79,24 +79,13 @@ class ShipmentLineLog implements IModularContractLogHandler
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull
-	@Getter
-	private final StorageCostComputingMethod computingMethod;
-	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull
 	private final ModularContractService modularContractService;
+	@Getter @NonNull private final StorageCostComputingMethod computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InOutLine.Table_Name;
-	}
-
-	@Override
-	public @NonNull LogEntryDocumentType getLogEntryDocumentType()
-	{
-		return LogEntryDocumentType.SHIPMENT;
-	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
