@@ -57,7 +57,6 @@ public class ModularContractLogService
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
-	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry;
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -148,7 +147,7 @@ public class ModularContractLogService
 				.build();
 	}
 
-	public void updatePriceAndAmount(@NonNull final ModCntrLogPriceUpdateRequest request)
+	public void updatePriceAndAmount(@NonNull final ModCntrLogPriceUpdateRequest request, @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
 						.flatrateTermId(request.flatrateTermId())

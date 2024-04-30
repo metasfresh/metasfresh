@@ -113,5 +113,4 @@ public class ModularContractSettingsBL
 	{
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
-
 }
