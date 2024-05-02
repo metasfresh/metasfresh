@@ -48,7 +48,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -61,7 +60,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 @Component
@@ -145,8 +143,7 @@ public class InterimComputingMethod implements IComputingMethodHandler
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 
 		final Money money = logs.getAmount().orElseGet(() -> Money.zero(request.getCurrencyId()));
-		final BigDecimal qtyBD = money.isZero() ? BigDecimal.ZERO : BigDecimal.ONE;
-		final Quantity qty = Quantitys.of(qtyBD, stockUOMId);
+
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
@@ -154,7 +151,7 @@ public class InterimComputingMethod implements IComputingMethodHandler
 							   .money(money.negate())
 							   .uomId(stockUOMId)
 							   .build())
-				.qty(qty)
+				.qty(money.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
 				.build();
 	}
 }

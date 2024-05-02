@@ -117,7 +117,7 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(priceWithStockUOM)
-				.qty(Quantitys.one(stockUOMId))
+				.qty(storageCosts.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
 				.build();
 	}
 
