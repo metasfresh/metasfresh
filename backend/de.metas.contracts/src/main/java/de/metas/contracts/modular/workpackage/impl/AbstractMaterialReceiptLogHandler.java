@@ -73,7 +73,7 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 
-	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
+	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.MATERIAL_RECEIPT;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
