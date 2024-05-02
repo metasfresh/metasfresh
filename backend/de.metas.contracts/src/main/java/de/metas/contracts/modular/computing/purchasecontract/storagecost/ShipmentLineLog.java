@@ -32,6 +32,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -40,6 +41,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -47,6 +49,9 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -71,20 +76,16 @@ class ShipmentLineLog implements IModularContractLogHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	@NonNull
-	@Getter
-	private final StorageCostComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull
 	private final ModularContractService modularContractService;
+	@Getter @NonNull private final StorageCostComputingMethod computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InOutLine.Table_Name;
-	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -115,13 +116,13 @@ class ShipmentLineLog implements IModularContractLogHandler
 				.producerBPartnerId(bpartnerId)
 				.invoicingBPartnerId(bpartnerId)
 				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-				.documentType(LogEntryDocumentType.SHIPMENT)
+				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
 				.soTrx(SOTrx.PURCHASE)
 				.processed(false)
 				.isBillable(true)
 				.quantity(quantity)
-				.amount(null)
+				.amount(calculateAmount(quantity, contractSpecificPrice, storageDays, uomConversionBL))
 				.transactionDate(transactionDate)
 				.storageDays(storageDays)
 				.priceActual(contractSpecificPrice)
@@ -173,6 +174,23 @@ class ShipmentLineLog implements IModularContractLogHandler
 				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
 				.contractModuleId(createLogRequest.getModularContractModuleId())
 				.build());
+	}
+
+	@Override
+	public @NonNull ModularContractLogEntry calculateAmount(final @NonNull ModularContractLogEntry logEntry, final @NonNull QuantityUOMConverter uomConverter)
+	{
+		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
+		final ProductPrice price = Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
+		final int storageDays = Check.assumeNotNull(logEntry.getStorageDays(), "StorageDays shouldn't be null");
+		return logEntry.toBuilder()
+				.amount(calculateAmount(qty, price, storageDays, uomConverter))
+				.build();
+	}
+
+	@NonNull
+	private Money calculateAmount(@NonNull final Quantity qty, @NonNull final ProductPrice price, final int storageDays, final @NonNull QuantityUOMConverter uomConverter)
+	{
+		return price.computeAmount(qty.multiply(storageDays), uomConverter);
 	}
 
 	private static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)

@@ -27,6 +27,7 @@ import de.metas.contracts.modular.ModCntrSpecificPriceId;
 import de.metas.contracts.modular.ModularContractPriceService;
 import de.metas.contracts.modular.log.ModCntrLogPriceUpdateRequest;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.IProcessPrecondition;
@@ -42,8 +43,9 @@ import java.math.BigDecimal;
 
 public class ModCntr_Specific_Price_Update extends JavaProcess implements IProcessPrecondition
 {
-	private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-	private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
+	@NonNull private final ModularContractLogService contractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	@NonNull private final ModularContractPriceService modularContractPriceService = SpringContextHolder.instance.getBean(ModularContractPriceService.class);
+	@NonNull private final ModularContractLogHandlerRegistry logHandlerRegistry = SpringContextHolder.instance.getBean(ModularContractLogHandlerRegistry.class);
 
 	@Param(parameterName = "Price")
 	private BigDecimal p_price;
@@ -75,10 +77,11 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 				.build());
 
 		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
-				.unitPrice(newContractPrice.getProductPrice())
-				.flatrateTermId(newContractPrice.flatrateTermId())
-				.modularContractModuleId(newContractPrice.modularContractModuleId())
-				.build());
+														.unitPrice(newContractPrice.getProductPrice())
+														.flatrateTermId(newContractPrice.flatrateTermId())
+														.modularContractModuleId(newContractPrice.modularContractModuleId())
+														.build(),
+												logHandlerRegistry);
 
 		return MSG_OK;
 	}

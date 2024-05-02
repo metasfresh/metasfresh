@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -61,6 +60,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -80,14 +80,17 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	private final InterimComputingMethod computingMethod;
 	private final ModularContractLogDAO contractLogDAO;
 	private final ModularContractLogService modularContractLogService;
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
+
+	@Getter @NonNull private final InterimComputingMethod computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
+	@Getter @NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
 
 	public InterimInvoiceLineLog(
 			@NonNull final InterimComputingMethod computingMethod,
@@ -99,18 +102,6 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 		this.contractLogDAO = contractLogDAO;
 		this.modularContractLogService = modularContractLogService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_InvoiceLine.Table_Name;
-	}
-
-	@Override
-	public @NonNull LogEntryContractType getLogEntryContractType()
-	{
-		return LogEntryContractType.INTERIM;
 	}
 
 	@Override
@@ -175,7 +166,7 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
 						.productName(createLogRequest.getProductName())
-						.documentType(LogEntryDocumentType.INTERIM_INVOICE)
+						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
 						.processed(false)
@@ -219,11 +210,5 @@ public class InterimInvoiceLineLog implements IModularContractLogHandler
 						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build()
 		);
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

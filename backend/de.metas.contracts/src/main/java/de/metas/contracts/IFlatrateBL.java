@@ -116,7 +116,7 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
 
-	FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
+	@Nullable FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
 
 	/**
 	 * term to extend
