@@ -407,7 +407,7 @@ UPDATE AD_Element_Trl SET Description='Das Fremdbearbeitungskonto ist das im Pro
 ;
 
 -- 2024-04-29T06:44:00.398Z
-UPDATE AD_Element_Trl SET Description='Das Gemeinkostenkonto ist das im Produktionsauftrag verwendete Konto ', IsTranslated='Y', PrintName='Gemeinkosten',Updated=TO_TIMESTAMP('2024-04-29 07:44:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=53731 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Das Gemeinkostenkonto ist das im Produktionsauftrag verwendete Konto ', IsTranslated='Y', Name='Gemeinkosten',PrintName='Gemeinkosten',Updated=TO_TIMESTAMP('2024-04-29 07:44:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=53731 AND AD_Language='de_CH'
 ;
 
 -- 2024-04-29T06:44:00.493Z
@@ -415,7 +415,7 @@ UPDATE AD_Element_Trl SET Description='Das Gemeinkostenkonto ist das im Produkti
 ;
 
 -- 2024-04-29T06:44:10.280Z
-UPDATE AD_Element_Trl SET Description='Das Gemeinkostenkonto ist das im Produktionsauftrag verwendete Konto', IsTranslated='Y', PrintName='Gemeinkosten',Updated=TO_TIMESTAMP('2024-04-29 07:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=53731 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Das Gemeinkostenkonto ist das im Produktionsauftrag verwendete Konto', IsTranslated='Y', Name='Gemeinkosten',PrintName='Gemeinkosten',Updated=TO_TIMESTAMP('2024-04-29 07:44:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=53731 AND AD_Language='de_DE'
 ;
 
 -- 2024-04-29T06:44:10.380Z
