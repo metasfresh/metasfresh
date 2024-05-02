@@ -45,6 +45,14 @@ export default function launchers(state = initialState, action) {
         list: applicationLaunchers.launchers,
       });
     }
+    case types.CLEAR_LAUNCHERS: {
+      const { applicationId } = payload;
+      return copyAndMergeToState(state, applicationId, {
+        isLoading: false,
+        list: [],
+        requestTimestamp: null,
+      });
+    }
     case types.SET_ACTIVE_FILTERS: {
       const { applicationId, facets, filterByDocumentNo } = payload;
       return copyAndMergeToState(state, applicationId, {

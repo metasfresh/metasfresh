@@ -67,6 +67,11 @@ public class WorkplaceService
 		return getWorkplaceByUserId(userId).map(Workplace::getWarehouseId);
 	}
 
+	public void assignWorkplace(@NonNull UserId userId, @NonNull WorkplaceId workplaceId)
+	{
+		workplaceUserAssignRepository.create(WorkplaceAssignmentCreateRequest.builder().userId(userId).workplaceId(workplaceId).build());
+	}
+
 	public void assignWorkplace(@NonNull final WorkplaceAssignmentCreateRequest request)
 	{
 		workplaceUserAssignRepository.create(request);

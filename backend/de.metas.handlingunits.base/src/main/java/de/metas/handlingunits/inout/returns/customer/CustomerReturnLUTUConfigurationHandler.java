@@ -120,7 +120,7 @@ public class CustomerReturnLUTUConfigurationHandler
 		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU().signum() == 0 ? BigDecimal.ONE: documentLine.getQtyEnteredTU());
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 
-		lutuConfiguration.setQtyCU(documentLine.getMovementQty());
+		lutuConfiguration.setQtyCUsPerTU(documentLine.getMovementQty());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 	}
 

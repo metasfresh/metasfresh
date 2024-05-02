@@ -56,7 +56,7 @@ class ManufacturingJobServiceTest
 		@Test
 		void empty()
 		{
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters()).isEmpty();
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet()).isEmpty();
 		}
 
 		@Test
@@ -65,7 +65,7 @@ class ManufacturingJobServiceTest
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
 			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant", ClientAndOrgId.SYSTEM);
 
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters())
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
 					.contains(ManufacturingJobDefaultFilter.UserPlant);
 		}
 
@@ -75,7 +75,7 @@ class ManufacturingJobServiceTest
 			// IMPORTANT: set the value as plain string to also enforce the name of the enums are not changed on refactoring
 			sysConfigDAO.setValue(ManufacturingJobService.SYSCONFIG_defaultFilters, "UserPlant, TodayDatePromised", ClientAndOrgId.SYSTEM);
 
-			Assertions.assertThat(manufacturingJobService.getDefaultFilters())
+			Assertions.assertThat(manufacturingJobService.getDefaultFilters().toSet())
 					.contains(ManufacturingJobDefaultFilter.UserPlant, ManufacturingJobDefaultFilter.TodayDatePromised);
 		}
 	}

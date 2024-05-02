@@ -133,7 +133,7 @@ public class WebuiHUTransformParametersFiller
 	public Object getParameterDefaultValue(final String parameterName)
 	{
 
-		if (WEBUI_M_HU_Transform.PARAM_QtyCU.equals(parameterName))
+		if (WEBUI_M_HU_Transform.PARAM_QtyCUsPerTU.equals(parameterName))
 		{
 			final I_M_HU cu = getSelectedRow().getM_HU(); // should work, because otherwise the param is not even shown.
 

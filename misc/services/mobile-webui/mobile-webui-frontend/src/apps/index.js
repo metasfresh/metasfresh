@@ -1,6 +1,7 @@
 import * as huManagerApp from './huManager';
 import * as scanAnythingApp from './scanAnything';
 import * as workplaceManagerApp from './workplaceManager';
+import * as workstationManagerApp from './workstationManager';
 import * as pickingApp from './picking';
 
 const registeredApplications = {};
@@ -95,4 +96,5 @@ export const fireWFActivityCompleted = ({ applicationId, defaultAction, ...param
 registerApplication(huManagerApp.applicationDescriptor);
 registerApplication(scanAnythingApp.applicationDescriptor);
 registerApplication(workplaceManagerApp.applicationDescriptor);
+registerApplication(workstationManagerApp.applicationDescriptor);
 registerApplication(pickingApp.applicationDescriptor);

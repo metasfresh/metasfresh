@@ -35,6 +35,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -65,6 +66,7 @@ import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCan
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -414,22 +416,22 @@ public class PPOrderCandidateService
 		Check.assume(productPlanning.isMatured(), "PP_Product_Planning_ID: {} is not matured", productPlanningId);
 
 		createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
-									  .clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
-									  .ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
-									  .maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
-									  .maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
-									  .productId(ppMaturingCandidatesV.getProductId())
-									  .warehouseId(ppMaturingCandidatesV.getWarehouseId())
-									  .productPlanningId(productPlanningId)
-									  .plantId(productPlanning.getPlantId())
-									  .qtyRequired(getQtyRequired(ppMaturingCandidatesV))
-									  .datePromised(ppMaturingCandidatesV.getDateStartSchedule())
-									  .dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
-									  .isMaturing(true)
-									  .simulated(false)
-									  .attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
-									  .issueHuId(ppMaturingCandidatesV.getIssueHuId())
-									  .build());
+				.clientAndOrgId(ppMaturingCandidatesV.getClientAndOrgId())
+				.ppOrderCandidateId(ppMaturingCandidatesV.getPpOrderCandidateId())
+				.maturingConfigId(ppMaturingCandidatesV.getMaturingConfigId())
+				.maturingConfigLineId(ppMaturingCandidatesV.getMaturingConfigLineId())
+				.productId(ppMaturingCandidatesV.getProductId())
+				.warehouseId(ppMaturingCandidatesV.getWarehouseId())
+				.productPlanningId(productPlanningId)
+				.plantId(productPlanning.getPlantId())
+				.qtyRequired(getQtyRequired(ppMaturingCandidatesV))
+				.datePromised(ppMaturingCandidatesV.getDateStartSchedule())
+				.dateStartSchedule(ppMaturingCandidatesV.getDateStartSchedule())
+				.isMaturing(true)
+				.simulated(false)
+				.attributeSetInstanceId(ppMaturingCandidatesV.getAttributeSetInstanceId())
+				.issueHuId(ppMaturingCandidatesV.getIssueHuId())
+				.build());
 
 		return ppMaturingCandidatesV.getPpOrderCandidateId() == null ? CrudOperationResult.CREATED : CrudOperationResult.UPDATED;
 	}
@@ -439,7 +441,7 @@ public class PPOrderCandidateService
 	{
 		final ProductBOMLineId productBOMLineId = productBOMsRepo.getLatestBOMByVersion(ppMaturingCandidatesV.getProductBOMVersionsId())
 				.flatMap(bom -> productBOMsRepo.getBomLineByProductId(bom, ppMaturingCandidatesV.getIssueProductId()))
-						.orElseThrow(() -> new AdempiereException("Cannot identify current BOM line for ProductBOMVersionsId=" + ppMaturingCandidatesV.getProductBOMVersionsId()));
+				.orElseThrow(() -> new AdempiereException("Cannot identify current BOM line for ProductBOMVersionsId=" + ppMaturingCandidatesV.getProductBOMVersionsId()));
 		final ComputeQtyRequiredRequest computeQtyRequiredRequest = ComputeQtyRequiredRequest.builder()
 				.issuedQty(ppMaturingCandidatesV.getQtyRequired())
 				.productBOMLineId(productBOMLineId)
@@ -450,5 +452,20 @@ public class PPOrderCandidateService
 	public void deleteLines(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		ppOrderCandidateDAO.deleteLines(ppOrderCandidateId);
+	}
+
+	public void setWorkstationId(@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds, @Nullable final ResourceId workstationId)
+	{
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
+		for (final I_PP_Order_Candidate candidate : candidates)
+		{
+			if (candidate.isProcessed() || candidate.isClosed() || !candidate.isActive())
+			{
+				continue;
+			}
+
+			candidate.setWorkStation_ID(ResourceId.toRepoId(workstationId));
+			ppOrderCandidateDAO.save(candidate);
+		}
 	}
 }

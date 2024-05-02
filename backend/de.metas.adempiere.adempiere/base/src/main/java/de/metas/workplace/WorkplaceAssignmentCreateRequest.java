@@ -31,8 +31,6 @@ import lombok.Value;
 @Builder
 public class WorkplaceAssignmentCreateRequest
 {
-	@NonNull
-	UserId userId;
-	@NonNull
-	WorkplaceId workplaceId;
+	@NonNull UserId userId;
+	@NonNull WorkplaceId workplaceId;
 }

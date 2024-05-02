@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.mobileui;
+package de.metas.manufacturing.mobileui;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
@@ -36,9 +36,10 @@ public class WorkplaceManager implements MobileApplication
 {
 	private static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("workplaceManager");
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.workplaceManager.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
+	public static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
 			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
+			.showInMainMenu(false)
 			.build();
 
 	@Override

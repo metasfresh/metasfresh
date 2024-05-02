@@ -65,7 +65,7 @@ input {
 
         @media (min-width: $breakpoint-md){
             /*margin: 0 15px;*/
-        }       
+        }
     }
 
     &.zoom-into:hover, .zoom-into:hover {
@@ -389,7 +389,7 @@ input:checked + .input-slider:before {
     padding: .125rem .5rem;
     padding-top: .3rem;
     margin: 0;
-    
+
     input {
         color: $brand-font-color-secondary;
     }
@@ -995,4 +995,9 @@ table {
 
 .input-qr-scanner-wrapper {
     padding: 20px 30px 20px 28px;
+}
+
+
+input:disabled, textarea:disabled {
+  color: black !important;
 }

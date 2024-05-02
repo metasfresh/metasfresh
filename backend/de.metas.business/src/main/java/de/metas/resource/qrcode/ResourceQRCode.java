@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.compiere.model.I_S_Resource;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -28,6 +29,20 @@ public class ResourceQRCode
 	public String toGlobalQRCodeJsonString() {return ResourceQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
 	public static ResourceQRCode ofGlobalQRCode(final GlobalQRCode globalQRCode) {return ResourceQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
+
+	public static ResourceQRCode ofGlobalQRCodeJsonString(final String qrCodeString)
+	{
+		return ResourceQRCodeJsonConverter.fromGlobalQRCodeJsonString(qrCodeString);
+	}
+
+	public static ResourceQRCode ofResource(@NonNull final I_S_Resource record)
+	{
+		return ResourceQRCode.builder()
+				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
+				.resourceType(record.getManufacturingResourceType())
+				.caption(record.getName())
+				.build();
+	}
 
 	public PrintableQRCode toPrintableQRCode()
 	{

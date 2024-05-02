@@ -16,7 +16,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
@@ -66,9 +65,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(ManufacturingOrderQuery.builder()
-																				 .warehouseId(warehouseId)
-																				 .onlyCompleted(true)
-																				 .build());
+				.warehouseId(warehouseId)
+				.onlyCompleted(true)
+				.build());
 
 		return queryBuilder
 				.orderBy(I_PP_Order.COLUMN_DocumentNo)
@@ -109,6 +108,21 @@ public class PPOrderDAO implements IPPOrderDAO
 		if (!query.getOnlyPlantIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantIds());
+		}
+
+		// Workstation
+		if (!query.getOnlyWorkstationIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_WorkStation_ID, query.getOnlyWorkstationIds());
+		}
+
+		// Plant or workstation
+		if (!query.getOnlyPlantOrWorkstationIds().isEmpty())
+		{
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantOrWorkstationIds())
+					.addInArrayFilter(I_PP_Order.COLUMN_WorkStation_ID, query.getOnlyPlantOrWorkstationIds());
 		}
 
 		// Warehouse

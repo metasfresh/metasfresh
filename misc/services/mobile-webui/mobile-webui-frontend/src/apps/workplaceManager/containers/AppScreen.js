@@ -22,33 +22,49 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import WorkplaceInfoComponent from '../components/WorkplaceInfoComponent';
-import { useRouteMatch } from 'react-router-dom';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { trl } from '../../../utils/translations';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import * as api from '../../../api/workplace';
 import { toastError } from '../../../utils/toast';
+import { appLocation } from '../routes';
+import { appTrl } from '../utils';
+import { APPLICATION_ID as APPLICATION_ID_scanAnything } from '../../scanAnything/constants';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
+import Spinner from '../../../components/Spinner';
 
-const WorkplaceManagerScreen = () => {
+const AppScreen = () => {
   const { url } = useRouteMatch();
   const dispatch = useDispatch();
-
+  const history = useHistory();
+  const [loading, setLoading] = useState(true);
   const [workplace, setWorkplace] = useState();
-  console.log('ctor', { workplace });
 
   useEffect(() => {
     // IMPORTANT, else it won't restore the title when we move back to this screen
     dispatch(pushHeaderEntry({ location: url }));
   }, []);
 
+  const queryParameters = new URLSearchParams(window.location.search);
+  const qrCodeParam = queryParameters.get('qrCode');
+  const parentApplicationId = queryParameters.get('parent');
+  useEffect(() => {
+    if (qrCodeParam && !workplace) {
+      setLoading(true);
+      onBarcodeScanned({ scannedBarcode: qrCodeParam }).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const setWorkplaceAndUpdateUrl = (newWorkplace) => {
+    setWorkplace(newWorkplace);
+    history.replace(appLocation({ qrCode: newWorkplace?.qrCode, parent: parentApplicationId }));
+  };
+
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    console.log('onBarcodeScanned', { scannedBarcode });
-    return api.getWorkplaceByQRCode(scannedBarcode).then((workplaceInfo) => {
-      console.log('got', { workplaceInfo });
-      setWorkplace(workplaceInfo);
-    });
-    //.catch((axiosError) => toastError({ axiosError })); // no need to catch it here
+    return api.getWorkplaceByQRCode(scannedBarcode).then((workplaceInfo) => setWorkplaceAndUpdateUrl(workplaceInfo));
   };
 
   const onAssignClick = () => {
@@ -59,24 +75,28 @@ const WorkplaceManagerScreen = () => {
   };
 
   const onScanAgainClick = () => {
-    setWorkplace(null);
+    if (parentApplicationId === APPLICATION_ID_scanAnything) {
+      history.push(scanAnythingRoutes.appLocation());
+    } else {
+      setWorkplaceAndUpdateUrl(null);
+    }
   };
 
-  if (workplace) {
+  if (loading) {
+    return (
+      <div className="app-workstantionManager">
+        <Spinner />
+      </div>
+    );
+  } else if (workplace) {
     return (
       <>
         <WorkplaceInfoComponent workplaceInfo={workplace} />
         <div className="pt-3 section">
           {!workplace.userAssigned && (
-            <ButtonWithIndicator
-              caption={trl('workplaceManager.action.assign.buttonCaption')}
-              onClick={onAssignClick}
-            />
+            <ButtonWithIndicator caption={appTrl('action.assign.buttonCaption')} onClick={onAssignClick} />
           )}
-          <ButtonWithIndicator
-            caption={trl('workplaceManager.action.scanAgain.buttonCaption')}
-            onClick={onScanAgainClick}
-          />
+          <ButtonWithIndicator caption={appTrl('action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>
     );
@@ -85,4 +105,4 @@ const WorkplaceManagerScreen = () => {
   }
 };
 
-export default WorkplaceManagerScreen;
+export default AppScreen;

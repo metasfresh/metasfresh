@@ -601,6 +601,12 @@ public class DesadvBL implements IDesadvBL
 		return result.build();
 	}
 
+	@Override
+	public List<I_M_InOutLine> retrieveAllInOutLines(final I_EDI_DesadvLine desadvLine)
+	{
+		return desadvDAO.retrieveAllInOutLines(desadvLine);
+	}
+
 	private Optional<ITranslatableString> createSingleMsg(
 			@NonNull final List<I_EDI_Desadv> desadvsToSkip,
 			@NonNull final BigDecimal minimumSumPercentage)

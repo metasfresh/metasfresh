@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MobileUI_UserProfile_MFG
@@ -123,27 +124,27 @@ public interface I_MobileUI_UserProfile_MFG
 	 * Set Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsScanResourceRequired (boolean IsScanResourceRequired);
+	void setIsScanResourceRequired (@Nullable java.lang.String IsScanResourceRequired);
 
 	/**
 	 * Get Scan Resource QR Code.
 	 * User needs to scan the resource QR code first
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isScanResourceRequired();
+	@Nullable java.lang.String getIsScanResourceRequired();
 
 	ModelColumn<I_MobileUI_UserProfile_MFG, Object> COLUMN_IsScanResourceRequired = new ModelColumn<>(I_MobileUI_UserProfile_MFG.class, "IsScanResourceRequired", null);
 	String COLUMNNAME_IsScanResourceRequired = "IsScanResourceRequired";
 
 	/**
-	 * Set mobile UI User Profile - Manufacturing.
+	 * Set Mobile UI User Profile - Manufacturing.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -152,7 +153,7 @@ public interface I_MobileUI_UserProfile_MFG
 	void setMobileUI_UserProfile_MFG_ID (int MobileUI_UserProfile_MFG_ID);
 
 	/**
-	 * Get mobile UI User Profile - Manufacturing.
+	 * Get Mobile UI User Profile - Manufacturing.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

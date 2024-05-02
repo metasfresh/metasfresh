@@ -90,6 +90,7 @@ public class PPOrderAllocatorService
 				.productPlanningId(ProductPlanningId.ofRepoId(ppOrderCandidatePojo.getPpOrderData().getProductPlanningId()))
 				.materialDispoGroupId(ppOrderCandidatePojo.getPpOrderData().getMaterialDispoGroupId())
 				.plantId(ppOrderCandidatePojo.getPpOrderData().getPlantId())
+				.workstationId(ppOrderCandidatePojo.getPpOrderData().getWorkstationId())
 				.warehouseId(ppOrderCandidatePojo.getPpOrderData().getWarehouseId())
 				//
 				.productId(productId)

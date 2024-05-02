@@ -281,8 +281,8 @@ Feature: Handling unit rest controller
       | receiptSchedule_PO              | order_PO              | orderLine_PO              | supplier_PO              | supplierLocation_PO               | purchaseProduct         | 18         | warehouseStd              |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedLU        | receiptSchedule_PO              | N               | 1     | N               | 2     | N               | 9     | huItemPurchaseProduct              | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedLU        | receiptSchedule_PO              | N               | 1     | N               | 2     | N               | 9           | huItemPurchaseProduct              | huPackingLU                  |
 
     When create material receipt
       | M_InOut_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier |

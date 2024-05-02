@@ -167,14 +167,16 @@ public class EDI_Desadv_Pack_StepDef
 		}
 
 		final Supplier<Boolean> packIsFound = () -> queryBuilder
+				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
-				.firstOnly(I_EDI_Desadv_Pack.class) != null;
+				.first(I_EDI_Desadv_Pack.class) != null;
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, packIsFound, this::logCurrentContext);
 
 		final I_EDI_Desadv_Pack desadvPack = queryBuilder
+				.orderByDescending(COLUMNNAME_EDI_Desadv_Pack_ID)
 				.create()
-				.firstOnlyNotNull(I_EDI_Desadv_Pack.class);
+				.firstNotNull(I_EDI_Desadv_Pack.class);
 
 		ediDesadvPackTable.put(packIdentifier, desadvPack);
 	}

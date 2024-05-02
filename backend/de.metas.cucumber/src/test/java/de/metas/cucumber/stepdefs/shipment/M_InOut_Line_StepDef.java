@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -292,7 +293,7 @@ public class M_InOut_Line_StepDef
 					softly.assertThat(actual.getM_Product_ID()).as("M_Product_ID").isEqualTo(expectedProductId);
 				});
 		expected.getAsOptionalBigDecimal("movementqty")
-				.ifPresent(movementQty -> softly.assertThat(actual.getMovementQty()).as("MovementQty").isEqualByComparingTo(movementQty));
+				.ifPresent(movementQty -> softly.assertThat(actual.getMovementQty()).as("movementqty").isEqualByComparingTo(movementQty));
 		expected.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyDeliveredCatch)
 				.ifPresent(qtyDeliveredCatch -> softly.assertThat(actual.getQtyDeliveredCatch()).as("QtyDeliveredCatch").isEqualByComparingTo(qtyDeliveredCatch));
 		expected.getAsOptionalBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEntered)
@@ -303,17 +304,20 @@ public class M_InOut_Line_StepDef
 		expected.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID)
 				.ifPresent(huPIItemProductIdentifier -> {
 					final HUPIItemProductId huPIItemProductId = huPIItemProductIdentifier.isNullPlaceholder() ? null : huPIItemProductTable.getId(huPIItemProductIdentifier);
-					softly.assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID()))
-							.as("M_HU_PI_Item_Product_ID")
-							.isEqualTo(huPIItemProductId);
+					softly.assertThat(HUPIItemProductId.ofRepoIdOrNull(actual.getM_HU_PI_Item_Product_ID())).as("M_HU_PI_Item_Product_ID").isEqualTo(huPIItemProductId);
 				});
+
+		expected.getAsOptionalString(I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName())
+				.map(X12DE355::ofCode)
+				.map(uomDAO::getUomIdByX12DE355)
+				.ifPresent(uomId -> softly.assertThat(UomId.ofRepoIdOrNull(actual.getC_UOM_ID())).as("C_UOM_ID").isEqualTo(uomId));
 
 		expected.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.ifPresent(asiIdentifier -> {
 					final AttributeSetInstanceId asiIdActual = AttributeSetInstanceId.ofRepoIdOrNone(actual.getM_AttributeSetInstance_ID());
 					if (asiIdentifier.isNullPlaceholder())
 					{
-						softly.assertThat(asiIdActual).as("asi").isEqualTo(AttributeSetInstanceId.NONE);
+						softly.assertThat(asiIdActual).as("M_AttributeSetInstance_ID").isEqualTo(AttributeSetInstanceId.NONE);
 					}
 					else
 					{
@@ -324,7 +328,7 @@ public class M_InOut_Line_StepDef
 						}
 						else
 						{
-							softly.assertThat(asiIdActual).as("asi").isEqualTo(asiId);
+							softly.assertThat(asiIdActual).as("M_AttributeSetInstance_ID").isEqualTo(asiId);
 						}
 					}
 				});
