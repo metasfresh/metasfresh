@@ -38,13 +38,19 @@ public class ReceiptScheduleExternalInfo
 	LocalDate movementDate;
 
 	@Nullable
+	LocalDate dateAcct;
+
+	@Nullable
 	ZonedDateTime dateReceived;
 
 	@Nullable
 	String externalId;
 
 	@Builder
-	public ReceiptScheduleExternalInfo(@Nullable final LocalDate movementDate, @Nullable final ZonedDateTime dateReceived, @Nullable final String externalId)
+	public ReceiptScheduleExternalInfo(@Nullable final LocalDate movementDate,
+			@Nullable final LocalDate dateAcct,
+			@Nullable final ZonedDateTime dateReceived,
+			@Nullable final String externalId)
 	{
 		if (movementDate == null && dateReceived == null && Check.isBlank(externalId))
 		{
@@ -52,6 +58,7 @@ public class ReceiptScheduleExternalInfo
 		}
 
 		this.movementDate = movementDate;
+		this.dateAcct = dateAcct;
 		this.dateReceived = dateReceived;
 		this.externalId = externalId;
 	}
