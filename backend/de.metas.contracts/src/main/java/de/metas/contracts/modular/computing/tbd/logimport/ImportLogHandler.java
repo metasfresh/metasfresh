@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -46,6 +45,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,11 +64,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 class ImportLogHandler implements IModularContractLogHandler
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	@NonNull
-	private final ImportLogModularContractHandler computingMethod;
+	@Getter @NonNull private final ImportLogModularContractHandler computingMethod;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.IMPORT_LOG;
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -114,7 +114,7 @@ class ImportLogHandler implements IModularContractLogHandler
 				.year(harvestingYearId)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
-				.documentType(LogEntryDocumentType.IMPORT_LOG)
+				.documentType(getLogEntryDocumentType())
 				.contractType(LogEntryContractType.MODULAR_CONTRACT)
 				//
 				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
@@ -139,11 +139,5 @@ class ImportLogHandler implements IModularContractLogHandler
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final IModularContractLogHandler.CreateLogRequest createLogRequest)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

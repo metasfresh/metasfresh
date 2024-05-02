@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -184,14 +185,12 @@ public class ModularContractLogEntry
 	}
 
 	@NonNull
-	public ModularContractLogEntry withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter uomConverter)
+	public ModularContractLogEntry withPriceActualAndCalculateAmount(
+			@NonNull final ProductPrice price,
+			@NonNull final QuantityUOMConverter uomConverter,
+			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
-		Check.assumeNotNull(quantity, "No quantity set for log entry {}, cannot update price and amount.", id);
-
-		return this.toBuilder()
-				.priceActual(price)
-				.amount(price.computeAmount(getQuantity(price.getUomId(), uomConverter)))
-				.build();
+		return logHandlerRegistry.getApplicableHandlerForOrError(this).calculateAmount(this.toBuilder().priceActual(price).build(), uomConverter);
 	}
 
 

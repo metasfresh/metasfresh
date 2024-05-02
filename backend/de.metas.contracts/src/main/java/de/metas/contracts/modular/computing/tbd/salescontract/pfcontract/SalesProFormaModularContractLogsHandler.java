@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -48,6 +47,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,13 +76,9 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final SalesContractProFormaModularContractHandler computingMethod;
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_Flatrate_Term.Table_Name;
-	}
+	@Getter @NonNull private final SalesContractProFormaModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO_MODULAR_CONTRACT;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
@@ -120,7 +116,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(warehousePartnerId)
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.PRO_FORMA_SO_MODULAR_CONTRACT)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.SALES)
 											.processed(false)
@@ -141,11 +137,5 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }
