@@ -22,17 +22,6 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -43,8 +32,18 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -199,7 +198,7 @@ public class C_Invoice_Candidate
 				}
 
 				final I_C_Flatrate_DataEntry dataEntry = ica.getC_Flatrate_DataEntry();
-				if (dataEntry.getC_Flatrate_Term().isClosingWithActualSum())
+				if (dataEntry.getC_Flatrate_Term().isClosingWithActualSum()) // TODO: don't use a virtual column!
 				{
 					if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 					{
@@ -221,22 +220,18 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 *
-	 * @param dataEntry
-	 * @param po
-	 * @param colName
 	 * @param isToClearChanged if <code>true</code>, then we assume that IsToClean has been change to 'Y'. In that case, we don't add the difference between old and new value, but just the new value
 	 */
 	private void updateActualQty(
 			final I_C_Flatrate_DataEntry dataEntry,
 			final I_C_Invoice_Candidate invoiceCand,
 			final String colName,
-			final boolean isToClearClanged)
+			final boolean isToClearChanged)
 	{
 		final PO po = InterfaceWrapperHelper.getPO(invoiceCand);
 
 		BigDecimal oldValue = (BigDecimal)po.get_ValueOld(colName);
-		if (isToClearClanged || oldValue == null)
+		if (isToClearChanged || oldValue == null)
 		{
 			oldValue = BigDecimal.ZERO;
 		}

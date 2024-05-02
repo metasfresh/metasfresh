@@ -46,7 +46,7 @@ import java.util.Properties;
 
 /**
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
- * are handled by a flatrate contract.
+ * are handled by a subscription contract.
  */
 @ToString
 public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWithoutShipmentScheduleVetoer
@@ -69,7 +69,7 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 
 		final boolean subscription = subscriptionBL.isSubscription(ol);
 		final boolean hasAtLeastOneFlatrateContract = hasAtLeastOneFlatrateContract(ol);
-		final boolean veto = subscription || hasAtLeastOneFlatrateContract;
+		final boolean veto = subscription /* || hasAtLeastOneFlatrateContract */;
 
 		if (veto)
 		{
@@ -81,6 +81,8 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 		return OnMissingCandidate.I_DONT_CARE;
 	}
 
+	// i don't see why there should be no shipment-sched if the order line has a FlatFee-contract
+	// TODO: let this method return false if the ol has one
 	public boolean hasAtLeastOneFlatrateContract(@NonNull final I_C_OrderLine ol)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);

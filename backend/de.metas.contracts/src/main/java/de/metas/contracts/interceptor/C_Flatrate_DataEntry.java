@@ -22,12 +22,21 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,20 +45,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Interceptor(I_C_Flatrate_DataEntry.class)
 public class C_Flatrate_DataEntry
@@ -59,7 +57,7 @@ public class C_Flatrate_DataEntry
 	private static final String MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P = "DataEntry_Existing_Correction_Entry";
 	public static final String MSG_DATA_ENTRY_EXISTING_CLOSING_ENTRY_0P = "DataEntry_Existing_Closing_Entry";
 
-	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
+	public static final C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
 			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
