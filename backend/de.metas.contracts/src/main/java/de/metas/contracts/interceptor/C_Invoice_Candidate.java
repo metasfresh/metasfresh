@@ -136,7 +136,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Deletes {@link I_C_Invoice_Clearing_Alloc}s and udpates {@link I_C_Flatrate_DataEntry}s.
-	 * @param invoiceCand
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void cleanup(final I_C_Invoice_Candidate invoiceCand)

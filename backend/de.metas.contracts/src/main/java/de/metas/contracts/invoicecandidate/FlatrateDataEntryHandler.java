@@ -11,6 +11,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 
 import java.util.Collections;
@@ -42,7 +43,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}
@@ -130,11 +131,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
-		// note: we can assume that #setQtyOrdered() was already called
-		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
-		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
-
-		ic.setDeliveryDate(ic.getDateOrdered());
+		HandlerTools.setDeliveredData(ic);
 	}
 
 	@Override

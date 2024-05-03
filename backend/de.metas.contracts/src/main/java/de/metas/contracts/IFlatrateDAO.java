@@ -23,7 +23,6 @@ package de.metas.contracts;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -49,7 +48,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -139,8 +137,14 @@ public interface IFlatrateDAO extends ISingletonService
 	 */
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, @NonNull OrgId orgId, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
 	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);

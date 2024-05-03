@@ -117,7 +117,7 @@ public class C_Flatrate_DataEntry
 	}
 
 	/** @return true if dataEntry's type is invoice candidates related */
-	private final boolean isInvoiceCandidatesRelatedType(I_C_Flatrate_DataEntry dataEntry)
+	private boolean isInvoiceCandidatesRelatedType(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final String dataEntryType = dataEntry.getType();
 		return DATAENTRY_TYPES_InvoiceCandidatesRelated.contains(dataEntryType);
