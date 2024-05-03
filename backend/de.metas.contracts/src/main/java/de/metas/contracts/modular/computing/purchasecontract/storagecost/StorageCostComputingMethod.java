@@ -101,7 +101,7 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		final ProductPrice pricePerUnitPerDay = getPricePerUnitPerDay(logs).orElse(null);
 		if (pricePerUnitPerDay == null)
 		{
-			return computingMethodService.toZeroResponseWithQtyOne(request);
+			return computingMethodService.toZeroResponseWithQtyZero(request);
 		}
 		Check.assumeEquals(request.getCurrencyId(), pricePerUnitPerDay.getCurrencyId(), "Log and Invoice Currency should be the same");
 
