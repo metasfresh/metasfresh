@@ -68,14 +68,14 @@ import java.util.Optional;
 class InventoryLineLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Getter @NonNull private final InventoryLineModularContractHandler computingMethod;
-	@Getter @NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@Getter @NonNull private final String supportedTableName = I_M_InventoryLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INVENTORY;
 
