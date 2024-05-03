@@ -84,7 +84,7 @@ public interface IComputingMethodHandler
 	default @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		final Quantity qty = Quantity.of(BigDecimal.ZERO, stockUOM);
 
 		return ComputingResponse.builder()
 				.ids(ImmutableSet.of())

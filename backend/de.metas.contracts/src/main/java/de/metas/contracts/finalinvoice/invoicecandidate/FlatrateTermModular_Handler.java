@@ -288,16 +288,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		final UomId stockUomId;
 
-		if (moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
-		{
-			// the invoice candidate will have to contain the stock UOM
-			// of the contract's product even if the M_Product_ID of the invoice candidate is different.
-			stockUomId = productBL.getStockUOMId(modularContract.getM_Product_ID());
-		}
-		else
-		{
-			stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
-		}
+		stockUomId = productBL.getStockUOMId(moduleConfig.getProductId());
 
 		Check.assumeEquals(currencyId, response.getPrice().getCurrencyId());
 		Check.assumeEquals(stockUomId, response.getPrice().getUomId());
@@ -328,7 +319,10 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		else
 		{
 			final FlatrateTermId interimContractId = flatrateBL.getInterimContractIdByModularContractIdAndDate(flatrateTermId, TimeUtil.asInstant(invoiceCandidate.getDateOrdered()));
-			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, interimContractId);
+
+			//interimContractId can be null, if ComputingMethodType.INTERIM_CONTRACT is present, but no interim contract was created (in this case the price will always be 0)
+			final FlatrateTermId contractToUse = interimContractId != null ? interimContractId : flatrateTermId;
+			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, contractToUse);
 		}
 
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true);

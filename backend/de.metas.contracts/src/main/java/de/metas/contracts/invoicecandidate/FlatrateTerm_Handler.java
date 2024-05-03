@@ -3,6 +3,8 @@ package de.metas.contracts.invoicecandidate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
@@ -16,6 +18,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lock.api.LockOwner;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -32,7 +35,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
@@ -50,6 +52,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private	final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	public FlatrateTerm_Handler()
 	{
@@ -208,7 +211,17 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 						.appendParametersToMessage()
 						.setParameter("C_Flatrate_Term_ID", term.getC_Flatrate_Term_ID()));
 
-		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+		final Quantity qtyInProductUOM;
+		final ProductId icProductId = ProductId.ofRepoId(ic.getM_Product_ID());
+		if(flatrateBL.isModularContract(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
+				&& !ProductId.equals(icProductId, productId))
+		{
+			qtyInProductUOM = Quantitys.of(calculateQtyOrdered.toBigDecimal(), icProductId);
+		}
+		else
+		{
+			qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+		}
 		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
 	}
 
