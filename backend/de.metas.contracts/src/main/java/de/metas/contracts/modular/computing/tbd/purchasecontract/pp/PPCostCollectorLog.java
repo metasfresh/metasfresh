@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -49,6 +48,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -75,30 +75,18 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
 	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
 
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final PPCostCollectorModularContractHandler computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_PP_Cost_Collector.Table_Name;
-	}
+	@Getter @NonNull private final PPCostCollectorModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRODUCTION;
 
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
@@ -106,7 +94,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 		if (recordRef.getTableName().equals(getSupportedTableName()))
 		{
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
-			return request.getModuleConfig().getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
+			return request.getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 		}
 		return false;
 	}
@@ -160,7 +148,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 											.productName(createLogRequest.getProductName())
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-											.documentType(LogEntryDocumentType.PRODUCTION)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(modCntrLogQty)

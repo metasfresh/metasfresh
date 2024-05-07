@@ -35,8 +35,8 @@ import javax.annotation.Nullable;
 @RepoIdAwares.SkipTest
 public class ModuleConfigAndSettingsId implements RepoIdAware
 {
-	ModularContractModuleId modularContractModuleId;
-	ModularContractSettingsId modularContractSettingsId;
+	@NonNull ModularContractModuleId modularContractModuleId;
+	@NonNull ModularContractSettingsId modularContractSettingsId;
 
 	@JsonCreator
 	public static ModuleConfigAndSettingsId ofRepoId(@NonNull final ModularContractSettingsId modularContractSettingsId, final int repoId)

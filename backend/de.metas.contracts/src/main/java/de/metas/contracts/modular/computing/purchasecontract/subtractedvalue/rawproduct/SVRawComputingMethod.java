@@ -22,34 +22,21 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.rawproduct;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.money.Money;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class SVRawComputingMethod implements IComputingMethodHandler
 {
-	private final IProductBL productBL = Services.get(IProductBL.class);
-
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
@@ -68,20 +55,4 @@ public class SVRawComputingMethod implements IComputingMethodHandler
 		return ComputingMethodType.SubtractValueOnRawProduct;
 	}
 
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
-				.build();
-	}
 }

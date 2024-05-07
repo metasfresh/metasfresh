@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -51,6 +50,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,23 +80,11 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	@NonNull
-	private final SalesModularContractHandler computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@Override
-	@NonNull
-	public String getSupportedTableName()
-	{
-		return I_C_Flatrate_Term.Table_Name;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
+	@Getter @NonNull private final SalesModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_MODULAR_CONTRACT;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
@@ -111,9 +99,9 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
 
-		final Quantity quantity = Quantitys.create(modularContractRecord.getPlannedQtyPerUnit(),
-												   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
-												   productId);
+		final Quantity quantity = Quantitys.of(modularContractRecord.getPlannedQtyPerUnit(),
+											   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
+											   productId);
 
 		final String productName = productBL.getProductValueAndName(productId);
 
@@ -141,7 +129,7 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.SALES_MODULAR_CONTRACT)
+											.documentType(getLogEntryDocumentType())
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 											.processed(false)

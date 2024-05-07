@@ -38,6 +38,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -71,7 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 public class ModularContractProvider
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
@@ -114,9 +115,7 @@ public class ModularContractProvider
 				.typeConditions(MODULAR_CONTRACT)
 				.build();
 
-		return flatrateBL.streamModularFlatrateTermsByQuery(query)
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoId);
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
 	}
 
 	@NonNull
@@ -131,7 +130,7 @@ public class ModularContractProvider
 	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForReceiptLine(@NonNull final InOutLineId receiptInOutLineId)
 	{
-		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptInOutLineId);
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(receiptInOutLineId);
 		final FlatrateTermId contractId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
 
 		return Stream.ofNullable(contractId)
@@ -144,8 +143,8 @@ public class ModularContractProvider
 	@NonNull
 	public Stream<FlatrateTermId> streamInterimPurchaseContractsForReceiptLine(@NonNull final InOutLineId receiptInOutLineId)
 	{
-		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptInOutLineId);
-		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(receiptInOutLineId);
+		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final FlatrateTermId modularFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
 		if (inOutRecord.isSOTrx() || modularFlatrateTermId == null || inOutLineRecord.getMovementQty().signum() < 0)
 		{
@@ -218,5 +217,40 @@ public class ModularContractProvider
 		}
 
 		return Optional.empty();
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularPurchaseContractsForShipmentLine(@NonNull final InOutLineId inOutLineId)
+	{
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(inOutLineId);
+		final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
+		if (!inOutRecord.isSOTrx() || inOutLineRecord.getMovementQty().signum() < 0)
+		{
+			return Stream.empty();
+		}
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and warehouseBL.getBPartnerId demands NonNull
+
+		final YearId harvestingYearId = YearId.ofRepoIdOrNull(order.getHarvesting_Year_ID());
+
+		final CalendarId harvestingCalendarId = CalendarId.ofRepoIdOrNull(order.getC_Harvesting_Calendar_ID());
+
+		if (harvestingYearId == null || harvestingCalendarId == null)
+		{
+			return Stream.empty();
+		}
+
+		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
+				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
+				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
+				.yearId(harvestingYearId)
+				.soTrx(SOTrx.PURCHASE)
+				.typeConditions(MODULAR_CONTRACT)
+				.calendarId(harvestingCalendarId)
+				.build();
+
+		return flatrateBL.streamModularFlatrateTermIdsByQuery(query);
 	}
 }

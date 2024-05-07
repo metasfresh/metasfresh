@@ -30,12 +30,18 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,6 +53,9 @@ public interface IModularContractLogHandler
 
 	@NonNull
 	String getSupportedTableName();
+
+	@NonNull
+	LogEntryDocumentType getLogEntryDocumentType();
 
 	@NonNull
 	default LogEntryContractType getLogEntryContractType() {return LogEntryContractType.MODULAR_CONTRACT;}
@@ -67,6 +76,16 @@ public interface IModularContractLogHandler
 				.referencedModel(handleLogsRequest.getTableRecordReference())
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.build();
+	}
+
+	@NonNull
+	default ModularContractLogEntry calculateAmount(@NonNull final ModularContractLogEntry logEntry, @NonNull final QuantityUOMConverter uomConverter)
+	{
+		Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
+		Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
+		return logEntry.toBuilder()
+				.amount(logEntry.getPriceActual().computeAmount(logEntry.getQuantity(), uomConverter))
 				.build();
 	}
 
@@ -111,6 +130,22 @@ public interface IModularContractLogHandler
 		public @NonNull ModuleConfigAndSettingsId getConfigId()
 		{
 			return moduleConfig.getId();
+		}
+
+		@NonNull
+		public ModularContractModuleId getModularContractModuleId()
+		{
+			return getConfigId().getModularContractModuleId();
+		}
+
+		public boolean isCostsType()
+		{
+			return moduleConfig.isCostsType();
+		}
+
+		public ProductId getProductId()
+		{
+			return moduleConfig.getProductId();
 		}
 	}
 

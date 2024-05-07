@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -50,6 +49,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -65,23 +65,17 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_PO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.PurchaseOrderLineLogHandler.OnComplete.Description");
 
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final ReceiptComputingMethod computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_OrderLine.Table_Name;
-	}
+	@Getter @NonNull private final ReceiptComputingMethod computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -116,7 +110,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 											.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
-											.documentType(LogEntryDocumentType.PURCHASE_ORDER)
+											.documentType(getLogEntryDocumentType())
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
@@ -141,13 +135,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 											.flatrateTermId(createLogRequest.getContractId())
 											.description(null)
 											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+											.contractModuleId(createLogRequest.getModularContractModuleId())
 											.build());
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

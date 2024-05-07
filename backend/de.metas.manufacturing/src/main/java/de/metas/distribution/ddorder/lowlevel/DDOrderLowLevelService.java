@@ -97,7 +97,7 @@ public class DDOrderLowLevelService
 				.subtract(qtyDelivered) // minus: Qty that we already moved (so it's there, on hand)
 				.subtract(qtyInTransit); // minus: Qty that left source locator but did not arrived yet to target locator
 
-		return Quantitys.create(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
+		return Quantitys.of(qtyToShipBD, UomId.ofRepoId(ddOrderLineOrAlt.getC_UOM_ID()));
 	}
 
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)

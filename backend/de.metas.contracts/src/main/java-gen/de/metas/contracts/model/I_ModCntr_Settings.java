@@ -341,6 +341,27 @@ public interface I_ModCntr_Settings
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStorageCostStartDate (java.sql.Timestamp StorageCostStartDate);
+
+	/**
+	 * Get Storage Cost Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getStorageCostStartDate();
+
+	ModelColumn<I_ModCntr_Settings, Object> COLUMN_StorageCostStartDate = new ModelColumn<>(I_ModCntr_Settings.class, "StorageCostStartDate", null);
+	String COLUMNNAME_StorageCostStartDate = "StorageCostStartDate";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

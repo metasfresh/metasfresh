@@ -95,20 +95,4 @@ public class SVInterimComputingMethod implements IComputingMethodHandler
 		return ComputingMethodType.SubtractValueOnInterim;
 	}
 
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(Money.of(BigDecimal.ONE, request.getCurrencyId()))
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
-				.build();
-	}
 }

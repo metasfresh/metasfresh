@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
@@ -29,12 +30,17 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -52,6 +58,7 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
@@ -69,6 +76,7 @@ public class ComputingMethodService
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
+	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	public void validateAction(@NonNull final TableRecordReference recordRef, @NonNull final ModelAction action)
 	{
@@ -177,7 +185,7 @@ public class ComputingMethodService
 		final ModularContractLogEntriesList logs = contractLogService.getModularContractLogEntries(
 				ModularContractLogQuery.builder()
 						.flatrateTermId(request.getFlatrateTermId())
-						.modularContractTypeId(request.getModularContractTypeId())
+						.contractModuleId(request.getModularContractModuleId())
 						.processed(false)
 						.billable(true)
 						.lockOwner(request.getLockOwner())
@@ -197,9 +205,51 @@ public class ComputingMethodService
 		return logs.getQtySum(stockUOMId, uomConversionBL);
 	}
 
+	@NonNull
+	public Quantity getQtyXStorageDaysSum(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
+	{
+		return logs.getQtyXStorageDaysSum(targetUomId, uomConversionBL);
+	}
+
 	public Quantity getQtySum(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
 	{
 		return logs.getQtySum(targetUomId, uomConversionBL);
 	}
 
+	@NonNull
+	public ComputingResponse toZeroResponseWithQtyZero(final @NotNull ComputingRequest request)
+	{
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		return ComputingResponse.builder()
+				.ids(ImmutableSet.of())
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(Money.zero(request.getCurrencyId()))
+							   .uomId(stockUOMId)
+							   .build())
+				.qty(Quantitys.zero(stockUOMId))
+				.build();
+	}
+
+	@NonNull
+	public ComputingResponse toZeroResponse(final @NotNull ComputingRequest request)
+	{
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		return ComputingResponse.builder()
+				.ids(ImmutableSet.of())
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(Money.zero(request.getCurrencyId()))
+							   .uomId(stockUOMId)
+							   .build())
+				.qty(Quantitys.zero(stockUOMId))
+				.build();
+	}
+
+	@NonNull
+	public ProductPrice productPriceToUOM(@NonNull final ProductPrice priceWithPriceUOM, @NonNull final UomId stockUOMId)
+	{
+		final CurrencyPrecision precision = currencyBL.getStdPrecision(priceWithPriceUOM.getCurrencyId());
+		return priceWithPriceUOM.convertToUom(stockUOMId, precision, uomConversionBL);
+	}
 }

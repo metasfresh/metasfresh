@@ -22,21 +22,47 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.interim;
 
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
 @Component
 @Getter
 public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ModularContractLogDAO contractLogDAO;
+	private final ModularContractLogService modularContractLogService;
+	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	private final InterimComputingMethod computingMethod;
+	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
+	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
+
+	@Getter @NonNull private final InterimComputingMethod computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
+	@Getter @NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
 
 	public InterimInvoiceLineLog(
 			@NonNull final InterimComputingMethod computingMethod,
@@ -45,8 +71,11 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractProvider modularContractProvider)
 	{
-		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository,modularContractProvider);
+		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository, modularContractProvider);
 		this.computingMethod = computingMethod;
+		this.contractLogDAO = contractLogDAO;
+		this.modularContractLogService = modularContractLogService;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 	}
 
 }

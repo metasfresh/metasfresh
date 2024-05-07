@@ -288,15 +288,15 @@ public class InvoiceCandidateRecordService
 				.stream()
 				.map(I_M_ShipmentSchedule_QtyPicked::getQtyPicked)
 				.reduce(BigDecimal::add)
-				.map(qtyPickedStockUOMSum -> Quantitys.create(qtyPickedStockUOMSum, stockUomId))
-				.orElseGet(() -> Quantitys.create(BigDecimal.ZERO, stockUomId));
+				.map(qtyPickedStockUOMSum -> Quantitys.of(qtyPickedStockUOMSum, stockUomId))
+				.orElseGet(() -> Quantitys.of(BigDecimal.ZERO, stockUomId));
 
-		final Quantity qtyPickedInUOM = Quantitys.create(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
+		final Quantity qtyPickedInUOM = Quantitys.of(qtyPickedStockUOM, UOMConversionContext.of(productId), icUomId);
 
 		final Quantity qtyPickedCatch = qtyPickedRecords
 				.stream()
 				.filter(qtyPickedRecord -> qtyPickedRecord.getQtyDeliveredCatch() != null && qtyPickedRecord.getCatch_UOM_ID() > 0)
-				.map(qtyPickedRecord -> Quantitys.create(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
+				.map(qtyPickedRecord -> Quantitys.of(qtyPickedRecord.getQtyDeliveredCatch(), UomId.ofRepoId(qtyPickedRecord.getCatch_UOM_ID())))
 				.reduce(Quantity::add)
 				.filter(qtyPickedCatchSum -> qtyPickedCatchSum.toBigDecimal().signum() != 0)
 				.orElse(null);

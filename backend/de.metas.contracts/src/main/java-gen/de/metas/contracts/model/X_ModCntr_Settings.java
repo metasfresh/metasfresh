@@ -42,7 +42,7 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public BigDecimal getAddInterestDays() 
+	public BigDecimal getAddInterestDays()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AddInterestDays);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -109,7 +109,7 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public BigDecimal getInterestRate() 
+	public BigDecimal getInterestRate()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestRate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -212,5 +212,17 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setStorageCostStartDate (final java.sql.Timestamp StorageCostStartDate)
+	{
+		set_Value (COLUMNNAME_StorageCostStartDate, StorageCostStartDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getStorageCostStartDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
 	}
 }

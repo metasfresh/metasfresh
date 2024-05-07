@@ -288,7 +288,7 @@ public class CustomsInvoiceService
 		final Quantity lineQty;
 		if (inoutLineRecord.getCatch_UOM_ID() > 0 && inoutLineRecord.getQtyDeliveredCatch().signum() != 0)
 		{
-			lineQty = Quantitys.create(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
+			lineQty = Quantitys.of(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
 		}
 		else if (inoutLineRecord.getC_UOM_ID() > 0)
 		{

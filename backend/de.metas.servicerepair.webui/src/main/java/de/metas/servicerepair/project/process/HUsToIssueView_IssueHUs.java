@@ -108,7 +108,7 @@ public class HUsToIssueView_IssueHUs
 
 	private Quantity getQtyToReserveParam()
 	{
-		final Quantity qtyToReserve = Quantitys.create(qty, uomId);
+		final Quantity qtyToReserve = Quantitys.of(qty, uomId);
 		if (qtyToReserve.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_Qty);

@@ -56,6 +56,7 @@ public class ModularContractService
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
 
+
 	public void scheduleLogCreation(@NonNull final DocStatusChangedEvent event)
 	{
 		boolean isRequestValidated = false;
@@ -128,9 +129,10 @@ public class ModularContractService
 	@NonNull
 	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
 	{
-		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
-
-		return modCntrSpecificPrice.taxCategoryId();
+		return modularContractPriceRepository.retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
+				.map(ModCntrSpecificPrice::taxCategoryId)
+				// don't have a contract specific price (e.g: Receipt), default to the contract's tax category.
+				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(flatrateTermId).getC_TaxCategory_ID()));
 	}
 
 	@NonNull

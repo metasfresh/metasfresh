@@ -244,7 +244,7 @@ class ShippingNotificationLoaderAndSaver
 				.id(ShippingNotificationLineId.ofRepoId(record.getM_Shipping_NotificationLine_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
-				.qty(Quantitys.create(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getMovementQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.salesOrderAndLineId(OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID()))
 				.line(SeqNo.ofInt(record.getLine()))

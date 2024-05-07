@@ -30,7 +30,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -50,6 +49,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -76,11 +76,7 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_Flatrate_Term.Table_Name;
-	}
+	@NonNull @Getter private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
@@ -110,9 +106,9 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
 
-		final Quantity quantity = Quantitys.create(modularContractRecord.getPlannedQtyPerUnit(),
-												   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
-												   productId);
+		final Quantity quantity = Quantitys.of(modularContractRecord.getPlannedQtyPerUnit(),
+											   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
+											   productId);
 
 		final String productName = productBL.getProductValueAndName(productId);
 
@@ -132,8 +128,6 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
 				.orElse(null);
 
-		final LogEntryDocumentType documentType = isInterimContract ? LogEntryDocumentType.CONTRACT_PREFINANCING : LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
-
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(request.getContractId())
 											.productId(productId)
@@ -143,7 +137,7 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 											.invoicingBPartnerId(billBPartnerId)
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
 											.warehouseId(warehouseId)
-											.documentType(documentType)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 											.processed(false)

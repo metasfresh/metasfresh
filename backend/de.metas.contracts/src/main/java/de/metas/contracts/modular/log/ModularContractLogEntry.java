@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -96,6 +97,9 @@ public class ModularContractLogEntry
 	LocalDateAndOrgId transactionDate;
 
 	@Nullable
+	Integer storageDays;
+
+	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
 
 	@NonNull YearId year;
@@ -112,7 +116,7 @@ public class ModularContractLogEntry
 
 	@NonNull ModularContractModuleId modularContractModuleId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
 			@NonNull final LogEntryContractType contractType,
@@ -129,12 +133,14 @@ public class ModularContractLogEntry
 			@Nullable final Quantity quantity,
 			@Nullable final Money amount,
 			@NonNull final LocalDateAndOrgId transactionDate,
+			@Nullable final Integer storageDays,
 			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			final boolean isBillable, final @NonNull ModularContractModuleId modularContractModuleId)
+			final boolean isBillable,
+			final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -161,6 +167,7 @@ public class ModularContractLogEntry
 		this.quantity = quantity;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.storageDays = storageDays;
 		this.invoiceCandidateId = invoiceCandidateId;
 		this.year = year;
 		this.description = description;
@@ -170,9 +177,21 @@ public class ModularContractLogEntry
 		this.modularContractModuleId = modularContractModuleId;
 	}
 
-	Quantity getQuantity(final UomId targetUomId, @NonNull QuantityUOMConverter uomConverter)
+	@NonNull
+	public Quantity getQuantity(@NonNull final UomId targetUomId, @NonNull final QuantityUOMConverter uomConverter)
 	{
 		Check.assumeNotNull(quantity, "Quantity of billable modular contract log shouldn't be null");
 		return uomConverter.convertQuantityTo(quantity, productId, targetUomId);
 	}
+
+	@NonNull
+	public ModularContractLogEntry withPriceActualAndCalculateAmount(
+			@NonNull final ProductPrice price,
+			@NonNull final QuantityUOMConverter uomConverter,
+			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
+	{
+		return logHandlerRegistry.getApplicableHandlerForOrError(this).calculateAmount(this.toBuilder().priceActual(price).build(), uomConverter);
+	}
+
+
 }

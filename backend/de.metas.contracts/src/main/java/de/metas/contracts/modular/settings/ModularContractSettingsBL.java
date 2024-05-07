@@ -23,10 +23,12 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
@@ -68,7 +70,7 @@ public class ModularContractSettingsBL
 
 		return conditionsId;
 	}
-	
+
 	public void validateModularContractSettingsNotUsed(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		final Optional<I_C_Flatrate_Conditions> completedConditions = flatrateBL.streamCompletedConditionsBy(modularContractSettingsId)
@@ -91,5 +93,24 @@ public class ModularContractSettingsBL
 	public ModularContractSettings getById(@NonNull final ModularContractSettingsId settingsId)
 	{
 		return modularContractSettingsDAO.getById(settingsId);
+	}
+
+	@NonNull
+	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
+	{
+		return modularContractSettingsDAO.getByFlatrateTermId(contractId);
+	}
+
+	@NonNull
+	public ModularContractType getModuleContractType(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		final ModuleConfig moduleConfig = modularContractSettingsDAO.getByModuleId(modularContractModuleId);
+
+		return moduleConfig.getModularContractType();
+	}
+
+	public boolean hasComputingMethodType(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ComputingMethodType computingMethodType)
+	{
+		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 }

@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.pforderline;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -47,6 +46,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -72,12 +72,9 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	private final SalesOrderLineProFormaModularContractHandler computingMethod;
-
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_OrderLine.Table_Name;
-	}
+	@Getter @NonNull private final SalesOrderLineProFormaModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -86,7 +83,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(OrderLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		final Quantity quantity = Quantitys.create(orderLine.getQtyEntered(), uomId);
+		final Quantity quantity = Quantitys.of(orderLine.getQtyEntered(), uomId);
 
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final BPartnerId warehousePartnerId = warehouseBL.getBPartnerId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()));
@@ -108,7 +105,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
-											.documentType(LogEntryDocumentType.PRO_FORMA_SO)
+											.documentType(getLogEntryDocumentType())
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.SALES)
 											.processed(false)
@@ -130,11 +127,5 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 			@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

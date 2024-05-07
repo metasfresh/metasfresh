@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1656183509L;
+	private static final long serialVersionUID = 1723173660L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -235,6 +235,21 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getHarvesting_Year_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
+	}
+
+	@Override
+	public void setInitial_Product_ID (final int Initial_Product_ID)
+	{
+		if (Initial_Product_ID < 1)
+			set_Value (COLUMNNAME_Initial_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_Initial_Product_ID, Initial_Product_ID);
+	}
+
+	@Override
+	public int getInitial_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Initial_Product_ID);
 	}
 
 	@Override
@@ -564,5 +579,17 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setStorageDays (final int StorageDays)
+	{
+		set_Value (COLUMNNAME_StorageDays, StorageDays);
+	}
+
+	@Override
+	public int getStorageDays()
+	{
+		return get_ValueAsInt(COLUMNNAME_StorageDays);
 	}
 }

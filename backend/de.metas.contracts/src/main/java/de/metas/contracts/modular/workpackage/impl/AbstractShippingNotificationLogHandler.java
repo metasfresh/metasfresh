@@ -51,6 +51,7 @@ import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -70,6 +71,8 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	@NonNull private final ShippingNotificationService notificationService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
+
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -108,7 +111,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.warehouseId(wrapper.getWarehouseId())
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
-											.documentType(LogEntryDocumentType.SHIPPING_NOTIFICATION)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(getSOTrx())
 											.processed(false)
@@ -143,7 +146,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 						.flatrateTermId(createLogRequest.getContractId())
 						.description(description)
 						.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-						.contractModuleId(createLogRequest.getModuleConfig().getId().getModularContractModuleId())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
 						.build());
 	}
 
@@ -155,7 +158,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	{
 		public Quantity getQuantity()
 		{
-			return Quantitys.create(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
+			return Quantitys.of(notificationLine.getMovementQty(), UomId.ofRepoId(notificationLine.getC_UOM_ID()));
 		}
 
 		public ProductId getProductId()
