@@ -118,7 +118,7 @@ public class ModularContractSettingsBL
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
-	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull ModularContractSettingsId modularContractSettingsId)
+	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return modularContractSettingsDAO.retrieveInformativeLogModule(modularContractSettingsId);
 	}
@@ -131,7 +131,7 @@ public class ModularContractSettingsBL
 
 		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContractTypeId.ofRepoId(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID));
 
-		ModuleConfigCreateRequest request = ModuleConfigCreateRequest.builder()
+		final ModuleConfigCreateRequest request = ModuleConfigCreateRequest.builder()
 				.seqNo(SeqNo.ofInt(0))
 				.modularContractType(informativeLogContractType)
 				.invoicingGroup(InvoicingGroupType.SERVICES)
@@ -140,5 +140,20 @@ public class ModularContractSettingsBL
 				.build();
 
 		modularContractSettingsDAO.createModule(request);
+	}
+
+	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
+	{
+		final I_ModCntr_Module existingModuleConfig = retrieveInformativeLogModule(modularContractSettingsId);
+
+		if(existingModuleConfig== null)
+		{
+			createInformativeLogsModule(modularContractSettingsId);
+		}
+
+		if(!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
+		{
+			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
+		}
 	}
 }

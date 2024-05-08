@@ -399,6 +399,12 @@ public class ModularContractSettingsDAO
 
 	}
 
+	public void updateModuleProduct(@NonNull final I_ModCntr_Module existingModuleConfig, @NonNull final ProductId rawProductId)
+	{
+		existingModuleConfig.setM_Product_ID(rawProductId.getRepoId());
+		saveRecord(existingModuleConfig);
+	}
+
 	private static class SettingsInfoCachingKeysMapper implements CachingKeysMapper<ModularContractSettingsId>
 	{
 		@Override
@@ -537,7 +543,7 @@ public class ModularContractSettingsDAO
 		}
 	}
 
-	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull ModularContractSettingsId modularContractSettingsId)
+	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
 				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)

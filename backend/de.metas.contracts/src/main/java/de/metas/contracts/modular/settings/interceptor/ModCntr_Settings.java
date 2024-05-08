@@ -22,11 +22,9 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
-import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
-import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +32,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @Interceptor(I_ModCntr_Settings.class)
@@ -56,30 +52,16 @@ public class ModCntr_Settings
 	{
 		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
 
-		if(rawProductId == null)
+		if (rawProductId == null)
 		{
 			// nothing to do
 			return;
 		}
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
-		final I_ModCntr_Module existingModuleConfig = modularContractSettingsBL.retrieveInformativeLogModule(modularContractSettingsId);
 
-		if(existingModuleConfig== null)
-		{
-			createInformativeLogsModule(modularContractSettingsId);
-		}
+		modularContractSettingsBL.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
 
-		if(!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
-		{
-existingModuleConfig.setM_Product_ID(rawProductId.getRepoId());
-sa
-		}
-	}
-
-	private void createInformativeLogsModule(final ModularContractSettingsId modularContractSettingsId)
-	{
-		modularContractSettingsBL.createInformativeLogsModule(modularContractSettingsId);
 	}
 
 }
