@@ -59,7 +59,7 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -120,7 +120,6 @@ public class HULoader
 	public static class HULoaderBuilder
 	{
 		public IAllocationResult load(final IAllocationRequest request) { return build().load(request); }
-		public void unloadAllFromSource() { build().unloadAllFromSource(); }
 	}
 
 	/**
@@ -186,7 +185,7 @@ public class HULoader
 
 		try (final IAutoCloseable ignore = handlingUnitsBL.huLoaderInProgress())
 		{
-			final IHUContext huContextInitial = request.getHuContext();
+			final IHUContext huContextInitial = request.getHUContext();
 			return processInHUContext(huContextInitial, huContext -> {
 				//
 				// Create the new allocation request, identical with given one, but the concept is with given transaction
@@ -264,7 +263,7 @@ public class HULoader
 	{
 		//
 		// HU Context to use
-		final IHUContext huContext = unloadRequest.getHuContext();
+		final IHUContext huContext = unloadRequest.getHUContext();
 		assertValidProcessingContext(huContext);
 
 		//

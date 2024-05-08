@@ -16,29 +16,24 @@ export function getKPIData(id) {
   );
 }
 
-export function changeKPIItem(id, values) {
-  const data = convertObjectToPatchRequestsArray(values);
-  if (data.length <= 0) return;
-
-  return axios.patch(`${config.API_URL}/dashboard/kpis/${id}`, data);
+export function changeKPIItem(id, path, value) {
+  return axios.patch(`${config.API_URL}/dashboard/kpis/${id}`, [
+    {
+      op: 'replace',
+      path: path,
+      value: value,
+    },
+  ]);
 }
 
-function convertObjectToPatchRequestsArray(values) {
-  if (!values) return [];
-  return Object.keys(values).map((key) => ({
-    op: 'replace',
-    path: key,
-    value: values[key],
-  }));
-}
-
-export function changeTargetIndicatorsItem(id, values) {
-  const data = convertObjectToPatchRequestsArray(values);
-  if (data.length <= 0) return;
-  return axios.patch(
-    `${config.API_URL}/dashboard/targetIndicators/${id}`,
-    values
-  );
+export function changeTargetIndicatorsItem(id, path, value) {
+  return axios.patch(`${config.API_URL}/dashboard/targetIndicators/${id}`, [
+    {
+      op: 'replace',
+      path: path,
+      value: value,
+    },
+  ]);
 }
 
 export function getTargetIndicatorsData(id) {

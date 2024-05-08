@@ -1,17 +1,18 @@
 package de.metas.ui.web.document.references.controller;
 
-import de.metas.logging.LogManager;
-import de.metas.ui.web.document.references.json.JSONDocumentReferencesEvent;
-import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
-import lombok.Getter;
-import lombok.NonNull;
+import java.io.IOException;
+import java.util.Collection;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
-import java.util.Collection;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesEvent;
+import de.metas.ui.web.document.references.json.JSONDocumentReferencesGroup;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,11 +45,8 @@ class JSONDocumentReferencesEventPublisher
 
 	private static final Logger logger = LogManager.getLogger(JSONDocumentReferencesEventPublisher.class);
 
-	/**
-	 * Set the timeout for this emitter to 2 minutes to avoid {@code AsyncRequestTimeoutException}s when nothing is cached yet.
-	 */
 	@Getter
-	private final SseEmitter sseEmitter = new SseEmitter((long) (60000 * 2));
+	private final SseEmitter sseEmiter = new SseEmitter();
 
 	private JSONDocumentReferencesEventPublisher()
 	{
@@ -71,7 +69,7 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmitter.send(JSONDocumentReferencesEvent.partialResult(group), MediaType.APPLICATION_JSON);
+			sseEmiter.send(JSONDocumentReferencesEvent.partialResult(group), MediaType.APPLICATION_JSON);
 		}
 		catch (final IOException ex)
 		{
@@ -83,8 +81,8 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmitter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
-			sseEmitter.complete();
+			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
+			sseEmiter.complete();
 		}
 		catch (final IOException ex)
 		{
@@ -96,8 +94,8 @@ class JSONDocumentReferencesEventPublisher
 	{
 		try
 		{
-			sseEmitter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
-			sseEmitter.completeWithError(ex);
+			sseEmiter.send(JSONDocumentReferencesEvent.COMPLETED, MediaType.APPLICATION_JSON);
+			sseEmiter.completeWithError(ex);
 		}
 		catch (final IOException ioe)
 		{

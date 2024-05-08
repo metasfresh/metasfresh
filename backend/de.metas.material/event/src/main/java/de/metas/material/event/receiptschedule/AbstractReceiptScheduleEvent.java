@@ -50,8 +50,6 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
-	private final OldReceiptScheduleData oldReceiptScheduleData;
-	
 	private final BigDecimal reservedQuantity;
 
 	@JsonInclude(NON_NULL)
@@ -62,7 +60,6 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	public AbstractReceiptScheduleEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final MaterialDescriptor materialDescriptor,
-			@Nullable final OldReceiptScheduleData oldReceiptScheduleData,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
@@ -71,7 +68,6 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 		this.receiptScheduleId = receiptScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
-		this.oldReceiptScheduleData = oldReceiptScheduleData;
 		this.reservedQuantity = reservedQuantity;
 	}
 

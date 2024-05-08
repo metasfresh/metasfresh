@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import de.metas.product.ProductCategoryId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,8 +38,10 @@ import javax.annotation.Nullable;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonProductCategory
 {
-	@Schema(type = "java.lang.Integer", //
-			description = "This translates to `M_Product_Category_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `M_Product_Category_ID`.")
 	@NonNull
 	ProductCategoryId id;
 
@@ -52,8 +54,10 @@ public class JsonProductCategory
 	@Nullable
 	String description;
 
-	@Schema(type = "java.lang.Integer", //
-			description = "This translates to `M_Product_Category.M_Product_Category_Parent_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `M_Product_Category.M_Product_Category_Parent_ID`.")
 	@Nullable
 	ProductCategoryId parentProductCategoryId;
 

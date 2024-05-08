@@ -23,7 +23,6 @@
 package de.metas.ui.web.order.products_proposal.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
@@ -41,7 +40,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
@@ -49,12 +47,9 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
 import de.metas.ui.web.order.products_proposal.service.Order;
-import de.metas.ui.web.order.products_proposal.service.OrderLine;
-import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewHeaderProperties.ViewHeaderPropertiesBuilder;
 import de.metas.ui.web.view.ViewHeaderPropertiesGroup;
@@ -71,8 +66,6 @@ import lombok.Singular;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Incoterms;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -102,13 +95,10 @@ public final class ProductsProposalRowsLoader
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
-	private final OrderProductProposalsService orderProductProposalsService;
 	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
-	private final LookupDataSource incoTermsLookup;
-	private final LookupDataSource uomLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 
 	private final ImmutableSet<PriceListVersionId> priceListVersionIds;
@@ -120,13 +110,10 @@ public final class ProductsProposalRowsLoader
 	private final ImmutableSet<ProductId> productIdsToExclude;
 
 	private final Map<PriceListVersionId, CurrencyCode> currencyCodesByPriceListVersionId = new HashMap<>();
-	private Map<ProductPriceId, OrderLine> bestMatchingProductPriceIdToOrderLine;
 
 	@Builder
 	private ProductsProposalRowsLoader(
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
-			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
 			//
 			@NonNull @Singular final ImmutableSet<PriceListVersionId> priceListVersionIds,
@@ -139,12 +126,8 @@ public final class ProductsProposalRowsLoader
 		Check.assumeNotEmpty(priceListVersionIds, "priceListVersionIds is not empty");
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
-		this.orderProductProposalsService = orderProductProposalsService;
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
-
-		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
-		incoTermsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Incoterms.Table_Name);
-		uomLookup = lookupDataSourceFactory.searchInTableLookup(I_C_UOM.Table_Name);
+		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
 
@@ -192,7 +175,6 @@ public final class ProductsProposalRowsLoader
 		return ProductsProposalRowsData.builder()
 				.nextRowIdSequence(nextRowIdSequence)
 				.campaignPriceProvider(campaignPriceProvider)
-				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.singlePriceListVersionId(singlePriceListVersionId)
 				.basePriceListVersionId(basePriceListVersionId)
@@ -222,29 +204,17 @@ public final class ProductsProposalRowsLoader
 
 	private Stream<ProductsProposalRow> loadAndStreamRowsForPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
-		final List<I_M_ProductPrice> productPrices = priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
+		return priceListsRepo.retrieveProductPrices(priceListVersionId, productIdsToExclude)
 				.map(productPriceRecord -> InterfaceWrapperHelper.create(productPriceRecord, I_M_ProductPrice.class))
-				.collect(ImmutableList.toImmutableList());
-		if (order != null && orderProductProposalsService != null)
-		{
-			bestMatchingProductPriceIdToOrderLine = orderProductProposalsService.findBestMatchesForOrderLineFromProductPrices(order, productPrices);
-		}
-		else
-		{
-			bestMatchingProductPriceIdToOrderLine = ImmutableMap.of();
-		}
-		return productPrices
-				.stream()
-				.map(this::toProductsProposalRowOrNull)
+				.map(productPriceRecord -> toProductsProposalRowOrNull(productPriceRecord))
 				.filter(Objects::nonNull);
 	}
 
-	@Nullable
 	private ProductsProposalRow toProductsProposalRowOrNull(@NonNull final I_M_ProductPrice record)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final LookupValue product = productLookup.findById(productId);
-		if (product == null || !product.isActive())
+		if (!product.isActive())
 		{
 			return null;
 		}
@@ -254,31 +224,20 @@ public final class ProductsProposalRowsLoader
 				? packingMaterialsService.getDisplayName(packingMaterialId)
 				: TranslatableStrings.empty();
 
-		final ProductProposalPrice currentProductProposalPrice = extractProductProposalPrice(record);
-
-		final ProductPriceId productPriceId = ProductPriceId.ofRepoId(record.getM_ProductPrice_ID());
-		final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder = ProductsProposalRow.builder()
+		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
 				.packingMaterialId(packingMaterialId)
 				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
-				.asiId(OrderProductProposalsService.extractProductASI(record))
-				.price(currentProductProposalPrice)
+				.price(extractProductProposalPrice(record))
 				.qty(null)
 				.lastShipmentDays(null) // will be populated later
 				.seqNo(record.getSeqNo())
-				.productPriceId(productPriceId);
-
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID());
-
-		orderProductProposalsService.getLastQuotation(clientAndOrgId, bpartnerId, productId)
-				.ifPresent((lastQuotation) -> setQuotationInfo(lastQuotation, rowBuilder, productId, currentProductProposalPrice));
-
-		return rowBuilder
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
 				.build()
 				//
-				.withExistingOrderLine(bestMatchingProductPriceIdToOrderLine.get(productPriceId));
+				.withExistingOrderLine(order);
 	}
 
 	private ProductASIDescription extractProductASIDescription(final I_M_ProductPrice record)
@@ -336,7 +295,6 @@ public final class ProductsProposalRowsLoader
 		return row.withLastShipmentDays(lastShipmentOrReceiptInDays);
 	}
 
-	@Nullable
 	private Integer calculateLastShipmentOrReceiptInDays(@Nullable final BPartnerProductStats stats)
 	{
 		if (stats == null)
@@ -351,22 +309,5 @@ public final class ProductsProposalRowsLoader
 		{
 			return stats.getLastReceiptInDays();
 		}
-	}
-
-	private void setQuotationInfo(
-			@NonNull final Order quotation,
-			@NonNull final ProductsProposalRow.ProductsProposalRowBuilder rowBuilder,
-			@NonNull final ProductId productId,
-			@NonNull final ProductProposalPrice currentProductProposalPrice)
-	{
-		final ProductPrice quotationPrice = orderProductProposalsService.getQuotationPrice(quotation, productId, currentProductProposalPrice.getCurrencyCode());
-
-		final Amount quotationAmount = Amount.of(quotationPrice.toBigDecimal(), currentProductProposalPrice.getCurrencyCode());
-
-		rowBuilder.lastQuotationDate(quotation.getDateOrdered().toLocalDate())
-				.lastQuotationPrice(quotationAmount)
-				.lastQuotationUOM(uomLookup.findById(quotationPrice.getUomId()))
-				.incoterms(incoTermsLookup.findById(quotation.getIncoTermsId()))
-				.quotationOrdered(quotation.getRefOrderId() != null);
 	}
 }

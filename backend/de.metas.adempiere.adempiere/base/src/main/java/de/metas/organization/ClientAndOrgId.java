@@ -61,10 +61,6 @@ public class ClientAndOrgId
 		{
 			return SYSTEM;
 		}
-		else if (MAIN.equals(instance))
-		{
-			return MAIN;
-		}
 		else
 		{
 			return instance;
@@ -72,10 +68,12 @@ public class ClientAndOrgId
 	}
 
 	public static ClientAndOrgId SYSTEM = new ClientAndOrgId(ClientId.SYSTEM, OrgId.ANY);
-	public static ClientAndOrgId MAIN = new ClientAndOrgId(ClientId.METASFRESH, OrgId.MAIN);
 
-	@JsonProperty("clientId") @NonNull ClientId clientId;
-	@JsonProperty("orgId") @NonNull OrgId orgId;
+	@JsonProperty("clientId")
+	@NonNull ClientId clientId;
+
+	@JsonProperty("orgId")
+	@NonNull OrgId orgId;
 
 	private ClientAndOrgId(
 			@NonNull final ClientId clientId,

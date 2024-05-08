@@ -63,9 +63,6 @@ public class MaterialDescriptor extends ProductDescriptor
 	@Getter
 	BPartnerId vendorId;
 
-	/**
-	 * Initialized with requiredQty based on ATP and overwritten in case of LotForLot with fullDemandQty
-	 */
 	@Getter
 	BigDecimal quantity;
 

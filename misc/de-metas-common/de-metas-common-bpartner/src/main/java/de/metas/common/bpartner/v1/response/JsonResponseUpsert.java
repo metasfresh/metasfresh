@@ -22,14 +22,14 @@
 
 package de.metas.common.bpartner.v1.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
-
-@Schema(description = "Can be used as endpoint response if only one sort of entities was updated")
+@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
 public final class JsonResponseUpsert

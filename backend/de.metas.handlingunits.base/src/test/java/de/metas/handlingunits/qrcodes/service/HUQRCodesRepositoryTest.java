@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
-import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -21,7 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class HUQRCodesRepositoryTest
 {
@@ -96,10 +95,7 @@ class HUQRCodesRepositoryTest
 		assertThat(record.getDisplayableQRCode()).isEqualTo(qrCode.toDisplayableQRCode());
 		assertThat(record.getRenderedQRCode()).isEqualTo(qrCode.toGlobalQRCode().getAsString());
 		assertThat(record.getattributes()).isEqualTo(qrCode.toGlobalQRCode().getPayloadAsJson());
-
-		I_M_HU_QRCode_Assignment assignment = POJOLookupMap.get().getFirstOnly(I_M_HU_QRCode_Assignment.class);
-		assertThat(assignment.getM_HU_ID()).isEqualTo(667);
-		assertThat(assignment.getM_HU_QRCode_ID()).isEqualTo(record.getM_HU_QRCode_ID());
+		assertThat(record.getM_HU_ID()).isEqualTo(667);
 
 	}
 }

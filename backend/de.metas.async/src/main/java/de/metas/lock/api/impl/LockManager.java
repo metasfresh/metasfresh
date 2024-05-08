@@ -22,7 +22,6 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import com.google.common.collect.SetMultimap;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -36,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -128,12 +126,6 @@ public class LockManager implements ILockManager
 	}
 
 	@Override
-	public boolean isLocked(final Object model, LockOwner lockOwner)
-	{
-		return getLockDatabase().isLocked(model, lockOwner);
-	}
-
-	@Override
 	public final <T> T retrieveAndLock(final IQuery<T> query, final Class<T> clazz)
 	{
 		return getLockDatabase().retrieveAndLock(query, clazz);
@@ -150,7 +142,7 @@ public class LockManager implements ILockManager
 	{
 		return getLockDatabase().getNotLockedFilter(modelClass);
 	}
-
+	
 	@Override
 	public String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
 	{
@@ -170,17 +162,11 @@ public class LockManager implements ILockManager
 	}
 
 	@Override
-	public <T> IQueryFilter<T> getNotLockedFilter(@NonNull String modelTableName, @NonNull String joinColumnNameFQ)
-	{
-		return getLockDatabase().getNotLockedFilter(modelTableName, joinColumnNameFQ);
-	}
-
-	@Override
 	public <T> IQueryBuilder<T> getLockedRecordsQueryBuilder(final Class<T> modelClass, final Object contextProvider)
 	{
 		return getLockDatabase().getLockedRecordsQueryBuilder(modelClass, contextProvider);
 	}
-
+	
 	@Override
 	public int removeAutoCleanupLocks()
 	{
@@ -188,7 +174,7 @@ public class LockManager implements ILockManager
 	}
 
 	@Override
-	public <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query, @NonNull final Class<T> clazz)
+	public <T> List<T> retrieveAndLockMultipleRecords(@NonNull final IQuery<T> query,@NonNull final Class<T> clazz)
 	{
 		return getLockDatabase().retrieveAndLockMultipleRecords(query, clazz);
 	}
@@ -203,11 +189,5 @@ public class LockManager implements ILockManager
 	public ExistingLockInfo getLockInfo(final TableRecordReference tableRecordReference, final LockOwner lockOwner)
 	{
 		return getLockDatabase().getLockInfo(tableRecordReference, lockOwner);
-	}
-
-	@Override
-	public SetMultimap<TableRecordReference, ExistingLockInfo> getLockInfosByRecordIds(final @NonNull TableRecordReferenceSet recordRefs)
-	{
-		return getLockDatabase().getLockInfosByRecordIds(recordRefs);
 	}
 }

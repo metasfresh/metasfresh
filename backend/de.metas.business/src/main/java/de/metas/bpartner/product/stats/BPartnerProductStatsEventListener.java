@@ -72,7 +72,7 @@ public class BPartnerProductStatsEventListener implements IEventListener
 	@Override
 	public void onEvent(final IEventBus eventBus, final Event event)
 	{
-		final String topicName = eventBus.getTopic().getName();
+		final String topicName = eventBus.getTopicName();
 		statsRepoAccessLock.lock();
 		try
 		{

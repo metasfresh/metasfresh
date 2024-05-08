@@ -22,6 +22,12 @@ package de.metas.shipping.callout;
  * #L%
  */
 
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Inventory;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -31,11 +37,6 @@ import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Inventory;
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
@@ -91,7 +92,7 @@ public class M_ShipperTransportation
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(shipperTransporationRecord.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: null;
 	}
 }

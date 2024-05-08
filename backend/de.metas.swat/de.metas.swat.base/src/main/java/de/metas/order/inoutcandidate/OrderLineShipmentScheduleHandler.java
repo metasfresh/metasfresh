@@ -10,11 +10,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.document.dimension.ShipmentScheduleDimensionFactory;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -35,7 +33,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -85,22 +82,17 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);;
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
-	private final OrderLineDimensionFactory orderLineDimensionFactory;
-	private final ShipmentScheduleDimensionFactory shipmentScheduleDimensionFactory;
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
+	
 
 	public OrderLineShipmentScheduleHandler(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
-			@NonNull final OrderLineDimensionFactory orderLineDimensionFactory,
-			@NonNull final ShipmentScheduleDimensionFactory shipmentScheduleDimensionFactory,
 			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
 	{
 		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
-		this.orderLineDimensionFactory = orderLineDimensionFactory;
-		this.shipmentScheduleDimensionFactory = shipmentScheduleDimensionFactory;
 		this.extensions = CompositeOrderLineShipmentScheduleHandlerExtension.of(extensions);
 	}
 
@@ -108,8 +100,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		return new OrderLineShipmentScheduleHandler(
 				Services.get(IShipmentScheduleInvalidateBL.class),
-				new OrderLineDimensionFactory(),
-				new ShipmentScheduleDimensionFactory(),
 				Optional.empty());
 	}
 
@@ -146,7 +136,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class);
 
 		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
+						  "The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		updateShipmentScheduleFromOrderLine(newSched, orderLine);
 
@@ -184,8 +174,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 
-		shipmentSchedule.setM_SectionCode(orderLine.getM_SectionCode());
-
 		shipmentSchedule.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not propagated to the shipment sched
 
 		// 08255 : initialize the qty order calculated
@@ -198,15 +186,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.mainLocationAdapter(shipmentSchedule)
 				.setFrom(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).toDocumentLocation());
 
-		final ProductId productId = Check.assumeNotNull(ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID()), "{} has M_Product_ID set", orderLine);
-		shipmentSchedule.setM_Product_ID(productId.getRepoId());
-
-		final boolean isCatchWeight = orderLineBL.isCatchWeight(orderLine);
-		final UomId catchWeightUomId = isCatchWeight
-				? productBL.getCatchUOMId(productId).orElse(null)
-				: null;
-		shipmentSchedule.setIsCatchWeight(isCatchWeight);
-		shipmentSchedule.setCatch_UOM_ID(UomId.toRepoId(catchWeightUomId));
+		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
+		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
 
@@ -228,8 +209,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrder(shipmentSchedule, orderRecord);
 
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final Quantity qtyReservedInPriceUOM = orderLineBL.convertQtyToPriceUOM(Quantitys.create(orderLine.getQtyReserved(), productId), orderLine);
-
+		
 		shipmentSchedule.setLineNetAmt(qtyReservedInPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual()));
 
 		// only display item products
@@ -248,8 +230,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// tthier values
 		shipmentSchedule.setSinglePriceTag_ID(groupingOrderLineLabel);
 		// 03152 end
-
-		shipmentScheduleDimensionFactory.updateRecord(shipmentSchedule, orderLineDimensionFactory.getFromRecord(orderLine));
 
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
@@ -278,11 +258,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		ShipmentScheduleDocumentLocationAdapterFactory
 				.billLocationAdapter(shipmentSchedule)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(billToLocationId.getBpartnerId())
-						.bpartnerLocationId(billToLocationId.getBpartnerLocationId())
-						.locationId(billToLocationId.getLocationCaptureId())
-						.contactId(billToContactId)
-						.build());
+								 .bpartnerId(billToLocationId.getBpartnerId())
+								 .bpartnerLocationId(billToLocationId.getBpartnerLocationId())
+								 .locationId(billToLocationId.getLocationCaptureId())
+								 .contactId(billToContactId)
+								 .build());
 
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
@@ -396,29 +376,29 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
 		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
-				.productPlanningId(config.getProductPlanningId())
-				// .materialDispoGroupId(null)
-				//
-				.plantId(config.getPlantId())
-				.warehouseId(warehouseId)
-				.plannerId(config.getPlannerId())
-				//
-				.bomId(config.getBomId())
-				.productId(productId)
-				.attributeSetInstanceId(asiId)
-				.qtyRequired(qtyOrdered)
-				//
-				.dateOrdered(SystemTime.asInstant())
-				.datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
-				.dateStartSchedule(SystemTime.asInstant())
-				//
-				.salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
-				.customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
-				//
-				.completeDocument(true)
-				//
-				.build());
+																	   .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
+																	   .productPlanningId(config.getProductPlanningId())
+																	   // .materialDispoGroupId(null)
+																	   //
+																	   .plantId(config.getPlantId())
+																	   .warehouseId(warehouseId)
+																	   .plannerId(config.getPlannerId())
+																	   //
+																	   .bomId(config.getBomId())
+																	   .productId(productId)
+																	   .attributeSetInstanceId(asiId)
+																	   .qtyRequired(qtyOrdered)
+																	   //
+																	   .dateOrdered(SystemTime.asInstant())
+																	   .datePromised(TimeUtil.asInstant(salesOrderLine.getDatePromised()))
+																	   .dateStartSchedule(SystemTime.asInstant())
+																	   //
+																	   .salesOrderLineId(OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()))
+																	   .customerId(BPartnerId.ofRepoId(salesOrderLine.getC_BPartner_ID()))
+																	   //
+																	   .completeDocument(true)
+																	   //
+																	   .build());
 
 		return PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 	}

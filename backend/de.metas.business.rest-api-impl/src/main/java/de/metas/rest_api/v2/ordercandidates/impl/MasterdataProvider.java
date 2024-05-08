@@ -1,8 +1,6 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import de.metas.RestUtils;
-import de.metas.auction.AuctionId;
-import de.metas.auction.AuctionService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -40,8 +38,6 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -84,7 +80,7 @@ import java.util.Optional;
  * #L%
  */
 
-public final class MasterdataProvider
+final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -98,8 +94,6 @@ public final class MasterdataProvider
 	private final ProductMasterDataProvider productMasterDataProvider;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final SectionCodeService sectionCodeService;
-	private final AuctionService auctionService;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -108,17 +102,13 @@ public final class MasterdataProvider
 			@NonNull final PermissionService permissionService,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final JsonRetrieverService jsonRetrieverService,
-			@NonNull final SectionCodeService sectionCodeService,
-			@NonNull final AuctionService auctionService)
+			@NonNull final JsonRetrieverService jsonRetrieverService)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
 		this.productMasterDataProvider = new ProductMasterDataProvider(externalReferenceRestControllerService);
-		this.sectionCodeService = sectionCodeService;
-		this.auctionService = auctionService;
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -342,9 +332,9 @@ public final class MasterdataProvider
 		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-															.bpartnerValue(externalBusinessKey.asValue())
-															.onlyOrgId(orgId)
-															.build());
+													 .bpartnerValue(externalBusinessKey.asValue())
+													 .onlyOrgId(orgId)
+													 .build());
 		}
 		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
 		{
@@ -392,7 +382,6 @@ public final class MasterdataProvider
 				.build();
 	}
 
-	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final JsonOLCandCreateRequest request, @NonNull final OrgId orgId)
 	{
 
@@ -438,28 +427,5 @@ public final class MasterdataProvider
 	{
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		return BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
-	}
-
-	@Nullable
-	public SectionCodeId getSectionCodeId(@NonNull final OrgId orgId, @Nullable final String sectionCode)
-	{
-		if (Check.isBlank(sectionCode))
-		{
-			return null;
-		}
-
-		return sectionCodeService.getSectionCodeIdByValue(orgId, sectionCode);
-	}
-
-
-	@Nullable
-	public AuctionId getAuctionId(@NonNull final JsonOLCandCreateRequest request)
-	{
-		if (Check.isBlank(request.getAuction()))
-		{
-			return null;
-		}
-
-		return auctionService.getIdByName(request.getAuction());
 	}
 }

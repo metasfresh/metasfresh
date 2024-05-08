@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ui.web.base.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for WEBUI_KPI
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 929068186L;
+	private static final long serialVersionUID = -95761224L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
@@ -74,8 +74,6 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public static final String CHARTTYPE_AreaChart = "AC";
 	/** Metric = M */
 	public static final String CHARTTYPE_Metric = "M";
-	/** URLs = urls */
-	public static final String CHARTTYPE_URLs = "urls";
 	@Override
 	public void setChartType (final java.lang.String ChartType)
 	{

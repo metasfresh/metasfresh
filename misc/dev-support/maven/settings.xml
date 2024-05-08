@@ -7,9 +7,8 @@
      The path to the local repository maven will use to store artifacts.
        Default: ~/.m2/repository
        If you have more than one local (eclipse-)workspace, it might make sense to have one local repo per-workspace, to avoid inconsistencies.
+      <localRepository>${user.home}\.m2\mvn-eclipse-ws-1</localRepository>
     -->
-    <!-- have a dedicated local repo for java-17 that we introduce into more and more projects-->
-    <localRepository>${user.home}\.m2\repositoryjava17</localRepository>
     <profiles>
         <profile>
             <id>env-dev</id>

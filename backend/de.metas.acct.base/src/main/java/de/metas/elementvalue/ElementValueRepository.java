@@ -23,13 +23,9 @@
 package de.metas.elementvalue;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,12 +34,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
-import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -56,27 +49,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ElementValueRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final CCache<Integer, ElementValuesMap> cache = CCache.<Integer, ElementValuesMap>builder()
-			.tableName(I_C_ElementValue.Table_Name)
-			.build();
 
 	ElementValue getById(@NonNull final ElementValueId id)
 	{
-		return getMap().getById(id);
-	}
-
-	ImmutableSet<ElementValueId> getOpenItemIds() {return getMap().getOpenItemIds();}
-
-	private ElementValuesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
-
-	private ElementValuesMap retrieveMap()
-	{
-		final ImmutableList<ElementValue> list = queryBL.createQueryBuilder(I_C_ElementValue.class)
-				.stream()
-				.map(ElementValueRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-
-		return new ElementValuesMap(list);
+		final I_C_ElementValue record = getRecordById(id);
+		return toElementValue(record);
 	}
 
 	@NonNull
@@ -95,8 +72,9 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.firstOnlyOptional(I_C_ElementValue.class)
-				.map(ElementValueRepository::fromRecord);
+				.map(ElementValueRepository::toElementValue);
 	}
+
 
 	void save(@NonNull final I_C_ElementValue record)
 	{
@@ -113,7 +91,7 @@ public class ElementValueRepository
 	}
 
 	@NonNull
-	public static ElementValue fromRecord(@NonNull final I_C_ElementValue record)
+	public static ElementValue toElementValue(@NonNull final I_C_ElementValue record)
 	{
 		return ElementValue.builder()
 				.id(ElementValueId.ofRepoId(record.getC_ElementValue_ID()))
@@ -122,8 +100,7 @@ public class ElementValueRepository
 				.value(record.getValue())
 				.name(record.getName())
 				.accountSign(record.getAccountSign())
-				.accountType(AccountType.ofCode(record.getAccountType()))
-				.isActive(record.isActive())
+				.accountType(record.getAccountType())
 				.isSummary(record.isSummary())
 				.isDocControlled(record.isDocControlled())
 				.isPostActual(record.isPostActual())
@@ -132,7 +109,6 @@ public class ElementValueRepository
 				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
-				.isOpenItem(record.isOpenItem())
 				.build();
 	}
 
@@ -140,7 +116,7 @@ public class ElementValueRepository
 	{
 		//
 		// Validate
-		if (request.getParentId() != null)
+		if(request.getParentId() != null)
 		{
 			final ElementValue parent = getById(request.getParentId());
 			if (!parent.isSummary())
@@ -176,7 +152,7 @@ public class ElementValueRepository
 
 		InterfaceWrapperHelper.saveRecord(record);
 
-		return fromRecord(record);
+		return toElementValue(record);
 	}
 
 	ImmutableSet<ElementValueId> getElementValueIdsBetween(final String accountValueFrom, final String accountValueTo)
@@ -190,7 +166,6 @@ public class ElementValueRepository
 				.orderBy(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();
-		final String fromValue = from != null ? from.getValue() : null;
 
 		final I_C_ElementValue to = queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
@@ -199,11 +174,10 @@ public class ElementValueRepository
 				.orderByDescending(I_C_ElementValue.COLUMNNAME_Value)
 				.create()
 				.first();
-		final String toValue = to != null ? to.getValue() : null;
 
 		return queryBL.createQueryBuilder(I_C_ElementValue.class)
 				.addOnlyActiveRecordsFilter()
-				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, fromValue, toValue, rpad)
+				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from.getValue(), to.getValue(), rpad)
 				.create()
 				.listIds(ElementValueId::ofRepoId);
 	}
@@ -216,51 +190,5 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.list();
-	}
-
-	public IValidationRule isOpenItemRule()
-	{
-		return SQLValidationRule.ofSqlWhereClause(I_C_ElementValue.COLUMNNAME_IsOpenItem + "=" + DB.TO_BOOLEAN(true));
-	}
-
-	//
-	//
-	//
-	//
-	//
-
-	private static final class ElementValuesMap
-	{
-		private final ImmutableMap<ElementValueId, ElementValue> byId;
-		private ImmutableSet<ElementValueId> _openItemIds;
-
-		private ElementValuesMap(final List<ElementValue> list)
-		{
-			byId = Maps.uniqueIndex(list, ElementValue::getId);
-		}
-
-		public ElementValue getById(final ElementValueId id)
-		{
-			final ElementValue elementValue = byId.get(id);
-			if (elementValue == null)
-			{
-				throw new AdempiereException("No Element Value found for " + id);
-			}
-			return elementValue;
-		}
-
-		public ImmutableSet<ElementValueId> getOpenItemIds()
-		{
-			ImmutableSet<ElementValueId> openItemIds = this._openItemIds;
-			if (openItemIds == null)
-			{
-				openItemIds = this._openItemIds = byId.values()
-						.stream()
-						.filter(ElementValue::isOpenItem)
-						.map(ElementValue::getId)
-						.collect(ImmutableSet.toImmutableSet());
-			}
-			return openItemIds;
-		}
 	}
 }

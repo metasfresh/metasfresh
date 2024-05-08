@@ -16,24 +16,20 @@ import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingSlotAllocateRequest;
-import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPick;
 import de.metas.handlingunits.picking.impl.HUPickingSlotBLs.RetrieveAvailableHUsToPickFilters;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -45,7 +41,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
@@ -53,9 +48,7 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -92,12 +85,8 @@ public class HUPickingSlotBL
 		extends PickingSlotBL
 		implements IHUPickingSlotBL
 {
-	private static final AdMessageKey HU_ALREADY_PICKED_ERROR_MESSAGE = AdMessageKey.of("de.metas.handlingunits.picking.impl.huAlreadyAssigned");
-
 	private final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 	private final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private ImmutableList<PickingSlotConnectedComponent> pickingSlotConnectedComponents = null; // lazy
 
 	public static final class QueueActionResult implements IHUPickingSlotBL.IQueueActionResult
 	{
@@ -185,7 +174,7 @@ public class HUPickingSlotBL
 	private LocatorId getLocatorId(final I_M_PickingSlot pickingSlot)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
-		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId);
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -344,7 +333,7 @@ public class HUPickingSlotBL
 		pickingSlotHU.setAD_Org_ID(pickingSlot.getAD_Org_ID());
 		pickingSlotHU.setIsActive(true);
 
-		handleSavePickingSlotHU(pickingSlotHU);
+		save(pickingSlotHU, ITrx.TRXNAME_ThreadInherited);
 
 		//
 		// Make sure HU has the picking slot's BPartner
@@ -575,15 +564,7 @@ public class HUPickingSlotBL
 		// There still not closed picking candidates; do nothing
 		final PickingCandidateRepository pickingCandidatesRepo = Adempiere.getBean(PickingCandidateRepository.class);
 		final PickingSlotId pickingSlotId = PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID());
-		if (pickingCandidatesRepo.hasDraftCandidatesForPickingSlot(pickingSlotId))
-		{
-			return;
-		}
-
-		final boolean isSlotAllocatedByAConnectedComponent = getPickingSlotConnectedComponents()
-				.stream()
-				.anyMatch(component -> component.hasAllocationsForSlot(PickingSlotId.ofRepoId(pickingSlot.getM_PickingSlot_ID())));
-		if (isSlotAllocatedByAConnectedComponent)
+		if (pickingCandidatesRepo.hasNotClosedCandidatesForPickingSlot(pickingSlotId))
 		{
 			return;
 		}
@@ -596,7 +577,7 @@ public class HUPickingSlotBL
 		pickingSlot.setC_BPartner_ID(-1);
 		pickingSlot.setC_BPartner_Location_ID(-1);
 		pickingSlot.setM_Picking_Job_ID(-1);
-		pickingSlotDAO.save(pickingSlot);
+		InterfaceWrapperHelper.save(pickingSlot);
 	}
 
 	@Override
@@ -674,64 +655,4 @@ public class HUPickingSlotBL
 		return retrieveAvailableHUIdsToPick(query);
 	}
 
-	private void handleSavePickingSlotHU(@NonNull final I_M_PickingSlot_HU pickingSlotHu)
-	{
-		try
-		{
-			save(pickingSlotHu);
-		}
-		catch (final DBUniqueConstraintException uniqueConstraintException)
-		{
-			final I_M_PickingSlot_HU pickingSlotAssignment = huPickingSlotDAO.retrievePickingSlotHU(HuId.ofRepoId(pickingSlotHu.getM_HU_ID()));
-
-			if (pickingSlotAssignment == null)
-			{
-				throw uniqueConstraintException;
-			}
-
-			final I_M_PickingSlot pickingSlot = pickingSlotDAO.getById(PickingSlotId.ofRepoId(pickingSlotAssignment.getM_PickingSlot_ID()),
-																	   I_M_PickingSlot.class);
-
-			throw new AdempiereException(HU_ALREADY_PICKED_ERROR_MESSAGE, computePickingSlotHumanIdentifier(pickingSlot))
-					.appendParametersToMessage()
-					.setParameter("M_PickingSlot_ID", pickingSlot.getM_PickingSlot_ID())
-					.setParameter("M_HU_ID", pickingSlotHu.getM_HU_ID());
-		}
-	}
-
-	@NonNull
-	private String computePickingSlotHumanIdentifier(@NonNull final I_M_PickingSlot pickingSlot)
-	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(pickingSlot.getM_Warehouse_ID());
-		final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, pickingSlot.getM_Locator_ID());
-
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId, I_M_Warehouse.class);
-		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId, I_M_Locator.class);
-
-		return pickingSlot.getPickingSlot()
-				+ " | " + warehouse.getName()
-				+ " | " + locator.getValue() + "_" + locator.getX() + "_" + locator.getY() + "_" + locator.getZ();
-	}
-	public boolean clearPickingSlotQueue(@NonNull final PickingSlotId pickingSlotId, final boolean removeQueuedHUsFromSlot)
-	{
-		final I_M_PickingSlot slot = pickingSlotDAO.getById(pickingSlotId, I_M_PickingSlot.class);
-
-		if (removeQueuedHUsFromSlot)
-		{
-			huPickingSlotDAO.retrieveAllHUs(slot).forEach(queuedHU -> removeFromPickingSlotQueue(slot, queuedHU));
-		}
-
-		return huPickingSlotDAO.isEmpty(slot);
-	}
-
-	@NonNull
-	private List<PickingSlotConnectedComponent> getPickingSlotConnectedComponents()
-	{
-		if (pickingSlotConnectedComponents == null)
-		{
-			pickingSlotConnectedComponents = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(PickingSlotConnectedComponent.class));
-		}
-
-		return pickingSlotConnectedComponents;
-	}
 }

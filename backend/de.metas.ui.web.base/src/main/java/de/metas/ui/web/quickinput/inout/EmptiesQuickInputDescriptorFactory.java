@@ -1,6 +1,15 @@
 package de.metas.ui.web.quickinput.inout;
 
+import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DisplayType;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -15,17 +24,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.DisplayType;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -52,23 +53,15 @@ import java.util.Set;
 public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	// FIXME: hardcoded AD_Window_IDs
-	public static final AdWindowId CustomerReturns_Window_ID = AdWindowId.ofRepoId(540323); // Return from customers - Leergut Rücknahme
-	public static final AdWindowId VendorReturns_Window_ID = AdWindowId.ofRepoId(540322); // Return to vendor - Leergut Rückgabe
-
-	@NonNull final LookupDescriptorProviders lookupDescriptorProviders;
-
-	public EmptiesQuickInputDescriptorFactory(
-			final @NonNull LookupDescriptorProviders lookupDescriptorProviders)
-	{
-		this.lookupDescriptorProviders = lookupDescriptorProviders;
-	}
+	public static final int CustomerReturns_Window_ID = 540323; // Return from customers - Leergut Rücknahme
+	public static final int VendorReturns_Window_ID = 540322; // Return to vendor - Leergut Rückgabe
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
-		return ImmutableSet.<MatchingKey>builder()
-				.add(MatchingKey.includedTab(CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
-				.add(MatchingKey.includedTab(VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
+		return ImmutableSet.<MatchingKey> builder()
+				.add(MatchingKey.includedDocument(DocumentType.Window, CustomerReturns_Window_ID, I_M_InOutLine.Table_Name))
+				.add(MatchingKey.includedDocument(DocumentType.Window, VendorReturns_Window_ID, I_M_InOutLine.Table_Name))
 				.build();
 	}
 
@@ -97,18 +90,18 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 				.setDataBinding(DocumentEntityDataBindingDescriptorBuilder.NULL)
 				// Defaults:
 				.setDetailId(detailId)
-				//
-				;
+		//
+		;
 
 		entityDescriptor.addField(DocumentFieldDescriptor.builder(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 				.setCaption(msgBL.translatable(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
+				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
 						.setCtxTableName(null) // ctxTableName
 						.setCtxColumnName(IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID)
 						.setDisplayType(DisplayType.Search)
-						.build())
+						.buildProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -130,7 +123,7 @@ public class EmptiesQuickInputDescriptorFactory implements IQuickInputDescriptor
 
 	private QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
-		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
+		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
 				{ IEmptiesQuickInput.COLUMNNAME_M_HU_PackingMaterial_ID } //
 				, { IEmptiesQuickInput.COLUMNNAME_Qty }
 		});

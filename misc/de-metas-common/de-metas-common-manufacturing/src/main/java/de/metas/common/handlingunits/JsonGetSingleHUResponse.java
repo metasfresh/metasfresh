@@ -42,8 +42,6 @@ public class JsonGetSingleHUResponse
 	@JsonInclude(JsonInclude.Include.NON_ABSENT)
 	JsonErrorItem error;
 
-	boolean multipleHUsFound;
-
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class JsonGetSingleHUResponseBuilder {}
 }

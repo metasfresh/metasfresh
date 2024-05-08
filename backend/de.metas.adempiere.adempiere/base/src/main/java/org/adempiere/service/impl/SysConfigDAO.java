@@ -29,6 +29,7 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -42,6 +43,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
@@ -49,6 +51,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
 public class SysConfigDAO implements ISysConfigDAO
 {
@@ -110,10 +113,28 @@ public class SysConfigDAO implements ISysConfigDAO
 	@Override
 	public Optional<String> getValue(@NonNull final String name, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final Optional<String> value = SpringContextHolder.instance.getProperty(name);
-		if (value.isPresent())
+		final ApplicationContext springApplicationContext = SpringContextHolder.instance.getApplicationContext();
+		if (springApplicationContext != null)
 		{
-			return value;
+			final String springContextValue = springApplicationContext.getEnvironment().getProperty(name);
+			if (springContextValue != null && !Check.isBlank(springContextValue))
+			{
+				logger.debug("Returning the spring context's value {}={} instead of looking up the AD_SysConfig record", name, springContextValue);
+				return Optional.of(springContextValue.trim());
+			}
+		}
+		else
+		{
+			// If there is no Spring context then go an check JVM System Properties.
+			// Usually we will get here when we will run some tools based on metasfresh framework.
+
+			final Properties systemProperties = System.getProperties();
+			final String systemPropertyValue = systemProperties.getProperty(name);
+			if (systemPropertyValue != null && !Check.isBlank(systemPropertyValue))
+			{
+				logger.debug("Returning the JVM system property's value {}={} instead of looking up the AD_SysConfig record", name, systemPropertyValue);
+				return Optional.of(systemPropertyValue.trim());
+			}
 		}
 
 		return getMap().getValueAsString(name, clientAndOrgId);

@@ -1,16 +1,15 @@
 package de.metas.banking.payment.impl;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankStatementAndLineAndRefId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.PaySelectionId;
-import de.metas.banking.PaySelectionLineId;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.invoice.InvoiceId;
-import de.metas.payment.PaymentId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -21,14 +20,17 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.util.DB;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.banking.BankStatementAndLineAndRefId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class PaySelectionDAO implements IPaySelectionDAO
 {
@@ -37,7 +39,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 	@Override
 	public Optional<I_C_PaySelection> getById(@Nullable final PaySelectionId paySelectionId)
 	{
-		if (paySelectionId == null)
+		if(paySelectionId==null)
 		{
 			return Optional.empty();
 		}
@@ -94,21 +96,6 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				.orderBy(I_C_PaySelectionLine.COLUMNNAME_Line)
 				.create()
 				.list();
-	}
-
-	@Override
-	public List<I_C_PaySelectionLine> retrievePaySelectionLinesByIds(@NonNull final Collection<PaySelectionLineId> paySelectionLineIds)
-	{
-		if (paySelectionLineIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL.createQueryBuilder(I_C_PaySelectionLine.class)
-				.addInArrayFilter(I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIds)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.listImmutable(I_C_PaySelectionLine.class);
 	}
 
 	@Override
@@ -263,7 +250,7 @@ public class PaySelectionDAO implements IPaySelectionDAO
 				+ "FROM C_PaySelectionLine psl "
 				+ "WHERE ps.C_PaySelection_ID=psl.C_PaySelection_ID AND psl.IsActive='Y') "
 				+ "WHERE C_PaySelection_ID=?";
-		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateEx(sql, new Object[] { paySelectionId }, ITrx.TRXNAME_ThreadInherited);
 		// note: no point in sending a cache-invalidation event just yet, because it wasn't committed
 	}
 

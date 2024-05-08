@@ -16,21 +16,22 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.email.EMail;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import de.metas.util.Services;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.EMail;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  *  Asset Model
@@ -155,12 +156,15 @@ public class MAsset extends X_A_Asset
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
 		setA_Asset_Group_ID(pc.getA_Asset_Group_ID());
-		//	Version
+		//	Guarantee & Version
+		//setGuaranteeDate(TimeUtil.addDays(shipment.getMovementDate(), product.getGuaranteeDays())); // metas-tsa: M_Product.GuaranteeDays is not a field anymore 
 		setVersionNo(product.getVersionNo());
 		if (shipLine.getM_AttributeSetInstance_ID() != 0)
 		{
 			MAttributeSetInstance asi = new MAttributeSetInstance (getCtx(), shipLine.getM_AttributeSetInstance_ID(), get_TrxName()); 
 			setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+			setLot(asi.getLot());
+			setSerNo(asi.getSerNo());
 		}
 		setHelp(shipLine.getDescription());
 		if (deliveryCount != 0)
@@ -516,6 +520,8 @@ public class MAsset extends X_A_Asset
 				change.setIsDisposed(isDisposed());
 				change.setIsDepreciated(isDepreciated());
 				change.setIsFullyDepreciated(isFullyDepreciated());
+				change.setLot(getLot());
+				change.setSerNo(getSerNo());
 				change.setVersionNo(getVersionNo());
 				change.setUseLifeMonths(getUseLifeMonths());
 				change.setUseLifeYears(getUseLifeYears());
@@ -628,6 +634,8 @@ public class MAsset extends X_A_Asset
 						change.setChangeType("UPD");
 						MRefList RefList = new MRefList (getCtx(), 0, get_TrxName());	
 						change.setTextDetails(RefList.getListDescription (getCtx(),"A_Update_Type" , "UPD"));
+						change.setLot(getLot());
+						change.setSerNo(getSerNo());
 						change.setVersionNo(getVersionNo());
 						change.setA_Parent_Asset_ID(getA_Parent_Asset_ID());
 						change.setUseLifeMonths(getUseLifeMonths());
@@ -686,6 +694,7 @@ public class MAsset extends X_A_Asset
 	/*************************************************************************
 	 * 	Confirm Asset EMail Delivery
 	 *	@param email email sent
+	 * @param emailSentStatus 
 	 * 	@param AD_User_ID recipient
 	 * 	@return asset delivery
 	 */

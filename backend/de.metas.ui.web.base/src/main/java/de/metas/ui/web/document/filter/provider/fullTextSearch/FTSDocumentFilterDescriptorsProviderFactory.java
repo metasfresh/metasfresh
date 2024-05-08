@@ -43,6 +43,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -116,9 +117,9 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 						.setFrequentUsed(true)
 						.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.fieldName(PARAM_SearchText)
-								.displayName(caption)
-								.widgetType(DocumentFieldWidgetType.Text))
+								.setFieldName(PARAM_SearchText)
+								.setDisplayName(caption)
+								.setWidgetType(DocumentFieldWidgetType.Text))
 						.addInternalParameter(PARAM_Context, context)
 						.build());
 	}

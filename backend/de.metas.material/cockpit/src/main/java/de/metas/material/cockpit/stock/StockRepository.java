@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
 import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
-import org.adempiere.mm.attributes.keys.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -89,7 +89,7 @@ public class StockRepository
 
 			final String insertSQL = createInsertSqlStatement(sqlQuery, uuid);
 
-			final int insertCount = DB.executeUpdateAndThrowExceptionOnFail(
+			final int insertCount = DB.executeUpdateEx(
 					insertSQL,
 					sqlQuery.getParametersEffective().toArray(),
 					ITrx.TRXNAME_ThreadInherited);

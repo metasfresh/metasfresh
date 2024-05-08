@@ -1,16 +1,19 @@
 package de.metas.banking.process;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.banking.BankStatementLineId;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import lombok.NonNull;
+import java.util.Set;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.banking.BankStatementLineId;
+import de.metas.document.engine.DocStatus;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -22,12 +25,12 @@ import java.util.Set;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,7 +46,7 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 				.and(() -> checkSingleLineSelectedWhichIsReconciled(context));
 	}
 
-	private ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
+	private final ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
 	{
 		// there should be a single line selected
 		final Set<TableRecordReference> bankStatemementLineRefs = context.getSelectedIncludedRecords();
@@ -59,10 +62,6 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("line shall be reconciled");
 		}
-		if (isReconciledByGLJournal(line))
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("GL Journal reconciliation");
-		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -71,22 +70,17 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 	protected String doIt()
 	{
 		final I_C_BankStatement bankStatement = getSelectedBankStatement();
-		bankStatementBL.assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
+		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+		if (!docStatus.isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed));
+		}
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
-		if (isReconciledByGLJournal(bankStatementLine))
-		{
-			throw new AdempiereException("Clearing GL Journal reconciliation is not allowed. Consider reversing the GL Journal instead");
-		}
-		bankStatementBL.markAsNotReconciledAndDeleteReferences(ImmutableList.of(bankStatementLine));
+		bankStatementBL.unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
 		bankStatementBL.unpost(bankStatement);
 
 		return MSG_OK;
-	}
-
-	private static boolean isReconciledByGLJournal(final I_C_BankStatementLine bankStatementLine)
-	{
-		return bankStatementLine.isReconciled() && bankStatementLine.getReconciledBy_SAP_GLJournalLine_ID() > 0;
 	}
 
 }

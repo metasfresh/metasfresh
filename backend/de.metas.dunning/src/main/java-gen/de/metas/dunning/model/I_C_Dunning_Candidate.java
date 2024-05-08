@@ -1,23 +1,20 @@
 package de.metas.dunning.model;
 
-import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_C_DunningLevel;
-import org.compiere.model.I_M_SectionCode;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /** Generated Interface for C_Dunning_Candidate
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Dunning_Candidate
+public interface I_C_Dunning_Candidate 
 {
 
-	String Table_Name = "C_Dunning_Candidate";
+    /** TableName=C_Dunning_Candidate */
+    public static final String Table_Name = "C_Dunning_Candidate";
 
-//	/** AD_Table_ID=540396 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540396 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
     /** AccessLevel = 1 - Org
      */
@@ -33,9 +30,14 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Client>(I_C_Dunning_Candidate.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -45,19 +47,26 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Org>(I_C_Dunning_Candidate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set DB-Tabelle.
@@ -67,7 +76,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Table_ID (int AD_Table_ID);
+	public void setAD_Table_ID (int AD_Table_ID);
 
 	/**
 	 * Get DB-Tabelle.
@@ -77,9 +86,16 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Table_ID();
+	public int getAD_Table_ID();
 
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	public org.compiere.model.I_AD_Table getAD_Table();
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+
+    /** Column definition for AD_Table_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_Table>(I_C_Dunning_Candidate.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -89,7 +105,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Geschäftspartner.
@@ -99,39 +115,55 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_ID();
+	public int getC_BPartner_ID();
 
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_BPartner>(I_C_Dunning_Candidate.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Location.
+	 * Set Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Location.
+	 * Get Standort.
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_BPartner_Location_ID();
+	public int getC_BPartner_Location_ID();
 
-	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
+
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
+
+    /** Column definition for C_BPartner_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_BPartner_Location>(I_C_Dunning_Candidate.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BPartner_Location_ID */
+    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Currency.
-	 * The Currency for this record
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Currency_ID (int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
 	 * Get Währung.
@@ -141,9 +173,16 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Currency_ID();
+	public int getC_Currency_ID();
 
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_Currency>(I_C_Dunning_Candidate.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Mahnungsdisposition.
@@ -152,7 +191,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Dunning_Candidate_ID (int C_Dunning_Candidate_ID);
+	public void setC_Dunning_Candidate_ID (int C_Dunning_Candidate_ID);
 
 	/**
 	 * Get Mahnungsdisposition.
@@ -161,10 +200,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Dunning_Candidate_ID();
+	public int getC_Dunning_Candidate_ID();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_C_Dunning_Candidate_ID = new ModelColumn<>(I_C_Dunning_Candidate.class, "C_Dunning_Candidate_ID", null);
-	String COLUMNNAME_C_Dunning_Candidate_ID = "C_Dunning_Candidate_ID";
+    /** Column definition for C_Dunning_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_C_Dunning_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "C_Dunning_Candidate_ID", null);
+    /** Column name C_Dunning_Candidate_ID */
+    public static final String COLUMNNAME_C_Dunning_Candidate_ID = "C_Dunning_Candidate_ID";
 
 	/**
 	 * Set Mahnkontakt.
@@ -173,7 +214,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Dunning_Contact_ID (int C_Dunning_Contact_ID);
+	public void setC_Dunning_Contact_ID (int C_Dunning_Contact_ID);
 
 	/**
 	 * Get Mahnkontakt.
@@ -182,9 +223,16 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Dunning_Contact_ID();
+	public int getC_Dunning_Contact_ID();
 
-	String COLUMNNAME_C_Dunning_Contact_ID = "C_Dunning_Contact_ID";
+	public org.compiere.model.I_AD_User getC_Dunning_Contact();
+
+	public void setC_Dunning_Contact(org.compiere.model.I_AD_User C_Dunning_Contact);
+
+    /** Column definition for C_Dunning_Contact_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User> COLUMN_C_Dunning_Contact_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User>(I_C_Dunning_Candidate.class, "C_Dunning_Contact_ID", org.compiere.model.I_AD_User.class);
+    /** Column name C_Dunning_Contact_ID */
+    public static final String COLUMNNAME_C_Dunning_Contact_ID = "C_Dunning_Contact_ID";
 
 	/**
 	 * Set Mahnstufe.
@@ -193,7 +241,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DunningLevel_ID (int C_DunningLevel_ID);
+	public void setC_DunningLevel_ID (int C_DunningLevel_ID);
 
 	/**
 	 * Get Mahnstufe.
@@ -202,14 +250,16 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_DunningLevel_ID();
+	public int getC_DunningLevel_ID();
 
-	org.compiere.model.I_C_DunningLevel getC_DunningLevel();
+	public org.compiere.model.I_C_DunningLevel getC_DunningLevel();
 
-	void setC_DunningLevel(org.compiere.model.I_C_DunningLevel C_DunningLevel);
+	public void setC_DunningLevel(org.compiere.model.I_C_DunningLevel C_DunningLevel);
 
-	ModelColumn<I_C_Dunning_Candidate, I_C_DunningLevel> COLUMN_C_DunningLevel_ID = new ModelColumn<>(I_C_Dunning_Candidate.class, "C_DunningLevel_ID", org.compiere.model.I_C_DunningLevel.class);
-	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
+    /** Column definition for C_DunningLevel_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_DunningLevel> COLUMN_C_DunningLevel_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_C_DunningLevel>(I_C_Dunning_Candidate.class, "C_DunningLevel_ID", org.compiere.model.I_C_DunningLevel.class);
+    /** Column name C_DunningLevel_ID */
+    public static final String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
 	 * Get Erstellt.
@@ -221,8 +271,10 @@ public interface I_C_Dunning_Candidate
 	 */
 	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Created = new ModelColumn<>(I_C_Dunning_Candidate.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -232,9 +284,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User>(I_C_Dunning_Candidate.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Tage fällig.
@@ -244,7 +299,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDaysDue (int DaysDue);
+	public void setDaysDue (int DaysDue);
 
 	/**
 	 * Get Tage fällig.
@@ -254,10 +309,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getDaysDue();
+	public int getDaysDue();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DaysDue = new ModelColumn<>(I_C_Dunning_Candidate.class, "DaysDue", null);
-	String COLUMNNAME_DaysDue = "DaysDue";
+    /** Column definition for DaysDue */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DaysDue = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DaysDue", null);
+    /** Column name DaysDue */
+    public static final String COLUMNNAME_DaysDue = "DaysDue";
 
 	/**
 	 * Set Nr..
@@ -267,7 +324,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
 	 * Get Nr..
@@ -277,10 +334,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_Dunning_Candidate.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Datum Fälligkeit.
@@ -290,7 +349,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDueDate (java.sql.Timestamp DueDate);
+	public void setDueDate (java.sql.Timestamp DueDate);
 
 	/**
 	 * Get Datum Fälligkeit.
@@ -300,10 +359,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDueDate();
+	public java.sql.Timestamp getDueDate();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Dunning_Candidate.class, "DueDate", null);
-	String COLUMNNAME_DueDate = "DueDate";
+    /** Column definition for DueDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DueDate = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DueDate", null);
+    /** Column name DueDate */
+    public static final String COLUMNNAME_DueDate = "DueDate";
 
 	/**
 	 * Set Dunning Date.
@@ -313,7 +374,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDunningDate (java.sql.Timestamp DunningDate);
+	public void setDunningDate (java.sql.Timestamp DunningDate);
 
 	/**
 	 * Get Dunning Date.
@@ -323,10 +384,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDunningDate();
+	public java.sql.Timestamp getDunningDate();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningDate = new ModelColumn<>(I_C_Dunning_Candidate.class, "DunningDate", null);
-	String COLUMNNAME_DunningDate = "DunningDate";
+    /** Column definition for DunningDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningDate = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DunningDate", null);
+    /** Column name DunningDate */
+    public static final String COLUMNNAME_DunningDate = "DunningDate";
 
 	/**
 	 * Set Dunning Date Effective.
@@ -336,7 +399,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDunningDateEffective (@Nullable java.sql.Timestamp DunningDateEffective);
+	public void setDunningDateEffective (java.sql.Timestamp DunningDateEffective);
 
 	/**
 	 * Get Dunning Date Effective.
@@ -346,10 +409,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDunningDateEffective();
+	public java.sql.Timestamp getDunningDateEffective();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningDateEffective = new ModelColumn<>(I_C_Dunning_Candidate.class, "DunningDateEffective", null);
-	String COLUMNNAME_DunningDateEffective = "DunningDateEffective";
+    /** Column definition for DunningDateEffective */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningDateEffective = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DunningDateEffective", null);
+    /** Column name DunningDateEffective */
+    public static final String COLUMNNAME_DunningDateEffective = "DunningDateEffective";
 
 	/**
 	 * Set Dunning Grace Date.
@@ -358,7 +423,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDunningGrace (@Nullable java.sql.Timestamp DunningGrace);
+	public void setDunningGrace (java.sql.Timestamp DunningGrace);
 
 	/**
 	 * Get Dunning Grace Date.
@@ -367,10 +432,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDunningGrace();
+	public java.sql.Timestamp getDunningGrace();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningGrace = new ModelColumn<>(I_C_Dunning_Candidate.class, "DunningGrace", null);
-	String COLUMNNAME_DunningGrace = "DunningGrace";
+    /** Column definition for DunningGrace */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningGrace = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DunningGrace", null);
+    /** Column name DunningGrace */
+    public static final String COLUMNNAME_DunningGrace = "DunningGrace";
 
 	/**
 	 * Set Mahnzins.
@@ -380,7 +447,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDunningInterestAmt (@Nullable BigDecimal DunningInterestAmt);
+	public void setDunningInterestAmt (java.math.BigDecimal DunningInterestAmt);
 
 	/**
 	 * Get Mahnzins.
@@ -390,10 +457,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getDunningInterestAmt();
+	public java.math.BigDecimal getDunningInterestAmt();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningInterestAmt = new ModelColumn<>(I_C_Dunning_Candidate.class, "DunningInterestAmt", null);
-	String COLUMNNAME_DunningInterestAmt = "DunningInterestAmt";
+    /** Column definition for DunningInterestAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_DunningInterestAmt = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "DunningInterestAmt", null);
+    /** Column name DunningInterestAmt */
+    public static final String COLUMNNAME_DunningInterestAmt = "DunningInterestAmt";
 
 	/**
 	 * Set Mahnpauschale.
@@ -403,7 +472,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFeeAmt (@Nullable BigDecimal FeeAmt);
+	public void setFeeAmt (java.math.BigDecimal FeeAmt);
 
 	/**
 	 * Get Mahnpauschale.
@@ -413,10 +482,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getFeeAmt();
+	public java.math.BigDecimal getFeeAmt();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_FeeAmt = new ModelColumn<>(I_C_Dunning_Candidate.class, "FeeAmt", null);
-	String COLUMNNAME_FeeAmt = "FeeAmt";
+    /** Column definition for FeeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_FeeAmt = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "FeeAmt", null);
+    /** Column name FeeAmt */
+    public static final String COLUMNNAME_FeeAmt = "FeeAmt";
 
 	/**
 	 * Set Aktiv.
@@ -426,7 +497,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -436,10 +507,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Dunning_Candidate.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set IsDunningDocProcessed.
@@ -448,7 +521,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsDunningDocProcessed (boolean IsDunningDocProcessed);
+	public void setIsDunningDocProcessed (boolean IsDunningDocProcessed);
 
 	/**
 	 * Get IsDunningDocProcessed.
@@ -457,10 +530,37 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isDunningDocProcessed();
+	public boolean isDunningDocProcessed();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsDunningDocProcessed = new ModelColumn<>(I_C_Dunning_Candidate.class, "IsDunningDocProcessed", null);
-	String COLUMNNAME_IsDunningDocProcessed = "IsDunningDocProcessed";
+    /** Column definition for IsDunningDocProcessed */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsDunningDocProcessed = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "IsDunningDocProcessed", null);
+    /** Column name IsDunningDocProcessed */
+    public static final String COLUMNNAME_IsDunningDocProcessed = "IsDunningDocProcessed";
+
+	/**
+	 * Set Zu aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsStaled (boolean IsStaled);
+
+	/**
+	 * Get Zu aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public boolean isStaled();
+
+    /** Column definition for IsStaled */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsStaled = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "IsStaled", null);
+    /** Column name IsStaled */
+    public static final String COLUMNNAME_IsStaled = "IsStaled";
 
 	/**
 	 * Set Massenaustritt.
@@ -469,7 +569,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsWriteOff (boolean IsWriteOff);
+	public void setIsWriteOff (boolean IsWriteOff);
 
 	/**
 	 * Get Massenaustritt.
@@ -478,31 +578,13 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isWriteOff();
+	public boolean isWriteOff();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsWriteOff = new ModelColumn<>(I_C_Dunning_Candidate.class, "IsWriteOff", null);
-    String COLUMNNAME_IsWriteOff = "IsWriteOff";
+    /** Column definition for IsWriteOff */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsWriteOff = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "IsWriteOff", null);
+    /** Column name IsWriteOff */
+    public static final String COLUMNNAME_IsWriteOff = "IsWriteOff";
 
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	ModelColumn<I_C_Dunning_Candidate, I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_Dunning_Candidate.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 	/**
 	 * Set Offener Betrag.
 	 *
@@ -510,7 +592,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+	public void setOpenAmt (java.math.BigDecimal OpenAmt);
 
 	/**
 	 * Get Offener Betrag.
@@ -519,33 +601,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getOpenAmt();
+	public java.math.BigDecimal getOpenAmt();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Dunning_Candidate.class, "OpenAmt", null);
-	String COLUMNNAME_OpenAmt = "OpenAmt";
-
-	/**
-	 * Set Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPOReference (@Nullable java.lang.String POReference);
-
-	/**
-	 * Get Order Reference.
-	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPOReference();
-
-	org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<>(I_C_Dunning_Candidate.class, "POReference", null);
-	String COLUMNNAME_POReference = "POReference";
+    /** Column definition for OpenAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_OpenAmt = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "OpenAmt", null);
+    /** Column name OpenAmt */
+    public static final String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
 	 * Set Verarbeitet.
@@ -555,7 +616,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
 	 * Get Verarbeitet.
@@ -565,10 +626,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Processed = new ModelColumn<>(I_C_Dunning_Candidate.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Datensatz-ID.
@@ -578,7 +641,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRecord_ID (int Record_ID);
+	public void setRecord_ID (int Record_ID);
 
 	/**
 	 * Get Datensatz-ID.
@@ -588,10 +651,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getRecord_ID();
+	public int getRecord_ID();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Record_ID = new ModelColumn<>(I_C_Dunning_Candidate.class, "Record_ID", null);
-	String COLUMNNAME_Record_ID = "Record_ID";
+    /** Column definition for Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "Record_ID", null);
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Gesamtbetrag.
@@ -600,7 +665,7 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTotalAmt (@Nullable BigDecimal TotalAmt);
+	public void setTotalAmt (java.math.BigDecimal TotalAmt);
 
 	/**
 	 * Get Gesamtbetrag.
@@ -609,10 +674,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getTotalAmt();
+	public java.math.BigDecimal getTotalAmt();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_TotalAmt = new ModelColumn<>(I_C_Dunning_Candidate.class, "TotalAmt", null);
-	String COLUMNNAME_TotalAmt = "TotalAmt";
+    /** Column definition for TotalAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_TotalAmt = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "TotalAmt", null);
+    /** Column name TotalAmt */
+    public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
 	/**
 	 * Get Aktualisiert.
@@ -622,10 +689,12 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Updated = new ModelColumn<>(I_C_Dunning_Candidate.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -635,7 +704,10 @@ public interface I_C_Dunning_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, org.compiere.model.I_AD_User>(I_C_Dunning_Candidate.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

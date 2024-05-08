@@ -16,8 +16,7 @@ const ConfirmOptionScreen = () => {
     params: { wfProcessId, activityId, optionIndex },
   } = useRouteMatch();
   const optionInfo = useSelector((state) => getOptionByIndex({ state, wfProcessId, activityId, optionIndex }));
-  const [numberOfHUs, setNumberOfHUs] = useState(optionInfo.numberOfHUs);
-  const [numberOfCopies, setNumberOfCopies] = useState(1);
+  const [qtyTUs, setQtyTUs] = useState(optionInfo.qtyTUs);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -29,22 +28,18 @@ const ConfirmOptionScreen = () => {
             caption: trl('activities.mfg.generateHUQRCodes.packing'),
             value: optionInfo.caption,
           },
+          {
+            caption: trl('activities.mfg.generateHUQRCodes.qtyTUs'),
+            value: qtyTUs,
+          },
         ],
       })
     );
-  }, [numberOfHUs]);
+  }, [qtyTUs]);
 
-  const validateQtyEntered = (numberOfHUsEntered) => {
-    if (numberOfHUsEntered <= 0) {
-      return 'numberOfHUs shall be greater than 0';
-    }
-
-    return null; // OK
-  };
-
-  const validateNumberOfCopies = (numberOfCopiesEntered) => {
-    if (numberOfCopiesEntered <= 0) {
-      return 'numberOfCopies shall be greater than 0';
+  const validateQtyEntered = (qtyTUsEntered) => {
+    if (qtyTUsEntered <= 0) {
+      return 'QtyTUs shall be greater than 0';
     }
 
     return null; // OK
@@ -55,54 +50,30 @@ const ConfirmOptionScreen = () => {
     postGenerateHUQRCodes({
       wfProcessId,
       finishedGoodsReceiveLineId: optionInfo.finishedGoodsReceiveLineId,
-      huPackingInstructionsId: optionInfo.packingInstructionsId,
-      numberOfHUs,
-      numberOfCopies,
+      tuPackingInstructionsId: optionInfo.tuPackingInstructionsId,
+      qtyTUs,
     })
       .then(() => history.go(-2)) // back to wfProcess screen
       .catch((axiosError) => toastError({ axiosError }));
   };
 
-  const isValidNumberOfHUs = numberOfHUs != null && numberOfHUs > 0;
+  const isValidQtyTUs = qtyTUs != null && qtyTUs > 0;
 
   return (
-    <>
-      <table className="table view-header is-size-6">
-        <tbody>
-          <tr className="with-border-top">
-            <th>{trl('activities.mfg.generateHUQRCodes.numberOfHUs')}</th>
-            <td>
-              <QtyInputField
-                qty={numberOfHUs}
-                integerValuesOnly
-                validateQtyEntered={validateQtyEntered}
-                onQtyChange={({ qty }) => setNumberOfHUs(qtyInfos.toNumberOrString(qty))}
-                isRequestFocus={true}
-              />
-            </td>
-          </tr>
-          <tr>
-            <th>{trl('activities.mfg.generateHUQRCodes.numberOfCopies')}</th>
-            <td>
-              <QtyInputField
-                qty={numberOfCopies}
-                integerValuesOnly
-                validateQtyEntered={validateNumberOfCopies}
-                onQtyChange={({ qty }) => setNumberOfCopies(qtyInfos.toNumberOrString(qty))}
-                isRequestFocus={true}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div className="section pt-2">
-        <Button
-          caption={trl('activities.mfg.generateHUQRCodes.print')}
-          disabled={!isValidNumberOfHUs}
-          onClick={onPrintClick}
-        />
-      </div>
-    </>
+    <div className="section pt-2">
+      <QtyInputField
+        qty={qtyTUs}
+        integerValuesOnly
+        validateQtyEntered={validateQtyEntered}
+        onQtyChange={({ qty }) => setQtyTUs(qtyInfos.toNumberOrString(qty))}
+        isRequestFocus={true}
+      />
+      <Button
+        caption={trl('activities.mfg.generateHUQRCodes.print')}
+        disabled={!isValidQtyTUs}
+        onClick={onPrintClick}
+      />
+    </div>
   );
 };
 

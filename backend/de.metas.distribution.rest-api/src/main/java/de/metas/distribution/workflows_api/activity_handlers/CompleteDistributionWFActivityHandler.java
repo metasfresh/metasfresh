@@ -1,7 +1,6 @@
 package de.metas.distribution.workflows_api.activity_handlers;
 
 import de.metas.distribution.workflows_api.DistributionJob;
-import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.distribution.workflows_api.DistributionRestService;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
@@ -41,15 +40,16 @@ public class CompleteDistributionWFActivityHandler implements WFActivityHandler,
 			final @NonNull JsonOpts jsonOpts)
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
-				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
+				UserConfirmationSupportUtil.UIComponentProps.builder()
 						.question("Are you sure?")
+						.confirmed(wfActivity.getStatus().isCompleted())
 						.build());
 	}
 
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity completeDistributionWFActivity)
 	{
-		final DistributionJob job = DistributionMobileApplication.getDistributionJob(wfProcess);
+		final DistributionJob job = wfProcess.getDocumentAs(DistributionJob.class);
 		return computeActivityState(job);
 	}
 
@@ -61,7 +61,9 @@ public class CompleteDistributionWFActivityHandler implements WFActivityHandler,
 	@Override
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
-		request.assertActivityType(HANDLED_ACTIVITY_TYPE);
-		return DistributionMobileApplication.mapDocument(request.getWfProcess(), distributionRestService::complete);
+		final WFProcess wfProcess = request.getWfProcess();
+		request.getWfActivity().getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
+
+		return wfProcess.mapDocument(distributionRestService::complete);
 	}
 }

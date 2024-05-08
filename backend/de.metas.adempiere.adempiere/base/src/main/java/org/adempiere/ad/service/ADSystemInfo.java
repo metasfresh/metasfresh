@@ -8,7 +8,6 @@ import lombok.Value;
 public class ADSystemInfo
 {
 	String dbVersion;
-	String systemStatus;
 	String lastBuildInfo;
 	boolean failOnMissingModelValidator;
 }

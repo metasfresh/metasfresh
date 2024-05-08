@@ -22,14 +22,16 @@ package de.metas.document.refid.api;
  * #L%
  */
 
-import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.document.refid.spi.IReferenceNoGenerator;
 
 import java.util.List;
+
+import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.document.refid.spi.IReferenceNoGenerator;
 
 public interface IReferenceNoGeneratorInstance
 {
 	/**
+	 * @param source
 	 * @return generated reference number or {@link IReferenceNoGenerator#REFERENCENO_None} if no reference number was generated
 	 */
 	String generateReferenceNo(Object sourceModel);

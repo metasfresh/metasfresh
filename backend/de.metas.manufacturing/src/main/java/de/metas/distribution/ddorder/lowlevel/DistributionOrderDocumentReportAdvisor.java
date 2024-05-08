@@ -23,8 +23,6 @@
 package de.metas.distribution.ddorder.lowlevel;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.document.DocTypeId;
@@ -99,18 +97,10 @@ public class DistributionOrderDocumentReportAdvisor implements DocumentReportAdv
 
 		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
 
-		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
-				.adTableId(recordRef.getAdTableId())
-				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, ddOrder.getC_BPartner_Location_ID()))
-				.docTypeId(docTypeId)
-				.onlyCopiesGreaterZero(true)
-				.build();
-
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_DD_Order.Table_Name, ddOrderId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
+				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(ddOrder.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

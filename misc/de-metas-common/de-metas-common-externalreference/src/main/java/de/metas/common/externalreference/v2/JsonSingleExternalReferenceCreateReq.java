@@ -25,7 +25,7 @@ package de.metas.common.externalreference.v2;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,16 +33,16 @@ import lombok.Value;
 @Value
 public class JsonSingleExternalReferenceCreateReq
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	JsonExternalSystemName systemName;
 
-	JsonExternalReferenceRequestItem externalReferenceItem;
+	JsonExternalReferenceItem externalReferenceItem;
 
 	@JsonCreator
 	@Builder
 	public JsonSingleExternalReferenceCreateReq(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceRequestItem externalReferenceItem)
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
 	{
 		this.systemName = systemName;
 		this.externalReferenceItem = externalReferenceItem;

@@ -100,7 +100,7 @@ public interface IPricingContext extends IContextAware
 	String getTrxName();
 
 	/**
-	 * If set, during pricing calculations, prices will be converted from {@link IPricingResult#getPriceUomId()} ()} to {@link IPricingContext#getUomId()} .
+	 * If set, during pricing calculations, prices will be converted from {@link IPricingResult#getPrice_UOM_ID()} to {@link IPricingContext#getC_UOM_ID()}.
 	 *
 	 * @return true if prices needs to be converted from Price UOM to context UOM
 	 */
@@ -123,8 +123,6 @@ public interface IPricingContext extends IContextAware
 	boolean isFailIfNotCalculated();
 
 	boolean isSkipCheckingPriceListSOTrxFlag();
-
-	BigDecimal getManualPrice();
 
 	Quantity getQuantity();
 }

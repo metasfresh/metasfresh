@@ -46,7 +46,7 @@ public class JsonResponseManufacturingOrder
 {
 	@NonNull
 	JsonMetasfreshId orderId;
-
+	
 	@NonNull
 	String orgCode;
 
@@ -60,22 +60,12 @@ public class JsonResponseManufacturingOrder
 	ZonedDateTime dateOrdered;
 
 	@NonNull
-	ZonedDateTime datePromised;
-
-	@NonNull
 	ZonedDateTime dateStartSchedule;
 
 	@NonNull
 	JsonProduct finishGoodProduct;
-
 	@NonNull
 	JsonQuantity qtyToProduce;
-
-	@NonNull
-	JsonMetasfreshId productId;
-
-	@Nullable
-	JsonMetasfreshId bpartnerId;
 
 	@NonNull
 	@Singular

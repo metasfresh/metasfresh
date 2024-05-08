@@ -1,7 +1,6 @@
 package de.metas.distribution.workflows_api.activity_handlers;
 
 import de.metas.distribution.workflows_api.DistributionJob;
-import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.distribution.workflows_api.DistributionRestService;
 import de.metas.distribution.workflows_api.json.JsonDistributionJob;
 import de.metas.distribution.workflows_api.json.JsonDistributionJobLine;
@@ -40,13 +39,14 @@ public class MoveWFActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		final DistributionJob job = DistributionMobileApplication.getDistributionJob(wfProcess);
+		final DistributionJob job = wfProcess.getDocumentAs(DistributionJob.class);
 
 		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(distributionRestService.getQtyRejectedReasons(), jsonOpts);
 
 		final List<JsonDistributionJobLine> lines = JsonDistributionJob.of(job, jsonOpts).getLines();
 
-		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
+		return UIComponent.builder()
+				.type(COMPONENT_TYPE)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
@@ -57,7 +57,7 @@ public class MoveWFActivityHandler implements WFActivityHandler
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		final DistributionJob job = DistributionMobileApplication.getDistributionJob(wfProcess);
+		final DistributionJob job = wfProcess.getDocumentAs(DistributionJob.class);
 		return job.getStatus();
 	}
 }

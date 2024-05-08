@@ -1,8 +1,20 @@
 package de.metas.handlingunits.sourcehu.impl;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.annotation.CacheModel;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
@@ -14,17 +26,8 @@ import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L

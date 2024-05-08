@@ -23,10 +23,8 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Predicate;
 
 /*
@@ -60,8 +58,6 @@ public interface IBPartnerBL extends ISingletonService
 	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
-
-	Map<BPartnerId, String> getBPartnerNames(@NonNull Set<BPartnerId> bpartnerIds);
 
 	/**
 	 * make full address
@@ -250,21 +246,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * extracted logic from legacy code
-	 *
 	 * @param bp
 	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
-
-	@NonNull
-	Optional<String> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
-
-	@NonNull
-	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
-
-	@NonNull
-	Optional<I_C_BPartner_Location> retrieveBillToDefaultLocation(@NonNull BPartnerId bPartnerId);
-
-	@NonNull
-	Optional<I_C_BPartner_Location> retrieveShipToDefaultLocation(@NonNull BPartnerId bPartnerId);
 }

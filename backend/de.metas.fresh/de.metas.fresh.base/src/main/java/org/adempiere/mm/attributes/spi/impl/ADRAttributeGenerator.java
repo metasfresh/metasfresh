@@ -22,11 +22,10 @@
 
 package org.adempiere.mm.attributes.spi.impl;
 
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.fresh.model.I_C_BPartner;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
+
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
@@ -39,11 +38,12 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
-import java.util.Properties;
+import de.metas.fresh.model.I_C_BPartner;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 {
@@ -58,7 +58,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 	 * @return <code>false</code>, because ADR is a List attribute.
 	 */
 	@Override
-	public boolean canGenerateValue(final Properties ctx, final IAttributeSet attributeSet, final I_M_Attribute attribute)
+	public boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute)
 	{
 		return false;
 	}
@@ -67,7 +67,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 	 * Creates an ADR attribute value for the C_BPartner which is specified by <code>tableId</code> and <code>recordId</code>.
 	 */
 	@Override
-	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, final boolean isSOTrx, final String trxName)
+	public AttributeListValue generateAttributeValue(final Properties ctx, final int tableId, final int recordId, boolean isSOTrx, final String trxName)
 	{
 		final IContextAware context = new PlainContextAware(ctx, trxName);
 		final ITableRecordReference record = TableRecordReference.of(tableId, recordId);
@@ -89,8 +89,7 @@ public class ADRAttributeGenerator extends AbstractAttributeValueGenerator
 
 		//
 		// Fetched AD_Ref_List record
-		final ADReferenceService adReferenceService = ADReferenceService.get();
-		final ADRefListItem adRefList = adReferenceService.retrieveListItemOrNull(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
+		final ADRefListItem adRefList = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, adrRegionValue);
 		Check.assumeNotNull(adRefList, "adRefList not null");
 
 		final String adrRegionName = adRefList.getName().getDefaultValue();

@@ -30,7 +30,6 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
-import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
@@ -132,7 +131,7 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 								.internalName(I_Fact_Acct.Table_Name)
 								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(factAcctWindowId))
 								.priority(relatedDocumentsPriority)
-								.querySupplier(RelatedDocumentsQuerySuppliers.ofQuery(query))
+								.query(query)
 								.windowCaption(windowCaption)
 								.documentsCountSupplier(recordsCountSupplier)
 								.build()));

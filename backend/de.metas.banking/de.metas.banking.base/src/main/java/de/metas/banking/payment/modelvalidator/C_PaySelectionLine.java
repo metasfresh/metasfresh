@@ -5,7 +5,7 @@ import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -27,12 +27,18 @@ import org.compiere.model.ModelValidator;
 @Interceptor(I_C_PaySelectionLine.class)
 public class C_PaySelectionLine
 {
+	public static final transient C_PaySelectionLine instance = new C_PaySelectionLine();
+
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 	private final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);
-	private final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+	private final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final AdMessageKey MSG_PaySelectionLine_Invoice_InvalidCurrency = AdMessageKey.of("PaySelectionLine.Invoice.InvalidCurrency");
+
+	private C_PaySelectionLine()
+	{
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeNewOrChange(@NonNull final I_C_PaySelectionLine paySelectionLine)
@@ -90,9 +96,10 @@ public class C_PaySelectionLine
 		final CurrencyCode bankAccountCurrencyCode = currenciesRepo.getCurrencyCodeById(CurrencyId.ofRepoId(bankAccount.getC_Currency_ID()));
 
 		throw new AdempiereException(MSG_PaySelectionLine_Invoice_InvalidCurrency,
-				invoice.getDocumentNo(),     // invoice
-				invoiceCurrencyCode.toThreeLetterCode(),      // Actual
-				bankAccountCurrencyCode.toThreeLetterCode()) // Expected
+				new Object[] {
+						invoice.getDocumentNo(),     // invoice
+						invoiceCurrencyCode.toThreeLetterCode(),      // Actual
+						bankAccountCurrencyCode.toThreeLetterCode() }) // Expected
 				.markAsUserValidationError();
 	}
 
@@ -118,6 +125,6 @@ public class C_PaySelectionLine
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.runAfterCommit(() -> modelCacheInvalidationService.invalidate(
 						CacheInvalidateMultiRequest.fromTableNameAndRecordId(I_C_PaySelection.Table_Name, paySelectionId.getRepoId()),
-						ModelCacheInvalidationTiming.AFTER_CHANGE));
+						ModelCacheInvalidationTiming.CHANGE));
 	}
 }

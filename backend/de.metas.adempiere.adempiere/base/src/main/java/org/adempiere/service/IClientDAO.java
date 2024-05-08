@@ -22,16 +22,17 @@ package org.adempiere.service;
  * #L%
  */
 
-import de.metas.email.mailboxes.ClientEMailConfig;
-import de.metas.util.ISingletonService;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import lombok.NonNull;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.util.ISingletonService;
 
 public interface IClientDAO extends ISingletonService
 {

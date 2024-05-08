@@ -26,7 +26,6 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -78,7 +77,7 @@ public class DhlDatabaseClientLogger
 		logRecord.setConfigSummary(event.getConfigSummary());
 		logRecord.setDurationMillis((int)event.getDurationMillis());
 
-		logRecord.setDHL_ShipmentOrderRequest_ID(DeliveryOrderId.toRepoId(event.getDeliveryOrderId()));
+		logRecord.setDHL_ShipmentOrderRequest_ID(event.getDeliveryOrderRepoId());
 
 		//noinspection ConstantConditions
 		logRecord.setRequestMessage(event.getRequestAsString());

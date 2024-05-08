@@ -1,63 +1,77 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { forEach } from 'lodash';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { pickingLineScreenLocation, pickingScanScreenLocation } from '../../../routes/picking';
+import { pickingLineScreenLocation } from '../../../routes/picking';
 import { useHistory } from 'react-router-dom';
-import { trl } from '../../../utils/translations';
-import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
-import { isAllowPickingAnyHUForActivity } from '../../../utils/picking';
 
-export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
+const computeLineQuantities = (line) => {
+  let picked = 0;
+  let toPick = 0;
+  let uom = '';
 
-const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity }) => {
+  forEach(line.steps, (step) => {
+    const { qtyToPick, uom: stepUom } = step;
+
+    picked += computeStepQtyPickedTotal(step);
+    toPick += qtyToPick;
+    uom = stepUom;
+  });
+
+  return { picked, toPick, uom };
+};
+
+const computeStepQtyPickedTotal = (step) => {
+  let qtyPickedTotal = 0;
+
+  if (step.mainPickFrom.qtyPicked) {
+    qtyPickedTotal += step.mainPickFrom.qtyPicked;
+  }
+
+  if (step.pickFromAlternatives) {
+    const qtyPickedInAltSteps = Object.values(step.pickFromAlternatives).reduce(
+      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
+      0
+    );
+
+    qtyPickedTotal += qtyPickedInAltSteps;
+  }
+
+  return qtyPickedTotal;
+};
+
+const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
   const {
-    dataStored: { isUserEditable },
-  } = activity;
-  const lines = getLinesArrayFromActivity(activity);
-  const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
+    dataStored: { lines, completeStatus, isUserEditable },
+  } = activityState;
 
   const history = useHistory();
-
-  const onScanButtonClick = () => {
-    history.push(pickingScanScreenLocation({ applicationId, wfProcessId, activityId }));
-  };
-  const onLineButtonClick = ({ lineId }) => {
+  const onButtonClick = ({ lineId }) => {
     history.push(pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
   return (
     <div className="mt-5">
-      {allowPickingAnyHU && (
-        <ButtonWithIndicator
-          caption={trl('activities.picking.scanQRCode')}
-          disabled={!isUserEditable}
-          onClick={onScanButtonClick}
-        />
-      )}
-      {lines &&
-        lines.map((lineItem) => {
-          const lineId = lineItem.pickingLineId;
-          const { uom, qtyToPick, qtyPicked } = lineItem;
+      {lines && lines.length > 0
+        ? lines.map((lineItem, lineIndex) => {
+            const lineId = '' + lineIndex;
+            const { picked, toPick, uom } = computeLineQuantities(lineItem);
 
-          return (
-            <ButtonWithIndicator
-              key={lineId}
-              caption={lineItem.caption}
-              completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-              disabled={!isUserEditable}
-              onClick={() => onLineButtonClick({ lineId })}
-            >
-              <ButtonQuantityProp
-                qtyCurrent={qtyPicked}
-                qtyTarget={qtyToPick}
-                uom={uom}
-                applicationId={applicationId}
-              />
-            </ButtonWithIndicator>
-          );
-        })}
+            return (
+              <ButtonWithIndicator
+                key={lineId}
+                caption={lineItem.caption}
+                completeStatus={completeStatus || CompleteStatus.NOT_STARTED}
+                disabled={!isUserEditable}
+                onClick={() => onButtonClick({ lineId })}
+              >
+                <ButtonQuantityProp qtyCurrent={picked} qtyTarget={toPick} uom={uom} applicationId={applicationId} />
+              </ButtonWithIndicator>
+            );
+          })
+        : null}
     </div>
   );
 };
@@ -66,7 +80,7 @@ PickProductsActivity.propTypes = {
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
-  activity: PropTypes.object.isRequired,
+  activityState: PropTypes.object.isRequired,
 };
 
 export default PickProductsActivity;

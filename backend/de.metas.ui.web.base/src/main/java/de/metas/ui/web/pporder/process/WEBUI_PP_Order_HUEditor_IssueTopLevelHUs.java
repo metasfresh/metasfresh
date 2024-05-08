@@ -2,7 +2,6 @@ package de.metas.ui.web.pporder.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -15,7 +14,6 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
 import java.util.List;
@@ -82,16 +80,10 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 		final PPOrderLinesView ppOrderView = getPPOrderView().orElseThrow(() -> new AdempiereException("No Issue/Receipt view"));
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 
-		final HUPPOrderIssueProducer issueProducer = huPPOrderBL.createIssueProducer(ppOrderId)
-				.considerIssueMethodForQtyToIssueCalculation(false); // issue exactly the HUs selected by user
-
-		final PPOrderBOMLineId selectedOrderBOMLineId = getSelectedOrderBOMLineId();
-		if (selectedOrderBOMLineId != null)
-		{
-			issueProducer.targetOrderBOMLine(selectedOrderBOMLineId);
-		}
-
-		issueProducer.createIssues(hus);
+		huPPOrderBL
+				.createIssueProducer(ppOrderId)
+				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the HUs selected by user
+				.createIssues(hus);
 
 		final HUEditorView huEditorView = getView();
 		huEditorView.removeHUsAndInvalidate(hus);

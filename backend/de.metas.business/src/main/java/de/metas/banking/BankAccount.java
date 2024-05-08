@@ -1,6 +1,5 @@
 package de.metas.banking;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.StringUtils;
@@ -36,23 +35,17 @@ import javax.annotation.Nullable;
  * Own (organization) bank account.
  */
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class BankAccount
 {
 	@NonNull
 	BankAccountId id;
-
-	@NonNull
-	BPartnerId bPartnerId;
 
 	@Nullable // C_BP_BankAccount.C_Bank_ID is not mandatory!
 	BankId bankId;
 
 	@Nullable
 	String accountName;
-
-	@Nullable
-	String name;
 
 	@Nullable
 	String accountNo;
@@ -62,9 +55,6 @@ public class BankAccount
 
 	@Nullable
 	String IBAN;
-
-	@Nullable
-	String SwiftCode;
 
 	@Nullable
 	String QR_IBAN;

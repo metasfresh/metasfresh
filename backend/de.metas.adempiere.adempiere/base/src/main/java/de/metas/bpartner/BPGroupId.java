@@ -9,7 +9,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -72,8 +71,6 @@ public class BPGroupId implements RepoIdAware
 			return new BPGroupId(repoId);
 		}
 	}
-
-	public static Optional<BPGroupId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static int toRepoId(@Nullable final BPGroupId bpGroupId)
 	{

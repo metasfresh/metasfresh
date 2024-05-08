@@ -65,7 +65,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public ImmutableList<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
+	public List<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
 	{
 		return requests.stream()
 				.map(this::save)
@@ -172,15 +172,9 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	{
 		return retrieveOrderQtys(ppOrderId)
 				.stream()
-				.filter(HUPPOrderQtyDAO::isFinishedGoodsReceipt)
+				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
 				.collect(ImmutableList.toImmutableList());
 	}
-
-	public static boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
-	{
-		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
-	}
-
 
 	@Override
 	public Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(

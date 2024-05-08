@@ -4,13 +4,11 @@
   "ARTNRID": "ProductId",
   "TEXT": "Name1",
   "TEXT2": "Name2",
-  "INAKTIV": 1,
+  "INAKTIV": 0,
   "VERLUST": 10.5,
   "GTIN": 12345678,
   "METASFRESHID": "100",
   "ANHANGDATEI": "bpartnerValue/directory/Attachment.pdf",
-  "BIO": 1,
-  "HALAL" : 0,
   "DETAIL": [
     {
       "ARTNR": "ProductValue1",
@@ -18,29 +16,7 @@
       "HERKUNFTSLAND": "countryCode",
       "POS": 1,
       "ANTEIL": 50,
-      "UOM": "KGM",
-      "INFO": "User Instructions"
-    }
-  ],
-  "Sonstige_Infos": [
-    {
-      "Produktion_Maschinengrößen": [
-        {
-          "Resource_1": null,
-          "Resource_2": 500.00000,
-          "Resource_3": 501.00000
-        }
-      ],
-      "Rezeptur_Angaben_GTIN": "additional_gtin",
-      "Lagerungsbedingungen_Lagerungstemperatur": "warehouse_temperature",
-      "Lagerungsbedingungen_MHD_in_Monaten": 12,
-      "Rezeptur_Angaben_Landwirtschaftliche_Herkunft": "EU-/Nicht-EU-Landwirtschaft"
-    }
-  ],
-  "ALLERGENE": [
-    {
-      "ALID": 1,
-      "Text": "AllergenName"
+      "UOM": "KGM"
     }
   ]
 }

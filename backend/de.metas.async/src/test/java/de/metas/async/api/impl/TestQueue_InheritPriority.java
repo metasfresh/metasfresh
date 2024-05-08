@@ -10,12 +10,12 @@ package de.metas.async.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -23,6 +23,7 @@ package de.metas.async.api.impl;
  */
 
 import de.metas.async.Helper;
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.NOPWorkpackageLogsRepository;
 import de.metas.async.model.I_C_Queue_Element;
@@ -30,9 +31,8 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
+import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
-import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.util.Services;
@@ -51,8 +51,9 @@ import static org.junit.Assert.assertThat;
 
 /**
  * See {@link #test_forwardWorkPackagePrio()}.
- *
+ * 
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class TestQueue_InheritPriority
 {
@@ -71,7 +72,7 @@ public class TestQueue_InheritPriority
 	{
 		AdempiereTestHelper.get().init();
 		NOPWorkpackageLogsRepository.registerToSpringContext();
-
+		
 		//
 		// Setup test data
 		ctx = Env.getCtx();
@@ -107,9 +108,9 @@ public class TestQueue_InheritPriority
 	private void doTheTestWithPrio(final ConstantWorkpackagePrio priorityToForward)
 	{
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+		final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 
 		final I_C_Queue_Processor queueProcessorDef = createProcessor();
-		final QueueProcessorDescriptor queueProcessor = QueueProcessorDescriptorRepository.mapToQueueProcessor(queueProcessorDef);
 
 		final IWorkPackageQueue queueForEnqueuing = workPackageQueueFactory.getQueueForEnqueuing(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
@@ -130,7 +131,7 @@ public class TestQueue_InheritPriority
 
 		InterfaceWrapperHelper.save(wp1);
 
-		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessor);
+		final IWorkPackageQueue queueForPackageProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
 
 		final IQueueProcessor processor = helper.newSynchronousQueueProcessor(queueForPackageProcessing);
 
@@ -144,12 +145,12 @@ public class TestQueue_InheritPriority
 
 	private I_C_Queue_Processor createProcessor()
 	{
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 		final Helper helper = new Helper();
-
-		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = helper.createPackageProcessor(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 
 		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor("Test_forwardWorkPackagePrio", 10, 1000);
 
+		final I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass = queueDAO.retrievePackageProcessorDefByClass(ctx, TestQueue_InheritPriority_WorkPackageProcessor.class);
 		helper.assignPackageProcessor(queueProcessorDef, retrievePackageProcessorDefByClass);
 
 		return queueProcessorDef;

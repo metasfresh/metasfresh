@@ -22,10 +22,15 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -36,15 +41,12 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
@@ -454,7 +456,7 @@ public abstract class AbstractTrx implements ITrx
 
 		if (create)
 		{
-			trxListenerManager = new TrxListenerManager(this);
+			trxListenerManager = new TrxListenerManager(getTrxName());
 			return trxListenerManager;
 		}
 

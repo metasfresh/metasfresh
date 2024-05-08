@@ -1,14 +1,28 @@
 package de.metas.global_qrcodes;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(SnapshotExtension.class)
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+
 class PrintableQRCodeTest
 {
-	private Expect expect;
+	@BeforeAll
+	static void beforeAll()
+	{
+		start(new SnapshotConfig()
+		{
+			@Override
+			public String getFilePath() {return "src/test/resources/";}
+
+			@Override
+			public SnapshotMatchingStrategy getSnapshotMatchingStrategy() {return JSONAssertMatchingStrategy.INSTANCE_STRICT;}
+		});
+	}
 
 	private PrintableQRCode newStandardPrintableQRCode()
 	{
@@ -26,6 +40,6 @@ class PrintableQRCodeTest
 	@Test
 	public void checkJsonFormatIsNotChanging()
 	{
-		expect.serializer("orderedJson").toMatchSnapshot(newStandardPrintableQRCode());
+		expect(newStandardPrintableQRCode()).toMatchSnapshot();
 	}
 }

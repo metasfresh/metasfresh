@@ -34,7 +34,7 @@ import lombok.Value;
 public class JSONZoomInto
 {
 	/** ZoomInto document path */
-	JSONDocumentPath documentPath;
+	private final JSONDocumentPath documentPath;
 	/** Source field for whom we retrieved the ZoomInto document path */
-	JSONDocumentPath source;
+	private final JSONDocumentPath source;
 }

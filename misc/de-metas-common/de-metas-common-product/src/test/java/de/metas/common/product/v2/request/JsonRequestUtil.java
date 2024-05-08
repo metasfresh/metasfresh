@@ -22,12 +22,8 @@
 
 package de.metas.common.product.v2.request;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import lombok.NonNull;
 
-import java.time.Instant;
 import java.util.Collections;
 
 public class JsonRequestUtil
@@ -69,7 +65,6 @@ public class JsonRequestUtil
 		jsonRequestProduct.setProductCategoryIdentifier("test");
 		jsonRequestProduct.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 		jsonRequestProduct.setBpartnerProductItems(Collections.singletonList(getJsonRequestBPartnerProductUpsert()));
-		jsonRequestProduct.setSAPProductHierarchy("SAPProductHierarchy");
 
 		return jsonRequestProduct;
 	}
@@ -87,27 +82,6 @@ public class JsonRequestUtil
 		return JsonRequestProductUpsertItem.builder()
 				.requestProduct(getJsonRequestProduct())
 				.productIdentifier("test")
-				.build();
-	}
-
-	@NonNull
-	public static JsonRequestProductTaxCategoryUpsert getJsonRequestProductTaxCategoryUpsert()
-	{
-		final JsonRequestProductTaxCategoryUpsert jsonRequestProductTaxCategoryUpsert = new JsonRequestProductTaxCategoryUpsert();
-		
-		jsonRequestProductTaxCategoryUpsert.setTaxCategory(TaxCategory.NORMAL.getInternalName());
-		jsonRequestProductTaxCategoryUpsert.setCountryCode("DE");
-		jsonRequestProductTaxCategoryUpsert.setValidFrom(Instant.parse("2019-11-22T00:00:00Z"));
-
-		return jsonRequestProductTaxCategoryUpsert;
-	}
-
-	@NonNull
-	public static JsonRequestProductWarehouseAssignmentSave getJsonRequestWarehouseAssignmentUpsert()
-	{
-		return JsonRequestProductWarehouseAssignmentSave.builder()
-				.warehouseIdentifiers(ImmutableList.of("name"))
-				.syncAdvise(SyncAdvise.REPLACE)
 				.build();
 	}
 }

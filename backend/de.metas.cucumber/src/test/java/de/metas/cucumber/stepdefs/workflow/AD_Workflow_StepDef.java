@@ -22,8 +22,6 @@
 
 package de.metas.cucumber.stepdefs.workflow;
 
-import de.metas.copy_with_details.CopyRecordRequest;
-import de.metas.copy_with_details.CopyRecordService;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -32,6 +30,8 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.copy.CopyRecordRequest;
+import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -64,10 +64,6 @@ import static org.compiere.model.I_AD_Workflow.COLUMNNAME_Version;
 import static org.compiere.model.I_AD_Workflow.COLUMNNAME_WaitingTime;
 import static org.compiere.model.I_AD_Workflow.COLUMNNAME_WorkflowType;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.compiere.model.I_AD_Workflow.COLUMNNAME_AD_Workflow_ID;
-import static org.compiere.model.I_AD_Workflow.COLUMNNAME_Name;
-
 public class AD_Workflow_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -83,7 +79,7 @@ public class AD_Workflow_StepDef
 		this.workflowTable = workflowTable;
 		this.wfNodeTable = wfNodeTable;
 	}
-	
+
 	@And("load AD_Workflow:")
 	public void load_AD_Workflow(@NonNull final DataTable dataTable)
 	{

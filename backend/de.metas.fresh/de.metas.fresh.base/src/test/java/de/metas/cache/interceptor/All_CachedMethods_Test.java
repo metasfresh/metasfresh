@@ -189,8 +189,6 @@ public class All_CachedMethods_Test
 
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
-					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
-					.forPackages("de")
 					.setScanners(new MethodAnnotationsScanner()));
 
 			final Set<Method> methods = reflections.getMethodsAnnotatedWith(Cached.class);

@@ -24,8 +24,8 @@ package de.metas.common.bpartner.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,30 +37,26 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_D
 
 @Value
 @Builder(toBuilder = true)
-@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
-	@Schema(description = BPARTNER_IDENTIFIER_DOC) //
+	@ApiModelProperty(position = 10,
+			value = BPARTNER_IDENTIFIER_DOC) //
 	@NonNull
 	String bpartnerIdentifier;
 
-	@Schema(description = "The version of the business partner." + EXTERNAL_VERSION_DOC)
+	@ApiModelProperty(position = 20, //
+			value = "The version of the business partner." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
 
-	@Schema(description = "URL of the resource in the target external system.")
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
 	@Nullable
 	String externalReferenceUrl;
 
-	@Schema(description = "ID of the external system config.")
-	@Nullable
-	JsonMetasfreshId externalSystemConfigId;
-
-	@Schema
-	@Nullable
-	Boolean isReadOnlyInMetasfresh;
-
-	@Schema(description = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@ApiModelProperty(position = 30,
+			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
 
@@ -69,15 +65,11 @@ public class JsonRequestBPartnerUpsertItem
 			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
-			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
-			@Nullable @JsonProperty("isReadOnlyInMetasfresh") final Boolean isReadOnlyInMetasfresh,
 			@NonNull @JsonProperty("bpartnerComposite") final JsonRequestComposite bpartnerComposite)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
 		this.externalVersion = externalVersion;
 		this.bpartnerComposite = bpartnerComposite;
 		this.externalReferenceUrl = externalReferenceUrl;
-		this.externalSystemConfigId = externalSystemConfigId;
-		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 	}
 }

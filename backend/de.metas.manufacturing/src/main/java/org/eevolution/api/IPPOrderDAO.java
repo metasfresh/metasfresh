@@ -35,14 +35,12 @@ public interface IPPOrderDAO extends ISingletonService
 
 	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
-	 *
+	 * 
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
 
 	Stream<I_PP_Order> streamManufacturingOrders(@NonNull ManufacturingOrderQuery query);
-
-	int getLastSeqNoPerOrderDate(@NonNull final I_PP_Order ppOrder);
 
 	/**
 	 * @return PP_Order_ID or -1 if not found.
@@ -68,6 +66,4 @@ public interface IPPOrderDAO extends ISingletonService
 	ImmutableList<I_PP_Order> getByProductBOMId(ProductBOMId productBOMId);
 
 	Stream<I_PP_Order> streamDraftedPPOrdersFor(@NonNull ProductBOMVersionsId bomVersionsId);
-
-	Stream<I_PP_Order> stream(@NonNull IQueryFilter<I_PP_Order> filter);
 }

@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.config;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
 import de.metas.i18n.BooleanWithReason;
@@ -59,11 +58,11 @@ public class FTSConfigService
 		return esSystem.elasticsearchClient();
 	}
 
-	public void addListener(@NonNull final FTSConfigChangedListener listener) {ftsConfigRepository.addListener(listener);}
+	public void addListener(@NonNull final FTSConfigChangedListener listener) { ftsConfigRepository.addListener(listener); }
 
-	public FTSConfig getConfigByESIndexName(@NonNull final String esIndexName) {return ftsConfigRepository.getByESIndexName(esIndexName);}
+	public FTSConfig getConfigByESIndexName(@NonNull final String esIndexName) { return ftsConfigRepository.getByESIndexName(esIndexName); }
 
-	public FTSConfig getConfigById(@NonNull final FTSConfigId ftsConfigId) {return ftsConfigRepository.getConfigById(ftsConfigId);}
+	public FTSConfig getConfigById(@NonNull final FTSConfigId ftsConfigId) { return ftsConfigRepository.getConfigById(ftsConfigId); }
 
 	public FTSConfigSourceTablesMap getSourceTables()
 	{
@@ -86,11 +85,4 @@ public class FTSConfigService
 		final Set<ESFieldName> esFieldNames = ESDocumentToIndexTemplate.ofJsonString(record.getES_DocumentToIndexTemplate()).getESFieldNames();
 		ftsConfigRepository.setConfigFields(configId, esFieldNames);
 	}
-
-	public void deleteDependingData(@NonNull final FTSConfigId configId)
-	{
-		ftsConfigRepository.setConfigFields(configId, ImmutableSet.of());
-		ftsConfigRepository.deleteSourceTablesByConfigId(configId);
-	}
-
 }

@@ -22,10 +22,11 @@ package org.adempiere.mm.attributes.api;
  * #L%
  */
 
+import java.math.MathContext;
+import java.util.Date;
+import java.util.Properties;
+
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -33,9 +34,9 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 
-import java.math.MathContext;
-import java.util.Date;
-import java.util.Properties;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
 
 public interface IAttributesBL extends ISingletonService
 {
@@ -70,13 +71,15 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
 
-	boolean isMandatoryOn(@NonNull ProductId productId, @NonNull AttributeId attributeId, @NonNull AttributeSourceDocument attributeSourceDocument);
+	boolean isMandatoryOnReceipt(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+
+	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
 	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
 
-	ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(ProductId productId);
-
 	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
+
+	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
 	/**
 	 * @return math context of this attribute or DEFAULT_MATHCONTEXT if the attribute's UOM is null
@@ -93,8 +96,6 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
-
+	
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
-
-	AttributeListValue retrieveAttributeValueOrNull(@NonNull I_M_Attribute attribute, @NonNull String value);
 }

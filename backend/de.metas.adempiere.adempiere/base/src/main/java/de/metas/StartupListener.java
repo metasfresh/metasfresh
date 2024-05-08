@@ -1,10 +1,5 @@
 package de.metas;
 
-import com.google.common.base.MoreObjects;
-import de.metas.util.IService;
-import de.metas.util.Services;
-import de.metas.util.Services.IServiceImplProvider;
-import lombok.NonNull;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -13,6 +8,13 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.MoreObjects;
+
+import de.metas.util.IService;
+import de.metas.util.Services;
+import de.metas.util.Services.IServiceImplProvider;
+import lombok.NonNull;
 
 /*
  * #%L

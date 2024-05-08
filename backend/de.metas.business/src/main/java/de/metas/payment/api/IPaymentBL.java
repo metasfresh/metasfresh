@@ -24,12 +24,10 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -63,7 +61,7 @@ public interface IPaymentBL extends ISingletonService
 	DefaultPaymentBuilder newBuilderOfInvoice(I_C_Invoice invoice);
 
 	/**
-	 * @param colName            source column name
+	 * @param colName source column name
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted);
@@ -90,7 +88,7 @@ public interface IPaymentBL extends ISingletonService
 	/**
 	 * check if the invoice is allocated with the specified payment
 	 */
-	boolean isMatchInvoice(@NonNull I_C_Payment payment, @NonNull I_C_Invoice invoice);
+	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
 
 	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
 
@@ -102,8 +100,6 @@ public interface IPaymentBL extends ISingletonService
 	 * @return true if updated
 	 */
 	boolean testAllocation(I_C_Payment payment);
-
-	void scheduleUpdateIsAllocated(@NonNull PaymentId paymentId);
 
 	void testAllocation(PaymentId paymentId);
 
@@ -119,9 +115,10 @@ public interface IPaymentBL extends ISingletonService
 
 	/**
 	 * WriteOff given payment.
+	 *
 	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created).
 	 *
-	 * @param writeOffAmt  amount to write-off
+	 * @param writeOffAmt amount to write-off
 	 * @param writeOffDate allocation writeOffDate
 	 * @return generated and completed allocation
 	 */
@@ -133,8 +130,6 @@ public interface IPaymentBL extends ISingletonService
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 
-	void markReconciled(@NonNull PaymentReconcileRequest request);
-
 	void markReconciled(@NonNull Collection<PaymentReconcileRequest> requests);
 
 	void markReconciled(
@@ -144,8 +139,6 @@ public interface IPaymentBL extends ISingletonService
 	void markReconciledAndSave(
 			@NonNull I_C_Payment payment,
 			@NonNull PaymentReconcileReference reconcileRef);
-
-	void markNotReconciled(@NonNull PaymentId paymentId);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
@@ -157,9 +150,4 @@ public interface IPaymentBL extends ISingletonService
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
-
-	Optional<SectionCodeId> determineSectionCodeId(I_C_Payment payment);
-
-	@NonNull
-	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
 }

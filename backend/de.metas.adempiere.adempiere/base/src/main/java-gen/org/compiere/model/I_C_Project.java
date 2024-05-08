@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -73,50 +72,6 @@ public interface I_C_Project
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Business partner department.
-	 * Abteilung / Kostenträger des Geschäftspartners
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBPartnerDepartment (@Nullable java.lang.String BPartnerDepartment);
-
-	/**
-	 * Get Business partner department.
-	 * Abteilung / Kostenträger des Geschäftspartners
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getBPartnerDepartment();
-
-	ModelColumn<I_C_Project, Object> COLUMN_BPartnerDepartment = new ModelColumn<>(I_C_Project.class, "BPartnerDepartment", null);
-	String COLUMNNAME_BPartnerDepartment = "BPartnerDepartment";
-
-	/**
-	 * Set Target date of business-partner.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setBPartnerTargetDate (@Nullable java.sql.Timestamp BPartnerTargetDate);
-
-	/**
-	 * Get Target date of business-partner.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getBPartnerTargetDate();
-
-	ModelColumn<I_C_Project, Object> COLUMN_BPartnerTargetDate = new ModelColumn<>(I_C_Project.class, "BPartnerTargetDate", null);
-	String COLUMNNAME_BPartnerTargetDate = "BPartnerTargetDate";
 
 	/**
 	 * Set Business Partner.
@@ -230,75 +185,6 @@ public interface I_C_Project
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Committed Amount.
-	 * The (legal) commitment amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommittedAmt (BigDecimal CommittedAmt);
-
-	/**
-	 * Get Committed Amount.
-	 * The (legal) commitment amount
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCommittedAmt();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CommittedAmt = new ModelColumn<>(I_C_Project.class, "CommittedAmt", null);
-	String COLUMNNAME_CommittedAmt = "CommittedAmt";
-
-	/**
-	 * Set Committed Quantity.
-	 * The (legal) commitment Quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCommittedQty (BigDecimal CommittedQty);
-
-	/**
-	 * Get Committed Quantity.
-	 * The (legal) commitment Quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getCommittedQty();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CommittedQty = new ModelColumn<>(I_C_Project.class, "CommittedQty", null);
-	String COLUMNNAME_CommittedQty = "CommittedQty";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCopyFrom (@Nullable java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCopyFrom();
-
-	ModelColumn<I_C_Project, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Project.class, "CopyFrom", null);
-	String COLUMNNAME_CopyFrom = "CopyFrom";
-
-	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -396,47 +282,6 @@ public interface I_C_Project
 	String COLUMNNAME_C_Project_Label_ID = "C_Project_Label_ID";
 
 	/**
-	 * Set Parent Project.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_Parent_ID (int C_Project_Parent_ID);
-
-	/**
-	 * Get Parent Project.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_Parent_ID();
-
-	String COLUMNNAME_C_Project_Parent_ID = "C_Project_Parent_ID";
-
-	/**
-	 * Set External project reference.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_Reference_Ext (@Nullable java.lang.String C_Project_Reference_Ext);
-
-	/**
-	 * Get External project reference.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getC_Project_Reference_Ext();
-
-	ModelColumn<I_C_Project, Object> COLUMN_C_Project_Reference_Ext = new ModelColumn<>(I_C_Project.class, "C_Project_Reference_Ext", null);
-	String COLUMNNAME_C_Project_Reference_Ext = "C_Project_Reference_Ext";
-
-	/**
 	 * Set Project Type.
 	 * Set Project Type and for Service Projects copy Phases and Tasks of Project Type into Project
 	 *
@@ -462,6 +307,75 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, org.compiere.model.I_C_ProjectType> COLUMN_C_ProjectType_ID = new ModelColumn<>(I_C_Project.class, "C_ProjectType_ID", org.compiere.model.I_C_ProjectType.class);
 	String COLUMNNAME_C_ProjectType_ID = "C_ProjectType_ID";
+
+	/**
+	 * Set Committed Amount.
+	 * The (legal) commitment amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommittedAmt (BigDecimal CommittedAmt);
+
+	/**
+	 * Get Committed Amount.
+	 * The (legal) commitment amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCommittedAmt();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CommittedAmt = new ModelColumn<>(I_C_Project.class, "CommittedAmt", null);
+	String COLUMNNAME_CommittedAmt = "CommittedAmt";
+
+	/**
+	 * Set Committed Quantity.
+	 * The (legal) commitment Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCommittedQty (BigDecimal CommittedQty);
+
+	/**
+	 * Get Committed Quantity.
+	 * The (legal) commitment Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCommittedQty();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CommittedQty = new ModelColumn<>(I_C_Project.class, "CommittedQty", null);
+	String COLUMNNAME_CommittedQty = "CommittedQty";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Project, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Project.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Get Created.
@@ -492,7 +406,7 @@ public interface I_C_Project
 	 * Set Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -502,7 +416,7 @@ public interface I_C_Project
 	 * Get Date of Contract.
 	 * The (planned) effective date of this document.
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -515,7 +429,7 @@ public interface I_C_Project
 	 * Set Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -525,7 +439,7 @@ public interface I_C_Project
 	 * Get Date planned finished.
 	 * Finish or (planned) completion date
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -533,29 +447,6 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_DateFinish = new ModelColumn<>(I_C_Project.class, "DateFinish", null);
 	String COLUMNNAME_DateFinish = "DateFinish";
-
-	/**
-	 * Set Date of provision.
-	 * Provision date planned by the business partner for the required resources.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDateOfProvisionByBPartner (@Nullable java.sql.Timestamp DateOfProvisionByBPartner);
-
-	/**
-	 * Get Date of provision.
-	 * Provision date planned by the business partner for the required resources.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getDateOfProvisionByBPartner();
-
-	ModelColumn<I_C_Project, Object> COLUMN_DateOfProvisionByBPartner = new ModelColumn<>(I_C_Project.class, "DateOfProvisionByBPartner", null);
-	String COLUMNNAME_DateOfProvisionByBPartner = "DateOfProvisionByBPartner";
 
 	/**
 	 * Set Description.
@@ -579,25 +470,25 @@ public interface I_C_Project
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set External ID.
+	 * Set Serminarende.
 	 *
-	 * <br>Type: String
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalId (@Nullable java.lang.String ExternalId);
+	void setenddatetime (@Nullable java.sql.Timestamp enddatetime);
 
 	/**
-	 * Get External ID.
+	 * Get Serminarende.
 	 *
-	 * <br>Type: String
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalId();
+	@Nullable java.sql.Timestamp getenddatetime();
 
-	ModelColumn<I_C_Project, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project.class, "ExternalId", null);
-	String COLUMNNAME_ExternalId = "ExternalId";
+	ModelColumn<I_C_Project, Object> COLUMN_enddatetime = new ModelColumn<>(I_C_Project.class, "enddatetime", null);
+	String COLUMNNAME_enddatetime = "enddatetime";
 
 	/**
 	 * Set Generate To.
@@ -621,27 +512,6 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_GenerateTo = new ModelColumn<>(I_C_Project.class, "GenerateTo", null);
 	String COLUMNNAME_GenerateTo = "GenerateTo";
-
-	/**
-	 * Set Internal Priority.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInternalPriority (@Nullable java.lang.String InternalPriority);
-
-	/**
-	 * Get Internal Priority.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getInternalPriority();
-
-	ModelColumn<I_C_Project, Object> COLUMN_InternalPriority = new ModelColumn<>(I_C_Project.class, "InternalPriority", null);
-	String COLUMNNAME_InternalPriority = "InternalPriority";
 
 	/**
 	 * Set Invoiced Amount.
@@ -759,7 +629,7 @@ public interface I_C_Project
 	String COLUMNNAME_IsCommitment = "IsCommitment";
 
 	/**
-	 * Set Summary Level.
+	 * Set Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -769,7 +639,7 @@ public interface I_C_Project
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Summary Level.
+	 * Get Zusammenfassungseintrag.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -802,28 +672,6 @@ public interface I_C_Project
 	int getM_PriceList_Version_ID();
 
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
-
-	/**
-	 * Set Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_ID();
-
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Warehouse.
@@ -892,7 +740,7 @@ public interface I_C_Project
 	String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Planned Amount.
+	 * Set VK Total.
 	 * Planned amount for this project
 	 *
 	 * <br>Type: Amount
@@ -902,7 +750,7 @@ public interface I_C_Project
 	void setPlannedAmt (BigDecimal PlannedAmt);
 
 	/**
-	 * Get Planned Amount.
+	 * Get VK Total.
 	 * Planned amount for this project
 	 *
 	 * <br>Type: Amount
@@ -1141,37 +989,10 @@ public interface I_C_Project
 	String COLUMNNAME_R_Project_Status_ID = "R_Project_Status_ID";
 
 	/**
-	 * Set Status Category.
-	 * Request Status Category
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setR_StatusCategory_ID (int R_StatusCategory_ID);
-
-	/**
-	 * Get Status Category.
-	 * Request Status Category
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getR_StatusCategory_ID();
-
-	@Nullable org.compiere.model.I_R_StatusCategory getR_StatusCategory();
-
-	void setR_StatusCategory(@Nullable org.compiere.model.I_R_StatusCategory R_StatusCategory);
-
-	ModelColumn<I_C_Project, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_C_Project.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
-	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
-
-	/**
 	 * Set Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1181,7 +1002,7 @@ public interface I_C_Project
 	 * Get Account manager.
 	 * Sales Representative or Company Agent
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1190,24 +1011,25 @@ public interface I_C_Project
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Set Specialist consultant.
+	 * Set Seminarbeginn.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSpecialist_Consultant_ID (int Specialist_Consultant_ID);
+	void setstartdatetime (@Nullable java.sql.Timestamp startdatetime);
 
 	/**
-	 * Get Specialist consultant.
+	 * Get Seminarbeginn.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getSpecialist_Consultant_ID();
+	@Nullable java.sql.Timestamp getstartdatetime();
 
-	String COLUMNNAME_Specialist_Consultant_ID = "Specialist_Consultant_ID";
+	ModelColumn<I_C_Project, Object> COLUMN_startdatetime = new ModelColumn<>(I_C_Project.class, "startdatetime", null);
+	String COLUMNNAME_startdatetime = "startdatetime";
 
 	/**
 	 * Get Updated.
@@ -1256,48 +1078,4 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_Value = new ModelColumn<>(I_C_Project.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
-
-	/**
-	 * Set Creator of test order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWOOwner (@Nullable java.lang.String WOOwner);
-
-	/**
-	 * Get Creator of test order.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getWOOwner();
-
-	ModelColumn<I_C_Project, Object> COLUMN_WOOwner = new ModelColumn<>(I_C_Project.class, "WOOwner", null);
-	String COLUMNNAME_WOOwner = "WOOwner";
-
-	/**
-	 * Set Project created.
-	 * Date on which the test project was created.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWOProjectCreatedDate (@Nullable java.sql.Timestamp WOProjectCreatedDate);
-
-	/**
-	 * Get Project created.
-	 * Date on which the test project was created.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getWOProjectCreatedDate();
-
-	ModelColumn<I_C_Project, Object> COLUMN_WOProjectCreatedDate = new ModelColumn<>(I_C_Project.class, "WOProjectCreatedDate", null);
-	String COLUMNNAME_WOProjectCreatedDate = "WOProjectCreatedDate";
 }

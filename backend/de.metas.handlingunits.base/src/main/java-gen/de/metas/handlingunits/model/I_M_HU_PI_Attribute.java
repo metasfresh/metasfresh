@@ -71,6 +71,28 @@ public interface I_M_HU_PI_Attribute
 	String COLUMNNAME_AggregationStrategy_JavaClass_ID = "AggregationStrategy_JavaClass_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -94,28 +116,6 @@ public interface I_M_HU_PI_Attribute
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set HU Transfer Attribute Strategy.
@@ -277,28 +277,7 @@ public interface I_M_HU_PI_Attribute
 	String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
-	 * Set Unique.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsUnique (boolean IsUnique);
-
-	/**
-	 * Get Unique.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isUnique();
-
-	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsUnique = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsUnique", null);
-	String COLUMNNAME_IsUnique = "IsUnique";
-
-	/**
-	 * Set Attribute.
+	 * Set Merkmal.
 	 * Produkt-Merkmal
 	 *
 	 * <br>Type: TableDir
@@ -308,7 +287,7 @@ public interface I_M_HU_PI_Attribute
 	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
-	 * Get Attribute.
+	 * Get Merkmal.
 	 * Produkt-Merkmal
 	 *
 	 * <br>Type: TableDir
@@ -320,7 +299,7 @@ public interface I_M_HU_PI_Attribute
 	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
-	 * Set Packing Instruction.
+	 * Set Handling Units Packing Instructions Attribute.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -329,7 +308,7 @@ public interface I_M_HU_PI_Attribute
 	void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
 
 	/**
-	 * Get Packing Instruction.
+	 * Get Handling Units Packing Instructions Attribute.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

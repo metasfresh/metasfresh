@@ -28,7 +28,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -37,14 +38,14 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
-@Schema
+@ApiModel
 public class JsonRequestPriceListVersionUpsert
 {
-	@Schema(required = true)
+	@ApiModelProperty(position = 10, required = true)
 	@JsonProperty("requestItems")
 	List<JsonRequestPriceListVersionUpsertItem> requestItems;
 
-	@Schema(description = "Default sync-advise that can be overridden by individual items\n" + SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Default sync-advise that can be overridden by individual items\n" + SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonProperty("syncAdvise")
 	SyncAdvise syncAdvise;
 

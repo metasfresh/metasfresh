@@ -95,26 +95,6 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
-	 * Set Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner_ID();
-
-	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Business Partner Group.
 	 * Business Partner Group
 	 *
@@ -148,7 +128,27 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Outbound Document Log ID.
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set C_Doc_Outbound_Log.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -157,7 +157,7 @@ public interface I_C_Doc_Outbound_Log
 	void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID);
 
 	/**
-	 * Get Outbound Document Log ID.
+	 * Get C_Doc_Outbound_Log.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -216,28 +216,28 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set eMail.
+	 * Set Derzeitige Mailadresse.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCurrentEMailAddress (@Nullable java.lang.String CurrentEMailAddress);
+	void setCurrentEMailAddress (@Nullable String CurrentEMailAddress);
 
 	/**
-	 * Get eMail.
+	 * Get Derzeitige Mailadresse.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCurrentEMailAddress();
+	@Nullable String getCurrentEMailAddress();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddress = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddress", null);
 	String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
 
 	/**
-	 * Set eMail Receipient.
+	 * Set Derzeitiger Mailempfänger.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -246,7 +246,7 @@ public interface I_C_Doc_Outbound_Log
 	void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
 
 	/**
-	 * Get eMail Receipient.
+	 * Get Derzeitiger Mailempfänger.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -278,7 +278,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Last eMailed.
+	 * Set Zuletzt gemailt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -287,7 +287,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastEMail (@Nullable java.sql.Timestamp DateLastEMail);
 
 	/**
-	 * Get Last eMailed.
+	 * Get Zuletzt gemailt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -299,7 +299,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastEMail = "DateLastEMail";
 
 	/**
-	 * Set Last printed.
+	 * Set Zuletzt gedruckt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -308,7 +308,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastPrint (@Nullable java.sql.Timestamp DateLastPrint);
 
 	/**
-	 * Get Last printed.
+	 * Get Zuletzt gedruckt.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -320,7 +320,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_DateLastPrint = "DateLastPrint";
 
 	/**
-	 * Set Last store.
+	 * Set Zuletzt gespeichert.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -329,7 +329,7 @@ public interface I_C_Doc_Outbound_Log
 	void setDateLastStore (@Nullable java.sql.Timestamp DateLastStore);
 
 	/**
-	 * Get Last store.
+	 * Get Zuletzt gespeichert.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -347,7 +347,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (@Nullable java.lang.String DocStatus);
+	void setDocStatus (@Nullable String DocStatus);
 
 	/**
 	 * Get Status.
@@ -356,7 +356,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocStatus();
+	@Nullable String getDocStatus();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -369,7 +369,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -379,34 +379,34 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDocumentNo();
+	@Nullable String getDocumentNo();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set EDI export status.
+	 * Set EDI Status Exportieren.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
+	void setEDI_ExportStatus (@Nullable String EDI_ExportStatus);
 
 	/**
-	 * Get EDI export status.
+	 * Get EDI Status Exportieren.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getEDI_ExportStatus();
+	@Nullable String getEDI_ExportStatus();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "EDI_ExportStatus", null);
 	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
-	 * Set eMail counter.
+	 * Set Anz. gemailt.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -417,7 +417,7 @@ public interface I_C_Doc_Outbound_Log
 	void setEMailCount (int EMailCount);
 
 	/**
-	 * Get eMail counter.
+	 * Get Anz. gemailt.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -477,7 +477,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Document to be sent via EDI.
+	 * Set Beleg soll per EDI übermittelt werden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -488,7 +488,7 @@ public interface I_C_Doc_Outbound_Log
 	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
-	 * Get Document to be sent via EDI.
+	 * Get Beleg soll per EDI übermittelt werden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -523,7 +523,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 
 	/**
-	 * Set PDF counter.
+	 * Set Anz. PDF.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -534,7 +534,7 @@ public interface I_C_Doc_Outbound_Log
 	void setPDFCount (int PDFCount);
 
 	/**
-	 * Get PDF counter.
+	 * Get Anz. PDF.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -557,7 +557,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	void setPOReference (@Nullable java.lang.String POReference);
+	void setPOReference (@Nullable String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -569,34 +569,13 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	@Nullable java.lang.String getPOReference();
+	@Nullable String getPOReference();
 
 	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
 
 	/**
-	 * Set PostFinance Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPostFinance_Export_Status (java.lang.String PostFinance_Export_Status);
-
-	/**
-	 * Get PostFinance Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getPostFinance_Export_Status();
-
-	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_PostFinance_Export_Status = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "PostFinance_Export_Status", null);
-	String COLUMNNAME_PostFinance_Export_Status = "PostFinance_Export_Status";
-
-	/**
-	 * Set Print counter.
+	 * Set Anz. gedruckt.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -607,7 +586,7 @@ public interface I_C_Doc_Outbound_Log
 	void setPrintCount (int PrintCount);
 
 	/**
-	 * Get Print counter.
+	 * Get Anz. gedruckt.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -644,7 +623,7 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Stored count.
+	 * Set Anz. gespeichert.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -655,7 +634,7 @@ public interface I_C_Doc_Outbound_Log
 	void setStoreCount (int StoreCount);
 
 	/**
-	 * Get Stored count.
+	 * Get Anz. gespeichert.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false

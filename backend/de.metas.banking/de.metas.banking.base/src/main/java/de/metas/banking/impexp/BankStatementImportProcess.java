@@ -207,7 +207,7 @@ public class BankStatementImportProcess extends SimpleImportProcessTemplate<I_I_
 						.chargeAmt(Money.of(importRecord.getChargeAmt(), currencyId))
 						.interestAmt(Money.of(importRecord.getInterestAmt(), currencyId))
 						.chargeId(ChargeId.ofRepoIdOrNull(importRecord.getC_Charge_ID()))
-						.debtorOrCreditorId(importRecord.getDebitorOrCreditorId())
+						.debitorOrCreditorId(importRecord.getDebitorOrCreditorId())
 						//
 						.eft(ElectronicFundsTransfer.builder()
 									 .trxId(importRecord.getEftTrxID())

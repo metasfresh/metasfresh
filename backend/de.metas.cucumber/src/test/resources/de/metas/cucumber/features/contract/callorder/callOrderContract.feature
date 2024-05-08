@@ -1,4 +1,3 @@
-@ghActions:run_on_executor5
 Feature: Call order contract
 
   Background:
@@ -8,31 +7,31 @@ Feature: Call order contract
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_PricingSystems
-      | Identifier             |
-      | defaultPricingSystem   |
-      | callOrderPricingSystem |
+      | Identifier             | Name                   | Value                  |
+      | defaultPricingSystem   | defaultPricingSystem   | defaultPricingSystem   |
+      | callOrderPricingSystem | callOrderPricingSystem | callOrderPricingSystem |
 
   @from:cucumber
   Scenario: Happy flow for call order contract and call order summary - sales order
     Given metasfresh contains M_PriceLists
-      | Identifier         | M_PricingSystem_ID     | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
-      | defaultPriceList   | defaultPricingSystem   | DE                    | EUR                 | true  | 2              |
-      | callOrderPriceList | callOrderPricingSystem | DE                    | EUR                 | true  | 2              |
+      | Identifier         | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | defaultPriceList   | defaultPricingSystem          | DE                        | EUR                 | PriceListName1 | true  | false         | 2              |
+      | callOrderPriceList | callOrderPricingSystem        | DE                        | EUR                 | PriceListName2 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID     | ValidFrom  |
-      | defaultPLV   | defaultPriceList   | 2022-02-01 |
-      | callOrderPLV | callOrderPriceList | 2022-02-01 |
+      | Identifier   | M_PriceList_ID.Identifier | Name     | ValidFrom  |
+      | defaultPLV   | defaultPriceList          | PLVName1 | 2022-02-01 |
+      | callOrderPLV | callOrderPriceList        | PLVName2 | 2022-02-01 |
     And metasfresh contains M_Products:
-      | Identifier         |
-      | call_order_product |
+      | Identifier         | Name               |
+      | call_order_product | call_order_product |
     And metasfresh contains M_ProductPrices
-      | Identifier  | M_PriceList_Version_ID | M_Product_ID       | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | defaultPP   | defaultPLV             | call_order_product | 5.00     | PCE               | Normal                        |
-      | callOrderPP | callOrderPLV           | call_order_product | 2.00     | PCE               | Normal                        |
+      | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | defaultPP   | defaultPLV                        | call_order_product      | 5.00     | PCE               | Normal                        |
+      | callOrderPP | callOrderPLV                      | call_order_product      | 2.00     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier | IsCustomer | M_PricingSystem_ID   | C_PaymentTerm_ID.Value |
-      | bpartner_1 | Y          | defaultPricingSystem | 1000002                |
+      | Identifier | Name         | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+      | bpartner_1 | BPartnerTest | Y              | defaultPricingSystem          | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bpartnerLocation_1 | 1234312345487 | bpartner_1               | true                | true                |
@@ -70,8 +69,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product      | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00         | KRT                   |
+      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00     | KRT               |
 
     And metasfresh contains C_Orders:
       | Identifier  | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType |
@@ -163,13 +162,13 @@ Feature: Call order contract
 
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | schedule_1 | callOrderLine_1           | N             |
+      | schedule_2 | callOrderLine_1           | N             |
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | schedule_1                       | D            | true                | false       |
+      | schedule_2                       | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
-      | schedule_1                       | shipment_3            |
+      | schedule_2                       | shipment_3            |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_3            | shipment_3            | call_order_product      | 4           | true      | callOrderLine_1               |
@@ -205,7 +204,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_1               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLine_1_1             | invoice_1               | call_order_product      | 2           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -254,7 +253,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus |
       | invoice_3               | bpartner_1               | bpartnerLocation_1                | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLine_3_1             | invoice_3               | call_order_product      | 4           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -274,29 +273,29 @@ Feature: Call order contract
   @from:cucumber
   Scenario: Happy flow for call order contract and call order summary - purchase order
     Given metasfresh contains M_Products:
-      | Identifier            |
-      | call_order_product_PO |
+      | Identifier            | Name                           |
+      | call_order_product_PO | call_order_product_PO_test1233 |
     And metasfresh contains M_PriceLists
-      | Identifier     | M_PricingSystem_ID     | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
-      | defaultPL_PO   | defaultPricingSystem   | DE                    | EUR                 | false | 2              |
-      | callOrderPL_PO | callOrderPricingSystem | DE                    | EUR                 | false | 2              |
+      | Identifier     | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name           | SOTrx | IsTaxIncluded | PricePrecision |
+      | defaultPL_PO   | defaultPricingSystem          | DE                        | EUR                 | defaultPL_PO   | false | false         | 2              |
+      | callOrderPL_PO | callOrderPricingSystem        | DE                        | EUR                 | callOrderPL_PO | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID | ValidFrom  |
-      | defaultPLV   | defaultPL_PO   | 2022-02-01 |
-      | callOrderPLV | callOrderPL_PO | 2022-02-01 |
+      | Identifier   | M_PriceList_ID.Identifier | Name         | ValidFrom  |
+      | defaultPLV   | defaultPL_PO              | defaultPLV   | 2022-02-01 |
+      | callOrderPLV | callOrderPL_PO            | callOrderPLV | 2022-02-01 |
     And metasfresh contains M_ProductPrices
-      | Identifier  | M_PriceList_Version_ID | M_Product_ID          | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | defaultPP   | defaultPLV             | call_order_product_PO | 5.00     | PCE               | Normal                        |
-      | callOrderPP | callOrderPLV           | call_order_product_PO | 2.00     | PCE               | Normal                        |
+      | Identifier  | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | defaultPP   | defaultPLV                        | call_order_product_PO   | 5.00     | PCE               | Normal                        |
+      | callOrderPP | callOrderPLV                      | call_order_product_PO   | 2.00     | PCE               | Normal                        |
 
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
     And metasfresh contains M_HU_PI:
-      | Identifier         |
-      | huPackingLU        |
-      | huPackingTU        |
-      | huPackingVirtualPI |
+      | M_HU_PI_ID.Identifier | Name            |
+      | huPackingLU           | huPackingLU     |
+      | huPackingTU           | huPackingTU     |
+      | huPackingVirtualPI    | No Packing Item |
     And metasfresh contains M_HU_PI_Version:
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
       | packingVersionLU              | huPackingLU           | packingVersionLU | LU          | Y         |
@@ -311,8 +310,8 @@ Feature: Call order contract
       | huItemPurchaseProduct              | huPiItemTU                 | call_order_product_PO   | 10  | 2022-02-01 |
 
     And metasfresh contains C_BPartners:
-      | Identifier     | IsVendor | M_PricingSystem_ID   | C_PaymentTerm_ID.Value |
-      | bp_callOrderPO | Y        | defaultPricingSystem | 1000002                |
+      | Identifier     | Name           | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
+      | bp_callOrderPO | bp_callOrderPO | Y            | defaultPricingSystem          | 1000002                    |
     And metasfresh contains C_BPartner_Locations:
       | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           | true                | true                |
@@ -350,8 +349,8 @@ Feature: Call order contract
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | call_order_product_PO   | PCE                    | KRT                  | 0.25         |
     And update M_ProductPrice:
-      | M_ProductPrice_ID.Identifier | OPT.PriceStd | OPT.C_UOM_ID.X12DE355 |
-      | defaultPP                    | 6.00         | KRT                   |
+      | M_ProductPrice_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 |
+      | defaultPP                    | 6.00     | KRT               |
 
     And metasfresh contains C_Orders:
       | Identifier   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.POReference |
@@ -395,7 +394,7 @@ Feature: Call order contract
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | callOrder_po          | callOrderLine_po          | bp_callOrderPO           | bp_callOrderPO_Location           | call_order_product_PO   | 8          | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | hu                 | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 6     | huItemPurchaseProduct              | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -441,7 +440,7 @@ Feature: Call order contract
       | orderDetail_material_receipt_2  | PCE               |                           |                               |                | material_receipt_2        | shipmentLine_2                | -6                    |
 
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
       | huLuTuConfig                          | hu_1               | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 8     | huItemPurchaseProduct              | huPackingLU                  |
     When create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -482,7 +481,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
       | invoice_1               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLine_1               | invoice_1               | call_order_product_PO   | 6           | true      |
 
     And validate updated C_CallOrderSummary:
@@ -531,7 +530,7 @@ Feature: Call order contract
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.POReference |
       | invoice_3               | bp_callOrderPO           | bp_callOrderPO_Location           | 1000002     | true      | CO        | poCallOrder_ref |
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
       | invoiceLine_3               | invoice_3               | call_order_product_PO   | 8           | true      |
 
     And validate updated C_CallOrderSummary:

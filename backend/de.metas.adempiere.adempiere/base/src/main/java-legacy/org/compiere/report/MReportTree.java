@@ -42,8 +42,6 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 
-import javax.swing.tree.TreeNode;
-
 /**
  *	Report Tree Model
  *	
@@ -271,11 +269,11 @@ public class MReportTree
 		if (node != null && node.isSummary ())
 		{
 			
-			Enumeration<TreeNode> en = node.preorderEnumeration ();
+			Enumeration<MTreeNode> en = node.preorderEnumeration ();
 			StringBuilder sb = new StringBuilder ();
 			while (en.hasMoreElements ())
 			{
-				MTreeNode nn = (MTreeNode)en.nextElement ();
+				MTreeNode nn = en.nextElement ();
 				if (!nn.isSummary ())
 				{
 					if (sb.length () > 0)

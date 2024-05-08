@@ -43,18 +43,18 @@ public interface IContractsDAO extends ISingletonService
 	 */
 	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, @NonNull QueryLimit limit);
 
-	IQueryBuilder<I_C_Flatrate_Term> createBaseTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, boolean ignoreDateFilter);
 
 	/**
 	 * Check if the term given as parameter was extended (has a predecessor).
 	 */
-	boolean termHasAPredecessor(I_C_Flatrate_Term term);
+	boolean termHasAPredecessor (I_C_Flatrate_Term term);
 
 	/**
 	 * Sums up the <code>Qty</code> values of all {@link I_C_SubscriptionProgress} records that reference the given
 	 * term.
 	 */
 	BigDecimal retrieveSubscriptionProgressQtyForTerm(I_C_Flatrate_Term term);
+
 
 	List<I_C_SubscriptionProgress> getSubscriptionProgress(I_C_Flatrate_Term currentTerm);
 

@@ -22,28 +22,26 @@
 
 package de.metas.cucumber.stepdefs.workpackage;
 
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
-import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.dao.IQueryBL;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Queue_PackageProcessor_StepDef
 {
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	private final C_Queue_PackageProcessor_StepDefData packageProcessorTable;
 
-	public C_Queue_PackageProcessor_StepDef(@NonNull final C_Queue_PackageProcessor_StepDefData packageProcessorTable)
+	public C_Queue_PackageProcessor_StepDef(final C_Queue_PackageProcessor_StepDefData packageProcessorTable)
 	{
 		this.packageProcessorTable = packageProcessorTable;
 	}
@@ -55,13 +53,13 @@ public class C_Queue_PackageProcessor_StepDef
 		{
 			final String classname = DataTableUtil.extractStringForColumnName(row, I_C_Queue_PackageProcessor.COLUMNNAME_Classname);
 
-			assertThat(classname).as("Missing classname").isNotNull();
+			assertThat(classname).isNotNull();
 
-			final QueuePackageProcessorId packageProcessorId = queueDAO.retrieveQueuePackageProcessorIdFor(classname);
-
-			assertThat(packageProcessorId).as("Missing C_Queue_PackageProcessor for classname=%s", classname).isNotNull();
-
-			final I_C_Queue_PackageProcessor packageProcessor = InterfaceWrapperHelper.load(packageProcessorId, I_C_Queue_PackageProcessor.class);
+			final I_C_Queue_PackageProcessor packageProcessor = queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Queue_PackageProcessor.COLUMNNAME_Classname, classname)
+					.create()
+					.firstOnlyNotNull(I_C_Queue_PackageProcessor.class);
 
 			final String packageProcessIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Queue_PackageProcessor.COLUMNNAME_C_Queue_PackageProcessor_ID + ".Identifier");
 

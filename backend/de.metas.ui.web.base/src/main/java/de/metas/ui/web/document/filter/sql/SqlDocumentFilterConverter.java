@@ -148,7 +148,7 @@ public interface SqlDocumentFilterConverter
 		{
 			return FilterSql.builder()
 					.whereClause(!whereClauseBuilder.isEmpty() ? whereClauseBuilder.build() : null)
-					.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS).orElse(null))
+					.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS))
 					.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.mergeOrNull(alwaysIncludeSqls))
 					.orderBy(!orderByBuilder.isEmpty() ? orderByBuilder.build() : null)
 					.build();

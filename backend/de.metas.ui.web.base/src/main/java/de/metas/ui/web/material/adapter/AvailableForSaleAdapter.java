@@ -27,15 +27,15 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesLookupBucket
 import de.metas.material.cockpit.availableforsales.AvailableForSalesLookupResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.AvailabilityInfoResultForWebuiBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
@@ -49,9 +49,9 @@ public class AvailableForSaleAdapter
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final AvailableForSalesRepository availableForSalesRepository;
 
-	public AvailableForSaleAdapter(@NonNull final AvailableForSalesRepository availableForSalesRepository)
+	public AvailableForSaleAdapter(@NonNull final AvailableForSalesRepository stockRepository)
 	{
-		this.availableForSalesRepository = availableForSalesRepository;
+		this.availableForSalesRepository = stockRepository;
 	}
 
 	@VisibleForTesting

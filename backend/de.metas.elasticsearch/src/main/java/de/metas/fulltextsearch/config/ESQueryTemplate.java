@@ -34,7 +34,6 @@ import org.compiere.util.Evaluatee;
 public class ESQueryTemplate
 {
 	public static final CtxName PARAM_query = CtxNames.parse("query");
-	public static final CtxName PARAM_queryStartsWith = CtxNames.parse("queryStartsWith");
 	public static final CtxName PARAM_orgFilter = CtxNames.parse("OrgFilter");
 
 	@NonNull IStringExpression expression;
@@ -51,12 +50,7 @@ public class ESQueryTemplate
 
 	public boolean isOrgFilterParameterRequired()
 	{
-		return isParameterRequired(PARAM_orgFilter);
-	}
-
-	public boolean isParameterRequired(@NonNull final CtxName ctxName)
-	{
-		return expression.requiresParameter(ctxName.getName());
+		return expression.requiresParameter(PARAM_orgFilter.getName());
 	}
 
 	public String resolve(@NonNull final Evaluatee evalCtx)

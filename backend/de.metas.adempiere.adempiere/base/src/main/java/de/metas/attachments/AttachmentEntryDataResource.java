@@ -83,7 +83,6 @@ public final class AttachmentEntryDataResource extends AbstractResource
 	}
 
 	@Override
-	@NonNull
 	public String getFilename()
 	{
 		return filename;

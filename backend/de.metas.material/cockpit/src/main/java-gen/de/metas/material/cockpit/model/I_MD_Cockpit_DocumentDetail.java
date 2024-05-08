@@ -1,9 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Cockpit_DocumentDetail
  *  @author metasfresh (generated) 

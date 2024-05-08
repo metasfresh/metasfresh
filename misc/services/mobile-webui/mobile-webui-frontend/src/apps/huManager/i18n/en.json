@@ -3,7 +3,6 @@
   "qrCode": "QR code",
   "locator": "Locator",
   "HUStatus": "Status",
-  "numberOfAggregatedHUs": "Aggregated HUs count",
   "product": "Product",
   "clearanceStatus": "Clearance Status",
   "clearanceNote": "Clearance Note",
@@ -15,38 +14,13 @@
     },
     "move": {
       "buttonCaption": "Move",
-      "scanTarget": "Scan target",
-      "qtyTULabel": "TU Qty"
+      "scanTarget": "Scan target"
     },
     "scanAgain": {
       "buttonCaption": "Scan again"
     },
     "setClearance": {
       "buttonCaption": "Change HU clearance"
-    },
-    "bulkActions": {
-      "buttonCaption": "Bulk actions",
-      "windowName": "Bulk actions",
-      "scan": "Scan",
-      "move": "Move",
-      "closeScanner": "Close scanner",
-      "scanHUPlaceholder": "Scan HU",
-      "scanTargetPlaceholder": "Scan target",
-      "moveSuccess": "Successfully moved"
-    },
-    "changeQty": {
-      "buttonCaption": "Change qty",
-      "qtyLabel": "Qty",
-      "descriptionLabel": "Description",
-      "allowedOnlyForSingleProducts": "The action can be performed only for a single product."
-    },
-    "printLabels": {
-      "buttonCaption": "Print labels",
-      "nrOfCopies": "Number of copies",
-      "label": "Label",
-      "windowName": "Print labels",
-      "print": "Print",
-      "noPrintingOptionSelected": "No printing option has been selected!"
     }
   }
 }

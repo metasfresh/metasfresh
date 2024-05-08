@@ -22,15 +22,15 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
-import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.product.ResourceId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -70,7 +70,7 @@ class DD_OrderLine
 	})
 	public void setPP_Plant_From_ID(final I_DD_OrderLine ddOrderLine)
 	{
-		ResourceId plantFromId = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
+		I_S_Resource plantFrom = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
 
 		//
 		// If no plant was found for "Warehouse From" we shall use the Destination Plant.
@@ -78,12 +78,13 @@ class DD_OrderLine
 		// Example when applies: MRP generated a DD order to move materials from a Raw materials warehouse to Plant warehouse.
 		// The raw materials warehouse is not assigned to a Plant so no further planning will be calculated.
 		// I see it as perfectly normal to use the Destination Plant in this case.
-		if (plantFromId == null)
+		if (plantFrom == null)
 		{
-			plantFromId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
+			final I_S_Resource plantTo = ddOrderLine.getDD_Order().getPP_Plant();
+			plantFrom = plantTo;
 		}
 
-		if (plantFromId == null)
+		if (plantFrom == null)
 		{
 			final LiberoException ex = new LiberoException("@NotFound@ @PP_Plant_ID@"
 					+ "\n @M_Marehouse_ID@: " + ddOrderLine.getM_Locator_ID()
@@ -92,7 +93,7 @@ class DD_OrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		ddOrderLine.setPP_Plant_From(plantFrom);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

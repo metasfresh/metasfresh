@@ -26,7 +26,6 @@ import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
-import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -36,7 +35,6 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
@@ -73,14 +71,12 @@ public interface IAllocationDAO extends ISingletonService
 	 * @param invoice            the invoice for which we retrieve the open amount
 	 * @param creditMemoAdjusted if <code>true</code> and <code>invoice</code> is a credit memo, then the open amount is negated.
 	 */
-	Money retrieveOpenAmtInInvoiceCurrency(I_C_Invoice invoice, boolean creditMemoAdjusted);
+	BigDecimal retrieveOpenAmt(I_C_Invoice invoice, boolean creditMemoAdjusted);
 
 	/**
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has already been allocated.
 	 */
 	BigDecimal retrieveAllocatedAmt(I_C_Invoice invoice);
-
-	InvoiceOpenResult retrieveInvoiceOpen(@NonNull InvoiceOpenRequest request);
 
 	/**
 	 * Retrieve the written off amount of an <code>invoice</code>.
@@ -92,7 +88,7 @@ public interface IAllocationDAO extends ISingletonService
 	 *
 	 * @param paymentIDsToIgnore may be <code>null</code> or empty.
 	 */
-	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(@NonNull I_C_Invoice invoice, @Nullable Set<PaymentId> paymentIDsToIgnore);
+	BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(I_C_Invoice invoice, Set<Integer> paymentIDsToIgnore);
 
 	/**
 	 * Retrieve allocation lines for specified invoice
@@ -110,8 +106,4 @@ public interface IAllocationDAO extends ISingletonService
 	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
 
 	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
-
-	@NonNull I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
-
-	List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(@NonNull PaymentId paymentId);
 }

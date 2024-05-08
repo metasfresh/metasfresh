@@ -38,7 +38,6 @@ export class AttributesDropdown extends PureComponent {
       rowIndex,
       tabIndex,
       isModal,
-      maxHeight,
       //
       onFieldChange,
       onFieldPatch,
@@ -58,7 +57,6 @@ export class AttributesDropdown extends PureComponent {
             'attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced',
             { 'attributes-dropup': rowIndex > DROPUP_START }
           )}
-          style={maxHeight && maxHeight > 0 ? { maxHeight } : {}}
           onKeyDown={this.handleKeyDown}
         >
           {layout.map((elementLayout, elementIndex) => (
@@ -115,7 +113,6 @@ AttributesDropdown.propTypes = {
   rowIndex: PropTypes.number,
   tabIndex: PropTypes.number,
   isModal: PropTypes.bool,
-  maxHeight: PropTypes.number,
   //
   onFieldChange: PropTypes.func.isRequired,
   onFieldPatch: PropTypes.func.isRequired,

@@ -32,9 +32,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Parameter;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import io.swagger.annotations.ApiParam;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -57,13 +55,6 @@ public class AppTestingRestController
 
 	private final AtomicLong nextNotificationId = new AtomicLong(1);
 
-	private final IQueryStatisticsLogger statisticsLogger;
-
-	public AppTestingRestController(@NonNull final IQueryStatisticsLogger statisticsLogger)
-	{
-		this.statisticsLogger = statisticsLogger;
-	}
-
 	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
 	public String pingNotifications(@RequestParam(value = "noEmail", defaultValue = "false") final String noEmail)
@@ -85,11 +76,11 @@ public class AppTestingRestController
 
 	@PutMapping(produces = "application/json")
 	public ResponseEntity<?> putMethod(
-			@Parameter(description = "Response code the endpoint should return")
+			@ApiParam("Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@Parameter(description = "Response body the endpoint should return")
+			@ApiParam("Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@Parameter(description = "Milliseconds to delay the response")
+			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -97,11 +88,11 @@ public class AppTestingRestController
 
 	@GetMapping(produces = "application/json")
 	public ResponseEntity<?> getMethod(
-			@Parameter(description = "Response code the endpoint should return")
+			@ApiParam("Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@Parameter(description = "Response body the endpoint should return")
+			@ApiParam("Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@Parameter(description = "Milliseconds to delay the response")
+			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -109,15 +100,15 @@ public class AppTestingRestController
 
 	@PostMapping(produces = "application/json")
 	public ResponseEntity<?> postMethod(
-			@Parameter(description = "Response code the endpoint should return")
+			@ApiParam("Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@Parameter(description = "Response body the endpoint should return")
+			@ApiParam("Response body the endpoint should return")
 			@RequestParam(name = "responseBody", required = false) final String responseBody,
-			@Parameter(description = "Milliseconds to delay the response")
+			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis,
-			@Parameter(description = "Exception thrown in metas API")
+			@ApiParam("Exception thrown in metas API")
 			@RequestParam(name = "throwException", required = false) final boolean throwException,
-			@Parameter(description = "Return non-json body")
+			@ApiParam("Return non-json body")
 			@RequestParam(name = "nonJsonBody", required = false) final boolean nonJsonBody) throws InterruptedException
 	{
 		if (throwException)
@@ -139,11 +130,11 @@ public class AppTestingRestController
 
 	@DeleteMapping(produces = "application/json")
 	public ResponseEntity<?> deleteMethod(
-			@Parameter(description = "Response code the endpoint should return")
+			@ApiParam("Response code the endpoint should return")
 			@RequestParam(name = "responseCode") final int responseCode,
-			@Parameter(description = "Response body the endpoint should return")
+			@ApiParam("Response body the endpoint should return")
 			@RequestParam(name = "responseBody") final String responseBody,
-			@Parameter(description = "Milliseconds to delay the response")
+			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
 		return executeMethod(responseCode, responseBody, delaymillis);
@@ -181,20 +172,5 @@ public class AppTestingRestController
 	public void cacheReset()
 	{
 		CacheMgt.get().reset();
-	}
-
-	@GetMapping("/recordSqlQueriesWithMicrometer")
-	public void setRecordSqlQueriesWithMicrometer(
-			@Parameter(description = "If Enabled, all SQL queries execution times are recorded with micrometer")
-			@RequestParam("enabled") final boolean enabled)
-	{
-		if (enabled)
-		{
-			statisticsLogger.enableRecordWithMicrometer();
-		}
-		else
-		{
-			statisticsLogger.disableRecordWithMicrometer();
-		}
 	}
 }

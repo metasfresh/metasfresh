@@ -23,8 +23,8 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
-import de.metas.cucumber.stepdefs.receiptschedule.M_ReceiptSchedule_StepDefData;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -151,7 +151,7 @@ public class M_HU_LUTU_Configuration_StepDef
 					.baseLUTUConfiguration(lutuConfigDefault)
 					.qtyLU(lutuConfigDefault.getQtyLU())
 					.qtyTU(lutuConfigDefault.getQtyTU())
-					.qtyCUsPerTU(lutuConfigDefault.getQtyCUsPerTU())
+					.qtyCU(lutuConfigDefault.getQtyCU())
 					.tuHUPIItemProductID(tuHuPiProduct.getM_HU_PI_Item_Product_ID())
 					.luHUPIID(luHuPi.getM_HU_PI_ID())
 					.build();
@@ -175,11 +175,11 @@ public class M_HU_LUTU_Configuration_StepDef
 
 			final BigDecimal qtyLU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
 			final BigDecimal qtyTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
-			final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
+			final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
 
 			assertThat(lutuConfig.getQtyLU()).isEqualTo(qtyLU);
 			assertThat(lutuConfig.getQtyTU()).isEqualTo(qtyTU);
-			assertThat(lutuConfig.getQtyCUsPerTU()).isEqualTo(qtyCUsPerTU);
+			assertThat(lutuConfig.getQtyCU()).isEqualTo(qtyCU);
 		}
 	}
 
@@ -271,14 +271,14 @@ public class M_HU_LUTU_Configuration_StepDef
 		final String piProductItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer huPiItemProductId = huPiItemProductTable.getOptional(piProductItemIdentifier)
 				.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
-				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));
+				.orElseGet(() -> Integer.parseInt(piProductItemIdentifier));;
 		assertThat(huPiItemProductId).isNotNull();
 
 		final boolean isInfiniteQtyCU = DataTableUtil.extractBooleanForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
-		final BigDecimal qtyCUsPerTU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
+		final BigDecimal qtyCU = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCU);
 
 		// CU
-		lutuConfig.setQtyCUsPerTU(qtyCUsPerTU);
+		lutuConfig.setQtyCU(qtyCU);
 		lutuConfig.setIsInfiniteQtyCU(isInfiniteQtyCU);
 
 		// TU

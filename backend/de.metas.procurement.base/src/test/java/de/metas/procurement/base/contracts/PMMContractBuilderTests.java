@@ -1,29 +1,28 @@
 package de.metas.procurement.base.contracts;
 
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
-import de.metas.procurement.base.PMMContractBuilder;
-import de.metas.procurement.base.model.I_C_Flatrate_Term;
-import de.metas.util.Services;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.procurement.base.PMMContractBuilder;
+import de.metas.procurement.base.model.I_C_Flatrate_Term;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -53,7 +52,6 @@ public class PMMContractBuilderTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 	}
 
 	@Test

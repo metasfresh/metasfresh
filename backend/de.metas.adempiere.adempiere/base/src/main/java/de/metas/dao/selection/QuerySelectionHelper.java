@@ -1,13 +1,9 @@
 package de.metas.dao.selection;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.lang.UIDStringUtil;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.List;
+
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,9 +12,15 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.lang.UIDStringUtil;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -64,7 +66,7 @@ public class QuerySelectionHelper
 		final String trxName = query.getTrxName();
 
 		final Instant now = retrieveDatabaseCurrentTime();
-		final int rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
+		final int rowsCount = DB.executeUpdateEx(
 				sql,
 				params.toArray(),
 				trxName);

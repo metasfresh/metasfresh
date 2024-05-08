@@ -30,9 +30,9 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -66,12 +66,12 @@ public class PurchaseCandidateRestController
 		this.purchaseCandidatesStatusService = purchaseCandidatesStatusService;
 	}
 
-	@Operation(summary = "Create new purchase order candidates")
+	@ApiOperation("Create new purchase order candidates")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Successfully created new purchase order candidate(s)"),
-			@ApiResponse(responseCode = "401", description = "You are not authorized to create new purchase order candidates"),
-			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
-			@ApiResponse(responseCode = "422", description = "The request body could not be processed")
+			@ApiResponse(code = 200, message = "Successfully created new purchase order candidate(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to create new purchase order candidates"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PostMapping(path = "/createCandidates", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonPurchaseCandidateResponse> createCandidates(@RequestBody final JsonPurchaseCandidateCreateRequest request)
@@ -93,7 +93,7 @@ public class PurchaseCandidateRestController
 				.build();
 	}
 
-	@Operation(summary = "Enqueues purchase candidates for creation of purchase orders")
+	@ApiOperation("Enqueues purchase candidates for creation of purchase orders")
 	@PostMapping(path = "/enqueueForOrdering", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<String> enqueue(@RequestBody @NonNull final JsonPurchaseCandidatesRequest request)
 	{

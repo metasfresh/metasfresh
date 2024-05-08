@@ -22,6 +22,15 @@ package de.metas.dunning.invoice.spi.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Iterator;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_InvoicePaySchedule;
+import org.compiere.util.TimeUtil;
+
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunningContext;
@@ -29,17 +38,10 @@ import de.metas.dunning.api.impl.DunnableDoc;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.dunning.spi.impl.AbstractDunnableSource;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Iterator;
 
 public class InvoiceSource extends AbstractDunnableSource
 {
@@ -64,13 +66,13 @@ public class InvoiceSource extends AbstractDunnableSource
 		final int currencyId = candidate.getC_Currency_ID();
 		final BigDecimal grandTotal = candidate.getGrandTotal();
 		final BigDecimal openAmt = candidate.getOpenAmt();
-		final Date dueDate = TimeUtil.asDate(candidate.getDueDate());
-		final Date dunningGrace = TimeUtil.asDate(candidate.getDunningGrace());
+		final Date dateInvoiced = candidate.getDateInvoiced();
+		final Date dueDate = candidate.getDueDate();
+		final Date dunningGrace = candidate.getDunningGrace();
+		final int paymentTermId = candidate.getC_PaymentTerm_ID();
 		final boolean isInDispute = candidate.isInDispute();
-		final int sectionCodeId = candidate.getM_SectionCode_ID();
 
 		final String documentNo; // FRESH-504
-		final String poReference;
 
 		final String tableName;
 		final int recordId;
@@ -81,7 +83,6 @@ public class InvoiceSource extends AbstractDunnableSource
 
 			// The table C_InvoicePaySchedule does not have the column DocumentNo. In this case, the documentNo is null
 			documentNo = null;
-			poReference = null;
 		}
 		else
 		// if (C_Invoice_ID > 0)
@@ -101,12 +102,10 @@ public class InvoiceSource extends AbstractDunnableSource
 				// in case of no referenced record the documentNo is null.
 
 				documentNo = null;
-				poReference = null;
 			}
 			else
 			{
 				documentNo = invoice.getDocumentNo();
-				poReference = invoice.getPOReference();
 			}
 		}
 
@@ -119,7 +118,10 @@ public class InvoiceSource extends AbstractDunnableSource
 		{
 			final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
 
-			daysDue = invoiceSourceDAO.computeDueDays(dueDate,	context.getDunningDate());
+			daysDue = invoiceSourceDAO.retrieveDueDays(
+					PaymentTermId.ofRepoId(paymentTermId),
+					dateInvoiced,
+					context.getDunningDate());
 		}
 
 		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName,
@@ -136,9 +138,7 @@ public class InvoiceSource extends AbstractDunnableSource
 				dueDate,
 				dunningGrace,
 				daysDue,
-				sectionCodeId,
-				isInDispute,
-				poReference);
+				isInDispute);
 
 		return dunnableDoc;
 	}

@@ -19,57 +19,110 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-// TODO DELETE ME
-@Deprecated
+import de.metas.cache.CCache;
+
+
+/**
+ *	Sales Region Model
+ *	
+ *  @author Jorg Janke
+ *  @version $Id: MSalesRegion.java,v 1.3 2006/07/30 00:54:54 jjanke Exp $
+ */
 public class MSalesRegion extends X_C_SalesRegion
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 8582026748675153489L;
 
-	@SuppressWarnings("unused")
-	public MSalesRegion(Properties ctx, int C_SalesRegion_ID, String trxName)
-	{
-		super(ctx, C_SalesRegion_ID, trxName);
-	}
 
-	@SuppressWarnings("unused")
-	public MSalesRegion(Properties ctx, ResultSet rs, String trxName)
+	/**
+	 * 	Get SalesRegion from Cache
+	 *	@param ctx context
+	 *	@param C_SalesRegion_ID id
+	 *	@return MSalesRegion
+	 */
+	public static MSalesRegion get (Properties ctx, int C_SalesRegion_ID)
+	{
+		Integer key = new Integer (C_SalesRegion_ID);
+		MSalesRegion retValue = (MSalesRegion) s_cache.get (key);
+		if (retValue != null)
+			return retValue;
+		retValue = new MSalesRegion (ctx, C_SalesRegion_ID, null);
+		if (retValue.get_ID () != 0)
+			s_cache.put (key, retValue);
+		return retValue;
+	}	//	get
+
+	/**	Cache						*/
+	private static CCache<Integer,MSalesRegion>	s_cache	= new CCache<Integer,MSalesRegion>("C_SalesRegion", 10);
+	
+	
+	/**************************************************************************
+	 * 	Default Constructor
+	 *	@param ctx context
+	 *	@param C_SalesRegion_ID id
+	 *	@param trxName transaction
+	 */
+	public MSalesRegion (Properties ctx, int C_SalesRegion_ID, String trxName)
+	{
+		super (ctx, C_SalesRegion_ID, trxName);
+	}	//	MSalesRegion
+
+	/**
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName transaction
+	 */
+	public MSalesRegion (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}
+	}	//	MSalesRegion
 
-	protected boolean beforeSave(boolean newRecord)
+	/**
+	 * 	Before Save
+	 *	@param newRecord new
+	 *	@return true
+	 */
+	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getAD_Org_ID() != 0)
 			setAD_Org_ID(0);
 		return true;
-	}
+	}	//	beforeSave
 
-	protected boolean afterSave(boolean newRecord, boolean success)
+	/**
+	 * 	After Save.
+	 * 	Insert
+	 * 	- create tree
+	 *	@param newRecord insert
+	 *	@param success save success
+	 *	@return success
+	 */
+	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
-		{
-			return false;
-		}
-
-		// if (newRecord)
-		// 	insert_Tree(MTree_Base.TREETYPE_SalesRegion);
-
+			return success;
+		if (newRecord)
+			insert_Tree(MTree_Base.TREETYPE_SalesRegion);
 		//	Value/Name change
-		if (!newRecord && (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
-		{
+		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
 			MAccount.updateValueDescription(getCtx(), "C_SalesRegion_ID=" + getC_SalesRegion_ID(), get_TrxName());
-		}
 
 		return true;
-	}
+	}	//	afterSave
 
-	// protected boolean afterDelete(boolean success)
-	// {
-	// 	if (success)
-	// 		delete_Tree(MTree_Base.TREETYPE_SalesRegion);
-	// 	return success;
-	// }
-}
+	/**
+	 * 	After Delete
+	 *	@param success
+	 *	@return deleted
+	 */
+	protected boolean afterDelete (boolean success)
+	{
+		if (success)
+			delete_Tree(MTree_Base.TREETYPE_SalesRegion);
+		return success;
+	}	//	afterDelete
+	
+}	//	MSalesRegion

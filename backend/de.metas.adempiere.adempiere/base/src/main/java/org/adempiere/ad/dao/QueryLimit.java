@@ -55,10 +55,6 @@ public final class QueryLimit
 		{
 			return FIVE_HUNDRED;
 		}
-		else if (limit == ONE_THOUSAND.value)
-		{
-			return ONE_THOUSAND;
-		}
 		else
 		{
 			return new QueryLimit(limit);
@@ -79,10 +75,8 @@ public final class QueryLimit
 	public static final QueryLimit NO_LIMIT = new QueryLimit(0);
 	public static final QueryLimit ONE = new QueryLimit(1);
 	public static final QueryLimit TWO = new QueryLimit(2);
-	public static final QueryLimit TEN = new QueryLimit(10);
 	public static final QueryLimit ONE_HUNDRED = new QueryLimit(100);
 	public static final QueryLimit FIVE_HUNDRED = new QueryLimit(500);
-	public static final QueryLimit ONE_THOUSAND = new QueryLimit(1000);
 
 	private final int value;
 

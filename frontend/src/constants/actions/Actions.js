@@ -26,22 +26,22 @@ export const DELETE_QUICK_ACTIONS = 'DELETE_QUICK_ACTIONS';
  * @constant
  * @type {string} fetches tab's quick actions.
  */
-export const TOP_ACTIONS_LOADING = 'TOP_ACTIONS/loading';
+export const FETCH_TOP_ACTIONS = 'FETCH_TOP_ACTIONS';
 
 /**
  * @constant
  * @type {string} called on successful response.
  */
-export const TOP_ACTIONS_SUCCESS = 'TOP_ACTIONS/success';
+export const FETCH_TOP_ACTIONS_SUCCESS = 'FETCH_TOP_ACTIONS_SUCCESS';
 
 /**
  * @constant
  * @type {string} called on failed response.
  */
-export const TOP_ACTIONS_FAILURE = 'TOP_ACTIONS/failure';
+export const FETCH_TOP_ACTIONS_FAILURE = 'FETCH_TOP_ACTIONS_FAILURE';
 
 /**
  * @constant
  * @type {string} removes tab's quick actions on unmount.
  */
-export const TOP_ACTIONS_DELETE = 'TOP_ACTIONS/delete';
+export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';

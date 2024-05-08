@@ -1,21 +1,8 @@
 package de.metas.handlingunits.trace;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.rules.TestWatcher;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -23,11 +10,20 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -39,12 +35,12 @@ import static org.junit.Assert.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,9 +49,7 @@ import static org.junit.Assert.assertThat;
 
 public class HUTraceRepositoryTests
 {
-	/**
-	 * Watches the current tests and dumps the database to console in case of failure
-	 */
+	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -70,23 +64,12 @@ public class HUTraceRepositoryTests
 
 	public static HUTraceEventBuilder createCommonEventBuilder()
 	{
-		final I_C_UOM uomRecord = createUOM("kg");
-
 		return HUTraceEvent.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.vhuStatus(X_M_HU.HUSTATUS_Active)
-				.qty(Quantity.of(100, uomRecord))
+				.qty(BigDecimal.valueOf(100))
 				.productId(ProductId.ofRepoId(23))
 				.type(HUTraceType.TRANSFORM_LOAD);
-	}
-
-	private static I_C_UOM createUOM(final String symbol)
-	{
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
-		uomRecord.setUOMSymbol(symbol);
-		saveRecord(uomRecord);
-
-		return uomRecord;
 	}
 
 	@Test
@@ -111,17 +94,16 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		final I_C_UOM uomRecord = createUOM("kg");
 		huTraceRepository.addEvent(HUTraceEvent.builder()
-										   .orgId(OrgId.ofRepoId(13))
-										   .eventTime(eventTime)
-										   .topLevelHuId(HuId.ofRepoId(2))
-										   .productId(ProductId.ofRepoId(23))
-										   .qty(Quantity.of(BigDecimal.TEN, uomRecord))
-										   .vhuStatus(X_M_HU.HUSTATUS_Active)
-										   .vhuId(HuId.ofRepoId(12))
-										   .type(HUTraceType.TRANSFORM_LOAD)
-										   .build());
+				.orgId(OrgId.ofRepoId(13))
+				.eventTime(eventTime)
+				.topLevelHuId(HuId.ofRepoId(2))
+				.productId(ProductId.ofRepoId(23))
+				.qty(BigDecimal.TEN)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.vhuId(HuId.ofRepoId(12))
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.build());
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(HuId.ofRepoId(12))
@@ -136,15 +118,15 @@ public class HUTraceRepositoryTests
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
-										   .orgId(OrgId.ofRepoId(13))
-										   .eventTime(eventTime)
-										   .topLevelHuId(HuId.ofRepoId(2))
-										   .productId(ProductId.ofRepoId(23))
-										   .qty(Quantity.of(BigDecimal.TEN, uomRecord))
-										   .vhuStatus(X_M_HU.HUSTATUS_Active)
-										   .vhuId(HuId.ofRepoId(12))
-										   .type(HUTraceType.TRANSFORM_LOAD)
-										   .build());
+				.orgId(OrgId.ofRepoId(13))
+				.eventTime(eventTime)
+				.topLevelHuId(HuId.ofRepoId(2))
+				.productId(ProductId.ofRepoId(23))
+				.qty(BigDecimal.TEN)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.vhuId(HuId.ofRepoId(12))
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.build());
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
 		assertThat(result2).hasSize(1); // still just one!
@@ -160,11 +142,11 @@ public class HUTraceRepositoryTests
 		final Instant eventTime = Instant.now();
 
 		huTraceRepository.addEvent(createCommonEventBuilder()
-										   .eventTime(eventTime)
-										   .topLevelHuId(HuId.ofRepoId(2))
-										   .vhuId(HuId.ofRepoId(12))
-										   .vhuSourceId(HuId.ofRepoId(13))
-										   .build());
+				.eventTime(eventTime)
+				.topLevelHuId(HuId.ofRepoId(2))
+				.vhuId(HuId.ofRepoId(12))
+				.vhuSourceId(HuId.ofRepoId(13))
+				.build());
 
 		final HUTraceEventQuery query = HUTraceEventQuery.builder()
 				.vhuId(HuId.ofRepoId(12))
@@ -223,9 +205,9 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "middle" group.
 		// the first group has no event with getHuSourceId > 0, that's why we go with the middle one
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(5).getVhuId())
-																		  .recursionMode(RecursionMode.NONE)
-																		  .build());
+				.vhuId(events.get(5).getVhuId())
+				.recursionMode(RecursionMode.NONE)
+				.build());
 
 		assertThat(result.size(), is(6));
 		for (int i = 0; i < result.size(); i++)
@@ -249,9 +231,9 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "preceding" group
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(5).getVhuId())
-																		  .recursionMode(RecursionMode.BACKWARD)
-																		  .build());
+				.vhuId(events.get(5).getVhuId())
+				.recursionMode(RecursionMode.BACKWARD)
+				.build());
 
 		result.sort(Comparator.comparing(HUTraceEvent::getEventTime));
 		events.sort(Comparator.comparing(HUTraceEvent::getEventTime));
@@ -282,9 +264,9 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "last" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(11).getVhuId())
-																		  .recursionMode(RecursionMode.BACKWARD)
-																		  .build());
+				.vhuId(events.get(11).getVhuId())
+				.recursionMode(RecursionMode.BACKWARD)
+				.build());
 		result.sort(Comparator.comparing(HUTraceEvent::getEventTime));
 		events.sort(Comparator.comparing(HUTraceEvent::getEventTime));
 
@@ -313,9 +295,9 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "middle" group.
 		// that means that we expect a record for each event of that group plus a record for each event of the "following" group
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(5).getVhuId())
-																		  .recursionMode(RecursionMode.FORWARD)
-																		  .build());
+				.vhuId(events.get(5).getVhuId())
+				.recursionMode(RecursionMode.FORWARD)
+				.build());
 
 		assertThat(result.size(), is(12));
 		for (int i = 0; i < result.size(); i++)
@@ -339,9 +321,9 @@ public class HUTraceRepositoryTests
 		// query with the huId of the first event from the "first" group.
 		// that means that we expect a record for each event event we added (because there is one directly preceding group and one indirectly preceding group).
 		final List<HUTraceEvent> result = huTraceRepository.query(HUTraceEventQuery.builder()
-																		  .vhuId(events.get(0).getVhuId())
-																		  .recursionMode(RecursionMode.FORWARD)
-																		  .build());
+				.vhuId(events.get(0).getVhuId())
+				.recursionMode(RecursionMode.FORWARD)
+				.build());
 		result.sort(Comparator.comparing(HUTraceEvent::getEventTime));
 		events.sort(Comparator.comparing(HUTraceEvent::getEventTime));
 

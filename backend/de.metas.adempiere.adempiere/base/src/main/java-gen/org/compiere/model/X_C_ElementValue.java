@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_ElementValue
  *  @author metasfresh (generated) 
@@ -258,18 +258,6 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	public boolean isMandatoryActivity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMandatoryActivity);
-	}
-
-	@Override
-	public void setIsOpenItem (final boolean IsOpenItem)
-	{
-		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
-	}
-
-	@Override
-	public boolean isOpenItem() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
 	}
 
 	@Override

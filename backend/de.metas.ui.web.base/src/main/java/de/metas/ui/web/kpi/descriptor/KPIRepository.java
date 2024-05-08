@@ -197,7 +197,7 @@ public class KPIRepository
 				.id(kpiId)
 				.caption(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Name, kpiDef.getName()))
 				.description(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Description, kpiDef.getDescription()))
-				.chartType(KPIChartType.ofCode(kpiDef.getChartType()))
+				.chartType(KPIChartType.forCode(kpiDef.getChartType()))
 				.fields(loadingCtx
 						.getFields(kpiId)
 						.stream()

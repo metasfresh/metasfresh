@@ -85,14 +85,10 @@ public class AbstractStockEstimateHandler
 		final BigDecimal qtyStockEstimate = stockEstimateEvent instanceof StockEstimateDeletedEvent
 				? BigDecimal.ZERO
 				: stockEstimateEvent.getQuantityDelta();
-
-		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
-				? 0
-				: stockEstimateEvent.getQtyStockEstimateSeqNo();
 		
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
-				.qtyStockEstimateSeqNo(qtyStockSeqNo)
+				.qtyStockEstimateSeqNo(stockEstimateEvent.getQtyStockEstimateSeqNo())
 				.qtyStockEstimateCount(qtyStockEstimate)
 				.qtyStockEstimateTime(stockEstimateEvent.getDate())
 				.build();

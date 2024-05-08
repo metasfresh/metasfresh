@@ -1,7 +1,14 @@
 package de.metas.ui.web.window.events;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -10,11 +17,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
-import java.util.Set;
 
 /*
  * #%L
@@ -48,33 +50,34 @@ final class JSONDocumentChangedWebSocketEventCollector
 
 	//@formatter:off
 	@Value
-	private static class EventKey { WindowId windowId; DocumentId documentId; }
+	private static final class EventKey { WindowId windowId; DocumentId documentId; }
 	//@formatter:on
 
-	@Nullable private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events; // null means collector closed
+	private LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> _events;
 
 	private JSONDocumentChangedWebSocketEventCollector()
 	{
 		_events = new LinkedHashMap<>();
 	}
 
-	public ImmutableList<JSONDocumentChangedWebSocketEvent> getEventsAndClose()
+	public List<JSONDocumentChangedWebSocketEvent> getEventsAndClear()
 	{
-		final ImmutableList<JSONDocumentChangedWebSocketEvent> events = getEvents();
-		markAsClosed();
-		return events;
+		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
+		if (events == null || events.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		else
+		{
+			final List<JSONDocumentChangedWebSocketEvent> eventsList = ImmutableList.copyOf(events.values());
+			events.clear();
+			return eventsList;
+		}
 	}
 
 	public void markAsClosed()
 	{
-		this._events = null;
-	}
-
-	@VisibleForTesting
-	ImmutableList<JSONDocumentChangedWebSocketEvent> getEvents()
-	{
-		final LinkedHashMap<EventKey, JSONDocumentChangedWebSocketEvent> events = this._events;
-		return events != null && !events.isEmpty() ? ImmutableList.copyOf(events.values()) : ImmutableList.of();
+		_events = null;
 	}
 
 	public boolean isEmpty()
@@ -103,17 +106,13 @@ final class JSONDocumentChangedWebSocketEventCollector
 
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
-		staleRootDocument(windowId, documentId, false);
-	}
-
-	public void staleRootDocument(final WindowId windowId, final DocumentId documentId, final boolean markActiveTabStaled)
-	{
 		final JSONDocumentChangedWebSocketEvent event = getCreateEvent(windowId, documentId);
 		event.markRootDocumentAsStaled();
-		if (markActiveTabStaled)
-		{
-			event.markActiveTabStaled();
-		}
+	}
+
+	public void staleTab(final WindowId windowId, final DocumentId documentId, final DetailId tabId)
+	{
+		staleTabs(windowId, documentId, ImmutableSet.of(tabId));
 	}
 
 	public void staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)

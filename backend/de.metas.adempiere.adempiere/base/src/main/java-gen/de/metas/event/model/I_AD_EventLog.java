@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.event.model;
 
 import org.adempiere.model.ModelColumn;
@@ -73,6 +95,27 @@ public interface I_AD_EventLog
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Asynchronous WorkPackage Queue.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Queue_WorkPackage_ID (int C_Queue_WorkPackage_ID);
+
+	/**
+	 * Get Asynchronous WorkPackage Queue.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Queue_WorkPackage_ID();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_C_Queue_WorkPackage_ID = new ModelColumn<>(I_AD_EventLog.class, "C_Queue_WorkPackage_ID", null);
+	String COLUMNNAME_C_Queue_WorkPackage_ID = "C_Queue_WorkPackage_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -98,34 +141,13 @@ public interface I_AD_EventLog
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEvent_UUID (String Event_UUID);
-
-	/**
-	 * Get Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getEvent_UUID();
-
-	ModelColumn<I_AD_EventLog, Object> COLUMN_Event_UUID = new ModelColumn<>(I_AD_EventLog.class, "Event_UUID", null);
-	String COLUMNNAME_Event_UUID = "Event_UUID";
-
-	/**
 	 * Set Daten.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventData (@Nullable String EventData);
+	void setEventData (@Nullable java.lang.String EventData);
 
 	/**
 	 * Get Daten.
@@ -134,7 +156,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventData();
+	@Nullable java.lang.String getEventData();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventData = new ModelColumn<>(I_AD_EventLog.class, "EventData", null);
 	String COLUMNNAME_EventData = "EventData";
@@ -167,7 +189,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventTopicName (@Nullable String EventTopicName);
+	void setEventTopicName (@Nullable java.lang.String EventTopicName);
 
 	/**
 	 * Get Topicname.
@@ -176,7 +198,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventTopicName();
+	@Nullable java.lang.String getEventTopicName();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventTopicName = new ModelColumn<>(I_AD_EventLog.class, "EventTopicName", null);
 	String COLUMNNAME_EventTopicName = "EventTopicName";
@@ -188,7 +210,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventTypeName (@Nullable String EventTypeName);
+	void setEventTypeName (@Nullable java.lang.String EventTypeName);
 
 	/**
 	 * Get Event type.
@@ -197,10 +219,31 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventTypeName();
+	@Nullable java.lang.String getEventTypeName();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventTypeName = new ModelColumn<>(I_AD_EventLog.class, "EventTypeName", null);
 	String COLUMNNAME_EventTypeName = "EventTypeName";
+
+	/**
+	 * Set Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEvent_UUID (java.lang.String Event_UUID);
+
+	/**
+	 * Get Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getEvent_UUID();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_Event_UUID = new ModelColumn<>(I_AD_EventLog.class, "Event_UUID", null);
+	String COLUMNNAME_Event_UUID = "Event_UUID";
 
 	/**
 	 * Set Active.

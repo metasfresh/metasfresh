@@ -48,10 +48,6 @@ public class PurchaseCandidateBL implements IPurchaseCandidateBL
 				.bpartnerId(vendorId)
 				.datePromised(candidate.getPurchaseDatePromised())
 				.countryId(bpartnerDAO.getDefaultShipToLocationCountryIdOrNull(vendorId))
-				.isManualPrice(candidate.isManualPrice())
-				.priceEntered(candidate.getPrice())
-				.priceEnteredUomId(candidate.getPriceUomId())
-				.currencyId(candidate.getCurrencyId())
 				.build();
 		final IPricingResult priceAndDiscount = getPriceAndDiscount(pricingInfo);
 

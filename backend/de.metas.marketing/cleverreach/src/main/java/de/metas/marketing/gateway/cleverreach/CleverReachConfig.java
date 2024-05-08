@@ -1,8 +1,6 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import de.metas.marketing.base.model.CampaignConfig;
 import de.metas.marketing.base.model.PlatformId;
-import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,7 +31,7 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
-public class CleverReachConfig implements CampaignConfig
+public class CleverReachConfig
 {
 	@NonNull
 	String client_id;
@@ -46,7 +44,4 @@ public class CleverReachConfig implements CampaignConfig
 
 	@NonNull
 	PlatformId platformId;
-
-	@NonNull
-	OrgId orgId;
 }

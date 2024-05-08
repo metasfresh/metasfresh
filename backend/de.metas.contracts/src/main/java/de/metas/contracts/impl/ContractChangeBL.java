@@ -14,7 +14,6 @@ import de.metas.contracts.model.X_C_Contract_Change;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionBL;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -45,6 +44,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
+import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -67,7 +67,7 @@ public class ContractChangeBL implements IContractChangeBL
 	@Override
 	public void cancelContract(
 			@NonNull final I_C_Flatrate_Term currentTerm,
-			@NonNull final ContractChangeParameters contractChangeParameters)
+			final @NonNull ContractChangeParameters contractChangeParameters)
 	{
 		final I_C_Flatrate_Term initialContract = Services.get(IFlatrateBL.class).getInitialFlatrateTerm(currentTerm);
 		if (initialContract == null || contractChangeParameters.isVoidSingleContract())
@@ -139,13 +139,11 @@ public class ContractChangeBL implements IContractChangeBL
 
 		if (isNotAllowedToTerminateCurrentContract(currentTerm, contractChangeParameters))
 		{
-			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT, currentTerm);
+			throw new AdempiereException(MSG_IS_NOT_ALLOWED_TO_TERMINATE_CURRENT_CONTRACT,
+										 new Object[] { currentTerm });
 		}
 
-
 		createCompesationOrderAndDeleteDeliveriesIfNeeded(currentTerm, contractChangeParameters);
-
-
 		setTerminatioReasonMemoAndDate(currentTerm, contractChangeParameters);
 		setMasterDates(currentTerm, contractChangeParameters);
 		currentTerm.setIsCloseInvoiceCandidate(contractChangeParameters.isCloseInvoiceCandidate());
@@ -264,7 +262,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
-		final DocBaseType docbasetype = openInvoice.isSOTrx() ? DocBaseType.ARCreditMemo : DocBaseType.APCreditMemo;
+		final String docbasetype = openInvoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARCreditMemo : X_C_DocType.DOCBASETYPE_APCreditMemo;
 		final DocTypeId targetDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeId(DocTypeQuery.builder()
 									  .docBaseType(docbasetype)
@@ -306,7 +304,7 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 	}
 
-	private I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate)
+	private final I_C_Order createCompesationOrder(@NonNull final I_C_Flatrate_Term currentTerm, @NonNull final I_C_Contract_Change changeConditions, final Timestamp changeDate)
 	{
 		final I_C_OrderLine currentTermOl = currentTerm.getC_OrderLine_Term();
 		final I_C_Order currentTermOrder = currentTermOl.getC_Order();

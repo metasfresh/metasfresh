@@ -23,7 +23,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -142,7 +141,6 @@ public class AttributeDAO implements IAttributeDAO
 				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
 				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
 				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
-				.mandatoryOnManufacturing(OptionalBoolean.ofNullableString(record.getMandatoryOnManufacturing()))
 				.build();
 	}
 
@@ -243,12 +241,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
-		return getAttributeDisplayNameByValue(AttributeCode.ofString(value));
-	}
-
-	@Override
-	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final AttributeCode attributeCode)
-	{
+		final AttributeCode attributeCode = AttributeCode.ofString(value);
 		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
 		return attribute != null
 				? Optional.of(attribute.getDisplayName())
@@ -566,8 +559,8 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// 07708: Apply AD_Val_Rule when filtering attributes for current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
-		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(attribute.getAD_Val_Rule_ID());
-		if (adValRuleId != null)
+		final int adValRuleId = attribute.getAD_Val_Rule_ID();
+		if (adValRuleId > 0)
 		{
 			validationRuleQueryFilter = new ValidationRuleQueryFilter<>(attribute, adValRuleId);
 		}
@@ -711,13 +704,16 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public void deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
+	public boolean deleteAttributeValueByCode(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
-		queryBL.createQueryBuilder(I_M_AttributeValue.class)
+		final int deleteCount = queryBL
+				.createQueryBuilder(I_M_AttributeValue.class)
 				.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attributeId)
 				.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
 				.create()
 				.delete();
+
+		return deleteCount > 0;
 	}
 
 	@Override
@@ -788,6 +784,15 @@ public class AttributeDAO implements IAttributeDAO
 				.addEqualsFilter(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID, AttributeSetInstanceId.NONE)
 				.create()
 				.firstOnlyNotNull(I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public boolean areAttributeSetsEqual(@NonNull final AttributeSetInstanceId firstASIId, @NonNull final AttributeSetInstanceId secondASIId)
+	{
+		final ImmutableAttributeSet firstAttributeSet = getImmutableAttributeSetById(firstASIId);
+		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
+
+		return firstAttributeSet.equals(secondAttributeSet);
 	}
 
 	@Override

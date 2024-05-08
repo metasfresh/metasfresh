@@ -17,27 +17,6 @@ public interface I_AD_User
 
 
 	/**
-	 * Set Default Boiler Plate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_BoilerPlate_Default_ID (int AD_BoilerPlate_Default_ID);
-
-	/**
-	 * Get Default Boiler Plate.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_BoilerPlate_Default_ID();
-
-	ModelColumn<I_AD_User, Object> COLUMN_AD_BoilerPlate_Default_ID = new ModelColumn<>(I_AD_User.class, "AD_BoilerPlate_Default_ID", null);
-	String COLUMNNAME_AD_BoilerPlate_Default_ID = "AD_BoilerPlate_Default_ID";
-
-	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -185,29 +164,6 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
-	 * Set Geschlecht.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setAlberta_Gender (@Nullable java.lang.String Alberta_Gender);
-
-	/**
-	 * Get Geschlecht.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getAlberta_Gender();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Alberta_Gender = new ModelColumn<>(I_AD_User.class, "Alberta_Gender", null);
-	String COLUMNNAME_Alberta_Gender = "Alberta_Gender";
-
-	/**
 	 * Set Title.
 	 *
 	 * <br>Type: List
@@ -256,7 +212,7 @@ public interface I_AD_User
 	String COLUMNNAME_Avatar_ID = "Avatar_ID";
 
 	/**
-	 * Set Birthday.
+	 * Set Geburtstag.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -266,7 +222,7 @@ public interface I_AD_User
 	void setBirthday (@Nullable java.sql.Timestamp Birthday);
 
 	/**
-	 * Get Birthday.
+	 * Get Geburtstag.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -339,27 +295,6 @@ public interface I_AD_User
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Default Flatrate Conditions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Flatrate_Conditions_Default_ID (int C_Flatrate_Conditions_Default_ID);
-
-	/**
-	 * Get Default Flatrate Conditions.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Flatrate_Conditions_Default_ID();
-
-	ModelColumn<I_AD_User, Object> COLUMN_C_Flatrate_Conditions_Default_ID = new ModelColumn<>(I_AD_User.class, "C_Flatrate_Conditions_Default_ID", null);
-	String COLUMNNAME_C_Flatrate_Conditions_Default_ID = "C_Flatrate_Conditions_Default_ID";
-
-	/**
 	 * Set Greeting (ID).
 	 * Greeting to print on correspondence
 	 *
@@ -407,6 +342,31 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_AD_User.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Comments.
@@ -457,7 +417,7 @@ public interface I_AD_User
 	String COLUMNNAME_Companyname = "Companyname";
 
 	/**
-	 * Set Connection Profile.
+	 * Set Verbindungsart.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
@@ -467,7 +427,7 @@ public interface I_AD_User
 	void setConnectionProfile (@Nullable java.lang.String ConnectionProfile);
 
 	/**
-	 * Get Connection Profile.
+	 * Get Verbindungsart.
 	 * How a Java Client connects to the server(s)
 	 *
 	 * <br>Type: List
@@ -545,31 +505,6 @@ public interface I_AD_User
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.
@@ -679,29 +614,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMail3 = "EMail3";
 
 	/**
-	 * Set eMail Private.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setEmail_private (@Nullable java.lang.String Email_private);
-
-	/**
-	 * Get eMail Private.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getEmail_private();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
-	String COLUMNNAME_Email_private = "Email_private";
-
-	/**
-	 * Set EMail User ID.
-	 * Set EMail User ID.
+	 * Set EMail Nutzer-ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -711,7 +624,7 @@ public interface I_AD_User
 	void setEMailUser (@Nullable java.lang.String EMailUser);
 
 	/**
-	 * Get EMail User ID.
+	 * Get EMail Nutzer-ID.
 	 * User Name (ID) in the Mail System
 	 *
 	 * <br>Type: String
@@ -724,8 +637,8 @@ public interface I_AD_User
 	String COLUMNNAME_EMailUser = "EMailUser";
 
 	/**
-	 * Set EMail User Password.
-	 * Password of your email user id
+	 * Set Passwort EMail-Nutzer.
+	 * Passwort Ihrer EMail Nutzer-ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -734,8 +647,8 @@ public interface I_AD_User
 	void setEMailUserPW (@Nullable java.lang.String EMailUserPW);
 
 	/**
-	 * Get EMail User Password.
-	 * Password of your email user id
+	 * Get Passwort EMail-Nutzer.
+	 * Passwort Ihrer EMail Nutzer-ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -747,7 +660,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMailUserPW = "EMailUserPW";
 
 	/**
-	 * Set Verification Info.
+	 * Set Überprüfung EMail.
 	 * Verification information of EMail Address
 	 *
 	 * <br>Type: String
@@ -757,7 +670,7 @@ public interface I_AD_User
 	void setEMailVerify (@Nullable java.lang.String EMailVerify);
 
 	/**
-	 * Get Verification Info.
+	 * Get Überprüfung EMail.
 	 * Verification information of EMail Address
 	 *
 	 * <br>Type: String
@@ -770,7 +683,7 @@ public interface I_AD_User
 	String COLUMNNAME_EMailVerify = "EMailVerify";
 
 	/**
-	 * Set EMail Verify.
+	 * Set EMail überprüft.
 	 * Date Email was verified
 	 *
 	 * <br>Type: DateTime
@@ -780,7 +693,7 @@ public interface I_AD_User
 	void setEMailVerifyDate (@Nullable java.sql.Timestamp EMailVerifyDate);
 
 	/**
-	 * Get EMail Verify.
+	 * Get EMail überprüft.
 	 * Date Email was verified
 	 *
 	 * <br>Type: DateTime
@@ -881,29 +794,31 @@ public interface I_AD_User
 	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
 
 	/**
-	 * Set Hobbies/Interests.
+	 * Set Gender.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	void setHobbies_interests (@Nullable java.lang.String Hobbies_interests);
+	@Deprecated
+	void setGender (@Nullable java.lang.String Gender);
 
 	/**
-	 * Get Hobbies/Interests.
+	 * Get Gender.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true
 	 */
-	@Nullable java.lang.String getHobbies_interests();
+	@Nullable java.lang.String getGender();
 
-	ModelColumn<I_AD_User, Object> COLUMN_Hobbies_interests = new ModelColumn<>(I_AD_User.class, "Hobbies_interests", null);
-	String COLUMNNAME_Hobbies_interests = "Hobbies_interests";
+	ModelColumn<I_AD_User, Object> COLUMN_Gender = new ModelColumn<>(I_AD_User.class, "Gender", null);
+	String COLUMNNAME_Gender = "Gender";
 
 	/**
 	 * Set Included Tab.
-	 * Included Tab in this Tab (Master Detail)
+	 * Included Tab in this Tab (Master Dateail)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -913,7 +828,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Included Tab.
-	 * Included Tab in this Tab (Master Detail)
+	 * Included Tab in this Tab (Master Dateail)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -926,7 +841,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Account locked.
-	 * Flag is yes if account is locked
+	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -936,7 +851,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Account locked.
-	 * Flag is yes if account is locked
+	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1019,28 +934,7 @@ public interface I_AD_User
 	String COLUMNNAME_IsAuthorizedSignatory = "IsAuthorizedSignatory";
 
 	/**
-	 * Set Backoffice Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsBackofficeContact (boolean IsBackofficeContact);
-
-	/**
-	 * Get Backoffice Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isBackofficeContact();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsBackofficeContact = new ModelColumn<>(I_AD_User.class, "IsBackofficeContact", null);
-	String COLUMNNAME_IsBackofficeContact = "IsBackofficeContact";
-
-	/**
-	 * Set Invoice Contact Default.
+	 * Set BillTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1049,7 +943,7 @@ public interface I_AD_User
 	void setIsBillToContact_Default (boolean IsBillToContact_Default);
 
 	/**
-	 * Get Invoice Contact Default.
+	 * Get BillTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1059,31 +953,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
-
-	/**
-	 * Set User restriction.
-	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setIsCustomUserRestriction (boolean IsCustomUserRestriction);
-
-	/**
-	 * Get User restriction.
-	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	boolean isCustomUserRestriction();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsCustomUserRestriction = new ModelColumn<>(I_AD_User.class, "IsCustomUserRestriction", null);
-	String COLUMNNAME_IsCustomUserRestriction = "IsCustomUserRestriction";
 
 	/**
 	 * Set Default Contact.
@@ -1105,50 +974,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDefaultContact = new ModelColumn<>(I_AD_User.class, "IsDefaultContact", null);
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
-
-	/**
-	 * Set Dunning contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIsDunningContact (boolean IsDunningContact);
-
-	/**
-	 * Get Dunning contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isDunningContact();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsDunningContact = new ModelColumn<>(I_AD_User.class, "IsDunningContact", null);
-	String COLUMNNAME_IsDunningContact = "IsDunningContact";
-
-	/**
-	 * Set Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDunningDefault (boolean IsDunningDefault);
-
-	/**
-	 * Get Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDunningDefault();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
-	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
 
 	/**
 	 * Set Full BP Access.
@@ -1241,27 +1066,6 @@ public interface I_AD_User
 	String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
 
 	/**
-	 * Set Logistic Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsLogisticContact (boolean IsLogisticContact);
-
-	/**
-	 * Get Logistic Contact.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isLogisticContact();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsLogisticContact = new ModelColumn<>(I_AD_User.class, "IsLogisticContact", null);
-	String COLUMNNAME_IsLogisticContact = "IsLogisticContact";
-
-	/**
 	 * Set Is Membership Contact.
 	 *
 	 * <br>Type: YesNo
@@ -1346,28 +1150,7 @@ public interface I_AD_User
 	String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
 
 	/**
-	 * Set Receive Mass Dunning Reports.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsReceiveMassDunningReports (boolean IsReceiveMassDunningReports);
-
-	/**
-	 * Get Receive Mass Dunning Reports.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isReceiveMassDunningReports();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsReceiveMassDunningReports = new ModelColumn<>(I_AD_User.class, "IsReceiveMassDunningReports", null);
-	String COLUMNNAME_IsReceiveMassDunningReports = "IsReceiveMassDunningReports";
-
-	/**
-	 * Set Sales Contact.
+	 * Set IsSalesContact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1376,7 +1159,7 @@ public interface I_AD_User
 	void setIsSalesContact (boolean IsSalesContact);
 
 	/**
-	 * Get Sales Contact.
+	 * Get IsSalesContact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1542,7 +1325,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Login Failure Count.
-	 * Failed login count
+	 * Anzahl Login Fehlversuche
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1552,7 +1335,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Login Failure Count.
-	 * Failed login count
+	 * Anzahl Login Fehlversuche
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1565,7 +1348,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Login Failure Date.
-	 * Date when was last faild
+	 * Datum Login Fehler
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1575,7 +1358,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Login Failure Date.
-	 * Date when was last faild
+	 * Datum Login Fehler
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1608,27 +1391,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
 	String COLUMNNAME_Memo = "Memo";
-
-	/**
-	 * Set Standard-Werbemassnahme.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMKTG_Campaign_Default_ID (int MKTG_Campaign_Default_ID);
-
-	/**
-	 * Get Standard-Werbemassnahme.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMKTG_Campaign_Default_ID();
-
-	ModelColumn<I_AD_User, Object> COLUMN_MKTG_Campaign_Default_ID = new ModelColumn<>(I_AD_User.class, "MKTG_Campaign_Default_ID", null);
-	String COLUMNNAME_MKTG_Campaign_Default_ID = "MKTG_Campaign_Default_ID";
 
 	/**
 	 * Set Mobile Phone.
@@ -1673,7 +1435,7 @@ public interface I_AD_User
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Notification Type.
+	 * Set Benachrichtigungs-Art.
 	 * Type of Notifications
 	 *
 	 * <br>Type: List
@@ -1683,7 +1445,7 @@ public interface I_AD_User
 	void setNotificationType (java.lang.String NotificationType);
 
 	/**
-	 * Get Notification Type.
+	 * Get Benachrichtigungs-Art.
 	 * Type of Notifications
 	 *
 	 * <br>Type: List
@@ -1805,52 +1567,6 @@ public interface I_AD_User
 	String COLUMNNAME_Phone2 = "Phone2";
 
 	/**
-	 * Set Photo.
-	 *
-	 * <br>Type: Image
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPhoto_ID (int Photo_ID);
-
-	/**
-	 * Get Photo.
-	 *
-	 * <br>Type: Image
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPhoto_ID();
-
-	@Nullable org.compiere.model.I_AD_Image getPhoto();
-
-	void setPhoto(@Nullable org.compiere.model.I_AD_Image Photo);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Photo_ID = new ModelColumn<>(I_AD_User.class, "Photo_ID", org.compiere.model.I_AD_Image.class);
-	String COLUMNNAME_Photo_ID = "Photo_ID";
-
-	/**
-	 * Set Previous Company.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrevious_company (@Nullable java.lang.String Previous_company);
-
-	/**
-	 * Get Previous Company.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPrevious_company();
-
-	ModelColumn<I_AD_User, Object> COLUMN_Previous_company = new ModelColumn<>(I_AD_User.class, "Previous_company", null);
-	String COLUMNNAME_Previous_company = "Previous_company";
-
-	/**
 	 * Set Process Now.
 	 *
 	 * <br>Type: Button
@@ -1895,27 +1611,6 @@ public interface I_AD_User
 	String COLUMNNAME_Registry = "Registry";
 
 	/**
-	 * Set 2FA Secret Key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSecretKey_2FA (@Nullable java.lang.String SecretKey_2FA);
-
-	/**
-	 * Get 2FA Secret Key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSecretKey_2FA();
-
-	ModelColumn<I_AD_User, Object> COLUMN_SecretKey_2FA = new ModelColumn<>(I_AD_User.class, "SecretKey_2FA", null);
-	String COLUMNNAME_SecretKey_2FA = "SecretKey_2FA";
-
-	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first
@@ -1941,7 +1636,7 @@ public interface I_AD_User
 	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Supervisor.
+	 * Set Vorgesetzter.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search
@@ -1951,7 +1646,7 @@ public interface I_AD_User
 	void setSupervisor_ID (int Supervisor_ID);
 
 	/**
-	 * Get Supervisor.
+	 * Get Vorgesetzter.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
 	 * <br>Type: Search

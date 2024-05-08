@@ -22,8 +22,6 @@
 
 package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -49,35 +47,35 @@ import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static de.metas.contracts.commission.CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class HierarchyCommissionConfigFactoryTest
 {
 	private CommissionHierarchyFactory commissionHierarchyFactory;
@@ -96,13 +94,10 @@ public class HierarchyCommissionConfigFactoryTest
 
 	private CommissionTriggerType commissionTriggerType;
 
-	private Expect expect;
-
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 
 		orgId = AdempiereTestHelper.createOrgWithTimeZone();
 
@@ -151,6 +146,20 @@ public class HierarchyCommissionConfigFactoryTest
 				.build();
 
 		commissionTriggerType = CommissionTriggerType.InvoiceCandidate;
+	}
+
+	@BeforeAll
+	static void beforeAll()
+	{
+		SnapshotMatcher.start(
+				AdempiereTestHelper.SNAPSHOT_CONFIG,
+				AdempiereTestHelper.createSnapshotJsonFunction());
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
@@ -210,7 +219,7 @@ public class HierarchyCommissionConfigFactoryTest
 		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(3);
 
-		expect.serializer("orderedJson").toMatchSnapshot(config);
+		SnapshotMatcher.expect(config).toMatchSnapshot();
 	}
 
 	private void setSalesRepOfEndCustomerTo(final BPartnerId salesRepLvl0Id)
@@ -272,7 +281,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		// then
 		assertThat(configs).hasSize(2);
-		expect.serializer("orderedJson").toMatchSnapshot(configs);
+		SnapshotMatcher.expect(configs).toMatchSnapshot();
 	}
 
 	@Test
@@ -535,7 +544,7 @@ public class HierarchyCommissionConfigFactoryTest
 
 		// then
 		assertThat(configs).hasSize(2);
-		expect.serializer("orderedJson").toMatchSnapshot(configs);
+		SnapshotMatcher.expect(configs).toMatchSnapshot();
 	}
 
 	@Test
@@ -666,7 +675,7 @@ public class HierarchyCommissionConfigFactoryTest
 					assertThat(HierarchyConfig.cast(config).getId()).isEqualTo(configData2.getHierarchyConfigId());
 				});
 
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		SnapshotMatcher.expect(result).toMatchSnapshot();
 	}
 
 	@Builder(builderMethodName = "flatrateConditionsBuilder", builderClassName = "FlatrateConditionsBuilder")

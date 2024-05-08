@@ -33,6 +33,7 @@ import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -46,17 +47,34 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
-public class DpdDeliveryOrderRepository
+public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 
+	@Override
+	public String getShipperGatewayId()
+	{
+		return DpdConstants.SHIPPER_GATEWAY_ID;
+	}
+
+	@NonNull
+	@Override
+	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
+		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
+		return TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deliveryOrderRepoId);
+	}
+
+	@Override
 	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
 	{
 
@@ -73,6 +91,7 @@ public class DpdDeliveryOrderRepository
 	 * - I_Dpd_StoreOrder is the persisted object for that DTO (which has lines), with data relevant for DPD.
 	 * Each different shipper has its own "shipper-po" with its own relevant data.
 	 */
+	@Override
 	@NonNull
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
@@ -165,7 +184,7 @@ public class DpdDeliveryOrderRepository
 
 				//noinspection ConstantConditions
 				orderLinePO.setPackageContent(deliveryOrderLine.getContent());
-				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg().intValue());
+				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
 				orderLinePO.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
 				orderLinePO.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
 
@@ -223,7 +242,7 @@ public class DpdDeliveryOrderRepository
 							.widthInCM(linePO.getWidthInCm())
 							.heightInCM(linePO.getHeightInCm())
 							.build())
-					.grossWeightKg(BigDecimal.valueOf(linePO.getWeightInKg()))
+					.grossWeightKg(linePO.getWeightInKg())
 					.content(linePO.getPackageContent())
 					.build();
 			deliveryOrderLIneBuilder.add(line);

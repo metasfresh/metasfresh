@@ -1,15 +1,16 @@
 package de.metas.ui.web.pporder;
 
-import de.metas.handlingunits.model.I_M_Source_HU;
-import de.metas.util.GuavaCollectors;
-import lombok.Getter;
-import lombok.NonNull;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import java.util.Map;
-import java.util.stream.Stream;
+import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.util.GuavaCollectors;
+import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,7 +61,5 @@ public enum PPOrderLineRowType
 
 	private static final Map<String, PPOrderLineRowType> code2type = Stream.of(values())
 			.collect(GuavaCollectors.toImmutableMapByKey(PPOrderLineRowType::getCode));
-
-	public boolean isPP_OrderBomLine() {return PP_OrderBomLine.equals(this);}
 
 }

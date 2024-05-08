@@ -4,12 +4,11 @@ import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.ad.table.api.ColumnNameFQ;
 import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SqlOrderByValueTest
 {
@@ -21,11 +20,11 @@ class SqlOrderByValueTest
 						.joinOnTableNameOrAlias("joinOnTableNameOrAlias")
 						.joinOnColumnName("joinOnColumnName")
 						.sqlExpression(SqlForFetchingLookupById.builder()
-								.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName("LookupTable", "keyColumnName"))
+								.keyColumnNameFQ("keyColumnNameFQ")
 								.numericKey(true)
 								.displayColumn(ConstantStringExpression.of("displayColumn"))
 								.descriptionColumn(ConstantStringExpression.of("descriptionColumn"))
-								.activeColumn(ColumnNameFQ.ofTableAndColumnName("LookupTable", "IsActive"))
+								.activeColumn("IsActive")
 								.validationMsgColumn(ConstantStringExpression.of("validationMsgColumn"))
 								.sqlFrom(ConstantStringExpression.of("sqlFrom"))
 								.additionalWhereClause("additionalWhereClause")
@@ -42,7 +41,7 @@ class SqlOrderByValueTest
 				.isEqualTo("SELECT "
 						+ "\n displayColumn"
 						+ "\n FROM sqlFrom"
-						+ "\n WHERE LookupTable.keyColumnName=joinOnTableNameOrAlias2.joinOnColumnName AND additionalWhereClause");
+						+ "\n WHERE keyColumnNameFQ=joinOnTableNameOrAlias2.joinOnColumnName AND additionalWhereClause");
 	}
 
 	@Nested

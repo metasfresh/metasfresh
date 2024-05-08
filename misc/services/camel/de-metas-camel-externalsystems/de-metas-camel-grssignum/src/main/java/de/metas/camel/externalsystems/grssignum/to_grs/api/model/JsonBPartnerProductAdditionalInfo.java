@@ -42,7 +42,7 @@ public class JsonBPartnerProductAdditionalInfo
 	List<JsonAttachment> attachments;
 
 	@Builder
-	public JsonBPartnerProductAdditionalInfo(@JsonProperty("ATTACHMENT") @Nullable final List<JsonAttachment> attachments)
+	public JsonBPartnerProductAdditionalInfo(@JsonProperty("ATTACHMENT") @NonNull final List<JsonAttachment> attachments)
 	{
 		this.attachments = attachments;
 	}

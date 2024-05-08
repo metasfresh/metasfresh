@@ -1,70 +1,72 @@
-DROP VIEW IF EXISTS AD_Window_ParentChildTableNames_v1
-;
 
-CREATE OR REPLACE VIEW AD_Window_ParentChildTableNames_v1 AS
-SELECT AD_Window_ID
-     , WindowName
-     , ParentTableName
-     , Parent_Table_IsEnableRemoteCacheInvalidation
-     , ChildTableName
-     , Child_Table_IsEnableRemoteCacheInvalidation
-     , ParentColumnName AS ParentLinkColumnName
-     , ChildKeyColumnName
-     --
-     , (CASE
-            WHEN ColumnName IS NOT NULL THEN ColumnName
-                                        ELSE (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Table_ID = t.Child_Table_ID AND c.ColumnName = t.ParentColumnName AND c.IsActive = 'Y')
-        END)            AS ChildLinkColumnName
-     --
-FROM (SELECT w.AD_Window_ID
-           , w.Name                                                                                                             AS WindowName
-           , pt.TableName                                                                                                       AS ParentTableName
-           -- , pt.AD_Table_ID                                                                                                     AS Parent_Table_ID
-           , (CASE
-                  WHEN w.IsEnableRemoteCacheInvalidation = 'Y' OR pt.IsEnableRemoteCacheInvalidation = 'Y' THEN 'Y'
-                                                                                                           ELSE 'N'
-              END)                                                                                                              AS Parent_Table_IsEnableRemoteCacheInvalidation
-           , ct.TableName                                                                                                       AS ChildTableName
-           , ct.AD_Table_ID                                                                                                     AS Child_Table_ID
-           , (CASE
-                  WHEN ct.AD_Table_ID IS NULL                                                              THEN NULL
-                  WHEN w.IsEnableRemoteCacheInvalidation = 'Y' OR ct.IsEnableRemoteCacheInvalidation = 'Y' THEN 'Y'
-                                                                                                           ELSE 'N'
-              END)                                                                                                              AS Child_Table_IsEnableRemoteCacheInvalidation
-           -- ColumnName
-           , (CASE
-                  WHEN ctt.AD_Column_ID IS NOT NULL THEN (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID = ctt.AD_Column_ID)
-              END)                                                                                                              AS ColumnName
+drop view if exists AD_Window_ParentChildTableNames_v1;
+create or replace view AD_Window_ParentChildTableNames_v1 as
+select
+AD_Window_ID
+, WindowName
+, ParentTableName
+, Parent_Table_IsEnableRemoteCacheInvalidation
+, ChildTableName
+, Child_Table_IsEnableRemoteCacheInvalidation
+, ParentColumnName as ParentLinkColumnName
+, ChildKeyColumnName
+--
+, (case
+	when ColumnName is not null then ColumnName
+	else (select c.ColumnName from AD_Column c where c.AD_Table_ID=t.Child_Table_ID and c.ColumnName=t.ParentColumnName and c.IsActive='Y')
+end) as ChildLinkColumnName
+--
+from (
+	select
+	w.AD_Window_ID
+	, w.Name as WindowName
+	, pt.TableName as ParentTableName
+	, pt.AD_Table_ID as Parent_Table_ID
+	, (case 
+	    when w.IsEnableRemoteCacheInvalidation='Y' OR pt.IsEnableRemoteCacheInvalidation='Y' then 'Y'
+	    else 'N'
+	end) as Parent_Table_IsEnableRemoteCacheInvalidation
+	, ct.TableName as ChildTableName
+	, ct.AD_Table_ID as Child_Table_ID
+	, (case 
+	   	when ct.AD_Table_ID IS NULL then NULL
+	    when w.IsEnableRemoteCacheInvalidation='Y' OR ct.IsEnableRemoteCacheInvalidation='Y' then 'Y'
+	    else 'N'
+	end) as Child_Table_IsEnableRemoteCacheInvalidation
+	-- ColumnName
+	, (case
+		when ctt.AD_Column_ID is not null then (select c.ColumnName from AD_Column c where c.AD_Column_ID=ctt.AD_Column_ID)
+		else null
+	end) as ColumnName
 
-           -- ParentColumnName
-           , (CASE
-                  WHEN ctt.Parent_Column_ID IS NOT NULL THEN (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Column_ID = ctt.Parent_Column_ID)
-                                                        ELSE (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Table_ID = ptt.AD_Table_ID AND c.IsKey = 'Y' AND c.IsActive = 'Y')
-              END)                                                                                                              AS ParentColumnName
+	-- ParentColumnName
+	, (case
+		when ctt.Parent_Column_ID is not null then (select c.ColumnName from AD_Column c where c.AD_Column_ID=ctt.Parent_Column_ID)
+		else (select c.ColumnName from AD_Column c where c.AD_Table_ID=ptt.AD_Table_ID and c.IsKey='Y' and c.IsActive='Y')
+	end) as ParentColumnName
 
-           , (SELECT c.ColumnName FROM AD_Column c WHERE c.AD_Table_ID = ct.AD_Table_ID AND c.IsKey = 'Y' AND c.IsActive = 'Y') AS ChildKeyColumnName
+	, (select c.ColumnName from AD_Column c where c.AD_Table_ID=ct.AD_Table_ID and c.IsKey='Y' and c.IsActive='Y') as ChildKeyColumnName
 
-      FROM AD_Tab ptt/*parent-tab*/
-               INNER JOIN AD_Table pt/*parent-table*/ ON (pt.AD_Table_ID = ptt.AD_Table_ID)
-               LEFT JOIN AD_Tab ctt/*child-tab*/ ON (
-                  ctt.AD_Window_ID = ptt.AD_Window_ID
-              AND ctt.TabLevel = ptt.TabLevel + 1
-              AND ctt.SeqNo > ptt.SeqNo
-              AND ctt.IsActive = 'Y'
-          )
-               LEFT JOIN AD_Table ct/*child-table*/ ON (ct.AD_Table_ID = ctt.AD_Table_ID)
-               INNER JOIN AD_Window w ON (w.AD_Window_ID = ptt.AD_Window_ID)
-      WHERE TRUE
-          /* the parent tab needs to have the smallest SeqNo and TabLevel (but not neccesarly 10 resp. 0) */
-        AND ptt.SeqNo = (SELECT MIN(siblings.SeqNo) FROM AD_Tab siblings WHERE siblings.AD_Window_ID = w.AD_Window_ID AND siblings.IsActive = 'Y')
-        AND ptt.TabLevel = (SELECT MIN(siblings.TabLevel) FROM AD_Tab siblings WHERE siblings.AD_Window_ID = w.AD_Window_ID AND siblings.IsActive = 'Y')
-        AND ptt.IsActive = 'Y'
-        AND w.IsActive = 'Y'
-        AND pt.IsActive = 'Y'
-        AND COALESCE(ct.IsActive, 'Y') = 'Y'
-         -- AND EXISTS(SELECT 1 FROM AD_Menu m WHERE m.AD_Window_ID = w.AD_Window_ID AND m.IsActive = 'Y') -- allow cache invalidation even if not in menu
-     ) t
-;
+	from AD_Tab ptt/*parent-tab*/
+		inner join AD_Table pt/*parent-table*/ on (pt.AD_Table_ID=ptt.AD_Table_ID)
+		left join AD_Tab ctt/*child-tab*/ on (
+			ctt.AD_Window_ID=ptt.AD_Window_ID
+			and ctt.TabLevel=ptt.TabLevel+1
+			and ctt.SeqNo > ptt.SeqNo
+			and ctt.IsActive='Y'
+		)
+			left join AD_Table ct/*child-table*/ on (ct.AD_Table_ID=ctt.AD_Table_ID)
+		inner join AD_Window w on (w.AD_Window_ID=ptt.AD_Window_ID)
+	where true
+		/* the parent tab needs to have the smallest SeqNo and TabLevel (but not neccesarly 10 resp. 0) */
+		and ptt.SeqNo=(select min(siblings.SeqNo) from AD_Tab siblings where siblings.AD_Window_ID=w.AD_Window_ID and siblings.IsActive='Y') 
+		and ptt.TabLevel=(select min(siblings.TabLevel) from AD_Tab siblings where siblings.AD_Window_ID=w.AD_Window_ID and siblings.IsActive='Y') 
+		and ptt.IsActive='Y'
+		and w.IsActive='Y'
+		and pt.IsActive='Y'
+		and coalesce(ct.IsActive,'Y')='Y'
+		and exists (select 1 from AD_Menu m where m.AD_Window_ID=w.AD_Window_ID and m.IsActive='Y')
+) t
 
 /*
 select * from AD_Window_ParentChildTableNames_v1 

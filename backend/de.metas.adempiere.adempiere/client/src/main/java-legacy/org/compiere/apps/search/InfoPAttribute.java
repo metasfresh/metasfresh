@@ -16,11 +16,19 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Services;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+
+import javax.swing.Box;
+
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -30,6 +38,7 @@ import org.compiere.grid.ed.VLine;
 import org.compiere.grid.ed.VNumber;
 import org.compiere.grid.ed.VString;
 import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MAttribute;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
@@ -41,14 +50,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 
 /**
  *	Search by Product Attribute.
@@ -112,6 +118,15 @@ public class InfoPAttribute extends CDialog
 			.withoutText()
 			.build();
 	//
+	private CLabel serNoLabel = new CLabel(msgBL.translate(Env.getCtx(), "SerNo"));
+	private VString serNoField = new VString("SerNo", false, false, true, 10, 20, null, null); 
+	private CLabel lotLabel = new CLabel(msgBL.translate(Env.getCtx(), "Lot"));
+	private VString lotField = new VString("Lot", false, false, true, 10, 20, null, null); 
+	private CComboBox<String> guaranteeDateSelection = null;
+	private VDate guaranteeDateField = new VDate ("GuaranteeDate", false, false, true, DisplayType.Date, msgBL.translate(Env.getCtx(), "GuaranteeDate")); 
+	private CLabel lotLabel2 = new CLabel(msgBL.translate(Env.getCtx(), "M_Lot_ID"));
+	private CComboBox<KeyNamePair> lotSelection = null; 
+	//
 
 	/**
 	 * 	Static Init
@@ -134,6 +149,23 @@ public class InfoPAttribute extends CDialog
 	private void dynInit()
 	{
 		int row = addAttributes();
+		//
+		final String s = msgBL.translate(Env.getCtx(), "GuaranteeDate");
+		guaranteeDateSelection = new CComboBox<> (new String[] {
+				s + " <"
+				, s + " ="
+				, s + " >"});
+	//	guaranteeDateSelection.setPreferredSize();
+		initLotSelection();
+		//	Fixed Instance Selection Fields		
+		centerPanel.add(serNoLabel, new ALayoutConstraint(row++, 0));
+		centerPanel.add(serNoField, null);
+		centerPanel.add(lotLabel, new ALayoutConstraint(row++, 0));
+		centerPanel.add(lotField, null);
+		centerPanel.add(lotLabel2, new ALayoutConstraint(row++, 0));
+		centerPanel.add(lotSelection, null);
+		centerPanel.add(guaranteeDateSelection, new ALayoutConstraint(row++, 0));
+		centerPanel.add(guaranteeDateField, null);
 		//
 		Dimension d = centerPanel.getPreferredSize();
 		d.width = 400;
@@ -273,6 +305,43 @@ public class InfoPAttribute extends CDialog
 		return retValue;
 	}	//	getAttributeList
 
+
+	/**
+	 * 	Initialize Lot Selection
+	 */
+	private void initLotSelection()
+	{
+		ArrayList<KeyNamePair> list = new ArrayList<KeyNamePair>();
+		list.add(new KeyNamePair(-1, ""));
+		
+		String sql = Env.getUserRolePermissions().addAccessSQL(
+			"SELECT M_Lot_ID, Name FROM M_Lot WHERE IsActive='Y' ORDER BY 2",
+			"M_Lot", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, null);
+			rs = pstmt.executeQuery();
+			while (rs.next())
+				list.add(new KeyNamePair(rs.getInt(1), rs.getString(2)));
+		}
+		catch (Exception e)
+		{
+			log.error(sql, e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+		//	Create List
+		KeyNamePair[] items = new KeyNamePair[list.size()];
+		list.toArray(items);
+		lotSelection = new CComboBox<>(items);
+	}	//	initLotSelection
+
+
+	
 	/**
 	 *	Action Listener
 	 *	@param e event
@@ -314,7 +383,51 @@ public class InfoPAttribute extends CDialog
 		
 		/***	Instance Attributes		*/		
 		StringBuffer sb = new StringBuffer();
-
+		//	Serial No
+		String s = serNoField.getText();
+		if (s != null && s.length() > 0)
+		{
+			sb.append(" AND asi.SerNo");
+			if (s.indexOf('%') == -1 && s.indexOf('_') == 1)
+				sb.append("=");
+			else
+				sb.append(" LIKE ");
+			sb.append(DB.TO_STRING(s));
+		}
+		//	Lot Number
+		s = lotField.getText();
+		if (s != null && s.length() > 0)
+		{
+			sb.append(" AND asi.Lot");
+			if (s.indexOf('%') == -1 && s.indexOf('_') == 1)
+				sb.append("=");
+			else
+				sb.append(" LIKE ");
+			sb.append(DB.TO_STRING(s));
+		}
+		//	Lot ID
+		KeyNamePair pp = lotSelection.getSelectedItem();
+		if (pp != null && pp.getKey() != -1)
+		{
+			int ID = pp.getKey();
+			sb.append(" AND asi.M_Lot_ID=").append(ID);
+		}
+		
+		//	Guarantee Date
+		Timestamp ts = guaranteeDateField.getValue();
+		if (ts != null)
+		{
+			sb.append(" AND TRUNC(asi." + I_M_AttributeSetInstance.COLUMNNAME_GuaranteeDate + ")");
+			int index = guaranteeDateSelection.getSelectedIndex();	//	 < = >
+			if (index == 0)
+				sb.append("<");
+			else if (index == 1)
+				sb.append("=");
+			else
+				sb.append(">");
+			sb.append(DB.TO_DATE(ts,true));
+		}
+		
 		//	Instance Editors
 		for (int i = 0; i < m_instanceEditors.size(); i++)
 		{
@@ -326,7 +439,7 @@ public class InfoPAttribute extends CDialog
 			{
 				@SuppressWarnings("unchecked")
 				CComboBox<KeyNamePair> field = (CComboBox<KeyNamePair>)c;
-				KeyNamePair pp = field.getSelectedItem();
+				pp = field.getSelectedItem();
 				if (pp != null && pp.getKey() != -1)
 				{
 					iAttr.append("M_Attribute_ID=").append(M_Attribute_ID)
@@ -350,7 +463,7 @@ public class InfoPAttribute extends CDialog
 					else if (value != null && valueTo != null)
 						iAttr.append(" BETWEEN ").append(value)
 							.append(" AND ").append(valueTo);
-				}
+				} 
 			}
 			else if (c instanceof VDate)
 			{
@@ -420,7 +533,7 @@ public class InfoPAttribute extends CDialog
 			{
 				@SuppressWarnings("unchecked")
 				CComboBox<KeyNamePair> field = (CComboBox<KeyNamePair>)c;
-				KeyNamePair pp = field.getSelectedItem();
+				pp = field.getSelectedItem();
 				if (pp != null && pp.getKey() != -1)
 				{
 					pAttr.append("M_Attribute_ID=").append(M_Attribute_ID)

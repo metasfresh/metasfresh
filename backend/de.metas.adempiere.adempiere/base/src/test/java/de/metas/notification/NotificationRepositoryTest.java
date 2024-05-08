@@ -70,7 +70,7 @@ public class NotificationRepositoryTest
 		createAD_Message("contentADMessage");
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
-				.topic(Topic.builder().name("topic1").type(Type.DISTRIBUTED).build())
+				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
 				.recipientUserId(UserId.ofRepoId(123))
 				.important(true)
 				//

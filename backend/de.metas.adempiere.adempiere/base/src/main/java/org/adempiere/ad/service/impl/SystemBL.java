@@ -38,7 +38,6 @@ public class SystemBL implements ISystemBL
 
 		return ADSystemInfo.builder()
 				.dbVersion(record.getDBVersion())
-				.systemStatus(record.getSystemStatus())
 				.lastBuildInfo(record.getLastBuildInfo())
 				.failOnMissingModelValidator(record.isFailOnMissingModelValidator())
 				.build();

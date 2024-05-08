@@ -3,7 +3,6 @@
   "qrCode": "QR code",
   "locator": "Lagerort",
   "HUStatus": "Status",
-  "numberOfAggregatedHUs": "Aggregierte HU-Zahl",
   "product": "Produkt",
   "qty": "Menge",
   "disposePendingStatus": "Entsorgen",
@@ -15,38 +14,13 @@
     },
     "move": {
       "buttonCaption": "Bewegen",
-      "scanTarget": "Lagerort scannen",
-      "qtyTULabel": "TU-Zahl"
+      "scanTarget": "Lagerort scannen"
     },
     "scanAgain": {
       "buttonCaption": "Erneut scannen"
     },
     "setClearance": {
       "buttonCaption": "HU-Freigabe ändern"
-    },
-    "bulkActions": {
-      "buttonCaption": "Massenaktionen",
-      "windowName": "Massenaktionen",
-      "scan": "Scannen",
-      "move": "Bewegen",
-      "closeScanner": "Scanner schließen",
-      "scanHUPlaceholder": "Scannen HU",
-      "scanTargetPlaceholder": "Scan-Ziel",
-      "moveSuccess": "Erfolgreich verschoben"
-    },
-    "changeQty": {
-      "buttonCaption": "Menge verändern",
-      "qtyLabel": "Menge",
-      "descriptionLabel": "Beschreibung",
-      "allowedOnlyForSingleProducts": "Die Aktion kann nur für ein einzelnes Produkt durchgeführt werden."
-    },
-    "printLabels": {
-      "buttonCaption": "Etiketten drucken",
-      "nrOfCopies": "Zahl der Kopien",
-      "label": "Etikett",
-      "windowName": "Etiketten drucken",
-      "print": "Drucken",
-      "noPrintingOptionSelected": "Es wurde keine Druckoption ausgewählt!"
     }
   }
 }

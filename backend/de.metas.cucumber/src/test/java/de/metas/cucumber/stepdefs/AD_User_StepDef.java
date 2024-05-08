@@ -22,9 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.security.IRoleDAO;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,9 +60,8 @@ import static org.compiere.model.I_AD_User.COLUMNNAME_Phone;
 public class AD_User_StepDef
 {
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
@@ -126,13 +122,6 @@ public class AD_User_StepDef
 			if (Check.isNotBlank(phone))
 			{
 				user.setPhone(phone);
-			}
-
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerIdentifier))
-			{
-				final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-				user.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(user);
@@ -210,19 +199,7 @@ public class AD_User_StepDef
 			userRecord.setNotificationType(notificationType);
 		}
 
-		final Integer userId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_User_ID);
-		if (userId != null)
-		{
-			userRecord.setAD_User_ID(userId);
-		}
-
 		InterfaceWrapperHelper.saveRecord(userRecord);
-
-		final Integer roleId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.Role_ID");
-		if (roleId != null)
-		{
-			roleDAO.createUserRoleAssignmentIfMissing(UserId.ofRepoId(userRecord.getAD_User_ID()), RoleId.ofRepoId(roleId));
-		}
 
 		final String userIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 		userTable.putOrReplace(userIdentifier, userRecord);

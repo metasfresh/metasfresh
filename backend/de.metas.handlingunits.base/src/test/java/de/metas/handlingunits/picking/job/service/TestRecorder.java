@@ -12,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Disabled
 public class TestRecorder
@@ -47,5 +49,10 @@ public class TestRecorder
 	public void reportStepWithAllHUs(final String name)
 	{
 		reportStep(name, huTracer.dumpAllHUsToJson());
+	}
+
+	public void assertMatchesSnapshot()
+	{
+		expect(this).toMatchSnapshot();
 	}
 }

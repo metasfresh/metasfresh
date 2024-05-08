@@ -22,9 +22,6 @@
 
 package de.metas.contracts.commission.commissioninstance.businesslogic.margin;
 
-import au.com.origin.snapshots.Expect;
-
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -59,9 +56,10 @@ import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -69,10 +67,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class MarginAlgorithmTest
 {
 	private final OrgId orgId = OrgId.ofRepoId(200);
@@ -89,7 +89,17 @@ public class MarginAlgorithmTest
 	CustomerTradeMarginService customerTradeMarginServiceSpy;
 	MarginAlgorithm marginAlgorithm;
 
-	private Expect expect;
+	@BeforeAll
+	static void init()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
 
 	@BeforeEach
 	void beforeEach()
@@ -127,7 +137,7 @@ public class MarginAlgorithmTest
 		// then
 		assertThat(shares).hasSize(1);
 
-		expect.serializer("orderedJson").toMatchSnapshot(shares.get(0));
+		expect(shares.get(0)).toMatchSnapshot();
 	}
 
 	@Builder(builderMethodName = "commissionSharesRequestBuilder")

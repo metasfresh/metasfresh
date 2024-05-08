@@ -22,13 +22,8 @@
 
 package de.metas.document.dimension;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
@@ -50,10 +45,6 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
-				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -63,7 +54,6 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
-				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getC_Harvesting_Calendar_ID(), record.getHarvesting_Year_ID()))
 				.build();
 	}
 
@@ -73,17 +63,6 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
-		//record.setM_Product_ID((ProductId.toRepoId(from.getProductId())));
-		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
-		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
-
-		updateRecordUserElements(record, from);
-	}
-
-	@Override
-	public void updateRecordUserElements(final I_M_InOutLine record, final Dimension from)
-	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -93,9 +72,5 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
-
-		final YearAndCalendarId harvestingYearAndCalendarId = from.getHarvestingYearAndCalendarId();
-		record.setC_Harvesting_Calendar_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.calendarId().getRepoId() : -1);
-		record.setHarvesting_Year_ID(harvestingYearAndCalendarId != null ? harvestingYearAndCalendarId.yearId().getRepoId() : -1);
 	}
 }

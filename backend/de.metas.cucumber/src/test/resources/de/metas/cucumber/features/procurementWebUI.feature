@@ -1,11 +1,9 @@
 @from:cucumber
-@ghActions:run_on_executor6
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
 
   @from:cucumber
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
-    Given infrastructure and metasfresh are running
-    And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
+    Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name             |
       | p_1        | contractProduct1 |

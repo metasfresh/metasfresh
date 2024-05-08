@@ -39,9 +39,8 @@ import java.util.Arrays;
 public enum InvoiceLineAllocType implements ReferenceListAwareEnum
 {
 	CreatedFromIC(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_CreatedFromIC),
-	CreditMemoReinvoiceable(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoicable),
-	CreditMemoNotReinvoiceable(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoicable),
-	InvoiceVoided(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_InvoiceVoided)
+	CreditMemoReinvoiceable(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoiceable),
+	CreditMemoNotReinvoiceable(X_C_Invoice_Line_Alloc.C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoiceable)
 	;
 
 	private final String code;

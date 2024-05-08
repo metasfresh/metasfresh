@@ -35,10 +35,9 @@ import de.metas.camel.externalsystems.grssignum.to_grs.client.model.DispatchRequ
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
-import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.v2.JsonExternalReferenceResponseItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -122,9 +121,7 @@ public class ExportCustomerProcessor implements Processor
 						.fullName(contact.getFirstName() + " " + contact.getLastName())
 						.lastName(contact.getLastName())
 						.firstName(contact.getFirstName())
-						.greeting(Optional.ofNullable(contact.getGreeting())
-										  .map(JsonResponseGreeting::getGreeting)
-										  .orElse(null))
+						.greeting(contact.getGreeting())
 						.title(contact.getTitle())
 						.position(contact.getPosition() == null ? null : contact.getPosition().getName())
 						.email(contact.getEmail())
@@ -176,7 +173,7 @@ public class ExportCustomerProcessor implements Processor
 		return jsonExternalReferenceLookupResponse
 				.getItems()
 				.stream()
-				.map(JsonExternalReferenceResponseItem::getExternalReference)
+				.map(JsonExternalReferenceItem::getExternalReference)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}

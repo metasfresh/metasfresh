@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking;
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.picking.model.X_M_Picking_Config;
@@ -20,8 +19,9 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import lombok.NonNull;
+import de.metas.util.Services;
 import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -57,9 +57,10 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 
 	private static final String FIELDNAME_ProductOrBPartner = "ProductOrBPartner";
 
-	public PickingTerminalByWarehouseAndProductViewCustomizer(@NonNull final ADReferenceService adReferenceService)
+	public PickingTerminalByWarehouseAndProductViewCustomizer()
 	{
-		final ITranslatableString caption = adReferenceService.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct);
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final ITranslatableString caption = referenceDAO.retrieveListNameTranslatableString(X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_AD_Reference_ID, X_M_Picking_Config.WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByProduct);
 		PROFILE = ViewProfile.of(PROFILE_ID, caption);
 	}
 

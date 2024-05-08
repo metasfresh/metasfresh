@@ -3,7 +3,6 @@ package de.metas.handlingunits;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.currency.CurrencyRepository;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InOutLineDimensionFactory;
@@ -12,29 +11,29 @@ import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapReposit
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
-import de.metas.money.MoneyService;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
-import de.metas.notification.impl.UserNotificationsConfigService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.test.ErrorMessage;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
@@ -99,10 +98,6 @@ public abstract class AbstractHUTest
 	protected I_M_Attribute attr_Volume;
 	protected I_M_Attribute attr_FragileSticker;
 
-	protected I_M_Attribute attr_Age;
-
-	protected I_M_Attribute attr_AgeOffset;
-
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_WeightGross}
 	 */
@@ -155,10 +150,9 @@ public abstract class AbstractHUTest
 	@BeforeEach
 	public final void init()
 	{
-
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
@@ -176,17 +170,6 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
-		SpringContextHolder.registerJUnitBean(new UserNotificationsConfigService());
-
-		final HUUniqueAttributesRepository huUniqueAttributeRepo = new HUUniqueAttributesRepository();
-		SpringContextHolder.registerJUnitBean(new HUUniqueAttributesService(huUniqueAttributeRepo));
-
-		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
-		SpringContextHolder.registerJUnitBean(moneyService);
-
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 
 		initialize();
 	}
@@ -215,9 +198,6 @@ public abstract class AbstractHUTest
 		attr_WeightNet = helper.attr_WeightNet;
 		attr_WeightTare = helper.attr_WeightTare;
 		attr_WeightTareAdjust = helper.attr_WeightTareAdjust;
-
-		attr_Age = helper.attr_Age;
-		attr_AgeOffset = helper.attr_AgeOffset;
 
 		attr_QualityDiscountPercent = helper.attr_QualityDiscountPercent;
 		attr_QualityNotice = helper.attr_QualityNotice;

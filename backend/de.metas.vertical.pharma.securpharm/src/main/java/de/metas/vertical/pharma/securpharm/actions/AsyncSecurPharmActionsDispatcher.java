@@ -1,16 +1,17 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.stereotype.Component;
+
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import lombok.NonNull;
 import lombok.ToString;
-import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.stereotype.Component;
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import java.util.concurrent.Executors;
 @Primary
 public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispatcher
 {
-	private static final Topic TOPIC = Topic.distributed("de.metas.vertical.pharma.securpharm.actions");
+	private static final Topic TOPIC = Topic.remote("de.metas.vertical.pharma.securpharm.actions");
 
 	private final IEventBus eventBus;
 	private final Executor executor;
@@ -67,7 +68,7 @@ public class AsyncSecurPharmActionsDispatcher implements SecurPharmActionsDispat
 	@Override
 	public void post(@NonNull final SecurPharmaActionRequest request)
 	{
-		eventBus.enqueueObject(request);
+		eventBus.postObject(request);
 	}
 
 	@ToString

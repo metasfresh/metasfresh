@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -61,12 +61,6 @@ public class JsonProduct
 	@JsonProperty("INAKTIV")
 	boolean isActive;
 
-	@JsonProperty("BIO")
-	boolean isBio;
-
-	@JsonProperty("HALAL")
-	boolean isHalal;
-
 	@Nullable
 	@JsonProperty("KRED")
 	List<JsonBPartnerProduct> bPartnerProducts;
@@ -80,8 +74,6 @@ public class JsonProduct
 			@JsonProperty("TEXT") final @Nullable String name1,
 			@JsonProperty("TEXT2") final @Nullable String name2,
 			@JsonProperty("INAKTIV") final int inactive,
-			@JsonProperty("BIO") final int bio,
-			@JsonProperty("HALAL") final int halal,
 			@JsonProperty("KRED") final @Nullable List<JsonBPartnerProduct> bPartnerProducts)
 	{
 		this.flag = flag;
@@ -90,8 +82,6 @@ public class JsonProduct
 		this.name1 = name1;
 		this.name2 = name2;
 		this.isActive = inactive != 1;
-		this.isBio = bio == 1;
-		this.isHalal = halal == 1;
 		this.bPartnerProducts = bPartnerProducts;
 	}
 

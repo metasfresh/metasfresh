@@ -101,6 +101,4 @@ public final class QtyTU implements Comparable<QtyTU>
 	public boolean isGreaterThan(@NonNull final QtyTU other) {return compareTo(other) > 0;}
 
 	public boolean isPositive() {return intValue > 0;}
-
-	public boolean isOne() {return intValue == 1;}
 }

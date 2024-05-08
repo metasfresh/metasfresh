@@ -22,12 +22,8 @@
 
 package de.metas.banking.service.impl;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IPostingRequestBuilder;
-import de.metas.acct.api.IPostingService;
-import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -36,36 +32,36 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.banking.service.ReconcileAsBankTransferRequest;
 import de.metas.currency.Amount;
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.DocStatus;
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.FixedConversionRate;
+import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -77,7 +73,8 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IPostingService postingService = Services.get(IPostingService.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
 
@@ -133,30 +130,37 @@ public class BankStatementBL implements IBankStatementBL
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
 		// Make sure the period is open
-		if (bankStatement.isPosted())
-		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
+		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-			factAcctDAO.deleteForDocumentModel(bankStatement);
+		factAcctDAO.deleteForDocumentModel(bankStatement);
 
-			bankStatement.setPosted(false);
-			InterfaceWrapperHelper.save(bankStatement);
-		}
-
-		postIt(bankStatement);
+		bankStatement.setPosted(false);
+		InterfaceWrapperHelper.save(bankStatement);
 	}
 
-	private void postIt(final I_C_BankStatement bankStatement)
+	@Override
+	public boolean isReconciled(@NonNull final I_C_BankStatementLine line)
 	{
-		postingService.newPostingRequest()
-				.setClientId(ClientId.ofRepoId(bankStatement.getAD_Client_ID()))
-				.setDocumentRef(TableRecordReference.of(bankStatement))
-				.setFailOnError(false)
-				.onErrorNotifyUser(UserId.ofRepoId(bankStatement.getUpdatedBy()))
-				.setPostImmediate(IPostingRequestBuilder.PostImmediate.No)
-				.postIt();
-
+		if (line.isMultiplePaymentOrInvoice())
+		{
+			if (line.isMultiplePayment())
+			{
+				// NOTE: for performance reasons we are not checking if we have C_BankStatementLine_Ref records which have payments.
+				// If this flag is set we assume that we already have them
+				return true;
+			}
+			else
+			{
+				final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+				return paymentId != null;
+			}
+		}
+		else
+		{
+			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+			return paymentId != null;
+		}
 	}
 
 	@Override
@@ -167,89 +171,7 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public void reconcileAsBankTransfer(@NonNull final ReconcileAsBankTransferRequest request)
-	{
-		if (BankStatementId.equals(request.getBankStatementId(), request.getCounterpartBankStatementId()))
-		{
-			throw new AdempiereException("Matching same bank statement is not allowed");
-		}
-		if (BankStatementLineId.equals(request.getBankStatementLineId(), request.getCounterpartBankStatementLineId()))
-		{
-			throw new AdempiereException("Matching same bank statement line is not allowed");
-		}
-
-		final I_C_BankStatement bankStatement = getById(request.getBankStatementId());
-		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
-		final I_C_BankStatementLine line = getLineById(request.getBankStatementLineId());
-		if (line.isReconciled())
-		{
-			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
-		}
-
-		final I_C_BankStatement counterpartBankStatement = getById(request.getCounterpartBankStatementId());
-		assertBankStatementIsDraftOrInProcessOrCompleted(counterpartBankStatement);
-		final I_C_BankStatementLine counterpartLine = getLineById(request.getCounterpartBankStatementLineId());
-		if (counterpartLine.isReconciled())
-		{
-			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
-		}
-
-		final boolean sameCurrency = line.getC_Currency_ID() == counterpartLine.getC_Currency_ID();
-		if (sameCurrency && line.getTrxAmt().negate().compareTo(counterpartLine.getTrxAmt()) != 0)
-		{
-			throw new AdempiereException("Transfer amount differs"); // TODO: translate
-		}
-
-		line.setC_BP_BankAccountTo_ID(counterpartBankStatement.getC_BP_BankAccount_ID());
-		line.setLink_BankStatementLine_ID(counterpartLine.getC_BankStatementLine_ID());
-		line.setIsReconciled(true);
-		InterfaceWrapperHelper.save(line);
-
-		counterpartLine.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
-		counterpartLine.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-		counterpartLine.setIsReconciled(true);
-		InterfaceWrapperHelper.save(counterpartLine);
-
-		unpost(bankStatement);
-		unpost(counterpartBankStatement);
-	}
-
-	@Override
-	public void assertBankStatementIsDraftOrInProcessOrCompleted(final I_C_BankStatement bankStatement)
-	{
-		if (!DocStatus.ofCode(bankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
-		{
-			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
-		}
-	}
-
-	public void markAsReconciledWithGLJournalLine(
-			@NonNull final BankStatementLineId lineId,
-			@NonNull final SAPGLJournalLineId glJournalLineId)
-	{
-		final I_C_BankStatementLine line = bankStatementDAO.getLineById(lineId);
-		if (line.isReconciled())
-		{
-			throw new AdempiereException("Linking GL Journal to an already reconciled bank statement line is not allowed");
-		}
-
-		line.setIsReconciled(true);
-		line.setIsMultiplePayment(false);
-		line.setIsMultiplePaymentOrInvoice(false);
-		line.setReconciledBy_SAP_GLJournal_ID(glJournalLineId.getGlJournalId().getRepoId());
-		line.setReconciledBy_SAP_GLJournalLine_ID(glJournalLineId.getRepoId());
-		bankStatementDAO.save(line);
-	}
-
-	@Override
-	public void markAsNotReconciledAndDeleteReferences(@NonNull final BankStatementLineId bankStatementLineId)
-	{
-		final I_C_BankStatementLine line = bankStatementDAO.getLineById(bankStatementLineId);
-		markAsNotReconciledAndDeleteReferences(ImmutableList.of(line));
-	}
-
-	@Override
-	public void markAsNotReconciledAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+	public void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	{
 		if (bankStatementLines.isEmpty())
 		{
@@ -271,14 +193,13 @@ public class BankStatementBL implements IBankStatementBL
 				paymentIdsToUnReconcile.add(paymentId);
 			}
 
-			final BankStatementLineId linkBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bankStatementLine.getLink_BankStatementLine_ID());
-			if (linkBankStatementLineId != null)
-			{
-				final I_C_BankStatementLine linkBankStatementLine = getLineById(linkBankStatementLineId);
-				markAsNotReconciledAndSave(linkBankStatementLine);
-			}
+			bankStatementLine.setIsReconciled(false);
+			bankStatementLine.setIsMultiplePaymentOrInvoice(false);
+			bankStatementLine.setIsMultiplePayment(false);
 
-			markAsNotReconciledAndSave(bankStatementLine);
+			bankStatementLine.setC_Payment_ID(-1);
+
+			bankStatementDAO.save(bankStatementLine);
 		}
 
 		//
@@ -289,21 +210,6 @@ public class BankStatementBL implements IBankStatementBL
 		deleteReferencesAndNotifyListeners(lineRefs);
 
 		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
-	}
-
-	private void markAsNotReconciledAndSave(final I_C_BankStatementLine bankStatementLine)
-	{
-		bankStatementLine.setIsReconciled(false);
-
-		bankStatementLine.setLink_BankStatementLine_ID(-1);
-
-		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
-		bankStatementLine.setIsMultiplePayment(false);
-		bankStatementLine.setC_Payment_ID(-1);
-		bankStatementLine.setReconciledBy_SAP_GLJournal_ID(-1);
-		bankStatementLine.setReconciledBy_SAP_GLJournalLine_ID(-1);
-
-		bankStatementDAO.save(bankStatementLine);
 	}
 
 	@Override
@@ -339,26 +245,17 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public BankStatementLineReferenceList getLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
-	{
-		return bankStatementDAO.getLineReferences(bankStatementLineIds);
-	}
-
-	@Override
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final Amount openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoiceId);
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
 
-		if (bankStatementLine.isUpdateAmountsFromInvoice())
-		{
-			bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
-			bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
-			bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
-		}
+		bankStatementLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
+		bankStatementLine.setStmtAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setTrxAmt(openAmt.getAsBigDecimal());
+		bankStatementLine.setC_Currency_ID(invoice.getC_Currency_ID());
 	}
 
 	@Override
@@ -372,10 +269,33 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final I_C_BankStatementLine bankStatementLine)
+	{
+		final PaymentCurrencyContext paymentCurrencyContext = getPaymentCurrencyContext(bankStatementLine);
+
+		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(bankStatementLine.getDateAcct(), timeZone),
+				paymentCurrencyContext.getCurrencyConversionTypeId(),
+				ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()),
+				orgId);
+
+		final FixedConversionRate fixedCurrencyRate = paymentCurrencyContext.toFixedConversionRateOrNull();
+		if (fixedCurrencyRate != null)
+		{
+			conversionCtx = conversionCtx.withFixedConversionRate(fixedCurrencyRate);
+		}
+
+		return conversionCtx;
+	}
+
+	@Override
 	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(getPaymentCurrencyConversionTypeId(bankStatementLine));
+				.currencyConversionTypeId(currencyConversionBL.getCurrencyConversionTypeId(ConversionTypeMethod.Spot));
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
@@ -393,50 +313,4 @@ public class BankStatementBL implements IBankStatementBL
 		return result.build();
 	}
 
-	@Override
-	public void changeCurrencyRate(@NonNull final BankStatementLineId bankStatementLineId, @NonNull final BigDecimal currencyRate)
-	{
-		if (currencyRate.signum() == 0)
-		{
-			throw new AdempiereException("Invalid currency rate: " + currencyRate);
-		}
-
-		final I_C_BankStatementLine line = getLineById(bankStatementLineId);
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(line.getC_BankStatement_ID());
-
-		final I_C_BankStatement bankStatement = getById(bankStatementId);
-		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
-		final CurrencyId baseCurrencyId = getBaseCurrencyId(line);
-		if (CurrencyId.equals(currencyId, baseCurrencyId))
-		{
-			throw new AdempiereException("line is not in foreign currency");
-		}
-
-		line.setCurrencyRate(currencyRate);
-		InterfaceWrapperHelper.save(line);
-
-		unpost(bankStatement);
-	}
-
-	@Override
-	public CurrencyId getBaseCurrencyId(final I_C_BankStatementLine line)
-	{
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID());
-		return moneyService.getBaseCurrencyId(clientAndOrgId);
-	}
-
-	@Nullable
-	private CurrencyConversionTypeId getPaymentCurrencyConversionTypeId(@NonNull final I_C_BankStatementLine bankStatementLine)
-	{
-		final PaymentId paymentId = PaymentId.ofRepoIdOrNull(bankStatementLine.getC_Payment_ID());
-
-		if (paymentId == null)
-		{
-			return null;
-		}
-
-		return paymentBL.getCurrencyConversionTypeId(paymentId).orElse(null);
-	}
 }

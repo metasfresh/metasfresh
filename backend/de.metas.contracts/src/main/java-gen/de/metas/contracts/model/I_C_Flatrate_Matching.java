@@ -1,8 +1,7 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_Matching
  *  @author metasfresh (generated) 

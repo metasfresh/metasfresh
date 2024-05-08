@@ -8,7 +8,6 @@ import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -141,13 +140,6 @@ public final class BooleanWithReason
 		{
 			throw new AdempiereException(reason);
 		}
-	}
-
-	public BooleanWithReason and(@NonNull final Supplier<BooleanWithReason> otherSupplier)
-	{
-		return isFalse()
-				? this
-				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
 	}
 
 }

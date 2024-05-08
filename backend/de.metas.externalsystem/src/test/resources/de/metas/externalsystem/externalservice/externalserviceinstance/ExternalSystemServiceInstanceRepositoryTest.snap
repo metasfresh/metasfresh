@@ -1,18 +1,18 @@
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenConfigIds_whenStreamByConfigIds_thenReturnMatchingInstances=[
   [
     {
-      "configId": 100001,
-      "expectedStatus": "INACTIVE",
-      "id": 100004,
-      "service": {
-        "description": "Description",
-        "disableCommand": "DisableCommand",
-        "enableCommand": "EnableCommand",
-        "externalSystemType": "GRSSignum",
-        "id": 100003,
-        "name": "Name",
-        "serviceValue": "grs_service_value"
-      }
+      "id" : 100004,
+      "service" : {
+        "id" : 100003,
+        "externalSystemType" : "GRSSignum",
+        "serviceValue" : "grs_service_value",
+        "name" : "Name",
+        "description" : "Description",
+        "enableCommand" : "EnableCommand",
+        "disableCommand" : "DisableCommand"
+      },
+      "configId" : 100001,
+      "expectedStatus" : "INACTIVE"
     }
   ]
 ]
@@ -20,53 +20,53 @@ de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemSe
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstanceRequest_whenCreate_thenCreateAndReturnInstance=[
   {
-    "configId": 100001,
-    "expectedStatus": "INACTIVE",
-    "id": 100003,
-    "service": {
-      "description": "Description",
-      "disableCommand": "DisableCommand",
-      "enableCommand": "EnableCommand",
-      "externalSystemType": "GRSSignum",
-      "id": 100002,
-      "name": "Name",
-      "serviceValue": "grs_service_value"
-    }
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "INACTIVE"
   }
 ]
 
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenInstance_whenUpdate_thenUpdateAndReturnInstance=[
   {
-    "configId": 100001,
-    "expectedStatus": "ACTIVE",
-    "id": 100003,
-    "service": {
-      "description": "Description",
-      "disableCommand": "DisableCommand",
-      "enableCommand": "EnableCommand",
-      "externalSystemType": "GRSSignum",
-      "id": 100002,
-      "name": "Name",
-      "serviceValue": "grs_service_value"
-    }
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "ACTIVE"
   }
 ]
 
 
 de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepositoryTest.givenValidIds_whenGetByConfigAndServiceId_thenReturnInstance=[
   {
-    "configId": 100001,
-    "expectedStatus": "INACTIVE",
-    "id": 100003,
-    "service": {
-      "description": "Description",
-      "disableCommand": "DisableCommand",
-      "enableCommand": "EnableCommand",
-      "externalSystemType": "GRSSignum",
-      "id": 100002,
-      "name": "Name",
-      "serviceValue": "grs_service_value"
-    }
+    "id" : 100003,
+    "service" : {
+      "id" : 100002,
+      "externalSystemType" : "GRSSignum",
+      "serviceValue" : "grs_service_value",
+      "name" : "Name",
+      "description" : "Description",
+      "enableCommand" : "EnableCommand",
+      "disableCommand" : "DisableCommand"
+    },
+    "configId" : 100001,
+    "expectedStatus" : "INACTIVE"
   }
 ]

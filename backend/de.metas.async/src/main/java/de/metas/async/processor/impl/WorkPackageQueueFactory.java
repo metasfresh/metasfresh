@@ -27,32 +27,33 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.impl.WorkPackageQueue;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
-import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.util.Env;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.Properties;
 
 public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
 
 	@Override
-	public IWorkPackageQueue getQueueForPackageProcessing(@NonNull final QueueProcessorDescriptor processor)
+	public IWorkPackageQueue getQueueForPackageProcessing(final I_C_Queue_Processor processor)
 	{
-		final QueueProcessorId queueProcessorId = processor.getQueueProcessorId();
-		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = QueueProcessorDescriptorRepository.getInstance().getPackageProcessorIdsForProcessor(queueProcessorId);
+		final QueueProcessorId queueProcessorId = QueueProcessorId.ofRepoId(processor.getC_Queue_Processor_ID());
 
+		final ImmutableSet<QueuePackageProcessorId> packageProcessorIds = queueProcessorDescriptorIndex.getPackageProcessorIdsForProcessor(queueProcessorId);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(processor);
 		final String priorityFrom = processor.getPriority();
 
-		return WorkPackageQueue.createForQueueProcessing(Env.getCtx(), packageProcessorIds, queueProcessorId, priorityFrom);
+		return WorkPackageQueue.createForQueueProcessing(ctx, packageProcessorIds, queueProcessorId, priorityFrom);
 	}
 
 	@Override
@@ -83,7 +84,7 @@ public class WorkPackageQueueFactory implements IWorkPackageQueueFactory
 
 		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(packageProcessor.getC_Queue_PackageProcessor_ID());
 
-		final QueueProcessorId queueProcessorId = QueueProcessorDescriptorRepository.getInstance().getQueueProcessorForPackageProcessor(packageProcessorId);
+		final QueueProcessorId queueProcessorId = queueProcessorDescriptorIndex.getQueueProcessorForPackageProcessor(packageProcessorId);
 
 		return WorkPackageQueue.createForEnqueuing(
 				ctx,

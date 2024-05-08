@@ -1,34 +1,12 @@
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
@@ -55,19 +33,13 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
-import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -77,6 +49,7 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -87,10 +60,27 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Client_ID;
-import static de.metas.ui.web.window.WindowConstants.FIELDNAME_AD_Org_ID;
-import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED;
-import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED;
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 public class LayoutFactory
 {
@@ -106,17 +96,23 @@ public class LayoutFactory
 	}
 
 	// services
-	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
+	@Autowired
+	private QuickInputDescriptorFactoryService quickInputDescriptors;
 
-	private final ImmutableList<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
-	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
+	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
+	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
+			.defaultValue("There are no detail rows")
+			.trl("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
+			.trl("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
+			.build();
 
-	private final IMsgBL msgBL = SpringContextHolder.instance.getBean(IMsgBL.class);
-	private final LookupDataSourceFactory lookupDataSourceFactory;
-
-	public static final AdMessageKey TAB_EMPTY_RESULT_HINT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_HINT");
-	public static final AdMessageKey TAB_EMPTY_RESULT_TEXT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_TEXT");
+	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
+	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
+			.defaultValue("You can create them in this window.")
+			.trl("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
+			.trl("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
+			.build();
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
 
@@ -137,7 +133,7 @@ public class LayoutFactory
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTab)
 	{
-		this.lookupDataSourceFactory = LookupDataSourceFactory.sharedInstance();
+		SpringContextHolder.instance.autowire(this);
 
 		_adWindowId = gridTabVO.getAdWindowId();
 
@@ -170,8 +166,6 @@ public class LayoutFactory
 
 		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(templateTabId);
 		descriptorsFactory = GridTabVOBasedDocumentEntityDescriptorFactory.builder()
-				.lookupDataSourceFactory(lookupDataSourceFactory)
-				.documentDecorators(documentDecorators)
 				.gridTabVO(gridTabVO)
 				.parentTabVO(parentTab)
 				.isSOTrx(gridWindowVO.isSOTrx())
@@ -263,7 +257,6 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
@@ -390,30 +383,21 @@ public class LayoutFactory
 	@Nullable
 	private DocumentLayoutElementLineDescriptor.Builder layoutSingleRow_ElementLine(final I_AD_UI_Element uiElement)
 	{
-		try
+		logger.trace("Building layout element line for {}", uiElement);
+
+		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
+		if (layoutElementBuilder == null)
 		{
-			logger.trace("Building layout element line for {}", uiElement);
-
-			final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = layoutElement(uiElement);
-			if (layoutElementBuilder == null)
-			{
-				logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
-				return null;
-			}
-
-			final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
-					.setInternalName(uiElement.toString())
-					.addElement(layoutElementBuilder);
-
-			logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
-			return layoutElementLineBuilder;
+			logger.trace("Skip building layout element line because got null layout element: {}", uiElement);
+			return null;
 		}
-		catch (Exception ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex)
-					.setParameter("AD_UI_Element", uiElement)
-					.setParameter("AD_Tab_ID", uiElement.getAD_Tab_ID());
-		}
+
+		final DocumentLayoutElementLineDescriptor.Builder layoutElementLineBuilder = DocumentLayoutElementLineDescriptor.builder()
+				.setInternalName(uiElement.toString())
+				.addElement(layoutElementBuilder);
+
+		logger.trace("Built layout element line for {}: {}", uiElement, layoutElementLineBuilder);
+		return layoutElementLineBuilder;
 	}
 
 	@Nullable
@@ -538,19 +522,13 @@ public class LayoutFactory
 	}
 
 	/**
-	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/778">778</a>
+	 * Task https://github.com/metasfresh/metasfresh-webui-api/issues/778
 	 */
 	private ViewEditorRenderMode computeViewEditorRenderMode(
 			@NonNull final I_AD_UI_Element uiElement,
 			final DocumentFieldWidgetType widgetType)
 	{
-		final AdFieldId adFieldId = AdFieldId.ofRepoIdOrNull(uiElement.getAD_Field_ID());
-		if (adFieldId == null)
-		{
-			return ViewEditorRenderMode.NEVER;
-		}
-
-		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(adFieldId);
+		final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
 		final boolean readOnly = field != null && field.getReadonlyLogicEffective().isConstantTrue();
 		if (readOnly)
 		{
@@ -558,7 +536,7 @@ public class LayoutFactory
 		}
 
 		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
-		if (viewEditMode != null)
+		if(viewEditMode != null)
 		{
 			return viewEditMode;
 		}
@@ -585,12 +563,8 @@ public class LayoutFactory
 		{
 			// add the "primary" field
 			{
-				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(AdFieldId.ofRepoId(uiElement.getAD_Field_ID()));
-				if (field != null && isSkipField(field))
-				{
-					logger.trace("Skip field {} because it's not displayed", field.getFieldName());
-				}
-				else if (field != null)
+				final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentFieldByAD_Field_ID(uiElement.getAD_Field_ID());
+				if (field != null)
 				{
 					fields.add(field);
 				}
@@ -621,7 +595,7 @@ public class LayoutFactory
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = descriptorsFactory.getLabelsFieldName(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID()));
+			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
 			if (field == null)
 			{
@@ -652,9 +626,8 @@ public class LayoutFactory
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
-				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT))
-				.setPageLength(entityDescriptor.getViewPageLength())
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(entityDescriptor.getSingleIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
 
@@ -737,7 +710,7 @@ public class LayoutFactory
 			return null;
 		}
 
-		if (!quickInputDescriptors.hasQuickInputEntityDescriptor(
+		if(!quickInputDescriptors.hasQuickInputEntityDescriptor(
 				entityDescriptor.getDocumentType(),
 				entityDescriptor.getDocumentTypeId(),
 				entityDescriptor.getTableName(),
@@ -765,8 +738,7 @@ public class LayoutFactory
 				.setLookupInfos(field.getLookupDescriptor().orElse(null))
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
 				.setSupportZoomInto(field.isSupportZoomInto())
-				.trackField(field)
-				.setForbidNewRecordCreation(field.isForbidNewRecordCreation());
+				.trackField(field);
 
 		if (!Check.isEmpty(field.getTooltipIconName()))
 		{
@@ -782,8 +754,8 @@ public class LayoutFactory
 	{
 		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WindowId.of(getAdWindowId()))
-				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
-				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT));
+				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
@@ -868,15 +840,5 @@ public class LayoutFactory
 				.addField(layoutElementField(docStatusField).setFieldType(FieldType.ActionButtonStatus))
 				.addField(layoutElementField(docActionField).setFieldType(FieldType.ActionButton))
 				.build();
-	}
-
-	private boolean isSkipField(@NonNull final DocumentFieldDescriptor.Builder field)
-	{
-		return switch (field.getFieldName())
-		{
-			case FIELDNAME_AD_Org_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_ORG_ID_IS_DISPLAYED, true);
-			case FIELDNAME_AD_Client_ID -> !sysConfigBL.getBooleanValue(SYS_CONFIG_AD_CLIENT_ID_IS_DISPLAYED, true);
-			default -> false;
-		};
 	}
 }

@@ -180,10 +180,4 @@ public class PaymentDocument implements IPaymentDocument
 	{
 		return true;
 	}
-
-	@Override
-	public Money getPaymentDiscountAmt()
-	{
-		return amountToAllocate.toZero();
-	}
 }

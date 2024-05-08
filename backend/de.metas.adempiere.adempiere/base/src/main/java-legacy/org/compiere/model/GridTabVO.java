@@ -1,24 +1,19 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software; you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program; if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
@@ -31,7 +26,6 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
-import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -70,7 +64,6 @@ import java.util.Set;
  * @author Jorg Janke
  * @version $Id: GridTabVO.java,v 1.4 2006/07/30 00:58:38 jjanke Exp $
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
@@ -91,7 +84,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		logger.debug("TabNo={}", TabNo);
 
-		final GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
+		GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
 		vo.adWindowId = wVO.getAdWindowId();
 		//
 		if (!loadTabDetails(vo, rs))
@@ -344,15 +337,13 @@ public class GridTabVO implements Evaluatee, Serializable
 					vo.IsReadOnly = true;
 				}
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
-			vo.quickInputLayout = QuickInputConfigLayout.parse(rs.getString(I_AD_Tab.COLUMNNAME_QuickInputLayout)).orElse(null);
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
-			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
 
 			loadTabDetails_metas(vo, rs); // metas
 		}
@@ -372,6 +363,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		this.captions.loadCurrentLanguage(rs);
 	}
+
 
 	/**
 	 * Return the SQL statement used for {@link GridTabVO#create(GridWindowVO, int, ResultSet, boolean, boolean)}.
@@ -426,7 +418,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.applyRolePermissions = applyRolePermissions;
 	}
 
-	private static final Logger logger = LogManager.getLogger(GridTabVO.class);
+	private static final transient Logger logger = LogManager.getLogger(GridTabVO.class);
 
 	/**
 	 * Context - replicated
@@ -462,9 +454,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			I_AD_Tab.COLUMNNAME_Help,
 			I_AD_Tab.COLUMNNAME_CommitWarning,
 			I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption,
-			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption,
-			I_AD_Tab.COLUMNNAME_NotFound_Message,
-			I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);
+			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);
 
 	private String entityType = null;
 	/**
@@ -524,11 +514,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private AdProcessId printProcessId;
 
-	/**
-	 * Detect default date filter
-	 */
+	/** Detect default date filter	*/
 	private boolean IsAutodetectDefaultDateFilter;
-
+	
 	/**
 	 * Where
 	 */
@@ -593,15 +581,11 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
-	@Getter @Nullable QuickInputConfigLayout quickInputLayout;
 
 	@Getter
 	private String includedTabNewRecordInputMode;
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
-
-	@Getter
-	private boolean queryIfNoFilters = true;
 
 	@Override
 	public String toString()
@@ -637,6 +621,27 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 		}
 		return _fields;
+	}
+
+	/**
+	 * @return {@link GridFieldVO} or <code>null</code>
+	 */
+	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
+	{
+		if (adFieldId <= 0)
+		{
+			return null;
+		}
+
+		for (final GridFieldVO gridFieldVO : getFields())
+		{
+			if (gridFieldVO.getAD_Field_ID() == adFieldId)
+			{
+				return gridFieldVO;
+			}
+		}
+
+		return null;
 	}
 
 	public GridFieldVO getFieldByColumnName(final String columnName)
@@ -723,13 +728,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *
 	 * @param newCtx new context
 	 */
-	public void setCtx(final Properties newCtx)
+	public void setCtx(Properties newCtx)
 	{
 		ctx = newCtx;
 		final List<GridFieldVO> fields = this._fields;
 		if (fields != null)
 		{
-			for (final GridFieldVO field : fields)
+			for (GridFieldVO field : fields)
 			{
 				field.setCtx(newCtx);
 			}
@@ -748,7 +753,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * @return value
 	 */
 	@Override
-	public String get_ValueAsString(final String variableName)
+	public String get_ValueAsString(String variableName)
 	{
 		return Env.getContext(ctx, WindowNo, variableName, false);    // not just window
 	}    //	get_ValueAsString
@@ -797,10 +802,8 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
-		clone.quickInputLayout = quickInputLayout;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
-		clone.queryIfNoFilters = queryIfNoFilters;
 
 		clone_metas(ctx, windowNo, clone); // metas
 
@@ -915,7 +918,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	private StringBuffer loadErrorMessages = null;
 
-	protected void addLoadErrorMessage(final String message)
+	protected void addLoadErrorMessage(String message)
 	{
 		if (Check.isEmpty(message, true))
 		{
@@ -938,7 +941,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return "";
 		}
-		final StringBuffer sb = new StringBuffer();
+		StringBuffer sb = new StringBuffer();
 		sb.append("Tab ").append(this.getName()).append("(").append(this.TableName).append("): ").append(loadErrorMessages);
 		return sb.toString();
 	}
@@ -1062,7 +1065,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		return IsReadOnly;
 	}
 
-	void setReadOnly(final boolean isReadOnly)
+	void setReadOnly(boolean isReadOnly)
 	{
 		IsReadOnly = isReadOnly;
 	}
@@ -1096,7 +1099,6 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		return IsAutodetectDefaultDateFilter;
 	}
-
 	public boolean isDeleteable()
 	{
 		return IsDeleteable;
@@ -1163,13 +1165,8 @@ public class GridTabVO implements Evaluatee, Serializable
 		return applyRolePermissions;
 	}
 
-	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
-
-	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
-
-	public ITranslatableString getNotFoundMessage() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_Message);}
-
-	public ITranslatableString getNotFoundMessageDetail() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);}
+	public ITranslatableString getQuickInputOpenButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption); }
+	public ITranslatableString getQuickInputCloseButtonCaption() { return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption); }
 
 	//
 	//
@@ -1303,17 +1300,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		public void putTranslation(@NonNull final String adLanguage, @Nullable final String captionTrl)
 		{
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-
-			final String captionTrlNorm = captionTrl != null ? captionTrl.trim() : "";
-			if (!captionTrlNorm.isEmpty())
-			{
-				translations.put(adLanguage, captionTrlNorm);
-			}
-			else
-			{
-				translations.remove(adLanguage);
-			}
-
+			translations.put(adLanguage, captionTrl != null ? captionTrl.trim() : "");
 			computedTrl = null;
 		}
 

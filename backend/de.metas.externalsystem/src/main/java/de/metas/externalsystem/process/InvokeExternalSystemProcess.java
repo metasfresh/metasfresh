@@ -37,7 +37,6 @@ import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersReposi
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -107,7 +106,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
 				.parameters(extractParameters(config))
-				.orgCode(getOrgCode(config.getOrgId()))
+				.orgCode(getOrgCode())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.traceId(externalSystemConfigService.getTraceId())
@@ -186,10 +185,9 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return parameters;
 	}
 
-	@NonNull
-	protected String getOrgCode(@NonNull final OrgId orgId)
+	protected String getOrgCode()
 	{
-		return orgDAO.getById(orgId).getValue();
+		return orgDAO.getById(getOrgId()).getValue();
 	}
 
 	@Nullable

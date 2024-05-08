@@ -16,14 +16,17 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import lombok.NonNull;
+import java.util.ArrayList;
+
 import org.adempiere.ad.dao.impl.QueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractResultSetBlindIterator;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
+import org.slf4j.Logger;
 
-import java.util.ArrayList;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  *  Trace Information
@@ -33,7 +36,9 @@ import java.util.ArrayList;
  */
 public class Trace
 {
-
+	/**	Logger	*/
+	private static final transient Logger log = LogManager.getLogger(Trace.class);
+	
 	/**
 	 * Get Caller Array
 	 *
@@ -115,6 +120,7 @@ public class Trace
 				|| (adempiereOnly && elements[i].getClassName().startsWith("org.compiere"))
 				)
 			{
+				log.debug(i + ": " + elements[i]);
 				if (first9only && ++counter > 8)
 				{
 					break;

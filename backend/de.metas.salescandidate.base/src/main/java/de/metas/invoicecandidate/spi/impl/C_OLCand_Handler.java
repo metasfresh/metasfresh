@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
@@ -20,14 +21,12 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -193,7 +192,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		}
 		
 		// 07442 activity and tax
-		final ActivityId activityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
+		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(olcRecord.getAD_Client_ID()),
 				OrgId.ofRepoId(olcRecord.getAD_Org_ID()),
 				productId);
@@ -202,7 +201,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerInfo shipToPartnerInfo = olCandEffectiveValuesBL
 				.getDropShipPartnerInfo(olcRecord)
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
-		final VatCodeId vatCodeId = null;
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final TaxId taxId = taxBL.getTaxNotNull(
@@ -213,17 +211,14 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				(WarehouseId)null,
 				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
-				SOTrx.SALES,
-				vatCodeId);
+				SOTrx.SALES);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());
+		ic.setC_Async_Batch_ID(olcRecord.getC_Async_Batch_ID());
 
 		ic.setAD_InputDataSource_ID(olcRecord.getAD_InputDataSource_ID());
-
-		ic.setM_SectionCode_ID(olcRecord.getM_SectionCode_ID());
-		ic.setC_Auction_ID(olcRecord.getC_Auction_ID());
 
 		olcRecord.setProcessed(true);
 		saveRecord(olcRecord);

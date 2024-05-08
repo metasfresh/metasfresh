@@ -42,8 +42,7 @@ public interface GitHubApiConstants
 	enum Endpoint
 	{
 		REPOS("repos"),
-		ISSUES("issues"),
-		HOOKS("hooks");
+		ISSUES("issues");
 
 		private final String value;
 	}
@@ -70,15 +69,6 @@ public interface GitHubApiConstants
 
 		private final String name;
 		private final int defaultValue;
-	}
-
-	@AllArgsConstructor
-	@Getter
-	enum Events
-	{
-		ISSUES("issues");
-
-		private final String value;
 	}
 
 

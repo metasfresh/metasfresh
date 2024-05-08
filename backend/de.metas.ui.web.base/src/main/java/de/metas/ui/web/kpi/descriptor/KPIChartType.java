@@ -23,26 +23,27 @@
 package de.metas.ui.web.kpi.descriptor;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.base.model.X_WEBUI_KPI;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public enum KPIChartType implements ReferenceListAwareEnum
+public enum KPIChartType
 {
 	AreaChart(X_WEBUI_KPI.CHARTTYPE_AreaChart),
 	BarChart(X_WEBUI_KPI.CHARTTYPE_BarChart),
 	PieChart(X_WEBUI_KPI.CHARTTYPE_PieChart),
-	Metric(X_WEBUI_KPI.CHARTTYPE_Metric),
-	URLs(X_WEBUI_KPI.CHARTTYPE_URLs),
-	;
+	Metric(X_WEBUI_KPI.CHARTTYPE_Metric);
 
-	private static final ReferenceListAwareEnums.ValuesIndex<KPIChartType> index = ReferenceListAwareEnums.index(values());
+	private final String code;
 
-	@NonNull @Getter private final String code;
+	KPIChartType(final String code)
+	{
+		this.code = code;
+	}
+
+	public String getCode()
+	{
+		return code;
+	}
 
 	@JsonValue
 	public String toJson()
@@ -50,5 +51,21 @@ public enum KPIChartType implements ReferenceListAwareEnum
 		return name();
 	}
 
-	public static KPIChartType ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static KPIChartType forCode(final String code)
+	{
+		final KPIChartType type = code2type.get(code);
+		if (type == null)
+		{
+			throw new IllegalArgumentException("No type found for: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, KPIChartType> code2type = ImmutableMap.<String, KPIChartType>builder()
+			.put(AreaChart.getCode(), AreaChart)
+			.put(BarChart.getCode(), BarChart)
+			.put(PieChart.getCode(), PieChart)
+			.put(Metric.getCode(), Metric)
+			.build();
+
 }

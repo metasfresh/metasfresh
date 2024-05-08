@@ -1,13 +1,9 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -27,13 +23,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
-import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -43,23 +34,18 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
-import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -83,13 +69,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
-@Component
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
-	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -98,29 +82,19 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
-	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
-	private final DimensionService dimensionService;
-	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
-			@NonNull final DimensionService dimensionService,
-			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
-		this.dimensionService = dimensionService;
-		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -253,7 +227,6 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
 			I_C_OrderLine.COLUMNNAME_QtyDelivered,
-			I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
@@ -445,103 +418,6 @@ public class C_OrderLine
 			return;
 		}
 
-		groupChangesHandler.scheduleOrderLinesRenumbering(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID })
-	public void updateTaxFromVatCodeId(final I_C_OrderLine orderLine)
-	{
-		if (orderLine.isProcessed())
-		{
-			return;
-		}
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(orderLine.getC_VAT_Code_ID());
-		if (vatCodeId == null)
-		{
-			return;
-		}
-		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
-		if (tax != null)
-		{
-			orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
-	public void updateIsOnConsignment(final I_C_OrderLine orderLine)
-	{
-		orderLineBL.updateIsOnConsignmentNoSave(orderLine);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, //
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsOnConsignment })
-	public void updateIsOnConsignmentOrder(final I_C_OrderLine orderLine)
-	{
-		final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
-
-		trxManager.accumulateAndProcessAfterCommit(
-				"orderIdsToUpdateIsOnConsigment",
-				ImmutableSet.of(orderId),
-				this::updateIsOnConsignmentFromLines
-		);
-	}
-
-	private void updateIsOnConsignmentFromLines(final List<OrderId> orderIds)
-	{
-		for (final OrderId orderId : ImmutableSet.copyOf(orderIds))
-		{
-			orderBL.updateIsOnConsignmentFromLines(orderId);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void copyDimensionFromHeader(final org.compiere.model.I_C_OrderLine orderLine)
-	{
-		// only update the section code and user elements. It's not specified if the other dimensions should be inherited from the order header to the lines
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		orderLine.setM_SectionCode_ID(order.getM_SectionCode_ID());
-
-		final Dimension orderDimension = dimensionService.getFromRecord(order);
-		dimensionService.updateRecordUserElements(orderLine, orderDimension);
-	}
-
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_M_Product_ID)
-	public void checkProductWarehouseAssignment(@NonNull final I_C_OrderLine orderLineRecord)
-	{
-		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
-		if (!productBL.getProductType(productId).isItem() || !productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
-		{
-			return;
-		}
-
-		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
-
-		final ProductWarehouseAssignments assignments = productWarehouseAssignmentService
-				.getByProductIdOrError(productId);
-
-		if (!assignments.isWarehouseAssigned(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID())))
-		{
-			throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
-					.appendParametersToMessage()
-					.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
-					.setParameter("C_OrderLine_ID", orderLineRecord.getC_OrderLine_ID())
-					.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
-					.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
-					.markAsUserValidationError();
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE },
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_QtyOrdered })
-	public void updateWeight(@NonNull final I_C_OrderLine orderLine)
-	{
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		orderBL.setWeightFromLines(order);
-
-		saveRecord(order);
+		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
 }

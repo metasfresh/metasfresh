@@ -11,7 +11,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
@@ -50,7 +49,7 @@ public interface DraftDeliveryOrderCreator
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
-		BigDecimal allPackagesGrossWeightInKg;
+		int allPackagesGrossWeightInKg;
 		String allPackagesContentDescription;
 		Set<PackageId> mpackageIds;
 	}

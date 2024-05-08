@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -36,6 +37,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
@@ -46,11 +48,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class WEBUI_PP_Order_Receipt
 		extends WEBUI_PP_Order_Template
@@ -59,6 +64,8 @@ public class WEBUI_PP_Order_Receipt
 	// services
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -67,7 +74,7 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCUsPerTU, mandatory = true)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
 	private BigDecimal p_QtyCU;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
@@ -116,7 +123,7 @@ public class WEBUI_PP_Order_Receipt
 
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
-		_packingInfoParams.setQtyCUsPerTU(p_QtyCU);
+		_packingInfoParams.setQtyCU(p_QtyCU);
 
 		return _packingInfoParams;
 	}
@@ -215,7 +222,8 @@ public class WEBUI_PP_Order_Receipt
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final IPPOrderReceiptHUProducer producer = newReceiptCandidatesProducer();
+		final IPPOrderReceiptHUProducer producer = newReceiptCandidatesProducer()
+				.bestBeforeDate(computeBestBeforeDate());
 
 		if (isReceiveIndividualCUs)
 		{
@@ -239,6 +247,30 @@ public class WEBUI_PP_Order_Receipt
 		ppOrderLinesView.invalidateAll();
 
 		getViewsRepo().notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
+	}
+
+	@Nullable
+	LocalDate computeBestBeforeDate()
+	{
+		if (attributesBL.isAutomaticallySetBestBeforeDate())
+		{
+			final PPOrderLineRow row = getSingleSelectedRow();
+
+			final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(row.getProductId());
+			if (guaranteeDaysMin <= 0)
+			{
+				return null;
+			}
+
+			final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
+			final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
+
+			return datePromised.plusDays(guaranteeDaysMin);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private IPPOrderReceiptHUProducer newReceiptCandidatesProducer()

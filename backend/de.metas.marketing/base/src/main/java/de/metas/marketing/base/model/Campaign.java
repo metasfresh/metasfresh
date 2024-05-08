@@ -1,12 +1,11 @@
 package de.metas.marketing.base.model;
 
-import de.metas.organization.OrgId;
+import javax.annotation.Nullable;
+
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,22 +47,17 @@ public class Campaign implements DataRecord
 	 */
 	CampaignId campaignId;
 
-	@NonNull
-	OrgId orgId;
-
 	@Builder(toBuilder = true)
 	public Campaign(
 			@NonNull final String name,
 			@Nullable final String remoteId,
 			@NonNull final PlatformId platformId,
-			@Nullable final CampaignId campaignId,
-			@NonNull final OrgId orgId)
+			@Nullable final CampaignId campaignId)
 	{
 		this.name = name;
 		this.remoteId = StringUtils.trimBlankToNull(remoteId);
 		this.platformId = platformId;
 		this.campaignId = campaignId;
-		this.orgId = orgId;
 	}
 
 	public static Campaign cast(@Nullable final DataRecord dataRecord)

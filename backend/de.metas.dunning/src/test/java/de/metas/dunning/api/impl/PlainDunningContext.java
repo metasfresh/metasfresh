@@ -22,13 +22,14 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import de.metas.dunning.interfaces.I_C_DunningLevel;
+
+import java.util.Date;
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.Properties;
+import de.metas.dunning.interfaces.I_C_DunningLevel;
 
 public class PlainDunningContext extends AbstractDunningContext
 {
@@ -39,16 +40,12 @@ public class PlainDunningContext extends AbstractDunningContext
 	private Date dunningDate;
 	private I_C_DunningLevel dunningLevel;
 
-	@Nullable
-	private final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery;
-
 	public PlainDunningContext(final Properties ctx, final ITrxRunConfig trxRunConfig)
 	{
 		super();
 		this.ctx = ctx;
 		this.trxRunConfig = trxRunConfig;
 		this.dunningConfig = new DunningConfig();
-		this.recomputeDunningCandidatesQuery = null;
 	}
 
 	@Override
@@ -100,12 +97,5 @@ public class PlainDunningContext extends AbstractDunningContext
 	public ITrxRunConfig getTrxRunnerConfig()
 	{
 		return trxRunConfig;
-	}
-
-	@Nullable
-	@Override
-	public RecomputeDunningCandidatesQuery getRecomputeDunningCandidatesQuery()
-	{
-		return recomputeDunningCandidatesQuery;
 	}
 }

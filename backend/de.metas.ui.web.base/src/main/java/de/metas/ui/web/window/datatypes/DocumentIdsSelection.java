@@ -1,14 +1,5 @@
 package de.metas.ui.web.window.datatypes;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-import de.metas.process.SelectionSize;
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-
-import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -21,6 +12,17 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.concurrent.Immutable;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.process.SelectionSize;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -46,10 +48,11 @@ import java.util.stream.Stream;
 
 /**
  * {@link DocumentId}s selection.
- * <p>
+ *
  * Basically consists of a set of {@link DocumentId}s but it all has the {@link #isAll()} flag.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Immutable
 @ToString
@@ -106,7 +109,7 @@ public final class DocumentIdsSelection
 
 		final ImmutableSet<DocumentId> documentIds = intDocumentIds
 				.stream()
-				.map(DocumentId::of)
+				.map(idInt -> DocumentId.of(idInt))
 				.collect(ImmutableSet.toImmutableSet());
 		return new DocumentIdsSelection(false, documentIds);
 	}
@@ -149,7 +152,7 @@ public final class DocumentIdsSelection
 	private static final String ALL_String = "all";
 	private static final ImmutableSet<String> ALL_StringSet = ImmutableSet.of(ALL_String);
 
-	private static final Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
+	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	private final boolean all;
 	private final ImmutableSet<DocumentId> documentIds;
@@ -302,23 +305,5 @@ public final class DocumentIdsSelection
 			return SelectionSize.ofAll();
 		}
 		return SelectionSize.ofSize(size());
-	}
-
-	public DocumentIdsSelection addAll(@NonNull final DocumentIdsSelection documentIdsSelection)
-	{
-		if (this.all)
-		{
-			return this;
-		}
-
-		if (documentIdsSelection.all)
-		{
-			return documentIdsSelection;
-		}
-
-		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream())
-				.collect(ImmutableSet.toImmutableSet());
-
-		return DocumentIdsSelection.of(combinedIds);
 	}
 }

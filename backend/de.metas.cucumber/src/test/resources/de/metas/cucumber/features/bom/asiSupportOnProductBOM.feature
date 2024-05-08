@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor3
 Feature: ASI support in Product BOM rest-api
   Add ProductBOM and ProductBOMLine with ASI via rest-api
   Using default ad_orgId 1000000
@@ -21,18 +20,18 @@ Feature: ASI support in Product BOM rest-api
       | standard_category                | attributeSet_convenienceSalate   |
 
     And metasfresh contains M_PricingSystems
-      | Identifier     | Name           | Value          | OPT.IsActive |
-      | ps_SO_20220426 | ps_SO_20220426 | ps_SO_20220426 | true         |
+      | Identifier | Name    | Value   | OPT.IsActive |
+      | ps_SO_1    | ps_SO_1 | ps_SO_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_SO      | ps_SO_20220426                | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
+      | pl_SO      | ps_SO_1                       | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_SO     | pl_SO                     | plv_SO | 2021-01-01 |
 
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer_SO | customer_SO | customer_SO | Y              | ps_SO_20220426                |
+      | customer_SO | customer_SO | customer_SO | Y              | ps_SO_1                       |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | customerLocation_SO | customerSO01 | customer_SO              | Y                   | Y                   |
@@ -50,10 +49,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S1              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
-      | productExternalRef_S1             | GRSSignum      | productExternalRef_S1   | Product | product_S1                  |
-      | componentExternalRef_S1           | GRSSignum      | componentExternalRef_S1 | Product | component_S1                |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | productExternalRef_S1   | Product                    | product_S1          |
+      | GRSSignum           | componentExternalRef_S1 | Product                    | component_S1        |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -151,7 +150,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_20220426                    |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                           |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S1              | 5          | orderLineAttributeSetInstance            |
@@ -160,14 +159,10 @@ Feature: ASI support in Product BOM rest-api
 
     And the order identified by order_SO is completed
 
-    And after not more than 60s, AD_EventLog are found
-      | AD_EventLog_ID.Identifier | EventType           | SupplyRequiredEvent.M_Product_ID.Identifier | EventData.Pattern   |
-      | eventLog_1                | SupplyRequiredEvent | product_S1                                  | SupplyRequiredEvent |
-
     And after not more than 60s, AD_EventLog_Entry are found
-      | AD_EventLog_Entry_ID.Identifier | AD_EventLog_ID.Identifier | Classname                                              | MsgText                                               | Processed |
-      | eventLogEntry_1                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
-      | eventLogEntry_2                 | eventLog_1                | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
+      | AD_EventLog_Entry_ID.Identifier | Classname                                              | MsgText                                               | Processed |
+      | eventLog_1                      | de.metas.material.planning.event.SupplyRequiredHandler | No PP_Product_Planning record found => nothing to do; | false     |
+      | eventLog_2                      | de.metas.material.planning.event.SupplyRequiredHandler | this handler is done                                  | true      |
 
   @from:cucumber
   Scenario: Create sales order without ASI, on complete production candidate is found having the productPlanning ASI
@@ -179,10 +174,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S2              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
-      | productExternalRef_S2             | GRSSignum      | productExternalRef_S2   | Product | product_S2                  |
-      | componentExternalRef_S2           | GRSSignum      | componentExternalRef_S2 | Product | component_S2                |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | productExternalRef_S2   | Product                    | product_S2          |
+      | GRSSignum           | componentExternalRef_S2 | Product                    | component_S2        |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -270,7 +265,7 @@ Feature: ASI support in Product BOM rest-api
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.PreparationDate  |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                           | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_SO | order_SO              | product_S2              | 5          |
@@ -298,10 +293,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S3              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference     | Type    | OPT.M_Product_ID.Identifier |
-      | productExternalRef_S3             | GRSSignum      | productExternalRef_S3 | Product | product_S3                  |
-      | componentExternalRef              | GRSSignum      | componentExternalRef  | Product | component_S3                |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference     | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | productExternalRef_S3 | Product                    | product_S3          |
+      | GRSSignum           | componentExternalRef  | Product                    | component_S3        |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -441,7 +436,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_1                           | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
@@ -469,10 +464,10 @@ Feature: ASI support in Product BOM rest-api
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_SO      | plv_SO                            | product_S4              | 10.0     | PCE               | Normal                        |
 
-    And metasfresh contains S_ExternalReference:
-      | S_ExternalReference_ID.Identifier | ExternalSystem | ExternalReference       | Type    | OPT.M_Product_ID.Identifier |
-      | productExternalRef_S4             | GRSSignum      | productExternalRef_S4   | Product | product_S4                  |
-      | componentExternalRef_S4           | GRSSignum      | componentExternalRef_S4 | Product | component_S4                |
+    And metasfresh contains S_ExternalReferences:
+      | ExternalSystem.Code | ExternalReference       | ExternalReferenceType.Code | RecordId.Identifier |
+      | GRSSignum           | productExternalRef_S4   | Product                    | product_S4          |
+      | GRSSignum           | componentExternalRef_S4 | Product                    | component_S4        |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/material/bom/version/001' and fulfills with '200' status code
 
@@ -612,8 +607,8 @@ Feature: ASI support in Product BOM rest-api
   }
   """
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | M_PricingSystem_ID.Identifier | OPT.DatePromised     |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO                         | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |

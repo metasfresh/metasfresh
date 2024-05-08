@@ -50,6 +50,6 @@ public class NotificationGroupName
 
 	public Topic toTopic()
 	{
-		return Topic.distributed(valueAsString);
+		return Topic.remote(valueAsString);
 	}
 }

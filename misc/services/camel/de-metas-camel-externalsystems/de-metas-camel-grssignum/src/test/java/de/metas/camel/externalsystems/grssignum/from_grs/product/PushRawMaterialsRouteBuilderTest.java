@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.grssignum.from_grs.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -85,7 +84,7 @@ public class PushRawMaterialsRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new PushRawMaterialsRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new PushRawMaterialsRouteBuilder();
 	}
 
 	@Override

@@ -24,20 +24,15 @@ package de.metas.cucumber.stepdefs.externalsystem;
 
 import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
-import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -58,25 +53,20 @@ import org.compiere.model.I_AD_UserGroup;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ExternalSystem_Config_StepDef
 {
@@ -87,18 +77,15 @@ public class ExternalSystem_Config_StepDef
 
 	private final ExternalSystem_Config_StepDefData configTable;
 	private final AD_UserGroup_StepDefData userGroupTable;
-	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
-			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
 			@NonNull final TestContext testContext)
 	{
 		this.configTable = configTable;
-		this.leichMehlConfigTable = leichMehlConfigTable;
 		this.userGroupTable = userGroupTable;
 		this.testContext = testContext;
 	}
@@ -163,17 +150,19 @@ public class ExternalSystem_Config_StepDef
 	@And("deactivate ExternalSystem_Config")
 	public void deactivate_ExternalSystem_Config(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		for (final Map<String, String> row: dataTable.asMaps())
 		{
 			final String configIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final I_ExternalSystem_Config parentConfig = configTable.get(configIdentifier);
-			assertThat(parentConfig).isNotNull();
+			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
+			assertThat(externalSystemConfig).isNotNull();
+
+			final I_ExternalSystem_Config parentConfig = InterfaceWrapperHelper.load(externalSystemConfig.getExternalSystem_Config_ID(), I_ExternalSystem_Config.class);
 
 			parentConfig.setIsActive(false);
-			saveRecord(parentConfig);
+			InterfaceWrapperHelper.saveRecord(parentConfig);
 
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(parentConfig.getType());
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
 
 			switch (externalSystemType)
 			{
@@ -184,7 +173,7 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
 					configRabbitMQHttp.setIsActive(false);
-					saveRecord(configRabbitMQHttp);
+					InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
 					break;
 				case GRSSignum:
 					final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
@@ -193,105 +182,11 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
 
 					configGrsSignum.setIsActive(false);
-					saveRecord(configGrsSignum);
-					break;
-				case Shopware6:
-					final I_ExternalSystem_Config_Shopware6 configShopware = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
-							.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, parentConfig.getExternalSystem_Config_ID())
-							.create()
-							.firstOnlyNotNull(I_ExternalSystem_Config_Shopware6.class);
-
-					configShopware.setIsActive(false);
-					saveRecord(configShopware);
+					InterfaceWrapperHelper.saveRecord(configGrsSignum);
 					break;
 				default:
 					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
-		}
-	}
-
-	@And("update ExternalSystem_Config")
-	public void update_ExternalSystem_Config(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String configIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
-			assertThat(externalSystemConfig).isNotNull();
-
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
-
-			if (externalSystemType == ExternalSystemType.Shopware6)
-			{
-				final I_ExternalSystem_Config_Shopware6 configShopware = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
-						.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, externalSystemConfig.getExternalSystem_Config_ID())
-						.create()
-						.firstOnlyNotNull(I_ExternalSystem_Config_Shopware6.class);
-
-				final BigDecimal percentageOfAvailableForSalesToSync = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync);
-
-				if (percentageOfAvailableForSalesToSync != null)
-				{
-					configShopware.setPercentageOfAvailableForSalesToSync(percentageOfAvailableForSalesToSync);
-				}
-
-				saveRecord(configShopware);
-			}
-			else
-			{
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
-			}
-		}
-	}
-
-	@And("^add Other external system config with identifier: (.*)$")
-	public void add_other_sys_config(@NonNull final String configIdentifier, @NonNull final DataTable dataTable)
-	{
-		final I_ExternalSystem_Config externalSystemParentConfigRecord = createExternalSystemConfig(configIdentifier, ExternalSystemType.Other);
-
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Other_ConfigParameter.COLUMNNAME_Name);
-			final String value = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Other_ConfigParameter.COLUMNNAME_Value);
-
-			final I_ExternalSystem_Other_ConfigParameter otherConfigParam = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Other_ConfigParameter.class);
-			otherConfigParam.setExternalSystem_Config_ID(externalSystemParentConfigRecord.getExternalSystem_Config_ID());
-			otherConfigParam.setName(name);
-			otherConfigParam.setValue(value);
-			otherConfigParam.setIsActive(true);
-
-			saveRecord(otherConfigParam);
-		}
-	}
-
-	@And("^store endpointPath (.*) in context, resolving placeholder as ExternalSystem.value$")
-	public void store_endpointPath_in_context(@NonNull String endpointPath)
-	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
-
-		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-		final Matcher matcher = pattern.matcher(endpointPath);
-
-		while (matcher.find())
-		{
-			final String externalSysConfigIdentifierGroup = matcher.group(1);
-			final String externalSysConfigIdentifier = externalSysConfigIdentifierGroup.replace(":", "");
-
-			final I_ExternalSystem_Config parentConfig = configTable.get(externalSysConfigIdentifier);
-			assertThat(parentConfig).isNotNull();
-
-			final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(parentConfig.getExternalSystem_Config_ID());
-			final ExternalSystemType systemType = ExternalSystemType.ofCode(parentConfig.getType());
-
-			final IExternalSystemChildConfig childConfig = externalSystemConfigRepo.getChildByParentIdAndType(parentConfigId, systemType)
-					.orElse(null);
-
-			assertThat(childConfig).isNotNull();
-
-			endpointPath = endpointPath.replace(externalSysConfigIdentifierGroup, childConfig.getValue());
-
-			testContext.setEndpointPath(endpointPath);
 		}
 	}
 
@@ -310,18 +205,16 @@ public class ExternalSystem_Config_StepDef
 			final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getId().getRepoId(), I_ExternalSystem_Config.class);
 			configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
-			if (externalSystemType.equals(LeichUndMehl))
-			{
-				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getChildConfig().getId(), I_ExternalSystem_Config_LeichMehl.class);
-
-				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
-						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
-			}
 			return;
 		}
 
-		final I_ExternalSystem_Config externalSystemParentConfigEntity = createExternalSystemConfig(configIdentifier, externalSystemType);
+		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
+		externalSystemParentConfigEntity.setType(externalSystemType.getCode());
+		externalSystemParentConfigEntity.setName("notImportant");
+		externalSystemParentConfigEntity.setIsActive(true);
+		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);
+
+		configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
 		switch (externalSystemType)
 		{
@@ -343,17 +236,6 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigShopware6.setClient_Id("notImportant");
 				externalSystemConfigShopware6.setBaseURL("notImportant.com");
 				externalSystemConfigShopware6.setIsActive(true);
-
-				final boolean isSyncAvailableForSalesToShopware6 = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsSyncAvailableForSalesToShopware6, false);
-				externalSystemConfigShopware6.setIsSyncAvailableForSalesToShopware6(isSyncAvailableForSalesToShopware6);
-
-				final BigDecimal percentageOfAvailableStockToSync = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_Shopware6.COLUMNNAME_PercentageOfAvailableForSalesToSync);
-
-				if (percentageOfAvailableStockToSync != null)
-				{
-					externalSystemConfigShopware6.setPercentageOfAvailableForSalesToSync(percentageOfAvailableStockToSync);
-				}
-
 				InterfaceWrapperHelper.save(externalSystemConfigShopware6);
 				break;
 			case RabbitMQ:
@@ -371,7 +253,7 @@ public class ExternalSystem_Config_StepDef
 				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
 				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
 				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if (Check.isNotBlank(userGroupIdentifier))
+				if(Check.isNotBlank(userGroupIdentifier))
 				{
 					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
 					assertThat(userGroup).isNotNull();
@@ -399,42 +281,8 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
 				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
 				break;
-
-			case LeichUndMehl:
-				final int portNumber = DataTableUtil.extractIntForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
-				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
-				final String product_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
-
-				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl.class);
-				leichMehlConfig.setTCP_PortNumber(portNumber);
-				leichMehlConfig.setTCP_Host(host);
-				leichMehlConfig.setProduct_BaseFolderName(product_BaseFolderName);
-				leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
-				leichMehlConfig.setIsActive(true);
-				leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
-				InterfaceWrapperHelper.saveRecord(leichMehlConfig);
-
-				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
-						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
-
-				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
-	}
-
-	@NonNull
-	private I_ExternalSystem_Config createExternalSystemConfig(@NonNull final String configIdentifier, @NonNull final ExternalSystemType externalSystemType)
-	{
-		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
-		externalSystemParentConfigEntity.setType(externalSystemType.getCode());
-		externalSystemParentConfigEntity.setName(externalSystemType.getCode() + "_ConfigName");
-		externalSystemParentConfigEntity.setIsActive(true);
-		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);
-
-		configTable.put(configIdentifier, externalSystemParentConfigEntity);
-
-		return externalSystemParentConfigEntity;
 	}
 }

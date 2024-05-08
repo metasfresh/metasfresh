@@ -17,7 +17,6 @@ import {
   VIEW_EDITOR_RENDER_MODES_ON_DEMAND,
 } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
-import { getSettingFromStateAsBoolean } from './settings';
 
 export const containerPropTypes = {
   // from <DocumentList>
@@ -64,8 +63,6 @@ export const componentPropTypes = {
   onDeselect: PropTypes.func.isRequired,
 };
 
-const userSettings_defaultPrecisionByFieldType = {};
-
 /**
  * @method getAmountFormatByPrecisiont
  * @param {string} precision
@@ -76,41 +73,6 @@ export function getAmountFormatByPrecision(precision) {
     precision < AMOUNT_FIELD_FORMATS_BY_PRECISION.length
     ? AMOUNT_FIELD_FORMATS_BY_PRECISION[precision]
     : null;
-}
-
-function getDefaultPrecisionByFieldType(fieldType) {
-  return userSettings_defaultPrecisionByFieldType[fieldType];
-}
-
-export function updateDefaultPrecisionsFromUserSettings(userSettings) {
-  userSettings_defaultPrecisionByFieldType['Quantity'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Quantity');
-  userSettings_defaultPrecisionByFieldType['Amount'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Amount');
-  userSettings_defaultPrecisionByFieldType['CostPrice'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'CostPrice');
-  userSettings_defaultPrecisionByFieldType['Number'] =
-    extractDefaultPrecisionFromUserSettings(userSettings, 'Number');
-
-  console.debug('Updated default precision from user settings', {
-    userSettings_defaultPrecisionByFieldType,
-    userSettings,
-  });
-}
-
-function extractDefaultPrecisionFromUserSettings(userSettings, fieldType) {
-  const precision =
-    userSettings?.[`widget.${fieldType}.defaultPrecision`] ?? null;
-  if (
-    precision == null ||
-    precision === '-' ||
-    precision === '' ||
-    precision < 0
-  ) {
-    return null;
-  } else {
-    return Number(precision);
-  }
 }
 
 /**
@@ -313,11 +275,7 @@ export function fieldValueToString({
       ) {
         return createDate({ fieldValue, fieldType });
       } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-        const precisionEffective =
-          precision != null
-            ? precision
-            : getDefaultPrecisionByFieldType(fieldType);
-        return createAmount(fieldValue, precisionEffective, isGerman);
+        return createAmount(fieldValue, precision, isGerman);
       } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
         return createSpecialField(fieldType, fieldValue);
       }
@@ -426,7 +384,7 @@ export function prepareWidgetData(item, cells) {
  * @param {object} cells - row's `fieldsByName` that hold the field value/type
  * @param {object} item - widget data object
  * @param {boolean} isEditable - flag if cell is editable
- * @param {boolean} supportFieldEdit - flag if selected cell can be editable
+ * @param {boolean} supportfieldEdit - flag if selected cell can be editable
  */
 export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
   const widgetData = item.fields.reduce((result, prop) => {
@@ -567,14 +525,3 @@ export function getTooltipWidget(item, widgetData) {
 
   return { tooltipData, tooltipWidget };
 }
-
-export const computeNumberOfPages = (size, pageLength) => {
-  if (pageLength > 0) {
-    return size ? Math.ceil(size / pageLength) : 0;
-  } else {
-    return size ? 1 : 0;
-  }
-};
-
-export const isShowCommentsMarker = (state) =>
-  getSettingFromStateAsBoolean(state, 'view.showCommentsMarker', true);

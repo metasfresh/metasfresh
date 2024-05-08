@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><invoice:request xmlns:invoice="http://www.forum-datenaustausch.ch/invoice" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" language="de" modus="production" validation_status="0" xsi:schemaLocation="http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd">
   <invoice:processing>
-    <invoice:transport from="7601001432130" to="7601001234412">
-      <invoice:via sequence_id="1" via="7609999032109"/>
+    <invoice:transport from="7601001405530" to="7601001398412">
+      <invoice:via sequence_id="1" via="7609999033209"/>
     </invoice:transport>
   </invoice:processing>
   <invoice:payload copy="0" storno="0">
@@ -18,41 +18,41 @@
           <invoice:vat_rate amount="0.00" vat="0.00" vat_rate="7.7"/>
         </invoice:vat>
       </invoice:balance>
-      <invoice:esr9 coding_line="0100000035152&gt;000000000001700000000000498+ 013050284&gt;" participant_number="01-123456-4" reference_number="00 00000 00001 70000 00000 00498" type="16or27"/>
+      <invoice:esr9 coding_line="0100000035152&gt;000000000001700000000000498+ 013050284&gt;" participant_number="01-305028-4" reference_number="00 00000 00001 70000 00000 00498" type="16or27"/>
       <invoice:tiers_payant>
-        <invoice:biller ean_party="7601234567895" zsr="F123456">
+        <invoice:biller ean_party="7601003906325" zsr="F163212">
           <invoice:person salutation="Herr">
-            <invoice:familyname>Anonymous</invoice:familyname>
-            <invoice:givenname>John</invoice:givenname>
+            <invoice:familyname>Eggs</invoice:familyname>
+            <invoice:givenname>Herbert</invoice:givenname>
             <invoice:postal>
               <invoice:zip countrycode="CH">4125</invoice:zip>
               <invoice:city>Riehen</invoice:city>
             </invoice:postal>
             <invoice:telecom>
-              <invoice:phone>073 123 45 78</invoice:phone>
+              <invoice:phone>079 209 15 39</invoice:phone>
             </invoice:telecom>
             <invoice:online>
-              <invoice:email>no.email@aol.com</invoice:email>
+              <invoice:email>herbert.eggs@bluewin.ch</invoice:email>
             </invoice:online>
           </invoice:person>
         </invoice:biller>
-        <invoice:provider ean_party="7601234567895" zsr="F123456">
+        <invoice:provider ean_party="7601003906325" zsr="F163212">
           <invoice:person salutation="Herr">
-            <invoice:familyname>Anonymous</invoice:familyname>
-            <invoice:givenname>John</invoice:givenname>
+            <invoice:familyname>Eggs</invoice:familyname>
+            <invoice:givenname>Herbert</invoice:givenname>
             <invoice:postal>
               <invoice:zip countrycode="CH">4125</invoice:zip>
               <invoice:city>Riehen</invoice:city>
             </invoice:postal>
             <invoice:telecom>
-              <invoice:phone>073 123 45 78</invoice:phone>
+              <invoice:phone>079 209 15 39</invoice:phone>
             </invoice:telecom>
             <invoice:online>
-              <invoice:email>no.email@aol.com</invoice:email>
+              <invoice:email>herbert.eggs@bluewin.ch</invoice:email>
             </invoice:online>
           </invoice:person>
         </invoice:provider>
-        <invoice:insurance ean_party="7654321951357">
+        <invoice:insurance ean_party="7601003002041">
           <invoice:company>
             <invoice:companyname>Swica Gesundheitsorganisation</invoice:companyname>
             <invoice:department>Regionaldirektion Basel </invoice:department>
@@ -64,10 +64,10 @@
             </invoice:postal>
           </invoice:company>
         </invoice:insurance>
-        <invoice:patient birthdate="1981-07-31T00:00:00" gender="male" ssn="7568889991234">
+        <invoice:patient birthdate="1981-07-31T00:00:00" gender="male" ssn="7562975799578">
           <invoice:person salutation="Herr">
-            <invoice:familyname>Pizza</invoice:familyname>
-            <invoice:givenname>Margherita</invoice:givenname>
+            <invoice:familyname>Cacciatore</invoice:familyname>
+            <invoice:givenname>Mario</invoice:givenname>
             <invoice:postal>
               <invoice:street>In einer Strasse</invoice:street>
               <invoice:zip countrycode="CH" statecode="BS">4125</invoice:zip>
@@ -81,14 +81,14 @@
             <invoice:companyname>Gesundheitsdepartement Basel Stadt</invoice:companyname>
             <invoice:department>Bereich Gesundheitversorgung</invoice:department>
             <invoice:postal>
-              <invoice:pobox>345</invoice:pobox>
-              <invoice:street>Gerbergasse 256</invoice:street>
+              <invoice:pobox>564</invoice:pobox>
+              <invoice:street>Gerbergasse 13</invoice:street>
               <invoice:zip countrycode="CH">4001</invoice:zip>
               <invoice:city>Basel</invoice:city>
             </invoice:postal>
           </invoice:company>
         </invoice:guarantor>
-        <invoice:referrer ean_party="7601002028127" zsr="I135792">
+        <invoice:referrer ean_party="7601002028127" zsr="I117612">
           <invoice:company>
             <invoice:companyname>Winter</invoice:companyname>
             <invoice:postal>
@@ -104,12 +104,12 @@
         <invoice:diagnosis type="freetext">Krankenpflege-Leistungsverordnung</invoice:diagnosis>
       </invoice:treatment>
       <invoice:services>
-        <invoice:record_other amount="8.10" code="53201.1" date_begin="2019-01-10T11:00:00" date_end="2019-01-10T11:30:00" external_factor="1" name="Tarif a 1h" obligation="true" provider_id="F123456" quantity="30" record_id="1" responsible_id="I135792" session="1" tariff_type="532" unit="0.27" unit_factor="1" validate="true" vat_rate="0"/>
-        <invoice:record_other amount="18.45" code="53202.1" date_begin="2019-01-10T11:30:00" date_end="2019-01-10T12:15:00" external_factor="1" name="Tarif b 1h" obligation="true" provider_id="F123456" quantity="45" record_id="2" responsible_id="I135792" session="1" tariff_type="532" unit="0.41" unit_factor="1" validate="true" vat_rate="0"/>
-        <invoice:record_other amount="-8.00" code="53299" date_begin="2019-01-10T00:00:00" date_end="2019-01-10T00:00:00" external_factor="1" name="Abzugsposition Eigenbeitrag" obligation="true" provider_id="F123456" quantity="-60" record_id="3" responsible_id="I135792" session="1" tariff_type="532" unit="0.1333" unit_factor="1" validate="true" vat_rate="0"/>
-        <invoice:record_other amount="24.60" code="53202.1" date_begin="2019-01-29T11:00:00" date_end="2019-01-29T12:00:00" external_factor="1" name="Tarif b 1h" obligation="true" provider_id="F123456" quantity="60" record_id="4" responsible_id="I135792" session="1" tariff_type="532" unit="0.41" unit_factor="1" validate="true" vat_rate="0"/>
-        <invoice:record_other amount="-8.00" code="53299" date_begin="2019-01-29T00:00:00" date_end="2019-01-29T00:00:00" external_factor="1" name="Abzugsposition Eigenbeitrag" obligation="true" provider_id="F123456" quantity="-60" record_id="5" responsible_id="I135792" session="1" tariff_type="532" unit="0.1333" unit_factor="1" validate="true" vat_rate="0"/>
+        <invoice:record_other amount="8.10" code="53201.1" date_begin="2019-01-10T11:00:00" date_end="2019-01-10T11:30:00" external_factor="1" name="Tarif a 1h" obligation="true" provider_id="F163212" quantity="30" record_id="1" responsible_id="I117612" session="1" tariff_type="532" unit="0.27" unit_factor="1" validate="true" vat_rate="0"/>
+        <invoice:record_other amount="18.45" code="53202.1" date_begin="2019-01-10T11:30:00" date_end="2019-01-10T12:15:00" external_factor="1" name="Tarif b 1h" obligation="true" provider_id="F163212" quantity="45" record_id="2" responsible_id="I117612" session="1" tariff_type="532" unit="0.41" unit_factor="1" validate="true" vat_rate="0"/>
+        <invoice:record_other amount="-8.00" code="53299" date_begin="2019-01-10T00:00:00" date_end="2019-01-10T00:00:00" external_factor="1" name="Abzugsposition Eigenbeitrag" obligation="true" provider_id="F163212" quantity="-60" record_id="3" responsible_id="I117612" session="1" tariff_type="532" unit="0.1333" unit_factor="1" validate="true" vat_rate="0"/>
+        <invoice:record_other amount="24.60" code="53202.1" date_begin="2019-01-29T11:00:00" date_end="2019-01-29T12:00:00" external_factor="1" name="Tarif b 1h" obligation="true" provider_id="F163212" quantity="60" record_id="4" responsible_id="I117612" session="1" tariff_type="532" unit="0.41" unit_factor="1" validate="true" vat_rate="0"/>
+        <invoice:record_other amount="-8.00" code="53299" date_begin="2019-01-29T00:00:00" date_end="2019-01-29T00:00:00" external_factor="1" name="Abzugsposition Eigenbeitrag" obligation="true" provider_id="F163212" quantity="-60" record_id="5" responsible_id="I117612" session="1" tariff_type="532" unit="0.1333" unit_factor="1" validate="true" vat_rate="0"/>
       </invoice:services>
-    <invoice:documents number="1"><invoice:document filename="F123456_KANTON_49_verordnung.csv" mimeType="text/csv"><invoice:base64>YW5hIGFyZSBtZXJl</invoice:base64></invoice:document></invoice:documents></invoice:body>
+    <invoice:documents number="1"><invoice:document filename="F163212_KANTON_49_verordnung.csv" mimeType="text/csv"><invoice:base64>R0xOIE5yLiBkZXMgTGVpc3R1bmdzZXJicmluZ2VyO1pTUiBOci4gZGVzIExlaXN0dW5nc2VyYnJpbmdlcjtOYW1lIFBhdGllbnQ7Vm9ybmFtZSBQYXRpZW50O0dlYnVydHNkYXR1bTtBSFYtTnVtbWVyO1Zlcm9yZG5lbmRlciBBcnp0O0dMTiBOdW1tZXIgQXJ6dDtaU1IgTnVtbWVyIEFyenQ7R/xsdGlnIHZvbiBEYXR1bTtH/Gx0aWcgYmlzIERhdHVtO1RhcmlmY29kZTtUYXJpZnppZmZlcjtBbnouIHZlcm9yZG5ldGUgTWludXRlbjtHVUlEDQo3NjAxMDAzOTA2MzI1O0YxNjMyMTI7SGVyem9nO1Vyc3VsYTswOS4wNS4xOTQ1Ozc1Njg4NTM2NjcyMzY7V2ludGVyLFBhdHJpemlhOzc2MDEwMDIwMjgxMjc7STExNzYxMjsxMC4wMS4yMDE5OzA5LjA3LjIwMTk7NTMyOzUzMjAxOzYwO3tDRTNDOTAyNC1EQzcwLUU4M0YtNkEwQS0yMjE5MzkwNDNGQkZ9DQo3NjAxMDAzOTA2MzI1O0YxNjMyMTI7SGVyem9nO1Vyc3VsYTswOS4wNS4xOTQ1Ozc1Njg4NTM2NjcyMzY7V2ludGVyLFBhdHJpemlhOzc2MDEwMDIwMjgxMjc7STExNzYxMjsxMC4wMS4yMDE5OzA5LjA3LjIwMTk7NTMyOzUzMjAyOzM2MDt7Q0UzQzkwMjQtREM3MC1FODNGLTZBMEEtMjIxOTM5MDQzRkJGfQ0KNzYwMTAwMzkwNjMyNTtGMTYzMjEyO0hlcnpvZztVcnN1bGE7MDkuMDUuMTk0NTs3NTY4ODUzNjY3MjM2O1dpbnRlcixQYXRyaXppYTs3NjAxMDAyMDI4MTI3O0kxMTc2MTI7MTAuMDEuMjAxOTswOS4wNy4yMDE5OzUzMjs1MzIwMzszNjA7e0NFM0M5MDI0LURDNzAtRTgzRi02QTBBLTIyMTkzOTA0M0ZCRn0NCg==</invoice:base64></invoice:document></invoice:documents></invoice:body>
   </invoice:payload>
 </invoice:request>

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
-import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
+import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
 
 export const HUInfoComponent = ({ handlingUnitInfo }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
@@ -14,12 +14,6 @@ export const HUInfoComponent = ({ handlingUnitInfo }) => {
           <th>{trl('huManager.HU')}</th>
           <td>{handlingUnitInfo.displayName}</td>
         </tr>
-        {handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1 ? (
-          <tr>
-            <th>{trl('huManager.numberOfAggregatedHUs')}</th>
-            <td>{handlingUnitInfo.numberOfAggregatedHUs}</td>
-          </tr>
-        ) : undefined}
         <tr>
           <th>{trl('huManager.qrCode')}</th>
           <td>{toQRCodeDisplayable(handlingUnitInfo.qrCode)}</td>

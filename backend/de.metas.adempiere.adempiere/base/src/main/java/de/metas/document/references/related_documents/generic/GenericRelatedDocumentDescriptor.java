@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,21 +34,15 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.Delegate;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Objects;
-import java.util.Optional;
 
 @Value
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-class GenericRelatedDocumentDescriptor
+public class GenericRelatedDocumentDescriptor
 {
-	@NonNull @Delegate GenericTargetWindowInfo genericTargetWindowInfo;
+	@Delegate
+	@NonNull GenericTargetWindowInfo genericTargetWindowInfo;
 
-	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<String, GenericTargetColumnInfo> targetColumnsByColumnName;
-	@NonNull ImmutableList<GenericTargetColumnInfo> dynamicColumns;
-	@NonNull ImmutableList<GenericTargetColumnInfo> nonDynamicColumns;
-	@NonNull Optional<GenericTargetColumnInfo> singleNonDynamicColumn;
+	@Getter(AccessLevel.NONE)
+	ImmutableMap<String, GenericTargetColumnInfo> targetColumnsByColumnName;
 
 	@Builder
 	private GenericRelatedDocumentDescriptor(
@@ -60,33 +53,10 @@ class GenericRelatedDocumentDescriptor
 
 		this.genericTargetWindowInfo = targetWindow;
 		this.targetColumnsByColumnName = Maps.uniqueIndex(targetColumns, GenericTargetColumnInfo::getColumnName);
-		this.dynamicColumns = targetColumns.stream()
-				.filter(GenericTargetColumnInfo::isDynamic)
-				.collect(ImmutableList.toImmutableList());
-		this.nonDynamicColumns = targetColumns.stream()
-				.filter(column -> !column.isDynamic())
-				.collect(ImmutableList.toImmutableList());
-		this.singleNonDynamicColumn = CollectionUtils.singleElementOrEmpty(nonDynamicColumns);
 	}
 
-	public ImmutableCollection<GenericTargetColumnInfo> getTargetColumns() {return targetColumnsByColumnName.values();}
-
-	@NonNull
-	public GenericTargetColumnInfo getColumnByName(final String columnName)
+	public ImmutableCollection<GenericTargetColumnInfo> getTargetColumns()
 	{
-		final GenericTargetColumnInfo column = targetColumnsByColumnName.get(columnName);
-		if (column == null)
-		{
-			throw new AdempiereException("No column found for `" + columnName + "`. Available columns are: " + targetColumnsByColumnName.keySet());
-		}
-		return column;
+		return targetColumnsByColumnName.values();
 	}
-
-	public boolean isSingleNonDynamicColumn(@NonNull final GenericTargetColumnInfo column)
-	{
-		final GenericTargetColumnInfo singleNonDynamicColumn = this.singleNonDynamicColumn.orElse(null);
-		return singleNonDynamicColumn != null && Objects.equals(singleNonDynamicColumn, column);
-	}
-
-	public boolean hasSingleNonDynamicColumn() {return singleNonDynamicColumn.isPresent();}
 }

@@ -1,7 +1,25 @@
 package de.metas.impexp;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.impexp.config.DataImportConfigId;
 import de.metas.impexp.format.ImpFormat;
 import de.metas.impexp.format.ImpFormatColumn;
@@ -16,22 +34,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.api.Params;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -80,7 +82,6 @@ final class SqlInsertIntoImportTableCommand
 	private final DataImportConfigId dataImportConfigId;
 	private final int insertBatchSize;
 	private Stream<ImpDataLine> linesStream;
-	private final Params overrideColumnValues;
 
 	//
 	// State
@@ -98,8 +99,7 @@ final class SqlInsertIntoImportTableCommand
 			@NonNull final DataImportRunId dataImportRunId,
 			@Nullable final DataImportConfigId dataImportConfigId,
 			final int insertBatchSize,
-			@NonNull final Stream<ImpDataLine> linesStream,
-			@Nullable final Params overrideColumnValues)
+			@NonNull final Stream<ImpDataLine> linesStream)
 	{
 		this.importTableDescriptor = importFormat.getImportTableDescriptor();
 		this.importFormatName = importFormat.getName();
@@ -113,7 +113,6 @@ final class SqlInsertIntoImportTableCommand
 		this.insertBatchSize = insertBatchSize > 0 ? insertBatchSize : DEFAULT_InsertBatchSize;
 
 		this.linesStream = linesStream;
-		this.overrideColumnValues = overrideColumnValues;
 	}
 
 	public InsertIntoImportTableResult execute()
@@ -243,7 +242,7 @@ final class SqlInsertIntoImportTableCommand
 
 		//
 		// I_LineContext
-		if (importTableDescriptor.getImportLineContentColumnName() != null)
+		if (importTableDescriptor.getImportLineNoColumnName() != null)
 		{
 			sqlColumns.append(", ").append(importTableDescriptor.getImportLineContentColumnName());
 			sqlValues.append(", ?");
@@ -275,26 +274,15 @@ final class SqlInsertIntoImportTableCommand
 			sqlParamsExtractors.add(dataLine -> Collections.singletonList(dataLine.getErrorMessageAsStringOrNull(errorMaxLength)));
 		}
 
-		// override columns
-		if (overrideColumnValues != null)
-		{
-			overrideColumnValues.getParameterNames().forEach(columnName -> {
-				sqlColumns.append(", ").append(columnName);
-				sqlValues.append(", ").append(overrideColumnValues.getParameterAsObject(columnName));
-			});
-		}
-
 		//
 		// Values
 		{
-			final ImmutableList<ImpFormatColumn> columnsToInsert = getColumnsExcludingOverrides();
-
-			for (final ImpFormatColumn column : columnsToInsert)
+			for (final ImpFormatColumn column : columns)
 			{
 				sqlColumns.append(", ").append(column.getColumnName());
 				sqlValues.append(", ?");
 			}
-			sqlParamsExtractors.add(dataLine -> dataLine.getJdbcValues(columnsToInsert));
+			sqlParamsExtractors.add(dataLine -> dataLine.getJdbcValues(columns));
 		}
 
 		return SqlAndParamsExtractor.<ImpDataLine> builder()
@@ -303,16 +291,4 @@ final class SqlInsertIntoImportTableCommand
 				.build();
 	}
 
-	@NonNull
-	private ImmutableList<ImpFormatColumn> getColumnsExcludingOverrides()
-	{
-		if (overrideColumnValues == null)
-		{
-			return columns;
-		}
-
-		return columns.stream()
-				.filter(column -> !overrideColumnValues.getParameterNames().contains(column.getColumnName()))
-				.collect(ImmutableList.toImmutableList());
-	}
 }

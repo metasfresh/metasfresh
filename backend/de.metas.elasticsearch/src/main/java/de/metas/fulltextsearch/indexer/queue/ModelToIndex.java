@@ -28,13 +28,11 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class ModelToIndex
 {
 	@NonNull FTSConfigId ftsConfigId;
 	@NonNull ModelToIndexEventType eventType;
-	@Nullable TableRecordReference sourceModelRef;
+	@NonNull TableRecordReference sourceModelRef;
 }

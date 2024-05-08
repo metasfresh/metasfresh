@@ -32,17 +32,14 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 
 @AllArgsConstructor
-@Getter
 public enum ModelToIndexEventType implements ReferenceListAwareEnum
 {
-	MODEL_CREATED_OR_UPDATED(X_ES_FTS_Index_Queue.EVENTTYPE_Update),
-	MODEL_REMOVED(X_ES_FTS_Index_Queue.EVENTTYPE_Delete),
-	DELETE_INDEX_REQUEST(X_ES_FTS_Index_Queue.EVENTTYPE_DeleteIndex),
-	;
+	CREATED_OR_UPDATED(X_ES_FTS_Index_Queue.EVENTTYPE_Update),
+	REMOVED(X_ES_FTS_Index_Queue.EVENTTYPE_Delete);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ModelToIndexEventType> index = ReferenceListAwareEnums.index(values());
 
-	final String code;
+	@Getter final String code;
 
 	public static ModelToIndexEventType ofCode(@NonNull final String code)
 	{
@@ -54,6 +51,4 @@ public enum ModelToIndexEventType implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
-
-	public boolean isDeleteIndexRequest() {return this.equals(DELETE_INDEX_REQUEST);}
 }

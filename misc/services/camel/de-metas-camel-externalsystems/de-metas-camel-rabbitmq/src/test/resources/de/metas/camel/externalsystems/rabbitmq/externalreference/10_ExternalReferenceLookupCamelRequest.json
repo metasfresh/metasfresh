@@ -6,15 +6,15 @@
     "systemName": "ALBERTA",
     "items": [
       {
-        "externalReference": "externalRef_bpartner",
+        "id": "externalRef_bpartner",
         "type": "BPartner"
       },
       {
-        "externalReference": "externalRef_bpLocation",
+        "id": "externalRef_bpLocation",
         "type": "BPartnerLocation"
       },
       {
-        "externalReference": "externalRef_user",
+        "id": "externalRef_user",
         "type": "UserID"
       }
     ]

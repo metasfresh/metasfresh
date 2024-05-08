@@ -18,9 +18,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
 /*
@@ -71,38 +69,25 @@ public class AbstractPurchaseOfferEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractPurchaseOfferEvent event)
 	{
-		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event, false);
+		final UpdateMainDataRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
-
-		final UpdateMainDataRequest dataUpdateRequestForNextDayQty = createDataUpdateRequestForEvent(event, true);
-		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequestForNextDayQty);
 	}
 
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
-			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent,
-			final boolean forNextDayQty)
+			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent)
 	{
 		final OrgId orgId = purchaseOfferedEvent.getEventDescriptor().getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
-		final Instant date = TimeUtil.getDay(purchaseOfferedEvent.getDate(), timeZone);
-		final Instant dateToUse = forNextDayQty ? date.minus(1, ChronoUnit.DAYS) : date;
+		
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(purchaseOfferedEvent.getProductDescriptor())
-				.date(dateToUse)
+				.date(TimeUtil.getDay(purchaseOfferedEvent.getDate(), timeZone))
 				.build();
 
-		final UpdateMainDataRequest.UpdateMainDataRequestBuilder request = UpdateMainDataRequest.builder()
-				.identifier(identifier);
-
-		if (forNextDayQty)
-		{
-			request.offeredQtyNextDay(purchaseOfferedEvent.getQtyDelta());
-		}
-		else
-		{
-			request.offeredQty(purchaseOfferedEvent.getQtyDelta());
-		}
-		return request.build();
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.offeredQty(purchaseOfferedEvent.getQtyDelta())
+				.build();
+		return request;
 	}
 }

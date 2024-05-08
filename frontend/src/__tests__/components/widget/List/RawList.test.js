@@ -1,8 +1,8 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import { v4 as uuidv4 } from 'uuid';
 
-import { RawList0 as RawListBare } from '../../../../components/widget/List/RawList';
+import { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 
@@ -164,7 +164,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const requestFocusSpy = jest.spyOn(RawListBare.prototype, 'requestFocus');
+      const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
       const wrapper = mount(<RawListBare {...props} />);
@@ -175,7 +175,7 @@ describe('RawList component', () => {
       expect(onSelectSpy).toHaveBeenCalledWith(fixtures.data1.listData[0]);
       expect(onCloseDropdownSpy).toHaveBeenCalled();
       expect(setTimeout).toHaveBeenCalledTimes(1);
-      expect(requestFocusSpy).toHaveBeenCalled();
+      expect(focusDropdownSpy).toHaveBeenCalled();
     });
 
     it('list blurs and stays hidden after selecting an option', () => {
@@ -196,8 +196,8 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const requestFocusSpy = jest.spyOn(
-        RawListBare.prototype, 'requestFocus'
+      const focusDropdownSpy = jest.spyOn(
+        RawListBare.prototype, 'focusDropdown'
       );
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
@@ -207,14 +207,14 @@ describe('RawList component', () => {
       jest.advanceTimersByTime(1);
       wrapper.update();
 
-      expect(requestFocusSpy).toHaveBeenCalled();
+      expect(focusDropdownSpy).toHaveBeenCalled();
 
-      requestFocusSpy.mockClear();
+      focusDropdownSpy.mockClear();
 
       wrapper.setProps({ isFocused: false });
       wrapper.update();
 
-      expect(requestFocusSpy).not.toHaveBeenCalled();
+      expect(focusDropdownSpy).not.toHaveBeenCalled();
     });
 
     describe('with elements attached to dummy element', function () {

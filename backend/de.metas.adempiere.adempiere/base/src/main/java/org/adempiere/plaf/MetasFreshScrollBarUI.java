@@ -44,11 +44,8 @@ import javax.swing.plaf.metal.MetalScrollBarUI;
  */
 public class MetasFreshScrollBarUI extends MetalScrollBarUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JScrollBar#getUIClassID()}.
-	 */
-	public static final String uiClassID = "ScrollBarUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JScrollBar.class, "ScrollBarUI");
 
 	/** The width of the scrollbar */
 	public static final String KEY_Width = "MetasFreshScrollBarUI.Width";

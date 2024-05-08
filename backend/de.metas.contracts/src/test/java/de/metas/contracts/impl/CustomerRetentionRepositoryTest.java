@@ -1,15 +1,15 @@
 package de.metas.contracts.impl;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.CustomerRetentionId;
-import de.metas.contracts.invoice.ContractInvoiceService;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoicecandidate.model.I_C_Invoice;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
@@ -19,14 +19,15 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.CustomerRetentionId;
+import de.metas.contracts.invoice.ContractInvoiceService;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoicecandidate.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 
 /*
  * #%L
@@ -67,7 +68,7 @@ public class CustomerRetentionRepositoryTest
 	@Test
 	public void setNewCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -75,13 +76,13 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
 	public void setRegularCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -89,13 +90,13 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
 	public void setNonSubscriptionCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -128,7 +129,7 @@ public class CustomerRetentionRepositoryTest
 
 		final int customerRetentionThreshold = repository.retrieveCustomerRetentionThreshold();
 
-		assertThat(customerRetentionThreshold).isEqualTo(23);
+		assertThat(23).isEqualTo(customerRetentionThreshold);
 	}
 
 	@Test
@@ -140,14 +141,14 @@ public class CustomerRetentionRepositoryTest
 
 		save(sysConfig);
 
-		LocalDate contractEndDate = LocalDate.parse("2017-12-12");
+		LocalDate contractEndDate = TimeUtil.asLocalDate("2017-12-12");
 
 		final LocalDate dateToCompare = de.metas.common.util.time.SystemTime.asLocalDate();
 		boolean dateExceedsThreshold = repository.dateExceedsRegularThreshold(contractEndDate, dateToCompare);
 
 		assertThat(dateExceedsThreshold).isTrue();
 
-		contractEndDate = LocalDate.parse("2017-12-14");
+		contractEndDate = TimeUtil.asLocalDate("2017-12-14");
 		dateExceedsThreshold = repository.dateExceedsRegularThreshold(contractEndDate, dateToCompare);
 
 		assertThat(dateExceedsThreshold).isFalse();
@@ -156,7 +157,7 @@ public class CustomerRetentionRepositoryTest
 	@Test
 	public void updateCustomerRetention_NewCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 		final Timestamp masterStartDate = TimeUtil.parseTimestamp("2016-12-14");
@@ -169,13 +170,13 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 	}
 
 	@Test
 	public void updateCustomerRetention_NoCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -195,7 +196,7 @@ public class CustomerRetentionRepositoryTest
 	@Test
 	public void updateCustomerRetention_NewCustomer_InvoiceExceedsDate_But_Not_MasterEndDate()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -230,7 +231,7 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 	
@@ -239,7 +240,7 @@ public class CustomerRetentionRepositoryTest
 	@Test
 	public void updateCustomerRetention_NewCustomer_InvoiceExceedsDate()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -273,14 +274,14 @@ public class CustomerRetentionRepositoryTest
 
 		refresh(customerRetention);
 
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
 	@Test
 	public void updateCustomerRetention_RegularCustomer()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -313,14 +314,14 @@ public class CustomerRetentionRepositoryTest
 		repository.createUpdateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
 	@Test
 	public void updateCustomerRetention_NewCustomer_InitialThresholdNotMet()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -353,14 +354,14 @@ public class CustomerRetentionRepositoryTest
 		repository.createUpdateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Neukunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
 	@Test
 	public void updateCustomerRetention_SameInvoiceDate()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = createPartner("Partner1");
 
 		final I_C_Customer_Retention customerRetention = createCustomerRetention(partner.getC_BPartner_ID());
 
@@ -394,11 +395,11 @@ public class CustomerRetentionRepositoryTest
 		repository.createUpdateCustomerRetention(bpartnerId);
 
 		refresh(customerRetention);
-		assertThat(customerRetention.getCustomerRetention()).isEqualTo(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde);
+		assertThat(X_C_Customer_Retention.CUSTOMERRETENTION_Stammkunde).isEqualTo(customerRetention.getCustomerRetention());
 
 	}
 
-	private void createInvoiceLineAlloc(final int candId, final int invoiceLineId)
+	private I_C_Invoice_Line_Alloc createInvoiceLineAlloc(final int candId, final int invoiceLineId)
 	{
 		final I_C_Invoice_Line_Alloc alloc = newInstance(I_C_Invoice_Line_Alloc.class);
 		alloc.setC_Invoice_Candidate_ID(candId);
@@ -406,6 +407,7 @@ public class CustomerRetentionRepositoryTest
 
 		save(alloc);
 
+		return alloc;
 	}
 
 	private I_C_InvoiceLine createInvoiceLine(final int invoiceId)
@@ -467,11 +469,11 @@ public class CustomerRetentionRepositoryTest
 		return customerRetention;
 	}
 
-	private I_C_BPartner createPartner()
+	private I_C_BPartner createPartner(final String name)
 	{
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 
-		partner.setName("Partner1");
+		partner.setName(name);
 
 		save(partner);
 

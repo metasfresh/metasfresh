@@ -24,8 +24,6 @@ package de.metas.rest_api.v2.bpartner;
 
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
-import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
-import de.metas.common.bpartner.v2.request.JsonRequestBankAccountsUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
@@ -33,7 +31,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -61,8 +58,7 @@ public class JsonRequestConsolidateService
 
 		consolidateWithIdentifier(bpartnerComposite.getLocationsNotNull());
 
-		consolidateWithIdentifier(bpartnerComposite.getBankAccountsNotNull());
-		// note that bank-accounts and creditLimits don't need this treatment yet because they don't have the identifier stuff etc
+		// note that bank-accounts don't need this treatment yet because they don't have the identifier stuff etc
 	}
 
 	public void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsert contacts)
@@ -78,38 +74,6 @@ public class JsonRequestConsolidateService
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
 			consolidateWithIdentifier(locationRequestItem);
-		}
-	}
-
-	public void consolidateWithIdentifier(@NonNull final JsonRequestBankAccountsUpsert bankAccountUpsert)
-	{
-		for (final JsonRequestBankAccountUpsertItem item : bankAccountUpsert.getRequestItems())
-		{
-			consolidateWithIdentifier(item);
-		}
-	}
-
-	public static void consolidateWithOrg(@NonNull final JsonRequestBPartnerUpsertItem requestItem, @Nullable final String orgCode)
-	{
-		if (Check.isBlank(orgCode))
-		{
-			//nothing to consolidate
-			return;
-		}
-
-		final String requestItemOrgCode = requestItem.getBpartnerComposite().getOrgCode();
-
-		if (Check.isBlank(requestItemOrgCode))
-		{
-			requestItem.getBpartnerComposite().setOrgCode(orgCode);
-			return;
-		}
-
-		if (!orgCode.equals(requestItemOrgCode))
-		{
-			throw new AdempiereException("Path parameter orgCode: " + orgCode + " and JsonRequestComposite.OrgCode: " + requestItemOrgCode + " don't match!")
-					.appendParametersToMessage()
-					.setParameter(requestItem.getBpartnerIdentifier(), "BPartnerIdentifier");
 		}
 	}
 
@@ -187,31 +151,6 @@ public class JsonRequestConsolidateService
 						.appendParametersToMessage()
 						.setParameter("externalIdentifier", externalIdentifier)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
-		}
-	}
-
-	private static void consolidateWithIdentifier(@NonNull final JsonRequestBankAccountUpsertItem requestItem)
-	{
-		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getIdentifier());
-		switch (externalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				// nothing to do; the JsonRequestBankAccountUpsertItem has no metasfresh-ID to consolidate with
-				break;
-			case EXTERNAL_REFERENCE:
-				// nothing to do
-				break;
-			case IBAN:
-				requestItem.setIban(externalIdentifier.asIban());
-				break;
-			case QR_IBAN:
-				requestItem.setQrIban(externalIdentifier.asQrIban());
-				break;
-			default:
-				throw new AdempiereException("Unexpected IdentifierString.Type=" + externalIdentifier.getType())
-						.appendParametersToMessage()
-						.setParameter("externalIdentifier", externalIdentifier)
-						.setParameter("JsonRequestBankAccountUpsertItem", requestItem);
 		}
 	}
 }

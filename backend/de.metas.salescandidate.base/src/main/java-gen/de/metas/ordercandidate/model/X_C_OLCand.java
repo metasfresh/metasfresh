@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 7381565L;
+	private static final long serialVersionUID = 1656813470L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -63,21 +63,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getAD_InputDataSource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
-	}
-
-	@Override
-	public void setAD_Issue_ID (final int AD_Issue_ID)
-	{
-		if (AD_Issue_ID < 1) 
-			set_Value (COLUMNNAME_AD_Issue_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
-	}
-
-	@Override
-	public int getAD_Issue_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
 	}
 
 	@Override
@@ -140,7 +125,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** 
+	/**
 	 * ApplySalesRepFrom AD_Reference_ID=541416
 	 * Reference name: SalesRepFrom
 	 */
@@ -158,7 +143,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getApplySalesRepFrom() 
+	public java.lang.String getApplySalesRepFrom()
 	{
 		return get_ValueAsString(COLUMNNAME_ApplySalesRepFrom);
 	}
@@ -250,43 +235,16 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1) 
+		if (C_Async_Batch_ID < 1)
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID() 
+	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Auction getC_Auction()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
-	}
-
-	@Override
-	public void setC_Auction(final org.compiere.model.I_C_Auction C_Auction)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class, C_Auction);
-	}
-
-	@Override
-	public void setC_Auction_ID (final int C_Auction_ID)
-	{
-		if (C_Auction_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Auction_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Auction_ID, C_Auction_ID);
-	}
-
-	@Override
-	public int getC_Auction_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Auction_ID);
 	}
 
 	@Override
@@ -557,27 +515,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
 	}
 
-	/** 
-	 * CompensationGroupOrderBy AD_Reference_ID=541580
-	 * Reference name: CompensationGroupOrderBy
-	 */
-	public static final int COMPENSATIONGROUPORDERBY_AD_Reference_ID=541580;
-	/** CompensationGroupFirst = F */
-	public static final String COMPENSATIONGROUPORDERBY_CompensationGroupFirst = "F";
-	/** CompensationGroupLast = L */
-	public static final String COMPENSATIONGROUPORDERBY_CompensationGroupLast = "L";
-	@Override
-	public void setCompensationGroupOrderBy (final @Nullable java.lang.String CompensationGroupOrderBy)
-	{
-		set_Value (COLUMNNAME_CompensationGroupOrderBy, CompensationGroupOrderBy);
-	}
-
-	@Override
-	public java.lang.String getCompensationGroupOrderBy() 
-	{
-		return get_ValueAsString(COLUMNNAME_CompensationGroupOrderBy);
-	}
-
 	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
@@ -591,21 +528,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_PaymentTerm_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
-	}
-
-	@Override
-	public void setC_Project_ID (final int C_Project_ID)
-	{
-		if (C_Project_ID < 1) 
-			set_Value (COLUMNNAME_C_Project_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
-	}
-
-	@Override
-	public int getC_Project_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override
@@ -1195,18 +1117,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setHeaderAggregationKey (final @Nullable java.lang.String HeaderAggregationKey)
-	{
-		set_Value (COLUMNNAME_HeaderAggregationKey, HeaderAggregationKey);
-	}
-
-	@Override
-	public java.lang.String getHeaderAggregationKey() 
-	{
-		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
-	}
-
-	@Override
 	public void setImportWarningMessage (final @Nullable java.lang.String ImportWarningMessage)
 	{
 		set_Value (COLUMNNAME_ImportWarningMessage, ImportWarningMessage);
@@ -1321,28 +1231,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public boolean isManualQtyItemCapacity()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
-	}
-
-	@Override
-	public void setIsReplicationTrxError (final boolean IsReplicationTrxError)
-	{
-		throw new IllegalArgumentException ("IsReplicationTrxError is virtual column");	}
-
-	@Override
-	public boolean isReplicationTrxError() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReplicationTrxError);
-	}
-
-	@Override
-	public void setIsReplicationTrxFinished (final boolean IsReplicationTrxFinished)
-	{
-		throw new IllegalArgumentException ("IsReplicationTrxFinished is virtual column");	}
-
-	@Override
-	public boolean isReplicationTrxFinished() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReplicationTrxFinished);
 	}
 
 	@Override
@@ -1551,33 +1439,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
-	public void setM_SectionCode_ID (final int M_SectionCode_ID)
-	{
-		if (M_SectionCode_ID < 1) 
-			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
-	}
-
-	@Override
-	public int getM_SectionCode_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
@@ -1655,12 +1516,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
-	/** PayPal Extern = V */
-	public static final String PAYMENTRULE_PayPalExtern = "V";
-	/** Kreditkarte Extern = U */
-	public static final String PAYMENTRULE_KreditkarteExtern = "U";
-	/** Sofortüberweisung = R */
-	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -1857,7 +1712,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getQtyShipped() 
+	public BigDecimal getQtyShipped()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1876,16 +1731,5 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
-	}
-
-	@Override
-	public void setReplicationTrxErrorMsg (final @Nullable java.lang.String ReplicationTrxErrorMsg)
-	{
-		throw new IllegalArgumentException ("ReplicationTrxErrorMsg is virtual column");	}
-
-	@Override
-	public java.lang.String getReplicationTrxErrorMsg() 
-	{
-		return get_ValueAsString(COLUMNNAME_ReplicationTrxErrorMsg);
 	}
 }

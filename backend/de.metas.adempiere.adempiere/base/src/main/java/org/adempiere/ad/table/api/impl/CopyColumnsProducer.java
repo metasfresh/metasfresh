@@ -9,16 +9,15 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.IADColumnCalloutBL;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.ddl.TableDDLSyncService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.MColumn;
 import org.compiere.model.M_Element;
 import org.compiere.util.Env;
 
@@ -30,6 +29,7 @@ import java.util.Properties;
  * Producer class used to given {@link I_AD_Column}s (see {@link #setSourceColumns(List)}) to another table (see {@link #setTargetTable(I_AD_Table)}).
  *
  * @author tsa
+ *
  */
 public class CopyColumnsProducer
 {
@@ -44,7 +44,6 @@ public class CopyColumnsProducer
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final IADColumnCalloutBL adColumnCalloutBL = Services.get(IADColumnCalloutBL.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
-	private final TableDDLSyncService syncService = SpringContextHolder.instance.getBean(TableDDLSyncService.class);
 
 	//
 	// Parameters
@@ -190,7 +189,7 @@ public class CopyColumnsProducer
 		// special case the key -> sourceTable_ID
 		if (sourceColumn.getColumnName().equals(sourceTableName + "_ID"))
 		{
-			final String targetColumnName = targetTable.getTableName() + "_ID";
+			final String targetColumnName = new String(targetTable.getTableName() + "_ID");
 			colTarget.setColumnName(targetColumnName);
 			// if the element don't exist, create it
 			final Properties ctx = Env.getCtx();
@@ -288,8 +287,8 @@ public class CopyColumnsProducer
 
 		for (final I_AD_Column column : columns)
 		{
-			final AdColumnId adColumnId = AdColumnId.ofRepoId(column.getAD_Column_ID());
-			syncService.syncToDatabase(adColumnId);
+			final MColumn columnPO = LegacyAdapters.convertToPO(column);
+			columnPO.syncDatabase();
 
 			final String columnName = column.getColumnName();
 			addLog("Synchronized column " + columnName);

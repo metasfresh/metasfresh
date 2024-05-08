@@ -22,10 +22,8 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
@@ -34,52 +32,30 @@ import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.function.ThrowingConsumer;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Map;
-import java.util.stream.Stream;
 
 @Builder
 @Value
 public class MD_Candidate_StepDefTable
 {
-	@NonNull @Getter(AccessLevel.NONE) @Singular ImmutableMap<StepDefDataIdentifier, MaterialDispoTableRow> rows;
+	@Singular
+	ImmutableMap<String, MaterialDispoTableRow> rows;
 
-	public int size() {return rows.size();}
-
-	public Stream<MaterialDispoTableRow> stream() {return rows.values().stream();}
-
-	public ImmutableSet<ProductId> getProductIds()
+	public MaterialDispoTableRow getRow(@NonNull final String identifier)
 	{
-		return stream()
-				.map(MaterialDispoTableRow::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
+		return rows.get(identifier);
 	}
 
-	public void forEach(@NonNull final ThrowingConsumer<MaterialDispoTableRow> consumer) throws Throwable
+	public ImmutableCollection<MaterialDispoTableRow> getRows()
 	{
-		for (final Map.Entry<StepDefDataIdentifier, MaterialDispoTableRow> entry : rows.entrySet())
-		{
-			final StepDefDataIdentifier identifier = entry.getKey();
-			final MaterialDispoTableRow row = entry.getValue();
-
-			SharedTestContext.run(() -> {
-				SharedTestContext.put("rowIdentifier", identifier);
-				SharedTestContext.put("row", row);
-
-				consumer.accept(row);
-			});
-		}
+		return rows.values();
 	}
 
 	@Value
@@ -87,7 +63,7 @@ public class MD_Candidate_StepDefTable
 	public static class MaterialDispoTableRow
 	{
 		@NonNull
-		StepDefDataIdentifier identifier;
+		String identifier;
 
 		@NonNull
 		CandidateType type;
@@ -108,12 +84,9 @@ public class MD_Candidate_StepDefTable
 		Instant time;
 
 		@Nullable
-		StepDefDataIdentifier attributeSetInstanceId;
+		String attributeSetInstanceId;
 
 		boolean simulated;
-
-		@Nullable
-		WarehouseId warehouseId;
 
 		public CandidatesQuery createQuery()
 		{
@@ -121,9 +94,9 @@ public class MD_Candidate_StepDefTable
 					.productId(productId.getRepoId())
 					.storageAttributesKey(AttributesKey.ALL) // don't restrict on ASI for now; we might use the row's attributeSetInstanceId in this query at a later time
 					.timeRangeEnd(DateAndSeqNo.builder()
-							.date(time)
-							.operator(DateAndSeqNo.Operator.INCLUSIVE)
-							.build())
+										  .date(time)
+										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
+										  .build())
 					.build();
 
 			return CandidatesQuery.builder()

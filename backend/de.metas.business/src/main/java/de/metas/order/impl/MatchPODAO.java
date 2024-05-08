@@ -1,13 +1,11 @@
 package de.metas.order.impl;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.inout.InOutId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.OrderLineId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -16,11 +14,14 @@ import org.compiere.model.MMatchPO;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.invoice.InvoiceId;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,29 +50,37 @@ public class MatchPODAO implements IMatchPODAO
 	@Override
 	public List<I_M_MatchPO> getByOrderLineAndInvoiceLine(
 			@NonNull final OrderLineId orderLineId,
-			@NonNull final InvoiceLineId invoiceLineId)
+			final int C_InvoiceLine_ID)
 	{
+		Check.assumeGreaterThanZero(C_InvoiceLine_ID, "C_InvoiceLine_ID");
+
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_MatchPO.class)
 				.addEqualsFilter(I_M_MatchPO.COLUMN_C_OrderLine_ID, orderLineId)
-				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, invoiceLineId)
+				.addEqualsFilter(I_M_MatchPO.COLUMN_C_InvoiceLine_ID, C_InvoiceLine_ID)
 				.create()
 				.listImmutable(I_M_MatchPO.class);
 	}
 
 	@Override
-	public List<I_M_MatchPO> getByReceiptId(@NonNull final InOutId inOutId)
+	public List<I_M_MatchPO> getByReceiptId(final int inOutId)
 	{
+		if (inOutId <= 0)
+		{
+			return ImmutableList.of();
+		}
+		//
 		final String sql = "SELECT * FROM M_MatchPO m"
 				+ " INNER JOIN M_InOutLine l ON (m.M_InOutLine_ID=l.M_InOutLine_ID) "
 				+ "WHERE l.M_InOut_ID=?";
-		final List<Object> sqlParams = Collections.singletonList(inOutId);
+		final List<Object> sqlParams = Arrays.asList(inOutId);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
 			DB.setParameters(pstmt, sqlParams);
+			pstmt.setInt(1, inOutId);
 			rs = pstmt.executeQuery();
 
 			final List<I_M_MatchPO> result = new ArrayList<>();
@@ -89,6 +98,8 @@ public class MatchPODAO implements IMatchPODAO
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 	}	// getInOut
 
@@ -98,7 +109,7 @@ public class MatchPODAO implements IMatchPODAO
 		final String sql = "SELECT * FROM M_MatchPO mi"
 				+ " INNER JOIN C_InvoiceLine il ON (mi.C_InvoiceLine_ID=il.C_InvoiceLine_ID) "
 				+ "WHERE il.C_Invoice_ID=?";
-		final List<Object> sqlParams = Collections.singletonList(invoiceId);
+		final List<Object> sqlParams = Arrays.asList(invoiceId);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -121,6 +132,8 @@ public class MatchPODAO implements IMatchPODAO
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 	}
 

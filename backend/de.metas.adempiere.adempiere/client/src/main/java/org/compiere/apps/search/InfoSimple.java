@@ -22,11 +22,29 @@ package org.compiere.apps.search;
  * #L%
  */
 
-import de.metas.i18n.IMsgBL;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import net.miginfocom.swing.MigLayout;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.beans.PropertyChangeListener;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.swing.BorderFactory;
+import javax.swing.table.TableModel;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -60,23 +78,10 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
-import javax.swing.*;
-import javax.swing.table.TableModel;
-import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.beans.PropertyChangeListener;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author cg
@@ -186,11 +191,11 @@ public class InfoSimple extends Info
 	private final EvaluableCtx ctx = new EvaluableCtx(Env.getCtx());
 
 	// metas: product category tree
-	// private MTreeNode treeSelectedNode = null;
+	private MTreeNode treeSelectedNode = null;
 	private final PropertyChangeListener treeNodeSelectedListener = evt -> {
 		final MTreeNode nd = (MTreeNode)evt.getNewValue();
-		log.info(nd.getNode_ID() + " - " + nd);
-		//this.treeSelectedNode = nd;
+		log.info(nd.getNode_ID() + " - " + nd.toString());
+		treeSelectedNode = nd;
 		executeQuery();
 	};
 
@@ -269,6 +274,8 @@ public class InfoSimple extends Info
 	};
 
 	/**
+	 * 
+	 * @param frame
 	 * @param modal note: reflection code relies on this parameter to be a <b>B</b>oolean, not a primitive boolean
 	 */
 	// NOTE: keep this constructor public because it's accessed by reflection
@@ -519,7 +526,7 @@ public class InfoSimple extends Info
 		}
 
 		// Create Grid
-		final StringBuilder where = new StringBuilder();
+		final StringBuffer where = new StringBuffer();
 		where.append(infoWindow.getOtherClause());
 		if (!Check.isEmpty(p_whereClause, true))
 		{
@@ -568,12 +575,11 @@ public class InfoSimple extends Info
 			final LanguageInfo languageInfo = LanguageInfo.ofSpecificLanguage(ctx);
 			colClass = KeyNamePair.class;
 			idColSQL = field.getSelectClause();
-			final String displayColumnSQL = MLookupFactory.newInstance().getLookupEmbed(languageInfo,
+			final String displayColumnSQL = MLookupFactory.getLookupEmbed(languageInfo,
 					colSQL, // BaseColumn
 					null, // BaseTable
 					field.getAD_Reference_ID(),
-					ReferenceId.ofRepoIdOrNull(field.getAD_Reference_Value_ID())
-			);
+					field.getAD_Reference_Value_ID());
 			if (!Check.isEmpty(displayColumnSQL, true))
 			{
 				colSQL = "(" + displayColumnSQL + ")";
@@ -627,6 +633,21 @@ public class InfoSimple extends Info
 
 	}
 
+	public final IInfoQueryCriteria getParameterByColumnNameOrNull(final String columnName)
+	{
+		Check.assumeNotEmpty(columnName, "columnName not null");
+		for (final IInfoQueryCriteria param : displayedParameters)
+		{
+			final I_AD_InfoColumn infoColumn = param.getAD_InfoColumn();
+			final String infoColumnName = infoColumn.getColumnName();
+			if (columnName.equals(infoColumnName))
+			{
+				return param;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Set default values from attributes
 	 */
@@ -649,6 +670,9 @@ public class InfoSimple extends Info
 
 	/**
 	 * Get where clause constructed from query fields
+	 *
+	 * @param params
+	 * @return
 	 */
 	protected String getSQLWhere(final List<Object> params)
 	{
@@ -666,6 +690,30 @@ public class InfoSimple extends Info
 			whereClause.append(" AND ");
 		}
 
+		// category id
+		if (treeSelectedNode != null && treeSelectedNode.getNode_ID() != 0)
+		{
+			// need to iterate category and all subcategories
+			if (where.length() > 0)
+			{
+				where.append(" AND ");
+			}
+			where.append(" ( ");
+			where.append(" ").append(getTableName()).append(".");
+			where.append(adInfoWindowBL.getTreeColumnName(infoWindow));
+			where.append(" IN (");
+
+			for (final int id : getSubtreeIds(treeSelectedNode))
+			{
+				where.append(id);
+				where.append(',');
+			}
+			// remote the last ','
+			where.setLength(where.length() - 1);
+			where.append(")");
+			where.append(" ) ");
+		}
+		//
 		if (where.length() > 0)
 		{
 			whereClause.append(" ( ").append(where).append(" ) ");
@@ -715,6 +763,21 @@ public class InfoSimple extends Info
 		}
 
 		return where.toString();
+	}
+
+	private Collection<Integer> getSubtreeIds(final MTreeNode category)
+	{
+
+		final ArrayList<Integer> result = new ArrayList<>();
+		result.add(category.getNode_ID());
+
+		@SuppressWarnings("unchecked")
+		final Enumeration<MTreeNode> enChildren = category.children();
+		while (enChildren.hasMoreElements())
+		{
+			result.add(enChildren.nextElement().getNode_ID());
+		}
+		return result;
 	}
 
 	@Override()
@@ -789,6 +852,12 @@ public class InfoSimple extends Info
 			return criteria.getParameterValue(0, false);
 		}
 		return attributes.get(name);
+	}
+
+	public String getContextVariableAsString(final String name)
+	{
+		final Object value = getContextVariable(name);
+		return value == null ? "" : value.toString();
 	}
 
 	@Override

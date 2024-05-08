@@ -290,7 +290,7 @@ public final class CalloutExecutor implements ICalloutExecutor
 		{
 			statisticsCollectorCurrent = statisticsCollectorCurrent == null ? null : statisticsCollectorCurrent.setStatusFailed(e);
 
-			throw CalloutExecutionException.wrapIfNeeded(e)
+			throw CalloutExecutionException.of(e)
 					.setCalloutExecutor(this)
 					.setField(field)
 					.setCalloutInstance(callout);

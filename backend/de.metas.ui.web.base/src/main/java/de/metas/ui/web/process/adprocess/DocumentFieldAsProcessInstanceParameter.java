@@ -11,8 +11,6 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.util.OptionalInt;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -60,12 +58,6 @@ public final class DocumentFieldAsProcessInstanceParameter implements IProcessIn
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return documentField.getWidgetType();
-	}
-
-	@Override
-	public OptionalInt getMinPrecision()
-	{
-		return documentField.getMinPrecision();
 	}
 
 	@Override

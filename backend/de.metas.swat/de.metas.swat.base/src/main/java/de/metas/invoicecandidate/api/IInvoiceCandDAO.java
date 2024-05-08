@@ -7,7 +7,6 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.InvoiceLineAllocId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -24,7 +23,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
@@ -39,7 +37,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -108,9 +105,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
+	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
 
-	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
@@ -179,7 +176,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCands(List<I_C_Invoice_Candidate> ics);
-
+	
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -242,13 +239,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void updateApprovalForInvoicingToTrue(@NonNull PInstanceId selectionId);
 
-	// /**
-	//  * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
-	//  * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
-	//  *
-	//  * task https://github.com/metasfresh/metasfresh/issues/3809
-	//  */
-	// void updateMissingPaymentTermIds(PInstanceId selectionId);
+	/**
+	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
+	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
+	 *
+	 * task https://github.com/metasfresh/metasfresh/issues/3809
+	 */
+	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
 	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
@@ -287,8 +284,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
-
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
 
 	/**
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
@@ -420,12 +415,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
-	ImmutableList<org.compiere.model.I_C_Invoice> getInvoicesForCandidateId(InvoiceCandidateId invoiceCandidateId);
-
-	Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(InvoiceLineAllocId invoiceLineAllocId);
-
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
-
-	@NonNull
-	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
 }

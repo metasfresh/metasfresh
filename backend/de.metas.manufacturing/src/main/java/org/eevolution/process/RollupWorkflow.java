@@ -1,6 +1,29 @@
 package org.eevolution.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
+import org.eevolution.model.I_PP_Product_Planning;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -20,7 +43,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
@@ -38,24 +60,6 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_CostElement;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * RollUp of Cost Manufacturing Workflow
@@ -76,7 +80,6 @@ public class RollupWorkflow extends JavaProcess
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
 	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
-	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 
 	// parameters
 	private OrgId p_AD_Org_ID = OrgId.ANY;
@@ -152,13 +155,14 @@ public class RollupWorkflow extends JavaProcess
 
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		PPRoutingId routingId = null;
-		ProductPlanning productPlanning = null;
+		I_PP_Product_Planning productPlanning = null;
 		if (routingId == null)
 		{
 			routingId = routingsRepo.getRoutingIdByProductId(productId);
 		}
 		if (routingId == null)
 		{
+			final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 			productPlanning = productPlanningsRepo
 					.find(ProductPlanningQuery.builder()
 							.orgId(p_AD_Org_ID)
@@ -167,7 +171,7 @@ public class RollupWorkflow extends JavaProcess
 					.orElse(null);
 			if (productPlanning != null)
 			{
-				routingId = productPlanning.getWorkflowId();
+				routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
 			}
 			else
 			{
@@ -224,14 +228,13 @@ public class RollupWorkflow extends JavaProcess
 		// Save to database
 		updateCostRecords(costSegment, costs);
 		updateRoutingRecord(context.getRouting().getId(), routingDurationsAndYield, costs);
-
-		// // Update Product Data Planning
-		// final ProductPlanning productPlanning = context.getProductPlanning();
-		// if (productPlanning != null)
-		// {
-		// 	productPlanning.setYield(routingDurationsAndYield.getYield().toInt());
-		// 	saveRecord(productPlanning);
-		// }
+		// Update Product Data Planning
+		final I_PP_Product_Planning productPlanning = context.getProductPlanning();
+		if (productPlanning != null)
+		{
+			productPlanning.setYield(routingDurationsAndYield.getYield().toInt());
+			saveRecord(productPlanning);
+		}
 	}
 
 	private void updateRoutingRecord(final PPRoutingId routingId, final RoutingDurationsAndYield routingDurationsAndYield, final List<RoutingActivitySegmentCost> costs)
@@ -342,9 +345,14 @@ public class RollupWorkflow extends JavaProcess
 	@lombok.Value(staticConstructor = "of")
 	private static class Context
 	{
-		@NonNull I_M_Product product;
-		@NonNull ProductPlanning productPlanning;
-		@NonNull PPRouting routing;
+		@NonNull
+		I_M_Product product;
+
+		@NonNull
+		I_PP_Product_Planning productPlanning;
+
+		@NonNull
+		PPRouting routing;
 	}
 
 	@lombok.Getter
@@ -399,7 +407,7 @@ public class RollupWorkflow extends JavaProcess
 
 		public BigDecimal getCostAsBigDecimal()
 		{
-			return cost.toBigDecimal();
+			return cost.getValue();
 		}
 	}
 }

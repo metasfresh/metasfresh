@@ -1,10 +1,10 @@
 package de.metas.shipper.gateway.spi.model;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -51,7 +51,7 @@ public class ContactPerson
 		final boolean phoneIsEmpty = phone == null;
 		Check.errorUnless(
 				simplePhoneNumberIsEmpty || phoneIsEmpty,
-				"Its not allowed to specify both a simple phone number string and a PhoneNumber instance because they might be contradictory; simplePhoneNumber={}; phone={}",
+				"Its not allowed to specify both a simple phone number string and a PhoneNumber instance because they might be contracdictory; simplePhoneNumber={}; phone={}",
 				simplePhoneNumber, phone);
 	}
 

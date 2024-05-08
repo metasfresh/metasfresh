@@ -67,7 +67,7 @@ public class ReceiptLineFindForwardToLocatorTool
 			final I_M_Warehouse warehouseForIssues = Services.get(IWarehouseDAO.class).retrieveWarehouseForIssuesOrNull(Env.getCtx());
 			Check.assumeNotNull(warehouseForIssues, "Warehouse for issues shall be defined");
 			final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-			final LocatorId locatorIdForIssues = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouseForIssues.getM_Warehouse_ID()));
+			final LocatorId locatorIdForIssues = warehouseBL.getDefaultLocatorId(WarehouseId.ofRepoId(warehouseForIssues.getM_Warehouse_ID()));
 
 			return locatorIdForIssues;
 		}
@@ -107,7 +107,7 @@ public class ReceiptLineFindForwardToLocatorTool
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 		final I_M_Warehouse targetWarehouse = loadOutOfTrx(warehouseDestRepoId, I_M_Warehouse.class);
-		final I_M_Locator locatorTo = warehouseBL.getOrCreateDefaultLocator(targetWarehouse);
+		final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(targetWarehouse);
 
 		// Skip if we don't have a target warehouse
 		if (locatorTo == null)

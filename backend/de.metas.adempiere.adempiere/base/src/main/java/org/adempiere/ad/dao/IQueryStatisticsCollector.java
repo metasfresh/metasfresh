@@ -1,7 +1,8 @@
 package org.adempiere.ad.dao;
 
-import com.google.common.base.Stopwatch;
 import org.compiere.util.CStatementVO;
+
+import com.google.common.base.Stopwatch;
 
 /*
  * #%L
@@ -29,18 +30,23 @@ import org.compiere.util.CStatementVO;
  * Query statistics collector
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public interface IQueryStatisticsCollector
 {
 	/**
 	 * Collect given <code>sql</code> query (that will be executed)
+	 *
+	 * @param sql
+	 * @param duration
 	 */
 	void collect(String sql, Stopwatch duration);
 
 	/**
 	 * Collect given statement query (that will be executed)
 	 *
-	 * @param vo       statement value object
+	 * @param vo statement value object
+	 * @param duration
 	 */
 	void collect(CStatementVO vo, Stopwatch duration);
 }

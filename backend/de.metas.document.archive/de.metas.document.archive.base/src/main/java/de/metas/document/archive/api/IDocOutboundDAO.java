@@ -22,19 +22,20 @@ package de.metas.document.archive.api;
  * #L%
  */
 
-import de.metas.document.archive.DocOutboundLogId;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
+
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Properties;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
@@ -58,23 +59,20 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
 
-	I_C_Doc_Outbound_Config getConfigById(int docOutboundConfigId);
+	/**
+	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
+	 *
+	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
+	 */
+	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
 	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
-
-	I_C_Doc_Outbound_Log getById(@NonNull DocOutboundLogId docOutboundLogId);
-
-	@Nullable
-	I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(@NonNull DocOutboundLogId docOutboundLogId);
-
-	void setPostFinanceExportStatus(@NonNull DocOutboundLogId docOutboundLogId, @NonNull String exportStatus);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)
 	 *
 	 * @return log line
 	 */
-	@Nullable
 	I_C_Doc_Outbound_Log_Line retrieveCurrentPDFArchiveLogLineOrNull(I_C_Doc_Outbound_Log log);
 
 	/**

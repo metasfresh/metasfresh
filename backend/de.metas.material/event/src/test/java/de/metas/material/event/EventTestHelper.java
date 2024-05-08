@@ -84,7 +84,6 @@ public class EventTestHelper
 				.demandCandidateId(41)
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
-				.fullDemandQty(new BigDecimal("20"))
 				.build();
 	}
 

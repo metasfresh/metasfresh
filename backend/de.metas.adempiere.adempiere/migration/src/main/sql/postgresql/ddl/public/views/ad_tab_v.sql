@@ -47,7 +47,6 @@ SELECT
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
-     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -58,10 +57,7 @@ SELECT
      , t.QuickInput_CloseButton_Caption
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
-     , t.IsAutodetectDefaultDateFilter
-     , t.QuickInputLayout
-     , t.NotFound_Message
-     , t.NotFound_MessageDetail
+, t.IsAutodetectDefaultDateFilter
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar

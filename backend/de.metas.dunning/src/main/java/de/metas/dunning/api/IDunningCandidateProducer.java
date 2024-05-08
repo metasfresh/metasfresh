@@ -41,6 +41,12 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 public interface IDunningCandidateProducer
 {
 	/**
+	 * If this option is set in context, the producer will update the candidate even if it's not staled.
+	 */
+	String CONTEXT_FullUpdate = IDunningCandidateProducer.class.getName() + "#" + "FullUpdate";
+	boolean DEFAULT_FullUpdate = true;
+
+	/**
 	 * 
 	 * @param sourceDoc
 	 * @return true if the sourceDoc is handled by this producer
@@ -50,7 +56,8 @@ public interface IDunningCandidateProducer
 	/**
 	 * Creates or updates dunning candidates for the given <code>context</code> and <code>sourceDoc</code>. This method assumes that there is only one dunning candidate per source doc and dunning
 	 * level.
-	 *
+	 * 
+	 * Note that if a candidate is found to exist, it is updated if is not {@link I_C_Dunning_Candidate#isStaled()}, unless the property {@link #CONTEXT_FullUpdate} is set to true in context.
 	 * <p>
 	 * Some notes about specific fields
 	 * <ul>

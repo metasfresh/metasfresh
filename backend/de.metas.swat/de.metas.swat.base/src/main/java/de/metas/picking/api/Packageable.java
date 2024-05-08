@@ -21,6 +21,9 @@
  */
 
 package de.metas.picking.api;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -28,7 +31,6 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
-import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.InstantAndOrgId;
@@ -36,19 +38,22 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Lines which have to be picked and delivered
@@ -79,8 +84,6 @@ public class Packageable
 	@NonNull
 	Quantity qtyPickedPlanned;
 
-	@Nullable UomId catchWeightUomId;
-
 	@NonNull
 	BPartnerId customerId;
 	String customerBPValue;
@@ -90,8 +93,6 @@ public class Packageable
 	BPartnerLocationId customerLocationId;
 	String customerBPLocationName;
 	String customerAddress;
-	@NonNull
-	BPartnerLocationId handoverLocationId;
 
 	@NonNull
 	WarehouseId warehouseId;
@@ -143,8 +144,42 @@ public class Packageable
 	@Nullable
 	UserId lockedBy;
 
-	@Nullable
-	public OrderAndLineId getSalesOrderAndLineIdOrNull() {return OrderAndLineId.ofNullable(salesOrderId, salesOrderLineIdOrNull);}
+	public static <T> Optional<T> extractSingleValue(@NonNull final Collection<Packageable> packageables, @NonNull final Function<Packageable, T> mapper)
+	{
+		if (packageables.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableList<T> values = packageables.stream()
+				.map(mapper)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+
+		if (values.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (values.size() == 1)
+		{
+			return Optional.of(values.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("More than one value were extracted (" + values + ") from " + packageables);
+		}
+	}
+
+	public static Optional<UserId> extractSingleLockedBy(@NonNull final Collection<Packageable> packageables)
+	{
+		return extractSingleValue(packageables, Packageable::getLockedBy);
+	}
+
+	public static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final Collection<Packageable> items)
+	{
+		return items.stream().map(Packageable::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
+	}
 
 	public Quantity getQtyPickedOrDelivered()
 	{
@@ -153,15 +188,5 @@ public class Packageable
 				.add(getQtyPickedNotDelivered())
 				.add(getQtyPickedPlanned());
 
-	}
-
-	public Quantity getQtyToPick()
-	{
-		return qtyToDeliver
-				// .subtract(qtyPickedNotDelivered) don't subtract the qtyPickedNotDelivered as it was already subtracted from the qtyToDeliver
-				// IMPORTANT: don't subtract the Qty PickedPlanned
-				// because we will also allocate existing DRAFT picking candidates
-				// .subtract(qtyPickedPlanned)
-				.toZeroIfNegative();
 	}
 }

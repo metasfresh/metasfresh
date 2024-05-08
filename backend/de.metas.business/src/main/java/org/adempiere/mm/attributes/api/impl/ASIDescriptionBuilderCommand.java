@@ -1,13 +1,12 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStringBuilder;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Date;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
@@ -24,10 +23,14 @@ import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Date;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -89,6 +92,9 @@ final class ASIDescriptionBuilderCommand
 		final TranslatableStringBuilder descriptionBuilder = TranslatableStrings.builder();
 
 		appendInstanceAttributes(descriptionBuilder);
+		appendSerNo(descriptionBuilder);
+		appendLot(descriptionBuilder);
+		appendGuaranteeDate(descriptionBuilder);
 		appendProductAttributes(descriptionBuilder);
 
 		// NOTE: mk: if there is nothing to show then don't show ASI ID because that number will confuse the user.
@@ -296,6 +302,67 @@ final class ASIDescriptionBuilderCommand
 		}
 
 		description.append(SEPARATOR);
+	}
+
+	private void appendSerNo(final TranslatableStringBuilder description)
+	{
+		final I_M_AttributeSet attributeSet = getAttributeSet();
+		if (!attributeSet.isSerNo())
+		{
+			return;
+		}
+
+		final String serNo = asi.getSerNo();
+		if (serNo == null)
+		{
+			return;
+		}
+
+		final String prefixOverride = attributeSet.getSerNoCharSOverwrite();
+		final String prefix = null == prefixOverride || prefixOverride.isEmpty() ? "#" : prefixOverride;
+
+		final String suffixOverride = attributeSet.getSerNoCharEOverwrite();
+		final String suffix = null == suffixOverride || suffixOverride.isEmpty() ? "#" : suffixOverride;
+
+		appendSeparator(description);
+		description.append(prefix).append(serNo).append(suffix);
+	}
+
+	private void appendLot(final TranslatableStringBuilder description)
+	{
+		final I_M_AttributeSet attributeSet = getAttributeSet();
+		if (!attributeSet.isLot())
+		{
+			return;
+		}
+
+		final String lot = asi.getLot();
+		if (lot == null)
+		{
+			return;
+		}
+
+		final String prefixOverride = attributeSet.getLotCharSOverwrite();
+		final String prefix = null == prefixOverride || attributeSet.getSerNoCharSOverwrite().isEmpty() ? "#" : prefixOverride;
+
+		final String suffixOverride = attributeSet.getLotCharEOverwrite();
+		final String suffix = null == suffixOverride || attributeSet.getSerNoCharEOverwrite().isEmpty() ? "#" : suffixOverride;
+
+		appendSeparator(description);
+		description.append(prefix).append(lot).append(suffix);
+	}
+
+	private void appendGuaranteeDate(final TranslatableStringBuilder description)
+	{
+		// NOTE: we are not checking if "as.isGuaranteeDate()" because it could be that GuaranteeDate was set even though in attribute set did not mention it (task #09363).
+		final Timestamp guaranteeDate = asi.getGuaranteeDate();
+		if (guaranteeDate == null)
+		{
+			return;
+		}
+
+		appendSeparator(description);
+		description.append(formatDateValue(guaranteeDate));
 	}
 
 	private void appendProductAttributes(final TranslatableStringBuilder description)

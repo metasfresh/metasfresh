@@ -30,18 +30,12 @@ Map build(final Map scmVars,
         final Nexus nexus = new Nexus()
         resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
-        if (resultsMap.dockerImage) {
-            resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes or forceSkip=true in procurement-nginx; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
 
-            echo "no changes happened or forceSkip=true in procurement-nginx; skip building procurement-nginx";
-            return resultsMap
-        }
-        else
-        {
-            echo "No docker image found; need to rebuild."
-        }
+        echo "no changes happened or forceSkip=true in procurement-nginx; skip building procurement-nginx";
+        return resultsMap
     }
 
     final DockerConf dockerConf = new DockerConf(

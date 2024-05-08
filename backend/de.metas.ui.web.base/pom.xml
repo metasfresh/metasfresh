@@ -119,18 +119,6 @@
             <version>10.0.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>de.metas.banking</groupId>
-            <artifactId>de.metas.banking.camt53</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>de.metas.postfinance</groupId>
-            <artifactId>de.metas.postfinance</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
@@ -176,35 +164,30 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        
         <!-- Swagger -->
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc-swagger.version}</version>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>${springfox-swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${springfox-swagger.version}</version>
+        </dependency>
+
+        <!-- https://github.com/hoereth/springfox-enum-plugin -->
+        <dependency>
+            <groupId>de.pentabyte</groupId>
+            <artifactId>springfox-enum-plugin</artifactId>
+            <version>${springfox-enum-plugin.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>${byte-buddy.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy-agent</artifactId>
-            <version>${byte-buddy.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-            <version>${objenesis.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -222,22 +205,4 @@
         </dependency>
         
     </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Create tests JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

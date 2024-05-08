@@ -1,9 +1,10 @@
 package de.metas.cache;
 
-import de.metas.cache.model.CacheInvalidateRequest;
+import java.util.Collection;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import java.util.Collection;
+import de.metas.cache.model.CacheInvalidateRequest;
 
 /*
  * #%L

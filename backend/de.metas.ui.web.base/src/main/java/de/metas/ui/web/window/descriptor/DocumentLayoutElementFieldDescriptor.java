@@ -108,9 +108,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 	@Getter
 	private final boolean supportZoomInto;
-	
-	@Getter
-	private final boolean forbidNewRecordCreation;
 
 	private DocumentLayoutElementFieldDescriptor(@NonNull final Builder builder)
 	{
@@ -137,7 +134,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		lookupSearchStartDelay = builder.lookupSearchStartDelay;
 
 		supportZoomInto = builder.isSupportZoomInto();
-		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 	}
 
 	@Override
@@ -213,8 +209,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private DocumentFieldDescriptor.Builder documentFieldBuilder;
 
 		private boolean supportZoomInto;
-		
-		private boolean forbidNewRecordCreation;
 
 		private Builder(final String fieldName)
 		{
@@ -390,17 +384,6 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		private boolean isSupportZoomInto()
 		{
 			return supportZoomInto;
-		}
-
-		public Builder setForbidNewRecordCreation(final boolean forbidNewRecordCreation)
-		{
-			this.forbidNewRecordCreation = forbidNewRecordCreation;
-			return this;
-		}
-
-		private boolean isForbidNewRecordCreation()
-		{
-			return forbidNewRecordCreation;
 		}
 	}
 }

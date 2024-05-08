@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
 
   Background:

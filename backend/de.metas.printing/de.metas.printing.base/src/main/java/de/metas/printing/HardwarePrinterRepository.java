@@ -22,7 +22,6 @@
 
 package de.metas.printing;
 
-import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.cache.CCache;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -54,8 +53,7 @@ public class HardwarePrinterRepository
 		final HardwarePrinter.HardwarePrinterBuilder printer = HardwarePrinter.builder()
 				.id(id)
 				.name(adPrinterHW.getName())
-				.outputType(OutputType.ofCode(adPrinterHW.getOutputType()))
-				.externalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(adPrinterHW.getExternalSystem_Config_ID()));
+				.outputType(OutputType.ofCode(adPrinterHW.getOutputType()));
 
 		for (final I_AD_PrinterHW_MediaTray printerHWMediaTray : printingDAO.retrieveMediaTrays(id))
 		{

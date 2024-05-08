@@ -1,8 +1,9 @@
 package de.metas.ui.web.quickinput;
 
+import org.adempiere.service.ISysConfigBL;
+
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
-import org.adempiere.service.ISysConfigBL;
 
 /*
  * #%L
@@ -14,12 +15,12 @@ import org.adempiere.service.ISysConfigBL;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,16 +32,6 @@ public class QuickInputConstants
 {
 	private static final String SYSCONFIG_EnablePackingInstructionsField = "webui.quickinput.EnablePackingInstructionsField";
 	private static final String SYSCONFIG_EnableBestBeforePolicy = "webui.quickinput.EnableBestBeforePolicy";
-	private static final String SYSCONFIG_EnableVatCodeField = "webui.quickinput.EnableVatCodeField";
-	private static final String SYSCONFIG_EnableContractConditionsField = "webui.quickinput.EnableContractConditionsField";
-	private static final String SYSCONFIG_IsContractConditionsFieldMandatory = "webui.quickinput.IsContractConditionsFieldMandatory";
-
-	/**
-	 * Created for https://github.com/metasfresh/metasfresh/issues/14009 where we want batch entry dropdown to contain "ALL" potential matches,
-	 * not just the first 10 (see de.metas.ui.web.window.model.lookup.LookupDataSource#DEFAULT_PageLength).
-	 * Because "ALL" is a recipe for OOMs and stalled requests, we're using this constant instead as pageLength.
-	 */
-	public static final Integer BIG_ENOUGH_PAGE_LENGTH = 200;
 
 	public static boolean isEnablePackingInstructionsField()
 	{
@@ -52,18 +43,4 @@ public class QuickInputConstants
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableBestBeforePolicy, true);
 	}
 
-	public static boolean isEnableVatCodeField()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableVatCodeField, false);
-	}
-
-	public static boolean isEnableContractConditionsField()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableContractConditionsField, false);
-	}
-
-	public static boolean isContractConditionsFieldMandatory()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_IsContractConditionsFieldMandatory, false);
-	}
 }

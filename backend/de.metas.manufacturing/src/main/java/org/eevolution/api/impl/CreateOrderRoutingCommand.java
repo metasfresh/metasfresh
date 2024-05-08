@@ -197,8 +197,6 @@ final class CreateOrderRoutingCommand
 				.subcontractingVendorId(activity.getSubcontractingVendorId())
 				//
 				.milestone(activity.isMilestone())
-				.alwaysAvailableToUser(activity.getAlwaysAvailableToUser())
-				.userInstructions(activity.getUserInstructions())
 				//
 				.resourceId(activity.getResourceId())
 				//

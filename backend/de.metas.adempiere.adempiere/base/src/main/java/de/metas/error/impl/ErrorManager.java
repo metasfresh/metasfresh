@@ -1,22 +1,20 @@
 package de.metas.error.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
+
 import de.metas.common.util.EmptyUtil;
 import de.metas.error.AdIssueFactory;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
-import de.metas.error.IssueCategory;
-import de.metas.error.IssueCountersByCategory;
-import de.metas.error.IssueCreateRequest;
-import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessMDC;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -30,16 +28,20 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCategory;
+import de.metas.error.IssueCountersByCategory;
+import de.metas.error.IssueCreateRequest;
+import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessMDC;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 public class ErrorManager implements IErrorManager
 {
@@ -67,6 +69,7 @@ public class ErrorManager implements IErrorManager
 				.build());
 	}
 
+
 	@Override
 	@NonNull
 	public AdIssueId insertRemoteIssue(@NonNull final InsertRemoteIssueRequest request)
@@ -78,13 +81,18 @@ public class ErrorManager implements IErrorManager
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
 		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
-		issue.setIssueCategory(IssueCategory.ofNullableCodeOrOther(request.getIssueCategory()).getCode());
+
+		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
+		issue.setIssueCategory(issueCategory.getCode());
+
 		issue.setIssueSummary(request.getIssueSummary());
+
 		issue.setSourceClassName(request.getSourceClassName());
 		issue.setSourceMethodName(request.getSourceMethodName());
 		issue.setStackTrace(request.getStacktrace());
-		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
-		issue.setAD_Org_ID(request.getOrgId().getRepoId());
+		issue.setAD_PInstance_ID(request.getPInstance_ID().getRepoId());
+		issue.setAD_Org_ID(request.getOrgId().getRepoId() );
+
 		saveRecord(issue);
 		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
 	}
@@ -125,7 +133,7 @@ public class ErrorManager implements IErrorManager
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
 					final String s = element.toString();
-					if (s.contains("adempiere"))
+					if (s.indexOf("adempiere") != -1)
 					{
 						errorTrace.append(s).append("\n");
 						if (count == 0)

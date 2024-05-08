@@ -92,7 +92,7 @@ public class VDocAction extends CDialog
 			//
 			AEnv.positionCenterWindow(Env.getWindow(WindowNo), this);
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			Services.get(IClientUI.class).error(WindowNo, ex);
 		}
@@ -110,15 +110,15 @@ public class VDocAction extends CDialog
 	private Map<String, IDocActionItem> docActionItemsByValue = null; // lazy
 
 	//
-	private final CPanel mainPanel = new CPanel();
-	private final BorderLayout mainLayout = new BorderLayout();
-	private final CPanel northPanel = new CPanel();
-	private final CComboBox<IDocActionItem> actionCombo = new CComboBox<>();
-	private final JLabel actionLabel = new JLabel();
-	private final JScrollPane centerPane = new JScrollPane();
-	private final JTextArea message = new JTextArea();
-	private final FlowLayout northLayout = new FlowLayout();
-	private final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+	private CPanel mainPanel = new CPanel();
+	private BorderLayout mainLayout = new BorderLayout();
+	private CPanel northPanel = new CPanel();
+	private CComboBox<IDocActionItem> actionCombo = new CComboBox<>();
+	private JLabel actionLabel = new JLabel();
+	private JScrollPane centerPane = new JScrollPane();
+	private JTextArea message = new JTextArea();
+	private FlowLayout northLayout = new FlowLayout();
+	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
 
 	/**
 	 * Static Init
@@ -190,9 +190,9 @@ public class VDocAction extends CDialog
 	 *
 	 * @param Record_ID id
 	 */
-	private void dynInit(final int Record_ID)
+	private void dynInit(int Record_ID)
 	{
-		final String DocStatus = (String)m_mTab.getValue("DocStatus");
+		String DocStatus = (String)m_mTab.getValue("DocStatus");
 		String DocAction = (String)m_mTab.getValue("DocAction");
 		//
 		final boolean Processing = DisplayType.toBoolean(m_mTab.getValue("Processing"));
@@ -299,12 +299,12 @@ public class VDocAction extends CDialog
 	 * @param DocStatus current doc status
 	 * @return true if status not changed
 	 */
-	private boolean checkStatus(final String TableName, final int Record_ID, final String DocStatus)
+	private boolean checkStatus(String TableName, int Record_ID, String DocStatus)
 	{
-		final String sql = "SELECT 2 FROM " + TableName
+		String sql = "SELECT 2 FROM " + TableName
 				+ " WHERE " + TableName + "_ID=" + Record_ID
 				+ " AND DocStatus='" + DocStatus + "'";
-		final int result = DB.getSQLValue(null, sql);
+		int result = DB.getSQLValue(null, sql);
 		return result == 2;
 	}	// checkStatusChange
 
@@ -347,7 +347,7 @@ public class VDocAction extends CDialog
 	 * @param e event
 	 */
 	@Override
-	public void actionPerformed(final ActionEvent e)
+	public void actionPerformed(ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
@@ -355,11 +355,13 @@ public class VDocAction extends CDialog
 			{
 				dispose();
 				m_OKpressed = true;
+				return;
 			}
 		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
 		{
 			dispose();
+			return;
 		}
 		//
 		// ActionCombo: display the description for the selection

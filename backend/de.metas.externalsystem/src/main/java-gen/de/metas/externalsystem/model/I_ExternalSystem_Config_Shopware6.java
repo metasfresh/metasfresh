@@ -1,31 +1,7 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated) 
@@ -75,7 +51,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base URL.
+	 * Set Base-URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
@@ -84,7 +60,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setBaseURL (java.lang.String BaseURL);
 
 	/**
-	 * Get Base URL.
+	 * Get Base-URL.
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: true
@@ -299,29 +275,6 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Is sync available for sales to Shopware6.
-	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsSyncAvailableForSalesToShopware6 (boolean IsSyncAvailableForSalesToShopware6);
-
-	/**
-	 * Get Is sync available for sales to Shopware6.
-	 * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSyncAvailableForSalesToShopware6();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_IsSyncAvailableForSalesToShopware6 = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "IsSyncAvailableForSalesToShopware6", null);
-	String COLUMNNAME_IsSyncAvailableForSalesToShopware6 = "IsSyncAvailableForSalesToShopware6";
-
-	/**
 	 * Set Address JSON-path.
 	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
 	 *
@@ -369,7 +322,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Business partner mapping - metasfresh-ID JSON-Path.
-	 * JSON path indicating where the customer's metasfresh ID (C_BPartner_ID) can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
+	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -379,7 +332,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Business partner mapping - metasfresh-ID JSON-Path.
-	 * JSON path indicating where the customer's metasfresh ID (C_BPartner_ID) can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
+	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -415,7 +368,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Business partner mapping - Shopware6-ID JSON-Path.
-	 * JSON path indicating where the customer's Shopware6 reference can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
+	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -425,7 +378,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Business partner mapping - Shopware6-ID JSON-Path.
-	 * JSON path indicating where the customer's Shopware6 reference can be read when importing a customized Shopware document that contains a customer. Currently, there are 2 workflows where we deal with such payloads: during a sales order import, and during the explicit customer import. For more details see: https://github.com/metasfresh/metasfresh/blob/master/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-shopware6/README.md
+	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -501,50 +454,6 @@ public interface I_ExternalSystem_Config_Shopware6
 	int getM_PriceList_ID();
 
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
-
-	/**
-	 * Set Order Processing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setOrderProcessing (java.lang.String OrderProcessing);
-
-	/**
-	 * Get Order Processing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getOrderProcessing();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_OrderProcessing = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "OrderProcessing", null);
-	String COLUMNNAME_OrderProcessing = "OrderProcessing";
-
-	/**
-	 * Set Percentage deduction.
-	 * Percentage that is subtracted from the actual available for sales before it is transferred to Shopware. For example, with 25% only three quarters of the actually available for sales is reported to the shop.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPercentageOfAvailableForSalesToSync (BigDecimal PercentageOfAvailableForSalesToSync);
-
-	/**
-	 * Get Percentage deduction.
-	 * Percentage that is subtracted from the actual available for sales before it is transferred to Shopware. For example, with 25% only three quarters of the actually available for sales is reported to the shop.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getPercentageOfAvailableForSalesToSync();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_PercentageOfAvailableForSalesToSync = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "PercentageOfAvailableForSalesToSync", null);
-	String COLUMNNAME_PercentageOfAvailableForSalesToSync = "PercentageOfAvailableForSalesToSync";
 
 	/**
 	 * Set Product Lookup.

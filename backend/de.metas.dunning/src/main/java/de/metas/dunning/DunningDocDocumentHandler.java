@@ -1,6 +1,11 @@
 package de.metas.dunning;
 
-import de.metas.document.engine.DocStatus;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
@@ -10,13 +15,8 @@ import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import java.util.List;
 
 /*
  * #%L
@@ -61,10 +61,9 @@ public class DunningDocDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
-		final I_C_DunningDoc record = extractDunningDoc(docFields);
-		return InstantAndOrgId.ofTimestamp(record.getDunningDate(), OrgId.ofRepoId(record.getAD_Org_ID()));
+		return TimeUtil.asLocalDate(extractDunningDoc(docFields).getDunningDate());
 	}
 
 	/**
@@ -74,7 +73,7 @@ public class DunningDocDocumentHandler implements DocumentHandler
 	 * Assumes that the given doc is not yet processed.
 	 */
 	@Override
-	public DocStatus completeIt(@NonNull final DocumentTableFields docFields)
+	public String completeIt(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_DunningDoc dunningDocRecord = extractDunningDoc(docFields);
 		dunningDocRecord.setDocAction(IDocument.ACTION_ReActivate);
@@ -106,7 +105,7 @@ public class DunningDocDocumentHandler implements DocumentHandler
 
 		dunningDocRecord.setProcessed(true);
 
-		return DocStatus.Completed;
+		return IDocument.STATUS_Completed;
 	}
 
 	@Override

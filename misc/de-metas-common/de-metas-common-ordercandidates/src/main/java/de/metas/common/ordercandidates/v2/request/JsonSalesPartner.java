@@ -24,7 +24,8 @@ package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,15 +34,15 @@ import javax.annotation.Nullable;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 
-@Schema(description="Used to identify a bpartner's sales partner. Only one of the possible matching properties shall be set.")
+@ApiModel(description="Used to identify a bpartner's sales partner. Only one of the possible matching properties shall be set.")
 @Value
 public class JsonSalesPartner
 {
-	@Schema(description = BPARTNER_VALUE_DOC)
+	@ApiModelProperty(value = BPARTNER_VALUE_DOC)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String salesPartnerCode;
 
-	@Schema(required = true, description = BPARTNER_IDENTIFIER_DOC)
+	@ApiModelProperty(required = true, value = BPARTNER_IDENTIFIER_DOC)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String salesPartnerIdentifier;
 

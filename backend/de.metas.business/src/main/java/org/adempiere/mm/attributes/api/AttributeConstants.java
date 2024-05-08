@@ -46,8 +46,6 @@ public class AttributeConstants
 	public final String ATTR_BestBeforeDate_String = "HU_BestBeforeDate";
 	public final AttributeCode ATTR_BestBeforeDate = AttributeCode.ofString(ATTR_BestBeforeDate_String);
 	public final AttributeCode ATTR_MonthsUntilExpiry = AttributeCode.ofString("MonthsUntilExpiry");
-	public final AttributeCode ATTR_MonthsUntilEndStorageDate = AttributeCode.ofString("OnConsignment_StoragePeriod");
-	public final AttributeCode ATTR_endStorageDate = AttributeCode.ofString("OnConsignment_EndDate");
 
 	//
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
@@ -72,18 +70,6 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC4 = AttributeCode.ofString("RouterMAC4");
 	public static final AttributeCode RouterMAC5 = AttributeCode.ofString("RouterMAC5");
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
-	public static final AttributeCode RouterMAC7 = AttributeCode.ofString("RouterMAC7");
-	public static final AttributeCode RouterMAC8 = AttributeCode.ofString("RouterMAC8");
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
-
-	public static final AttributeCode CountryOfOrigin = AttributeCode.ofString("1000001");
-	public static final AttributeCode HU_BatchNo = AttributeCode.ofString("HU_BatchNo");
-
-	public static final AttributeCode OnConsignment = AttributeCode.ofString("OnConsignment");
-
-
-	public static final AttributeCode HU_ExternalLotNumber = AttributeCode.ofString("ExternalLotNumber");
-
-	public static final AttributeCode ProductionDate = AttributeCode.ofString("ProductionDate");
 }

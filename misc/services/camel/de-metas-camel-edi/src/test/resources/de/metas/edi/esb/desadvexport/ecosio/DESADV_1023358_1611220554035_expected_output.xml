@@ -22,10 +22,8 @@
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <LotNumber>19</LotNumber>
-            <QtyCUsPerTU>1</QtyCUsPerTU>
+            <QtyCU>1</QtyCU>
             <QtyCUsPerLU>1</QtyCUsPerLU>
-            <QtyCUsPerLU_InInvoiceUOM>0.25</QtyCUsPerLU_InInvoiceUOM>
-            <QtyCUsPerTU_InInvoiceUOM>0.25</QtyCUsPerTU_InInvoiceUOM>
             <QtyTU>1</QtyTU>
             <EDI_DesadvLine_ID>
                 <C_UOM_ID>

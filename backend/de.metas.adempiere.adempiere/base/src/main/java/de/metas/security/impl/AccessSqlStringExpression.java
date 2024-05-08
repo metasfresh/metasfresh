@@ -12,7 +12,6 @@ import org.adempiere.ad.expression.api.IStringExpressionWrapper;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionsHelper;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.ad.table.api.TableName;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
@@ -65,15 +64,15 @@ public final class AccessSqlStringExpression implements IStringExpression
 	 * Creates and returns a new wrapper for given parameters.
 	 *
 	 * Usually these wrappers are used in {@link CompositeStringExpression.Builder#wrap(IStringExpressionWrapper)} methods.
+	 *
+	 * @param tableNameIn
+	 * @param fullyQualified
+	 * @param rw
+	 * @return wrapper
 	 */
-	public static IStringExpressionWrapper wrapper(final String tableNameIn, final boolean fullyQualified, final Access access)
+	public static final IStringExpressionWrapper wrapper(final String tableNameIn, final boolean fullyQualified, final Access access)
 	{
 		return new Wrapper(tableNameIn, fullyQualified, access);
-	}
-
-	public static IStringExpressionWrapper wrapper(final TableName tableNameIn, final boolean fullyQualified, final Access access)
-	{
-		return new Wrapper(tableNameIn.getAsString(), fullyQualified, access);
 	}
 
 	/**
@@ -201,7 +200,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 		}
 	}
 
-	private static OnVariableNotFound getOnVariableNotFoundForInternalParameter(final OnVariableNotFound onVariableNotFound)
+	private static final OnVariableNotFound getOnVariableNotFoundForInternalParameter(final OnVariableNotFound onVariableNotFound)
 	{
 		switch (onVariableNotFound)
 		{

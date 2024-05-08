@@ -27,36 +27,25 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Schema(description = "Logs")
+@ApiModel(description = "Logs")
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonPInstanceLog.JsonPInstanceLogBuilder.class)
 public class JsonPInstanceLog
 {
 	@NonNull
-	@JsonProperty("message")
 	String message;
-
-	@Nullable
-	@JsonProperty("tableRecordRef")
-	JsonTableRecordReference tableRecordReference;
 
 	@JsonCreator
 	@Builder
-	private JsonPInstanceLog(
-			@JsonProperty("message") @NonNull final String message,
-			@JsonProperty("tableRecordRef") @Nullable final JsonTableRecordReference tableRecordRef)
+	private JsonPInstanceLog(@JsonProperty("message") @NonNull final String message)
 	{
 		this.message = message;
-		this.tableRecordReference = tableRecordRef;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

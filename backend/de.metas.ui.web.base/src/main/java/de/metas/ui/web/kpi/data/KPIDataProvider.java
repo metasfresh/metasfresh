@@ -29,7 +29,6 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
 import de.metas.ui.web.kpi.TimeRange;
-import de.metas.ui.web.kpi.data.sql.SQLKPIDataLoader;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIDatasourceType;
 import de.metas.ui.web.kpi.descriptor.KPIId;
@@ -55,7 +54,6 @@ public class KPIDataProvider
 	private static final Logger logger = LogManager.getLogger(KPIDataProvider.class);
 	private final IESSystem esSystem;
 	private final KPIRepository kpiRepository;
-	private final KPIPermissionsProvider kpiPermissionsProvider;
 
 	private final int cacheSize;
 	private final ConcurrentHashMap<KPIDataCacheKey, KPIDataCacheValue> cache;
@@ -67,12 +65,10 @@ public class KPIDataProvider
 	private KPIDataProvider(
 			@NonNull final KPIRepository kpiRepository,
 			@NonNull final IESSystem esSystem,
-			@NonNull final ISysConfigBL sysConfigBL,
-			@NonNull final KPIPermissionsProvider kpiPermissionsProvider)
+			@NonNull final ISysConfigBL sysConfigBL)
 	{
 		this.esSystem = esSystem;
 		this.kpiRepository = kpiRepository;
-		this.kpiPermissionsProvider = kpiPermissionsProvider;
 
 		this.cacheSize = getCacheSize(sysConfigBL);
 		logger.info("cacheSize={} (sysconfig: {})", cacheSize, SYSCONFIG_CacheSize);
@@ -173,7 +169,6 @@ public class KPIDataProvider
 			else if (dataSourceType == KPIDatasourceType.SQL)
 			{
 				final KPIDataResult data = SQLKPIDataLoader.builder()
-						.permissionsProvider(kpiPermissionsProvider)
 						.kpi(kpi)
 						.timeRange(timeRange)
 						.context(context)
@@ -234,7 +229,6 @@ public class KPIDataProvider
 		{
 			return Optional.of(
 					SQLKPIDataLoader.builder()
-							.permissionsProvider(kpiPermissionsProvider)
 							.kpi(kpi)
 							.timeRange(timeRange)
 							.context(context)

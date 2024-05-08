@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -32,11 +32,15 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PI.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU_PI.COLUMNNAME_M_HU_PI_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI.COLUMNNAME_Name;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_HU_PI_StepDef
 {
@@ -52,16 +56,18 @@ public class M_HU_PI_StepDef
 	@And("metasfresh contains M_HU_PI:")
 	public void add_M_HU_PI(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final String name = row.suggestValueAndName().getName();
-			final boolean active = row.getAsOptionalBoolean("IsActive").orElseTrue();
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String name = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Name);
+			final boolean active = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsActive, true);
 
 			final I_M_HU_PI huPiRecord = CoalesceUtil.coalesceSuppliers(() -> queryBL.createQueryBuilder(I_M_HU_PI.class)
-							.addEqualsFilter(COLUMNNAME_Name, name)
-							.addEqualsFilter(COLUMNNAME_IsActive, active)
-							.create()
-							.firstOnlyOrNull(I_M_HU_PI.class),
-					() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class));
+																				.addEqualsFilter(COLUMNNAME_Name, name)
+																				.addEqualsFilter(COLUMNNAME_IsActive, active)
+																				.create()
+																				.firstOnlyOrNull(I_M_HU_PI.class),
+																		() -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class));
 
 			assertThat(huPiRecord).isNotNull();
 
@@ -70,19 +76,23 @@ public class M_HU_PI_StepDef
 
 			saveRecord(huPiRecord);
 
-			row.getAsOptionalIdentifier()
-					.orElseGet(() -> row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID))
-					.putOrReplace(huPiTable, huPiRecord);
-		});
+			final String huPiIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_ID + "." + TABLECOLUMN_IDENTIFIER);
+			huPiTable.putOrReplace(huPiIdentifier, huPiRecord);
+		}
 	}
 
 	@And("load M_HU_PI:")
 	public void load_M_HU_PI(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final int huPiId = row.getAsInt(COLUMNNAME_M_HU_PI_ID);
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String huPiIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int huPiId = DataTableUtil.extractIntForColumnName(row, COLUMNNAME_M_HU_PI_ID);
+
 			final I_M_HU_PI huPiRecord = InterfaceWrapperHelper.load(huPiId, I_M_HU_PI.class);
-			row.getAsIdentifier(COLUMNNAME_M_HU_PI_ID).putOrReplace(huPiTable, huPiRecord);
-		});
+
+			huPiTable.putOrReplace(huPiIdentifier, huPiRecord);
+		}
 	}
 }

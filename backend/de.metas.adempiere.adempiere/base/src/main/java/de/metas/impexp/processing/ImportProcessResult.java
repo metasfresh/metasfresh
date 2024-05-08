@@ -1,5 +1,14 @@
 package de.metas.impexp.processing;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.OptionalInt;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.ValidateImportRecordsResult;
 import de.metas.util.Check;
@@ -7,31 +16,31 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.OptionalInt;
 
 /**
  * The result of an {@link IImportProcess} execution.
- *
+ * 
  * @author tsa
+ *
  */
 @Value
-public class ImportProcessResult
+public final class ImportProcessResult
 {
 	public static ImportProcessResultCollector newCollector(@NonNull final String targetTableName)
 	{
 		return new ImportProcessResultCollector(targetTableName);
 	}
 
-	@NonNull Instant importStartTime;
-	@NonNull Instant importEndTime;
-	@NonNull ValidateImportRecordsResult importRecordsValidation;
-	@Nullable ActualImportRecordsResult actualImport;
+	@NonNull
+	private final Instant importStartTime;
+	@NonNull
+	private final Instant importEndTime;
+
+	@NonNull
+	ValidateImportRecordsResult importRecordsValidation;
+
+	@Nullable
+	ActualImportRecordsResult actualImport;
 
 	private ImportProcessResult(@NonNull final ImportProcessResultCollector collector)
 	{
@@ -81,12 +90,12 @@ public class ImportProcessResult
 
 		//
 		// Actual data import
-		@NonNull private String importTableName;
-		@NonNull private final String targetTableName;
+		@NonNull
+		private String importTableName;
+		@Nullable
+		private final String targetTableName;
 		private final Counter countImportRecordsConsidered = new Counter();
-		/**
-		 * target table name, where the records were imported (e.g. C_BPartner)
-		 */
+		/** target table name, where the records were imported (e.g. C_BPartner) */
 		private final Counter countInsertsIntoTargetTable = new Counter();
 		private final Counter countUpdatesIntoTargetTable = new Counter();
 		private final ArrayList<ActualImportRecordsResult.Error> actualImportErrors = new ArrayList<>();

@@ -22,8 +22,21 @@ package de.metas.printing.api;
  * #L%
  */
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
+
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -44,19 +57,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
-import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import de.metas.workplace.WorkplaceId;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Archive;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
 
 public interface IPrintingDAO extends ISingletonService
 {
@@ -85,6 +86,8 @@ public interface IPrintingDAO extends ISingletonService
 	Iterator<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Print_Job_Instructions jobInstructions);
 
 	I_C_Print_Job_Line retrievePrintJobLine(I_C_Print_Job job, int seqNo);
+
+	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
 
 	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
@@ -118,8 +121,6 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId);
 
-	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId, WorkplaceId workplaceId);
-
 	/**
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.
 	 */
@@ -127,7 +128,7 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Delete all existing recipients of given item.
-	 * <p/>
+	 *
 	 * NOTE: this method will prevent updating the item's aggregation key.
 	 */
 	void deletePrintingQueueRecipients(I_C_Printing_Queue item);
@@ -202,7 +203,7 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	I_AD_Printer_Matching retrievePrinterMatching(String hostKey, UserId userToPrintId, I_AD_PrinterRouting routing);
 
-	I_AD_Printer_Matching retrievePrinterMatchingOrNull(@Nullable String hostKey, @Nullable UserId userToPrintId, @NonNull de.metas.adempiere.model.I_AD_Printer printer);
+	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, UserId userToPrintId, de.metas.adempiere.model.I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
 
@@ -226,4 +227,5 @@ public interface IPrintingDAO extends ISingletonService
 	 * <ul> virtual printer because is not a real hardware printer
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
+
 }

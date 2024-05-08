@@ -27,9 +27,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.metas.common.rest_api.common.JsonExternalId;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,7 +38,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Schema(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
+@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
@@ -63,55 +64,67 @@ public class JsonResponseBPartner
 
 	private static final String CHANGE_INFO = "changeInfo";
 
-	@Schema(required = true,
-			description = "This translates to `C_BPartner.C_BPartner_ID`.")
+	@ApiModelProperty( //
+			required = true, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `C_BPartner.C_BPartner_ID`.")
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@Schema(description = "This translates to `C_BPartner.ExternalId`.")
+	@ApiModelProperty( //
+			required = false, //
+			dataType = "java.lang.String", //
+			value = "This translates to `C_BPartner.ExternalId`.")
 	@JsonProperty(EXTERNAL_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
-	@Schema(description = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
 
-	@Schema(description = "This translates to `C_BPartner.GlobalId`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.GlobalId`.")
 	@JsonProperty(GLOBAL_ID)
 	String globalId;
 
-	@Schema(description = "This translates to `C_BPartner.IsActive`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
 	boolean active;
 
-	@Schema(description = "This translates to `C_BPartner.Name`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@Schema(description = "This translates to `C_BPartner.Name2`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
 	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@Schema(description = "This translates to `C_BPartner.Name3`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
 	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 
-	@Schema(description = "This translates to `C_BPartner.CompanyName`.\n"
+	@ApiModelProperty( //
+			required = false, //
+			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonProperty(COMPANY_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String companyName;
 
-	@Schema(description = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company")
+	@ApiModelProperty( //
+			required = false, //
+			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
+			dataType = "java.lang.Integer")
 	@JsonProperty(PARENT_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId parentId;
 
-	@Schema(description = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@ApiModelProperty( //
+			required = false, //
+			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
 	String phone;
@@ -120,43 +133,45 @@ public class JsonResponseBPartner
 	@JsonProperty(LANGUAGE)
 	String language;
 
-	@Schema(description = "This translates to `C_BPartner.URL`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
 	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@Schema(description = "This translates to `C_BPartner.URL2`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
 	private String url2;
 
-	@Schema(description = "This translates to `C_BPartner.URL3`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
 	private String url3;
 
-	@Schema(description = "Name of the business partner's group")
+	@ApiModelProperty( //
+			required = false, //
+			value = "Name of the business partner's group")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@Schema(description = "This translates to `C_BPartner.IsVendor`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
 
-	@Schema(description = "This translates to `C_BPartner.IsCustomer`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCustomer`.")
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
-	@Schema(description = "This translates to `C_BPartner.IsCompany`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
 
-	@Schema(description = "This translates to `C_BPartner.VATaxID`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
 
-	@Schema // shall be last
+	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
 	JsonChangeInfo changeInfo;

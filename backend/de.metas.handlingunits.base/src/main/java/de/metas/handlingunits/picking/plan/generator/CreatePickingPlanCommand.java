@@ -52,7 +52,6 @@ import de.metas.handlingunits.picking.plan.model.SourceDocumentInfo;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -62,7 +61,8 @@ import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.QtyCalculationsBOM;
@@ -81,13 +81,13 @@ import java.util.stream.Stream;
 public class CreatePickingPlanCommand
 {
 	private final IPPOrderBL ppOrdersBL = Services.get(IPPOrderBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerBL bpartnersService;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	//
 	// Params
-	private final PackageableList packageables;
+	private final ImmutableList<Packageable> packageables;
 
 	//
 	// State
@@ -141,6 +141,13 @@ public class CreatePickingPlanCommand
 
 	private static AllocablePackageable toAllocablePackageable(@NonNull final Packageable packageable)
 	{
+		final Quantity qtyToAllocateTarget = packageable.getQtyToDeliver()
+				.subtract(packageable.getQtyPickedNotDelivered())
+				// IMPORTANT: don't subtract the Qty PickedPlanned
+				// because we will also allocate existing DRAFT picking candidates
+				// .subtract(packageable.getQtyPickedPlanned())
+				.toZeroIfNegative();
+
 		return AllocablePackageable.builder()
 				.sourceDocumentInfo(extractSourceDocumentInfo(packageable))
 				.customerId(packageable.getCustomerId())
@@ -149,22 +156,7 @@ public class CreatePickingPlanCommand
 				.bestBeforePolicy(packageable.getBestBeforePolicy())
 				.warehouseId(packageable.getWarehouseId())
 				.pickFromOrderId(packageable.getPickFromOrderId())
-				.qtyToAllocateTarget(packageable.getQtyToPick())
-				.build();
-	}
-
-	@NonNull
-	private PickFromHUsGetRequest getPickFromHUsGetRequest(@NonNull final AllocablePackageable packageable)
-	{
-		return PickFromHUsGetRequest.builder()
-				.pickFromLocatorIds(warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId()))
-				.partnerId(packageable.getCustomerId())
-				.productId(packageable.getProductId())
-				.asiId(packageable.getAsiId())
-				.bestBeforePolicy(packageable.getBestBeforePolicy()
-										  .orElseGet(() -> bpartnersService.getBestBeforePolicy(packageable.getCustomerId())))
-				.reservationRef(packageable.getReservationRef())
-				.enforceMandatoryAttributesOnPicking(true)
+				.qtyToAllocateTarget(qtyToAllocateTarget)
 				.build();
 	}
 
@@ -287,7 +279,16 @@ public class CreatePickingPlanCommand
 			return ImmutableList.of();
 		}
 
-		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(getPickFromHUsGetRequest(packageable));
+		final List<PickFromHU> husEligibleToPick = pickFromHUsSupplier.getEligiblePickFromHUs(
+				PickFromHUsGetRequest.builder()
+						.pickFromLocatorIds(getPickFromLocatorIds(packageable))
+						.partnerId(packageable.getCustomerId())
+						.productId(packageable.getProductId())
+						.asiId(packageable.getAsiId())
+						.bestBeforePolicy(getBestBeforePolicy(packageable))
+						.reservationRef(packageable.getReservationRef())
+						.enforceMandatoryAttributesOnPicking(true)
+						.build());
 
 		return husEligibleToPick.stream()
 				.map(pickFromHU -> createZeroQtyLineFromHU(packageable, pickFromHU))
@@ -298,7 +299,8 @@ public class CreatePickingPlanCommand
 
 	private Set<LocatorId> getPickFromLocatorIds(final AllocablePackageable packageable)
 	{
-		return warehouseBL.getLocatorIdsOfTheSamePickingGroup(packageable.getWarehouseId());
+		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(packageable.getWarehouseId());
+		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
 	}
 
 	@NonNull

@@ -27,7 +27,6 @@ import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.request.ApiRequestQuery;
 import de.metas.organization.OrgId;
-import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -73,7 +72,6 @@ public class ApiRequestAuditRepository
 		record.setTime(TimeUtil.asTimestamp(apiRequestAudit.getTime()));
 		record.setHttpHeaders(apiRequestAudit.getHttpHeaders());
 		record.setRequestURI(apiRequestAudit.getRequestURI());
-		record.setAD_PInstance_ID(PInstanceId.toRepoId(apiRequestAudit.getPInstanceId()));
 
 		saveRecord(record);
 
@@ -147,7 +145,6 @@ public class ApiRequestAuditRepository
 				.time(TimeUtil.asInstantNonNull(record.getTime()))
 				.httpHeaders(record.getHttpHeaders())
 				.requestURI(record.getRequestURI())
-				.pInstanceId(PInstanceId.ofRepoIdOrNull(record.getAD_PInstance_ID()))
 				.build();
 	}
 }

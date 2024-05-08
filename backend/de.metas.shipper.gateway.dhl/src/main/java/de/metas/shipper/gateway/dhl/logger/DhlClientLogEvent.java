@@ -22,13 +22,14 @@
 
 package de.metas.shipper.gateway.dhl.logger;
 
-import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
-import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.oxm.Marshaller;
+import org.springframework.xml.transform.StringResult;
 
 import javax.annotation.Nullable;
 
@@ -39,13 +40,16 @@ public class DhlClientLogEvent
 	/**
 	 * Regexp explanation: .*? means ungreedy (while .* means greedy).
 	 */
+	public static final String LABEL_DATA_REGEX = "(?m)<labelData>(.*?\\s*?)</labelData>";
+	public static final String LABEL_DATA_REPLACEMENT_TEXT = "<labelData>PDF TEXT REMOVED!</labelData>";
 
-	DeliveryOrderId deliveryOrderId;
+	int deliveryOrderRepoId;
 	DhlClientConfig config;
-	@NonNull JSONDhlCreateOrderRequest requestElement;
+	Marshaller marshaller;
+	Object requestElement;
 
 	@Nullable
-	JSONDhlCreateOrderResponse responseElement;
+	Object responseElement;
 
 	@Nullable
 	Exception responseException;
@@ -57,16 +61,47 @@ public class DhlClientLogEvent
 		return config != null ? config.toString() : "";
 	}
 
-	@NonNull
+	@Nullable
 	String getRequestAsString()
 	{
-		return String.valueOf(requestElement);
+		return elementToString(requestElement);
 	}
 
 	@Nullable
 	String getResponseAsString()
 	{
-		return responseElement == null ? null : String.valueOf(responseElement.withNoLabelData());
+		return elementToString(responseElement);
+	}
+
+	@Nullable
+	private String elementToString(@Nullable final Object element)
+	{
+		if (element == null)
+		{
+			return null;
+		}
+
+		try
+		{
+			final StringResult result = new StringResult();
+			marshaller.marshal(element, result);
+
+			return cleanupPdfData(result.toString());
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Failed converting " + element + " to String", ex);
+		}
+	}
+
+	/**
+	 * remove the pdfdata since it's long and useless and we also attach it to the PO record
+	 */
+	@NonNull
+	@VisibleForTesting
+	static String cleanupPdfData(@NonNull final String s)
+	{
+		return s.replaceAll(LABEL_DATA_REGEX, LABEL_DATA_REPLACEMENT_TEXT);
 	}
 
 }

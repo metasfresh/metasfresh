@@ -98,12 +98,6 @@ public @interface ViewColumn
 
 	WidgetSize widgetSize() default WidgetSize.Default;
 
-	/**
-	 * If true the Zoom Into will be enabled for this field, if supported.
-	 * When setting this flag, pls also make sure your view implements {@link de.metas.ui.web.view.IViewZoomIntoFieldSupport}.
-	 */
-	boolean zoomInto() default false;
-
 	enum TranslationSource
 	{
 		/**
@@ -130,7 +124,8 @@ public @interface ViewColumn
 			TRUE,
 
 			/**
-			 * The column will be displayed only on demand, when it was explicitly (programatically) specified.
+			 * The column will be displayed only on demand, when it was explicitly specified.
+			 * (note by ts @teosarca: I copied this line..tbh I don't understand it..might be outdated-lying)
 			 */
 			FALSE,
 

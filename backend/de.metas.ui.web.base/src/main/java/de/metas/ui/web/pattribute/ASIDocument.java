@@ -230,6 +230,7 @@ public class ASIDocument
 
 		final I_M_AttributeSetInstance asiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 		asiRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
+		// TODO: set Lot, GuaranteeDate etc
 		InterfaceWrapperHelper.save(asiRecord);
 
 		//

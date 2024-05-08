@@ -4,21 +4,23 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api/process';
+import { startProcess } from '../../api';
 import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
-  callAPI,
   closeModal,
+  createProcess,
   createWindow,
+  handleProcessResponse,
   fetchChangeLog,
-  fireUpdateData,
+  callAPI,
   patch,
-  printDocument,
   resetPrintingOptions,
+  fireUpdateData,
 } from '../../actions/WindowActions';
+import { openFile } from '../../actions/GenericActions';
 
-import { getSelection, getTableId } from '../../reducers/tables';
+import { getTableId, getSelection } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -34,10 +36,6 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
-import {
-  createProcess,
-  handleProcessResponse,
-} from '../../actions/ProcessActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -453,12 +451,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse({
+          const action = handleProcessResponse(
             response,
-            processId: windowId,
-            pinstanceId: layout.pinstanceId,
-            parentId,
-          });
+            windowId,
+            layout.pinstanceId,
+            parentId
+          );
 
           await dispatch(action);
 
@@ -485,21 +483,23 @@ class Modal extends Component {
   handlePrinting = () => {
     const { windowId, modalViewDocumentIds, dataId, printingOptions } =
       this.props;
-    const documentId = dataId;
-    const documentNo = modalViewDocumentIds[0] ?? documentId;
+    const docNo = modalViewDocumentIds[0];
+    const docId = dataId;
+    const { options } = printingOptions;
 
-    const options = printingOptions.options.reduce((acc, item) => {
-      acc[item.internalName] = item.value;
-      return acc;
-    }, {});
-
-    printDocument({
-      windowId,
-      documentId,
-      documentNo,
-      options,
+    let extraParams = '';
+    options.map((item) => {
+      extraParams += `${item.internalName}=${item.value}&`;
     });
+    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
 
+    openFile(
+      'window',
+      windowId,
+      docId,
+      'print',
+      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
+    );
     this.handleClose();
   };
 
@@ -577,18 +577,18 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
+      isDocumentNotSaved,
       layout,
+      indicator,
       staticModalType,
       printingOptions,
-      //
-      indicator,
-      isDocumentNotSaved,
-      saveStatus,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
+    const isNotSaved =
+      staticModalType === 'printing' ? true : isDocumentNotSaved;
     let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
     if (staticModalType === 'printing') applyHandler = this.handlePrinting;
@@ -678,7 +678,6 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
-                  disabled={indicator === 'error'}
                 >
                   {counterpart.translate('modal.actions.start')}
 
@@ -710,14 +709,7 @@ class Modal extends Component {
             </div>
           </div>
 
-          <Indicator
-            indicator={indicator}
-            isDocumentNotSaved={
-              staticModalType === 'printing' ? false : isDocumentNotSaved
-            }
-            error={saveStatus?.error ? saveStatus?.reason : ''}
-            exception={saveStatus?.error ? saveStatus?.exception : null}
-          />
+          <Indicator {...{ isNotSaved, indicator }} />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -871,11 +863,10 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.bool,
+  isDocumentNotSaved: PropTypes.any,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  saveStatus: PropTypes.object,
-  modalSaveStatus: PropTypes.bool,
+  modalSaveStatus: PropTypes.any,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,

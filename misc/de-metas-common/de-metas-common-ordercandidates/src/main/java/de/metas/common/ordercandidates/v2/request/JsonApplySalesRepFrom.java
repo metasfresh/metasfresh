@@ -22,16 +22,14 @@
 
 package de.metas.common.ordercandidates.v2.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.pentabyte.springfox.ApiEnum;
 
-@Schema(enumAsRef = true, description = "JsonApplySalesRepFrom: \n" +
-		"* `Candidate` - The sales partner set in the order candidate is forwarded to both the order and the business partner master data.\n" +
-		"* `BPartner` - The sales partner set in the order candidate is for information purposes only. The internal sales partner from the master data is always forwarded to the order.\n" +
-		"* `CandidateFirst` - Like \"Dispo\", but if the sales partner set in the order candidate is \"empty\", then the internal sales partner is used.\n" +
-		"")
 public enum JsonApplySalesRepFrom
 {
+	@ApiEnum("The sales partner set in the order candidate is forwarded to both the order and the business partner master data.")
 	Candidate,
+	@ApiEnum("The sales partner set in the order candidate is for information purposes only. The internal sales partner from the master data is always forwarded to the order.")
 	BPartner,
+	@ApiEnum("Like \"Dispo\", but if the sales partner set in the order candidate is \"empty\", then the internal sales partner is used.")
 	CandidateFirst
 }

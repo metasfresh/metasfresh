@@ -18,6 +18,7 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -130,8 +131,8 @@ public class MovementBLTest
 
 		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class, context);
 		productAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
-		productAcct.setM_Product_ID(product.getM_Product_ID());
-		productAcct.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		productAcct.setM_Product(product);
+		productAcct.setC_Activity(activity);
 		InterfaceWrapperHelper.save(productAcct);
 
 		return product;

@@ -1,14 +1,14 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_RemittanceAdvice
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_RemittanceAdvice 
 {
 
@@ -159,7 +159,7 @@ public interface I_C_RemittanceAdvice
 	String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Remittance Advice (REMADV).
+	 * Set Remittance Advice.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -168,7 +168,7 @@ public interface I_C_RemittanceAdvice
 	void setC_RemittanceAdvice_ID (int C_RemittanceAdvice_ID);
 
 	/**
-	 * Get Remittance Advice (REMADV).
+	 * Get Remittance Advice.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -463,27 +463,6 @@ public interface I_C_RemittanceAdvice
 
 	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_C_RemittanceAdvice.class, "IsSOTrx", null);
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
-
-	/**
-	 * Set Date Payment.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPaymentDate (@Nullable java.sql.Timestamp PaymentDate);
-
-	/**
-	 * Get Date Payment.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getPaymentDate();
-
-	ModelColumn<I_C_RemittanceAdvice, Object> COLUMN_PaymentDate = new ModelColumn<>(I_C_RemittanceAdvice.class, "PaymentDate", null);
-	String COLUMNNAME_PaymentDate = "PaymentDate";
 
 	/**
 	 * Set Payment discount amount.

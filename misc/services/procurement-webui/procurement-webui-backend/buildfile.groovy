@@ -35,17 +35,11 @@ Map build(final MvnConf mvnConf,
         final String dockerImageName = 'metasfresh/procurement-webui-backend'
         resultsMap.dockerImage = nexus.retrieveDockerUrlToUse("${DockerConf.PULL_REGISTRY}:6001/${dockerImageName}:${dockerLatestTag}")
 
-        if(resultsMap.dockerImage) {
-            resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
+        resultsMap.buildDescription = """${resultsMap.buildDescription}<p/>
 					No changes happened or forceSkip=true in procurement-webui-backend; latest docker image: <code>${resultsMap.dockerImage}</code>
 					"""
-            echo "no changes happened or forceSkip=true in procurement-webui-backend; skip building procurement-webui-backend";
-            return resultsMap
-        }
-        else
-        {
-            echo "No docker image found; need to rebuild."
-        }
+        echo "no changes happened or forceSkip=true in procurement-webui-backend; skip building procurement-webui-backend";
+        return resultsMap
     }
 
     // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo

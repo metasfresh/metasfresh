@@ -24,7 +24,6 @@ package de.metas.order.model.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -37,8 +36,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.letter.BoilerPlateId;
-import de.metas.letters.model.MADBoilerPlate;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -56,14 +53,9 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.project.service.ProjectService;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
-import de.metas.warehouseassignment.ProductWarehouseAssignments;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -76,36 +68,23 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
-
-@Component
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
 public class C_Order
 {
-	@VisibleForTesting
-	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
-	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
-	private static final AdMessageKey ORDER_DIFFERENT_WAREHOUSE_MSG_KEY = AdMessageKey.of("ORDER_DIFFERENT_WAREHOUSE");
-	
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -119,28 +98,25 @@ public class C_Order
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
-	private final ProductWarehouseAssignmentService productWarehouseAssignmentService;
-	private final ProjectService projectService;
+
+	@VisibleForTesting
+	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
+	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final ProductWarehouseAssignmentService productWarehouseAssignmentService,
-			@NonNull final ProjectService projectService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
-		this.productWarehouseAssignmentService = productWarehouseAssignmentService;
-		this.projectService = projectService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -224,33 +200,6 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
-	public void updateProjectFromOrder(@NonNull final I_C_Order order)
-	{
-		if (order.getC_Project_ID() <= 0)
-		{
-			return; // let possible existing project assignment be
-		}
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
-		for (final I_C_OrderLine orderLine : orderLines)
-		{
-			orderLine.setC_Project_ID(order.getC_Project_ID());
-			orderDAO.save(orderLine);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_Project_ID)
-	public void copyFieldsFromProject(@NonNull final I_C_Order order)
-	{
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
-
-		final UserId projectManagerId = Optional.ofNullable(projectId)
-				.flatMap(projectService::getProjectManagerByProjectId)
-				.orElse(null);
-
-		order.setProjectManager_ID(UserId.toRepoId(projectManagerId));
-	}
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID,
@@ -268,31 +217,22 @@ public class C_Order
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setIncoterms(@NonNull final I_C_Order order)
+	public void setIncoterms(final I_C_Order order)
 	{
-		if (InterfaceWrapperHelper.isCopying(order))
-		{
-			return; // nothing to do ; the value shall be cloned
-		}
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 
-		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
-		if (bpartner == null)
-		{
-			return; // nothing to do yet
-		}
-
-		final int incotermsId;
+		final int c_Incoterms;
 
 		if (order.isSOTrx())
 		{
-			incotermsId = bpartner.getC_Incoterms_Customer_ID();
+			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
 		}
 		else
 		{
-			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
+			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
 		}
 
-		order.setC_Incoterms_ID(incotermsId);
+		order.setC_Incoterms_ID(c_Incoterms);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -427,15 +367,6 @@ public class C_Order
 		// TODO teo: there's no way to remove the callout error right now, unless the user reloads the page.
 		//  	It will always appear when changing the PaymentRule after it was set once.
 		//}
-	}
-
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setSectionCodeFromBPartner(final I_C_Order order)
-	{
-		Optional.ofNullable(BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()))
-				.map(bpartnerBL::getById)
-				.map(I_C_BPartner::getM_SectionCode_ID)
-				.ifPresent(order::setM_SectionCode_ID);
 	}
 
 	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)
@@ -602,40 +533,12 @@ public class C_Order
 		validateSupplierApprovals(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
 	public void validateVoidActionForMediatedOrder(final I_C_Order order)
 	{
 		if (orderBL.isMediated(order))
 		{
 			throw new AdempiereException("'Void' action is not permitted for mediated orders!");
-		}
-	}
-
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_M_Warehouse_ID,
-			I_C_Order.COLUMNNAME_IsDropShip,
-			I_C_Order.COLUMNNAME_C_BPartner_ID })
-	public void handleDropShipRelatedColumns(@NonNull final I_C_Order order)
-	{
-		if (isValueChanged(order, I_C_Order.COLUMNNAME_M_Warehouse_ID))
-		{
-			setDropShipFlag(order);
-		}
-
-		if (orderBL.isUseDefaultBillToLocationForBPartner(order))
-		{
-			setDefaultBillToBPartnerLocation(order);
-		}
-	}
-
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_Warehouse_ID)
-	public void handleDefaultLocator(@NonNull final I_C_Order order)
-	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
-		if (warehouseId != null)
-		{
-			final LocatorId defaultLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
-			order.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 	}
 
@@ -666,180 +569,6 @@ public class C_Order
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
-		}
-	}
-
-	private void setDropShipFlag(@NonNull final I_C_Order order)
-	{
-		if (order.isDropShip())
-		{
-			return;
-		}
-
-		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
-
-		if (warehouseId == null)
-		{
-			return;
-		}
-
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-
-		order.setIsDropShip(warehouseBL.isDropShipWarehouse(warehouseId, orgId));
-	}
-
-	private void setDefaultBillToBPartnerLocation(@NonNull final I_C_Order order)
-	{
-		final IBPartnerDAO.BPartnerLocationQuery billToQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-				.build();
-
-		final I_C_BPartner_Location billToLocation = bpartnerDAO.retrieveBPartnerLocation(billToQuery);
-		if (billToLocation != null)
-		{
-			order.setC_BPartner_Location_ID(billToLocation.getC_BPartner_Location_ID());
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_UserElementString1,
-					I_C_Order.COLUMNNAME_UserElementString2,
-					I_C_Order.COLUMNNAME_UserElementString3,
-					I_C_Order.COLUMNNAME_UserElementString4,
-					I_C_Order.COLUMNNAME_UserElementString5,
-					I_C_Order.COLUMNNAME_UserElementString6,
-					I_C_Order.COLUMNNAME_UserElementString7,
-					I_C_Order.COLUMNNAME_M_SectionCode_ID
-			})
-	@CalloutMethod(columnNames = {
-			I_C_Order.COLUMNNAME_UserElementString1,
-			I_C_Order.COLUMNNAME_UserElementString2,
-			I_C_Order.COLUMNNAME_UserElementString3,
-			I_C_Order.COLUMNNAME_UserElementString4,
-			I_C_Order.COLUMNNAME_UserElementString5,
-			I_C_Order.COLUMNNAME_UserElementString6,
-			I_C_Order.COLUMNNAME_UserElementString7,
-			I_C_Order.COLUMNNAME_M_SectionCode_ID
-	})
-	public void copyDimensionToLines(@NonNull final I_C_Order order)
-	{
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
-		if (orderLines.isEmpty())
-		{
-			return;
-		}
-
-		final boolean userElementString1Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString1);
-		final boolean userElementString2Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString2);
-		final boolean userElementString3Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString3);
-		final boolean userElementString4Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString4);
-		final boolean userElementString5Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString5);
-		final boolean userElementString6Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString6);
-		final boolean userElementString7Changed = isValueChanged(order, I_C_Order.COLUMNNAME_UserElementString7);
-		final boolean sectionCodeChanged = isValueChanged(order, I_C_Order.COLUMNNAME_M_SectionCode_ID);
-
-		for (final I_C_OrderLine line : orderLines)
-		{
-			if (userElementString1Changed)
-			{
-				line.setUserElementString1(order.getUserElementString1());
-			}
-			if (userElementString2Changed)
-			{
-				line.setUserElementString2(order.getUserElementString2());
-			}
-			if (userElementString3Changed)
-			{
-				line.setUserElementString3(order.getUserElementString3());
-			}
-			if (userElementString4Changed)
-			{
-				line.setUserElementString4(order.getUserElementString4());
-			}
-			if (userElementString5Changed)
-			{
-				line.setUserElementString5(order.getUserElementString5());
-			}
-			if (userElementString6Changed)
-			{
-				line.setUserElementString6(order.getUserElementString6());
-			}
-			if (userElementString7Changed)
-			{
-				line.setUserElementString7(order.getUserElementString7());
-			}
-			if (sectionCodeChanged)
-			{
-				line.setM_SectionCode_ID(order.getM_SectionCode_ID());
-			}
-
-			orderBL.save(line);
-		}
-	}
-
-	@ModelChange(
-			timings = ModelValidator.TYPE_BEFORE_CHANGE,
-			ifColumnsChanged = I_C_Order.COLUMNNAME_M_Warehouse_ID)
-	public void beforeWarehouseChange(@NonNull final I_C_Order orderRecord)
-	{
-		checkProductWarehouseAssignment(orderRecord);
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void validateWarehouseAssignmentsBeforeComplete(@NonNull final I_C_Order orderRecord)
-	{
-		checkProductWarehouseAssignment(orderRecord);
-	}
-
-	private void checkProductWarehouseAssignment(@NonNull final I_C_Order orderRecord)
-	{
-		if (!productWarehouseAssignmentService.enforceWarehouseAssignmentsForProducts())
-		{
-			return;
-		}
-
-		final WarehouseId orderWarehouseId = WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID());
-
-		orderBL.getLinesByOrderIds(ImmutableSet.of(OrderId.ofRepoId(orderRecord.getC_Order_ID())))
-				.forEach(line -> {
-					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
-
-					if (!productBL.getProductType(productId).isItem())
-					{
-						return;
-					}
-
-					final ProductWarehouseAssignments assignments = productWarehouseAssignmentService.getByProductIdOrError(productId);
-
-					if (!assignments.isWarehouseAssigned(orderWarehouseId))
-					{
-						throw new AdempiereException(ORDER_DIFFERENT_WAREHOUSE_MSG_KEY)
-								.appendParametersToMessage()
-								.setParameter("C_Order_ID", orderRecord.getC_Order_ID())
-								.setParameter("C_OrderLine_ID", line.getC_OrderLine_ID())
-								.setParameter("C_Order.M_Warehouse_ID", orderRecord.getM_Warehouse_ID())
-								.setParameter("M_Warehouse_IDs assigned to Product", assignments.getWarehouseIds())
-								.markAsUserValidationError();
-					}
-				});
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_DescriptionBottom_BoilerPlate_ID)
-	public void onBoilerPlateChangeCallout(@NonNull final I_C_Order order)
-	{
-		updateDescriptionBottomFromBoilerPlateIfSet(order);
-	}
-
-	private void updateDescriptionBottomFromBoilerPlateIfSet(@NonNull final I_C_Order order)
-	{
-		final BoilerPlateId boilerPlateId = BoilerPlateId.ofRepoIdOrNull(order.getDescriptionBottom_BoilerPlate_ID());
-		if (boilerPlateId != null)
-		{
-			final MADBoilerPlate boilerPlate = Check.assumeNotNull(MADBoilerPlate.get(Env.getCtx(), boilerPlateId.getRepoId()), "No Boilerplate found for {}", boilerPlateId);
-			final MADBoilerPlate.BoilerPlateContext evalCtx = MADBoilerPlate.createEditorContextFromObject(order);
-			order.setDescriptionBottom(boilerPlate.getTextSnippetParsed(evalCtx));
 		}
 	}
 }

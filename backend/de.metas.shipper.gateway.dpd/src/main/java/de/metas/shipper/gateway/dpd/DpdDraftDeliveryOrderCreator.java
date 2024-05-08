@@ -25,7 +25,6 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;
@@ -49,6 +48,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,7 +59,6 @@ import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -137,7 +136,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content(mPackage.getDescription())
-					.grossWeightKg(getPackageGrossWeightKg(mPackage, BigDecimal.ONE)) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.grossWeightKg(getPackageGrossWeightKg(mPackage, 1)) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
 					.packageDimensions(getPackageDimensions(packageId))
 					// .customDeliveryData()
 					.packageId(packageId)
@@ -163,10 +162,17 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				deliveryOrderLinesBuilder.build());
 	}
 
-	private BigDecimal getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
+	private int getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, @SuppressWarnings("SameParameterValue") final int defaultValue)
 	{
-		final BigDecimal weight = mPackage.getPackageWeight();
-		return CoalesceUtil.firstGreaterThanZero(weight, defaultValue);
+		final int weight = mPackage.getPackageWeight().intValue();
+		if (weight == 0)
+		{
+			return defaultValue;
+		}
+		else
+		{
+			return weight;
+		}
 	}
 
 	@VisibleForTesting

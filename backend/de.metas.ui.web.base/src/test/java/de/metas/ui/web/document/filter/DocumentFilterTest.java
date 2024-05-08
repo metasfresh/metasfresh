@@ -46,7 +46,7 @@ public class DocumentFilterTest
 	}
 
 	@Nested
-	public class equalsTests
+	public static class equalsTests
 	{
 		@Test
 		public void testEquals()

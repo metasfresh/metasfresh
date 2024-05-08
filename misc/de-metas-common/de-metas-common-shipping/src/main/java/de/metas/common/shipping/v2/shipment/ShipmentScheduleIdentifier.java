@@ -26,22 +26,22 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
 @Value
 public class ShipmentScheduleIdentifier
 {
-	@Schema(description = "This translates to 'M_Shipment_Schedule_ID' used to identify the shipment schedule that needs to be processed")
+	@ApiModelProperty(value = "This translates to 'M_Shipment_Schedule_ID' used to identify the shipment schedule that needs to be processed")
 	@JsonProperty("shipmentScheduleId")
 	JsonMetasfreshId shipmentScheduleId;
 
-	@Schema(description = "This translates to 'C_OLCand.externalHeaderId' used to identify the shipment schedules that needs to be processed")
+	@ApiModelProperty(value = "This translates to 'C_OLCand.externalHeaderId' used to identify the shipment schedules that needs to be processed")
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
-	@Schema(description = "This translates to 'C_OLCand.externalLineId' used to identify the shipment schedules that needs to be processed")
+	@ApiModelProperty(value = "This translates to 'C_OLCand.externalLineId' used to identify the shipment schedules that needs to be processed")
 	@JsonProperty("externalLineId")
 	String externalLineId;
 

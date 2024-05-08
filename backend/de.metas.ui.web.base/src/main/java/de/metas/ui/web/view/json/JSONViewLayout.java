@@ -84,9 +84,6 @@ public final class JSONViewLayout
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String emptyResultHint;
 
-	@JsonProperty("pageLength")
-	private final int pageLength;
-
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
@@ -156,7 +153,6 @@ public final class JSONViewLayout
 		description = layout.getDescription(adLanguage);
 		emptyResultText = layout.getEmptyResultText(adLanguage);
 		emptyResultHint = layout.getEmptyResultHint(adLanguage);
-		pageLength = layout.getPageLength();
 
 		//
 		// Elements

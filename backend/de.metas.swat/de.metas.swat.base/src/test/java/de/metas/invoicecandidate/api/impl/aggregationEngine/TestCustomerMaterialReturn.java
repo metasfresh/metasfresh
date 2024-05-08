@@ -1,5 +1,14 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.money.MoneyService;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,6 +31,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestCustomerMaterialReturn extends AbstractMaterialReturnTests
 {
 	@Override

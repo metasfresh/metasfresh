@@ -22,16 +22,14 @@
 
 package de.metas.common.handlingunits;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.pentabyte.springfox.ApiEnum;
 
-@Schema(enumAsRef = true, description = "JsonHUType: \n" +
-		"* `LU` - Handling unit which accommodates Loading Unit\n" +
-		"* `TU` - Handling unit which accommodates Transport Unit\n" +
-		"* `CU` - Handling unit which accommodates Customer Unit\n" +
-		"")
 public enum JsonHUType
 {
+	@ApiEnum("Handling unit which accommodates Loading Unit")
 	LU,
+	@ApiEnum("Handling unit which accommodates Transport Unit")
 	TU,
+	@ApiEnum("Handling unit which accommodates Customer Unit")
 	CU
 }

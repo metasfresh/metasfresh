@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.uom.UOMPrecision;
-import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -20,6 +21,7 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -38,8 +40,8 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author tsa
  */
-@JsonDeserialize(using = QuantityDeserializer.class)
-@JsonSerialize(using = QuantitySerializer.class)
+@JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
+@JsonSerialize(using = Quantitys.QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
 	/**
@@ -56,16 +58,6 @@ public final class Quantity implements Comparable<Quantity>
 	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
 		return new Quantity(qty, uomRecord);
-	}
-
-	@Nullable
-	public static Quantity ofNullable(@Nullable final BigDecimal qty, @Nullable final I_C_UOM uom)
-	{
-		if (qty == null || uom == null)
-		{
-			return null;
-		}
-		return of(qty, uom);
 	}
 
 	/**
@@ -121,7 +113,22 @@ public final class Quantity implements Comparable<Quantity>
 
 	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
-		return UomId.getCommonUomIdOfAll(Quantity::getUomId, "quantity", quantities);
+		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
+
+		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
+				.filter(Objects::nonNull)
+				.iterator();
+		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
+		if (uomIds2qties.isEmpty())
+		{
+			throw new AdempiereException("The given quantities may not be empty");
+		}
+
+		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
+		Check.errorIf(uomIds.size() > 1,
+				"at least two quantity instances have different uoms: {}", uomIds2qties);
+
+		return CollectionUtils.singleElement(uomIds.asList());
 	}
 
 	public static void assertSameUOM(@Nullable final Quantity... quantities)
@@ -259,7 +266,6 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * @return true if current Qty/UOM are comparable equal.
 	 */
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean qtyAndUomCompareToEquals(@Nullable final Quantity quantity)
 	{
 		if (this == quantity)
@@ -420,11 +426,6 @@ public final class Quantity implements Comparable<Quantity>
 			return this;
 		}
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, sourceUom);
-	}
-
-	public Quantity abs()
-	{
-		return signum() >= 0 ? this : negate();
 	}
 
 	public Quantity negate()
@@ -815,35 +816,5 @@ public final class Quantity implements Comparable<Quantity>
 	public int intValueExact()
 	{
 		return toBigDecimal().intValueExact();
-	}
-
-	public boolean isWeightable()
-	{
-		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
-	}
-
-	public Percent percentageOf(@NonNull Quantity whole)
-	{
-		assertSameUOM(this, whole);
-		return Percent.of(toBigDecimal(), whole.toBigDecimal());
-	}
-	
-	public void assertUOM(@NonNull final UomId uomId)
-	{
-		if (!getUomId().equals(uomId))
-		{
-			throw new QuantitiesUOMNotMatchingExpection("UOMs are not compatible")
-					.appendParametersToMessage()
-					.setParameter("Qty.UOM", getUomId())
-					.setParameter("assertUOM", uomId);
-		}
-	}
-	
-	@NonNull
-	public BigDecimal toBigDecimalAssumingUOM(@NonNull final UomId uomId)
-	{
-		assertUOM(uomId);
-		
-		return toBigDecimal();
 	}
 }

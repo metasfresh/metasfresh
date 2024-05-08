@@ -22,10 +22,23 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.currency.ICurrencyBL;
-import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -34,24 +47,15 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.service.ClientId;
-import org.slf4j.Logger;
-
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 public class PlainInvoiceCandDAO extends InvoiceCandDAO
 {
-	private static final Logger logger = LogManager.getLogger(PlainInvoiceCandDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(PlainInvoiceCandDAO.class);
+
+	private final POJOLookupMap db = POJOLookupMap.get();
 
 	/**
-	 * Comparator to order a list of order candidates the same way it would be returned by {@link InvoiceCandDAO#fetchInvalidInvoiceCandidates(Properties, InvoiceCandRecomputeTag, String)}. Please keep in sync if the
+	 * Comparator to order a list of order candidates the same way it would be returned by {@link InvoiceCandDAO#fetchInvalidInvoiceCandidates(Properties, int, String)}. Please keep in sync if the
 	 * orderBy clause of that method.
 	 */
 	public static final Comparator<I_C_Invoice_Candidate> INVALID_CANDIDATES_ORDERING = Services.get(IQueryBL.class)
@@ -64,12 +68,15 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 	@Override
 	public BigDecimal retrieveInvoicableAmount(
 			final Properties ctx,
-			final @NonNull InvoiceCandidateQuery query,
-			final @NonNull CurrencyId targetCurrencyId,
+			final InvoiceCandidateQuery query,
+			final CurrencyId targetCurrencyId,
 			final int adClientId,
 			final String amountColumnName,
 			final String trxName)
 	{
+		// Conversion date to be used on currency conversion
+		final LocalDate dateConv = SystemTime.asLocalDate();
+
 		final List<I_C_Invoice_Candidate> records = getByQuery(InvoiceCandidateMultiQuery.builder().query(query).build());
 
 		BigDecimal totalAmt = BigDecimal.ZERO;
@@ -85,7 +92,7 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 					netAmtToInvoice,
 					CurrencyId.ofRepoId(ic.getC_Currency_ID()), // CurFrom_ID,
 					targetCurrencyId, // CurTo_ID,
-					SystemTime.asInstant(),
+					dateConv,
 					CurrencyConversionTypeId.ofRepoIdOrNull(ic.getC_ConversionType_ID()),
 					ClientId.ofRepoId(adClientId),
 					query.getOrgIdNotNull());

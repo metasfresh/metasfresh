@@ -30,8 +30,8 @@
         <poi.version>3.15</poi.version>
         <zxing.version>2.3.0</zxing.version>
 
-        <spring-boot.version>2.7.7</spring-boot.version>
-        <lucene.version>8.11.1</lucene.version>
+        <spring-boot.version>2.4.3</spring-boot.version>
+        <lucene.version>8.6.2</lucene.version>
 
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
@@ -46,11 +46,6 @@
         <license.name>gpl_v2</license.name>
 
         <acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
-
-        <javax.activation.version>1.2.0</javax.activation.version>
-        <jaxb.api.version>2.3.1</jaxb.api.version>
-        <jaxb.core.version>2.3.0.1</jaxb.core.version>
-        <jaxb.impl.version>2.3.8</jaxb.impl.version>
 
     </properties>
 
@@ -69,12 +64,10 @@
 
         <module>de.metas.manufacturing</module>
         <module>de.metas.manufacturing.rest-api</module>
-        <module>de.metas.manufacturing.webui</module>
 
         <module>de.metas.adempiere.libero.liberoHR</module>
 
         <module>de.metas.acct.base</module>
-        <module>de.metas.acct.webui</module>
 
         <module>de.metas.async</module>
 
@@ -83,8 +76,6 @@
         <module>de.metas.global_qrcode.api</module>
         <module>de.metas.global_qrcode.services</module>
         <module>de.metas.business</module>
-
-        <module>de.metas.forex.webui</module>
 
         <module>de.metas.business.rest-api</module>
         <module>de.metas.business.rest-api-impl</module>
@@ -145,8 +136,6 @@
         <module>de.metas.payment.paypal</module>
         <module>de.metas.payment.revolut</module>
 
-        <module>de.metas.postfinance</module>
-
         <module>de.metas.printing</module>
         <module>de.metas.printing.rest-api-impl</module>
         <module>de.metas.printing.common</module>
@@ -161,10 +150,6 @@
         <module>de.metas.storage</module>
 
         <module>de.metas.swat</module>
-        <module>de.metas.invoice.webui</module>
-
-        <module>de.metas.deliveryplanning.base</module>
-        <module>de.metas.deliveryplanning.webui</module>
 
         <module>de.metas.serviceprovider</module>
 
@@ -218,35 +203,6 @@
 
     <dependencyManagement>
         <dependencies>
-
-            <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>javax.activation</artifactId>
-                <version>${javax.activation.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
-                <version>${jaxb.api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-core</artifactId>
-                <version>${jaxb.core.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>${jaxb.impl.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jaxb</groupId>
-                <artifactId>jaxb-runtime</artifactId>
-                <version>2.3.3</version>
-            </dependency>
 
             <dependency>
                 <groupId>com.mchange</groupId>
@@ -376,9 +332,9 @@
 
             <!-- Swagger -->
             <dependency>
-                <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-ui</artifactId>
-                <version>${springdoc-swagger.version}</version>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-boot-starter</artifactId>
+                <version>${springfox-swagger.version}</version>
             </dependency>
 
 
@@ -397,11 +353,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit-jupiter.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>

@@ -25,7 +25,14 @@ package org.adempiere.model.tree.spi.impl;
  * #L%
  */
 
-import de.metas.util.StringUtils;
+
+import java.awt.Color;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.compiere.model.GridTab;
 import org.compiere.model.MTree;
@@ -34,12 +41,6 @@ import org.compiere.model.MTree_Base;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Tree;
 import org.compiere.print.MPrintColor;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.awt.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 
 /**
  * @author tsa
@@ -100,7 +101,8 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 		final int nodeId = gridTab.getRecord_ID();
 		final String name = String.valueOf(gridTab.getValue("Name"));
 		final String description = String.valueOf(gridTab.getValue("Description"));
-		final boolean isSummary = StringUtils.toBoolean(gridTab.getValue("IsSummary"));
+		final Boolean isSummaryObj = (Boolean)gridTab.getValue("IsSummary");
+		final boolean isSummary = isSummaryObj != null && isSummaryObj.booleanValue();
 		final String imageIndicator = String.valueOf(gridTab.getValue("Action"));
 		final int seqNo = 0;
 		final int parent_ID = 0;
@@ -146,7 +148,7 @@ public class DefaultPOTreeSupport implements IPOTreeSupport
 			throw new IllegalArgumentException("Unknown TreeType=" + tree.getTreeType());
 		}
 		final String fromClause = getNodeInfoFromSQL(tree, tableAlias);
-		final StringBuilder sqlNode = new StringBuilder();
+		final StringBuffer sqlNode = new StringBuffer();
 		sqlNode.append("SELECT ")
 		.append(tableAlias).append(".").append(columnNameX).append(" AS Node_ID")
 		.append(",").append(tableAlias).append(".Name")

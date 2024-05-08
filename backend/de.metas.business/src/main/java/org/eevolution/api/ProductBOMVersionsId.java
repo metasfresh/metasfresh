@@ -58,6 +58,4 @@ public class ProductBOMVersionsId implements RepoIdAware
 	{
 		return repoId;
 	}
-
-	public static int toRepoId(@Nullable ProductBOMVersionsId id) {return id != null ? id.getRepoId() : -1;}
 }

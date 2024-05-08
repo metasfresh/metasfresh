@@ -22,15 +22,6 @@ package de.metas.banking.model.validator;
  * #L%
  */
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.model.BankStatementLineAmounts;
-import de.metas.banking.service.IBankStatementBL;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.document.engine.DocStatus;
-import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -41,6 +32,17 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.model.BankStatementLineAmounts;
+import de.metas.banking.service.IBankStatementBL;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.document.engine.DocStatus;
+import lombok.NonNull;
 
 @Interceptor(I_C_BankStatementLine.class)
 public class C_BankStatementLine
@@ -80,7 +82,6 @@ public class C_BankStatementLine
 		}
 
 		BankStatementLineAmounts.of(bankStatementLine).assertNoDifferences();
-		assertReconcilationConsistent(bankStatementLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -123,7 +124,7 @@ public class C_BankStatementLine
 					+ " SET StatementDifference=(SELECT COALESCE(SUM(StmtAmt),0) FROM C_BankStatementLine bsl "
 					+ "WHERE bsl.C_BankStatement_ID=bs.C_BankStatement_ID AND bsl.IsActive='Y') "
 					+ "WHERE C_BankStatement_ID=?";
-			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
 
 		// EndingBalance
@@ -131,7 +132,7 @@ public class C_BankStatementLine
 			final String sql = "UPDATE C_BankStatement bs"
 					+ " SET EndingBalance=BeginningBalance+StatementDifference "
 					+ "WHERE C_BankStatement_ID=?";
-			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -141,14 +142,6 @@ public class C_BankStatementLine
 		final String sql = "UPDATE C_BankStatement bs"
 				+ " SET IsReconciled=(CASE WHEN (SELECT COUNT(1) FROM C_BankStatementLine bsl WHERE bsl.C_BankStatement_ID = bs.C_BankStatement_ID AND bsl.IsReconciled = 'N') = 0 THEN 'Y' ELSE 'N' END)"
 				+ " WHERE C_BankStatement_ID=?";
-		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	private void assertReconcilationConsistent(final I_C_BankStatementLine line)
-	{
-		if (line.getLink_BankStatementLine_ID() > 0 && line.getC_Payment_ID() > 0)
-		{
-			throw new AdempiereException("Invalid reconcilation: cannot have bank transfer and payment at the same time");
-		}
+		DB.executeUpdateEx(sql, new Object[] { bankStatementId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

@@ -43,9 +43,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +58,8 @@ import java.util.function.Supplier;
 
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
+import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
+import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
 @Service
 public class OrderService
@@ -69,7 +70,7 @@ public class OrderService
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-
+	
 	private final AsyncBatchService asyncBatchService;
 
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
@@ -127,9 +128,6 @@ public class OrderService
 
 		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
 				.ifPresent(noAsyncBatchOLCands -> {
-
-					// the asyncBatchId will be propagated through C_OLCand, M_ShipmentSchedule and C_Invoice_candidate.
-					// If will be used when we create workpackages (and wait for them!) that in turn create actual the actual orders, shipments and invoices
 					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);
@@ -146,7 +144,7 @@ public class OrderService
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
 
-		if (!order.getDocStatus().equals(X_C_Order.DOCSTATUS_Completed))
+		if (!order.getDocStatus().equals(DOCSTATUS_Completed))
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Order not COMPLETED!");
 			return ImmutableSet.of();
@@ -159,7 +157,7 @@ public class OrderService
 
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
+		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
 
 		asyncBatchService.executeBatch(action, asyncBatchId);
 	}

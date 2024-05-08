@@ -64,6 +64,6 @@ public class M_Forecast_PostMaterialEvent
 		}
 
 		final ForecastCreatedEvent forecastCreatedEvent = forecastEventCreator.createEventWithLinesAndTiming(forecastLines, timing);
-		materialEventService.enqueueEventAfterNextCommit(forecastCreatedEvent);
+		materialEventService.postEventAfterNextCommit(forecastCreatedEvent);
 	}
 }

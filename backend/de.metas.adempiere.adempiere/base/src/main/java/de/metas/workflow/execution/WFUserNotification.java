@@ -24,7 +24,6 @@ package de.metas.workflow.execution;
 
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
-import de.metas.notification.UserNotificationRequest;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,11 +36,15 @@ import javax.annotation.Nullable;
 @Builder
 class WFUserNotification
 {
-	@NonNull UserId userId;
-	@NonNull ADMessageAndParams content;
-	@Nullable UserNotificationRequest.TargetAction targetAction;
+	@NonNull
+	UserId userId;
 
-	@SuppressWarnings("unused")
+	@NonNull
+	ADMessageAndParams content;
+
+	@Nullable
+	TableRecordReference documentToOpen;
+
 	public static class WFUserNotificationBuilder
 	{
 		public WFUserNotificationBuilder content(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
@@ -49,15 +52,11 @@ class WFUserNotification
 			return content(ADMessageAndParams.of(adMessage, params));
 		}
 
-		public WFUserNotificationBuilder content(@NonNull final ADMessageAndParams content)
+		public WFUserNotificationBuilder content(@Nullable final ADMessageAndParams content)
 		{
 			this.content = content;
 			return this;
 		}
 
-		public WFUserNotificationBuilder documentToOpen(@Nullable final TableRecordReference documentToOpen)
-		{
-			return targetAction(documentToOpen != null ? UserNotificationRequest.TargetRecordAction.of(documentToOpen) : null);
-		}
 	}
 }

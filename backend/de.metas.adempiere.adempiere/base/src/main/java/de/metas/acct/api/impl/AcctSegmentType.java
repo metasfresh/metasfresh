@@ -1,8 +1,6 @@
 package de.metas.acct.api.impl;
 
 import de.metas.acct.api.AcctSchemaElementType;
-import org.compiere.model.I_C_ValidCombination;
-import org.compiere.model.X_C_AcctSchema_Element;
 
 /*
  * #%L
@@ -28,43 +26,42 @@ import org.compiere.model.X_C_AcctSchema_Element;
 
 /**
  * Accounting segment type
- *
+ * 
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public enum AcctSegmentType
 {
-	Client(null),
-	Organization(AcctSchemaElementType.Organization),
-	Account(AcctSchemaElementType.Account),
-	SubAccount(AcctSchemaElementType.SubAccount),
-	Product(AcctSchemaElementType.Product),
-	BPartner(AcctSchemaElementType.BPartner),
-	OrgTrx(AcctSchemaElementType.OrgTrx),
-	LocationFrom(AcctSchemaElementType.LocationFrom),
-	LocationTo(AcctSchemaElementType.LocationTo),
-	SalesRegion(AcctSchemaElementType.SalesRegion),
-	Project(AcctSchemaElementType.Project),
-	Campaign(AcctSchemaElementType.Campaign),
-	Activity(AcctSchemaElementType.Activity),
-	UserList1(AcctSchemaElementType.UserList1),
-	UserList2(AcctSchemaElementType.UserList2),
-	UserElement1(AcctSchemaElementType.UserElement1),
-	UserElement2(AcctSchemaElementType.UserElement2),
+	Client(null), //
+	Organization(AcctSchemaElementType.Organization), //
+	Account(AcctSchemaElementType.Account), //
+	SubAccount(AcctSchemaElementType.SubAccount), //
+	Product(AcctSchemaElementType.Product), //
+	BPartner(AcctSchemaElementType.BPartner), //
+	OrgTrx(AcctSchemaElementType.OrgTrx), //
+	LocationFrom(AcctSchemaElementType.LocationFrom), //
+	LocationTo(AcctSchemaElementType.LocationTo), //
+	SalesRegion(AcctSchemaElementType.SalesRegion), //
+	Project(AcctSchemaElementType.Project), //
+	Campaign(AcctSchemaElementType.Campaign), //
+	Activity(AcctSchemaElementType.Activity), //
+	UserList1(AcctSchemaElementType.UserList1), //
+	UserList2(AcctSchemaElementType.UserList2), //
+	UserElement1(AcctSchemaElementType.UserElement1), //
+	UserElement2(AcctSchemaElementType.UserElement2),  //
 	UserElementString1(AcctSchemaElementType.UserElementString1),
 	UserElementString2(AcctSchemaElementType.UserElementString2),
 	UserElementString3(AcctSchemaElementType.UserElementString3),
 	UserElementString4(AcctSchemaElementType.UserElementString4),
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
-	UserElementString7(AcctSchemaElementType.UserElementString7),
-	SalesOrder(AcctSchemaElementType.SalesOrder),
-	SectionCode(AcctSchemaElementType.SectionCode),
-	UserElementDate1(AcctSchemaElementType.UserElementDate1),
-	UserElementDate2(AcctSchemaElementType.UserElementDate2),
-	HarvestingCalendar(AcctSchemaElementType.HarvestingCalendar),
-	HarvestingYear(AcctSchemaElementType.HarvestingYear);
+	UserElementString7(AcctSchemaElementType.UserElementString7)
+	;
 
-	AcctSegmentType(@SuppressWarnings("unused") final AcctSchemaElementType elementType)
+	// private final AcctSchemaElementType elementType;
+
+	AcctSegmentType(final AcctSchemaElementType elementType)
 	{
+		// this.elementType = elementType;
 	}
 }

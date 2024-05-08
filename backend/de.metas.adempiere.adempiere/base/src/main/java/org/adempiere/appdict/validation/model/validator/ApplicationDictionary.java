@@ -25,11 +25,10 @@ package org.adempiere.appdict.validation.model.validator;
  * #L%
  */
 
-import de.metas.logging.LogManager;
-import de.metas.security.RoleId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
@@ -43,10 +42,13 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import java.util.List;
-import java.util.Properties;
+import de.metas.logging.LogManager;
+import de.metas.security.RoleId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -81,7 +83,14 @@ public class ApplicationDictionary implements ModelValidator
 		//
 		// Log Migration Scripts, if we log in with SysAdm role and the ID server is configured
 		final RoleId roleId = RoleId.ofRepoId(AD_Role_ID);
-		MigrationScriptFileLoggerHolder.setEnabled(roleId.isSystem() && MSequence.isExternalIDSystemEnabled());
+		if (roleId.isSystem() && MSequence.isExternalIDSystemEnabled())
+		{
+			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
+		}
+		else
+		{
+			Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false);
+		}
 		return null;
 	}
 

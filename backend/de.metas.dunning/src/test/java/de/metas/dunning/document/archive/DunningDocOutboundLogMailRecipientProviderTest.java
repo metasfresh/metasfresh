@@ -34,7 +34,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -308,8 +308,8 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	private I_C_DunningDoc createDunningDocRecord()
 	{
 		final I_C_DunningDoc dunningDocRecord = newInstance(I_C_DunningDoc.class);
-		dunningDocRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
-		dunningDocRecord.setC_BPartner_Location_ID(bPartnerLocationRecord.getC_BPartner_Location_ID());
+		dunningDocRecord.setC_BPartner(bPartnerRecord);
+		dunningDocRecord.setC_BPartner_Location(bPartnerLocationRecord);
 		saveRecord(dunningDocRecord);
 		return dunningDocRecord;
 	}

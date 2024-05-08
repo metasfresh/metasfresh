@@ -127,7 +127,6 @@ public class ProcessPickingCandidatesCommand_PickFromPickingOrder_Test
 
 		ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(helper.pickingCandidateRepository)
-				.inventoryService(helper.inventoryService)
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(pickingCandidateId)
 						.build())

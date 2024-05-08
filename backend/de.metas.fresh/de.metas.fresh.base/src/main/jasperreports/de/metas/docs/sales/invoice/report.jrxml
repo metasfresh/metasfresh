@@ -103,7 +103,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="37" y="153" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
+				<reportElement key="subreport-7" x="56" y="153" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -245,14 +245,6 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_details_footer.jasper"]]></subreportExpression>
 			</subreport>
-			<subreport>
-				<reportElement key="subreport-13" x="400" y="0" width="194" height="36" uuid="7da82817-042f-45a8-9093-2606b77cc14e"/>
-				<subreportParameter name="c_invoice_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_details_local_tax_reporting.jasper"]]></subreportExpression>
-			</subreport>
 		</band>
 	</detail>
 	<columnFooter>
@@ -322,7 +314,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="3" width="595" height="150" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($F{iscreditmemo}) && ("CH").equals($F{countrycode})) && ("Y").equals($F{showqrbill} )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
@@ -337,7 +329,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<reportElement key="subreport-3" mode="Transparent" x="1" y="0" width="595" height="130" uuid="a94eb539-f031-4a02-863d-065b2f4347b6">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("N").equals($F{iscreditmemo}) && ("CH").equals($F{countrycode})) && ("Y").equals($F{showqrbill} )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode}))  && ("N").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>

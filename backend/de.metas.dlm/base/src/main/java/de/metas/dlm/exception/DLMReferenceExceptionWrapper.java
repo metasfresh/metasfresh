@@ -1,20 +1,22 @@
 package de.metas.dlm.exception;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.exceptions.IExceptionWrapper;
-import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
-import org.adempiere.exceptions.DBException;
-import org.postgresql.util.PSQLException;
-import org.postgresql.util.ServerErrorMessage;
-
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.DBException;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.ServerErrorMessage;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.exceptions.IExceptionWrapper;
 
 /*
  * #%L
@@ -117,22 +119,20 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 		// the the "real" tables and column from the extracted lowercase infos
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		final AdTableId referencedTableId = adTableDAO.retrieveAdTableId(infos[0]);
-		Check.errorIf(referencedTableId == null, "Unable to retrieve an AD_Table for referencedTable name={}", infos[0]);
-		final String referencedTableName = adTableDAO.retrieveTableName(referencedTableId);
+		final I_AD_Table referencedTable = adTableDAO.retrieveTable(infos[0]);
+		Check.errorIf(referencedTable == null, "Unable to retrieve an AD_Table for referencedTable name={}", infos[0]);
 
-		final AdTableId referencingTableId = adTableDAO.retrieveAdTableId(infos[2]);
-		Check.errorIf(referencingTableId == null, "Unable to retrieve an AD_Table for referencingTable name={}", infos[2]);
-		final String referencingTableName = adTableDAO.retrieveTableName(referencingTableId);
+		final I_AD_Table referencingTable = adTableDAO.retrieveTable(infos[2]);
+		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Table for referencingTable name={}", infos[2]);
 
-		final MinimalColumnInfo referencingColumn = adTableDAO.getMinimalColumnInfo(referencingTableName, infos[3]);
-		Check.errorIf(referencingColumn == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
+		final I_AD_Column referencingColumn = adTableDAO.retrieveColumn(referencingTable.getTableName(), infos[3]);
+		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
 
 		final DLMReferenceException ex = new DLMReferenceException(t,
 				TableRecordIdDescriptor.of(
-						referencingTableName,
+						referencingTable.getTableName(),
 						referencingColumn.getColumnName(),
-						referencedTableName),
+						referencedTable.getTableName()),
 				referencingTableHasDLMLevel);
 		ex.setParameter("referencedRecordId", Integer.parseInt(infos[1]));
 		ex.appendParametersToMessage();

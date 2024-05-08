@@ -26,43 +26,40 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-/**
- * Used in both requests and responses.
- */
 @Value
 public class JsonExternalReferenceLookupItem
 {
-	@Schema(description = "JsonMetasfreshId of the referenced resource. E.g. a `C_BPartner_ID`. Either this or `externalReference` are required")
+	@ApiModelProperty(value = "JsonMetasfreshId of the referenced resource")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@Schema(required = true, description = "Type of the externally referenced resource. E.g. user, issue, timebooking")
+	@ApiModelProperty(required = true, value = "Type of the externally referenced resource. E.g. user, issue, timebooking")
 	String type;
 
-	@Schema(description = "External identifier of the referenced resource. Either this or `metasfreshId` are required")
+	@ApiModelProperty(value = "External identifier of the referenced resource")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	String externalReference;
+	String id;
 
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceLookupItem(
 			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
 			@JsonProperty("type") @NonNull final String type,
-			@JsonProperty("externalReference") @Nullable final String externalReference)
+			@JsonProperty("id") @Nullable final String id)
 	{
-		if (metasfreshId == null && externalReference == null)
+		if (metasfreshId == null && id == null)
 		{
 			throw new RuntimeException("metasfreshId && externalReference cannot be both null!");
 		}
 
-		this.externalReference = externalReference;
+		this.id = id;
 		this.type = type;
 		this.metasfreshId = metasfreshId;
 	}

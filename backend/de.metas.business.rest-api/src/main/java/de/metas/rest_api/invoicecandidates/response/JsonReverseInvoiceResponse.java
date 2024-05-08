@@ -22,7 +22,7 @@
 
 package de.metas.rest_api.invoicecandidates.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -33,7 +33,7 @@ import java.util.List;
 @Builder
 public class JsonReverseInvoiceResponse
 {
-	@Schema
+	@ApiModelProperty(position = 10)
 	@Singular
 	List<JsonInvoiceCandidatesResponseItem> affectedInvoiceCandidates;
 }

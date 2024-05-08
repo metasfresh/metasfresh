@@ -499,7 +499,6 @@ class TableRow extends PureComponent {
       viewId,
       keyProperty,
       modalVisible,
-      isModal,
       isGerman,
       isSelected,
       focusOnFieldName,
@@ -512,7 +511,6 @@ class TableRow extends PureComponent {
       changeListenOnTrue,
       changeListenOnFalse,
       fieldsByName,
-      isShowComments,
     } = this.props;
     const {
       edited,
@@ -582,7 +580,6 @@ class TableRow extends PureComponent {
                   handleRightClick,
                   keyProperty,
                   modalVisible,
-                  isModal,
                   rowIndex,
                   tableId,
                   isGerman,
@@ -608,7 +605,7 @@ class TableRow extends PureComponent {
                   }
                 }}
                 colIndex={idx}
-                hasComments={isShowComments && !!hasComments && idx === 0}
+                hasComments={!!(hasComments && idx === 0)}
                 cellExtended={cellsExtended}
                 key={`${property}-${idx}`}
                 isRowSelected={isSelected}
@@ -785,8 +782,6 @@ TableRow.propTypes = {
   updatePropertyValue: PropTypes.func,
   onFastInlineEdit: PropTypes.func,
   navigationActive: PropTypes.bool,
-  isModal: PropTypes.bool,
-  isShowComments: PropTypes.bool,
 };
 
 export default TableRow;

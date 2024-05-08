@@ -83,7 +83,7 @@ public final class EventBusConfig
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
-	public static final Topic TOPIC_GeneralUserNotifications = Topic.distributed("de.metas.event.GeneralNotifications");
+	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
 
 	/**
 	 * Topic used for general notifications inside this JVM instance.
@@ -103,7 +103,7 @@ public final class EventBusConfig
 		return SENDER_ID;
 	}
 
-	/** @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously */
+	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
@@ -131,7 +131,7 @@ public final class EventBusConfig
 
 	public static boolean isMonitorIncomingEvents()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.monitoring.eventBus.enable", false);
+		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
 	}
 
 }

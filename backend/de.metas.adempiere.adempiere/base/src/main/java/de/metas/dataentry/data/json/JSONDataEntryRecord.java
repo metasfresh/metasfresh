@@ -1,16 +1,17 @@
 package de.metas.dataentry.data.json;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.CreatedUpdatedInfo;
-import de.metas.dataentry.DataEntryListValueId;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.CreatedUpdatedInfo;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L

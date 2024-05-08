@@ -50,7 +50,6 @@ SELECT trl.ad_language
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
-     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -63,12 +62,7 @@ SELECT trl.ad_language
      , t.QuickInput_CloseButton_Caption AS QuickInput_CloseButton_Caption_BaseLang
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
-     , t.IsAutodetectDefaultDateFilter
-     , t.QuickInputLayout
-     , trl.NotFound_Message
-     , t.NotFound_Message AS NotFound_Message_BaseLang
-     , trl.NotFound_MessageDetail
-     , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
+, t.IsAutodetectDefaultDateFilter
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id

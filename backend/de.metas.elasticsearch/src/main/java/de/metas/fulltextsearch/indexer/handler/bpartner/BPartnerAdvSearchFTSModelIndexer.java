@@ -156,11 +156,6 @@ public class BPartnerAdvSearchFTSModelIndexer implements FTSModelIndexer
 		for (final ModelToIndex request : requests)
 		{
 			final TableRecordReference sourceModelRef = request.getSourceModelRef();
-			if(sourceModelRef == null)
-			{
-				continue;
-			}
-
 			final String sourceTableName = sourceModelRef.getTableName();
 			if (I_C_BPartner.Table_Name.equals(sourceTableName))
 			{

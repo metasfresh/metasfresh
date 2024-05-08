@@ -8,7 +8,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.model.I_AD_Archive;
 import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderService;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
@@ -79,6 +79,8 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private static final String PARAM_ShipperGatewayId = "ShipperGatewayId";
 	// Services
 
+	// private final GOClientFactory goClientFactory;
+
 	private final ShipperGatewayServicesRegistry shipperRegistry;
 
 	public DeliveryOrderWorkpackageProcessor()
@@ -103,8 +105,8 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 				.getClientFactory(shipperGatewayId)
 				.newClientForShipperId(draftedDeliveryOrder.getShipperId());
 
-		final DeliveryOrderService deliveryOrderRepo = //
-				shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+		final DeliveryOrderRepository deliveryOrderRepo = //
+				shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(draftedDeliveryOrder);
 		deliveryOrderRepo.save(completedDeliveryOrder);
@@ -120,7 +122,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private DeliveryOrder retrieveDeliveryOrder()
 	{
 		final String shipperGatewayId = getParameters().getParameterAsString(PARAM_ShipperGatewayId);
-		final DeliveryOrderService deliveryOrderRepo = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
+		final DeliveryOrderRepository deliveryOrderRepo = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
 		final DeliveryOrderId deliveryOrderRepoId = getDeliveryOrderRepoId();
 		return deliveryOrderRepo.getByRepoId(deliveryOrderRepoId);
@@ -135,7 +137,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	public void printLabels(
 			@NonNull final DeliveryOrder deliveryOrder,
 			@NonNull final List<PackageLabels> packageLabels,
-			@NonNull final DeliveryOrderService deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		for (final PackageLabels packageLabel : packageLabels)
@@ -148,7 +150,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 	private void printLabel(
 			final DeliveryOrder deliveryOrder,
 			final PackageLabel packageLabel,
-			@NonNull final DeliveryOrderService deliveryOrderRepo,
+			@NonNull final DeliveryOrderRepository deliveryOrderRepo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);

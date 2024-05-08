@@ -22,12 +22,13 @@ package de.metas.printing;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import org.adempiere.service.ISysConfigBL;
+
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-
-import java.math.BigDecimal;
 
 public final class Printing_Constants
 {
@@ -65,7 +66,7 @@ public final class Printing_Constants
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.printing.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	/**

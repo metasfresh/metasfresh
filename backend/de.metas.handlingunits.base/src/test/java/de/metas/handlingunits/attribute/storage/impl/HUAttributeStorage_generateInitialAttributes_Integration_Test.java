@@ -188,8 +188,6 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
-				//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
-				.forPackages("de")
 				.setScanners(new SubTypesScanner()));
 
 		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);

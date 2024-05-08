@@ -1,17 +1,14 @@
 package de.metas.acct.callout;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
+import java.sql.Timestamp;
+
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.compiere.model.I_GL_JournalBatch;
+
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.util.Services;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_JournalBatch;
-
-import java.sql.Timestamp;
-import java.util.Optional;
 
 /*
  * #%L
@@ -23,12 +20,12 @@ import java.util.Optional;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,8 +35,6 @@ import java.util.Optional;
 @Callout(I_GL_JournalBatch.class)
 public class GL_JournalBatch
 {
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-
 	@CalloutMethod(columnNames = I_GL_JournalBatch.COLUMNNAME_DateDoc)
 	public void onDateDoc(final I_GL_JournalBatch glJournalBatch)
 	{
@@ -57,7 +52,7 @@ public class GL_JournalBatch
 	{
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(getDocType(glJournalBatch).orElse(null))
+				.setNewDocType(glJournalBatch.getC_DocType())
 				.setOldDocumentNo(glJournalBatch.getDocumentNo())
 				.setDocumentModel(glJournalBatch)
 				.buildOrNull();
@@ -65,12 +60,6 @@ public class GL_JournalBatch
 		{
 			glJournalBatch.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
-	}
-
-	private Optional<I_C_DocType> getDocType(final I_GL_JournalBatch glJournalBatch)
-	{
-		return DocTypeId.optionalOfRepoId(glJournalBatch.getC_DocType_ID())
-				.map(docTypeBL::getById);
 	}
 
 	// Old/missing callouts

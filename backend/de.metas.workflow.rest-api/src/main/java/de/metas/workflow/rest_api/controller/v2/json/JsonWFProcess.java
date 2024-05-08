@@ -24,7 +24,6 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -34,7 +33,6 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 
@@ -48,8 +46,6 @@ public class JsonWFProcess
 	@NonNull JsonWFProcessHeaderProperties headerProperties;
 
 	@NonNull List<JsonWFActivity> activities;
-
-	boolean isAllowAbort;
 
 	public static JsonWFProcess of(
 			@NonNull final WFProcess wfProcess,
@@ -67,15 +63,7 @@ public class JsonWFProcess
 								uiComponents.get(activity.getId()),
 								jsonOpts))
 						.collect(ImmutableList.toImmutableList()))
-				.isAllowAbort(wfProcess.isAllowAbort())
 				.build();
 	}
 
-	@JsonIgnore
-	public JsonWFActivity getActivityById(@NonNull final String activityId)
-	{
-		return activities.stream().filter(activity -> activity.getActivityId().equals(activityId))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No activity found for id `" + activityId + "` in " + this));
-	}
 }

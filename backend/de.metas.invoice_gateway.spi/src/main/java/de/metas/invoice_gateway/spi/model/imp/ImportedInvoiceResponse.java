@@ -54,9 +54,6 @@ public class ImportedInvoiceResponse
 	@NonNull
 	Instant invoiceCreated;
 
-	@NonNull
-	Instant invoiceResponse;
-
 	Status status;
 
 	ImportInvoiceResponseRequest request;

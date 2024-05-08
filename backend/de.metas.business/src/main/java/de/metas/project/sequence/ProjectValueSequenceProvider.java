@@ -10,6 +10,7 @@ import de.metas.project.ProjectTypeRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Component;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;

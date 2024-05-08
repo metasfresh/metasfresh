@@ -22,12 +22,8 @@
 
 package de.metas.document.dimension;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -45,21 +41,10 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	@NonNull
 	public Dimension getFromRecord(@NonNull final I_C_OrderLine record)
 	{
-		OrderId salesOrderId = OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID());
-		if (salesOrderId == null
-				&& record.getC_Order().isSOTrx())
-		{
-			salesOrderId = OrderId.ofRepoId(record.getC_Order_ID());
-		}
-
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(salesOrderId)
-				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
-				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
-				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -73,21 +58,11 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	}
 
 	@Override
-	public void updateRecord(@NonNull final I_C_OrderLine record, @NonNull final Dimension from)
+	public void updateRecord(final I_C_OrderLine record, final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
-		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
-		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
-		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
-		updateRecordUserElements(record, from);
-	}
-
-	@Override
-	public void updateRecordUserElements(@NonNull final I_C_OrderLine record, @NonNull final Dimension from)
-	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -97,5 +72,6 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setUserElementString7(from.getUserElementString7());
 		record.setUser1_ID(from.getUser1_ID());
 		record.setUser2_ID(from.getUser2_ID());
+
 	}
 }

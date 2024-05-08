@@ -1,6 +1,16 @@
 package de.metas.impexp;
 
+import java.util.Optional;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Stopwatch;
+
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -15,22 +25,10 @@ import de.metas.impexp.processing.ImportProcessResult;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.report.ReportResultData;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import java.nio.file.Path;
-import java.util.Optional;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ import java.util.Optional;
 @Service
 public class DataImportService
 {
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.DISTRIBUTED);
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
 
 	private static final Logger logger = LogManager.getLogger(DataImportService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
@@ -116,7 +114,6 @@ public class DataImportService
 				.userId(request.getUserId())
 				.completeDocuments(request.isCompleteDocuments())
 				.additionalParameters(request.getAdditionalParameters())
-				.overrideColumnValues(request.getOverrideColumnValues())
 				//
 				.dataImportConfigId(request.getDataImportConfigId())
 				.importFormat(importFormat)
@@ -125,8 +122,6 @@ public class DataImportService
 				//
 				.processImportRecordsSynchronously(request.isProcessImportRecordsSynchronously())
 				.stopOnFirstError(request.isStopOnFirstError())
-				//
-				.logMigrationScriptsSpec(request.getLogMigrationScriptsSpec())
 				//
 				.build()
 				//
@@ -159,41 +154,23 @@ public class DataImportService
 
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
-		try (final IAutoCloseable ignored = MigrationScriptFileLoggerHolder.temporaryEnabledLoggingToNewFileIf(request.isLogMigrationScripts()))
+		final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
+				.setCtx(Env.getCtx())
+				.setLoggable(Loggables.get())
+				.selectedRecords(request.getSelectionId())
+				.completeDocuments(request.isCompleteDocuments())
+				.setParameters(request.getAdditionalParameters())
+				.run();
+
+		if (request.getNotifyUserId() != null)
 		{
-			final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-					.setCtx(Env.getCtx())
-					.setLoggable(Loggables.get())
-					.selectedRecords(request.getSelectionId())
-					.completeDocuments(request.isCompleteDocuments())
-					.setParameters(request.getAdditionalParameters())
-					.run();
-
-			final ActualImportRecordsResult actualImport = result.getActualImport();
-			if (actualImport == null)
-			{
-				throw new AdempiereException("For some unknown reason the actual import was not performed")
-						.setParameter("importProcessResult", result)
-						.appendParametersToMessage();
-			}
-
-			if (request.getNotifyUserId() != null)
-			{
-				notifyImportDone(actualImport, request.getNotifyUserId());
-			}
-
-			final Path sqlMigrationScript = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
-			if (sqlMigrationScript != null)
-			{
-				Loggables.get().addLog("Wrote migration script: {}", sqlMigrationScript);
-			}
-
-			return ValidateAndActualImportRecordsResult.builder()
-					.importRecordsValidation(result.getImportRecordsValidation())
-					.actualImport(actualImport)
-					.sqlMigrationScript(sqlMigrationScript)
-					.build();
+			notifyImportDone(result.getActualImport(), request.getNotifyUserId());
 		}
+
+		return ValidateAndActualImportRecordsResult.builder()
+				.importRecordsValidation(result.getImportRecordsValidation())
+				.actualImport(result.getActualImport())
+				.build();
 	}
 
 	AsyncImportRecordsResponse importRecordsAsync(@NonNull final ImportRecordsRequest request)
@@ -237,13 +214,5 @@ public class DataImportService
 				.setLoggable(Loggables.get())
 				.setParameters(request.getAdditionalParameters())
 				.deleteImportRecords(request);
-	}
-
-	@NonNull
-	public ReportResultData generateTemplate(@NonNull final DataImportConfigId dataImportConfigId)
-	{
-		final DataImportConfig dataImportConfig = dataImportConfigsRepo.getById(dataImportConfigId);
-		final ImpFormat importFormat = importFormatsRepo.getById(dataImportConfig.getImpFormatId());
-		return importFormat.generateTabularTemplate();
 	}
 }

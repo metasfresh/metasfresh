@@ -30,12 +30,9 @@ import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
+import org.compiere.model.X_AD_Issue;
 import org.compiere.util.DB;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -57,7 +54,7 @@ public class AdIssueFactory
 		issue.setName("-");
 		issue.setUserName("?");
 		issue.setDBAddress("-");
-		issue.setSystemStatus(system.getSystemStatus());
+		issue.setSystemStatus(X_AD_Issue.SYSTEMSTATUS_Implementation);
 		issue.setReleaseNo("-");
 		issue.setVersion(system.getDbVersion());
 		issue.setDatabaseInfo(DB.getDatabaseInfo());
@@ -65,18 +62,6 @@ public class AdIssueFactory
 		issue.setJavaInfo(Adempiere.getJavaInfo());
 		issue.setReleaseTag(Adempiere.getImplementationVersion());
 		issue.setLocal_Host(NetUtils.getLocalHost().toString());
-
-		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		if (requestAttributes instanceof ServletRequestAttributes)
-		{
-			final ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)requestAttributes;
-			final HttpServletRequest httpServletRequest = servletRequestAttributes.getRequest();
-			issue.setRemote_Addr(httpServletRequest.getRemoteAddr());
-			issue.setRemote_Host(httpServletRequest.getRemoteHost());
-
-			final String userAgent = httpServletRequest.getHeader("User-Agent");
-			issue.setUserAgent(userAgent);
-		}
 
 		return issue;
 	}

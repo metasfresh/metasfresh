@@ -27,7 +27,6 @@ package de.metas.async.api.impl;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimap;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
 import de.metas.async.api.AsyncBatchType;
 import de.metas.async.api.AsyncBatchTypeId;
 import de.metas.async.api.IAsyncBatchBL;
@@ -55,7 +54,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -211,6 +210,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return asyncBatchRecord.isProcessed();
 	}
 
+	
 	@Override
 	@NonNull
 	public Duration getTimeUntilProcessedRecheck(@NonNull final I_C_Async_Batch asyncBatch)
@@ -364,9 +364,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return Optional.of(temporaryBatchId);
 		}
 
-		// final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
-		// return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
-		return Optional.empty();
+		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
+		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -453,19 +452,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		return internalName != null && internalName.equals(expectedInternalName);
 	}
 
-	@Override
-	public boolean isAsyncBatchForAutomaticallyInvoicePDFPrinting(@NonNull I_C_Async_Batch asyncBatch)
-	{
-		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
-		return internalName != null	&& internalName.equals(Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting);
-	}
-
-	@Override
-	public boolean isAsyncBatchForAutomaticallyDunningPDFPrinting(@NonNull I_C_Async_Batch asyncBatch)
-	{
-		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
-		return internalName != null && internalName.equals(Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting);
-	}
 
 	@Override
 	public Optional<AsyncBatchType> getAsyncBatchType(@NonNull final I_C_Async_Batch asyncBatch)

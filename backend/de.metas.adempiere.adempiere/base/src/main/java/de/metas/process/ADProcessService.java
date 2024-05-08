@@ -192,5 +192,4 @@ public class ADProcessService
 		final String tableName = adTableDAO.retrieveTableName(document.getAD_Table_ID());
 		return adTableDAO.retrieveColumn(tableName, columnName);
 	}
-
 }

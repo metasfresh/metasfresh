@@ -10,8 +10,8 @@ export const generateHUQRCodesReducer = ({ draftState }) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
+  mergeActivityDataStored: ({ draftActivityDataStored }) => {
+    draftActivityDataStored.isAlwaysAvailableToUser = true;
     return draftActivityDataStored;
   },
 

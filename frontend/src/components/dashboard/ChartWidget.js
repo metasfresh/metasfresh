@@ -48,14 +48,12 @@ export class ChartWidget extends Component {
       fields,
       groupBy,
       editmode,
-      openChartOptions,
+      handleChartOptions,
     } = this.props;
     const { toggleWidgetMenu, height } = this.state;
     const isMaximized = idMaximized === id;
 
     if (!isMaximized && typeof idMaximized === 'number') return false;
-
-    const isRenderChartContent = !framework || !!data;
 
     return (
       <div>
@@ -75,13 +73,15 @@ export class ChartWidget extends Component {
         >
           <p className="draggable-widget-title">
             {text}
-            {editmode && openChartOptions && (
+            {editmode ? (
               <span
                 className="chart-edit-mode"
-                onClick={() => openChartOptions(id)}
+                onClick={() => handleChartOptions(true, text, id, false)}
               >
                 <i className="meta-icon-settings" />
               </span>
+            ) : (
+              ''
             )}
           </p>
           {!editmode && !framework && (
@@ -116,7 +116,7 @@ export class ChartWidget extends Component {
         </div>
 
         <div className="draggable-widget-body">
-          {isRenderChartContent ? (
+          {!framework ? (
             <RawChart
               {...{
                 index,
@@ -155,7 +155,7 @@ ChartWidget.propTypes = {
   fields: PropTypes.any,
   groupBy: PropTypes.object,
   editmode: PropTypes.bool,
-  openChartOptions: PropTypes.func,
+  handleChartOptions: PropTypes.func,
   id: PropTypes.number,
   idMaximized: PropTypes.number,
 };

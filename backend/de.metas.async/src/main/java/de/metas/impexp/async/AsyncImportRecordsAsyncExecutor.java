@@ -10,6 +10,8 @@ import lombok.NonNull;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
+import java.util.Properties;
+
 @Component
 public final class AsyncImportRecordsAsyncExecutor implements ImportRecordsAsyncExecutor
 {
@@ -18,7 +20,9 @@ public final class AsyncImportRecordsAsyncExecutor implements ImportRecordsAsync
 	@Override
 	public AsyncImportRecordsResponse schedule(@NonNull final ImportRecordsRequest request)
 	{
-		final QueueWorkPackageId workpackageId = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), AsyncImportWorkpackageProcessor.class)
+		final Properties ctx = Env.getCtx();
+		final QueueWorkPackageId workpackageId = workPackageQueueFactory
+				.getQueueForEnqueuing(ctx, AsyncImportWorkpackageProcessor.class)
 				.newWorkPackage()
 				.parameters(request.toParams())
 				.buildAndGetId();

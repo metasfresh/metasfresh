@@ -72,15 +72,14 @@ public class BankStatementLineAndPaymentsToReconcileRepository
 
 	public BankStatementLineAndPaymentsToReconcileRepository(
 			@NonNull final IBankStatementBL bankStatementBL,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.bankStatementBL = bankStatementBL;
 		this.currencyRepository = currencyRepository;
 
 		if (!Adempiere.isUnitTestMode()) // FIXME: workaround to be able to test it
 		{
-			bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+			bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 		}
 		else
 		{

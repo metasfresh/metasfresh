@@ -99,16 +99,15 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			@NonNull final Predicate<I_M_Attribute> filter)
 	{
 		final Builder builder = builder();
-		for (final I_M_Attribute attribute : attributeSet.getAttributes())
-		{
-			if (filter.test(attribute))
-			{
-				final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
-				final Object value = attributeSet.getValue(attributeCode);
-				final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
-				builder.attributeValue(attribute, value, attributeValueId);
-			}
-		}
+		attributeSet.getAttributes()
+				.stream()
+				.filter(filter)
+				.forEach(attribute -> {
+					final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+					final Object value = attributeSet.getValue(attributeCode);
+					final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeCode);
+					builder.attributeValue(attribute, value, attributeValueId);
+				});
 
 		return builder.build();
 	}
@@ -439,13 +438,6 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		final Object valueObj = getValue(attributeCode);
 		return valueObj != null ? valueObj.toString() : null;
-	}
-
-	@Override
-	@Nullable
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		return getValueAsString(attributeCode);
 	}
 
 	public Optional<String> getValueAsStringIfExists(final AttributeCode attributeCode)

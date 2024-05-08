@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 @Value
 public class FactTrxLines
 {
-	public enum FactTrxLinesType
+	public static enum FactTrxLinesType
 	{
 		/** one debit line, one or more credit lines */
 		Debit,

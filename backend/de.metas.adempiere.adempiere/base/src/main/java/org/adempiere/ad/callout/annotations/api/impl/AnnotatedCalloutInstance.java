@@ -160,7 +160,7 @@ public final class AnnotatedCalloutInstance implements ICalloutInstance
 		}
 		catch (final Exception e)
 		{
-			throw CalloutExecutionException.wrapIfNeeded(e)
+			throw CalloutExecutionException.of(e)
 					.setCalloutExecutor(executor)
 					.setCalloutInstance(this)
 					.setField(field);

@@ -47,7 +47,6 @@ public class AddQtyToHURequest
 	ImmutableList<HuId> sourceHUIds;
 
 	boolean allowOverDelivery;
-	boolean isForbidAggCUsForDifferentOrders;
 
 	@Builder
 	private AddQtyToHURequest(
@@ -56,8 +55,7 @@ public class AddQtyToHURequest
 			@NonNull final PickingSlotId pickingSlotId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final ImmutableList<HuId> sourceHUIds,
-			final boolean allowOverDelivery,
-			final boolean isForbidAggCUsForDifferentOrders)
+			final boolean allowOverDelivery)
 	{
 		if (qtyToPack.signum() <= 0)
 		{
@@ -69,7 +67,6 @@ public class AddQtyToHURequest
 		this.pickingSlotId = pickingSlotId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.allowOverDelivery = allowOverDelivery;
-		this.isForbidAggCUsForDifferentOrders = isForbidAggCUsForDifferentOrders;
 		this.sourceHUIds = sourceHUIds;
 	}
 

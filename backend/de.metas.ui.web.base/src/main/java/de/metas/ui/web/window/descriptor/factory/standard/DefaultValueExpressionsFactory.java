@@ -1,17 +1,10 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import de.metas.document.sequence.DocSequenceId;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
-import de.metas.ui.web.window.descriptor.sql.DocSequenceAwareFieldStringExpression;
-import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -25,9 +18,16 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.Optional;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
+import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -128,8 +128,7 @@ public class DefaultValueExpressionsFactory
 			final DocumentFieldWidgetType widgetType,
 			final Class<?> fieldValueClass,
 			final boolean isMandatory,
-			final boolean allowUsingAutoSequence,
-			final DocSequenceId docSequenceId)
+			final boolean allowUsingAutoSequence)
 	{
 		final boolean isDetailTab = isDetailTab();
 
@@ -146,11 +145,7 @@ public class DefaultValueExpressionsFactory
 		// If there is no default value expression, use some defaults
 		if (Check.isEmpty(defaultValueStr))
 		{
-			if (docSequenceId != null && allowUsingAutoSequence)
-			{
-				return Optional.of(DocSequenceAwareFieldStringExpression.of(docSequenceId));
-			}
-			else if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
+			if (WindowConstants.FIELDNAME_AD_Client_ID.equals(columnName))
 			{
 				return DEFAULT_VALUE_AD_Client_ID;
 			}

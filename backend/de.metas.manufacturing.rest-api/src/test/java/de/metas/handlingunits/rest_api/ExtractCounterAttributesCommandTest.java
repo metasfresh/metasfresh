@@ -95,8 +95,6 @@ class ExtractCounterAttributesCommandTest
 			createAttribute("indexedAttribute4", AttributeValueType.STRING);
 			createAttribute("indexedAttribute5", AttributeValueType.STRING);
 			createAttribute("indexedAttribute6", AttributeValueType.STRING);
-			createAttribute("indexedAttribute7", AttributeValueType.STRING);
-			createAttribute("indexedAttribute8", AttributeValueType.STRING);
 		}
 
 		private void createAttribute(final String attributeCode, final AttributeValueType type)
@@ -120,14 +118,12 @@ class ExtractCounterAttributesCommandTest
 					.attributeValue(AttributeCode.ofString("indexedAttribute4"), "value4")
 					.attributeValue(AttributeCode.ofString("indexedAttribute5"), null)
 					.attributeValue(AttributeCode.ofString("indexedAttribute6"), null)
-					.attributeValue(AttributeCode.ofString("indexedAttribute7"), " ")
-					.attributeValue(AttributeCode.ofString("indexedAttribute8"), "-")
 					.build();
 
 			final List<CounterAttribute> counterAttributes = new ExtractCounterAttributesCommand(attributes).execute();
 			Assertions.assertThat(counterAttributes)
 					.containsExactly(
-							CounterAttribute.builder().attributeCode("indexedAttribute_count").counter(5).build()
+							CounterAttribute.builder().attributeCode("indexedAttribute_count").counter(4).build()
 					);
 		}
 	}

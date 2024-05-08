@@ -22,8 +22,6 @@
 
 package de.metas.rest_api.v1.product;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
@@ -34,16 +32,17 @@ import de.metas.rest_api.v1.product.response.JsonProduct;
 import de.metas.rest_api.v1.product.response.JsonProductBPartner;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -55,7 +54,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
@@ -64,12 +62,20 @@ public class ProductsRestControllerTest
 	private UomId kgUomId;
 	private JsonCreatedUpdatedInfo createdUpdatedInfo;
 
-	private Expect expect;
-
 	@BeforeAll
 	static void initStatic()
 	{
+		SnapshotMatcher.start(
+				AdempiereTestHelper.SNAPSHOT_CONFIG,
+				AdempiereTestHelper.createSnapshotJsonFunction());
+
 		LogManager.setLoggerLevel(ProductsRestController.class, Level.ALL);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -162,52 +168,52 @@ public class ProductsRestControllerTest
 		final JsonGetProductsResponse responseBody = response.getBody();
 		assertThat(responseBody)
 				.isEqualTo(JsonGetProductsResponse.builder()
-								   .product(JsonProduct.builder()
-													.id(productId1)
-													.productNo("value1")
-													.name("name1")
-													.description("description1")
-													.ean("ean1")
-													.uom("Ea")
-													.createdUpdatedInfo(createdUpdatedInfo)
-													.bpartner(JsonProductBPartner.builder()
-																	  .bpartnerId(BPartnerId.ofRepoId(1))
-																	  .productNo("productNo1-vendor1")
-																	  .productName("productName1-vendor1")
-																	  .productDescription("productDescription1-vendor1")
-																	  .productCategory("productCategory1-vendor1")
-																	  .ean("ean1-vendor1")
-																	  .vendor(true)
-																	  .currentVendor(true)
-																	  .customer(false)
-																	  .leadTimeInDays(13)
-																	  .build())
-													.bpartner(JsonProductBPartner.builder()
-																	  .bpartnerId(BPartnerId.ofRepoId(2))
-																	  .productNo("productNo1-customer2")
-																	  .productName("productName1-customer2")
-																	  .productDescription("productDescription1-customer2")
-																	  .productCategory("productCategory1-customer2")
-																	  .ean("ean1-customer2")
-																	  .vendor(false)
-																	  .currentVendor(false)
-																	  .customer(true)
-																	  .leadTimeInDays(32)
-																	  .build())
-													.build())
-								   .product(JsonProduct.builder()
-													.id(ProductId.ofRepoId(product2.getM_Product_ID()))
-													.productNo("value2")
-													.name("name2")
-													.description("description2")
-													.ean("ean2")
-													.uom("Kg")
-													.createdUpdatedInfo(createdUpdatedInfo)
-													.build())
-								   .build());
+						.product(JsonProduct.builder()
+								.id(productId1)
+								.productNo("value1")
+								.name("name1")
+								.description("description1")
+								.ean("ean1")
+								.uom("Ea")
+								.createdUpdatedInfo(createdUpdatedInfo)
+								.bpartner(JsonProductBPartner.builder()
+										.bpartnerId(BPartnerId.ofRepoId(1))
+										.productNo("productNo1-vendor1")
+										.productName("productName1-vendor1")
+										.productDescription("productDescription1-vendor1")
+										.productCategory("productCategory1-vendor1")
+										.ean("ean1-vendor1")
+										.vendor(true)
+										.currentVendor(true)
+										.customer(false)
+										.leadTimeInDays(13)
+										.build())
+								.bpartner(JsonProductBPartner.builder()
+										.bpartnerId(BPartnerId.ofRepoId(2))
+										.productNo("productNo1-customer2")
+										.productName("productName1-customer2")
+										.productDescription("productDescription1-customer2")
+										.productCategory("productCategory1-customer2")
+										.ean("ean1-customer2")
+										.vendor(false)
+										.currentVendor(false)
+										.customer(true)
+										.leadTimeInDays(32)
+										.build())
+								.build())
+						.product(JsonProduct.builder()
+								.id(ProductId.ofRepoId(product2.getM_Product_ID()))
+								.productNo("value2")
+								.name("name2")
+								.description("description2")
+								.ean("ean2")
+								.uom("Kg")
+								.createdUpdatedInfo(createdUpdatedInfo)
+								.build())
+						.build());
 
 		//
-		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
+		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)

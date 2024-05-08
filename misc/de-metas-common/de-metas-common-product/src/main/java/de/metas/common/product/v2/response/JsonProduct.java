@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -47,18 +47,20 @@ import java.util.List;
 @JsonDeserialize(builder = JsonProduct.JsonProductBuilder.class)
 public class JsonProduct
 {
-	@Schema(minLength = 1,
-			description = "This translates to `M_Product.M_Product_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `M_Product.M_Product_ID`.")
 	@NonNull
 	@JsonProperty("id")
 	JsonMetasfreshId id;
 
-	@Schema(description = "This translates to `M_Product.M_Product_Category_ID`.")
+	@ApiModelProperty("This translates to `M_Product.M_Product_Category_ID`.")
 	@NonNull
 	@JsonProperty("productCategoryId")
 	JsonMetasfreshId productCategoryId;
 
-	@Schema(description = "This translates to `M_Product.Value`.")
+	@ApiModelProperty("This translates to `M_Product.Value`.")
 	@NonNull
 	@JsonProperty("productNo")
 	String productNo;
@@ -71,55 +73,54 @@ public class JsonProduct
 	@JsonProperty("description")
 	String description;
 
-	@Schema(description = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
+	@ApiModelProperty(value = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
 	@Nullable
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("ean")
 	String ean;
 
-	@Schema(description = "This translates to `M_Product.ExternalId`.")
+	@ApiModelProperty("This translates to `M_Product.ExternalId`.")
 	@Nullable
 	@JsonInclude(Include.NON_EMPTY)
 	@JsonProperty("externalId")
 	String externalId;
 
-	@Schema(description = "This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
+	@ApiModelProperty("This is the `C_UOM.UOMSymbol` of the product's unit of measurement.")
 	@NonNull
 	@JsonProperty("uom")
 	String uom;
 
-	@Schema(description = "This translates to `M_Product.Manufacturer_ID`.")
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			dataType = "java.lang.Integer", //
+			value = "This translates to `M_Product.Manufacturer_ID`.")
 	@Nullable
 	@JsonProperty("manufacturerId")
 	JsonMetasfreshId manufacturerId;
 
-	@Schema(description = "This translates to `C_BPartner.Name` of the product's manufacturer.")
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			dataType = "java.lang.String", //
+			value = "This translates to `C_BPartner.Name` of the product's manufacturer.")
 	@Nullable
 	@JsonProperty("manufacturerName")
 	String manufacturerName;
 
-	@Schema(description = "This translates to `M_Product.ManufacturerArticleNumber`.")
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			dataType = "java.lang.String", //
+			value = "This translates to `M_Product.ManufacturerArticleNumber`.")
 	@Nullable
 	@JsonProperty("manufacturerNumber")
 	String manufacturerNumber;
 
-	@Schema(description = "This translates to `M_Product.DiscontinuedFrom`.")
+	@ApiModelProperty( //
+			dataType = "java.time.LocalDate", //
+			value = "This translates to `M_Product.DiscontinuedFrom`.")
 	@Nullable
 	@JsonProperty("discontinuedFrom")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate discontinuedFrom;
-
-	@Schema(description = "This translates to `M_Product.M_SectionCode_ID.Value`.")
-	@Nullable
-	@JsonInclude(Include.NON_NULL)
-	@JsonProperty("sectionCode")
-	String sectionCode;
-
-	@Schema(description = "This translates to `M_Product.SAP_ProductHierarchy`.")
-	@Nullable
-	@JsonInclude(Include.NON_NULL)
-	@JsonProperty("sapProductHierarchy")
-	String sapProductHierarchy;
 
 	@NonNull
 	@Singular

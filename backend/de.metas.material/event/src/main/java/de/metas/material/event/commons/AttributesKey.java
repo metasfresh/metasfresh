@@ -19,7 +19,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -115,7 +114,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public static AttributesKey ofParts(final AttributesKeyPart... partsArray)
 	{
-		if (partsArray == null || partsArray.length == 0)
+		if (partsArray == null | partsArray.length == 0)
 		{
 			return NONE;
 		}
@@ -127,7 +126,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 
 	public static AttributesKey ofParts(final Collection<AttributesKeyPart> parts)
 	{
-		if (parts == null || parts.isEmpty())
+		if (parts == null | parts.isEmpty())
 		{
 			return NONE;
 		}
@@ -232,19 +231,12 @@ public final class AttributesKey implements Comparable<AttributesKey>
 		return parts.containsAll(attributesKey.parts);
 	}
 
-	public AttributesKey getIntersection(@NonNull final AttributesKey attributesKey)
-	{
-		final HashSet<AttributesKeyPart> ownMutableParts = new HashSet<>(parts);
-		ownMutableParts.retainAll(attributesKey.parts);
-		return AttributesKey.ofParts(ownMutableParts);
-	}
-
 	/**
 	 * @return {@code true} if ad least one attributeValueId from the given {@code attributesKey} is included in this instance.
 	 */
 	public boolean intersects(@NonNull final AttributesKey attributesKey)
 	{
-		return parts.stream().anyMatch(attributesKey.parts::contains);
+		return parts.stream().anyMatch(part -> attributesKey.parts.contains(part));
 	}
 
 	public String getValueByAttributeId(@NonNull final AttributeId attributeId)

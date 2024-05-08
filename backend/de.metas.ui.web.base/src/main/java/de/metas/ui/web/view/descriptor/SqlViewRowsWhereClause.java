@@ -46,7 +46,6 @@ public class SqlViewRowsWhereClause
 
 	boolean noRecords;
 	@Nullable SqlAndParams rowsPresentInViewSelection;
-	boolean isRowsNotPresentInViewSelection;
 	@Nullable SqlAndParams rowsPresentInTable;
 	@Nullable SqlAndParams rowsMatchingFilter;
 
@@ -54,13 +53,11 @@ public class SqlViewRowsWhereClause
 	private SqlViewRowsWhereClause(
 			final boolean noRecords,
 			@Nullable final SqlAndParams rowsPresentInViewSelection,
-			final boolean isRowsNotPresentInViewSelection,
 			@Nullable final SqlAndParams rowsPresentInTable,
 			@Nullable final SqlAndParams rowsMatchingFilter)
 	{
 		this.noRecords = noRecords;
 		this.rowsPresentInViewSelection = SqlAndParams.emptyToNull(rowsPresentInViewSelection);
-		this.isRowsNotPresentInViewSelection = isRowsNotPresentInViewSelection;
 		this.rowsPresentInTable = SqlAndParams.emptyToNull(rowsPresentInTable);
 		this.rowsMatchingFilter = SqlAndParams.emptyToNull(rowsMatchingFilter);
 	}
@@ -78,21 +75,7 @@ public class SqlViewRowsWhereClause
 		}
 		else
 		{
-			SqlAndParams viewSelectionWhereClause;
-			if (rowsPresentInViewSelection == null || rowsPresentInViewSelection.isEmpty())
-			{
-				viewSelectionWhereClause = null;
-			}
-			else if (isRowsNotPresentInViewSelection)
-			{
-				viewSelectionWhereClause = rowsPresentInViewSelection.negate();
-			}
-			else
-			{
-				viewSelectionWhereClause = rowsPresentInViewSelection;
-			}
-
-			return SqlAndParams.andNullables(viewSelectionWhereClause, rowsPresentInTable, rowsMatchingFilter)
+			return SqlAndParams.andNullables(rowsPresentInViewSelection, rowsPresentInTable, rowsMatchingFilter)
 					.orElse(SQL_ALWAYS_FALSE);
 		}
 	}
@@ -106,13 +89,7 @@ public class SqlViewRowsWhereClause
 	{
 		final SqlAndParams sqlAndParams = toSqlAndParams();
 		return TypedSqlQueryFilter.of(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
-	}
 
-	public SqlViewRowsWhereClause withRowsNotPresentInViewSelection()
-	{
-		return !this.isRowsNotPresentInViewSelection
-				? toBuilder().isRowsNotPresentInViewSelection(true).build()
-				: this;
 	}
 
 	public SqlViewRowsWhereClause withRowsMatchingFilter(@Nullable final SqlAndParams rowsMatchingFilter)

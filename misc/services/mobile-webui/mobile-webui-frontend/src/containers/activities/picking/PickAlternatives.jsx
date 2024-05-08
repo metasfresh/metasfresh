@@ -3,16 +3,7 @@ import PropTypes from 'prop-types';
 
 import PickStepButton from './PickStepButton';
 
-const PickAlternatives = ({
-  applicationId,
-  wfProcessId,
-  activityId,
-  lineId,
-  stepId,
-  pickFromAlternatives,
-  uom,
-  disabled,
-}) => {
+const PickAlternatives = ({ applicationId, wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom }) => {
   return (
     <>
       {pickFromAlternatives &&
@@ -22,7 +13,6 @@ const PickAlternatives = ({
             return (
               <PickStepButton
                 key={pickFromAlternative.alternativeId}
-                disabled={disabled}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
@@ -48,7 +38,6 @@ PickAlternatives.propTypes = {
   stepId: PropTypes.string.isRequired,
   pickFromAlternatives: PropTypes.object.isRequired,
   uom: PropTypes.string.isRequired,
-  disabled: PropTypes.bool,
 };
 
 export default PickAlternatives;

@@ -27,15 +27,17 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.model.MQuery;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 
-@Getter //(AccessLevel.PACKAGE) visible for cucumber tests
+@Getter(AccessLevel.PACKAGE)
 public final class RelatedDocumentsCandidate
 {
 	private static final Logger logger = LogManager.getLogger(RelatedDocumentsCandidate.class);
@@ -47,7 +49,7 @@ public final class RelatedDocumentsCandidate
 	private final RelatedDocumentsTargetWindow targetWindow;
 	private final Priority priority;
 
-	private final RelatedDocumentsQuerySupplier querySupplier;
+	private final MQuery query;
 	private final RelatedDocumentsCountSupplier documentsCountSupplier;
 
 	@Builder
@@ -56,9 +58,9 @@ public final class RelatedDocumentsCandidate
 			@NonNull final String internalName,
 			@NonNull final RelatedDocumentsTargetWindow targetWindow,
 			@NonNull final Priority priority,
+			@NonNull final MQuery query,
 			@NonNull final ITranslatableString windowCaption,
 			@Nullable final ITranslatableString filterByFieldCaption,
-			@NonNull final RelatedDocumentsQuerySupplier querySupplier,
 			@NonNull final RelatedDocumentsCountSupplier documentsCountSupplier)
 	{
 		Check.assumeNotEmpty(internalName, "internalName is not empty");
@@ -71,7 +73,7 @@ public final class RelatedDocumentsCandidate
 		this.windowCaption = windowCaption;
 		this.filterByFieldCaption = filterByFieldCaption;
 
-		this.querySupplier = querySupplier;
+		this.query = query;
 		this.documentsCountSupplier = documentsCountSupplier;
 	}
 

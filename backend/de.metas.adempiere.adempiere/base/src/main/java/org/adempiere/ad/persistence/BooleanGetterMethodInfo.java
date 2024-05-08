@@ -26,10 +26,11 @@ import java.lang.reflect.Method;
 
 /**
  * Boolean getter handler
- * <p>
+ *
  * e.g. org.compiere.model.I_C_Invoice.isProcessed()
  *
  * @author tsa
+ *
  */
 /* package */class BooleanGetterMethodInfo extends AbstractModelMethodInfo
 {
@@ -45,7 +46,7 @@ import java.lang.reflect.Method;
 	}
 
 	@Override
-	public Object invoke(final IModelInternalAccessor model, final Object[] methodArgs) throws Exception
+	public Object invoke(final IModelInternalAccessor model, final Object[] methodArgs_IGNORED) throws Exception
 	{
 		// TODO: optimization: cache matched PropertyName and ColumnIndex
 
@@ -70,14 +71,8 @@ import java.lang.reflect.Method;
 			return model.getValue(propertyNameToUse, ii, returnType);
 		}
 
-		final Method interfaceMethod = getInterfaceMethod();
-		if (interfaceMethod.isDefault())
-		{
-			return model.invokeParent(interfaceMethod, methodArgs);
-		}
-
 		//
-		throw new IllegalArgumentException("Method " + interfaceMethod + " is not supported on model " + model);
+		throw new IllegalArgumentException("Method " + getInterfaceMethod() + " is not supported on model " + model);
 	}
 
 }

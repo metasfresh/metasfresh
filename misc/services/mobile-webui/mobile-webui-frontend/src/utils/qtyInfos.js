@@ -1,6 +1,6 @@
 export const qtyInfos = {
-  of: ({ qty, qtyStr, notValidMessage }) => ({
-    qtyStr: qtyStr,
+  of: ({ qty, notValidMessage }) => ({
+    qtyStr: qty != null ? `${qty}` : null,
     qty: qty != null ? parseFloat(qty) : null,
     isQtyValid: !notValidMessage,
     notValidMessage,
@@ -29,7 +29,7 @@ export const qtyInfos = {
     // QtyInfo data structure
     else if (typeof qtyObj === 'object') {
       const qtyInfo = qtyObj;
-      return qtyInfo.qtyStr ?? `${qtyInfo.qty}`;
+      return qtyInfo.qty ?? qtyInfo.qtyStr;
     }
     // Case: possible string
     else if (!Array.isArray(qtyObj)) {

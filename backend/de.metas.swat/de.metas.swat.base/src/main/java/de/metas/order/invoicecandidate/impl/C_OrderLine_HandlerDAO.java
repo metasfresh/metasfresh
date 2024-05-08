@@ -23,7 +23,6 @@ package de.metas.order.invoicecandidate.impl;
  */
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
@@ -86,14 +85,13 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			docTypeFilter.setJoinOr();
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterSO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
-			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, DocBaseType.SalesOrder);
+			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_SalesOrder);
 			docTypeFilterSO.addFilter(NotQueryFilter.of(new InArrayQueryFilter<>(I_C_DocType.COLUMNNAME_DocSubType,
 																				 X_C_DocType.DOCSUBTYPE_Proposal,
 																				 X_C_DocType.DOCSUBTYPE_Quotation,
 																				 X_C_DocType.DOCSUBTYPE_POSOrder,
 																				 X_C_DocType.DOCSUBTYPE_FrameAgrement,
-																				 X_C_DocType.DOCSUBTYPE_CostEstimate,
-																				 X_C_DocType.DOCSUBTYPE_ProFormaSO)));
+																				 X_C_DocType.DOCSUBTYPE_CostEstimate)));
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);

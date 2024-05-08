@@ -5,7 +5,7 @@
  * <li>{@link de.metas.event.Topic#builder()}, 
  * <li>{@link de.metas.event.IEventBusFactory#getEventBus(Topic)},
  * <li>{@link de.metas.event.Event#builder()} and
- * <li>{@link de.metas.event.IEventBus#processEvent(Event)}.
+ * <li>{@link de.metas.event.IEventBus#postEvent(Event)}.
  * </ul>
  * <p>Also see:
  * <ul>

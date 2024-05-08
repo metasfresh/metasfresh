@@ -1,8 +1,6 @@
 package de.metas.websocket.producers;
 
-import de.metas.websocket.WebsocketHeaders;
 import de.metas.websocket.WebsocketSubscriptionId;
-import de.metas.websocket.sender.WebsocketSender;
 import lombok.NonNull;
 
 import java.util.List;
@@ -38,27 +36,14 @@ import java.util.List;
  */
 public interface WebSocketProducer
 {
-	default void setWebsocketSender(@SuppressWarnings("unused") final WebsocketSender websocketSender) {}
+	/**
+	 * Produce a new event.
+	 *
+	 * @return events list (JSON friendly)
+	 */
+	List<?> produceEvents();
 
-	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId) {}
-
-	default void onStart() {}
-
-	default void onStop() {}
-
-
-	interface ProduceEventsOnPollSupport
+	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId)
 	{
-		/**
-		 * Produce a new event.
-		 *
-		 * @return events list (JSON friendly)
-		 */
-		List<?> produceEvents();
-	}
-
-	default void onNewSubscription(@NonNull final WebsocketSubscriptionId subscriptionId, @NonNull final WebsocketHeaders headers)
-	{
-		onNewSubscription(subscriptionId);
 	}
 }

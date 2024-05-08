@@ -42,7 +42,7 @@ import java.time.ZonedDateTime;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Matchers.any;
 
 public class AttachmentListenerServiceTest
 {

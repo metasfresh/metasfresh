@@ -57,17 +57,9 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		try
 		{
 			final File outputFile = concatenateFiles(workpackage);
-			if (workpackage.getC_Async_Batch_ID() > 0)
-			{
-				attachmentEntryService.createNewAttachment(workpackage.getC_Async_Batch(), outputFile);
-			}
-			else
-			{
-				Loggables.withLogger(logger, Level.WARN).addLog("C_Queue_WorkPackage_ID={} has no C_Async_Batch; -> attaching the file to the workpackage instead of any C_Async_Batch", workpackage.getC_Queue_WorkPackage_ID());
-				attachmentEntryService.createNewAttachment(workpackage, outputFile);
-			}
+			attachmentEntryService.createNewAttachment(workpackage.getC_Async_Batch(), outputFile);
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			logger.warn("Failed concatenating files", ex);
 			Loggables.withLogger(logger, Level.ERROR).addLog(ex.getLocalizedMessage());
@@ -81,8 +73,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		final File file = createNewTemporaryPDFFile(workpackage);
 		final Document document = new Document();
 		final FileOutputStream fos = new FileOutputStream(file, false);
-
-		// don't create FileOutputStream in try-catch; will cause the an exception becuase will be closed too early
+		
 		try
 		{
 			final PdfCopy copy = new PdfCopy(document, fos);
@@ -108,6 +99,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 					printingQueueBL.setProcessedAndSave(pq);
 				}
 			}
+
 		}
 		finally
 		{
@@ -128,7 +120,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		{
 			return File.createTempFile(fileName, ".pdf");
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			throw new AdempiereException("Failed to create temporary file with prefix: " + fileName, ex);
 		}
@@ -146,7 +138,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		{
 			return new PdfReader(data);
 		}
-		catch (final IOException e)
+		catch (IOException e)
 		{
 			throw new AdempiereException("Failed to create PDF reader from archive=" + archive + ", printing queue=" + pq, e);
 		}
@@ -161,7 +153,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 				pdf.addPage(pdf.getImportedPage(from, ++page));
 			}
 		}
-		catch (final IOException | BadPdfFormatException e)
+		catch (IOException | BadPdfFormatException e)
 		{
 			throw new AdempiereException("Failed appending to pdf=" + pdf + " from " + from, e);
 		}

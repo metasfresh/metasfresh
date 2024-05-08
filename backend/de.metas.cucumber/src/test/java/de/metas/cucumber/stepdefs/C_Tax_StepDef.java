@@ -46,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_Tax_StepDef
@@ -74,26 +72,6 @@ public class C_Tax_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createC_Tax(tableRow);
-		}
-	}
-
-	@And("load C_Tax:")
-	public void load_C_Tax(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			loadTax(row);
-		}
-	}
-
-	@And("update C_Tax:")
-	public void update_C_Tax(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			updateTax(row);
 		}
 	}
 
@@ -144,41 +122,9 @@ public class C_Tax_StepDef
 			taxRecord.setAD_Org_ID(org.getAD_Org_ID());
 		}
 
-		saveRecord(taxRecord);
+		InterfaceWrapperHelper.saveRecord(taxRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_Tax.Table_Name);
 		taxTable.putOrReplace(recordIdentifier, taxRecord);
-	}
-
-	private void loadTax(@NonNull final Map<String, String> tableRow)
-	{
-		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Tax.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_C_Tax_ID);
-
-		if (id != null)
-		{
-			final I_C_Tax taxRecord = InterfaceWrapperHelper.load(id, I_C_Tax.class);
-
-			taxTable.putOrReplace(identifier, taxRecord);
-		}
-	}
-
-	private void updateTax(@NonNull final Map<String, String> tableRow)
-	{
-		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Tax.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Tax taxRecord = taxTable.get(identifier);
-		assertThat(taxRecord).isNotNull();
-
-		final String seqNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_SeqNo);
-
-		if (Check.isNotBlank(seqNo))
-		{
-			taxRecord.setSeqNo(Integer.parseInt(seqNo));
-		}
-
-		saveRecord(taxRecord);
-
-		taxTable.putOrReplace(identifier, taxRecord);
 	}
 }

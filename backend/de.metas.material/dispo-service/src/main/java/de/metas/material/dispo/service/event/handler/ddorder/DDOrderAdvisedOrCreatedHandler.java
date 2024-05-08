@@ -17,7 +17,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
@@ -33,7 +32,6 @@ import org.adempiere.warehouse.WarehouseId;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 /*
  * #%L
@@ -162,9 +160,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 
 		final DistributionDetail distributionDetail = createCandidateDetailFromDDOrderAndLine(ddOrder, ddOrderLine);
 
-		final SupplyRequiredDescriptor supplyRequiredDescriptor = ddOrderEvent.getSupplyRequiredDescriptor();
-		final String lotForLot = supplyRequiredDescriptor == null ? "" : supplyRequiredDescriptor.getIsLotForLot();
-
 		// create or update the supply candidate
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
@@ -174,7 +169,6 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
 				.simulated(ddOrder.isSimulated())
-				.lotForLot(lotForLot)
 				.build();
 
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
@@ -197,10 +191,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(Optional.ofNullable(demanddetail).map(detail -> detail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId())).orElse(null))
+				.additionalDemandDetail(demanddetail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId()))
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.simulated(ddOrder.isSimulated())
-				.lotForLot(lotForLot)
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event

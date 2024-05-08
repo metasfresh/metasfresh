@@ -22,23 +22,22 @@ package de.metas.data.export.api.impl;
  * #L%
  */
 
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.data.export.api.IExportDataSource;
-import de.metas.data.export.api.IExporter;
-import de.metas.data.export.api.IExporterMonitor;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.data.export.api.IExportDataSource;
+import de.metas.data.export.api.IExporter;
+import de.metas.data.export.api.IExporterMonitor;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 /**
  * Abstract implementation of {@link IExporter} which take care about statistic information and status.
@@ -58,13 +57,12 @@ public abstract class AbstractExporter implements IExporter
 
 	private final AtomicInteger exportedRowCount = new AtomicInteger(0);
 	private ExportStatus exportStatus = ExportStatus.NotStarted;
-	
-	@Nullable
 	private Throwable error = null;
 
 	@Override
-	public void setDataSource(@NonNull final IExportDataSource dataSource)
+	public void setDataSource(IExportDataSource dataSource)
 	{
+		Check.assumeNotNull(dataSource, "dataSource not null");
 		this.dataSource = dataSource;
 	}
 
@@ -121,8 +119,10 @@ public abstract class AbstractExporter implements IExporter
 	}
 
 	@Override
-	public final void export(@NonNull final OutputStream out)
+	public final void export(final OutputStream out)
 	{
+		Check.assumeNotNull(out, "out is not null");
+
 		final IExportDataSource dataSource = getDataSource();
 		Check.assumeNotNull(dataSource, "dataSource not null");
 

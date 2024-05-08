@@ -1,6 +1,18 @@
 package de.metas.ui.web.process.view;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstanceParameter;
@@ -16,23 +28,15 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.List;
 
 /*
  * #%L
@@ -172,7 +176,11 @@ import java.util.List;
 		// Validate parameters, if any
 		if (parametersDocument != null)
 		{
-			parametersDocument.checkAndGetValidStatus().throwIfInvalid();
+			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus();
+			if (!validStatus.isValid())
+			{
+				throw new AdempiereException(validStatus.getReason());
+			}
 		}
 
 		//

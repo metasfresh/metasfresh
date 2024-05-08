@@ -170,7 +170,7 @@ import javax.annotation.Nullable;
 	{
 		if (constantValue == null)
 		{
-			throw ExpressionEvaluationException.newWithTranslatableMessage("Not a constant expression: " + this);
+			throw new ExpressionEvaluationException("Not a constant expression: " + this);
 		}
 		return constantValue;
 	}

@@ -163,7 +163,7 @@ public class RESTUtil
 
 				try
 				{
-					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8), JsonApiResponse.class);
+					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
 
 					final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
 
@@ -179,20 +179,20 @@ public class RESTUtil
 				}
 				catch (final JsonParseException jsonParseException)
 				{
-					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8));
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 				}
 			}
 			else
 			{
-				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8));
+				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 			}
 
 			assertThat(response.getStatusLine().getStatusCode())
-				.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
-															CoalesceUtil.coalesce(statusCode, 200),
-															response.getStatusLine().getStatusCode(),
-															apiResponseBuilder.build().getContent()))
-				.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+					.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+																CoalesceUtil.coalesce(statusCode, 200),
+																response.getStatusLine().getStatusCode(),
+																apiResponseBuilder.build().getContent()))
+					.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 			return apiResponseBuilder.build();
 		}

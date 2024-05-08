@@ -24,28 +24,20 @@ package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
-import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobService;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.v2.bpartner.JsonGreetingService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.sectionCode.SectionCodeService;
 import de.metas.title.TitleRepository;
-import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class JsonServiceFactory
 {
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -55,14 +47,32 @@ public class JsonServiceFactory
 	private final GreetingRepository greetingRepository;
 	private final TitleRepository titleRepository;
 	private final CurrencyRepository currencyRepository;
-	private final JobService jobService;
+	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
-	private final SectionCodeService sectionCodeService;
-	private final IncotermsRepository incotermsRepository;
-	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
-	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
-	private final JsonGreetingService greetingService;
+
+	public JsonServiceFactory(
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
+			@NonNull final BPartnerQueryService bpartnerQueryService,
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
+			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final TitleRepository titleRepository,
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final JobRepository jobRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+	{
+		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
+		this.bpartnerQueryService = bpartnerQueryService;
+		this.greetingRepository = greetingRepository;
+		this.titleRepository = titleRepository;
+		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+		this.bpGroupRepository = bpGroupRepository;
+		this.currencyRepository = currencyRepository;
+		this.jobRepository = jobRepository;
+		this.externalReferenceService = externalReferenceService;
+		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+	}
 
 	public JsonPersisterService createPersister()
 	{
@@ -76,12 +86,7 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService,
-				sectionCodeService,
-				incotermsRepository,
-				bPartnerCreditLimitRepository,
-				greetingService,
-				identifier);
+				albertaBPartnerCompositeService, identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
@@ -98,9 +103,8 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				greetingRepository,
 				titleRepository,
-				jobService,
+				jobRepository,
 				externalReferenceService,
-				paymentTermRepository,
 				identifier);
 	}
 }

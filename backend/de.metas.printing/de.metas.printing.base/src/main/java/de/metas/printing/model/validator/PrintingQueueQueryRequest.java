@@ -36,6 +36,4 @@ class PrintingQueueQueryRequest
 	final String queryName;
 	@NonNull
 	final IQuery<I_C_Printing_Queue> query;
-	@NonNull
-	final String asyncBatchType;
 }

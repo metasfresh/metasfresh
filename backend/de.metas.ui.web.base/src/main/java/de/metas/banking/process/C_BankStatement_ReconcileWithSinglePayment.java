@@ -22,7 +22,15 @@
 
 package de.metas.banking.process;
 
+import java.util.Set;
+
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.payment.PaymentId;
 import de.metas.process.IProcessDefaultParameter;
@@ -35,18 +43,9 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-
-import java.util.Set;
 
 public class C_BankStatement_ReconcileWithSinglePayment extends BankStatementBasedProcess implements IProcessDefaultParametersProvider
 {
-	private final LookupDataSourceFactory lookupDataSourceFactory = SpringContextHolder.instance.getBean(LookupDataSourceFactory.class);
-
 	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
 	@Param(parameterName = PARAM_C_BPartner_ID, mandatory = true)
 	private BPartnerId bpartnerId;
@@ -93,7 +92,7 @@ public class C_BankStatement_ReconcileWithSinglePayment extends BankStatementBas
 				bpartnerId,
 				ImmutableSet.of(), // excludePaymentIds
 				limit);
-		return lookupDataSourceFactory.searchInTableLookup(I_C_Payment.Table_Name).findByIdsOrdered(paymentIds);
+		return LookupDataSourceFactory.instance.searchInTableLookup(I_C_Payment.Table_Name).findByIdsOrdered(paymentIds);
 	}
 
 	@Override

@@ -22,12 +22,12 @@ package de.metas.document.engine.impl;
  * #L%
  */
 
-import de.metas.document.engine.DocumentWrapper;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.lang.reflect.Method;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.adempiere.ad.modelvalidator.BeforeAfterType;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -37,10 +37,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Util.ArrayKey;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import de.metas.document.engine.DocumentWrapper;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Database decoupled implementation for {@link IDocumentBL}
@@ -63,13 +64,22 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		return isDocumentTableResponse;
 	}
 
-	@SuppressWarnings("SameParameterValue")
-	private static boolean hasMethod(Class<?> clazz, Class<?> returnType, String methodName, Class<?>... parameterTypes)
+	private static final boolean hasMethod(Class<?> clazz, Class<?> returnType, String methodName, Class<?>... parameterTypes)
 	{
 		try
 		{
 			final Method method = clazz.getMethod(methodName, parameterTypes);
-			return returnType.equals(method.getReturnType());
+			if (method == null)
+			{
+				return false;
+			}
+
+			if (!returnType.equals(method.getReturnType()))
+			{
+				return false;
+			}
+
+			return true;
 		}
 		catch (SecurityException e)
 		{
@@ -159,7 +169,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 			final boolean prepared = processIt0(document, IDocument.ACTION_Prepare);
 			if (!prepared)
 			{
-				return false;
+				return prepared;
 			}
 		}
 
@@ -194,6 +204,11 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	private final Map<ArrayKey, IProcessInterceptor> processInterceptors = new HashMap<>();
 
 	private IProcessInterceptor defaultProcessInterceptor = PROCESSINTERCEPTOR_CompleteDirectly;
+
+	public IProcessInterceptor getDefaultProcessInterceptor()
+	{
+		return defaultProcessInterceptor;
+	}
 
 	public void setDefaultProcessInterceptor(IProcessInterceptor defaultProcessInterceptor)
 	{
@@ -265,7 +280,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 	};
 
 	@Override
-	public InstantAndOrgId getDocumentDate(Properties ctx, int adTableID, int recordId)
+	public LocalDate getDocumentDate(Properties ctx, int adTableID, int recordId)
 	{
 		final Object model = POJOLookupMap.get().lookup(adTableID, recordId);
 		return getDocumentDate(model);
@@ -296,7 +311,8 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		// && hasMethod(interfaceClass, String.class, "getDocumentNo")
 		)
 		{
-			return POJOWrapper.create(documentObjToUse, IDocument.class);
+			final IDocument pojoWrapper = POJOWrapper.create(documentObjToUse, IDocument.class);
+			return pojoWrapper;
 		}
 		if (throwEx)
 		{

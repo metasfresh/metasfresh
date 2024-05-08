@@ -27,33 +27,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.ByteArrayInputStream;
 
 @Value
 public class AdArchive
 {
-	@NonNull ArchiveId id;
-	byte[] archiveData;
-	@NonNull String contentType;
+	private ArchiveId id;
+	private byte[] archiveData;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private AdArchive(
 			@JsonProperty("id") @NonNull final ArchiveId id,
-			@JsonProperty("archiveData") final byte[] archiveData,
-			@JsonProperty("contentType") @NonNull final String contentType)
+			@JsonProperty("archiveData") @NonNull final byte[] archiveData)
 	{
 		this.id = id;
 		this.archiveData = archiveData;
-		this.contentType = contentType;
 	}
 
 	public ByteArrayInputStream getArchiveStream()
 	{
 		return new ByteArrayInputStream(archiveData);
 	}
-
-	public ByteArrayResource getArchiveDataAsResource() {return new ByteArrayResource(archiveData);}
 }

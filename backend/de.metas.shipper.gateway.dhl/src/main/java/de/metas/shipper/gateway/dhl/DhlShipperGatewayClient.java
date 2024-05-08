@@ -23,88 +23,104 @@
 package de.metas.shipper.gateway.dhl;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
+import de.dhl.webservice.cisbase.AuthentificationType;
+import de.dhl.webservice.cisbase.CommunicationType;
+import de.dhl.webservice.cisbase.CountryType;
+import de.dhl.webservice.cisbase.NameType;
+import de.dhl.webservice.cisbase.NativeAddressType;
+import de.dhl.webservice.cisbase.ObjectFactory;
+import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
+import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
+import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
+import de.dhl.webservices.businesscustomershipping._3.CreationState;
+import de.dhl.webservices.businesscustomershipping._3.LabelData;
+import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
+import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
+import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
+import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
+import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
+import de.dhl.webservices.businesscustomershipping._3.ShipperType;
+import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.mpackage.PackageId;
-import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
-import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
-import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
-import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
-import de.metas.shipper.gateway.dhl.json.JsonDhlAmount;
-import de.metas.shipper.gateway.dhl.json.JsonDhlCustomsDeclaration;
-import de.metas.shipper.gateway.dhl.json.JsonDhlDimension;
-import de.metas.shipper.gateway.dhl.json.JsonDhlItemResponse;
-import de.metas.shipper.gateway.dhl.json.JsonDhlPackageDetails;
-import de.metas.shipper.gateway.dhl.json.JsonDhlShipment;
-import de.metas.shipper.gateway.dhl.json.JsonDhlWeight;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
-import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
-import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
+import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.WebServiceMessage;
+import org.springframework.ws.client.core.WebServiceMessageCallback;
+import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.soap.SoapHeader;
+import org.springframework.ws.soap.SoapMessage;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
-import javax.annotation.Nullable;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
-
 	private final DhlDatabaseClientLogger databaseLogger;
+
+	private final Version API_VERSION;
 
 	private final DhlClientConfig config;
 
-	@VisibleForTesting
-	@Getter(value = AccessLevel.PACKAGE)
-	private final RestTemplate restTemplate;
+	private final WebServiceTemplate webServiceTemplate;
+
+	private final de.dhl.webservice.cisbase.ObjectFactory objectFactoryCis;
+	private final de.dhl.webservices.businesscustomershipping._3.ObjectFactory objectFactory;
 
 	@Builder
-	public DhlShipperGatewayClient(@NonNull final DhlClientConfig config, @NonNull final DhlDatabaseClientLogger databaseLogger, @NonNull final RestTemplate restTemplate)
+	public DhlShipperGatewayClient(@NonNull final DhlClientConfig config, @NonNull final DhlDatabaseClientLogger databaseLogger)
 	{
 		this.config = config;
 		this.databaseLogger = databaseLogger;
-		this.restTemplate = restTemplate;
 
+		objectFactoryCis = new de.dhl.webservice.cisbase.ObjectFactory();
+		objectFactory = new de.dhl.webservices.businesscustomershipping._3.ObjectFactory();
+
+		webServiceTemplate = createWebServiceTemplate();
+
+		// we're using DHL SOAP API V3
+		API_VERSION = objectFactory.createVersion();
+		API_VERSION.setMajorRelease("3");
+		API_VERSION.setMinorRelease("0");
 	}
 
 	@NonNull
@@ -127,27 +143,117 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final ILoggable epicLogger = getEpicLogger();
 
 		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
-		final JSONDhlCreateOrderRequest dhlOrderRequest = createNewDHLShipmentOrderRequest(deliveryOrder);
-		final JSONDhlCreateOrderResponse dhlResponse = callDhl(dhlOrderRequest, deliveryOrder.getId());
+		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, dhlResponse);
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId(), SupportedSoapAction.CREATE_SHIPMENT_ORDER);
+		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
+		{
+			final String exceptionMessage = response.getCreationState()
+					.stream()
+					.map(it -> it.getLabelData().getStatus().getStatusText() + " " +
+							Joiner.on("; ")
+									.skipNulls()
+									.join(it.getLabelData().getStatus().getStatusMessage())
+					)
+					.collect(Collectors.joining("; "));
+			throw new ShipperGatewayException(exceptionMessage);
+		}
+		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, response);
 
 		epicLogger.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
 
 		return completedDeliveryOrder;
 	}
 
+	/**
+	 * no idea what this does, but tobias sais it's useful to have this special log, so here it is!
+	 */
 	@NonNull
-	private JSONDhlCreateOrderResponse callDhl(@NonNull final JSONDhlCreateOrderRequest dhlOrderRequest, @Nullable final DeliveryOrderId id)
+	private ILoggable getEpicLogger()
+	{
+		return Loggables.withLogger(logger, Level.TRACE);
+	}
+
+	@NonNull
+	@Override
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	{
+		final ILoggable epicLogger = getEpicLogger();
+		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
+
+		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+
+		//noinspection ConstantConditions
+		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
+				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), String.valueOf(deliveryOrder.getId().getRepoId())))
+				.collect(ImmutableList.toImmutableList());
+
+		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
+
+		return packageLabels;
+	}
+
+	@NonNull
+	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, final String deliveryOrderIdAsString)
+	{
+		return PackageLabels.builder()
+				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
+				.defaultLabelType(DhlPackageLabelType.GUI)
+				.label(PackageLabel.builder()
+						.type(DhlPackageLabelType.GUI)
+						.labelData(labelData)
+						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.fileName(awb)
+						.build())
+				.build();
+	}
+
+	@NonNull
+	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final CreateShipmentOrderResponse response)
+	{
+		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+
+		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.builder();
+
+		for (final CreationState creationState : response.getCreationState())
+		{
+			final LabelData labelData = creationState.getLabelData();
+			final byte[] pdfData = Base64.getDecoder().decode(labelData.getLabelData());
+
+			final DhlCustomDeliveryDataDetail detail = initialCustomDeliveryData
+					.getDetailBySequenceNumber(DhlSequenceNumber.of(creationState.getSequenceNumber()))
+					.toBuilder()
+					.pdfLabelData(pdfData)
+					.awb(creationState.getShipmentNumber()) // i hope shipmentNumber is the AWB
+					.trackingUrl(config.getTrackingUrlBase() + creationState.getShipmentNumber())
+					.build();
+
+			updatedCustomDeliveryData.add(detail);
+		}
+
+		// imo this implementation is super ugly, but i have no idea how to make it better, and i've wasted enough time as it is.
+		return deliveryOrder
+				.toBuilder()
+				.customDeliveryData(
+						initialCustomDeliveryData
+								.toBuilder()
+								.clearDetails()
+								.details(updatedCustomDeliveryData.build())
+								.build())
+				.build();
+	}
+
+	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoIdForLogging, @NonNull final SupportedSoapAction soapAction)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
-				.requestElement(dhlOrderRequest)
-				.deliveryOrderId(id)
+				.marshaller(webServiceTemplate.getMarshaller())
+				.requestElement(request)
+				.deliveryOrderRepoId(deliveryOrderRepoIdForLogging.getRepoId())
 				.config(config);
 		try
 		{
-			final JSONDhlCreateOrderResponse response = callDhlWith(dhlOrderRequest);
+			final Object response = webServiceTemplate.marshalSendAndReceive(request, new SoapHeaderWithAuth(objectFactoryCis, config, soapAction));
 			databaseLogger.log(logEventBuilder
 					.responseElement(response)
 					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
@@ -167,238 +273,250 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private JSONDhlCreateOrderResponse callDhlWith(@NonNull final JSONDhlCreateOrderRequest dhlOrderRequest)
+	private CreateShipmentOrderRequest createDHLShipmentOrderRequest(
+			@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
-		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-		httpHeaders.set(DhlConstants.DHL_API_KEY_HTTP_HEADER, config.getApplicationToken());
+		final CreateShipmentOrderRequest createShipmentOrderRequest = objectFactory.createCreateShipmentOrderRequest();
+		createShipmentOrderRequest.setVersion(API_VERSION);
+		// (3.) base64 encoding for labels in response
+		createShipmentOrderRequest.setLabelResponseType("B64");
+		// (5.) GUI = sort of an "auto" label format
+		createShipmentOrderRequest.setLabelFormat(DhlPackageLabelType.GUI.name());
 
-		final HttpEntity<JSONDhlCreateOrderRequest> entity = new HttpEntity<>(dhlOrderRequest, httpHeaders);
+		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
+		{
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
+			{
+				// (2.2)  the shipment
+				final ShipmentOrderType.Shipment shipmentOrderTypeShipment = objectFactory.createShipmentOrderTypeShipment();
+
+				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
+
+				{
+					// (2.2.1) Shipment Details
+					final PickupDate pickupDate = deliveryOrder.getPickupDate();
+
+					final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
+					shipmentDetailsTypeType.setProduct(deliveryOrder.getShipperProduct().getCode());
+					shipmentDetailsTypeType.setAccountNumber(config.getAccountNumber());
+					//noinspection ConstantConditions
+					shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());
+					shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+					// (2.2.1.8)
+					final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+					final ShipmentItemType shipmentItemType = objectFactory.createShipmentItemType();
+					shipmentItemType.setHeightInCM(BigInteger.valueOf(packageDimensions.getHeightInCM()));
+					shipmentItemType.setLengthInCM(BigInteger.valueOf(packageDimensions.getLengthInCM()));
+					shipmentItemType.setWidthInCM(BigInteger.valueOf(packageDimensions.getWidthInCM()));
+					shipmentItemType.setWeightInKG(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+					shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
+					// (2.2.1.10)
+					final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();
+					//noinspection ConstantConditions
+					shipmentNotificationType.setRecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+					shipmentDetailsTypeType.setNotification(shipmentNotificationType);
+					shipmentOrderTypeShipment.setShipmentDetails(shipmentDetailsTypeType);
+				}
+
+				{
+					// (2.2.4) Receiver aka Delivery
+					final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+
+					final ReceiverType receiverType = objectFactory.createReceiverType();
+					receiverType.setName1(deliveryAddress.getCompanyName1());
+					// (2.2.4.2)
+					final ReceiverNativeAddressType receiverNativeAddressType = objectFactoryCis.createReceiverNativeAddressType();
+					receiverNativeAddressType.setName2(deliveryAddress.getCompanyName2());
+					receiverNativeAddressType.setStreetName(deliveryAddress.getStreet1());
+					receiverNativeAddressType.getAddressAddition().add(deliveryAddress.getStreet2());
+					receiverNativeAddressType.setStreetNumber(deliveryAddress.getHouseNo());
+					receiverNativeAddressType.setZip(deliveryAddress.getZipCode());
+					receiverNativeAddressType.setCity(deliveryAddress.getCity());
+					// (2.2.4.2.10)
+					final CountryType countryType = objectFactoryCis.createCountryType();
+					countryType.setCountryISOCode(deliveryAddress.getCountry().getAlpha2());
+					receiverNativeAddressType.setOrigin(countryType);
+					receiverType.setAddress(receiverNativeAddressType);
+					// (2.2.4.2)
+					final CommunicationType communicationType = objectFactoryCis.createCommunicationType();
+					//noinspection ConstantConditions
+					communicationType.setEmail(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+					//noinspection ConstantConditions
+					communicationType.setPhone(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
+					receiverType.setCommunication(communicationType);
+
+					shipmentOrderTypeShipment.setReceiver(receiverType);
+				}
+
+				{
+					// (2.2.2) Shipper aka Pickup
+					final Address pickupAddress = deliveryOrder.getPickupAddress();
+
+					final ShipperType shipperType = objectFactory.createShipperType();
+					// (2.2.2.1)
+					final NameType nameType = objectFactoryCis.createNameType();
+					nameType.setName1(pickupAddress.getCompanyName1());
+					nameType.setName2(pickupAddress.getCompanyName2());
+					shipperType.setName(nameType);
+					// (2.2.2.2)
+					final NativeAddressType nativeAddressType = objectFactoryCis.createNativeAddressType();
+					nativeAddressType.setStreetName(pickupAddress.getStreet1());
+					nativeAddressType.getAddressAddition().add(pickupAddress.getStreet2());
+					nativeAddressType.setStreetNumber(pickupAddress.getHouseNo());
+					nativeAddressType.setZip(pickupAddress.getZipCode());
+					nativeAddressType.setCity(pickupAddress.getCity());
+					// (2.2.2.2.8)
+					final CountryType countryType = objectFactoryCis.createCountryType();
+					countryType.setCountryISOCode(pickupAddress.getCountry().getAlpha2());
+					nativeAddressType.setOrigin(countryType);
+					shipperType.setAddress(nativeAddressType);
+
+					shipmentOrderTypeShipment.setShipper(shipperType);
+				}
+
+				//				{
+				//					// (2.2.6) Export Document - only for international shipments
+				//
+				//					//noinspection ConstantConditions
+				//					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+				//					final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				//
+				//					if (deliveryDetail.isInternationalDelivery())
+				//					{
+				//						final DhlCustomsDocument customsDocument = deliveryDetail.getCustomsDocument();
+				//						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
+				//						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
+				//						exportDocumentType.setExportType(customsDocument.getExportType());
+				//						exportDocumentType.setExportTypeDescription(customsDocument.getExportTypeDescription());
+				//						//			exportDocumentType.setTermsOfTrade("DDP"); // optional
+				//						exportDocumentType.setPlaceOfCommital(deliveryOrder.getDeliveryAddress().getCity());
+				//						exportDocumentType.setAdditionalFee(customsDocument.getAdditionalFee());
+				//						//			exportDocumentType.setPermitNumber("12345"); //  optional
+				//						//			exportDocumentType.setAttestationNumber("65421"); //  optional
+				//
+				//						// (2.2.6.9)
+				//						final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
+				//						serviceconfiguration.setActive(customsDocument.getElectronicExportNotification());
+				//						exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
+				//						// (2.2.6.10)
+				//						final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
+				//						docPosition.setDescription(customsDocument.getPackageDescription());
+				//						docPosition.setCountryCodeOrigin(deliveryOrder.getPickupAddress().getCountry().getAlpha2());
+				//						docPosition.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+				//						docPosition.setAmount(customsDocument.getCustomsAmount());
+				//						docPosition.setNetWeightInKG(customsDocument.getNetWeightInKg()); // must be less than the weight!!
+				//						docPosition.setCustomsValue(customsDocument.getCustomsValue());
+				//						exportDocumentType.getExportDocPosition().add(docPosition);
+				//
+				//						shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
+				//					}
+				//				}
+
+				// (2) create the needed shipment order type
+				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
+				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i).getRepoId());
+				shipmentOrderType.setSequenceNumber(deliveryDetail.getSequenceNumber().getSequenceNumber());
+				shipmentOrderType.setShipment(shipmentOrderTypeShipment);
+				createShipmentOrderRequest.getShipmentOrder().add(shipmentOrderType);
+			}
+		}
+
+		return createShipmentOrderRequest;
+	}
+
+	@NonNull
+	private WebServiceTemplate createWebServiceTemplate()
+	{
+		// cig authentication (basic http authentication) required @ each request: https://entwickler.dhl.de/en/group/ep/authentifizierung
+		final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(config.getApplicationID(), config.getApplicationToken());
+
+		final HttpComponentsMessageSender messageSender = new HttpComponentsMessageSender();
+		messageSender.setCredentials(credentials);
 		try
 		{
-			final ResponseEntity<JSONDhlCreateOrderResponse> result = restTemplate.postForEntity("/parcel/de/shipping/v2/orders", entity, JSONDhlCreateOrderResponse.class);
-			if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null)
+			messageSender.afterPropertiesSet(); // to make sure credentials are set to HttpClient
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+
+		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+		marshaller.setPackagesToScan(
+				de.dhl.webservice.cisbase.ObjectFactory.class.getPackage().getName(),
+				de.dhl.webservices.businesscustomershipping._3.ObjectFactory.class.getPackage().getName()
+		);
+
+		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
+		webServiceTemplate.setDefaultUri(config.getBaseUrl());
+		webServiceTemplate.setMessageSender(messageSender);
+		webServiceTemplate.setMarshaller(marshaller);
+		webServiceTemplate.setUnmarshaller(marshaller);
+		return webServiceTemplate;
+	}
+
+	private static class SoapHeaderWithAuth implements WebServiceMessageCallback
+	{
+
+		private final ObjectFactory objectFactoryCis;
+		private final DhlClientConfig config;
+		private final SupportedSoapAction soapAction;
+
+		private SoapHeaderWithAuth(final ObjectFactory objectFactoryCis, final DhlClientConfig config, final SupportedSoapAction soapAction)
+		{
+			this.objectFactoryCis = objectFactoryCis;
+			this.config = config;
+			this.soapAction = soapAction;
+		}
+
+		// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
+		// 		for the SoapHeader reference
+		@Override
+		public void doWithMessage(final WebServiceMessage message)
+		{
+			try
 			{
-				throw createShipperException(dhlOrderRequest, result.getStatusCode(), String.valueOf(result.getBody()));
+				// service authentication
+				final AuthentificationType authentificationType = objectFactoryCis.createAuthentificationType();
+				authentificationType.setUser(config.getUsername());
+				authentificationType.setSignature(config.getSignature());
+				final JAXBElement<AuthentificationType> authentification = objectFactoryCis.createAuthentification(authentificationType);
+
+				// add the authentication to header
+				final SoapMessage soapMessage = (SoapMessage)message;
+				final SoapHeader header = soapMessage.getSoapHeader();
+
+				soapMessage.setSoapAction(soapAction.getValue());
+
+				final JAXBContext context = JAXBContext.newInstance(AuthentificationType.class);
+				final Marshaller marshaller = context.createMarshaller();
+				marshaller.marshal(authentification, header.getResult());
+
 			}
-			return result.getBody();
+			catch (final JAXBException e)
+			{
+				throw new AdempiereException("Error while setting soap header");
+			}
 		}
-		catch (final HttpClientErrorException e)
+	}
+
+	public enum SupportedSoapAction
+	{
+		CREATE_SHIPMENT_ORDER("urn:createShipmentOrder");
+
+		private final String value;
+
+		SupportedSoapAction(final String value)
 		{
-			final HttpStatus statusCode = e.getStatusCode();
-			final String responseBodyAsString = e.getResponseBodyAsString();
-			throw createShipperException(dhlOrderRequest, statusCode, responseBodyAsString);
+			this.value = value;
 		}
-	}
 
-	private AdempiereException createShipperException(final @NonNull JSONDhlCreateOrderRequest dhlOrderRequest, @NonNull final HttpStatus statusCode, @NonNull final String responseBodyAsString)
-	{
-		final ShipperGatewayException shipperGatewayException = //
-				new ShipperGatewayException("HttpClientErrorException with statusCode=" + statusCode);
-
-		return AdempiereException.wrapIfNeeded(shipperGatewayException)
-				.appendParametersToMessage()
-				.setParameter("responseBodyAsString", responseBodyAsString)
-				.setParameter("routingRequest", dhlOrderRequest);
-	}
-
-	private JSONDhlCreateOrderRequest createNewDHLShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		final JSONDhlCreateOrderRequest.JSONDhlCreateOrderRequestBuilder orderRequestBuilder = JSONDhlCreateOrderRequest.builder()
-				//I can't tell if this is variable in any way, but on the sandbox environment this is the only profile I was able to use
-				.profile(DhlConstants.STANDARD_GRUPPENPROFIL);
-		final ImmutableList.Builder<JsonDhlShipment> shipments = ImmutableList.builder();
-		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+		public String getValue()
 		{
-			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
-					.billingNumber(config.getAccountNumber())
-					// .refNo(deliveryOrder.getCustomerReference()) // not setting this because DHL expects a length between 5 and 30 and because we do not populate it from anywhere
-					.product(deliveryOrder.getShipperProduct().getCode())
-					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
-					.shipper(getJsonDhlAddress(deliveryOrder.getPickupAddress(), null))
-					.consignee(getJsonDhlAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
-					.details(getJsonDhlDetails(deliveryOrderLine))
-					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
-
-			shipments.add(shipmentBuilder.build());
-
+			return value;
 		}
-		orderRequestBuilder.shipments(shipments.build());
-
-		return orderRequestBuilder.build();
 	}
 
-	@Nullable
-	private JsonDhlCustomsDeclaration getJsonCustomsDeclaration(@Nullable final CustomDeliveryData customDeliveryData, final @NonNull PackageId packageId)
-	{
-		if (customDeliveryData == null)
-		{
-			return null;
-		}
-		final DhlCustomsDocument customsDocument = getDhlCustomsDocument(customDeliveryData, packageId);
-		if (customsDocument == null)
-		{
-			return null;
-		}
-		return JsonDhlCustomsDeclaration.builder()
-				.shipperCustomsRef(customsDocument.getShipperEORI())
-				.consigneeCustomsRef(customsDocument.getConsigneeEORI())
-				.postalCharges(JsonDhlAmount.builder()
-						.amount(Amount.of(0, CurrencyCode.EUR))
-						.build())
-				.items(customsDocument.getItems()
-						.stream()
-						.map(this::toJsonDHLItem)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
-	}
-
-	@Nullable
-	private static DhlCustomsDocument getDhlCustomsDocument(final @NonNull CustomDeliveryData customDeliveryData, final @NonNull PackageId packageId)
-	{
-		final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(customDeliveryData);
-		final DhlCustomDeliveryDataDetail dhlCustomDeliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageId);
-		final DhlCustomsDocument customsDocument = dhlCustomDeliveryDataDetail.getCustomsDocument();
-		if (dhlCustomDeliveryDataDetail.isInternationalDelivery() && customsDocument == null)
-		{
-			throw new AdempiereException("Customs document needs to be provided for international shipments!");
-		}
-		return customsDocument;
-	}
-
-	private JsonDHLItem toJsonDHLItem(@NonNull final DhlCustomsItem dhlCustomsItem)
-	{
-		return JsonDHLItem.builder()
-				.itemDescription(dhlCustomsItem.getItemDescription())
-				.packagedQuantity(dhlCustomsItem.getPackagedQuantity())
-				.itemWeight(JsonDhlWeight._inKg()
-						.qtyInKg(dhlCustomsItem.getWeightInKg())
-						.weightInKg())
-				.itemValue(JsonDhlAmount.builder()
-						.amount(dhlCustomsItem.getItemValue())
-						.build())
-				.build();
-	}
-
-	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderLine deliveryOrderLine)
-	{
-		final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
-		return JsonDhlPackageDetails.builder()
-				.weight(JsonDhlWeight._inKg()
-						.qtyInKg(deliveryOrderLine.getGrossWeightKg())
-						.weightInKg())
-				.dim(JsonDhlDimension._inCM()
-						.heightInCM(BigDecimal.valueOf(packageDimensions.getHeightInCM()))
-						.widthInCM(BigDecimal.valueOf(packageDimensions.getWidthInCM()))
-						.lengthInCM(BigDecimal.valueOf(packageDimensions.getLengthInCM()))
-						.weightInCM())
-				.build();
-	}
-
-	private JsonDhlAddress getJsonDhlAddress(final @NonNull Address address, @Nullable final ContactPerson deliveryContact)
-	{
-		final JsonDhlAddress.JsonDhlAddressBuilder addressBuilder = JsonDhlAddress.builder()
-				.name1(address.getCompanyName1())
-				.name2(address.getCompanyName2())
-				.addressStreet(address.getStreet1())
-				.addressHouse(address.getHouseNo())
-				.additionalAddressInformation1(address.getStreet2())
-				.postalCode(address.getZipCode())
-				.city(address.getCity())
-				.country(address.getCountry().getAlpha3());
-		if (deliveryContact != null)
-		{
-			addressBuilder.email(deliveryContact.getEmailAddress())
-					.phone(deliveryContact.getPhoneAsStringOrNull())
-			;
-		}
-		return addressBuilder
-				.build();
-	}
-
-	/**
-	 * no idea what this does, but tobias sais it's useful to have this special log, so here it is!
-	 */
-	@NonNull
-	private ILoggable getEpicLogger()
-	{
-		return Loggables.withLogger(logger, Level.TRACE);
-	}
-
-	@NonNull
-	@Override
-	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		final ILoggable epicLogger = getEpicLogger();
-		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
-
-		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(Objects.requireNonNull(deliveryOrder.getCustomDeliveryData()));
-
-		//noinspection ConstantConditions
-		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
-				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), String.valueOf(deliveryOrder.getId().getRepoId())))
-				.collect(ImmutableList.toImmutableList());
-
-		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
-
-		return packageLabels;
-	}
-
-	@NonNull
-	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final String deliveryOrderIdAsString)
-	{
-		return PackageLabels.builder()
-				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
-				.defaultLabelType(DhlPackageLabelType.GUI)
-				.label(PackageLabel.builder()
-						.type(DhlPackageLabelType.GUI)
-						.labelData(labelData)
-						.contentType(PackageLabel.CONTENTTYPE_PDF)
-						.fileName(awb)
-						.build())
-				.build();
-	}
-
-	@NonNull
-	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final JSONDhlCreateOrderResponse response)
-	{
-		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-
-		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.builder();
-		final int deliveryOrderLineCount = deliveryOrder.getDeliveryOrderLines().size();
-		final int responseItemsCount = response.getItems().size();
-		if (deliveryOrderLineCount != responseItemsCount)
-		{
-			//the new API no longer allows for reliable mapping between order lines and generated shipments.
-			//maybe match through order references?
-			final String awbs = response.getItems().stream()
-					.map(JsonDhlItemResponse::getShipmentNo)
-					.collect(Collectors.joining(", "));
-			getEpicLogger().addLog("Sent {} orders to DHL, but got {} labels for them. Unclear how to perform matching of following AWBs: {}", deliveryOrderLineCount, responseItemsCount, awbs);
-			throw new ShipperGatewayException(String.format("Sent %d orders to DHL, but got %d labels for them. Unclear how to perform matching of following AWBs: %s", deliveryOrderLineCount, responseItemsCount, awbs));
-		}
-
-		for (int i = 0; i < deliveryOrderLineCount; i++)
-		{
-			final JsonDhlItemResponse creationState = response.getItems().get(i);
-
-			final byte[] pdfData = Base64.getDecoder().decode(creationState.getLabel().b64());
-
-			final DhlCustomDeliveryDataDetail detail = initialCustomDeliveryData
-					.getDetails()
-					.get(i)
-					.toBuilder()
-					.pdfLabelData(pdfData)
-					.awb(creationState.getShipmentNo())
-					.trackingUrl(config.getTrackingUrlBase() + creationState.getShipmentNo())
-					.build();
-
-			updatedCustomDeliveryData.add(detail);
-		}
-
-		return deliveryOrder.withCustomDeliveryData(initialCustomDeliveryData
-				.withDhlCustomDeliveryDataDetails(updatedCustomDeliveryData.build()));
-	}
 }

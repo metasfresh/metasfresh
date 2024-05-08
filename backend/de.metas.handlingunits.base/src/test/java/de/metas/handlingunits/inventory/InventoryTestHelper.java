@@ -1,9 +1,8 @@
 package de.metas.handlingunits.inventory;
 
-import de.metas.acct.GLCategoryId;
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -22,7 +21,6 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
 
 import static de.metas.handlingunits.HuPackingInstructionsVersionId.VIRTUAL;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -117,14 +115,11 @@ public class InventoryTestHelper
 
 	public static DocTypeId createDocType(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-				.ctx(Env.getCtx())
-				.name(docBaseAndSubType.toString())
-				.docBaseType(docBaseAndSubType.getDocBaseType())
-				.docSubType(docBaseAndSubType.getDocSubType())
-				.glCategoryId(GLCategoryId.ofRepoId(123))
-				.build());
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(docBaseAndSubType.getDocBaseType());
+		docType.setDocSubType(docBaseAndSubType.getDocSubType());
+		saveRecord(docType);
+		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}
 
 	public static void createStorageFor(final ProductId productId, final Quantity qtyCount, final HuId huId)

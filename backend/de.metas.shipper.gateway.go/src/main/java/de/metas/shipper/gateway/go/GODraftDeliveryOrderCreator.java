@@ -2,11 +2,9 @@ package de.metas.shipper.gateway.go;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.mpackage.PackageId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -111,7 +109,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE))
+						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
 						.content(request.getAllPackagesContentDescription())
 						.build())
 				// .customerReference(null)

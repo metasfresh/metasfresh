@@ -1,5 +1,15 @@
 package de.metas.banking.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -15,15 +25,6 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentReconcileRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 /*
  * #%L
@@ -87,6 +88,11 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		return bankStatementDAO.getLineReferences(bankStatementLineIds);
 	}
 
+	public I_C_BankStatementLine getBankStatementLineById(@NonNull final BankStatementLineId bankStatementLineId)
+	{
+		return bankStatementBL.getLineById(bankStatementLineId);
+	}
+
 	public void save(final I_C_BankStatementLine line)
 	{
 		bankStatementDAO.save(line);
@@ -116,9 +122,9 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		factAcctDAO.deleteForDocumentModel(bankStatement);
 	}
 
-	public void unreconcile(@NonNull final List<I_C_BankStatementLine> lines)
+	public void unlinkPaymentsAndDeleteReferences(final List<I_C_BankStatementLine> lines)
 	{
-		bankStatementBL.markAsNotReconciledAndDeleteReferences(lines);
+		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
 	}
 
 	public String getMsg(final AdMessageKey adMessage)

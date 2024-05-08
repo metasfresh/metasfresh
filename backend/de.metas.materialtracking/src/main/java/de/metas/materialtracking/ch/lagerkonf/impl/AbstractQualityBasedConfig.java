@@ -22,7 +22,17 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
-import de.metas.document.DocBaseType;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -34,17 +44,10 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceL
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 
 /**
  * Abstract implementation of {@link ILagerKonfQualityBasedConfig}.
+ *
  * It's main purpose is to contain some common methods and common settings.
  *
  * @author tsa
@@ -54,7 +57,8 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 {
 	/**
 	 * Sort the {@link IQualityInspectionLine} according to customer requirement
-	 * See <a href="https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit">...</a>.
+	 *
+	 * See https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit.
 	 */
 	// NOTE: public for testing
 	public static final List<QualityInspectionLineType> PP_Order_ReportLineTypes = Arrays.asList(
@@ -69,7 +73,8 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 
 	/**
 	 * Sort the {@link QualityInvoiceLineGroupType} according to customer requirement
-	 * See <a href="https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit">...</a>.
+	 *
+	 * See https://drive.google.com/file/d/0B-AaY-YNDnR5bndhaWZxbVp2N3M/edit.
 	 */
 	// NOTE: public for testing
 	public static final List<QualityInvoiceLineGroupType> QualityInvoiceLineGroupType_ForInvoicing = Arrays.asList(
@@ -160,7 +165,7 @@ public abstract class AbstractQualityBasedConfig implements ILagerKonfQualityBas
 
 		return Services.get(IDocTypeDAO.class).getDocTypeId(
 				DocTypeQuery.builder()
-						.docBaseType(DocBaseType.APInvoice)
+						.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
 						.docSubType(docSubType)
 						.adClientId(adClientId)
 						.adOrgId(adOrgId)

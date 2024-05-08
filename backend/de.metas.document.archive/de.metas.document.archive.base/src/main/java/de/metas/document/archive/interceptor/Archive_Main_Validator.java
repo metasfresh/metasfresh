@@ -22,8 +22,29 @@ package de.metas.document.archive.interceptor;
  * #L%
  */
 
+import java.util.List;
+import java.util.Properties;
+
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
+import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.model.Query;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import de.metas.cache.CacheMgt;
-import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
@@ -32,36 +53,16 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
-import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
-import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
 
 /**
  * Main de.metas.document.document-archive module's entry point
  *
  * @author tsa
+ *
  */
 public class Archive_Main_Validator implements ModelValidator
 {
-	private static final Logger logger = LogManager.getLogger(Archive_Main_Validator.class);
-	private final DocOutboundArchiveEventListener docOutboundArchiveEventListener = SpringContextHolder.instance.getBean(DocOutboundArchiveEventListener.class);
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
-	private final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private static final transient Logger logger = LogManager.getLogger(Archive_Main_Validator.class);
 
 	private int m_AD_Client_ID = -1;
 	private ModelValidationEngine engine;
@@ -81,6 +82,12 @@ public class Archive_Main_Validator implements ModelValidator
 		}
 		this.engine = engine;
 
+		//
+		// Services
+		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
+		final IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+		final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+
 		// Register RemoteArchiveStorage
 		archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, RemoteArchiveStorage.class);
 
@@ -90,13 +97,14 @@ public class Archive_Main_Validator implements ModelValidator
 			archiveStorageFactory.registerArchiveStorage(IArchiveStorageFactory.StorageType.Filesystem, AccessMode.CLIENT, FilesystemArchiveStorage.class);
 		}
 
+		final DocOutboundArchiveEventListener docOutboundArchiveEventListener = Adempiere.getBean(DocOutboundArchiveEventListener.class);
 		archiveEventManager.registerArchiveEventListener(docOutboundArchiveEventListener);
 
 		engine.addModelValidator(new C_Doc_Outbound_Config(this), client);
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new C_BPartner(), client);
 
-		registerExportPdfProcess();
+		registerArchiveAwareTables();
 
 		// task 09417: while we are at it, also make sure that config changes are propagated
 		final CacheMgt cacheMgt = CacheMgt.get();
@@ -110,7 +118,7 @@ public class Archive_Main_Validator implements ModelValidator
 	}
 
 	@Override
-	public String modelChange(final PO po, final int type)
+	public String modelChange(final PO po, final int type) throws Exception
 	{
 		// shall never reach this point
 		throw new IllegalStateException("Not supported: po=" + po + ", type=" + type);
@@ -124,6 +132,7 @@ public class Archive_Main_Validator implements ModelValidator
 	}
 
 	/**
+	 *
 	 * @return {@link ModelValidationEngine} which was used on registration
 	 */
 	public ModelValidationEngine getEngine()
@@ -131,37 +140,40 @@ public class Archive_Main_Validator implements ModelValidator
 		return engine;
 	}
 
-	private void registerExportPdfProcess()
+	private void registerArchiveAwareTables()
 	{
-		final AdProcessId exportPdfProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExportArchivePDF.class);
-		if (exportPdfProcessId == null)
+		final Properties ctx = Env.getCtx();
+		final List<I_AD_Column> archiveColumns = new Query(ctx, I_AD_Column.Table_Name, I_AD_Column.COLUMNNAME_ColumnName + "=?", ITrx.TRXNAME_None)
+				.setParameters(org.compiere.model.I_AD_Archive.COLUMNNAME_AD_Archive_ID)
+				.setOnlyActiveRecords(true)
+				.list(I_AD_Column.class);
+
+		if (archiveColumns.isEmpty())
 		{
-			final AdempiereException ex = new AdempiereException("No AD_Process_ID found for " + ExportArchivePDF.class);
-			logger.error(ex.getLocalizedMessage(), ex);
 			return;
 		}
 
 		//
-		// Register our export PDF process to AD_Archive itself
-		adProcessDAO.registerTableProcess(
-				adTableDAO.retrieveAdTableId(I_AD_Archive.Table_Name),
-				exportPdfProcessId);
+		// Services
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		//
-		// Register our export PDF process to tables which have columns referencing AD_Archive table
-		for (final MinimalColumnInfo column : adTableDAO.getMinimalColumnInfosByColumnName(I_AD_Archive.COLUMNNAME_AD_Archive_ID))
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExportArchivePDF.class);
+		if (processId == null)
 		{
-			// skip inactive columns
-			if (!column.isActive())
+			final AdempiereException ex = new AdempiereException("No AD_Process_ID found for " + ExportArchivePDF.class);
+			Archive_Main_Validator.logger.error(ex.getLocalizedMessage(), ex);
+			return;
+		}
+
+		for (final I_AD_Column column : archiveColumns)
+		{
+			if (!DisplayType.isLookup(column.getAD_Reference_ID()))
 			{
 				continue;
 			}
 
-			if (DisplayType.isLookup(column.getDisplayType()))
-			{
-				adProcessDAO.registerTableProcess(column.getAdTableId(), exportPdfProcessId);
-			}
+			final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
+			adProcessDAO.registerTableProcess(adTableId, processId);
 		}
 	}
-
 }

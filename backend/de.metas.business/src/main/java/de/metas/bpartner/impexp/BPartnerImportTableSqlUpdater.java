@@ -1,11 +1,8 @@
 package de.metas.bpartner.impexp;
 
-import com.google.common.base.Stopwatch;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.logging.LogManager;
-import de.metas.order.DeliveryViaRule;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -15,8 +12,13 @@ import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
+import com.google.common.base.Stopwatch;
+
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.logging.LogManager;
+import de.metas.order.DeliveryViaRule;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -108,7 +110,7 @@ public class BPartnerImportTableSqlUpdater
 	private final void executeUpdate(@NonNull final String description, @NonNull final CharSequence sql)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		stopwatch.stop();
 
 		logger.info("{}: Updated {} records in {}", description, no, stopwatch);
@@ -636,10 +638,10 @@ public class BPartnerImportTableSqlUpdater
 	{
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-																+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-																+ " WHERE i.payment_term_so=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-																+ "WHERE C_PaymentTerm_ID IS NULL AND payment_term_so IS NOT NULL"
-																+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					+ "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+					+ " WHERE i.PaymentTermValue=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set SO Payment Term", sql);
@@ -648,9 +650,9 @@ public class BPartnerImportTableSqlUpdater
 		//
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-																+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm_ID, ' "
-																+ "WHERE C_PaymentTerm_ID IS NULL AND payment_term_so IS NOT NULL"
-																+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid C_PaymentTerm_ID, ' "
+					+ "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid SO Payment Terms", sql);
@@ -661,10 +663,10 @@ public class BPartnerImportTableSqlUpdater
 	{
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-																+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
-																+ " WHERE i.payment_term_po=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
-																+ "WHERE PO_PaymentTerm_ID IS NULL AND payment_term_po IS NOT NULL"
-																+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					+ "SET PO_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm pt"
+					+ " WHERE i.PaymentTerm=pt.Name AND pt.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Set PO Payment Term", sql);
@@ -673,9 +675,9 @@ public class BPartnerImportTableSqlUpdater
 		//
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
-																+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
-																+ "WHERE PO_PaymentTerm_ID IS NULL AND payment_term_po IS NOT NULL"
-																+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+					+ "SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid PO_PaymentTerm, ' "
+					+ "WHERE PO_PaymentTerm_ID IS NULL AND PaymentTerm IS NOT NULL"
+					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
 
 			executeUpdate("Flag records with invalid PO Payment Terms", sql);

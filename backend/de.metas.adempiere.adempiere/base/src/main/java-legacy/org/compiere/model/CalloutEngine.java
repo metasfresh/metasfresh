@@ -75,7 +75,7 @@ public class CalloutEngine implements Callout
 		}
 		catch (final Exception e)
 		{
-			throw CalloutExecutionException.wrapIfNeeded(e)
+			throw CalloutExecutionException.of(e)
 					.setField(calloutField)
 					.setCalloutExecutor(currentCalloutExecutor);
 		}

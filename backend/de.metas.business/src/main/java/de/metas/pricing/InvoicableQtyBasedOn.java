@@ -1,13 +1,13 @@
 package de.metas.pricing;
 
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.compiere.model.X_M_ProductPrice;
+import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_M_ProductPrice;
+
+import lombok.Getter;
 
 /*
  * #%L
@@ -31,27 +31,42 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@RequiredArgsConstructor
-@Getter
-public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
+public enum InvoicableQtyBasedOn
 {
+	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_CatchWeight}. */
 	CatchWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight),
-	NominalWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal),
-	;
 
-	@NonNull private final String code;
+	/** Please keep in sync with {@link X_M_ProductPrice#INVOICABLEQTYBASEDON_Nominal}. */
+	NominalWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal);
 
-	private static final ReferenceListAwareEnums.ValuesIndex<InvoicableQtyBasedOn> index = ReferenceListAwareEnums.index(values());
-
-	public static InvoicableQtyBasedOn ofCode(@NonNull final String code) {return index.ofCode(code);}
-
-	public static InvoicableQtyBasedOn ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
-
-	public static InvoicableQtyBasedOn ofNullableCodeOrNominal(@Nullable final String code)
+	public static InvoicableQtyBasedOn fromRecordString(@Nullable final String invoicableQtyBasedOn)
 	{
-		final InvoicableQtyBasedOn type = index.ofNullableCode(code);
-		return type != null ? type : NominalWeight;
+		if (isEmpty(invoicableQtyBasedOn, true))
+		{
+			return NominalWeight; // default
+		}
+		else if (X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn))
+		{
+			return CatchWeight;
+		}
+		else if (X_M_ProductPrice.INVOICABLEQTYBASEDON_Nominal.equals(invoicableQtyBasedOn))
+		{
+			return NominalWeight;
+		}
+
+		throw new AdempiereException("Unsupported invoicableQtyBasedOn value: " + invoicableQtyBasedOn);
 	}
 
-	public boolean isCatchWeight() {return CatchWeight.equals(this);}
+	@Getter
+	private final String recordString;
+
+	private InvoicableQtyBasedOn(String recordString)
+	{
+		this.recordString = recordString;
+	}
+
+	public boolean isCatchWeight()
+	{
+		return CatchWeight.equals(this);
+	}
 }

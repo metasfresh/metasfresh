@@ -25,7 +25,7 @@ package de.metas.common.bpartner.v2.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,11 +36,11 @@ public class JsonResponseSalesRep
 	public static final String SALES_REP_VALUE = "salesRepValue";
 	public static final String SALES_REP_ID = "salesRepId";
 
-	@Schema(description = "This translates to `C_BPartner.C_BPartner_ID`.")
+	@ApiModelProperty(required = true, value = "This translates to `C_BPartner.C_BPartner_ID`.")
 	@JsonProperty(SALES_REP_ID)
 	JsonMetasfreshId salesRepId;
 
-	@Schema(description = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(required = true, value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(SALES_REP_VALUE)
 	String salesRepValue;
 

@@ -13,8 +13,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-material-event
@@ -57,20 +55,16 @@ public class PPOrderCreatedEvent implements MaterialEvent
 
 	public static final String TYPE = "PPOrderCreatedEvent";
 
-	private final String lotForLot;
-
 	@JsonCreator
 	@Builder
 	public PPOrderCreatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") final @NonNull PPOrder ppOrder,
-			@JsonProperty("directlyPickIfFeasible") final boolean directlyPickIfFeasible,
-			@JsonProperty("lotForLot") @Nullable final String lotForLot)
+			@JsonProperty("directlyPickIfFeasible") final boolean directlyPickIfFeasible)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrder = ppOrder;
 		this.directlyPickIfFeasible = directlyPickIfFeasible;
-		this.lotForLot = lotForLot;
 	}
 
 	public void validate()

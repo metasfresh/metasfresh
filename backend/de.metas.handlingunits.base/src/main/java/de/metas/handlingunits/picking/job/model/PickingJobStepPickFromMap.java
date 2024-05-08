@@ -89,11 +89,6 @@ public class PickingJobStepPickFromMap
 				.orElseThrow(() -> new AdempiereException("No HU found for " + qrCode));
 	}
 
-	public boolean isNothingPicked()
-	{
-		return map.values().stream().allMatch(PickingJobStepPickFrom::isNotPicked);
-	}
-
 	public PickingJobStepPickFromMap reduceWithPickedEvent(
 			@NonNull PickingJobStepPickFromKey key,
 			@NonNull PickingJobStepPickedTo pickedTo)

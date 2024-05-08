@@ -21,12 +21,19 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override
+	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice,
+			final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef) // settings
+	{
+		return copyLinesFrom(fromInvoice, toInvoice, counter, setOrderRef, setInvoiceRef, defaultDocLineCopyHandler);
+	}
+
+	@Override
 	public int copyLinesFrom(final I_C_Invoice fromInvoice,
-							 final I_C_Invoice toInvoice,
-							 final boolean counter,
-							 final boolean setOrderRef,
-							 final boolean setInvoiceRef,      // settings
-							 final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
+			final I_C_Invoice toInvoice,
+			final boolean counter,
+			final boolean setOrderRef,
+			final boolean setInvoiceRef,      // settings
+			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> additionalDocLineHandler)
 	{
 		if (toInvoice.isProcessed() || toInvoice.isPosted() || fromInvoice == null)
 		{
@@ -35,8 +42,8 @@ public final class InvoiceBL extends AbstractInvoiceBL
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(fromInvoice);
 
-		final MInvoice fromInvoicePO = InterfaceWrapperHelper.getPO(fromInvoice);
-		final MInvoice toInvoicePO = InterfaceWrapperHelper.getPO(toInvoice);
+		final MInvoice fromInvoicePO = (MInvoice)InterfaceWrapperHelper.getPO(fromInvoice);
+		final MInvoice toInvoicePO = (MInvoice)InterfaceWrapperHelper.getPO(toInvoice);
 
 		final MInvoiceLine[] fromLines = fromInvoicePO.getLines(false);
 		int count = 0;
@@ -66,7 +73,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			// ...for that reason, and because on reversal, the reversal line is found using Line, we need to explicitly copy the Line value
 			toLine.setLine(fromLine.getLine());
 
-			final MInvoiceLine toLinePO = InterfaceWrapperHelper.getPO(toLine);
+			final MInvoiceLine toLinePO = (MInvoiceLine)InterfaceWrapperHelper.getPO(toLine);
 			toLinePO.setInvoice(toInvoicePO);
 
 			// 04109: this is a trick to cause the MInvoiceLine.m_priceSet to be "true" and therefore omit a recalculation of the price when the new line is saved.
@@ -94,7 +101,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			// New Tax
 			if (toInvoice.getC_BPartner_ID() != fromInvoice.getC_BPartner_ID())
 			{
-				toLinePO.setTax();    // recalculate
+				toLinePO.setTax();	// recalculate
 			}
 			//
 			if (counter || setInvoiceRef)
@@ -163,7 +170,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
-		final StringBuilder sb = new StringBuilder();
+		final StringBuffer sb = new StringBuffer();
 		sb.append(invoice.getDocumentNo());
 		// : Grand Total = 123.00 (#1)
 		sb.append(": ").append(Services.get(IMsgBL.class).translate(ctx, "GrandTotal")).append("=").append(invoice.getGrandTotal());

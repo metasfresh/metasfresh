@@ -54,8 +54,6 @@ import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandida
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates.JsonResponseShipmentCandidatesBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.util.StringUtils;
-import de.metas.common.util.pair.IPair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -95,6 +93,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -106,6 +105,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
@@ -131,7 +131,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 @Service
 class ShipmentCandidateAPIService
 {
-	private final static Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
+	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
@@ -299,7 +299,7 @@ class ShipmentCandidateAPIService
 		{
 			final InputDataSourceId id = InputDataSourceId.ofRepoId(olCand.getAD_InputDataSource_ID()); // C_OLCand.AD_InputDataSource_ID is mandatory
 			final I_AD_InputDataSource byId = inputDataSourceDAO.getById(id);
-
+			
 			if (Check.isNotBlank(byId.getInternalName()))
 			{
 				itemBuilder.orderDataSourceInternalName(byId.getInternalName());

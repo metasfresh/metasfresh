@@ -1,5 +1,20 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
+import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
+
 import de.metas.currency.Amount;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -11,19 +26,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.util.NamePair;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -57,7 +59,7 @@ import java.util.stream.Collectors;
 public final class Values
 {
 	/**
-	 * Invokes {@link #valueToJsonObject(Object, JSONOptions, UnaryOperator)} with {@link UnaryOperator#identity()}.
+	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
 	 */
 	public static Object valueToJsonObject(
 			@Nullable final Object value,
@@ -73,7 +75,6 @@ public final class Values
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
-	@NonNull
 	public static Object valueToJsonObject(
 			@Nullable final Object value,
 			@NonNull final JSONOptions jsonOpts,
@@ -85,7 +86,7 @@ public final class Values
 		}
 		else if (value instanceof java.util.Date)
 		{
-			final Instant valueDate = ((Date)value).toInstant();
+			final ZonedDateTime valueDate = TimeUtil.asZonedDateTime(value);
 			return DateTimeConverters.toJson(valueDate, jsonOpts.getZoneId());
 		}
 		else if (value instanceof LocalDate)

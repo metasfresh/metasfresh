@@ -15,25 +15,6 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import de.metas.acct.Account;
-import de.metas.acct.AccountConceptualName;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.document.DocBaseType;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.MElementValue;
-import org.compiere.util.DB;
-import org.eevolution.model.I_HR_Process;
-import org.eevolution.model.MHRMovement;
-import org.eevolution.model.MHRProcess;
-import org.eevolution.model.X_HR_Concept_Acct;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
@@ -41,32 +22,60 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.model.MAccount;
+import org.compiere.model.MElementValue;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_HR_Process;
+import org.eevolution.model.MHRMovement;
+import org.eevolution.model.MHRProcess;
+import org.eevolution.model.X_HR_Concept_Acct;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.util.Services;
+
 /**
  * Post Payroll Documents.
- *
+ * 
  * <pre>
  *  Table:              HR_Process (??)
  *  Document Types:     HR_Process
  * </pre>
- *
+ * 
  * @author Oscar Gomez Islas
+ * @version $Id: Doc_Payroll.java,v 1.1 2007/01/20 00:40:02 ogomezi Exp $
  * @author Cristina Ghita, www.arhipac.ro
  */
 public class Doc_HRProcess extends Doc<DocLine_Payroll>
 {
+	/** Process Payroll **/
+	public static final String DOCTYPE_Payroll = "HRP";
+
 	public Doc_HRProcess(final AcctDocContext ctx)
 	{
-		super(ctx, DocBaseType.Payroll);
+		super(ctx, DOCTYPE_Payroll);
 	}
 
 	@Override
 	protected void loadDocumentDetails()
 	{
 		final I_HR_Process process = getModel(I_HR_Process.class);
-		setDateDoc(getDateAcct());
+		setDateDoc(TimeUtil.asTimestamp(getDateAcct()));
 		setDocLines(loadLines(process));
 	}
 
+	/**
+	 * Load Payroll Line
+	 * 
+	 * @param Payroll Process
+	 * @return DocLine Array
+	 */
 	private List<DocLine_Payroll> loadLines(I_HR_Process process)
 	{
 		List<DocLine_Payroll> list = new ArrayList<>();
@@ -116,25 +125,23 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 				// round amount according to currency
 				sumAmount = sumAmount.setScale(as.getStandardPrecision().toInt(), RoundingMode.HALF_UP);
 				String AccountSign = rs.getString(4);
-				final OrgId AD_OrgTrx_ID = OrgId.ofRepoIdOrAny(rs.getInt(6));
-				final ActivityId C_Activity_ID = ActivityId.ofRepoIdOrNull(rs.getInt(7));
+				int AD_OrgTrx_ID = rs.getInt(6);
+				int C_Activity_ID = rs.getInt(7);
 				//
 				if (AccountSign != null && AccountSign.length() > 0 && (AccountSign.equals("D") || AccountSign.equals("C")))
 				{
 					// HR_Expense_Acct DR
 					// HR_Revenue_Acct CR
-					fact.createLine()
-							.setAccount(getAccountBalancing(as.getId(), HR_Concept_ID, "D"))
-							.setAmtSource(as.getCurrencyId(), sumAmount, null)
-							.orgTrxId(AD_OrgTrx_ID)
-							.activityId(C_Activity_ID)
-							.buildAndAdd();
-					fact.createLine()
-							.setAccount(getAccountBalancing(as.getId(), HR_Concept_ID, "C"))
-							.setAmtSource(as.getCurrencyId(), null, sumAmount)
-							.orgTrxId(AD_OrgTrx_ID)
-							.activityId(C_Activity_ID)
-							.buildAndAdd();
+					MAccount accountBPD = Services.get(IAccountDAO.class).getById(getAccountBalancing(as.getId(), HR_Concept_ID, "D"));
+					FactLine debit = fact.createLine(null, accountBPD, as.getCurrencyId(), sumAmount, null);
+					debit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
+					debit.setC_Activity_ID(C_Activity_ID);
+					debit.saveEx();
+					MAccount accountBPC = Services.get(IAccountDAO.class).getById(getAccountBalancing(as.getId(), HR_Concept_ID, "C"));
+					FactLine credit = fact.createLine(null, accountBPC, as.getCurrencyId(), null, sumAmount);
+					credit.setAD_OrgTrx_ID(AD_OrgTrx_ID);
+					credit.setC_Activity_ID(C_Activity_ID);
+					credit.saveEx();
 				}
 			}
 		}
@@ -145,6 +152,8 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		finally
 		{
 			DB.close(rs, pstmt);
+			pstmt = null;
+			rs = null;
 		}
 
 		ArrayList<Fact> facts = new ArrayList<>();
@@ -152,9 +161,17 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		return facts;
 	}
 
-	private Account getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
+	/**
+	 * get account balancing
+	 * 
+	 * @param acctSchemaId
+	 * @param HR_Concept_ID
+	 * @param AccountSign D or C only
+	 * @return
+	 */
+	private int getAccountBalancing(AcctSchemaId acctSchemaId, int HR_Concept_ID, String AccountSign)
 	{
-		final String field;
+		String field;
 		if (MElementValue.ACCOUNTSIGN_Debit.equals(AccountSign))
 		{
 			field = X_HR_Concept_Acct.COLUMNNAME_HR_Expense_Acct;
@@ -169,8 +186,8 @@ public class Doc_HRProcess extends Doc<DocLine_Payroll>
 		}
 		final String sqlAccount = "SELECT " + field + " FROM HR_Concept_Acct"
 				+ " WHERE HR_Concept_ID=? AND C_AcctSchema_ID=?";
-		final AccountId accountId = AccountId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId));
-		return Account.of(accountId, AccountConceptualName.ofString(field));
+		int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sqlAccount, HR_Concept_ID, acctSchemaId);
+		return Account_ID;
 	}
 
 }   // Doc_Payroll

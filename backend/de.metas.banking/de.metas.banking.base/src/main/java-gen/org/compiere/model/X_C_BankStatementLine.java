@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_BankStatementLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1043202516L;
+	private static final long serialVersionUID = 1230132644L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine (final Properties ctx, final int C_BankStatementLine_ID, @Nullable final String trxName)
@@ -500,18 +500,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsUpdateAmountsFromInvoice (final boolean IsUpdateAmountsFromInvoice)
-	{
-		set_Value (COLUMNNAME_IsUpdateAmountsFromInvoice, IsUpdateAmountsFromInvoice);
-	}
-
-	@Override
-	public boolean isUpdateAmountsFromInvoice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsUpdateAmountsFromInvoice);
-	}
-
-	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -551,33 +539,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
-	public void setM_SectionCode_ID (final int M_SectionCode_ID)
-	{
-		if (M_SectionCode_ID < 1) 
-			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
-	}
-
-	@Override
-	public int getM_SectionCode_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
-	@Override
 	public void setProcessed (final boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Processed);
@@ -587,36 +548,6 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setReconciledBy_SAP_GLJournal_ID (final int ReconciledBy_SAP_GLJournal_ID)
-	{
-		if (ReconciledBy_SAP_GLJournal_ID < 1) 
-			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournal_ID, null);
-		else 
-			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournal_ID, ReconciledBy_SAP_GLJournal_ID);
-	}
-
-	@Override
-	public int getReconciledBy_SAP_GLJournal_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ReconciledBy_SAP_GLJournal_ID);
-	}
-
-	@Override
-	public void setReconciledBy_SAP_GLJournalLine_ID (final int ReconciledBy_SAP_GLJournalLine_ID)
-	{
-		if (ReconciledBy_SAP_GLJournalLine_ID < 1) 
-			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID, null);
-		else 
-			set_Value (COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID, ReconciledBy_SAP_GLJournalLine_ID);
-	}
-
-	@Override
-	public int getReconciledBy_SAP_GLJournalLine_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ReconciledBy_SAP_GLJournalLine_ID);
 	}
 
 	@Override

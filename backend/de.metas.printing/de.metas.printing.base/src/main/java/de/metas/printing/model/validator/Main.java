@@ -1,7 +1,6 @@
 package de.metas.printing.model.validator;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.cache.CacheMgt;
@@ -11,7 +10,6 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
-import de.metas.printing.async.spi.impl.AutomaticallyDunningPrintinAsyncBatchListener;
 import de.metas.printing.async.spi.impl.AutomaticallyInvoicePdfPrintinAsyncBatchListener;
 import de.metas.printing.async.spi.impl.PDFPrintingAsyncBatchListener;
 import de.metas.printing.model.I_AD_Print_Clients;
@@ -47,7 +45,6 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Printing base - Main Validator
@@ -83,6 +80,27 @@ public class Main extends AbstractModuleInterceptor
 	protected void onBeforeInit()
 	{
 		//
+		// Configure tables which are skipped when we record migration scripts
+		{
+			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+			migrationLogger.addTableToIgnoreList(I_AD_User_Login.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_Package.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_PrintPackageData.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_PackageInfo.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_Job.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Detail.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Instructions.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Print_Job_Line.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_C_Printing_Queue.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_Print_Clients.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_Calibration.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaSize.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaTray.Table_Name);
+			migrationLogger.addTableToIgnoreList(I_AD_Printer_Matching.Table_Name);
+		}
+
+		//
 		// Configure tables which are excluded by EXP_ReplicationTrx
 		{
 			final IReplicationTrxBL replicationTrxBL = Services.get(IReplicationTrxBL.class);
@@ -92,28 +110,6 @@ public class Main extends AbstractModuleInterceptor
 			// and we don't need gracefully handle not-unique lookup results.
 			replicationTrxBL.addTableToIgnoreList(I_AD_User_Login.Table_Name);
 		}
-	}
-
-	@Override
-	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
-	{
-		return ImmutableSet.of(
-				I_AD_User_Login.Table_Name,
-				I_C_Print_Package.Table_Name,
-				I_C_PrintPackageData.Table_Name,
-				I_C_Print_PackageInfo.Table_Name,
-				I_C_Print_Job.Table_Name,
-				I_C_Print_Job_Detail.Table_Name,
-				I_C_Print_Job_Instructions.Table_Name,
-				I_C_Print_Job_Line.Table_Name,
-				I_C_Printing_Queue.Table_Name,
-				I_AD_Print_Clients.Table_Name,
-				I_AD_PrinterHW.Table_Name,
-				I_AD_PrinterHW_Calibration.Table_Name,
-				I_AD_PrinterHW_MediaSize.Table_Name,
-				I_AD_PrinterHW_MediaTray.Table_Name,
-				I_AD_Printer_Matching.Table_Name
-		);
 	}
 
 	@Override
@@ -136,6 +132,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new AD_PrinterHW_Calibration());
 		engine.addModelValidator(new AD_PrinterHW_MediaTray());
 		engine.addModelValidator(new AD_PrinterTray_Matching());
+		engine.addModelValidator(new C_BPartner()); // task 08958
 
 		engine.addModelValidator(new C_Print_Job_Instructions());
 		engine.addModelValidator(new C_Printing_Queue());
@@ -185,7 +182,6 @@ public class Main extends AbstractModuleInterceptor
 
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new AutomaticallyInvoicePdfPrintinAsyncBatchListener(), Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting);
-		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new AutomaticallyDunningPrintinAsyncBatchListener(), Async_Constants.C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting);
 	}
 
 	@Override
@@ -195,7 +191,7 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
 		// make sure that the host key is set in the context
 		if (checkPrintingEnabled())

@@ -1,8 +1,10 @@
+package de.metas.inoutcandidate.api;
+
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,13 +22,11 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.api;
-
 import de.metas.document.engine.DocStatus;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.order.OrderLineId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
@@ -164,10 +164,17 @@ public final class OlAndSched
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
 	}
 
-	@NonNull
-	public Optional<OrderLineId> getOrderLineId()
+	@Nullable
+	public InputDataSourceId getSalesOrderADInputDatasourceID()
 	{
-		return salesOrderLine.map(org.compiere.model.I_C_OrderLine::getC_OrderLine_ID)
-				.map(OrderLineId::ofRepoId);
+		if(!salesOrder.isPresent())
+		{
+			return null;
+		}
+
+		final I_C_Order orderRecord = salesOrder.get();
+
+		return InputDataSourceId.ofRepoIdOrNull(orderRecord.getAD_InputDataSource_ID());
+
 	}
 }

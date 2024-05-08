@@ -22,26 +22,17 @@
 
 package de.metas.order;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
-import de.metas.document.engine.DocStatus;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
-import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
-import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -50,16 +41,10 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
-import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -95,8 +80,6 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	Optional<BPartnerContactId> getShipToContactId(I_C_Order order);
-
 	/**
 	 * @return the order's bill location <b>OR</b> falls back to the "general" contact ({@code C_Order.C_BParter_Location_ID}).
 	 */
@@ -127,19 +110,6 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if set
 	 */
 	boolean setBill_User_ID(I_C_Order order);
-
-	List<I_C_Order> getByIds(@NonNull Collection<OrderId> orderIds);
-
-	default List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderId(@NonNull final OrderId orderId)
-	{
-		return getLinesByOrderIds(ImmutableSet.of(orderId));
-	}
-
-	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
-
-	Map<OrderAndLineId, de.metas.interfaces.I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds);
-
-	de.metas.interfaces.I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId);
 
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
@@ -249,6 +219,8 @@ public interface IOrderBL extends ISingletonService
 	 * <li>QtyInvoiced
 	 * </ul>
 	 * from the sums of the order's lines.
+	 *
+	 * @param order task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
 
@@ -260,8 +232,6 @@ public interface IOrderBL extends ISingletonService
 	boolean isSalesProposalOrQuotation(I_C_Order order);
 
 	boolean isRequisition(@NonNull I_C_Order order);
-
-	boolean isProFormaSO(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
 
@@ -302,67 +272,4 @@ public interface IOrderBL extends ISingletonService
 	String getDocumentNoById(OrderId orderId);
 
 	String getLocationEmail(OrderId ofRepoId);
-
-	DocStatus getDocStatus(OrderId orderId);
-
-	void save(I_C_Order order);
-
-	void save(I_C_OrderLine orderLine);
-
-	CurrencyId getCurrencyId(final OrderId orderId);
-
-	Set<OrderAndLineId> getSOLineIdsByPOLineId(@NonNull OrderAndLineId purchaseOrderLineId);
-
-	List<I_C_Order> getPurchaseOrdersBySalesOrderId(@NonNull OrderId salesOrderId);
-
-	void updateIsOnConsignmentFromLines(OrderId orderId);
-
-	/**
-	 * @return {@code true} if metasfresh should use the default-billTo-location for {@code C_Order.C_BPartner_Location_ID}
-	 */
-	boolean isUseDefaultBillToLocationForBPartner(@NonNull I_C_Order order);
-
-	static Money extractLineNetAmt(final I_C_OrderLine orderLine)
-	{
-		return Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-	}
-
-	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
-	{
-		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		return Quantitys.create(orderLine.getQtyEntered(), uomId);
-	}
-
-	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
-
-	void setProductId(
-			@NonNull I_C_OrderLine orderLine,
-			@NonNull ProductId productId,
-			boolean setUOM);
-
-	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
-
-	void deleteLineById(final OrderAndLineId orderAndLineId);
-
-	Quantity getQtyEntered(I_C_OrderLine orderLine);
-
-	boolean isCompleted(OrderId orderId);
-
-	boolean isCompleted(I_C_Order order);
-
-	boolean isDraftedOrInProgress(@NonNull I_C_Order order);
-
-	@NonNull
-	List<I_C_Order> getOrdersByQuery(@NonNull GetOrdersQuery query);
-
-	void setPhysicalClearanceDate(@NonNull OrderId orderId, @Nullable Instant physicalClearanceDate);
-
-	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
-
-	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
-
-	void setWeightFromLines(@NonNull I_C_Order order);
-
-	@NonNull
-	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
 }

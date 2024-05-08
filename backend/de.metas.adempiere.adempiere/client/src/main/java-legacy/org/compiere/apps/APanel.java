@@ -19,6 +19,7 @@
 package org.compiere.apps;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.engine.DocStatus;
@@ -36,9 +37,12 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
@@ -49,6 +53,8 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
 import org.compiere.grid.GridSynchronizer;
+import org.compiere.grid.ICreateFrom;
+import org.compiere.grid.VCreateFromFactory;
 import org.compiere.grid.VOnlyCurrentDays;
 import org.compiere.grid.VSortTab;
 import org.compiere.grid.VTabbedPane;
@@ -74,6 +80,7 @@ import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MWindow;
+import org.compiere.model.PO;
 import org.compiere.model.X_AD_Process;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
@@ -98,6 +105,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.stream.IntStream;
 
 /**
  * Main Panel of application window.
@@ -397,6 +405,7 @@ public class APanel extends CPanel
 		aSave = addAction("Save", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0), false, true);
 		mEdit.addSeparator();
 		aCopy = addAction("Copy", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F2, Event.SHIFT_MASK), false, false);
+		aCopyDetails = addAction("CopyDetails", mEdit, null, false, false); // metas: c.ghita@metas.ro
 		aDelete = addAction("Delete", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0), false, false);
 		aDeleteSelection = addAction("DeleteSelection", mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_D, Event.CTRL_MASK), false, false);
 		aIgnore = addAction(CMD_Ignore, mEdit, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), false, false);
@@ -473,6 +482,10 @@ public class APanel extends CPanel
 			toolBar.add(aNew.getButton());
 			toolBar.add(aSave.getButton());
 			toolBar.add(aCopy.getButton());
+			if (CopyRecordFactory.isEnabled())
+			{
+				toolBar.add(aCopyDetails.getButton());							// metas: c.ghita@metas.ro
+			}
 		}
 
 		// Ignore, Delete
@@ -1236,70 +1249,67 @@ public class APanel extends CPanel
 		}
 
 		//
-		// Never require a FindPanel before the actual window is opened! 
-		// I doesn't work with java-17 and x2go and that is the remaining primary mode of operation for the swing-client.
-		//
-		// final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
-		// // Query automatically if high volume and no query
-		// boolean require = mTab.isHighVolume();
-		//
-		// // metas-2009_0021_AP1_CR064: begin
-		// if (!mTab.isQueryOnLoad())
-		// {
-		// 	return MQuery.getNoRecordQuery(mTab.getTableName(), false);
-		// }
-		// // metas-2009_0021_AP1_CR064: end
-		//
-		// if (!require
-		// 		&& !m_onlyCurrentRows // No Trx Window
-		// 		&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
-		// {
-		// 	/* Where Extended already appended above, check for variables */
-		// 	if (query != null)
-		// 	{
-		// 		final String wh2 = query.getWhereClause();
-		// 		if (wh2.length() > 0)
-		// 		{
-		// 			if (where.length() > 0)
-		// 			{
-		// 				where.append(" AND ");
-		// 			}
-		// 			where.append(wh2);
-		// 		}
-		// 	}
-		// 	//
-		// 	final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
-		// 			.append(mTab.getTableName());
-		// 	if (where.length() > 0)
-		// 	{
-		// 		sql.append(" WHERE ").append(where);
-		// 	}
-		// 	// Does not consider security
-		// 	final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
-		// 	//
-		// 	require = GridTabMaxRowsRestrictionChecker.builder()
-		// 			.setAD_Tab(mTab)
-		// 			.build()
-		// 			.isQueryRequire(no);
-		// }
-		// // Show Query
-		// if (require)
-		// {
-		// 	Find find = Find.builder()
-		// 			.setParentFrame(getCurrentFrame())
-		// 			.setTargetWindowNo(m_curWindowNo)
-		// 			.setGridTab(mTab)
-		// 			.setFindFields(mTab.getFields())
-		// 			.setWhereExtended(where.toString())
-		// 			.setQuery(query)
-		// 			.setMinRecords(10) // no query below 10
-		// 			.buildFindDialog();
-		// 	query = find.getQuery();
-		// 	query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
-		// 	isCancel = (query == null);// Goodwill
-		// 	find.dispose();
-		// 	find = null;
-		// }
+		final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
+		// Query automatically if high volume and no query
+		boolean require = mTab.isHighVolume();
+
+		// metas-2009_0021_AP1_CR064: begin
+		if (!mTab.isQueryOnLoad())
+		{
+			return MQuery.getNoRecordQuery(mTab.getTableName(), false);
+		}
+		// metas-2009_0021_AP1_CR064: end
+
+		if (!require
+				&& !m_onlyCurrentRows // No Trx Window
+				&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
+		{
+			/* Where Extended already appended above, check for variables */
+			if (query != null)
+			{
+				final String wh2 = query.getWhereClause();
+				if (wh2.length() > 0)
+				{
+					if (where.length() > 0)
+					{
+						where.append(" AND ");
+					}
+					where.append(wh2);
+				}
+			}
+			//
+			final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
+					.append(mTab.getTableName());
+			if (where.length() > 0)
+			{
+				sql.append(" WHERE ").append(where);
+			}
+			// Does not consider security
+			final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
+			//
+			require = GridTabMaxRowsRestrictionChecker.builder()
+					.setAD_Tab(mTab)
+					.build()
+					.isQueryRequire(no);
+		}
+		// Show Query
+		if (require)
+		{
+			Find find = Find.builder()
+					.setParentFrame(getCurrentFrame())
+					.setTargetWindowNo(m_curWindowNo)
+					.setGridTab(mTab)
+					.setFindFields(mTab.getFields())
+					.setWhereExtended(where.toString())
+					.setQuery(query)
+					.setMinRecords(10) // no query below 10
+					.buildFindDialog();
+			query = find.getQuery();
+			query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
+			isCancel = (query == null);// Goodwill
+			find.dispose();
+			find = null;
+		}
 		return query;
 	}	// initialQuery
 
@@ -1432,6 +1442,7 @@ public class APanel extends CPanel
 
 		aNew.setEnabled(((inserting && changedColumn > 0) || !inserting) && insertRecord);
 		aCopy.setEnabled(!changed && insertRecord);
+		aCopyDetails.setEnabled(!changed && insertRecord && CopyRecordFactory.isEnabledForTableName(m_curTab.getTableName()));
 		aRefresh.setEnabled(!changed);
 		aDelete.setEnabled(!changed && deleteRecord);
 		aDeleteSelection.setEnabled(!changed && deleteRecord); // same as "aDelete"
@@ -2010,6 +2021,10 @@ public class APanel extends CPanel
 			{
 				cmd_new(DataNewCopyMode.Copy);
 			}
+			else if (cmd.equals(aCopyDetails.getName()))
+			{
+				cmd_new(DataNewCopyMode.CopyWithDetails);
+			}
 			else if (cmd.equals(aDelete.getName()))
 			{
 				cmd_delete();
@@ -2257,7 +2272,15 @@ public class APanel extends CPanel
 		// If we were asked to copy with details, ask the user which child tables he/she wants to be copied
 		if (DataNewCopyMode.isCopyWithDetails(copyMode))
 		{
-			throw new UnsupportedOperationException();
+			final List<CopyRecordSupportTableInfo> childTablesToBeCopied = getSuggestedChildTablesToCopyWithDetails();
+			// If user canceled then ignore everything and get out
+			if (childTablesToBeCopied == null)
+			{
+				cmd_ignore();
+				return;
+			}
+
+			m_curTab.setSuggestedCopyWithDetailsList(childTablesToBeCopied);
 		}
 
 		m_curTab.dataNew(copyMode);
@@ -2314,7 +2337,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)
@@ -2893,7 +2916,7 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
-		if (IColumnBL.isRecordIdColumnName (columnName))
+		if (columnBL.isRecordIdColumnName (columnName))
 		{
 			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
 			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);
@@ -2981,7 +3004,32 @@ public class APanel extends CPanel
 		// Pop up Create From
 		else if (columnName.equals("CreateFrom"))
 		{
-			throw new UnsupportedOperationException();
+			// Ensure it's saved
+			if (noRowFound)
+			{
+				throw new AdempiereException("@SaveErrorRowNotFound@");
+			}
+
+			// Run form only if the button has no process defined - teo_sarca [ 1974354 ]
+			if (vButton.getProcess_ID() <= 0)
+			{
+				ICreateFrom cf = VCreateFromFactory.create(m_curTab);
+				if (cf != null)
+				{
+					if (cf.isInitOK())
+					{
+						cf.showWindow();
+						cf.closeWindow();
+						m_curTab.dataRefresh();
+					}
+					else
+					{
+						cf.closeWindow();
+					}
+					return;
+				}
+				// else may start process
+			}
 		}  	// CreateFrom
 
 		// Posting -----
@@ -3411,6 +3459,7 @@ public class APanel extends CPanel
 
 	private boolean isSearchActive = true; // metas-2009_0021_AP1_CR057
 	private boolean isTabIncluded = false; // metas-2009_0021_AP1_CR056
+	private AppsAction aCopyDetails; // metas
 
 	public GridWorkbench getGridWorkbench()
 	{
@@ -3428,6 +3477,50 @@ public class APanel extends CPanel
 	public boolean requestFocusInWindow()
 	{
 		return m_curGC.requestFocusInWindow();
+	}
+
+	/**
+	 * @return list of {@link CopyRecordSupportTableInfo} to be also copied or <code>null</code> if user canceled.
+	 */
+	private final List<CopyRecordSupportTableInfo> getSuggestedChildTablesToCopyWithDetails()
+	{
+		final Properties ctx = m_ctx;
+		final String tableName = m_curTab.getTableName();
+		final int recordId = m_curTab.getRecord_ID();
+
+		final PO po = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
+		final List<CopyRecordSupportTableInfo> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
+
+		//
+		final String adLanguage = Env.getAD_Language(ctx);
+		final JList<String> list = new JList<>();
+		list.setListData(tiList.stream().map(tableInfo -> tableInfo.getName(adLanguage)).toArray(size -> new String[size]));
+		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		list.setSelectedIndices(IntStream.range(0, tiList.size()).toArray()); // select entire list
+		//
+		final JOptionPane pane = new JOptionPane(
+				new JScrollPane(list),   // message
+				JOptionPane.QUESTION_MESSAGE,   // messageType
+				JOptionPane.OK_CANCEL_OPTION); // optionType
+		final JDialog deleteDialog = pane.createDialog(this.getParent(), Services.get(IMsgBL.class).getMsg(ctx, "CopyDetailsSelection"));
+		deleteDialog.setVisible(true);
+		final Integer okCancel = (Integer)pane.getValue();
+		if (okCancel != null && okCancel == JOptionPane.OK_OPTION)
+		{
+			final int[] indices = list.getSelectedIndices();
+			Arrays.sort(indices);
+			final ImmutableList.Builder<CopyRecordSupportTableInfo> suggestedList = ImmutableList.builder();
+			for (int indice : indices)
+			{
+				suggestedList.add(tiList.get(indice));
+			}
+
+			return suggestedList.build();
+		}
+		else
+		{
+			return null; // canceled
+		}
 	}
 
 	public GridController getCurrentGridController()

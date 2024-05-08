@@ -34,11 +34,6 @@
         "caption": "Filters",
         "includedFilters": [
           {
-            "filterId": "default",
-            "caption": "Default filter",
-            "frequent": false
-          },
-          {
             "filterId": "userquery-540024",
             "caption": "Abrechnung_offen_normal",
             "frequent": false,

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -67,7 +67,7 @@ public class C_Invoice_CreateRelation extends JavaProcess implements IProcessPre
 		}
 		final InvoiceId toInvoiceId = InvoiceId.ofRepoId(context.getSingleSelectedRecordId());
 		final I_C_Invoice invoice = invoiceBL.getById(toInvoiceId);
-		if (invoiceBL.isVendorInvoice(invoiceBL.getC_DocTypeEffectiveOrNull(invoice).getDocBaseType()))
+		if (invoiceBL.isVendorInvoice(invoiceBL.getC_DocType(invoice).getDocBaseType()))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only Sales Invoices accepted.");
 		}

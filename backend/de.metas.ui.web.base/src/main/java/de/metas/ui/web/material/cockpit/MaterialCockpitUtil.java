@@ -1,13 +1,14 @@
 package de.metas.ui.web.material.cockpit;
 
-import de.metas.common.util.CoalesceUtil;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
+
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
+import de.metas.common.util.CoalesceUtil;
 
 /*
  * #%L
@@ -45,9 +46,7 @@ public final class MaterialCockpitUtil
 	public static final String SYSCONFIG_DIM_SPEC_INTERNAL_NAME = "de.metas.ui.web.material.cockpit.DIM_Dimension_Spec.InternalName";
 	public static final String DEFAULT_DIM_SPEC_INTERNAL_NAME = "Material_Cockpit_Default_Spec";
 
-	public static final String SYSCONFIG_DETAILS_ROW_AGGREGATION = "de.metas.ui.web.material.cockpit.DetailsRowAggregation";
-
-	private static final String SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE = "de.metas.ui.web.material.cockpit.I_QtyDemand_QtySupply_V.IsActive";
+	public static final String SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS = "de.metas.ui.web.material.cockpit.DisplayPerPlantDetailRows";
 
 	public static final String DONT_FILTER = "DONT_FILTER";
 	public static final String NON_EMPTY = "NON_EMPTY";
@@ -72,10 +71,5 @@ public final class MaterialCockpitUtil
 				DEFAULT_DIM_SPEC_INTERNAL_NAME));
 
 		return Check.assumeNotNull(dimensionSpec, "Unable to load DIM_Dimension_Spec record with InternalName={}", dimSpecName);
-	}
-
-	public static boolean isI_QtyDemand_QtySupply_VActive()
-	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCFG_I_QtyDemand_QtySupply_V_ACTIVE, true);
 	}
 }

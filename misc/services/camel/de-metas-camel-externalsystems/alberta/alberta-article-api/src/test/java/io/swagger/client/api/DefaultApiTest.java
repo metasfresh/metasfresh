@@ -14,8 +14,14 @@ package io.swagger.client.api;
 
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.Ignore;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**

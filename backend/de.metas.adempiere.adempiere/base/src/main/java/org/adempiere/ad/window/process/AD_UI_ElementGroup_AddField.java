@@ -1,19 +1,21 @@
 package org.adempiere.ad.window.process;
 
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
+import org.adempiere.ad.window.api.UIElementId;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_UI_Element;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,8 +44,8 @@ public class AD_UI_ElementGroup_AddField extends JavaProcess
 	@Param(parameterName = "AD_Field_ID", mandatory = true)
 	private AdFieldId adFieldId;
 
-	// @Param(parameterName = "After_UI_Element_ID", mandatory = false)
-	// private UIElementId afterUIElementId;
+	@Param(parameterName = "After_UI_Element_ID", mandatory = false)
+	private UIElementId afterUIElementId;
 
 	private UIElementGroupId getAdElementGroupId()
 	{
@@ -73,11 +75,11 @@ public class AD_UI_ElementGroup_AddField extends JavaProcess
 		uiElement.setIsDisplayed(true);
 		uiElement.setSeqNo(seqNo);
 
-		// if (afterUIElementId != null)
-		// {
-		// 	// TODO implement
-		// 	addLog("WARNING: Adding after a given element not yet implemented, so your element will be added last.");
-		// }
+		if (afterUIElementId != null)
+		{
+			// TODO implement
+			addLog("WARNING: Adding after a given element not yet implemented, so your element will be added last.");
+		}
 
 		saveRecord(uiElement);
 

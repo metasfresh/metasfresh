@@ -164,7 +164,7 @@ public class PlainPriceListDAO extends PriceListDAO
 				.create();
 
 		final List<I_M_PriceList_Version> customerVersions = queryBL.createQueryBuilder(I_M_PriceList.class)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_BasePriceList_ID, basePricelistId)
+				.addEqualsFilter(I_M_PriceList.COLUMN_BasePriceList_ID, basePricelistId)
 
 				.addInSubQueryFilter()
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)

@@ -74,7 +74,7 @@ public class SchedulerEventBusService
 	{
 		final Event event = createEventFromRequest(request);
 
-		getEventBus().enqueueEvent(event);
+		getEventBus().postEvent(event);
 	}
 
 	@NonNull

@@ -1,9 +1,46 @@
 package de.metas.dunning.api.impl;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.dunning.DunningDocId;
-import de.metas.dunning.DunningLevelId;
+import java.math.BigDecimal;
+
+/*
+ * #%L
+ * de.metas.dunning
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
 import de.metas.dunning.api.IDunningBL;
@@ -22,74 +59,19 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
-import de.metas.email.EMailCustomType;
-import de.metas.i18n.Language;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.ShipmentConstraintCreateRequest;
-import de.metas.letter.BoilerPlate;
-import de.metas.letter.BoilerPlateRepository;
-import de.metas.letter.BoilerPlateWithLineId;
 import de.metas.logging.LogManager;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.Recipient;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 
 public class DunningBL implements IDunningBL
 {
-
-	public static final String MASS_GENERATE_LINES_EVALUATEE_PARAM = "Mass_Generate_Lines";
 	private final Logger logger = LogManager.getLogger(getClass());
 
-	private final ReentrantLock configLock = new ReentrantLock();
+	private ReentrantLock configLock = new ReentrantLock();
 
 	/**
 	 * Dunning configurator (if any)
@@ -98,15 +80,10 @@ public class DunningBL implements IDunningBL
 
 	/**
 	 * Dunning configuration
-	 * <p>
+	 *
 	 * NOTE: please always access it via {@link #getDunningConfig()} and never directly
 	 */
 	private IDunningConfig _config;
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 
 	@Override
 	public IDunningConfig getDunningConfig()
@@ -158,31 +135,18 @@ public class DunningBL implements IDunningBL
 		}
 	}
 
-	@NonNull
 	@Override
-	public IDunningContext createDunningContext(
-			final Properties ctx,
-			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
-			final String trxName,
-			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
+	public IDunningContext createDunningContext(final Properties ctx, final I_C_DunningLevel dunningLevel, final Date dunningDate, final String trxName)
 	{
 		final ITrxRunConfig defaultConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		return createDunningContext(ctx, dunningLevel, dunningDate, defaultConfig, trxName, recomputeDunningCandidatesQuery);
+		return createDunningContext(ctx, dunningLevel, dunningDate, defaultConfig, trxName);
 	}
 
-	@NonNull
 	@Override
-	public IDunningContext createDunningContext(
-			final Properties ctx,
-			final I_C_DunningLevel dunningLevel,
-			final Date dunningDate,
-			final ITrxRunConfig trxRunnerConfig,
-			final String trxName,
-			@Nullable final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery)
+	public IDunningContext createDunningContext(final Properties ctx, final I_C_DunningLevel dunningLevel, final Date dunningDate, final ITrxRunConfig trxRunnerConfig, final String trxName)
 	{
 		final IDunningConfig config = getDunningConfig();
-		final IDunningContext context = new DunningContext(ctx, config, dunningLevel, dunningDate, trxRunnerConfig, trxName, recomputeDunningCandidatesQuery);
+		final IDunningContext context = new DunningContext(ctx, config, dunningLevel, dunningDate, trxRunnerConfig, trxName);
 		return context;
 	}
 
@@ -246,7 +210,7 @@ public class DunningBL implements IDunningBL
 			}
 		}
 
-		logger.info("Created/Updated {} from {} records evaluated", new Object[] { countCreated, countAll });
+		logger.info("Created {} from {} records evaluated", new Object[] { countCreated, countAll });
 
 		return countCreated;
 	}
@@ -283,75 +247,6 @@ public class DunningBL implements IDunningBL
 		}
 
 		dunningProducer.finish();
-
-		sendMassNotifications(dunningProducer.getCreatedDunningDocIds(), Language.getBaseLanguage());
-	}
-
-	private void sendMassNotifications(@NonNull final Collection<DunningDocId> createdDunningDocIds,
-			@NonNull final Language language)
-	{
-		dunningDAO.getByIdsInTrx(createdDunningDocIds)
-				.stream()
-				.filter(doc -> groupByBoilerPlate(doc) != null)
-				.collect(Collectors.groupingBy(this::groupByBoilerPlate))
-				.forEach((boilerPlateWithLineId, dunningDocs)-> sendMassNotifications(boilerPlateWithLineId,dunningDocs, language));
-	}
-
-	@Nullable
-	private BoilerPlateWithLineId groupByBoilerPlate(final I_C_DunningDoc doc)
-	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(doc.getC_DocType_ID());
-		if (docTypeId != null)
-		{
-			return docTypeDAO.getById(docTypeId).getMassGenerateNotification();
-		}
-		return null;
-	}
-
-	private void sendMassNotifications(@NonNull final BoilerPlateWithLineId boilerPlateWithLineId,
-			@NonNull final List<I_C_DunningDoc> dunningDocs,
-			@NonNull final Language language)
-	{
-		dunningDocs.stream()
-				.collect(Collectors.groupingBy(doc -> OrgId.ofRepoId(doc.getAD_Org_ID())))
-				.forEach((orgId, docs) -> this.sendMassNotifications(boilerPlateWithLineId, orgId, docs, language));
-	}
-
-	private void sendMassNotifications(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId,
-			@NonNull final OrgId orgId,
-			@NonNull final List<I_C_DunningDoc> dunningDocs,
-			@NonNull final Language language)
-	{
-		final BoilerPlate headerBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getHeaderId(), language);
-		final String lines = getMassGenerateLinesPlainString(boilerPlateWithLineId, dunningDocs, language);
-
-		final Evaluatee headerEvaluatee = Evaluatees.ofSingleton(MASS_GENERATE_LINES_EVALUATEE_PARAM, lines)
-				.andComposeWith(getPO(orgDAO.getById(orgId)));
-
-		notificationBL.send(UserNotificationRequest.builder()
-				.notificationGroupName(MASS_DUNNING_NOTIFICATION_GROUP_NAME)
-				.recipient(Recipient.allOrgUsersForGroupAndOrgId(MASS_DUNNING_NOTIFICATION_GROUP_NAME, orgId))
-				.contentPlain(headerBoilerPlate.evaluateTextSnippet(headerEvaluatee))
-				.subjectPlain(headerBoilerPlate.evaluateSubject(headerEvaluatee))
-				.eMailCustomType(EMailCustomType.MassDunning)
-				.build());
-	}
-
-	@NonNull
-	private String getMassGenerateLinesPlainString(final @NonNull BoilerPlateWithLineId boilerPlateWithLineId,
-			final @NonNull List<I_C_DunningDoc> dunningDocs,
-			final Language language)
-	{
-		final BoilerPlate lineBoilerPlate = boilerPlateRepository.getByBoilerPlateId(boilerPlateWithLineId.getLineId(), language);
-		return dunningDocs.stream()
-				.map(doc -> lineBoilerPlate.evaluateTextSnippet(createEvalContext(doc)))
-				.collect(Collectors.joining("\n"));
-	}
-
-	private Evaluatee createEvalContext(final @NonNull I_C_DunningDoc doc)
-	{
-		return Evaluatees.compose(Evaluatees.ofSingleton("C_DunningLevel", dunningDAO.getById(DunningLevelId.ofRepoId(doc.getC_DunningLevel_ID())).getPrintName()),
-				getPO(doc));
 	}
 
 	@Override
@@ -360,6 +255,8 @@ public class DunningBL implements IDunningBL
 		// refactor of org.compiere.model.MDunningLevel.getPreviousLevels()
 
 		// NOTE: Only DaysAfterDue shall be considered when checking previous levels and not DaysAfterDue+DaysBetweenDunnings.
+
+		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 		final I_C_Dunning dunning = level.getC_Dunning();
 
@@ -391,11 +288,14 @@ public class DunningBL implements IDunningBL
 			@NonNull final I_C_DunningDoc dunningDoc,
 			@NonNull final I_C_DunningDoc_Line_Source source)
 	{
+		final IDunningDAO dao = Services.get(IDunningDAO.class);
+
 		final I_C_Dunning_Candidate candidate = source.getC_Dunning_Candidate();
 		candidate.setProcessed(true); // make sure the Processed flag is set
 		candidate.setIsDunningDocProcessed(true); // IsDunningDocProcessed
 		candidate.setDunningDateEffective(dunningDoc.getDunningDate());
-		dunningDAO.save(candidate);
+		dao.save(candidate);
+
 
 		source.setProcessed(true);
 		InterfaceWrapperHelper.save(source);
@@ -431,8 +331,10 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public boolean isExpired(final @NonNull I_C_Dunning_Candidate candidate, @Nullable final Timestamp dunningGraceDate)
+	public boolean isExpired(final I_C_Dunning_Candidate candidate, final Timestamp dunningGraceDate)
 	{
+		Check.assumeNotNull(candidate, "candidate not null");
+
 		if (candidate.isProcessed())
 		{
 			// candidate already processed => not expired

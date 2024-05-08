@@ -61,12 +61,14 @@ public class MPaymentTerm extends X_C_PaymentTerm
 		super(ctx, C_PaymentTerm_ID, trxName);
 		if (C_PaymentTerm_ID == 0)
 		{
+			setAfterDelivery (false);
 			setNetDays (0);
 			setDiscount (ZERO);
 			setDiscount2 (ZERO);
 			setDiscountDays (0);
 			setDiscountDays2 (0);
 			setGraceDays (0);
+			setIsDueFixed (false);
 			setIsValid (false);
 		}	}	//	MPaymentTerm
 
@@ -275,7 +277,7 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	private void deleteInvoicePaySchedule (int C_Invoice_ID)
 	{
 		String sql = "DELETE FROM C_InvoicePaySchedule WHERE C_Invoice_ID=" + C_Invoice_ID;
-		int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		log.debug("C_Invoice_ID=" + C_Invoice_ID + " - #" + no);
 	}	//	deleteInvoicePaySchedule
 
@@ -302,6 +304,20 @@ public class MPaymentTerm extends X_C_PaymentTerm
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
+		if (isDueFixed())
+		{
+			int dd = getFixMonthDay();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthDay@");
+			}
+			dd = getFixMonthCutoff();
+			if (dd < 1 || dd > 31)
+			{
+				throw new AdempiereException("@Invalid@ @FixMonthCutoff@");
+			}
+		}
+
 		if (!newRecord || !isValid())
 			validate();
 		return true;

@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor6
 Feature: Production dispo scenarios
 
   Background:
@@ -13,8 +12,7 @@ Feature: Production dispo scenarios
       | warehouseStd              | StdWarehouse |
 
   @from:cucumber
-  @Id:S0129.2_140
-  Scenario: Try to re-open production candidate after it has been closed
+  Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_1           |
@@ -43,8 +41,7 @@ Feature: Production dispo scenarios
       | oc_1                             |
 
   @from:cucumber
-  @Id:S0129.2_160
-  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed
+  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed (S0129.2_160)
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_2           |
@@ -70,8 +67,7 @@ Feature: Production dispo scenarios
       | oc_1                             | 12           |
 
   @from:cucumber
-  @Id:S0129.2_180
-  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed
+  Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed (S0129.2_180)
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_3           |
@@ -109,8 +105,7 @@ Feature: Production dispo scenarios
       | oc_1                             | 2            |
 
   @from:cucumber
-  @Id:S0129.2_190
-  Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed
+  Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed (S0129.2_190)
     Given metasfresh contains M_Products:
       | Identifier | Name                                |
       | p_1        | trackedProduct_04052022_4           |

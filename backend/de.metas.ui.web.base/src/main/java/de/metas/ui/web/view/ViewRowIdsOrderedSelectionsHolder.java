@@ -27,12 +27,12 @@ import java.util.function.UnaryOperator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -107,12 +107,6 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return getDefaultSelection().isQueryLimitHit();
 	}
 
-	@Nullable
-	public EmptyReason getEmptyReason()
-	{
-		return getDefaultSelection().getEmptyReason();
-	}
-
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return getCurrentSelections().getDefaultSelectionBeforeFacetsFiltering();
@@ -156,7 +150,6 @@ final class ViewRowIdsOrderedSelectionsHolder
 		final SqlDocumentFilterConverterContext filterConverterContext = SqlDocumentFilterConverterContext.builder()
 				.viewId(viewId)
 				.userRolePermissionsKey(viewEvalCtx.getPermissionsKey())
-				.queryIfNoFilters(viewDataRepository.isQueryIfNoFilters())
 				.build();
 
 		final ViewRowIdsOrderedSelection selectionBeforeFacetsFiltering = viewDataRepository.createOrderedSelection(
@@ -200,37 +193,32 @@ final class ViewRowIdsOrderedSelectionsHolder
 		return viewEvaluationCtxSupplier.get();
 	}
 
-	public void updateChangedRows(
-			@NonNull final Set<DocumentId> changedRowIds,
-			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
+	public void updateChangedRows(@NonNull final Set<DocumentId> changedRowIds)
 	{
 		if (changedRowIds.isEmpty())
 		{
 			return;
 		}
 
-		computeCurrentSelectionsIfPresent(selections -> addRemoveChangedRows(selections, changedRowIds, changesCollector));
+		computeCurrentSelectionsIfPresent(selections -> removeRowIdsNotMatchingFilters(selections, changedRowIds));
 	}
 
-	private ViewRowIdsOrderedSelections addRemoveChangedRows(
+	private ViewRowIdsOrderedSelections removeRowIdsNotMatchingFilters(
 			@NonNull final ViewRowIdsOrderedSelections selections,
-			@NonNull final Set<DocumentId> rowIds,
-			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
+			@NonNull final Set<DocumentId> rowIds)
 	{
-		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.addRemoveChangedRows(
+		final ViewRowIdsOrderedSelection defaultSelectionBeforeFacetsFiltering = viewDataRepository.removeRowIdsNotMatchingFilters(
 				selections.getDefaultSelectionBeforeFacetsFiltering(),
 				filtersExcludingFacets,
-				rowIds,
-				changesCollector);
+				rowIds);
 
 		final ViewRowIdsOrderedSelection defaultSelection;
 		if (!facetFilters.isEmpty())
 		{
-			defaultSelection = viewDataRepository.addRemoveChangedRows(
+			defaultSelection = viewDataRepository.removeRowIdsNotMatchingFilters(
 					selections.getDefaultSelection(),
 					facetFilters,
-					rowIds,
-					changesCollector);
+					rowIds);
 		}
 		else
 		{

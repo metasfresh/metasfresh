@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.async.spi.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -116,7 +117,9 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 
 			if (countRemaining > 0)
 			{
-				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName);
+				final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+				final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(ctx, localTrxName, asyncBatchId);
 				schedule(request);
 
 				Loggables.addLog("Scheduled another workpackage for {} remaining recompute records", countRemaining);

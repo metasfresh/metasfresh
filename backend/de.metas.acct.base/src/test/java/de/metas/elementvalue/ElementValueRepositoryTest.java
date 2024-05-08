@@ -90,8 +90,7 @@ class ElementValueRepositoryTest
 						.value("accountNo")
 						.name("account name")
 						.accountSign("D") // Debit
-						.accountType(AccountType.Asset)
-						.isActive(true)
+						.accountType("A") // Asset
 						.isSummary(true)
 						.isDocControlled(true)
 						.isPostActual(true)

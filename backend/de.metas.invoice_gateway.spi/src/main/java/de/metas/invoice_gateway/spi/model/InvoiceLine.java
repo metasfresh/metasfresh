@@ -1,7 +1,5 @@
 package de.metas.invoice_gateway.spi.model;
 
-import de.metas.invoice.InvoiceLineId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -35,9 +33,6 @@ import java.util.List;
 @Builder
 public class InvoiceLine
 {
-	@NonNull
-	InvoiceLineId id;
-
 	@NonNull
 	ProductId productId;
 

@@ -5,7 +5,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
-import de.metas.ordercandidate.api.OLCandSPIRegistry;
+import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -58,11 +58,11 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	{
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
-		final OLCandSPIRegistry olCandSPIRegistry = new OLCandSPIRegistry(
+		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
 				Optional.empty());
-		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandSPIRegistry);
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
 		// Initialize C_OLCand MV Only!
@@ -168,6 +168,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 
 		assertThat(olCand.getProductDescription()).isNull();
 	}
+
 
 	@Test
 	public void testSalesRepSameIdAsBPartner()

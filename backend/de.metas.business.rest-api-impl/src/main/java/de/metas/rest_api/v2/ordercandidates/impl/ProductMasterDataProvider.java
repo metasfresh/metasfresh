@@ -40,7 +40,7 @@ import org.compiere.model.I_M_Product;
  * #L%
  */
 
-public final class ProductMasterDataProvider
+final class ProductMasterDataProvider
 {
 	private final IProductBL productsBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);

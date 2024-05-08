@@ -1,6 +1,5 @@
 package de.metas.impexp;
 
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 /*
@@ -30,7 +29,7 @@ public class SqlInsertIntoImportTableService implements InsertIntoImportTableSer
 {
 
 	@Override
-	public InsertIntoImportTableResult insertData(@NonNull final InsertIntoImportTableRequest request)
+	public InsertIntoImportTableResult insertData(InsertIntoImportTableRequest request)
 	{
 		final SqlInsertIntoImportTableCommand command = SqlInsertIntoImportTableCommand.builder()
 				.importFormat(request.getImportFormat())
@@ -41,7 +40,6 @@ public class SqlInsertIntoImportTableService implements InsertIntoImportTableSer
 				.dataImportConfigId(request.getDataImportConfigId())
 				.insertBatchSize(request.getInsertBatchSize())
 				.linesStream(request.getStream())
-				.overrideColumnValues(request.getOverrideColumnValues())
 				.build();
 
 		return command.execute();

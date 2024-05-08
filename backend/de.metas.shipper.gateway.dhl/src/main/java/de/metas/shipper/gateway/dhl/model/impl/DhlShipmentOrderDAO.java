@@ -22,7 +22,6 @@
 
 package de.metas.shipper.gateway.dhl.model.impl;
 
-import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlShipmentOrderId;
@@ -47,7 +46,7 @@ public class DhlShipmentOrderDAO implements IDhlShipmentOrderDAO
 
 		return DhlCustomDeliveryDataDetail.builder()
 				.awb(shipmentOrder.getawb())
-				.packageId(PackageId.ofRepoId(shipmentOrder.getPackageId()))
+				.packageId(shipmentOrder.getPackageId())
 				.trackingUrl(shipmentOrder.getTrackingURL())
 				.pdfLabelData(shipmentOrder.getPdfLabelData())
 				.internationalDelivery(shipmentOrder.isInternationalDelivery())

@@ -1,20 +1,14 @@
 package de.metas.document.engine;
 
-import de.metas.ad_reference.ReferenceId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.organization.InstantAndOrgId;
+import de.metas.reflist.ReferenceId;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
-import java.util.Optional;
+import java.time.LocalDate;
 import java.util.Properties;
 
 /**
@@ -72,60 +66,43 @@ public interface IDocument
 	 * <pre>
 	 * reference to COLUMNNAME_Reversal_ID is ambiguous
 	 * </pre>
-	 * <p>
+	 *
 	 * in (legacy) sub classes of this class.
+	 *
 	 */
 	String Reversal_ID = "Reversal_ID";
 
 	@Nullable
 	String getProcessMsg();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	default boolean processIt(final String docAction)
 	{
 		return Services.get(IDocumentBL.class).processIt(this, docAction);
 	}
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean unlockIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean invalidateIt();
 
-	/**
-	 * @return new status (In Progress or Invalid)
-	 */
+	/** @return new status (In Progress or Invalid) */
 	String prepareIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean approveIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean rejectIt();
 
-	/**
-	 * @return new status (Complete, In Progress, Invalid, Waiting etc)
-	 */
+	/** @return new status (Complete, In Progress, Invalid, Waiting ..) */
 	String completeIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean voidIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean closeIt();
 
 	default void unCloseIt()
@@ -133,36 +110,24 @@ public interface IDocument
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean reverseCorrectIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean reverseAccrualIt();
 
-	/**
-	 * @return true if success
-	 */
+	/** @return true if success */
 	boolean reActivateIt();
 
 	File createPDF();
 
-	/**
-	 * @return Summary of Document
-	 */
+	/** @return Summary of Document */
 	String getSummary();
 
-	/**
-	 * @return Document No
-	 */
+	/** @return Document No */
 	String getDocumentNo();
 
-	/**
-	 * @return Type and Document No
-	 */
+	/** @return Type and Document No */
 	String getDocumentInfo();
 
 	int getDoc_User_ID();
@@ -170,12 +135,6 @@ public interface IDocument
 	int getC_Currency_ID();
 
 	BigDecimal getApprovalAmt();
-
-	default Money getApprovalAmtAsMoney()
-	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(getC_Currency_ID());
-		return currencyId != null ? Money.of(getApprovalAmt(), currencyId) : null;
-	}
 
 	int getAD_Client_ID();
 
@@ -189,7 +148,7 @@ public interface IDocument
 
 	String getDocAction();
 
-	InstantAndOrgId getDocumentDate();
+	LocalDate getDocumentDate();
 
 	Properties getCtx();
 
@@ -197,12 +156,10 @@ public interface IDocument
 
 	int get_Table_ID();
 
-	/**
-	 * @return true if saved
-	 */
-	boolean save();
+	Logger get_Logger();
 
-	String get_TableName();
+	/** @return true if saved */
+	boolean save();
 
 	String get_TrxName();
 
@@ -213,9 +170,9 @@ public interface IDocument
 		return TableRecordReference.of(get_Table_ID(), get_ID());
 	}
 
-	/**
-	 * We use this constant in {@link org.adempiere.ad.wrapper.POJOWrapper}.
-	 * Please keep it in sync with {@link #getDocumentModel()}.
+	/** 
+	 * We use this constant in {@link org.adempiere.ad.wrapper.POJOWrapper}. 
+	 * Please keep it in sync with {@link #getDocumentModel()}. 
 	 */
 	String METHOD_NAME_getDocumentModel = "getDocumentModel";
 
@@ -223,20 +180,4 @@ public interface IDocument
 	{
 		return this;
 	}
-
-	default <T> T getDocumentModelAs(@NonNull final Class<T> modelType)
-	{
-		return InterfaceWrapperHelper.create(getDocumentModel(), modelType);
-	}
-
-	default Optional<Object> getValue(@NonNull final String columnName)
-	{
-		return InterfaceWrapperHelper.getValue(getDocumentModel(), columnName);
-	}
-
-	default <T extends RepoIdAware> Optional<T> getValueAsId(@NonNull final String columnName, @NonNull Class<T> idType)
-	{
-		return getValue(columnName).map(valueObj -> RepoIdAwares.ofObject(valueObj, idType));
-	}
-
 }

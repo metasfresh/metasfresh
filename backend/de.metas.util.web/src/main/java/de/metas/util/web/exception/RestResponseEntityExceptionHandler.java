@@ -134,7 +134,7 @@ public class RestResponseEntityExceptionHandler
 				() -> detail,
 				e::getMessage,
 				() -> e.getClass().getSimpleName());
-		Loggables.withFallbackToLogger(logger, Level.ERROR).addLog(logMessage, e);
+		Loggables.withLogger(logger, Level.ERROR).addLog(logMessage, e);
 
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 

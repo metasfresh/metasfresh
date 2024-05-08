@@ -84,11 +84,6 @@ public class AcctSchemaElementsMap implements Iterable<AcctSchemaElement>
 		}
 	}
 
-	public boolean isElementEnabled(@NonNull final AcctSchemaElementType elementType)
-	{
-		return elementsByType.get(elementType) != null;
-	}
-
 	@Nullable
 	public AcctSchemaElement getByElementType(@NonNull final AcctSchemaElementType elementType)
 	{

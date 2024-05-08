@@ -50,21 +50,30 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Make sure the {@link I_C_Invoice_Candidate_Agg#getClassname()} exists and is implementing {@link IAggregator} interface.
+	 *
+	 * @param agg
 	 */
 	void evalClassName(I_C_Invoice_Candidate_Agg agg);
 
 	/**
 	 * Creates a plain {@link IInvoiceLineRW} instance.
+	 *
+	 * @return
 	 */
 	IInvoiceLineRW mkInvoiceLine();
 
 	/**
 	 * Creates a new {@link IInvoiceLineRW}, and set every properties of that line from the given <code>template</code>.
+	 *
+	 * @param template
+	 * @return
 	 */
 	IInvoiceLineRW mkInvoiceLine(IInvoiceLineRW template);
 
 	/**
 	 * Creates a plain {@link IInvoiceCandAggregate} instance.
+	 *
+	 * @return
 	 */
 	IInvoiceCandAggregate mkInvoiceCandAggregate();
 
@@ -73,6 +82,7 @@ public interface IAggregationBL extends ISingletonService
 	/**
 	 * Build an invoice header aggregation key. In other words, all {@link I_C_Invoice_Candidate}s which will go to same invoice will have the same header aggregation key.
 	 *
+	 * @param ic
 	 * @return header aggregation key
 	 */
 	AggregationKey mkHeaderAggregationKey(I_C_Invoice_Candidate ic);
@@ -81,49 +91,59 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Gets the {@link IProcessor} used to update aggregation related informations of an {@link I_C_Invoice_Candidate}.
-	 * <p>
+	 *
 	 * i.e.
 	 * <ul>
 	 * <li> {@link I_C_Invoice_Candidate#setC_Invoice_Candidate_Agg(I_C_Invoice_Candidate_Agg)}
 	 * <li> {@link I_C_Invoice_Candidate#setHeaderAggregationKey(String)}
 	 * <li> {@link I_C_Invoice_Candidate#setLineAggregationKey(String)}
 	 * </ul>
+	 *
+	 * @return
 	 */
 	IProcessor<I_C_Invoice_Candidate> getUpdateProcessor();
 
 	/**
 	 * Convenience method that returns <code>true</code> if the given <code>iciol</code>'s inOutLine has it's <code>InDispute</code> flag set. <br>
 	 * If iciol is <code>null</code> or if the iciol's M_InOutLine is not set, then the method return <code>false</code>.
+	 *
+	 * @param iciol
+	 * @return
 	 */
 	boolean isIolInDispute(I_C_InvoiceCandidate_InOutLine iciol);
 
 	/**
 	 * Extract invoice line relevant product attributes from {@link I_M_InOutLine}.
-	 * <p>
+	 *
 	 * Relevant attributes from inout line are those that:
 	 * <ul>
 	 * <li>are inside the inout line's ASI
 	 * <li>have {@link I_M_Attribute#isAttrDocumentRelevant()} set.
 	 * </ul>
 	 *
+	 * @param inOutLine
 	 * @return invoice line product attributes
-	 * <p>
-	 * task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
-	 * task <a href="http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29">http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29</a>
+	 *
+	 * @task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
+	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	List<IInvoiceLineAttribute> extractInvoiceLineAttributes(final I_M_InOutLine inOutLine);
 
 	/**
 	 * Builds and set Header Aggregation Keys (calculated and the actual one).
-	 * <p>
+	 *
 	 * Also set the invoicing group.
+	 *
+	 * @param ic
 	 */
 	void setHeaderAggregationKey(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Reset Header Aggregation Keys (calculated and actual).
-	 * <p>
+	 *
 	 * Also resets the invoicing group.
+	 *
+	 * @param ic
 	 */
 	void resetHeaderAggregationKey(I_C_Invoice_Candidate ic);
 }

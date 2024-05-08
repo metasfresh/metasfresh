@@ -22,18 +22,14 @@
 
 package de.metas.externalreference;
 
-import de.metas.externalreference.allergen.AllergenExternalReferenceType;
-import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.greeting.GreetingExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
-import de.metas.externalreference.uom.UOMExternalReferenceType;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -61,10 +57,6 @@ public class ExternalReferenceTypes
 		registerType(WarehouseExternalReferenceType.WAREHOUSE);
 		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);
 		registerType(ShipperExternalReferenceType.SHIPPER);
-		registerType(UOMExternalReferenceType.UOM);
-		registerType(AllergenExternalReferenceType.ALLERGEN);
-		registerType(BPBankAccountType.BPBankAccount);
-		registerType(GreetingExternalReferenceType.GREETING);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

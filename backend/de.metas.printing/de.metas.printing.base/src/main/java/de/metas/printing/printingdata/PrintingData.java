@@ -24,12 +24,11 @@ package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.PdfReader;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
-import de.metas.process.PInstanceId;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,11 +48,8 @@ import java.util.Objects;
 public class PrintingData
 {
 	// Services
-	private static final Logger logger = LogManager.getLogger(PrintingData.class);
+	private static final transient Logger logger = LogManager.getLogger(PrintingData.class);
 
-	@Getter
-	private final @Nullable PInstanceId pInstanceId;
-	
 	@Getter
 	private final ImmutableList<PrintingSegment> segments;
 
@@ -74,7 +70,6 @@ public class PrintingData
 
 	@Builder
 	private PrintingData(
-			@Nullable final PInstanceId pInstanceId,
 			@Singular @NonNull final List<PrintingSegment> segments,
 			@NonNull final PrintingQueueItemId printingQueueItemId,
 			@NonNull final OrgId orgId,
@@ -82,7 +77,6 @@ public class PrintingData
 			@NonNull final String documentFileName,
 			@Nullable final Boolean adjustSegmentPageRanges)
 	{
-		this.pInstanceId = pInstanceId;
 		this.printingQueueItemId = printingQueueItemId;
 		this.data = data;
 		this.orgId = orgId;
@@ -297,7 +291,7 @@ public class PrintingData
 				{
 					reader.close();
 				}
-				catch (final Exception ignored)
+				catch (final Exception e)
 				{
 				}
 			}
@@ -308,24 +302,6 @@ public class PrintingData
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
 				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), outputType))
-				.collect(ImmutableList.toImmutableList());
-
-		return PrintingData.builder()
-				.pInstanceId(this.pInstanceId)
-				.adjustSegmentPageRanges(false)
-				.data(this.data)
-				.documentFileName(this.documentFileName)
-				.orgId(this.orgId)
-				.printingQueueItemId(this.printingQueueItemId)
-				.segments(filteredSegments)
-				.build();
-	}
-
-	public PrintingData onlyQueuedForExternalSystems()
-	{
-		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), OutputType.Queue))
-				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
 				.collect(ImmutableList.toImmutableList());
 
 		return PrintingData.builder()

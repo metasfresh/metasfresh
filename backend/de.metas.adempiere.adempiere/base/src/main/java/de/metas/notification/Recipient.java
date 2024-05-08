@@ -1,6 +1,5 @@
 package de.metas.notification;
 
-import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
@@ -86,38 +85,26 @@ public class Recipient
 				.build();
 	}
 
-	public static Recipient allOrgUsersForGroupAndOrgId(final NotificationGroupName notificationGroupName, final OrgId orgId)
+	public static enum RecipientType
 	{
-		return _builder()
-				.type(RecipientType.OrgUsersContainingGroup)
-				.notificationGroupName(notificationGroupName)
-				.orgId(orgId)
-				.build();
-	}
-
-
-	public enum RecipientType
-	{
-		AllUsers, User, Role, AllRolesContainingGroup, Group, OrgUsersContainingGroup
+		AllUsers, User, Role, AllRolesContainingGroup, Group,
 	}
 
 	private static final Recipient ALL_USERS = _builder().type(RecipientType.AllUsers).build();
 
-	RecipientType type;
-	UserId userId;
-	RoleId roleId;
-	UserGroupId groupId;
-	NotificationGroupName notificationGroupName;
-	OrgId orgId;
+	private RecipientType type;
+	private UserId userId;
+	private RoleId roleId;
+	private UserGroupId groupId;
+	private NotificationGroupName notificationGroupName;
 
-	@Builder(builderMethodName = "_builder", toBuilder = true)
+	@Builder(builderMethodName = "_builder")
 	private Recipient(
 			@NonNull final RecipientType type,
 			final UserId userId,
 			final RoleId roleId,
 			final UserGroupId groupId,
-			final NotificationGroupName notificationGroupName,
-			final OrgId orgId)
+			final NotificationGroupName notificationGroupName)
 	{
 		this.type = type;
 		if (type == RecipientType.AllUsers)
@@ -126,7 +113,6 @@ public class Recipient
 			this.roleId = null;
 			this.groupId = null;
 			this.notificationGroupName = null;
-			this.orgId = null;
 		}
 		else if (type == RecipientType.User)
 		{
@@ -135,7 +121,6 @@ public class Recipient
 			this.roleId = roleId;
 			this.groupId = null;
 			this.notificationGroupName = null;
-			this.orgId = null;
 		}
 		else if (type == RecipientType.Role)
 		{
@@ -144,7 +129,6 @@ public class Recipient
 			this.roleId = roleId;
 			this.groupId = null;
 			this.notificationGroupName = null;
-			this.orgId = null;
 		}
 		else if (type == RecipientType.Group)
 		{
@@ -152,7 +136,6 @@ public class Recipient
 			this.roleId = null;
 			this.groupId = groupId;
 			this.notificationGroupName = null;
-			this.orgId = null;
 		}
 		else if (type == RecipientType.AllRolesContainingGroup)
 		{
@@ -161,17 +144,6 @@ public class Recipient
 			this.roleId = null;
 			this.groupId = null;
 			this.notificationGroupName = notificationGroupName;
-			this.orgId = orgId;
-		}
-		else if (type == RecipientType.OrgUsersContainingGroup)
-		{
-			Check.assumeNotNull(notificationGroupName, "Parameter notificationGroupName is not null");
-			Check.assumeNotNull(orgId, "Parameter orgId is not null");
-			this.userId = null;
-			this.roleId = null;
-			this.groupId = null;
-			this.notificationGroupName = notificationGroupName;
-			this.orgId = orgId;
 		}
 		else
 		{
@@ -203,10 +175,6 @@ public class Recipient
 	{
 		return type == RecipientType.AllRolesContainingGroup;
 	}
-	public boolean isOrgUsersContainingGroup()
-	{
-		return type == RecipientType.OrgUsersContainingGroup;
-	}
 
 	public UserId getUserId()
 	{
@@ -233,7 +201,7 @@ public class Recipient
 
 	public NotificationGroupName getNotificationGroupName()
 	{
-		if (type != RecipientType.AllRolesContainingGroup && type != RecipientType.OrgUsersContainingGroup)
+		if (type != RecipientType.AllRolesContainingGroup)
 		{
 			throw new AdempiereException("NotificationGroupName not available: " + this);
 		}

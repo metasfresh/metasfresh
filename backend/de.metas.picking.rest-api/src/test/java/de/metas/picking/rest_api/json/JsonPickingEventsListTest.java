@@ -21,7 +21,6 @@ class JsonPickingEventsListTest
 						JsonPickingStepEvent.builder()
 								.wfProcessId("wfProcessId")
 								.wfActivityId("wfActivityId")
-								.pickingLineId("pickingLineId")
 								.pickingStepId("pickingStepId")
 								.type(JsonPickingStepEvent.EventType.PICK)
 								.huQRCode("some dummy HU QR code")

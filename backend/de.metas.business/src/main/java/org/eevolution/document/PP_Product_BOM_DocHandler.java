@@ -22,20 +22,25 @@
 
 package org.eevolution.document;
 
-import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
-import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_RemittanceAdvice;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_BOM;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 public class PP_Product_BOM_DocHandler implements DocumentHandler
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@Override
 	public String getSummary(final DocumentTableFields docFields)
 	{
@@ -56,21 +61,23 @@ public class PP_Product_BOM_DocHandler implements DocumentHandler
 
 	@Nullable
 	@Override
-	public InstantAndOrgId getDocumentDate(final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(final DocumentTableFields docFields)
 	{
 		final I_PP_Product_BOM productBom = extractProductBom(docFields);
-		final OrgId orgId = OrgId.ofRepoId(productBom.getAD_Org_ID());
-		return InstantAndOrgId.ofTimestamp(productBom.getDateDoc(), orgId);
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(productBom.getAD_Org_ID()));
+
+		return TimeUtil.asLocalDate(productBom.getDateDoc(), timeZone);
 	}
 
 	@Override
-	public DocStatus completeIt(final DocumentTableFields docFields)
+	public String completeIt(final DocumentTableFields docFields)
 	{
 		final I_PP_Product_BOM productBomRecord = extractProductBom(docFields);
 
 		productBomRecord.setDocAction(X_C_RemittanceAdvice.DOCACTION_Re_Activate);
 		productBomRecord.setProcessed(true);
-		return DocStatus.Completed;
+		return X_PP_Product_BOM.DOCSTATUS_Completed;
 	}
 
 	@Override

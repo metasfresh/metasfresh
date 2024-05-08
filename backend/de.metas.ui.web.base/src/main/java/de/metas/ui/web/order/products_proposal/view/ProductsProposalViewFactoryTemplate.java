@@ -124,14 +124,14 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 				.build();
 	}
 
-	private ProductsProposalRowsData loadRowsData(final CreateViewRequest request)
+	private final ProductsProposalRowsData loadRowsData(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = getRecordReference(request);
 		return createRowsLoaderFromRecord(recordRef)
 				.load();
 	}
 
-	private TableRecordReference getRecordReference(final CreateViewRequest request)
+	private final TableRecordReference getRecordReference(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = request.getParameterAs(PARAM_RecordRef, TableRecordReference.class);
 		if (recordRef == null)

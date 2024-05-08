@@ -26,30 +26,22 @@ import de.metas.bpartner.BPartnerLocationId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.PO;
 
 @UtilityClass
 public class RecordBasedLocationUtils
 {
 	public static <SELF extends RecordBasedLocationAdapter<SELF>> void updateCapturedLocationAndRenderedAddressIfNeeded(
-			@NonNull final RecordBasedLocationAdapter<SELF> locationAdapter,
+			@NonNull RecordBasedLocationAdapter<SELF> locationAdapter,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		final Object record = locationAdapter.getWrappedRecord();
 
 		// do nothing if we are cloning the record
-		if(InterfaceWrapperHelper.isCopying(record))
+		if (InterfaceWrapperHelper.getDynAttribute(record, PO.DYNATTR_CopyRecordSupport) != null)
 		{
 			return;
 		}
-
-		updateCapturedLocationAndRenderedAddress(locationAdapter,documentLocationBL);
-	}
-
-	public static <SELF extends RecordBasedLocationAdapter<SELF>> void updateCapturedLocationAndRenderedAddress(
-			@NonNull final RecordBasedLocationAdapter<SELF> locationAdapter,
-			@NonNull final IDocumentLocationBL documentLocationBL)
-	{
-		final Object record = locationAdapter.getWrappedRecord();
 
 		final boolean isNewRecord = InterfaceWrapperHelper.isNew(record);
 		final DocumentLocation currentLocation = locationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(DocumentLocation.EMPTY);

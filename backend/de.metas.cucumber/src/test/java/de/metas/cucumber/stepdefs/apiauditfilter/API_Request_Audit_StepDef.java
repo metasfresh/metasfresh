@@ -35,7 +35,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_API_Request_Audit;
@@ -148,8 +147,6 @@ public class API_Request_Audit_StepDef
 		
 		final String statuses = DataTableUtil.extractStringForColumnName(row, "Status");
 		final String[] allowedStatuses = statuses.split(" *OR *");
-
-		final Integer pInstanceId = DataTableUtil.extractIntegerOrNullForColumnName(row,"OPT." + I_API_Request_Audit.COLUMNNAME_AD_PInstance_ID);
 		
 		if (timeoutSec != null)
 		{
@@ -157,21 +154,15 @@ public class API_Request_Audit_StepDef
 		}
 
 		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId.getValue(), I_API_Request_Audit.class);
+
 		assertThat(requestAuditRecord).isNotNull();
-
-		final SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(requestAuditRecord.getPath()).as("path").contains(path);
-		softly.assertThat(requestAuditRecord.getMethod()).as("method").contains(method);
-		softly.assertThat(requestAuditRecord.getStatus()).as("status").isIn((Object[])allowedStatuses);
-
-		if (pInstanceId != null)
-		{
-			softly.assertThat(requestAuditRecord.getAD_PInstance_ID()).isEqualTo(pInstanceId);
-		}
+		assertThat(requestAuditRecord.getPath()).contains(path);
+		assertThat(requestAuditRecord.getMethod()).contains(method);
+		assertThat(requestAuditRecord.getStatus()).isIn((Object[])allowedStatuses);
 
 		final I_AD_User adUserRecord = InterfaceWrapperHelper.load(requestAuditRecord.getAD_User_ID(), I_AD_User.class);
 
 		assertThat(adUserRecord).isNotNull();
-		assertThat(adUserRecord.getLogin()).as("AD_User.Login of API_Request_Audit_ID=%s", requestAuditRecord.getAPI_Request_Audit_ID()).isEqualTo(name);
+		assertThat(name).isEqualTo(adUserRecord.getLogin());
 	}
 }

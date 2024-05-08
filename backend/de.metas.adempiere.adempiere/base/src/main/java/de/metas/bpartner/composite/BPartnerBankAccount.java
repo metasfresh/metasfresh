@@ -28,7 +28,6 @@ import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.common.util.Check;
 import de.metas.money.CurrencyId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -70,12 +69,8 @@ public class BPartnerBankAccount
 	public static final String ID = "id";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String IBAN = "iban";
-	public static final String QR_IBAN = "qrIban";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
-	public static final String IS_DEFAULT = "isDefault";
-	public static final String NAME = "name";
-	public static final String SWIFT_CODE = "swiftCode";
 
 	@Nullable
 	private BPartnerBankAccountId id;
@@ -91,20 +86,12 @@ public class BPartnerBankAccount
 	private String iban;
 
 	@Nullable
-	private String swiftCode;
-
-	@Nullable
 	private String qrIban;
-
-	@Nullable
-	private String name;
 
 	@NonNull
 	private CurrencyId currencyId;
 
 	private boolean active;
-
-	private boolean isDefault;
 
 	private final RecordChangeLog changeLog;
 
@@ -119,24 +106,18 @@ public class BPartnerBankAccount
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
 			@NonNull final String iban,
-			@Nullable final String swiftCode,
 			@Nullable final String qrIban,
-			@Nullable final String name,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
-			@Nullable final Boolean isDefault,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final BankId bankId)
 	{
 		setId(id);
 		this.iban = iban;
-		this.swiftCode = swiftCode;
 		this.qrIban = qrIban;
-		this.name = name;
 		this.currencyId = currencyId;
 		this.active = coalesce(active, true);
-		this.isDefault = coalesce(isDefault, true);
 
 		this.changeLog = changeLog;
 
@@ -148,12 +129,6 @@ public class BPartnerBankAccount
 	{
 		this.id = id;
 		this.bpartnerId = id != null ? id.getBpartnerId() : null;
-	}
-
-	@NonNull
-	public BPartnerBankAccountId getIdNotNull()
-	{
-		return Check.assumeNotNull(id, "Assuming the id is set at this point!");
 	}
 
 }

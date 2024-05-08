@@ -6,10 +6,9 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /*
  * #%L
@@ -85,11 +84,6 @@ public final class ExplainedOptional<T>
 		return value != null ? value : other;
 	}
 
-	public T orElseGet(@NonNull final Supplier<? extends T> other)
-	{
-		return value != null ? value : other.get();
-	}
-
 	public T orElseThrow()
 	{
 		if (value != null)
@@ -151,25 +145,17 @@ public final class ExplainedOptional<T>
 		return this;
 	}
 
-	/**
-	 * @see #resolve(Function, Function)
-	 */
-	public <R> Optional<R> mapIfAbsent(@NonNull final Function<ITranslatableString, R> mapper)
-	{
-		return isPresent()
-				? Optional.empty()
-				: Optional.ofNullable(mapper.apply(getExplanation()));
-	}
-
-	/**
-	 * @see #mapIfAbsent(Function)
-	 */
 	public <R> R resolve(
 			@NonNull final Function<T, R> mapPresent,
 			@NonNull final Function<ITranslatableString, R> mapAbsent)
 	{
-		return isPresent()
-				? mapPresent.apply(value)
-				: mapAbsent.apply(explanation);
+		if (isPresent())
+		{
+			return mapPresent.apply(value);
+		}
+		else
+		{
+			return mapAbsent.apply(explanation);
+		}
 	}
 }

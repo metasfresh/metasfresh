@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -45,19 +44,15 @@ public class PPOrderLinesViewDataSupplier
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService,
-			final boolean serialNoFromSequence)
+			@NonNull final HUReservationService huReservationService)
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
 		dataSupplier = ExtendedMemorizingSupplier
 				.of(() -> PPOrderLinesViewDataLoader
 						.builder(viewWindowId)
 						.asiAttributesProvider(asiAttributesProvider)
-						.serialNoFromSequence(serialNoFromSequence)
 						.huSQLViewBinding(huSQLViewBinding)
 						.huReservationService(huReservationService)
-						.adReferenceService(adReferenceService)
 						.build()
 						.retrieveData(ppOrderId));
 	}

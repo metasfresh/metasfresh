@@ -37,9 +37,14 @@ import java.util.function.Consumer;
 public interface IEventBus
 {
 	/**
-	 * @return the topic of this event bus. If the event bus is "distributed" then subscriber on other hosts will be notified about events on this host.
+	 * @return the (topic-) name of this event bus.
 	 */
-	Topic getTopic();
+	String getTopicName();
+
+	/**
+	 * @return the type (remote or local) of this event bus. If the event bus is "remote" then subscriber on other hosts will be notified about events on this host.
+	 */
+	Type getType();
 
 	/**
 	 * Subscribe to this bus.
@@ -55,7 +60,7 @@ public interface IEventBus
 
 	/**
 	 * Subscribe and expect events with to have bodys of a particular type.
-	 * Also see {@link #enqueueObject(Object)}.
+	 * Also see {@link #postObject(Object)}.
 	 *
 	 * @param type the class of the object the consumer is subscribed to.
 	 *             The event-bus will attempt to deserialize the event's body to an instance of this class.
@@ -65,19 +70,14 @@ public interface IEventBus
 	<T> IEventListener subscribeOn(Class<T> type, Consumer<T> eventConsumer);
 
 	/**
-	 * Post given event in the underlying bus.
+	 * Post given event on this bus.
 	 */
-	void processEvent(Event event);
-
-	/**
-	 * Enqueue given event in RabbitMQ.
-	 */
-	void enqueueEvent(Event event);
+	void postEvent(Event event);
 
 	/**
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).
 	 */
-	void enqueueObject(Object obj);
+	void postObject(Object obj);
 
 	/**
 	 * @return {@code true} if the bus was destroyed and it no longer accepts events.
@@ -95,7 +95,7 @@ public interface IEventBus
 	 * <li>analog to the PROD and CONs of async</li>
 	 * <li>note that only one thread per eventbus is allowed to process its event (analog to the one worker thread that we have at async=true)</li>
 	 *
-	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #processEvent(Event)} doesn't have to wait for the listeners to be invoked.
+	 * @return {@code true} if events are submitted to a dedicated worker thread such that the invoker of {@link #postEvent(Event)} doesn't have to wait for the listeners to be invoked.
 	 */
 	boolean isAsync();
 

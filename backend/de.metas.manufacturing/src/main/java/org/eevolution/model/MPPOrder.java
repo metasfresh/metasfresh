@@ -27,10 +27,8 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -38,14 +36,9 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.quantity.Quantity;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -54,6 +47,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -69,8 +63,8 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -79,13 +73,9 @@ import java.util.Properties;
  * @author Victor Perez www.e-evolution.com
  * @author Teo Sarca, www.arhipac.ro
  */
-@SuppressWarnings("unused")
 public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
-
-	private static final AdMessageKey MSG_CannotVoidDueToTransactions = AdMessageKey.of("CannotVoidDueToTransactions");
-	private static final AdMessageKey MSG_CannotReactivateDueToTransactions = AdMessageKey.of("CannotReactivateDueToTransactions");
 
 	@SuppressWarnings("unused")
 	public MPPOrder(
@@ -127,7 +117,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
-		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override
@@ -170,7 +160,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final List<I_PP_Order_BOMLine> lines = getLines();
 		if (lines.isEmpty())
 		{
-			throw new LiberoException(LiberoException.MSG_NoLines);
+			throw new LiberoException("@NoLines@");
 		}
 
 		//
@@ -182,10 +172,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 			{
 				if (line.getM_Warehouse_ID() != getM_Warehouse_ID())
 				{
-					throw new LiberoException(TranslatableStrings.parse("@CannotChangeDocType@"
-													  + "\n@PP_Order_BOMLine_ID@: " + line
-													  + "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
-							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID()));
+					throw new LiberoException("@CannotChangeDocType@"
+							+ "\n@PP_Order_BOMLine_ID@: " + line
+							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
+							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
 				}
 			}
 		}
@@ -215,7 +205,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
 		if (docBaseType.isQualityOrder())
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
@@ -301,7 +291,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		if (ppOrderBL.isSomethingProcessed(this))
 		{
-			throw new LiberoException(MSG_CannotVoidDueToTransactions);
+			throw new LiberoException("Cannot void this document because exist transactions"); // TODO: Create Message for Translation
 		}
 
 		//
@@ -372,29 +362,21 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		//
-		// Validate BOM Lines before closing them
-		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final Optional<Quantity> roundingToScaleQty = ppOrderBL.getRoundingToScale(PPOrderId.ofRepoId(getPP_Order_ID()));
-
-		getLines().forEach(line -> ppOrderBOMLineBL.validateBeforeClose(line,
-																		roundingToScaleQty.flatMap(scaleQtyRound -> uomConversionBL
-																				.convertQtyTo(scaleQtyRound, UomId.ofRepoId(line.getC_UOM_ID())))
-																				.orElse(null)));
-
-		//
 		// Create usage variances
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.optionalOfNullable(getDocBaseType()).orElse(PPOrderDocBaseType.MANUFACTURING_ORDER);
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
 		if (!docBaseType.isRepairOrder())
 		{
 			createVariances();
 		}
 
 		//
-		// Close BOM Lines
-		getLines().forEach(ppOrderBOMLineBL::close);
+		// Update BOM Lines and set QtyRequired=QtyDelivered
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
+		for (final I_PP_Order_BOMLine line : getLines())
+		{
+			ppOrderBOMLineBL.close(line);
+		}
 
 		//
 		// Close all the activity do not reported
@@ -426,7 +408,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
+		materialEventService.postEventAfterNextCommit(changeEvent);
 
 		return true;
 	}
@@ -449,7 +431,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		if (ppOrderBL.isSomethingProcessed(this))
 		{
-			throw new LiberoException(MSG_CannotReactivateDueToTransactions);
+			throw new LiberoException("Cannot re-activate this document because exist transactions"); // TODO: Create Message for Translation
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
@@ -460,11 +442,10 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
-		setDocAction(IDocument.ACTION_Complete);
-		setProcessed(false);
-
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 
+		setDocAction(IDocument.ACTION_Complete);
+		setProcessed(false);
 		return true;
 	} // reActivateIt
 
@@ -499,9 +480,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate()
+	public LocalDate getDocumentDate()
 	{
-		return InstantAndOrgId.ofTimestamp(getDateOrdered(), OrgId.ofRepoId(getAD_Org_ID()));
+		return TimeUtil.asLocalDate(getDateOrdered());
 	}
 
 	@Override
@@ -552,12 +533,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 					&& (activity.isSubcontracting() || orderRouting.isFirstActivity(activity)))
 			{
 				ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
-																.order(this)
-																.orderActivity(activity)
-																.qtyMoved(activity.getQtyToDeliver())
-																.durationSetup(Duration.ZERO)
-																.duration(Duration.ZERO)
-																.build());
+						.order(this)
+						.orderActivity(activity)
+						.qtyMoved(activity.getQtyToDeliver())
+						.durationSetup(Duration.ZERO)
+						.duration(Duration.ZERO)
+						.build());
 			}
 		}
 	}

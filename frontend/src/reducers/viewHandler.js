@@ -394,7 +394,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             pending: false,
-            //notFound: true, // don't set notFound to true because in case the filter failed, we still want to keep current data
+            notFound: true,
             error,
           },
         },

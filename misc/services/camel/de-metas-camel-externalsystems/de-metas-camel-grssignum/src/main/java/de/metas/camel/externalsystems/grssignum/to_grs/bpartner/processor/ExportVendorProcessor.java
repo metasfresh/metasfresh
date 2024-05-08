@@ -36,7 +36,6 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
-import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.util.Check;
 import lombok.NonNull;
@@ -45,7 +44,6 @@ import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -139,9 +137,7 @@ public class ExportVendorProcessor implements Processor
 						.lastName(contact.getLastName())
 						.email(contact.getEmail())
 						.fax(contact.getFax())
-						.greeting(Optional.ofNullable(contact.getGreeting())
-										  .map(JsonResponseGreeting::getGreeting)
-										  .orElse(null))
+						.greeting(contact.getGreeting())
 						.title(contact.getTitle())
 						.phone(contact.getPhone())
 						.phone2(contact.getPhone2())

@@ -52,12 +52,11 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.process.PInstanceId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,13 +67,13 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -93,12 +92,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -110,7 +106,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	public HandlingUnitsDAO()
 	{
@@ -132,25 +127,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
-	}
-
-	@Override
-	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.setOnlySelection(selectionId)
-				.create()
-				.list();
-	}
-
-	@Override
-	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.setOnlySelection(selectionId)
-				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
-				.create()
-				.listIds(HuId::ofRepoId);
 	}
 
 	@Override
@@ -295,12 +271,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		return result;
-	}
-
-	@NonNull
-	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
-	{
-		return retrieveIncludedHUs(getById(huId));
 	}
 
 	@Override
@@ -468,7 +438,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
-			@NonNull final I_M_HU_PI handlingUnit,
+			@NonNull final I_M_HU_PI handlingUnit, 
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
@@ -640,6 +610,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return piVersion;
 	}
 
+
 	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)
 	{
@@ -725,6 +696,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return retrieveParentPIItemsForParentPI(Env.getCtx(), packingInstructionsId, huUnitType, bpartnerId, ITrx.TRXNAME_None);
 	}
 
+	@Cached
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			@NonNull final HuPackingInstructionsId packingInstructionsId,
@@ -861,13 +833,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull final HuPackingInstructionsVersionId versionId, @Nullable final BPartnerId bpartnerId)
-	{
-		final I_M_HU_PI_Version version = retrievePIVersionById(versionId);
-		return retrievePackingMaterial(version, bpartnerId);
-	}
-
-	@Override
 	public List<I_M_HU> retrieveVirtualHUs(final I_M_HU_Item itemMaterial)
 	{
 		return retrieveIncludedHUs(itemMaterial);
@@ -943,19 +908,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 	}
 
-	@NonNull
-	public Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(
-			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
-			@Nullable final BPartnerId bpartnerId)
-	{
-		final I_M_HU_PI_Item parentPIItem = retrieveDefaultParentPIItem(huPI, huUnitType, bpartnerId);
-
-		return Optional.ofNullable(parentPIItem)
-				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
-				.map(HuPackingInstructionsItemId::ofRepoId);
-	}
-
 	private boolean isDefaultLU(final I_M_HU_PI_Item parentPIItem)
 	{
 		return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
@@ -1003,16 +955,36 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.firstOnly(I_DD_NetworkDistribution.class);
 	}
 
-	@Override
-	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
+	private Set<WarehouseId> retrieveWarehouseIdsForHUs(final List<I_M_HU> hus)
 	{
 		final Set<Integer> locatorRepoIds = hus.stream()
 				.map(I_M_HU::getM_Locator_ID)
 				.filter(locatorRepoId -> locatorRepoId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
+		return Services.get(IWarehouseDAO.class).getWarehouseIdsForLocatorRepoIds(locatorRepoIds);
+	}
+
+	@Override
+	public List<org.compiere.model.I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(final List<I_M_HU> hus)
+	{
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return Collections.emptyList();
+		}
+
+		// used for deciding the org and context
+		final I_M_HU firstHU = hus.get(0);
+
+		final OrgId orgId = OrgId.ofRepoId(firstHU.getAD_Org_ID());
+
+		final Set<WarehouseId> huWarehouseIds = retrieveWarehouseIdsForHUs(hus);
+
+		return Services.get(IWarehouseDAO.class).getByOrgId(orgId)
+				.stream()
+				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -1043,25 +1015,5 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			hu.setIsReserved(reserved);
 			saveHU(hu);
 		}
-	}
-
-	@Override
-	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
-	{
-		return createHUQueryBuilder()
-				.setHUStatus(X_M_HU.HUSTATUS_Active)
-				.setOnlyTopLevelHUs()
-				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
-				.createQuery()
-				.firstIdOnlyOptional(HuId::ofRepoId);
-	}
-
-	@Override
-	public <T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper)
-	{
-		return queryBuilder
-				.create()
-				.iterateAndStream()
-				.map(mapper);
 	}
 }

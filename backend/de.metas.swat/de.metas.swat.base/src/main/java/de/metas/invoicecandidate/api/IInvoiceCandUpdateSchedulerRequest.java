@@ -34,4 +34,6 @@ public interface IInvoiceCandUpdateSchedulerRequest
 	Properties getCtx();
 
 	String getTrxName();
+
+	AsyncBatchId getAsyncBatchId();
 }

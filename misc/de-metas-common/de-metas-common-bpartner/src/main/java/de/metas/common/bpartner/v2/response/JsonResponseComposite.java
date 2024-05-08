@@ -30,7 +30,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.EmptyUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,28 +42,25 @@ import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-@Schema(description = "A BPartner with `n` contacts and `n` locations.\n" //
+@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonResponseComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
-	@Schema
+	@ApiModelProperty
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
 	JsonResponseBPartner bpartner;
 
-	@Schema(description = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseLocation> locations;
 
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseContact> contacts;
-
-	@JsonInclude(Include.NON_EMPTY)
-	List<JsonResponseBPBankAccount> bankAccounts;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -70,14 +68,12 @@ public class JsonResponseComposite
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("bpartner") @NonNull final JsonResponseBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonResponseLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts,
-			@JsonProperty("bankAccounts") @Singular final List<JsonResponseBPBankAccount> bankAccounts)
+			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts)
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
-		this.bankAccounts = coalesce(bankAccounts, ImmutableList.of());
 	}
 
 	public ImmutableList<String> extractLocationGlns()

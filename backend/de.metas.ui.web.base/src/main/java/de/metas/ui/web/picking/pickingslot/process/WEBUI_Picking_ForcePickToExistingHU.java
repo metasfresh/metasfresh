@@ -22,8 +22,10 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
+import de.metas.handlingunits.HuId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 
 import java.util.Optional;
 
@@ -50,9 +52,13 @@ public class WEBUI_Picking_ForcePickToExistingHU extends WEBUI_Picking_PickQtyTo
 
 	protected String doIt() throws Exception
 	{
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+
+		final HuId packToHuId = pickingSlotRow.getHuId();
+
 		validatePickingToHU();
 
-		forcePick(getQtyToPack(), getPackToHuId());
+		forcePick(getQtyToPack(), packToHuId);
 
 		invalidateView();
 		invalidateParentView();

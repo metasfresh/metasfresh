@@ -22,20 +22,12 @@
 
 package de.metas.rest_api.v2.product;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -45,82 +37,59 @@ import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
-import de.metas.greeting.GreetingRepository;
-import de.metas.incoterms.repository.IncotermsRepository;
-import de.metas.job.JobService;
 import de.metas.logging.LogManager;
-import de.metas.pricing.pricelist.PriceListVersionRepository;
-import de.metas.pricing.productprice.ProductPriceRepository;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.product.quality.attribute.ProductQualityAttributeRepository;
-import de.metas.product.quality.attribute.QualityAttributeService;
-import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
-import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.v2.bpartner.JsonGreetingService;
-import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
-import de.metas.rest_api.v2.pricing.PriceListRestService;
-import de.metas.rest_api.v2.pricing.ProductPriceRestService;
-import de.metas.rest_api.v2.warehouseassignment.ProductWarehouseAssignmentRestService;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.sectionCode.SectionCodeRepository;
-import de.metas.sectionCode.SectionCodeService;
-import de.metas.title.TitleRepository;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentRepository;
-import de.metas.warehouseassignment.ProductWarehouseAssignmentService;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
 
 	private UomId eachUomId;
 	private UomId kgUomId;
-	private SectionCodeId sectionCodeId;
-
-	private Expect expect;
 
 	@BeforeAll
 	static void initStatic()
 	{
+		SnapshotMatcher.start(
+				AdempiereTestHelper.SNAPSHOT_CONFIG,
+				AdempiereTestHelper.createSnapshotJsonFunction());
+
 		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -130,11 +99,10 @@ public class ProductsRestControllerTest
 		createMasterData();
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
-		final SectionCodeRepository sectionCodeRepository = new SectionCodeRepository();
-
+		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
 																					  new ExternalSystemExportAuditRepo(),
 																					  new RuntimeParametersRepository(),
 																					  externalServices,
@@ -149,67 +117,15 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository);
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
 
-		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
-		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
-				new JsonRequestConsolidateService(),
-				new BPartnerQueryService(),
-				bpartnerCompositeRepository,
-				new BPGroupRepository(),
-				new GreetingRepository(),
-				new TitleRepository(),
-				currencyRepository,
-				JobService.newInstanceForUnitTesting(),
-				Mockito.mock(ExternalReferenceRestControllerService.class),
-				Mockito.mock(AlbertaBPartnerCompositeService.class),
-				new SectionCodeService(sectionCodeRepository),
-				new IncotermsRepository(),
-				new BPartnerCreditLimitRepository(),
-				new JsonGreetingService(new GreetingRepository(), Mockito.mock(ExternalReferenceRestControllerService.class)));
-		
-		final ExternalIdentifierResolver externalIdentifierResolver = new ExternalIdentifierResolver(externalReferenceRestControllerService);
-
-		final ProductWarehouseAssignmentService productWarehouseAssignmentService = new ProductWarehouseAssignmentService(new ProductWarehouseAssignmentRepository());
-		final ProductWarehouseAssignmentRestService productWarehouseAssignmentRestService = new ProductWarehouseAssignmentRestService(productWarehouseAssignmentService, externalIdentifierResolver);
-		//
-
-		final ProductTaxCategoryRepository productTaxCategoryRepository = new ProductTaxCategoryRepository();
-		final ProductTaxCategoryService productTaxCategoryService = new ProductTaxCategoryService(productTaxCategoryRepository);
-		final ProductPriceRepository productPriceRepository = new ProductPriceRepository(productTaxCategoryService);
-
-		final PriceListVersionRepository priceListVersionRepository = new PriceListVersionRepository();
-		final PriceListRestService priceListService = new PriceListRestService(externalReferenceRestControllerService, priceListVersionRepository);
-
-		final ProductPriceRestService productPriceRestService= new ProductPriceRestService(externalReferenceRestControllerService, 
-																						   productPriceRepository, 
-																						   priceListService, 
-																						   externalIdentifierResolver,
-																						   new BpartnerPriceListServicesFacade(productPriceRepository),
-																						   jsonServiceFactory);
-				
-		final ProductRestService productRestService = new ProductRestService(productRepository,
-																			 productWarehouseAssignmentRestService,
-																			 externalReferenceRestControllerService,
-																			 new SectionCodeService(sectionCodeRepository),
-																			 Mockito.mock(ProductAllergenRestService.class),
-																			 new QualityAttributeService(new ProductQualityAttributeRepository()),
-																			 jsonServiceFactory,
-																			 externalIdentifierResolver,
-																			 productPriceRestService,
-																			 new ProductTaxCategoryService(new ProductTaxCategoryRepository())
-		);
-		//
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService, externalIdentifierResolver);
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}
 
 	private void createMasterData()
 	{
 		eachUomId = createUOM("Ea");
 		kgUomId = createUOM("Kg");
-		sectionCodeId = createSectionCode("SectionCode");
 	}
 
 	@Test
@@ -224,7 +140,6 @@ public class ProductsRestControllerTest
 				.description("description1")
 				.ean("ean1")
 				.uomId(eachUomId)
-				.sectionCodeId(sectionCodeId)
 				.build();
 		final ProductId productId1 = ProductId.ofRepoId(product1.getM_Product_ID());
 		prepareBPartnerProduct()
@@ -279,7 +194,6 @@ public class ProductsRestControllerTest
 													.description("description1")
 													.ean("ean1")
 													.uom("Ea")
-													.sectionCode("SectionCode")
 													.productCategoryId(JsonMetasfreshId.of(3))
 													.bpartner(JsonProductBPartner.builder()
 																	  .bpartnerId(JsonMetasfreshId.of(1))
@@ -318,7 +232,7 @@ public class ProductsRestControllerTest
 								   .build());
 
 		//
-		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
+		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)
@@ -329,15 +243,6 @@ public class ProductsRestControllerTest
 		return UomId.ofRepoId(record.getC_UOM_ID());
 	}
 
-	private SectionCodeId createSectionCode(@NonNull final String sectionCode)
-	{
-		final I_M_SectionCode record = newInstance(I_M_SectionCode.class);
-		record.setName(sectionCode);
-		record.setValue(sectionCode);
-		saveRecord(record);
-		return SectionCodeId.ofRepoId(record.getM_SectionCode_ID());
-	}
-
 	@Builder(builderMethodName = "prepareProduct", builderClassName = "prepareProductBuilder")
 	private I_M_Product createProduct(
 			@NonNull final String value,
@@ -345,8 +250,7 @@ public class ProductsRestControllerTest
 			@NonNull final ProductCategoryId categoryId,
 			final String description,
 			final String ean,
-			@NonNull final UomId uomId,
-			@Nullable final SectionCodeId sectionCodeId)
+			@NonNull final UomId uomId)
 	{
 		final I_M_Product record = newInstance(I_M_Product.class);
 		record.setValue(value);
@@ -355,7 +259,6 @@ public class ProductsRestControllerTest
 		record.setDescription(description);
 		record.setUPC(ean);
 		record.setC_UOM_ID(uomId.getRepoId());
-		record.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
 
 		saveRecord(record);
 		return record;

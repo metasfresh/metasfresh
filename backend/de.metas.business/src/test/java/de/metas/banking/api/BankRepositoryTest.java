@@ -96,7 +96,6 @@ public class BankRepositoryTest
 							.cashBank(true)
 							.locationId(LocationId.ofRepoId(123))
 							.esrPostBank(true)
-							.importAsSingleSummaryLine(false)
 							.build());
 		}
 	}

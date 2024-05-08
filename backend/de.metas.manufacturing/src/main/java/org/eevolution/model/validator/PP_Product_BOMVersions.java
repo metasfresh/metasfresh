@@ -46,7 +46,10 @@ public class PP_Product_BOMVersions
 	public void validateProductChange(final I_PP_Product_BOMVersions bomVersions)
 	{
 		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(bomVersions.getPP_Product_BOMVersions_ID());
-		if (bomsRepo.hasBOMs(bomVersionsId))
+
+		final Optional<ProductBOMId> productBomId = bomsRepo.getLatestBOMByVersion(bomVersionsId);
+
+		if (productBomId.isPresent())
 		{
 			throw new AdempiereException(AdMessageKey.of("PP_Product_BOMVersions_BOMs_Already_Linked"))
 					.markAsUserValidationError();

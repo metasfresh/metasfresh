@@ -22,30 +22,15 @@
 
 package de.metas.acct.api;
 
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public interface IAcctSchemaBL extends ISingletonService
 {
-	AcctSchema getById(AcctSchemaId acctSchemaId);
-
-	List<AcctSchema> getAllByClientId(@NonNull ClientId clientId);
-
-	AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull ClientId clientId, @NonNull OrgId orgId);
-
-	AcctSchema getPrimaryAcctSchema(@NonNull ClientId clientId);
-
-	CurrencyId getAcctCurrencyId(@NonNull ClientId clientId, @NonNull OrgId orgId);
-
-	CurrencyId getAcctCurrencyId(@NonNull AcctSchemaId acctSchemaId);
-
 	void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable OrgId orgId);
 
 	void updateDebitorCreditorIds(@NonNull AcctSchema acctSchema, @NonNull I_C_BPartner bpartner);

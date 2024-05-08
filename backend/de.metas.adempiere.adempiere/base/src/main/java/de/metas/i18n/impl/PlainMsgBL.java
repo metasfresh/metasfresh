@@ -22,22 +22,19 @@ package de.metas.i18n.impl;
  * #L%
  */
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
-import de.metas.i18n.AdMessageId;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import lombok.NonNull;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -142,7 +139,7 @@ public class PlainMsgBL implements IMsgBL
 		}
 		else
 		{
-			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").useForNull("-").join(msgParameters));
+			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").join(msgParameters));
 		}
 	}
 
@@ -150,30 +147,5 @@ public class PlainMsgBL implements IMsgBL
 	public void cacheReset()
 	{
 		// nothing
-	}
-
-	@Override
-	public String getBaseLanguageMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... msgParameters)
-	{
-		return TranslatableStrings.adMessage(adMessage, msgParameters)
-				.translate(Language.getBaseAD_Language());
-	}
-
-	@Override
-	public Optional<AdMessageId> getIdByAdMessage(@NonNull final AdMessageKey value)
-	{
-		return Optional.empty();
-	}
-
-	@Override
-	public boolean isMessageExists(final AdMessageKey adMessage)
-	{
-		return false;
-	}
-
-	@Override
-	public Optional<AdMessageKey> getAdMessageKeyById(final AdMessageId adMessageId)
-	{
-		return Optional.empty();
 	}
 }

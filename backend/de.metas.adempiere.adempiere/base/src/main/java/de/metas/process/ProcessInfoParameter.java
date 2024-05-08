@@ -1,10 +1,11 @@
 package de.metas.process;
 
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -296,11 +297,6 @@ public final class ProcessInfoParameter implements Serializable
 	public Instant getParameterAsInstant()
 	{
 		return TimeUtil.asInstant(m_Parameter);
-	}
-
-	public Instant getParameter_ToAsInstant()
-	{
-		return TimeUtil.asInstant(m_Parameter_To);
 	}
 
 	@Nullable

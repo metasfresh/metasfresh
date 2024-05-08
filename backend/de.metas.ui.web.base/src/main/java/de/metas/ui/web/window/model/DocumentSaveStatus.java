@@ -1,15 +1,14 @@
 package de.metas.ui.web.window.model;
 
-import com.google.common.base.MoreObjects;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+import java.util.Objects;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+
+import lombok.Builder;
 
 /*
  * #%L
@@ -33,73 +32,79 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@EqualsAndHashCode
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DocumentSaveStatus
 {
-	public static DocumentSaveStatus unknown()
+	public static final DocumentSaveStatus unknown()
 	{
 		return STATUS_Unknown;
 	}
 
-	public static DocumentSaveStatus saved()
+	public static final DocumentSaveStatus saved()
 	{
 		return STATUS_Saved;
 	}
 
-	public static DocumentSaveStatus deleted()
+	public static final DocumentSaveStatus deleted()
 	{
 		return STATUS_Deleted;
 	}
 
-	public static DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
+	public static final DocumentSaveStatus notSaved(final DocumentValidStatus invalidState)
 	{
-		return builder().hasChangesToBeSaved(true).error(true).reason(invalidState.getReason()).exception(invalidState.getException()).build();
+		final String reason = invalidState.getReason();
+		return builder().hasChangesToBeSaved(true).error(false).reason(reason).build();
 	}
 
-	public static DocumentSaveStatus error(@NonNull final Exception exception)
+	public static final DocumentSaveStatus notSaved(final Exception exception)
 	{
-		return builder().hasChangesToBeSaved(true).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
+		final String reason = exception.getLocalizedMessage();
+		return builder().hasChangesToBeSaved(true).error(true).reason(reason).build();
 	}
 
-	public static DocumentSaveStatus notSavedJustCreated()
+	public static final DocumentSaveStatus notSavedJustCreated()
 	{
 		return STATUS_NotSavedJustCreated;
 	}
 
-	public static DocumentSaveStatus savedJustLoaded()
+	public static final DocumentSaveStatus savedJustLoaded()
 	{
 		return STATUS_SavedJustLoaded;
 	}
 
-	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("not yet checked")).build();
+	private static final DocumentSaveStatus STATUS_Unknown = builder().hasChangesToBeSaved(true).error(false).reason("not yet checked").build();
 	private static final DocumentSaveStatus STATUS_Saved = builder().hasChangesToBeSaved(false).error(false).build();
-	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).deleted(true).error(false).build();
-	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason(TranslatableStrings.anyLanguage("new")).build();
-	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason(TranslatableStrings.anyLanguage("just loaded")).build();
+	private static final DocumentSaveStatus STATUS_Deleted = builder().hasChangesToBeSaved(false).deleted(true).error(false).build(); // FIXME: it's same as Saved!
+	private static final DocumentSaveStatus STATUS_NotSavedJustCreated = builder().hasChangesToBeSaved(true).error(false).reason("new").build();
+	private static final DocumentSaveStatus STATUS_SavedJustLoaded = builder().hasChangesToBeSaved(false).error(false).reason("just loaded").build();
 
-	@Getter private final boolean hasChangesToBeSaved;
-	@Getter private final boolean deleted;
-	@Getter private final boolean error;
-	@Nullable @Getter private final ITranslatableString reason;
-	@Nullable @Getter private final transient Exception exception;
+	@JsonProperty("saved")
+	private final boolean saved;
+	@JsonProperty("hasChanges")
+	private final boolean hasChangesToBeSaved;
+	@JsonProperty("error")
+	private final boolean error;
+	@JsonProperty("reason")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String reason;
 
-	@Getter private final boolean saved; // computed
+	private final boolean deleted;
+
+	private transient Integer _hashcode;
 
 	@Builder
 	private DocumentSaveStatus(
 			final boolean hasChangesToBeSaved,
 			final boolean deleted,
 			final boolean error,
-			@Nullable final ITranslatableString reason,
-			@Nullable final Exception exception)
+			final String reason)
 	{
-		this.hasChangesToBeSaved = hasChangesToBeSaved;
+		this.saved = !hasChangesToBeSaved && !error && !deleted;
 		this.deleted = deleted;
+
+		this.hasChangesToBeSaved = hasChangesToBeSaved;
 		this.error = error;
 		this.reason = reason;
-		this.exception = exception;
-
-		this.saved = !this.hasChangesToBeSaved && !this.error && !this.deleted;
 	}
 
 	@Override
@@ -115,43 +120,75 @@ public final class DocumentSaveStatus
 				.toString();
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	@Override
+	public int hashCode()
+	{
+		if (_hashcode == null)
+		{
+			_hashcode = Objects.hash(hasChangesToBeSaved, error, reason);
+		}
+		return _hashcode;
+	}
+
+	@Override
+	public boolean equals(final Object obj)
+	{
+		final boolean ignoreReason = false;
+		return equals(obj, ignoreReason);
+	}
+
+	public boolean equalsIgnoreReason(final Object obj)
+	{
+		final boolean ignoreReason = true;
+		return equals(obj, ignoreReason);
+	}
+
+	private boolean equals(final Object obj, final boolean ignoreReason)
+	{
+		if (this == obj)
+		{
+			return true;
+		}
+
+		if (!(obj instanceof DocumentSaveStatus))
+		{
+			return false;
+		}
+
+		final DocumentSaveStatus other = (DocumentSaveStatus)obj;
+		return hasChangesToBeSaved == other.hasChangesToBeSaved
+				&& deleted == other.deleted
+				&& error == other.error
+				&& (ignoreReason || Objects.equals(reason, other.reason));
+	}
+
+	public boolean isSaved()
+	{
+		return saved;
+	}
+
+	public boolean isDeleted()
+	{
+		return deleted;
+	}
+
 	public boolean isSavedOrDeleted()
 	{
 		return isSaved() || isDeleted();
 	}
 
-	public DocumentSaveStatus throwIfError()
+	public boolean hasChangesToBeSaved()
 	{
-		if (!error)
-		{
-			return this;
-		}
-
-		if (exception != null)
-		{
-			throw AdempiereException.wrapIfNeeded(exception);
-		}
-		else
-		{
-			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Error"));
-		}
+		return hasChangesToBeSaved;
 	}
 
-	public void throwIfNotSavedNorDelete()
+	public boolean isError()
 	{
-		if (isSavedOrDeleted())
-		{
-			return;
-		}
+		return error;
+	}
 
-		if (exception != null)
-		{
-			throw AdempiereException.wrapIfNeeded(exception);
-		}
-		else
-		{
-			throw new AdempiereException(reason != null ? reason : TranslatableStrings.anyLanguage("Not saved"));
-		}
+	public String getReason()
+	{
+		return reason;
 	}
 }

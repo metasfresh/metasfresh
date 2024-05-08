@@ -29,6 +29,7 @@ import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -38,8 +39,6 @@ import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.Payment
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -52,8 +51,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -128,17 +125,10 @@ class BankStatementPaymentBLTest
 			}
 		};
 
-		final CurrencyRepository currencyRepository = new CurrencyRepository();
-		final MoneyService moneyService = new MoneyService(currencyRepository);
-		SpringContextHolder.registerJUnitBean(moneyService);
-
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
-
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
-				moneyService,
-				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+				new MoneyService(new CurrencyRepository()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));
@@ -146,8 +136,9 @@ class BankStatementPaymentBLTest
 		bankRepo = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
+		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
-		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
+		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, bankAccountAcctRepo, currencyRepo));
 
 		createMasterData();
 	}
@@ -516,8 +507,7 @@ class BankStatementPaymentBLTest
 				//
 				InterfaceWrapperHelper.refresh(bsl);
 				assertThat(BankStatementLineAmounts.of(bsl))
-						.usingRecursiveComparison()
-						.isEqualTo(BankStatementLineAmounts.builder()
+						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
 								.stmtAmt(new BigDecimal("100"))
 								.trxAmt(new BigDecimal("123"))
 								.bankFeeAmt(new BigDecimal("23"))
@@ -627,8 +617,7 @@ class BankStatementPaymentBLTest
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
 				InterfaceWrapperHelper.refresh(bsl);
 				assertThat(BankStatementLineAmounts.of(bsl))
-						.usingRecursiveComparison()
-						.isEqualTo(BankStatementLineAmounts.builder()
+						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
 								.stmtAmt(new BigDecimal("100"))
 								.trxAmt(new BigDecimal("123"))
 								.bankFeeAmt(new BigDecimal("23"))
@@ -642,7 +631,7 @@ class BankStatementPaymentBLTest
 				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
 				assertThat(payment.getPayAmt()).isEqualTo("123");
 				assertThat(payment.isReconciled()).isTrue();
-				assertThat(payment.isReceipt()).isTrue();
+				assertThat(payment.isReceipt()).isEqualTo(true);
 				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
 				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}
@@ -688,7 +677,7 @@ class BankStatementPaymentBLTest
 				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
 				assertThat(payment.getPayAmt()).isEqualTo("123");
 				assertThat(payment.isReconciled()).isTrue();
-				assertThat(payment.isReceipt()).isFalse();
+				assertThat(payment.isReceipt()).isEqualTo(false);
 				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
 				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}

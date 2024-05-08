@@ -36,7 +36,6 @@
       "billToDefault": true,
       "visitorsAddress": true,
       "ephemeral":false,
-      "countryName": "CountryName",
       "changeInfo": {
         "createdMillis": 1436877663000,
         "createdBy": 100,

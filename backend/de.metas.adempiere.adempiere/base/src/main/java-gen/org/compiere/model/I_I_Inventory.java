@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_Inventory
  *  @author metasfresh (generated) 
@@ -336,8 +337,8 @@ public interface I_I_Inventory
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Date last inventory count.
-	 * Date of Last Inventory Count
+	 * Set Datum der letzten Inventur.
+	 * Datum der letzten Inventur
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -346,8 +347,8 @@ public interface I_I_Inventory
 	void setDateLastInventory (@Nullable java.sql.Timestamp DateLastInventory);
 
 	/**
-	 * Get Date last inventory count.
-	 * Date of Last Inventory Count
+	 * Get Datum der letzten Inventur.
+	 * Datum der letzten Inventur
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -359,8 +360,8 @@ public interface I_I_Inventory
 	String COLUMNNAME_DateLastInventory = "DateLastInventory";
 
 	/**
-	 * Set Date received.
-	 * Date a product was received
+	 * Set Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -369,8 +370,8 @@ public interface I_I_Inventory
 	void setDateReceived (@Nullable java.sql.Timestamp DateReceived);
 
 	/**
-	 * Get Date received.
-	 * Date a product was received
+	 * Get Eingangsdatum.
+	 * Datum, zu dem ein Produkt empfangen wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -403,7 +404,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Override Cost Price.
+	 * Set Explizite Kosten.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -412,7 +413,7 @@ public interface I_I_Inventory
 	void setExplicitCostPrice (java.lang.String ExplicitCostPrice);
 
 	/**
-	 * Get Override Cost Price.
+	 * Get Explizite Kosten.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -533,7 +534,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
-	 * Set Import Inventory.
+	 * Set Import - Warenbestand.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
@@ -543,7 +544,7 @@ public interface I_I_Inventory
 	void setI_Inventory_ID (int I_Inventory_ID);
 
 	/**
-	 * Get Import Inventory.
+	 * Get Import - Warenbestand.
 	 * Import Inventory Transactions
 	 *
 	 * <br>Type: ID
@@ -688,27 +689,6 @@ public interface I_I_Inventory
 	String COLUMNNAME_IsLotBlocked = "IsLotBlocked";
 
 	/**
-	 * Set Update Qty Booked From FactAcct.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsUpdateQtyBookedFromFactAcct (boolean IsUpdateQtyBookedFromFactAcct);
-
-	/**
-	 * Get Update Qty Booked From FactAcct.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isUpdateQtyBookedFromFactAcct();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_IsUpdateQtyBookedFromFactAcct = new ModelColumn<>(I_I_Inventory.class, "IsUpdateQtyBookedFromFactAcct", null);
-	String COLUMNNAME_IsUpdateQtyBookedFromFactAcct = "IsUpdateQtyBookedFromFactAcct";
-
-	/**
 	 * Set Locator Key.
 	 * Key of the Warehouse Locator
 	 *
@@ -732,7 +712,8 @@ public interface I_I_Inventory
 	String COLUMNNAME_LocatorValue = "LocatorValue";
 
 	/**
-	 * Set Lot No..
+	 * Set Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -741,7 +722,8 @@ public interface I_I_Inventory
 	void setLot (@Nullable java.lang.String Lot);
 
 	/**
-	 * Get Lot No..
+	 * Get Los-Nr..
+	 * Los-Nummer (alphanumerisch)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -942,27 +924,6 @@ public interface I_I_Inventory
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Product Account Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setProductAcctValue (@Nullable java.lang.String ProductAcctValue);
-
-	/**
-	 * Get Product Account Value.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getProductAcctValue();
-
-	ModelColumn<I_I_Inventory, Object> COLUMN_ProductAcctValue = new ModelColumn<>(I_I_Inventory.class, "ProductAcctValue", null);
-	String COLUMNNAME_ProductAcctValue = "ProductAcctValue";
-
-	/**
 	 * Set Product Value.
 	 * Product identifier;
  "val-<search key>", "ext-<external id>" or internal M_Product_ID
@@ -1009,7 +970,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_QtyCount = "QtyCount";
 
 	/**
-	 * Set Serial No.
+	 * Set Serien-Nr..
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
@@ -1019,7 +980,7 @@ public interface I_I_Inventory
 	void setSerNo (@Nullable java.lang.String SerNo);
 
 	/**
-	 * Get Serial No.
+	 * Get Serien-Nr..
 	 * Product Serial Number
 	 *
 	 * <br>Type: String
@@ -1032,7 +993,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_SerNo = "SerNo";
 
 	/**
-	 * Set Vendor.
+	 * Set Geschäftspartner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1041,7 +1002,7 @@ public interface I_I_Inventory
 	void setSubProducer_BPartner_ID (int SubProducer_BPartner_ID);
 
 	/**
-	 * Get Vendor.
+	 * Get Geschäftspartner.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1189,7 +1150,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Aisle.
-	 * X dimension, e.g., Aisle
+	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1199,7 +1160,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Aisle.
-	 * X dimension, e.g., Aisle
+	 * X-Dimension, z.B. Gang
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1211,7 +1172,7 @@ public interface I_I_Inventory
 	String COLUMNNAME_X = "X";
 
 	/**
-	 * Set Rack.
+	 * Set Regal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1220,7 +1181,7 @@ public interface I_I_Inventory
 	void setX1 (@Nullable java.lang.String X1);
 
 	/**
-	 * Get Rack.
+	 * Get Regal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1233,7 +1194,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Tray.
-	 * Y dimension, e.g., Bin
+	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1243,7 +1204,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Tray.
-	 * Y dimension, e.g., Bin
+	 * Y-Dimension, z.B. Fach
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1256,7 +1217,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Set Level.
-	 * Z dimension, e.g., Level
+	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1266,7 +1227,7 @@ public interface I_I_Inventory
 
 	/**
 	 * Get Level.
-	 * Z dimension, e.g., Level
+	 * Z-Dimension, z.B. Ebene
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

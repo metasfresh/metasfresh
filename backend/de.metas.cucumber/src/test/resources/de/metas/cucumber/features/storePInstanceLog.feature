@@ -1,12 +1,11 @@
 @from:cucumber
-@ghActions:run_on_executor7
 Feature: pInstanceLog store using metasfresh api
   As a REST-API invoker
   I want to be able to store external pInstanceLog
 
   Background:
     Given infrastructure and metasfresh are running
-	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And I_AD_PInstance with id 321321 is created
     
   @from:cucumber

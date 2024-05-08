@@ -27,7 +27,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -43,44 +42,6 @@ import java.util.Optional;
 public final class Capacity
 {
 
-	private final ProductId productId;
-	private final UomId uomId;
-	private final I_C_UOM uom;
-	private final BigDecimal capacity;
-	private final boolean infiniteCapacity;
-	private final boolean allowNegativeCapacity;
-	/**
-	 * Constructs a finite capacity definition
-	 */
-	private Capacity(
-			@NonNull final BigDecimal capacity,
-			@NonNull final ProductId productId,
-			@NonNull final I_C_UOM uom,
-			final boolean allowNegativeCapacity)
-	{
-		this.productId = productId;
-		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
-		this.uom = uom;
-
-		this.capacity = capacity;
-
-		infiniteCapacity = false;
-		this.allowNegativeCapacity = allowNegativeCapacity;
-	}
-	/**
-	 * Constructs an infinite capacity definition
-	 */
-	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
-	{
-		this.productId = productId;
-		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
-		this.uom = uom;
-
-		capacity = null;
-
-		infiniteCapacity = true;
-		allowNegativeCapacity = true;
-	}
 	public static Capacity createInfiniteCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom)
@@ -110,6 +71,47 @@ public final class Capacity
 			@NonNull final ProductId productId)
 	{
 		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
+	}
+
+	private final ProductId productId;
+	private final UomId uomId;
+	private final I_C_UOM uom;
+	private final BigDecimal capacity;
+	private final boolean infiniteCapacity;
+	private final boolean allowNegativeCapacity;
+
+	/**
+	 * Constructs a finite capacity definition
+	 */
+	private Capacity(
+			@NonNull final BigDecimal capacity,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom,
+			final boolean allowNegativeCapacity)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		this.capacity = capacity;
+
+		infiniteCapacity = false;
+		this.allowNegativeCapacity = allowNegativeCapacity;
+	}
+
+	/**
+	 * Constructs an infinite capacity definition
+	 */
+	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		capacity = null;
+
+		infiniteCapacity = true;
+		allowNegativeCapacity = true;
 	}
 
 	public boolean isInfiniteCapacity()
@@ -177,9 +179,9 @@ public final class Capacity
 
 		final BigDecimal qtyUsedConv = uomConverter
 				.convertQty(getProductId(),
-							quantity.toBigDecimal(),
-							quantity.getUOM(),
-							uom);
+						quantity.toBigDecimal(),
+						quantity.getUOM(),
+						uom);
 
 		final BigDecimal capacityAvailable = capacity.subtract(qtyUsedConv);
 
@@ -194,15 +196,15 @@ public final class Capacity
 			if (mustCreateZeroCapacity)
 			{
 				return createZeroCapacity(productId,
-										  uom,
-										  allowNegativeCapacity);
+						uom,
+						allowNegativeCapacity);
 			}
 		}
 
 		return createCapacity(capacityAvailable,
-							  productId,
-							  uom,
-							  allowNegativeCapacity);
+				productId,
+				uom,
+				allowNegativeCapacity);
 	}
 
 	/**
@@ -211,9 +213,7 @@ public final class Capacity
 	 * <p>
 	 * e.g. if Qty=13 and Capacity=10 then QtyPacks=2 (13/10 rounded up).
 	 *
-	 * @param qty
-	 * @param targetUom   quantity's unit of measure
-	 * @param capacityDef
+	 * @param targetUom quantity's unit of measure
 	 * @return how many capacities are required or NULL if capacity is not available
 	 */
 	public Optional<QuantityTU> calculateQtyTU(
@@ -285,15 +285,5 @@ public final class Capacity
 				+ ", uom=" + (uom == null ? "null" : uom.getUOMSymbol())
 				+ ", allowNegativeCapacity=" + allowNegativeCapacity
 				+ "]";
-	}
-
-	public Quantity computeQtyCUs(final int qtyTUs)
-	{
-		if (qtyTUs < 0)
-		{
-			throw new AdempiereException("@QtyPacks@ < 0");
-		}
-
-		return multiply(qtyTUs).toQuantity();
 	}
 }

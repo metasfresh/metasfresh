@@ -33,7 +33,6 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -201,8 +200,8 @@ public interface IAttributeStorage extends IAttributeSet
 
 	boolean isMandatory(
 			@NonNull final I_M_Attribute attribute,
-			@NonNull final Set<ProductId> productIds,
-			@Nullable final AttributeSourceDocument attributeSourceDocument);
+			final Set<ProductId> productIds,
+			final boolean isMaterialReceipt);
 
 	/**
 	 * Set attribute's value with NO propagation.

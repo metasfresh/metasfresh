@@ -23,7 +23,6 @@
 package de.metas.rest_api.v1.shipping;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -348,15 +347,13 @@ public class ShipmentService
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
 				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
-				ImmutableMap.of(),
-				true  /* backwards compatibility: true - fail if no picked HUs found*/
-		);
+				ImmutableMap.of());
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(true)
 				.setScheduleIdToExternalInfo(request.getScheduleToExternalInfo())
-				.computeShipmentDate(CalculateShippingDateRule.DELIVERY_DATE)
+				.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(scheduleWithHUS);
 	}
@@ -426,9 +423,10 @@ public class ShipmentService
 	{
 		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
+		final ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
 
 		final Set<InOutLineId> inOutLineIds = scheduleId2qtyPickedRecords.values().stream()
+				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());

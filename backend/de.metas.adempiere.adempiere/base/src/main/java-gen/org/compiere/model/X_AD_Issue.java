@@ -1,27 +1,26 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Issue
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1027252420L;
+	private static final long serialVersionUID = -1132870364L;
 
     /** Standard Constructor */
-    public X_AD_Issue (final Properties ctx, final int AD_Issue_ID, @Nullable final String trxName)
+    public X_AD_Issue (Properties ctx, int AD_Issue_ID, String trxName)
     {
       super (ctx, AD_Issue_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_Issue (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_AD_Issue (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,7 +28,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	protected org.compiere.model.POInfo initPO(Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
@@ -41,18 +40,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setA_Asset(final org.compiere.model.I_A_Asset A_Asset)
+	public void setA_Asset(org.compiere.model.I_A_Asset A_Asset)
 	{
 		set_ValueFromPO(COLUMNNAME_A_Asset_ID, org.compiere.model.I_A_Asset.class, A_Asset);
 	}
 
 	@Override
-	public void setA_Asset_ID (final int A_Asset_ID)
+	public void setA_Asset_ID (int A_Asset_ID)
 	{
 		if (A_Asset_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, A_Asset_ID);
+			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, Integer.valueOf(A_Asset_ID));
 	}
 
 	@Override
@@ -68,18 +67,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_Form(final org.compiere.model.I_AD_Form AD_Form)
+	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Form_ID, org.compiere.model.I_AD_Form.class, AD_Form);
 	}
 
 	@Override
-	public void setAD_Form_ID (final int AD_Form_ID)
+	public void setAD_Form_ID (int AD_Form_ID)
 	{
 		if (AD_Form_ID < 1) 
 			set_Value (COLUMNNAME_AD_Form_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Form_ID, AD_Form_ID);
+			set_Value (COLUMNNAME_AD_Form_ID, Integer.valueOf(AD_Form_ID));
 	}
 
 	@Override
@@ -89,12 +88,12 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_Issue_ID (final int AD_Issue_ID)
+	public void setAD_Issue_ID (int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
+			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
 	}
 
 	@Override
@@ -110,18 +109,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
+	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
 	}
 
 	@Override
-	public void setAD_PInstance_ID (final int AD_PInstance_ID)
+	public void setAD_PInstance_ID (int AD_PInstance_ID)
 	{
 		if (AD_PInstance_ID < 1) 
 			set_Value (COLUMNNAME_AD_PInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
+			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
 	}
 
 	@Override
@@ -137,18 +136,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
 	@Override
-	public void setAD_Process_ID (final int AD_Process_ID)
+	public void setAD_Process_ID (int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
+			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
 	}
 
 	@Override
@@ -158,12 +157,12 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_Table_ID (final int AD_Table_ID)
+	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_Value (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Table_ID, AD_Table_ID);
+			set_Value (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
 	@Override
@@ -179,18 +178,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
 	}
 
 	@Override
-	public void setAD_Window_ID (final int AD_Window_ID)
+	public void setAD_Window_ID (int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
 			set_Value (COLUMNNAME_AD_Window_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Window_ID, AD_Window_ID);
+			set_Value (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
 	}
 
 	@Override
@@ -200,7 +199,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setComments (final @Nullable java.lang.String Comments)
+	public void setComments (java.lang.String Comments)
 	{
 		set_Value (COLUMNNAME_Comments, Comments);
 	}
@@ -208,11 +207,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getComments() 
 	{
-		return get_ValueAsString(COLUMNNAME_Comments);
+		return (java.lang.String)get_Value(COLUMNNAME_Comments);
 	}
 
 	@Override
-	public void setDatabaseInfo (final @Nullable java.lang.String DatabaseInfo)
+	public void setDatabaseInfo (java.lang.String DatabaseInfo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DatabaseInfo, DatabaseInfo);
 	}
@@ -220,11 +219,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getDatabaseInfo() 
 	{
-		return get_ValueAsString(COLUMNNAME_DatabaseInfo);
+		return (java.lang.String)get_Value(COLUMNNAME_DatabaseInfo);
 	}
 
 	@Override
-	public void setDBAddress (final @Nullable java.lang.String DBAddress)
+	public void setDBAddress (java.lang.String DBAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_DBAddress, DBAddress);
 	}
@@ -232,11 +231,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getDBAddress() 
 	{
-		return get_ValueAsString(COLUMNNAME_DBAddress);
+		return (java.lang.String)get_Value(COLUMNNAME_DBAddress);
 	}
 
 	@Override
-	public void setErrorTrace (final @Nullable java.lang.String ErrorTrace)
+	public void setErrorTrace (java.lang.String ErrorTrace)
 	{
 		set_Value (COLUMNNAME_ErrorTrace, ErrorTrace);
 	}
@@ -244,7 +243,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getErrorTrace() 
 	{
-		return get_ValueAsString(COLUMNNAME_ErrorTrace);
+		return (java.lang.String)get_Value(COLUMNNAME_ErrorTrace);
 	}
 
 	/** 
@@ -257,15 +256,16 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	/** No = N */
 	public static final String ISREPRODUCIBLE_No = "N";
 	@Override
-	public void setIsReproducible (final @Nullable java.lang.String IsReproducible)
+	public void setIsReproducible (java.lang.String IsReproducible)
 	{
+
 		set_Value (COLUMNNAME_IsReproducible, IsReproducible);
 	}
 
 	@Override
 	public java.lang.String getIsReproducible() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsReproducible);
+		return (java.lang.String)get_Value(COLUMNNAME_IsReproducible);
 	}
 
 	/** 
@@ -277,18 +277,17 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	public static final String ISSUECATEGORY_Accounting = "ACCT";
 	/** Other = OTHER */
 	public static final String ISSUECATEGORY_Other = "OTHER";
-	/** MOBILEUI = MOBILEUI */
-	public static final String ISSUECATEGORY_MOBILEUI = "MOBILEUI";
 	@Override
-	public void setIssueCategory (final java.lang.String IssueCategory)
+	public void setIssueCategory (java.lang.String IssueCategory)
 	{
+
 		set_Value (COLUMNNAME_IssueCategory, IssueCategory);
 	}
 
 	@Override
 	public java.lang.String getIssueCategory() 
 	{
-		return get_ValueAsString(COLUMNNAME_IssueCategory);
+		return (java.lang.String)get_Value(COLUMNNAME_IssueCategory);
 	}
 
 	/** 
@@ -313,19 +312,20 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	/** Board = K */
 	public static final String ISSUESOURCE_Board = "K";
 	@Override
-	public void setIssueSource (final @Nullable java.lang.String IssueSource)
+	public void setIssueSource (java.lang.String IssueSource)
 	{
+
 		set_Value (COLUMNNAME_IssueSource, IssueSource);
 	}
 
 	@Override
 	public java.lang.String getIssueSource() 
 	{
-		return get_ValueAsString(COLUMNNAME_IssueSource);
+		return (java.lang.String)get_Value(COLUMNNAME_IssueSource);
 	}
 
 	@Override
-	public void setIssueSummary (final java.lang.String IssueSummary)
+	public void setIssueSummary (java.lang.String IssueSummary)
 	{
 		set_Value (COLUMNNAME_IssueSummary, IssueSummary);
 	}
@@ -333,7 +333,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getIssueSummary() 
 	{
-		return get_ValueAsString(COLUMNNAME_IssueSummary);
+		return (java.lang.String)get_Value(COLUMNNAME_IssueSummary);
 	}
 
 	/** 
@@ -346,19 +346,20 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	/** No = N */
 	public static final String ISVANILLASYSTEM_No = "N";
 	@Override
-	public void setIsVanillaSystem (final @Nullable java.lang.String IsVanillaSystem)
+	public void setIsVanillaSystem (java.lang.String IsVanillaSystem)
 	{
+
 		set_Value (COLUMNNAME_IsVanillaSystem, IsVanillaSystem);
 	}
 
 	@Override
 	public java.lang.String getIsVanillaSystem() 
 	{
-		return get_ValueAsString(COLUMNNAME_IsVanillaSystem);
+		return (java.lang.String)get_Value(COLUMNNAME_IsVanillaSystem);
 	}
 
 	@Override
-	public void setJavaInfo (final @Nullable java.lang.String JavaInfo)
+	public void setJavaInfo (java.lang.String JavaInfo)
 	{
 		set_ValueNoCheck (COLUMNNAME_JavaInfo, JavaInfo);
 	}
@@ -366,13 +367,13 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getJavaInfo() 
 	{
-		return get_ValueAsString(COLUMNNAME_JavaInfo);
+		return (java.lang.String)get_Value(COLUMNNAME_JavaInfo);
 	}
 
 	@Override
-	public void setLineNo (final int LineNo)
+	public void setLineNo (int LineNo)
 	{
-		set_Value (COLUMNNAME_LineNo, LineNo);
+		set_Value (COLUMNNAME_LineNo, Integer.valueOf(LineNo));
 	}
 
 	@Override
@@ -382,7 +383,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setLocal_Host (final @Nullable java.lang.String Local_Host)
+	public void setLocal_Host (java.lang.String Local_Host)
 	{
 		set_ValueNoCheck (COLUMNNAME_Local_Host, Local_Host);
 	}
@@ -390,11 +391,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getLocal_Host() 
 	{
-		return get_ValueAsString(COLUMNNAME_Local_Host);
+		return (java.lang.String)get_Value(COLUMNNAME_Local_Host);
 	}
 
 	@Override
-	public void setLoggerName (final @Nullable java.lang.String LoggerName)
+	public void setLoggerName (java.lang.String LoggerName)
 	{
 		set_Value (COLUMNNAME_LoggerName, LoggerName);
 	}
@@ -402,11 +403,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getLoggerName() 
 	{
-		return get_ValueAsString(COLUMNNAME_LoggerName);
+		return (java.lang.String)get_Value(COLUMNNAME_LoggerName);
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_ValueNoCheck (COLUMNNAME_Name, Name);
 	}
@@ -414,11 +415,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getName() 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setOperatingSystemInfo (final @Nullable java.lang.String OperatingSystemInfo)
+	public void setOperatingSystemInfo (java.lang.String OperatingSystemInfo)
 	{
 		set_ValueNoCheck (COLUMNNAME_OperatingSystemInfo, OperatingSystemInfo);
 	}
@@ -426,13 +427,13 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getOperatingSystemInfo() 
 	{
-		return get_ValueAsString(COLUMNNAME_OperatingSystemInfo);
+		return (java.lang.String)get_Value(COLUMNNAME_OperatingSystemInfo);
 	}
 
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
-		set_ValueNoCheck (COLUMNNAME_Processed, Processed);
+		set_ValueNoCheck (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
 	@Override
@@ -442,9 +443,9 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setProcessing (final boolean Processing)
+	public void setProcessing (boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Processing);
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
 	@Override
@@ -454,7 +455,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setProfileInfo (final @Nullable java.lang.String ProfileInfo)
+	public void setProfileInfo (java.lang.String ProfileInfo)
 	{
 		set_ValueNoCheck (COLUMNNAME_ProfileInfo, ProfileInfo);
 	}
@@ -462,94 +463,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getProfileInfo() 
 	{
-		return get_ValueAsString(COLUMNNAME_ProfileInfo);
-	}
-
-	@Override
-	public void setRecord_ID (final int Record_ID)
-	{
-		if (Record_ID < 0) 
-			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
-	}
-
-	@Override
-	public int getRecord_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Record_ID);
-	}
-
-	@Override
-	public void setReleaseNo (final java.lang.String ReleaseNo)
-	{
-		set_ValueNoCheck (COLUMNNAME_ReleaseNo, ReleaseNo);
-	}
-
-	@Override
-	public java.lang.String getReleaseNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_ReleaseNo);
-	}
-
-	@Override
-	public void setReleaseTag (final @Nullable java.lang.String ReleaseTag)
-	{
-		set_Value (COLUMNNAME_ReleaseTag, ReleaseTag);
-	}
-
-	@Override
-	public java.lang.String getReleaseTag() 
-	{
-		return get_ValueAsString(COLUMNNAME_ReleaseTag);
-	}
-
-	@Override
-	public void setRemote_Addr (final @Nullable java.lang.String Remote_Addr)
-	{
-		set_ValueNoCheck (COLUMNNAME_Remote_Addr, Remote_Addr);
-	}
-
-	@Override
-	public java.lang.String getRemote_Addr() 
-	{
-		return get_ValueAsString(COLUMNNAME_Remote_Addr);
-	}
-
-	@Override
-	public void setRemote_Host (final @Nullable java.lang.String Remote_Host)
-	{
-		set_ValueNoCheck (COLUMNNAME_Remote_Host, Remote_Host);
-	}
-
-	@Override
-	public java.lang.String getRemote_Host() 
-	{
-		return get_ValueAsString(COLUMNNAME_Remote_Host);
-	}
-
-	@Override
-	public void setRequestDocumentNo (final @Nullable java.lang.String RequestDocumentNo)
-	{
-		set_ValueNoCheck (COLUMNNAME_RequestDocumentNo, RequestDocumentNo);
-	}
-
-	@Override
-	public java.lang.String getRequestDocumentNo() 
-	{
-		return get_ValueAsString(COLUMNNAME_RequestDocumentNo);
-	}
-
-	@Override
-	public void setResponseText (final @Nullable java.lang.String ResponseText)
-	{
-		set_ValueNoCheck (COLUMNNAME_ResponseText, ResponseText);
-	}
-
-	@Override
-	public java.lang.String getResponseText() 
-	{
-		return get_ValueAsString(COLUMNNAME_ResponseText);
+		return (java.lang.String)get_Value(COLUMNNAME_ProfileInfo);
 	}
 
 	@Override
@@ -559,18 +473,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setR_IssueKnown(final org.compiere.model.I_R_IssueKnown R_IssueKnown)
+	public void setR_IssueKnown(org.compiere.model.I_R_IssueKnown R_IssueKnown)
 	{
 		set_ValueFromPO(COLUMNNAME_R_IssueKnown_ID, org.compiere.model.I_R_IssueKnown.class, R_IssueKnown);
 	}
 
 	@Override
-	public void setR_IssueKnown_ID (final int R_IssueKnown_ID)
+	public void setR_IssueKnown_ID (int R_IssueKnown_ID)
 	{
 		if (R_IssueKnown_ID < 1) 
 			set_Value (COLUMNNAME_R_IssueKnown_ID, null);
 		else 
-			set_Value (COLUMNNAME_R_IssueKnown_ID, R_IssueKnown_ID);
+			set_Value (COLUMNNAME_R_IssueKnown_ID, Integer.valueOf(R_IssueKnown_ID));
 	}
 
 	@Override
@@ -586,18 +500,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setR_IssueProject(final org.compiere.model.I_R_IssueProject R_IssueProject)
+	public void setR_IssueProject(org.compiere.model.I_R_IssueProject R_IssueProject)
 	{
 		set_ValueFromPO(COLUMNNAME_R_IssueProject_ID, org.compiere.model.I_R_IssueProject.class, R_IssueProject);
 	}
 
 	@Override
-	public void setR_IssueProject_ID (final int R_IssueProject_ID)
+	public void setR_IssueProject_ID (int R_IssueProject_ID)
 	{
 		if (R_IssueProject_ID < 1) 
 			set_Value (COLUMNNAME_R_IssueProject_ID, null);
 		else 
-			set_Value (COLUMNNAME_R_IssueProject_ID, R_IssueProject_ID);
+			set_Value (COLUMNNAME_R_IssueProject_ID, Integer.valueOf(R_IssueProject_ID));
 	}
 
 	@Override
@@ -613,18 +527,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setR_IssueSystem(final org.compiere.model.I_R_IssueSystem R_IssueSystem)
+	public void setR_IssueSystem(org.compiere.model.I_R_IssueSystem R_IssueSystem)
 	{
 		set_ValueFromPO(COLUMNNAME_R_IssueSystem_ID, org.compiere.model.I_R_IssueSystem.class, R_IssueSystem);
 	}
 
 	@Override
-	public void setR_IssueSystem_ID (final int R_IssueSystem_ID)
+	public void setR_IssueSystem_ID (int R_IssueSystem_ID)
 	{
 		if (R_IssueSystem_ID < 1) 
 			set_Value (COLUMNNAME_R_IssueSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_R_IssueSystem_ID, R_IssueSystem_ID);
+			set_Value (COLUMNNAME_R_IssueSystem_ID, Integer.valueOf(R_IssueSystem_ID));
 	}
 
 	@Override
@@ -640,18 +554,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setR_IssueUser(final org.compiere.model.I_R_IssueUser R_IssueUser)
+	public void setR_IssueUser(org.compiere.model.I_R_IssueUser R_IssueUser)
 	{
 		set_ValueFromPO(COLUMNNAME_R_IssueUser_ID, org.compiere.model.I_R_IssueUser.class, R_IssueUser);
 	}
 
 	@Override
-	public void setR_IssueUser_ID (final int R_IssueUser_ID)
+	public void setR_IssueUser_ID (int R_IssueUser_ID)
 	{
 		if (R_IssueUser_ID < 1) 
 			set_Value (COLUMNNAME_R_IssueUser_ID, null);
 		else 
-			set_Value (COLUMNNAME_R_IssueUser_ID, R_IssueUser_ID);
+			set_Value (COLUMNNAME_R_IssueUser_ID, Integer.valueOf(R_IssueUser_ID));
 	}
 
 	@Override
@@ -667,18 +581,18 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setR_Request(final org.compiere.model.I_R_Request R_Request)
+	public void setR_Request(org.compiere.model.I_R_Request R_Request)
 	{
 		set_ValueFromPO(COLUMNNAME_R_Request_ID, org.compiere.model.I_R_Request.class, R_Request);
 	}
 
 	@Override
-	public void setR_Request_ID (final int R_Request_ID)
+	public void setR_Request_ID (int R_Request_ID)
 	{
 		if (R_Request_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_R_Request_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_R_Request_ID, R_Request_ID);
+			set_ValueNoCheck (COLUMNNAME_R_Request_ID, Integer.valueOf(R_Request_ID));
 	}
 
 	@Override
@@ -688,7 +602,94 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	}
 
 	@Override
-	public void setSourceClassName (final @Nullable java.lang.String SourceClassName)
+	public void setRecord_ID (int Record_ID)
+	{
+		if (Record_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+	}
+
+	@Override
+	public int getRecord_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setReleaseNo (java.lang.String ReleaseNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_ReleaseNo, ReleaseNo);
+	}
+
+	@Override
+	public java.lang.String getReleaseNo() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ReleaseNo);
+	}
+
+	@Override
+	public void setReleaseTag (java.lang.String ReleaseTag)
+	{
+		set_Value (COLUMNNAME_ReleaseTag, ReleaseTag);
+	}
+
+	@Override
+	public java.lang.String getReleaseTag() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ReleaseTag);
+	}
+
+	@Override
+	public void setRemote_Addr (java.lang.String Remote_Addr)
+	{
+		set_ValueNoCheck (COLUMNNAME_Remote_Addr, Remote_Addr);
+	}
+
+	@Override
+	public java.lang.String getRemote_Addr() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Remote_Addr);
+	}
+
+	@Override
+	public void setRemote_Host (java.lang.String Remote_Host)
+	{
+		set_ValueNoCheck (COLUMNNAME_Remote_Host, Remote_Host);
+	}
+
+	@Override
+	public java.lang.String getRemote_Host() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Remote_Host);
+	}
+
+	@Override
+	public void setRequestDocumentNo (java.lang.String RequestDocumentNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_RequestDocumentNo, RequestDocumentNo);
+	}
+
+	@Override
+	public java.lang.String getRequestDocumentNo() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_RequestDocumentNo);
+	}
+
+	@Override
+	public void setResponseText (java.lang.String ResponseText)
+	{
+		set_ValueNoCheck (COLUMNNAME_ResponseText, ResponseText);
+	}
+
+	@Override
+	public java.lang.String getResponseText() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ResponseText);
+	}
+
+	@Override
+	public void setSourceClassName (java.lang.String SourceClassName)
 	{
 		set_Value (COLUMNNAME_SourceClassName, SourceClassName);
 	}
@@ -696,11 +697,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getSourceClassName() 
 	{
-		return get_ValueAsString(COLUMNNAME_SourceClassName);
+		return (java.lang.String)get_Value(COLUMNNAME_SourceClassName);
 	}
 
 	@Override
-	public void setSourceMethodName (final @Nullable java.lang.String SourceMethodName)
+	public void setSourceMethodName (java.lang.String SourceMethodName)
 	{
 		set_Value (COLUMNNAME_SourceMethodName, SourceMethodName);
 	}
@@ -708,11 +709,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getSourceMethodName() 
 	{
-		return get_ValueAsString(COLUMNNAME_SourceMethodName);
+		return (java.lang.String)get_Value(COLUMNNAME_SourceMethodName);
 	}
 
 	@Override
-	public void setStackTrace (final @Nullable java.lang.String StackTrace)
+	public void setStackTrace (java.lang.String StackTrace)
 	{
 		set_Value (COLUMNNAME_StackTrace, StackTrace);
 	}
@@ -720,11 +721,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getStackTrace() 
 	{
-		return get_ValueAsString(COLUMNNAME_StackTrace);
+		return (java.lang.String)get_Value(COLUMNNAME_StackTrace);
 	}
 
 	@Override
-	public void setStatisticsInfo (final @Nullable java.lang.String StatisticsInfo)
+	public void setStatisticsInfo (java.lang.String StatisticsInfo)
 	{
 		set_ValueNoCheck (COLUMNNAME_StatisticsInfo, StatisticsInfo);
 	}
@@ -732,11 +733,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getStatisticsInfo() 
 	{
-		return get_ValueAsString(COLUMNNAME_StatisticsInfo);
+		return (java.lang.String)get_Value(COLUMNNAME_StatisticsInfo);
 	}
 
 	@Override
-	public void setSupportEMail (final @Nullable java.lang.String SupportEMail)
+	public void setSupportEMail (java.lang.String SupportEMail)
 	{
 		set_Value (COLUMNNAME_SupportEMail, SupportEMail);
 	}
@@ -744,7 +745,7 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getSupportEMail() 
 	{
-		return get_ValueAsString(COLUMNNAME_SupportEMail);
+		return (java.lang.String)get_Value(COLUMNNAME_SupportEMail);
 	}
 
 	/** 
@@ -759,31 +760,20 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	/** Production = P */
 	public static final String SYSTEMSTATUS_Production = "P";
 	@Override
-	public void setSystemStatus (final java.lang.String SystemStatus)
+	public void setSystemStatus (java.lang.String SystemStatus)
 	{
+
 		set_Value (COLUMNNAME_SystemStatus, SystemStatus);
 	}
 
 	@Override
 	public java.lang.String getSystemStatus() 
 	{
-		return get_ValueAsString(COLUMNNAME_SystemStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_SystemStatus);
 	}
 
 	@Override
-	public void setUserAgent (final @Nullable java.lang.String UserAgent)
-	{
-		set_Value (COLUMNNAME_UserAgent, UserAgent);
-	}
-
-	@Override
-	public java.lang.String getUserAgent() 
-	{
-		return get_ValueAsString(COLUMNNAME_UserAgent);
-	}
-
-	@Override
-	public void setUserName (final java.lang.String UserName)
+	public void setUserName (java.lang.String UserName)
 	{
 		set_ValueNoCheck (COLUMNNAME_UserName, UserName);
 	}
@@ -791,11 +781,11 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getUserName() 
 	{
-		return get_ValueAsString(COLUMNNAME_UserName);
+		return (java.lang.String)get_Value(COLUMNNAME_UserName);
 	}
 
 	@Override
-	public void setVersion (final java.lang.String Version)
+	public void setVersion (java.lang.String Version)
 	{
 		set_ValueNoCheck (COLUMNNAME_Version, Version);
 	}
@@ -803,6 +793,6 @@ public class X_AD_Issue extends org.compiere.model.PO implements I_AD_Issue, org
 	@Override
 	public java.lang.String getVersion() 
 	{
-		return get_ValueAsString(COLUMNNAME_Version);
+		return (java.lang.String)get_Value(COLUMNNAME_Version);
 	}
 }

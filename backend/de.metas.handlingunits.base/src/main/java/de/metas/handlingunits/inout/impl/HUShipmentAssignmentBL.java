@@ -98,32 +98,18 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 	@Override
 	public void updateHUsOnShipmentComplete(final I_M_InOut shipment)
 	{
-		updateHUsOnShipmentStatusChange(shipment, X_M_HU.HUSTATUS_Shipped);
-	}
-
-	@Override
-	public void updateHUsOnShipmentReactivate(@NonNull final I_M_InOut shipment)
-	{
-		updateHUsOnShipmentStatusChange(shipment, X_M_HU.HUSTATUS_Picked);
-	}
-
-	private void updateHUsOnShipmentStatusChange(
-			@NonNull final I_M_InOut shipment,
-			@NonNull final String huStatus)
-	{
 		assertShipment(shipment);
 
 		final List<I_M_InOutLine> shipmentLines = inOutDAO.retrieveLines(shipment, I_M_InOutLine.class);
 
+		// Iterate each shipment line, get assigned HUs and change HUStatus to Shipped
 		for (final I_M_InOutLine shipmentLine : shipmentLines)
 		{
-			updateHUsOnShipmentStatusChange(shipmentLine, huStatus);
+			updateHUsOnShipmentComplete(shipmentLine);
 		}
 	}
 
-	private void updateHUsOnShipmentStatusChange(
-			@NonNull final I_M_InOutLine shipmentLine,
-			@NonNull final String huStatus)
+	private void updateHUsOnShipmentComplete(final I_M_InOutLine shipmentLine)
 	{
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(shipmentLine);
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(contextProvider);
@@ -136,7 +122,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			hu.setM_Locator_ID(locatorId);
 
 			// Change HU's status to Shipped
-			setHUStatus(huContext, hu, huStatus);
+			final boolean shipped = true;
+			setHUStatus(huContext, hu, shipped);
 		}
 	}
 
@@ -167,8 +154,9 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(shipmentLine);
 		for (final I_M_HU hu : hus)
 		{
-			// Change HU's status to Active
-			setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+			// Change HU's status to Picked
+			final boolean shipped = false;
+			setHUStatus(huContext, hu, shipped);
 		}
 		//
 		huAssignmentBL.unassignAllHUs(shipmentLine);
@@ -180,8 +168,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			alloc.setM_InOutLine(null);
 			alloc.setIsActive(false); // NOTE: deactivating the line because we assume this method was called when a shipment was voided/reversed.
 			alloc.setDescription("Deactivated because the shipment line "
-										 + shipmentLine
-										 + " was voided or reversed. ");
+					+ shipmentLine
+					+ " was voided or reversed. ");
 			InterfaceWrapperHelper.save(alloc);
 		}
 	}
@@ -209,14 +197,11 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		return NotQueryFilter.of(assignedQueryFilter);
 	}
 
-	private void setHUStatus(
-			@NonNull final IHUContext huContext,
-			@NonNull final I_M_HU hu,
-			@NonNull final String status)
+	private void setHUStatus(final IHUContext huContext, final I_M_HU hu, final boolean shipped)
 	{
 		//
 		// HU was shipped
-		if (X_M_HU.HUSTATUS_Shipped.equals(status))
+		if (shipped)
 		{
 			// Change HU's status to Shipped
 
@@ -233,18 +218,17 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		// HU was not shipped (i.e. it was shipped before shipment was reversed)
 		else
 		{
-			huStatusBL.setHUStatus(huContext, hu, status);
+			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 			hu.setIsActive(true);
-			if (hu.getM_Locator_ID() > 0)
-			{
-				final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
-				if (locator.isAfterPickingLocator())
-				{
-					final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
 
-					// Restore default locator
-				hu.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
-				}
+			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
+
+			if (locator.isAfterPickingLocator())
+			{
+				final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+
+				// Restore default locator
+				hu.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
 			}
 		}
 

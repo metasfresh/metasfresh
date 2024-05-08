@@ -22,14 +22,16 @@
 
 package de.metas.handlingunits;
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.util.ISingletonService;
+import java.util.Collection;
+
+import java.util.List;
+
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.util.Collection;
-import java.util.List;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.util.ISingletonService;
 
 public interface IHUStatusBL extends ISingletonService
 {

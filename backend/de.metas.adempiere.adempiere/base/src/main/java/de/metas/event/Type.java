@@ -39,12 +39,12 @@ package de.metas.event;
 public enum Type
 {
 	/**
-	 * If events are posted to a local topic, only local subscribers will be notified.
+	 * If event are posed to a local topic, only local subscribers will be notified.
 	 */
 	LOCAL,
 
 	/**
-	 * If events are posted to a "distributed" topic, not only subscribers on this machine, but also subscribers on other machines will be notified.
+	 * If events are posted to a "remote" topic, not only subscribers on this machine, but also subscribers on other machines will be notified.
 	 */
-	DISTRIBUTED
+	REMOTE
 }

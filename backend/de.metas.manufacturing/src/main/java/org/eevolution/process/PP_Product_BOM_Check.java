@@ -2,6 +2,7 @@ package org.eevolution.process;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
+import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -22,6 +23,7 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -81,7 +83,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 
 						try
 						{
-							productBOMBL.verifyDefaultBOMProduct(product);
+							validateProduct(product);
 							counter.incrementAndGet();
 						}
 						catch (final Exception ex)
@@ -95,7 +97,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		else
 		{
 			final I_M_Product product = InterfaceWrapperHelper.load(getM_Product_ID(), I_M_Product.class);
-			productBOMBL.verifyDefaultBOMProduct(product);
+			validateProduct(product);
 			return MSG_OK;
 		}
 	}

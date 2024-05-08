@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -53,12 +54,14 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 	BPartnerId vendorId;
 	ZonedDateTime datePromised;
 	ForecastLineId forecastLineId;
+	Dimension dimension;
 	String externalPurchaseOrderUrl;
 
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
 			.thenComparing(PurchaseOrderAggregationKey::getDatePromised)
+			.thenComparing(PurchaseOrderAggregationKey::getDimension, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
@@ -72,6 +75,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.vendorId(purchaseOrderItem.getVendorId())
 				.datePromised(purchaseOrderItem.getDatePromised())
 				.forecastLineId(purchaseOrderItem.getForecastLineId())
+				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
 				.poReference(purchaseOrderItem.getPOReference())
 				.build();
@@ -87,6 +91,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.vendorId(purchaseCandidate.getVendorId())
 				.datePromised(purchaseCandidate.getPurchaseDatePromised())
 				.forecastLineId(purchaseCandidate.getForecastLineId())
+				.dimension(purchaseCandidate.getDimension())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 				.build();
 	}

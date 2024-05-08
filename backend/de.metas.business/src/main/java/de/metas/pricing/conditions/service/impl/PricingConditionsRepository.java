@@ -42,7 +42,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import ch.qos.logback.classic.Level;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -66,6 +65,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
+
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.currency.ICurrencyBL;
@@ -104,8 +105,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	private static final Logger logger = LogManager.getLogger(PricingConditionsRepository.class);
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions>builder()
+	
+	private final CCache<PricingConditionsId, PricingConditions> pricingConditionsById = CCache.<PricingConditionsId, PricingConditions> builder()
 			.tableName(I_M_DiscountSchema.Table_Name)
 			.initialCapacity(10)
 			.additionalTableNameToResetFor(I_M_DiscountSchemaBreak.Table_Name)
@@ -126,8 +127,12 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	@VisibleForTesting
 	PricingConditions retrievePricingConditionsById(@NonNull final PricingConditionsId id)
 	{
-		final I_M_DiscountSchema discountSchemaRecord = loadOutOfTrx(id, I_M_DiscountSchema.class);
-		final List<I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(ImmutableList.of(id)).collect(ImmutableList.toImmutableList());
+		final int discountSchemaRecordId = id.getRepoId();
+
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofRepoId(discountSchemaRecordId);
+		final I_M_DiscountSchema discountSchemaRecord = loadOutOfTrx(discountSchemaRecordId, I_M_DiscountSchema.class);
+		final List<I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(ImmutableList.of(pricingConditionsId))
+				.collect(ImmutableList.toImmutableList());
 
 		return toPricingConditions(discountSchemaRecord, schemaBreakRecords);
 	}
@@ -180,8 +185,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		return PricingConditions.builder()
 				.id(PricingConditionsId.ofRepoId(discountSchemaRecord.getM_DiscountSchema_ID()))
-				.active(discountSchemaRecord.isActive())
-				.validFrom(discountSchemaRecord.getValidFrom().toInstant())
 				.discountType(discountType)
 				.bpartnerFlatDiscount(discountSchemaRecord.isBPartnerFlatDiscount())
 				.flatDiscount(Percent.of(discountSchemaRecord.getFlatDiscount()))
@@ -302,7 +305,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@VisibleForTesting
-		/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Collection<PricingConditionsId> pricingConditionsId)
+	/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Collection<PricingConditionsId> pricingConditionsId)
 	{
 		if (pricingConditionsId.isEmpty())
 		{
@@ -325,7 +328,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@VisibleForTesting
-		/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final int discountSchemaId)
+	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final int discountSchemaId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_DiscountSchemaLine.class)
@@ -575,20 +578,21 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			copyOrUpdateFromSelectionToGivenSchemaAndProduct(request);
 
 		}
-		else        // filtered records are the target and the source is the given product and pricing conditions
+		else 		// filtered records are the target and the source is the given product and pricing conditions
 		{
 			copyFromGivenSchemaAndProductToSelection(request);
 
 		}
 	}
+	
 
 	private void copyFromGivenSchemaAndProductToSelection(@NonNull CopyDiscountSchemaBreaksRequest request)
 	{
-
+		
 		final PricingConditionsId pPricingConditionsId = request.getPricingConditionsId();
 		final ProductId productId = request.getProductId();
 		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
-
+		
 		//
 		// retrieve source discount breaks
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksForGivenPorductAndPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
@@ -606,7 +610,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		// find records that need to be updated and the records that needs to be copied
 		final Map<PricingConditionsBreak, List<PricingConditionsBreak>> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, List<PricingConditionsBreak>>();
 		final Set<PricingConditionsBreak> discountSchemaBreaksToCopy = new HashSet<PricingConditionsBreak>();
-
+		
 		for (final PricingConditionsBreak discountSchemaBreak : sourceDiscountSchemaBreaks)
 		{
 
@@ -621,12 +625,13 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			}
 		}
 
+		
 		// copy breaks
 		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
 		{
 			// build target data for copy
 			// can be one product and several discount schemas or one schema and several products
-
+			
 			final Set<PricingConditionsId> pricingConditionsIds = new HashSet<PricingConditionsId>();
 			final Set<ProductId> productIds = new HashSet<ProductId>();
 			targetDiscountSchemaBreaks.forEach(discountBreak -> {
@@ -635,7 +640,8 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				pricingConditionsIds.add(discountBreak.getPricingConditionsId());
 
 			});
-
+			
+			
 			for (final PricingConditionsId pricingConditionsId : pricingConditionsIds)
 			{
 				for (final ProductId id : productIds)
@@ -646,14 +652,14 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 
 		// update breaks
-		for (final PricingConditionsBreak schemaBreakKey : discountSchemaBreaksToUpdate.keySet())
+		for (final  PricingConditionsBreak schemaBreakKey : discountSchemaBreaksToUpdate.keySet())
 		{
 			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.get(schemaBreakKey))
 			{
 				updateDiscountSchemaBreakRecords(schemaBreakKey, schemaBreak);
 			}
 		}
-
+		
 		// gather breaks that could be inactivated
 		if (request.getMakeTargetAsSource())
 		{
@@ -663,7 +669,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				inactivateDiscountSchemaBreakRecords(schemaBreak);
 			}
 		}
-
+				
 	}
 
 	private Set<PricingConditionsBreak> fetchBreaksToInactivate(final List<PricingConditionsBreak> targetDiscountSchemaBreaks, final Map<PricingConditionsBreak, List<PricingConditionsBreak>> discountSchemaBreaksToUpdate)
@@ -681,7 +687,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				discountSchemaBreaksToInactivate.add(discountSchemaBreak);
 			}
 		}
-
+		
 		return discountSchemaBreaksToInactivate;
 	}
 
@@ -690,7 +696,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final PricingConditionsId pPricingConditionsId = request.getPricingConditionsId();
 		final ProductId productId = request.getProductId();
 		final boolean allowCopyToSameSchema = request.isAllowCopyToSameSchema();
-
+		
 		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
@@ -745,25 +751,26 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
 		}
 	}
-
-	private List<PricingConditionsBreak> fetchMatchingPricingConditionBreakValue(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
+	
+	
+	private  List<PricingConditionsBreak> fetchMatchingPricingConditionBreakValue(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
 	{
 		final List<PricingConditionsBreak> matchedBreaks = new ArrayList<PricingConditionsBreak>();
-
+		
 		for (final PricingConditionsBreak discountSchemaBreak : exitentBreaks)
 		{
 			final BigDecimal sourceBreakValue = sourceBreak.getMatchCriteria().getBreakValue();
-
+			
 			if (sourceBreakValue.equals(discountSchemaBreak.getMatchCriteria().getBreakValue()))
 			{
 				matchedBreaks.add(discountSchemaBreak);
 			}
 		}
-
+		
 		return matchedBreaks;
 	}
-
-	private PricingConditionsBreak fetchMatchingPricingConditionBreak(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
+	
+	private  PricingConditionsBreak fetchMatchingPricingConditionBreak(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
 	{
 		for (final PricingConditionsBreak discountSchemaBreak : exitentBreaks)
 		{
@@ -772,19 +779,20 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				return discountSchemaBreak;
 			}
 		}
-
+		
 		return null;
 	}
+	
 
 	private List<PricingConditionsBreak> retrieveDiscountSchemaBreakRecords(@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
 	{
-
+		
 		return queryBL
 				.createQueryBuilder(I_M_DiscountSchemaBreak.class)
 				.filter(queryFilter)
 				.create()
 				.stream()
-				.map(schemaBreakRecord -> toPricingConditionsBreak(schemaBreakRecord))
+				.map(schemaBreakRecord->toPricingConditionsBreak(schemaBreakRecord))
 				.collect(Collectors.toList());
 	}
 
@@ -794,7 +802,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@Nullable final ProductId toProductId)
 	{
 		final I_M_DiscountSchemaBreak from = getPricingConditionsBreakbyId(discountSchemaBreakId);
-
+		
 		final I_M_DiscountSchemaBreak newBreak = copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(from)
@@ -809,18 +817,18 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		saveRecord(newBreak);
 	}
-
+	
 	private void updateDiscountSchemaBreakRecords(@NonNull final PricingConditionsBreak fromBreak, @NonNull final PricingConditionsBreak toBreak)
 	{
-
+		
 		final I_M_DiscountSchemaBreak to = getPricingConditionsBreakbyId(toBreak.getId());
 		to.setPricingSystemSurchargeAmt(fromBreak.getPricingSystemSurchargeAmt());
 		saveRecord(to);
 	}
-
+	
 	private void inactivateDiscountSchemaBreakRecords(@NonNull final PricingConditionsBreak db)
 	{
-
+		
 		final I_M_DiscountSchemaBreak record = getPricingConditionsBreakbyId(db.getId());
 		record.setIsActive(false);
 		saveRecord(record);
@@ -865,7 +873,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		return ProductId.ofRepoIds(distinctProductRecordIds);
 
 	}
-
+	
 	public I_M_DiscountSchemaBreak getPricingConditionsBreakbyId(@NonNull PricingConditionsBreakId discountSchemaBreakId)
 	{
 		return load(discountSchemaBreakId.getDiscountSchemaBreakId(), I_M_DiscountSchemaBreak.class);

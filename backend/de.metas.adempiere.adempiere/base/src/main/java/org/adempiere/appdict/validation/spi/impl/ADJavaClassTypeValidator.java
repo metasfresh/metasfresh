@@ -22,19 +22,19 @@ package org.adempiere.appdict.validation.spi.impl;
  * #L%
  */
 
-import de.metas.javaclasses.model.I_AD_JavaClass_Type;
-import de.metas.util.Check;
-import lombok.NonNull;
+
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Util;
+
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Check;
 
 public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass_Type>
 {
 
 	@Override
-	public String getLogMessage(@NonNull final IADValidatorViolation violation)
+	public String getLogMessage(IADValidatorViolation violation)
 	{
 		final StringBuilder message = new StringBuilder();
 		try
@@ -43,7 +43,7 @@ public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass
 
 			message.append("Error on ").append(javaClassType).append(" (IsActive=").append(javaClassType.isActive()).append("): ");
 		}
-		catch(final Exception e)
+		catch (Exception e)
 		{
 			message.append("Error (InterfaceWrapperHelper exception: ").append(e.getLocalizedMessage()).append(") on ").append(violation.getItem()).append(": ");
 		}
@@ -60,14 +60,14 @@ public class ADJavaClassTypeValidator extends AbstractADValidator<I_AD_JavaClass
 	}
 
 	@Override
-	public void validate(@NonNull final I_AD_JavaClass_Type item)
+	public void validate(I_AD_JavaClass_Type item)
 	{
-		if (Check.isBlank(item.getClassname()))
+		if (Check.isEmpty(item.getClassname(), true))
 		{
 			return;
 		}
 
-		Util.validateJavaClassname(item.getClassname(), null);
+		validateJavaClassname(item.getClassname(), null);
 	}
 
 }

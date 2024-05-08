@@ -18,7 +18,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
@@ -110,12 +109,6 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.stream()
 				.map(PickingSlotDAO::toPickingSlotIdAndCaption)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public void save(@NonNull final I_M_PickingSlot slot)
-	{
-		InterfaceWrapperHelper.save(slot);
 	}
 
 	private static Predicate<I_M_PickingSlot> toPredicate(final PickingSlotQuery query)

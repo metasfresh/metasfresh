@@ -22,10 +22,9 @@
 
 package de.metas.elementvalue;
 
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
-import de.metas.acct.interceptor.C_ElementValue;
+import de.metas.acct.model.validator.C_ElementValue;
 import de.metas.organization.OrgId;
 import de.metas.treenode.TreeNode;
 import de.metas.treenode.TreeNodeRepository;
@@ -70,8 +69,7 @@ public class C_ElementValueTest
 		ElementValueService elementValueService = new ElementValueService(elementValueRepository, treeNodeService);
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, accountDAO, treeNodeService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_ElementValue(acctSchemasRepo, treeNodeService));
 
 		this.elementValueService = elementValueService;
 		this.treeNodeService = treeNodeService;

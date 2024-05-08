@@ -149,7 +149,7 @@ public class SysconfigBackedSizeBasedWorkpackagePrioConfig implements Function<I
 
 		logger.debug(
 				"Found no priority for the given position {} (current queue size={}).\nThe {} AD_SysConfig-records which we checked are: {}.\nReturning the preset default prio: {}.",
-				position, size, sortedMap.size(), sortedMap, defaultPrio.getPriority());
+				position, size, sortedMap.size(), sortedMap, defaultPrio.retrievePrioName());
 		return defaultPrio;
 	}
 

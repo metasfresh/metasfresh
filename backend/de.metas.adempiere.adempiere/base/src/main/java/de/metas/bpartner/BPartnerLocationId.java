@@ -2,10 +2,8 @@ package de.metas.bpartner;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -77,11 +75,9 @@ public class BPartnerLocationId implements RepoIdAware
 		return bpartnerId != null && bpartnerLocationId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
 	}
 
-	@Jacksonized
-	@Builder
-	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int repoId)
+	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "bpartnerLocationId");
+		this.repoId = Check.assumeGreaterThanZero(bpartnerLocationId, "bpartnerLocationId");
 		this.bpartnerId = bpartnerId;
 	}
 

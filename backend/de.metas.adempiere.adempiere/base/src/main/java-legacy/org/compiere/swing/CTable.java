@@ -468,12 +468,12 @@ public class CTable extends JTable implements ITable
 		modelRowSorter.setClearFiltersAfterRefresh(clearFiltersAfterRefresh);
 	}
 
-	/* package */Vector<?> getModelDataVector()
+	/* package */Vector<Object> getModelDataVector()
 	{
 		final DefaultTableModel model = (DefaultTableModel)getModel();
 
 		@SuppressWarnings("unchecked")
-		final Vector<?> modelDataVector = model.getDataVector();
+		final Vector<Object> modelDataVector = model.getDataVector();
 		return modelDataVector;
 	}
 

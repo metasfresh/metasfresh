@@ -2,7 +2,6 @@ package de.metas.ui.web.order.products_proposal.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
@@ -10,6 +9,7 @@ import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -26,14 +26,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -45,12 +43,12 @@ import java.util.Optional;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -102,13 +100,8 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(seqNo = 70, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
 	private final boolean isCampaignPrice;
 
-	/**
-	 * This and the following fields with {@link Displayed#FALSE} can be activated programatically via sysconfig;
-	 * see {@link de.metas.ui.web.order.products_proposal.view.OrderProductsProposalViewFactory#createViewLayout(ProductsProposalViewFactoryTemplate.ViewLayoutKey)}.
-	 */
 	public static final String FIELD_BPartner = "bpartner";
 	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
-	@Getter
 	private final LookupValue bpartner;
 
 	public static final String FIELD_LastSalesInvoiceDate = "lastSalesInvoiceDate";
@@ -120,31 +113,6 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_Description, captionKey = "Description", widgetType = DocumentFieldWidgetType.Text, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final String description;
-
-	public static final String FIELD_OfferDate = "offerDate";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_OfferDate, captionKey = "OfferDate", widgetType = DocumentFieldWidgetType.LocalDate)
-	@Getter
-	private final LocalDate offerDate;
-
-	public static final String FIELD_TermsOfDelivery = "termsOfDelivery";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_TermsOfDelivery, captionKey = "TermsOfDelivery", widgetType = DocumentFieldWidgetType.Lookup)
-	private final LookupValue incoterms;
-
-	public static final String FIELD_LastQuotationDate = "lastQuotationDate";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastQuotationDate, captionKey = "LastQuotationDate", widgetType = DocumentFieldWidgetType.LocalDate)
-	private final LocalDate lastQuotationDate;
-
-	public static final String FIELD_LastQuotationPrice = "lastQuotationPrice";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastQuotationPrice, captionKey = "LastQuotationPrice", widgetType = DocumentFieldWidgetType.Amount)
-	private final Amount lastQuotationPrice;
-
-	public static final String FIELD_LastQuotationUOM = "lastQuotationUOM";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_LastQuotationUOM, captionKey = "LastQuotationUOM", widgetType = DocumentFieldWidgetType.Lookup)
-	private final LookupValue lastQuotationUOM;
-
-	public static final String FIELD_QuotationOrdered = "quotationOrdered";
-	@ViewColumn(displayed = Displayed.FALSE, fieldName = FIELD_QuotationOrdered, captionKey = "QuotationOrdered", widgetType = DocumentFieldWidgetType.YesNo)
-	private final Boolean quotationOrdered;
 
 	private final DocumentId id;
 	@Getter
@@ -159,17 +127,10 @@ public class ProductsProposalRow implements IViewRow
 	private final ProductProposalPrice price;
 
 	@Getter
-	private final AttributeSetInstanceId asiId;
-
-	@Getter
 	private final OrderLineId existingOrderLineId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
-
-	@NonNull
-	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModes;
-
-	private static final ImmutableMap<String, ViewEditorRenderMode> DEFAULT_EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode>builder()
+	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
 			.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_Price, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_Description, ViewEditorRenderMode.ALWAYS)
@@ -183,23 +144,15 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final ITranslatableString packingDescription,
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
-			@Nullable final AttributeSetInstanceId asiId,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
 			@Nullable final String description,
-			@Nullable final LocalDate offerDate,
-			@Nullable final LookupValue incoterms,
-			@Nullable final LocalDate lastQuotationDate,
-			@Nullable final Amount lastQuotationPrice,
-			@Nullable final LookupValue lastQuotationUOM,
-			@Nullable final Boolean quotationOrdered,
 			final int seqNo,
 			@Nullable final ProductPriceId productPriceId,
 			@Nullable final ProductPriceId copiedFromProductPriceId,
-			@Nullable final OrderLineId existingOrderLineId,
-			@Nullable final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModes)
+			@Nullable final OrderLineId existingOrderLineId)
 	{
 		this.id = id;
 
@@ -209,7 +162,6 @@ public class ProductsProposalRow implements IViewRow
 		this.packingDescription = packingDescription;
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
-		this.asiId = asiId;
 
 		this.price = price;
 		this.isCampaignPrice = price.isCampaignPriceUsed();
@@ -220,12 +172,6 @@ public class ProductsProposalRow implements IViewRow
 
 		this.lastShipmentDays = lastShipmentDays;
 		this.lastSalesInvoiceDate = lastSalesInvoiceDate;
-		this.offerDate = offerDate;
-		this.incoterms = incoterms;
-		this.lastQuotationDate = lastQuotationDate;
-		this.lastQuotationPrice = lastQuotationPrice;
-		this.lastQuotationUOM = lastQuotationUOM;
-		this.quotationOrdered = quotationOrdered;
 
 		this.description = description;
 
@@ -235,11 +181,8 @@ public class ProductsProposalRow implements IViewRow
 
 		this.existingOrderLineId = existingOrderLineId;
 
-		this.viewEditorRenderModes = Optional.ofNullable(viewEditorRenderModes)
-				.orElse(DEFAULT_EDITOR_RENDER_MODES);
-
 		this.values = ViewRowFieldNameAndJsonValuesHolder.builder(ProductsProposalRow.class)
-				.viewEditorRenderModeByFieldName(this.viewEditorRenderModes)
+				.viewEditorRenderModeByFieldName(EDITOR_RENDER_MODES)
 				.build();
 	}
 
@@ -297,14 +240,6 @@ public class ProductsProposalRow implements IViewRow
 		return getProduct().getIdAs(ProductId::ofRepoId);
 	}
 
-	@Nullable
-	public BPartnerId getBPartnerId()
-	{
-		return Optional.ofNullable(getBpartner())
-				.map(lookupValue -> lookupValue.getIdAs(BPartnerId::ofRepoId))
-				.orElse(null);
-	}
-
 	public String getProductName()
 	{
 		return getProduct().getDisplayName();
@@ -340,21 +275,28 @@ public class ProductsProposalRow implements IViewRow
 				|| getProductName().toLowerCase().contains(filter.getProductName().toLowerCase());
 	}
 
-	public ProductsProposalRow withExistingOrderLine(@Nullable final OrderLine existingOrderLine)
+	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
 	{
-		if(existingOrderLine == null)
+		if (order == null)
 		{
 			return this;
 		}
-		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), existingOrderLine.getCurrency().getCurrencyCode());
 
+		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(), getPackingMaterialId()).orElse(null);
+		if (existingOrderLine == null)
+		{
+			return this;
+		}
+
+		final Amount existingPrice = Amount.of(existingOrderLine.getPriceEntered(), order.getCurrency().getCurrencyCode());
+		
 		return toBuilder()
 				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()
-							 ? existingOrderLine.getQtyEnteredCU()
-							 : BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
+						? existingOrderLine.getQtyEnteredCU()
+						: BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
 				.price(ProductProposalPrice.builder()
-							   .priceListPrice(existingPrice)
-							   .build())
+						.priceListPrice(existingPrice)
+						.build())
 				.existingOrderLineId(existingOrderLine.getOrderLineId())
 				.description(existingOrderLine.getDescription())
 				.build();

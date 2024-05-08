@@ -30,18 +30,18 @@
 
 				<configuration>
 					<rules>
-<!--						<banDuplicateClasses>-->
-<!--							<dependencies>-->
-<!--								<dependency>-->
-<!--									<groupId>de.metas.migration</groupId>-->
-<!--									<artifactId>de.metas.migration.cli</artifactId>-->
-<!--									<ignoreClasses>-->
-<!--										<ignoreClass>*</ignoreClass>-->
-<!--									</ignoreClasses>-->
-<!--								</dependency>-->
-<!--							</dependencies>-->
-<!--							<findAllDuplicates>true</findAllDuplicates>-->
-<!--						</banDuplicateClasses>-->
+						<banDuplicateClasses>
+							<dependencies>
+								<dependency>
+									<groupId>de.metas.migration</groupId>
+									<artifactId>de.metas.migration.cli</artifactId>
+									<ignoreClasses>
+										<ignoreClass>*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+							</dependencies>
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
 					</rules>
 					<fail>true</fail>
 				</configuration>

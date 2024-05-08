@@ -22,9 +22,7 @@
 package org.compiere.util;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
-import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -42,10 +40,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
@@ -55,10 +51,10 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.db.Database;
@@ -78,7 +74,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
@@ -88,7 +83,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -97,7 +91,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * General Database Interface
@@ -135,6 +128,7 @@ public class DB
 		 * <p>
 		 * NOTE: avoid using this method. We introduced it just to migrate from old API.
 		 *
+		 * @param ignoreError
 		 * @return {@link OnFail} value
 		 */
 		public static OnFail valueOfIgnoreError(final boolean ignoreError)
@@ -154,8 +148,14 @@ public class DB
 	 */
 	private final Logger log = LogManager.getLogger(DB.class);
 
+	/**
+	 * SQL Statement Separator "; "
+	 */
+	public final String SQLSTATEMENT_SEPARATOR = "; ";
+
 	/**************************************************************************
 	 * Set connection.
+	 *
 	 * If the connection was already set and it's the same, this method does nothing.
 	 *
 	 * @param cc connection
@@ -384,6 +384,7 @@ public class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
+	 * @param readOnly
 	 * @param trxLevel   - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
 	 */
 	public Connection createConnection(final boolean autoCommit, final boolean readOnly, final int trxLevel)
@@ -459,6 +460,25 @@ public class DB
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}    // prepareCall
 
+	/**************************************************************************
+	 * Prepare Statement
+	 *
+	 * @param sql
+	 * @return Prepared Statement
+	 * @deprecated
+	 */
+	@Deprecated
+	public CPreparedStatement prepareStatement(final String sql)
+	{
+		int concurrency = ResultSet.CONCUR_READ_ONLY;
+		final String upper = sql.toUpperCase();
+		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
+		{
+			concurrency = ResultSet.CONCUR_UPDATABLE;
+		}
+		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
+	}    // prepareStatement
+
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -481,7 +501,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType, final int resultSetConcurrency)
+			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -496,9 +516,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType,
-											   final int resultSetConcurrency,
-											   final String trxName)
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -621,7 +641,7 @@ public class DB
 		}
 		else if (param instanceof Integer)
 		{
-			pstmt.setInt(index, (Integer)param);
+			pstmt.setInt(index, ((Integer)param).intValue());
 		}
 		else if (param instanceof BigDecimal)
 		{
@@ -663,7 +683,7 @@ public class DB
 		{
 			pstmt.setString(index, ((ReferenceListAwareEnum)param).getCode());
 		}
-		else if (param instanceof byte[])
+		else if(param instanceof byte[])
 		{
 			pstmt.setBytes(index, (byte[])param);
 		}
@@ -678,138 +698,118 @@ public class DB
 	 *
 	 * @param trxName optional transaction name
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}.
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdateAndSaveErrorOnFail(final String sql, final String trxName)
+	public int executeUpdate(final String sql, final String trxName)
 	{
+		final Object[] params = null;
 		final int timeOut = 0;
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
-	}
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+	}    // executeUpdate
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
+	 * @param trxName     transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final boolean ignoreError, final String trxName)
+	public int executeUpdate(final String sql, final boolean ignoreError, final String trxName)
 	{
+		final Object[] sqlParams = null;
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
-	}
+		final ISqlUpdateReturnProcessor updpateReturnProcessor = null;
+		return executeUpdate(sql, sqlParams, onFail, trxName, timeOut, updpateReturnProcessor);
+	}    // executeUpdate
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
+	 * @param trxName transaction
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, String)}
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdateAndSaveErrorOnFail(final String sql, final int param, final String trxName)
+	public int executeUpdate(final String sql, final int param, final String trxName)
 	{
 		final Object[] params = new Object[] { param };
 		final OnFail onFail = OnFail.valueOfIgnoreError(false);
 		final int timeOut = 0;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.params(params)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-		return result.getReturnedValue();
-	}
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+	}    // executeUpdate
 
 	/**
 	 * Execute Update. saves "DBExecuteError" in Log
 	 *
 	 * @param ignoreError if true, no execution error is reported
+	 * @param trxName     optional transaction name
 	 * @return number of rows updated or -1 if error
-	 * @deprecated please use a method that throws exceptions instead, like {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 * @deprecated please use the {@code ...Ex} variant of this method.
 	 */
 	@Deprecated
-	public int executeUpdateAndIgnoreErrorOnFail(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
+	public int executeUpdate(final String sql, final Object[] params, final boolean ignoreError, final String trxName)
 	{
 		final OnFail onFail = OnFail.valueOfIgnoreError(ignoreError);
 		final int timeOut = 0;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.params(params)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}
 
-	private SQLUpdateResult executeUpdate(@NonNull final ExecuteUpdateRequest request)
+	/**
+	 * Execute SQL Update.
+	 *
+	 * @param onFail                what to do if the update fails
+	 * @param updateReturnProcessor
+	 * @return update count
+	 * @throws DBException if update fails and {@link OnFail#ThrowException}.
+	 * @deprecated please use the {@code ...Ex} variant of this method.
+	 */
+	@Deprecated
+	public int executeUpdate(final String sql,
+			final Object[] params,
+			@NonNull final OnFail onFail,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
-		if (Check.isEmpty(request.getSql(), true))
+		if (Check.isEmpty(sql, true))
 		{
-			throw new IllegalArgumentException("Required parameter missing - " + request.getSql());
+			throw new IllegalArgumentException("Required parameter missing - " + sql);
 		}
 
 		//
 		int no = -1;
-		SQLWarning warning = null;
 		CPreparedStatement cs = statementsFactory.newCPreparedStatement(
 				ResultSet.TYPE_FORWARD_ONLY,
 				ResultSet.CONCUR_UPDATABLE,
-				request.getSql(),
-				request.getTrxName());
+				sql, // converted in call
+				trxName);
 
 		try
 		{
-			setParameters(cs, request.getParams());
-			if (request.getTimeOut() > 0 && getDatabase().isQueryTimeoutSupported())
+			setParameters(cs, params);
+			if (timeOut > 0 && getDatabase().isQueryTimeoutSupported())
 			{
-				cs.setQueryTimeout(request.getTimeOut());
+				cs.setQueryTimeout(timeOut);
 			}
 
-			if (request.getUpdateReturnProcessor() != null)
+			if (updateReturnProcessor != null)
 			{
 				// NOTE: this is an UPDATE query, so we shall log migration scripts
 				final ResultSet rs = cs.executeQueryAndLogMigationScripts();
 				int rows = 0;
 				try
 				{
-					warning = rs.getStatement().getWarnings();
-
 					while (rs.next())
 					{
-						request.getUpdateReturnProcessor().process(rs);
+						updateReturnProcessor.process(rs);
 						rows++;
 					}
 				}
@@ -825,7 +825,7 @@ public class DB
 			}
 
 			// No Transaction - Commit
-			if (Services.get(ITrxManager.class).isNull(request.getTrxName()))
+			if (Services.get(ITrxManager.class).isNull(trxName))
 			{
 				cs.commit();    // Local commit
 				// Connection conn = cs.getConnection();
@@ -844,8 +844,8 @@ public class DB
 			if (sqlException instanceof SQLException
 					&& DBException.isUniqueContraintError(sqlException))
 			{
-				sqlException = new DBUniqueConstraintException((SQLException)sqlException, request.getSql(), request.getParams())
-						.setSqlIfAbsent(request.getSql(), request.getParams());
+				sqlException = new DBUniqueConstraintException((SQLException)sqlException, sql, params)
+						.setSqlIfAbsent(sql, params);
 			}
 			// metas-2009_0021_AP1_CR061: teo_sarca: end
 
@@ -856,7 +856,7 @@ public class DB
 				{
 					final Connection connection = cs.getConnection();
 					sqlException = new DBDeadLockDetectedException(sqlException, connection)
-							.setSqlIfAbsent(request.getSql(), request.getParams());
+							.setSqlIfAbsent(sql, params);
 				}
 				catch (final SQLException | DBException e1)
 				{
@@ -866,7 +866,7 @@ public class DB
 					e1.printStackTrace(); // printing the stacktrace (to err), just to make sure it's recorded somewhere
 					// now try to log it
 					log.error(
-							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + request.getTrxName() + "] - " + e1.getMessage());
+							"Caught an additional exception while trying to get the connection of our DBDeadLockDetectedException: " + cs.getSql() + " [" + trxName + "] - " + e1.getMessage());
 				}
 			}
 
@@ -874,31 +874,31 @@ public class DB
 					&& DBException.isForeignKeyViolation(sqlException))
 			{
 				sqlException = new DBForeignKeyConstraintException(sqlException)
-						.setSqlIfAbsent(request.getSql(), request.getParams());
+						.setSqlIfAbsent(sql, params);
 			}
 
 			//
 			// Handle the sqlException
-			if (request.getOnFail() == OnFail.SaveError)
+			if (onFail == OnFail.SaveError)
 			{
-				log.error(cs.getSql() + " [" + request.getTrxName() + "]", sqlException);
+				log.error(cs.getSql() + " [" + trxName + "]", sqlException);
 				MetasfreshLastError.saveError(log, "DBExecuteError", sqlException);
 			}
-			else if (request.getOnFail() == OnFail.IgnoreButLog)
+			else if (onFail == OnFail.IgnoreButLog)
 			{
-				log.error(cs.getSql() + " [" + request.getTrxName() + "] - " + sqlException.getLocalizedMessage());
+				log.error(cs.getSql() + " [" + trxName + "] - " + sqlException.getLocalizedMessage());
 			}
-			else if (request.getOnFail() == OnFail.ThrowException)
+			else if (onFail == OnFail.ThrowException)
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
-						.setSqlIfAbsent(request.getSql(), request.getParams());
+						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
 				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
-						.setSqlIfAbsent(request.getSql(), request.getParams());
+						.setSqlIfAbsent(sql, params);
 			}
 		}
 		finally
@@ -907,13 +907,8 @@ public class DB
 			DB.close(cs);
 		}
 
-		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
-
-		return SQLUpdateResult.builder()
-				.returnedValue(no)
-				.warningMessages(warningMessages)
-				.build();
-	}
+		return no;
+	}    // executeUpdate
 
 	/**
 	 * Execute Update and throw exception.
@@ -922,105 +917,61 @@ public class DB
 	 * @param trxName transaction
 	 * @return number of rows updated
 	 */
-	public int executeUpdateAndThrowExceptionOnFail(final String sql, final Object[] params, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, @Nullable final String trxName) throws DBException
 	{
 		final int timeOut = 0;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.params(params)
-				.onFail(OnFail.ThrowException)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.updateReturnProcessor(null)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
+		return executeUpdateEx(sql, params, trxName, timeOut);
 	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 * @param params  statement parameters
+	 * @param trxName transaction
+	 * @param timeOut optional timeOut parameter
+	 * @return number of rows updated
 	 */
-	public int executeUpdateAndThrowExceptionOnFail(final String sql, @Nullable final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, final Object[] params, final String trxName, final int timeOut) throws DBException
 	{
-		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
-
-	}
-
-	public SQLUpdateResult executeUpdateWithWarningEx(final String sql, @Nullable final String trxName) throws DBException
-	{
-		final int timeOut = 0;
-		final OnFail onFail = OnFail.ThrowException;
-
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.build();
-
-		return executeUpdate(executeUpdateRequest);
-
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
 	}
 
 	/**
 	 * Execute Update and throw exception.
 	 *
-	 * @see {@link #executeUpdateAndThrowExceptionOnFail(String, Object[], String)}
+	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public int executeUpdateAndThrowExceptionOnFail(final String sql, final String trxName, final int timeOut) throws DBException
+	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
+		final Object[] params = null;
+		final int timeOut = 0;
 		final OnFail onFail = OnFail.ThrowException;
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+	}    // executeUpdateEx
 
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.onFail(onFail)
-				.trxName(trxName)
-				.timeOut(timeOut)
-
-				.build();
-
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
-
-	}
-
-	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-							   final Object[] params,
-							   final String trxName,
-							   final int timeOut,
-							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+	/**
+	 * Execute Update and throw exception.
+	 *
+	 * @see {@link #executeUpdateEx(String, Object[], String)}
+	 */
+	public int executeUpdateEx(final String sql, final String trxName, final int timeOut) throws DBException
 	{
-		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
-				.sql(sql)
-				.params(params)
-				.onFail(OnFail.ThrowException)
-				.trxName(trxName)
-				.timeOut(timeOut)
-				.updateReturnProcessor(updateReturnProcessor)
-				.build();
+		final Object[] params = null;
+		final OnFail onFail = OnFail.ThrowException;
+		final ISqlUpdateReturnProcessor updateReturnProcessor = null;
+		return executeUpdate(sql, params, onFail, trxName, timeOut, updateReturnProcessor);
+	}    // executeUpdateEx
 
-		final SQLUpdateResult result = executeUpdate(executeUpdateRequest);
-
-		return result.getReturnedValue();
+	public int executeUpdateEx(final String sql,
+			final Object[] params,
+			final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
+	{
+		return executeUpdate(sql, params, OnFail.ThrowException, trxName, timeOut, updateReturnProcessor);
 	}
 
 	/**
@@ -1050,6 +1001,7 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
+	 * @throws SQLException
 	 */
 	public boolean commit(final boolean throwException, final String trxName) throws SQLException, IllegalStateException
 	{
@@ -1093,6 +1045,7 @@ public class DB
 	 * @param throwException if true, re-throws exception
 	 * @param trxName        transaction name
 	 * @return true if not needed or success
+	 * @throws SQLException
 	 */
 	public boolean rollback(final boolean throwException, final String trxName) throws SQLException
 	{
@@ -1161,6 +1114,8 @@ public class DB
 		finally
 		{
 			close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 		return retValue;
 	}
@@ -1229,16 +1184,7 @@ public class DB
 	 */
 	public String getSQLValueStringEx(@Nullable final String trxName, final String sql, final Object... params)
 	{
-		final SQLValueStringResult result = getSQLValueStringWithWarningEx(trxName, sql, params);
-
-		return result.getReturnedValue();
-	}
-
-	public SQLValueStringResult getSQLValueStringWithWarningEx(@Nullable final String trxName, final String sql, final Object... params)
-	{
 		String retValue = null;
-		SQLWarning warning = null;
-
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1249,7 +1195,6 @@ public class DB
 			if (rs.next())
 			{
 				retValue = rs.getString(1);
-				warning = rs.getStatement().getWarnings();
 			}
 			else
 			{
@@ -1266,12 +1211,7 @@ public class DB
 			rs = null;
 			pstmt = null;
 		}
-
-		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
-
-		return SQLValueStringResult.builder().
-				returnedValue(retValue).
-				warningMessages(warningMessages).build();
+		return retValue;
 	}
 
 	/**
@@ -1527,7 +1467,8 @@ public class DB
 
 			if (rs.next())
 			{
-				@SuppressWarnings("unchecked") final T[] arr = (T[])rs.getArray(1).getArray();
+				@SuppressWarnings("unchecked")
+				final T[] arr = (T[])rs.getArray(1).getArray();
 				return arr;
 			}
 			else
@@ -1756,11 +1697,6 @@ public class DB
 	 */
 	public int getNextID(final int AD_Client_ID, final String TableName, final String trxName)
 	{
-		if (Adempiere.isUnitTestMode())
-		{
-			return POJOLookupMap.get().nextId(TableName);
-		}
-
 		final boolean useNativeSequences = DB.isUseNativeSequences(AD_Client_ID, TableName);
 		if (useNativeSequences)
 		{
@@ -1776,13 +1712,6 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
-	}
-
-	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
-	{
-		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
-		paramsOut.addAll(values);
-		return sql;
 	}
 
 	/**
@@ -1837,7 +1766,7 @@ public class DB
 		{
 			return String.valueOf(((RepoIdAware)param).getRepoId());
 		}
-		else if (param instanceof ReferenceListAwareEnum)
+		else if(param instanceof ReferenceListAwareEnum)
 		{
 			return TO_STRING(((ReferenceListAwareEnum)param).getCode());
 		}
@@ -1967,11 +1896,6 @@ public class DB
 		return Database.TO_NUMBER(number, displayType);
 	}
 
-	public String TO_STRING(@Nullable final ReferenceListAwareEnum value)
-	{
-		return TO_STRING(value != null ? value.getCode() : null, 0);
-	}
-
 	/**
 	 * Package Strings for SQL command in quotes
 	 *
@@ -2037,6 +1961,7 @@ public class DB
 	}
 
 	/**
+	 * @param comment
 	 * @return SQL multiline comment
 	 */
 	public String TO_COMMENT(final String comment)
@@ -2049,26 +1974,6 @@ public class DB
 		return "/* "
 				+ comment.replace("/*", " ").replace("*/", " ")
 				+ " */";
-	}
-
-	public String TO_ARRAY(@Nullable final Collection<?> values)
-	{
-		if (values == null)
-		{
-			return "NULL";
-		}
-
-		final StringBuilder result = new StringBuilder();
-		for (final Object value : values)
-		{
-			if (result.length() > 0)
-			{
-				result.append(",");
-			}
-			result.append(TO_SQL(value));
-		}
-
-		return TO_STRING(result.insert(0, "{").append("}").toString());
 	}
 
 	/**
@@ -2092,6 +1997,7 @@ public class DB
 	/**
 	 * convenient method to close statement
 	 *
+	 * @param st
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2227,7 +2133,7 @@ public class DB
 
 			if (counter >= 1000)
 			{
-				DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
+				DB.executeUpdateEx(insert.toString(), trxName);
 				insert = new StringBuilder();
 				insert.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ");
 				counter = 0;
@@ -2235,7 +2141,7 @@ public class DB
 		}
 		if (counter > 0)
 		{
-			DB.executeUpdateAndThrowExceptionOnFail(insert.toString(), trxName);
+			DB.executeUpdateEx(insert.toString(), trxName);
 		}
 	}
 
@@ -2258,7 +2164,7 @@ public class DB
 	}
 
 	public void createT_Selection(
-			@NonNull final PInstanceId selectionId,
+			@NonNull final PInstanceId selectionId, 
 			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
@@ -2285,12 +2191,14 @@ public class DB
 	/**
 	 * Delete T_Selection
 	 *
+	 * @param pinstanceId
+	 * @param trxName
 	 * @return number of records that were deleted
 	 */
 	public int deleteT_Selection(final PInstanceId pinstanceId, @Nullable final String trxName)
 	{
 		final String sql = "DELETE FROM T_SELECTION WHERE AD_PInstance_ID=?";
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { pinstanceId }, trxName);
+		final int no = DB.executeUpdateEx(sql, new Object[] { pinstanceId }, trxName);
 		return no;
 	}
 
@@ -2338,6 +2246,7 @@ public class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it returns the string <code>"(?,?,?)"</code>, and it will copy <code>paramsIn</code> to the list <code>paramsOut</code>. Note that e.g. if we need
 	 * something like <code>AND ..._ID IN (?,?,?)</code>, then the ordering paramsIn's elements doesn't really matter.
 	 *
+	 * @param paramsIn
 	 * @param paramsOut a list containing the prepared statement parameters for the returned SQL's question marks.
 	 * @return SQL list (string)
 	 */
@@ -2379,7 +2288,7 @@ public class DB
 	/**
 	 * Build an SQL list (e.g. ColumnName IN (?, ?) OR ColumnName IS NULL)<br>
 	 *
-	 * @param paramsOut if null, the parameters will be embedded in returned SQL
+	 * @param paramsOut  if null, the parameters will be embedded in returned SQL
 	 * @return sql
 	 * @see InArrayQueryFilter
 	 */
@@ -2419,6 +2328,7 @@ public class DB
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 *
+	 * @param paramsIn
 	 * @return SQL list
 	 * @see #buildSqlList(Collection, List)
 	 */
@@ -2476,10 +2386,10 @@ public class DB
 
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
-		if (MigrationScriptFileLoggerHolder.isEnabled()
-				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
+		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
+				&& Services.get(IMigrationLogger.class).isLogTableName(TableName))
 		{
-			log.debug("Returning 'false' for table {} because log migration scripts is enabled and this table is supposed to be logged", TableName);
+			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
 			return false;
 		}
 
@@ -2511,7 +2421,7 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
-					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2529,11 +2439,11 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
-													   1, // increment
-													   1, // minvalue
-													   Integer.MAX_VALUE, // maxvalue
-													   1000000, // start
-													   ITrx.TRXNAME_ThreadInherited);
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2558,6 +2468,7 @@ public class DB
 	 * <li>use it only if is really needed</li>
 	 * </ul>
 	 *
+	 * @param sql
 	 * @return converted SQL
 	 */
 	public String convertSqlToNative(final String sql)
@@ -2576,7 +2487,7 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
-										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
 		}
 	}
 
@@ -2708,9 +2619,10 @@ public class DB
 		{
 			value = (AT)rs.getString(columnIndex);
 		}
-		else if (RepoIdAware.class.isAssignableFrom(returnType))
+		else if(RepoIdAware.class.isAssignableFrom(returnType))
 		{
-			@SuppressWarnings("unchecked") final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
 			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
@@ -2778,9 +2690,7 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableList.Builder<T> rows = ImmutableList.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader, rows::add);
-		return rows.build();
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_None, loader);
 	}
 
 	@NonNull
@@ -2789,31 +2699,44 @@ public class DB
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableList.Builder<T> rows = ImmutableList.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
-		return rows.build();
+		return retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader);
 	}
 
 	@NonNull
-	public static <T> ImmutableList<T> retrieveRows(
-			@NonNull final CharSequence sql,
-			@Nullable final Object[] sqlParams,
-			@NonNull final ResultSetRowLoader<T> loader)
-	{
-		final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
-		return retrieveRows(sql, sqlParamsList, loader);
-	}
-
-
-	@NonNull
-	public static <T> ImmutableSet<T> retrieveUniqueRows(
+	private static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
+			@Nullable final String trxName,
 			@NonNull final ResultSetRowLoader<T> loader)
 	{
-		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
-		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
-		return rows.build();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = prepareStatement(sql.toString(), trxName);
+			setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableList.Builder<T> rows = ImmutableList.builder();
+			while (rs.next())
+			{
+				final T row = loader.retrieveRowOrNull(rs);
+				if (row != null)
+				{
+					rows.add(row);
+				}
+			}
+
+			return rows.build();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql, sqlParams);
+		}
+		finally
+		{
+			close(rs, pstmt);
+		}
 	}
 
 	public <T> T retrieveFirstRowOrNull(
@@ -2835,40 +2758,6 @@ public class DB
 			else
 			{
 				return null;
-			}
-		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			close(rs, pstmt);
-		}
-	}
-
-	private static <T> void retrieveRows(
-			@NonNull final CharSequence sql,
-			@Nullable final List<Object> sqlParams,
-			@Nullable final String trxName,
-			@NonNull final ResultSetRowLoader<T> loader,
-			@NonNull final Consumer<T> collector)
-	{
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = prepareStatement(sql.toString(), trxName);
-			setParameters(pstmt, sqlParams);
-			rs = pstmt.executeQuery();
-
-			while (rs.next())
-			{
-				final T row = loader.retrieveRowOrNull(rs);
-				if (row != null)
-				{
-					collector.accept(row);
-				}
 			}
 		}
 		catch (final SQLException ex)

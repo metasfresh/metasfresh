@@ -22,11 +22,12 @@ package de.metas.event;
  * #L%
  */
 
-import com.google.common.base.MoreObjects;
-import de.metas.event.impl.EventMDC;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -34,10 +35,12 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.google.common.base.MoreObjects;
+
+import de.metas.event.impl.EventMDC;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * An {@link IEventBus} wrapper implementation which can be asked to collect posted events and send them all together when {@link #flush()} is called.
@@ -55,7 +58,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 	}
 
 	@Override
-	public final void processEvent(@NonNull final Event event)
+	public final void postEvent(@NonNull final Event event)
 	{
 		try (final MDCCloseable mdc = EventMDC.putEvent(event))
 		{
@@ -67,7 +70,7 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 			else
 			{
 				logger.debug("queuing=false; -> post event immediately; this={}", this);
-				super.processEvent(event);
+				super.postEvent(event);
 			}
 		}
 	}
@@ -187,19 +190,17 @@ public class QueueableForwardingEventBus extends ForwardingEventBus
 		logger.debug("flush - posting {} queued events to event bus; this={}", queuedEventsList.size(), this);
 		for (final Event event : queuedEventsList)
 		{
-			super.processEvent(event);
+			super.postEvent(event);
 		}
 	}
 
 	@Override
 	public String toString()
 	{
-		final Topic topic = getTopic();
-
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("topicName", topic.getName())
-				.add("type", topic.getType())
+				.add("topicName", getTopicName())
+				.add("type", getType())
 				.add("destroyed", isDestroyed() ? Boolean.TRUE : null)
 				.toString();
 	}

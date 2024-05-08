@@ -7,7 +7,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -80,23 +79,16 @@ public final class DocumentFilterParam
 	}
 
 	private final boolean joinAnd;
-	@Nullable private final String fieldName;
-	@Nullable private final Operator operator;
-	@Nullable private final Object value;
-	@Nullable private final Object valueTo;
+	private final String fieldName;
+	private final Operator operator;
+	private final Object value;
+	private final Object valueTo;
 	//
-	@Nullable private final SqlAndParams sqlWhereClause;
+	private final SqlAndParams sqlWhereClause;
 
 	public static Builder builder()
 	{
 		return new Builder();
-	}
-
-	@NonNull
-	public static DocumentFilterParam of(@NonNull final SqlAndParams sqlWhereClause)
-	{
-		final boolean joinAnd = true;
-		return new DocumentFilterParam(joinAnd, sqlWhereClause);
 	}
 
 	public static DocumentFilterParam ofSqlWhereClause(final String sqlWhereClause)
@@ -111,7 +103,7 @@ public final class DocumentFilterParam
 
 	public static DocumentFilterParam ofNameEqualsValue(
 			@NonNull final String fieldName,
-			@Nullable final Object value)
+			@NonNull final Object value)
 	{
 		return ofNameOperatorValue(fieldName, Operator.EQUAL, value);
 	}
@@ -122,7 +114,7 @@ public final class DocumentFilterParam
 	public static DocumentFilterParam ofNameOperatorValue(
 			@NonNull final String fieldName,
 			@NonNull final Operator operator,
-			@Nullable final Object value)
+			@NonNull final Object value)
 	{
 		return builder().setFieldName(fieldName).setOperator(operator).setValue(value).build();
 	}
@@ -166,22 +158,7 @@ public final class DocumentFilterParam
 	@Nullable
 	public String getValueAsString()
 	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof ReferenceListAwareEnum)
-		{
-			return ((ReferenceListAwareEnum)value).getCode();
-		}
-		else if (value instanceof LookupValue)
-		{
-			return ((LookupValue)value).getIdAsString();
-		}
-		else
-		{
-			return value.toString();
-		}
+		return value != null ? value.toString() : null;
 	}
 
 	public int getValueAsInt(final int defaultValue)
@@ -290,16 +267,6 @@ public final class DocumentFilterParam
 			return null;
 		}
 		return repoIdMapper.apply(idInt);
-	}
-
-	public <T extends ReferenceListAwareEnum> T getValueAsRefListOrNull(@NonNull final Function<String, T> mapper)
-	{
-		final String value = StringUtils.trimBlankToNull(getValueAsString());
-		if (value == null)
-		{
-			return null;
-		}
-		return mapper.apply(value);
 	}
 
 	//

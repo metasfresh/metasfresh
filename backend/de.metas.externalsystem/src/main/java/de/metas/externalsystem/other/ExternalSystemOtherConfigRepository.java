@@ -27,7 +27,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -49,22 +48,11 @@ public class ExternalSystemOtherConfigRepository
 				.map(this::recordToParameterModel)
 				.collect(ImmutableList.toImmutableList());
 
-		if (parameters.isEmpty())
-		{
-			throw new AdempiereException("No ExternalSystem_Other_ConfigParameter found for ExternalSystem_Config_ID=" + externalSystemOtherConfigId.getRepoId());
-		}
 
 		return ExternalSystemOtherConfig.builder()
 				.id(externalSystemOtherConfigId)
 				.parameters(parameters)
 				.build();
-	}
-
-	@NonNull
-	public ExternalSystemOtherConfig getByValue(@NonNull final String value)
-	{
-		final ExternalSystemOtherValue externalSystemOtherValue = ExternalSystemOtherValue.ofString(value);
-		return getById(externalSystemOtherValue.getExternalSystemOtherConfigId());
 	}
 
 	@NonNull

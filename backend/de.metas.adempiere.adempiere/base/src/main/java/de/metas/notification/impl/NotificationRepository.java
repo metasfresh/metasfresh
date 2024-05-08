@@ -10,10 +10,11 @@ import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
+import de.metas.notification.UserNotification.UserNotificationBuilder;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -98,11 +99,11 @@ public class NotificationRepository implements INotificationRepository
 		final AdMessageKey detailADMessage = request.getContentADMessage();
 		if (detailADMessage != null)
 		{
-			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(detailADMessage).orElse(null);
+			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(detailADMessage).orElse(null);
 		}
 		if (adMessageId == null)
 		{
-			adMessageId = Services.get(IMsgBL.class).getIdByAdMessage(DEFAULT_AD_MESSAGE).orElse(null);
+			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(DEFAULT_AD_MESSAGE).orElse(null);
 		}
 		notificationPO.setAD_Message_ID(AdMessageId.toRepoId(adMessageId));
 
@@ -183,7 +184,7 @@ public class NotificationRepository implements INotificationRepository
 
 	private UserNotification toUserNotification(@NonNull final I_AD_Note notificationPO)
 	{
-		final UserNotification.UserNotificationBuilder builder = UserNotification.builder()
+		final UserNotificationBuilder builder = UserNotification.builder()
 				.id(notificationPO.getAD_Note_ID())
 				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())
@@ -195,7 +196,7 @@ public class NotificationRepository implements INotificationRepository
 		final AdMessageId detailADMessageId = AdMessageId.ofRepoIdOrNull(notificationPO.getAD_Message_ID());
 		if (detailADMessageId != null)
 		{
-			final AdMessageKey detailADMessage = Services.get(IMsgBL.class).getAdMessageKeyById(detailADMessageId).orElse(null);
+			final AdMessageKey detailADMessage = Services.get(IADMessageDAO.class).retrieveValueById(detailADMessageId).orElse(null);
 			builder.detailADMessage(detailADMessage != null ? detailADMessage.toAD_Message() : null);
 		}
 		else

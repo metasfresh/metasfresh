@@ -22,19 +22,11 @@ package de.metas.ui.web.view;
  * #L%
  */
 
-/**
- * @implNote If you want to add a new action, e.g. MY_CLOSE, then you shall
- * <ul>
- * <li>add the MY_CLOSE enum member here</li>
- * <li>add the `webui.modal.actions.my_close` to AD_Message (remark: `webui.modal.actions.` prefix plus enum name lowe-case) </li>
- * </ul>
- */
 public enum ViewCloseAction
 {
-	BACK,
-	CANCEL,
-	DONE,
-	CLOSE,
+	BACK, //
+	CANCEL, //
+	DONE, //
 	;
 
 	public static ViewCloseAction fromJsonOr(final String json, final ViewCloseAction defaultValue)
@@ -46,7 +38,7 @@ public enum ViewCloseAction
 
 		return valueOf(json);
 	}
-
+	
 	public boolean isDone()
 	{
 		return this.equals(DONE);

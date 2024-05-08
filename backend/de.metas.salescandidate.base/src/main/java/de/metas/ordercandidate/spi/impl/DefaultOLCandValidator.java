@@ -18,6 +18,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -133,11 +134,14 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
 	{
-		// *always* set the internal quantity. IsManualQtyItemCapacity decides if we use it
-		olCandCapacityProvider.computeQtyItemCapacity(olCand)
-				.filter(capacity -> !capacity.isInfinite())
-				.map(capacity -> capacity.toBigDecimal())
-				.ifPresent(olCand::setQtyItemCapacityInternal);
+		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
+		{
+			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
+			if(!qtyItemCapacity.isInfinite())
+			{
+				olCand.setQtyItemCapacityInternal(qtyItemCapacity.toBigDecimal());
+			}
+		}
 	}
 
 	private void validateLocation(@NonNull final I_C_OLCand olCand)

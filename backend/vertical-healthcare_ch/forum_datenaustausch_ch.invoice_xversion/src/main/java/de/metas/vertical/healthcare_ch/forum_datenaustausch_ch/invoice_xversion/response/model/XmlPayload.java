@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigInteger;
-
 /*
  * #%L
  * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
@@ -34,9 +32,6 @@ import java.math.BigInteger;
 @Builder(toBuilder = true)
 public class XmlPayload
 {
-
-	@NonNull
-	BigInteger responseTimestamp;
 
 	@NonNull
 	XmlInvoice invoice;

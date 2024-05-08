@@ -34,19 +34,15 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,20 +50,13 @@ import java.util.List;
  * Abstract lock database which does not implement any database specific logic.
  *
  * @author tsa
+ *
  */
 public abstract class AbstractLockDatabase implements ILockDatabase
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
-	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
-	protected boolean isFailOnWarnings()
-	{
-		return developerModeBL.isEnabled();
-	}
-
-	/**
-	 * Asserts given lock owner is a valid owner to be used on for Locks
-	 */
+	/** Asserts given lock owner is a valid owner to be used on for Locks */
 	protected static void assertValidLockOwner(@NonNull final LockOwner lockOwner)
 	{
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
@@ -96,17 +85,10 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	public final ILock lock(final ILockCommand lockCommand)
 	{
 		final int countLocked;
-		final int countTransferredFromParent;
 
 		if (lockCommand.getSelectionToLock_Filters() != null)
 		{
-			if (lockCommand.getParentLock() != null)
-			{
-				throw new LockFailedException("Changing the lock for a given query filter is not supported)")
-						.setLockCommand(lockCommand);
-			}
 			countLocked = lockByFilters(lockCommand);
-			countTransferredFromParent = 0;
 		}
 		//
 		// Lock by selection
@@ -118,15 +100,12 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 						.setLockCommand(lockCommand);
 			}
 			countLocked = lockBySelection(lockCommand);
-			countTransferredFromParent = 0;
 		}
 		//
 		// Lock by iterator
 		else if (lockCommand.getRecordsToLockIterator() != null)
 		{
-			final LockCounters counters = lockByIterator(lockCommand);
-			countLocked = counters.countLocked();
-			countTransferredFromParent = counters.countTransferredFromParent();
+			countLocked = lockByIterator(lockCommand);
 		}
 		//
 		// No lock records were specified
@@ -136,12 +115,12 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 					.setLockCommand(lockCommand);
 		}
 
-		return newLock(lockCommand.getOwner(), lockCommand.isAutoCleanup(), countLocked, countTransferredFromParent);
+		return newLock(lockCommand.getOwner(), lockCommand.isAutoCleanup(), countLocked);
 	}
 
-	protected final ILock newLock(final LockOwner lockOwner, final boolean autoCleanup, final int countLocked, final int countTransferredFromParent)
+	protected final ILock newLock(final LockOwner lockOwner, final boolean autoCleanup, final int countLocked)
 	{
-		return new Lock(this, lockOwner, autoCleanup, countLocked, countTransferredFromParent);
+		return new Lock(this, lockOwner, autoCleanup, countLocked);
 	}
 
 	/**
@@ -153,15 +132,12 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	protected abstract int lockByFilters(ILockCommand lockCommand);
 
-	@Builder
-	private record LockCounters(int countLocked, int countTransferredFromParent) {}
-
 	/**
 	 * Lock all records specified by {@link LockCommand#getRecordsToLockIterator()}.
 	 *
 	 * @return how many records were locked
 	 */
-	private LockCounters lockByIterator(@NonNull final ILockCommand lockCommand)
+	private int lockByIterator(@NonNull final ILockCommand lockCommand)
 	{
 		final Iterator<TableRecordReference> records = lockCommand.getRecordsToLockIterator();
 		Check.assumeNotNull(records, "records not null");
@@ -169,29 +145,16 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		final boolean failIfAlreadyLocked = lockCommand.isFailIfAlreadyLocked();
 		final boolean changeLock = lockCommand.getParentLock() != null;
 		int countLocked = 0;
-		int countTransferredFromParent = 0;
 		while (records.hasNext())
 		{
 			final TableRecordReference record = records.next();
 
 			//
 			// Acquire/Change the lock
-			boolean locked;
+			final boolean locked;
 			if (changeLock)
 			{
 				locked = changeLockRecord(lockCommand, record);
-				if (locked)
-				{
-					countTransferredFromParent++;
-				}
-				else
-				{
-					//noinspection ThrowableNotThrown
-					new AdempiereException("Could not transfer locked record from parent -- lockCommand=" + lockCommand)
-							.throwOrLogWarning(isFailOnWarnings(), logger);
-
-					locked = lockRecord(lockCommand, record);
-				}
 			}
 			else
 			{
@@ -205,7 +168,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 
 			//
-			// If lock could not be acquired/changed, and we were asked to fail, do so
+			// If lock could not be acquired/changed and we were asked to fail, do so
 			if (failIfAlreadyLocked && !locked)
 			{
 				// NOTE: we are checking this just to me sure, but basically, the "lockRecord" method is already throwing an exception in this case
@@ -215,16 +178,17 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 			}
 		}
 
-		return LockCounters.builder().countLocked(countLocked).countTransferredFromParent(countTransferredFromParent).build();
+		return countLocked;
 	}
 
 	/**
 	 * Locks a single record.
 	 *
-	 * @return <ul>
-	 * <li><code>true</code> if record was locked
-	 * <li><code>false</code> if records was NOT locked because it's already locked and {@link LockCommand#isFailIfAlreadyLocked()} is false
-	 * </ul>
+	 * @return
+	 *         <ul>
+	 *         <li><code>true</code> if record was locked
+	 *         <li><code>false</code> if records was NOT locked because it's already locked and {@link LockCommand#isFailIfAlreadyLocked()} is false
+	 *         </ul>
 	 * @throws LockFailedException if locking failed
 	 */
 	protected abstract boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record);
@@ -341,8 +305,10 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	}
 
 	@Override
-	public final String getLockedWhereClause(final @NonNull Class<?> modelClass, final @NonNull String joinColumnNameFQ, @NonNull final LockOwner lockOwner)
+	public final String getLockedWhereClause(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
 	{
+		Check.assumeNotNull(lockOwner, "Parameter lockOwner is not null");
+
 		return getLockedWhereClauseAllowNullLock(modelClass, joinColumnNameFQ, lockOwner);
 	}
 
@@ -357,7 +323,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// note: don't specify a particular ordering; leave that freedom to the caller if this method
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, contextProvider)
 				.addOnlyActiveRecordsFilter()
-				// .addOnlyContextClientOrSystem() // avoid applying context client because in some cases context is not available
+				.addOnlyContextClientOrSystem()
 				.filter(TypedSqlQueryFilter.of(lockedRecordsSQL));
 	}
 
@@ -412,5 +378,5 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	protected abstract <T> IQuery<T> retrieveNotLockedQuery(IQuery<T> query);
 
-	protected abstract String getLockedWhereClauseAllowNullLock(@NonNull final Class<?> modelClass, @NonNull final String joinColumnNameFQ, @Nullable final LockOwner lockOwner);
+	protected abstract String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner);
 }

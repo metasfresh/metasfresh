@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,25 +24,20 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 
@@ -85,70 +80,33 @@ public class M_Locator_StepDef
 	}
 
 	@And("metasfresh contains M_Locator:")
-	public void create_M_Locator_record(@NonNull final DataTable dataTable)
+	public void create_M_Locator(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			createLocator(row);
-		});
-	}
-
-	private void createLocator(@NonNull final DataTableRow row)
-	{
-		final String value = row.getAsString(I_M_Locator.COLUMNNAME_Value);
-
-		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
-		final WarehouseId warehouseId = warehouseTable.getIdOptional(warehouseIdentifier)
-				.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class));
-
-		final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
-				() -> getExistingLocator(warehouseId, value),
-				() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
-		assertThat(locatorRecord).isNotNull();
-		final boolean isNew = InterfaceWrapperHelper.isNew(locatorRecord);
-
-		locatorRecord.setValue(value);
-		locatorRecord.setM_Warehouse_ID(warehouseId.getRepoId());
-
-		final OptionalBoolean isDefault = row.getAsOptionalBoolean(I_M_Locator.COLUMNNAME_IsDefault);
-		if (isNew || isDefault.isPresent())
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
 		{
-			locatorRecord.setIsDefault(isDefault.orElse(true));
-		}
+			final String value = DataTableUtil.extractStringForColumnName(row, I_M_Locator.COLUMNNAME_Value);
 
-		final OptionalInt priorityNo = row.getAsOptionalInt(I_M_Locator.COLUMNNAME_PriorityNo);
-		if (isNew || priorityNo.isPresent())
-		{
-			locatorRecord.setPriorityNo(priorityNo.orElse(50));
-		}
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
-		final Optional<String> x = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
-		if (isNew || x.isPresent())
-		{
-			locatorRecord.setX(x.orElse("0"));
-		}
-		final Optional<String> y = row.getAsOptionalString(I_M_Locator.COLUMNNAME_X);
-		if (isNew || y.isPresent())
-		{
-			locatorRecord.setY(y.orElse("0"));
-		}
-		final Optional<String> z = row.getAsOptionalString(I_M_Locator.COLUMNNAME_Z);
-		if (isNew || z.isPresent())
-		{
-			locatorRecord.setZ(z.orElse("0"));
-		}
+			final I_M_Locator locatorRecord = CoalesceUtil.coalesceSuppliers(
+					() -> queryBL.createQueryBuilder(I_M_Locator.class)
+							.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+							.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
+							.create()
+							.firstOnlyOrNull(I_M_Locator.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_Locator.class));
 
-		InterfaceWrapperHelper.saveRecord(locatorRecord);
+			assertThat(locatorRecord).isNotNull();
 
-		row.getAsIdentifier(COLUMNNAME_M_Locator_ID).put(locatorTable, locatorRecord);
-	}
+			locatorRecord.setValue(value);
+			locatorRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
-	@Nullable
-	private I_M_Locator getExistingLocator(final WarehouseId warehouseId, final String value)
-	{
-		return queryBL.createQueryBuilder(I_M_Locator.class)
-				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
-				.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
-				.create()
-				.firstOnlyOrNull(I_M_Locator.class);
+			InterfaceWrapperHelper.saveRecord(locatorRecord);
+
+			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			locatorTable.put(locatorIdentifier, locatorRecord);
+		}
 	}
 }

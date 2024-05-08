@@ -22,18 +22,19 @@
 
 package de.metas.payment.spi.impl;
 
-import de.metas.banking.payment.PaymentString;
-import org.adempiere.test.AdempiereTestHelper;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
-import static org.assertj.core.api.Assertions.*;
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import de.metas.banking.payment.PaymentString;
 
 class QRCodeStringParserTest
 {
@@ -52,7 +53,7 @@ class QRCodeStringParserTest
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/payment/spi/impl/QRR_PurchaseInvoice.txt");
 		assertThat(inputStream).isNotNull();
 
-		final String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+		String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
 

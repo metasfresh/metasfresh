@@ -95,8 +95,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	public I_M_Locator getEmptiesLocator(final I_M_Warehouse warehouse)
 	{
 		final I_M_Warehouse emptiesWarehouse = getEmptiesWarehouse(warehouse);
-		final I_M_Locator emptiesLocator = InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(emptiesWarehouse), I_M_Locator.class);
-		return emptiesLocator;
+		return InterfaceWrapperHelper.create(Services.get(IWarehouseBL.class).getDefaultLocator(emptiesWarehouse), I_M_Locator.class);
 	}
 
 	@Override

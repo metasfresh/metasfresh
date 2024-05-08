@@ -1,9 +1,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -21,7 +19,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -94,20 +91,19 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	public IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(
-			@NonNull final Properties ctx,
+			final Properties ctx,
 			final int adTableId,
-			@NonNull final Set<Integer> recordIds,
-			@Nullable final String trxName)
+			final int recordId,
+			final String trxName)
 	{
-		Check.assumeNotEmpty(recordIds, "recordIds not empty");
-
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName);
 
 		applyCommonTopLevelFilters(queryBuilder, adTableId)
-				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordIds);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId);
 
-		queryBuilder.orderBy(I_M_HU_Assignment.COLUMNNAME_M_HU_Assignment_ID);
+		queryBuilder.orderBy()
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_HU_Assignment_ID);
 
 		return queryBuilder;
 	}
@@ -156,13 +152,13 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final int recordId = InterfaceWrapperHelper.getId(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 
-		return retrieveHUAssignmentsForModelQuery(ctx, adTableId, ImmutableSet.of(recordId), trxName);
+		return retrieveHUAssignmentsForModelQuery(ctx, adTableId, recordId, trxName);
 	}
 
 	@Override
 	public List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return retrieveHUAssignmentsForModelQuery(ctx, adTableId, ImmutableSet.of(recordId), trxName)
+		return retrieveHUAssignmentsForModelQuery(ctx, adTableId, recordId, trxName)
 				.create()
 				.list(I_M_HU_Assignment.class);
 	}
@@ -175,14 +171,9 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 			return ImmutableSetMultimap.of();
 		}
 
-		final HashMultimap<AdTableId, Integer> recordIdsByTableId = HashMultimap.create();
-		recordRefs.forEach(recordRef -> recordIdsByTableId.put(recordRef.getAdTableId(), recordRef.getRecord_ID()));
-
 		final Properties ctx = Env.getCtx();
-
-		return recordIdsByTableId.keySet()
-				.stream()
-				.map(adTableId -> retrieveHUAssignmentsForModelQuery(ctx, adTableId.getRepoId(), recordIdsByTableId.get(adTableId), ITrx.TRXNAME_ThreadInherited).create())
+		return recordRefs.stream()
+				.map(recordRef -> retrieveHUAssignmentsForModelQuery(ctx, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), ITrx.TRXNAME_ThreadInherited).create())
 				.reduce(IQuery.unionDistict())
 				.get()
 				.stream()

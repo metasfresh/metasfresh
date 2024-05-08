@@ -37,7 +37,6 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.bpartner.patient.AlbertaPatientRepository;
@@ -61,8 +60,7 @@ public class OrderAttachmentViewFactory implements IViewFactory
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 		this.rowsRepo = OrderAttachmentRowsRepository.builder()
@@ -70,7 +68,6 @@ public class OrderAttachmentViewFactory implements IViewFactory
 				.attachmentEntryRepository(attachmentEntryRepository)
 				.albertaPatientRepository(albertaPatientRepository)
 				.purchaseCandidateRepository(purchaseCandidateRepository)
-				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.build();
 	}
 

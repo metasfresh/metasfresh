@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_ElementValue
  *  @author metasfresh (generated) 
@@ -434,29 +433,6 @@ public interface I_C_ElementValue
 
 	ModelColumn<I_C_ElementValue, Object> COLUMN_IsMandatoryActivity = new ModelColumn<>(I_C_ElementValue.class, "IsMandatoryActivity", null);
 	String COLUMNNAME_IsMandatoryActivity = "IsMandatoryActivity";
-
-	/**
-	 * Set Open Item Managed.
-	 * This indicator shows that the account selected is an open item managed account.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsOpenItem (boolean IsOpenItem);
-
-	/**
-	 * Get Open Item Managed.
-	 * This indicator shows that the account selected is an open item managed account.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isOpenItem();
-
-	ModelColumn<I_C_ElementValue, Object> COLUMN_IsOpenItem = new ModelColumn<>(I_C_ElementValue.class, "IsOpenItem", null);
-	String COLUMNNAME_IsOpenItem = "IsOpenItem";
 
 	/**
 	 * Set Summary Level.

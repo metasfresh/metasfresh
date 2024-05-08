@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.externalsystem.JsonOrderProcessingConfig;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -41,9 +40,8 @@ public class ProcessOLCandProcessor implements Processor
 	public void process(final Exchange exchange) throws Exception
 	{
 		final ImportOrdersRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
-		final JsonOrderProcessingConfig orderProcessingConfig = context.getOrderProcessingConfig();
 
-		if (context.getImportedExternalHeaderIds().isEmpty() || orderProcessingConfig.equals(JsonOrderProcessingConfig.NONE))
+		if (context.getImportedExternalHeaderIds().isEmpty())
 		{
 			//nothing to do
 			exchange.getIn().setBody(null);
@@ -54,8 +52,8 @@ public class ProcessOLCandProcessor implements Processor
 				.map(externalHeaderId -> JsonOLCandProcessRequest.builder()
 						.externalHeaderId(externalHeaderId)
 						.inputDataSourceName(DATA_SOURCE_INT_SHOPWARE)
-						.ship(JsonOrderProcessingConfig.isShip(orderProcessingConfig))
-						.invoice(JsonOrderProcessingConfig.isInvoice(orderProcessingConfig))
+						.ship(false)
+						.invoice(false)
 						.closeOrder(false)
 						.build())
 				.collect(Collectors.toList());

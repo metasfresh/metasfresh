@@ -22,19 +22,17 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.spi.IWorkpackagePrioStrategy;
-import de.metas.i18n.AdMessageKey;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.process.PInstanceId;
-import lombok.NonNull;
-import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
+
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.
@@ -47,7 +45,7 @@ public interface IInvoiceCandidateEnqueuer
 	String SYSCONFIG_FailOnChanges = "de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer.FailOnChanges";
 	boolean DEFAULT_FailOnChanges = true;
 
-	AdMessageKey MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = AdMessageKey.of("InvoiceGenerate_No_Candidates_Selected");
+	String MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P = "InvoiceGenerate_No_Candidates_Selected";
 
 	/**
 	 * Prepare the selection while the ICs are not yet locked, because we want them to be updated by the regular
@@ -64,7 +62,7 @@ public interface IInvoiceCandidateEnqueuer
 	{
 		prepareSelection(pinstanceId);
 		return enqueueSelection(pinstanceId);
-	}
+	};
 
 	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
@@ -88,7 +86,7 @@ public interface IInvoiceCandidateEnqueuer
 	/**
 	 * Sets invoicing parameters to be used.
 	 */
-	IInvoiceCandidateEnqueuer setInvoicingParams(InvoicingParams invoicingParams);
+	IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams);
 
 	/**
 	 * Sets the total net amount to invoice checksum.

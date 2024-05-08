@@ -1,15 +1,13 @@
 package de.metas.order.compensationGroup;
 
+import java.math.BigDecimal;
+
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -47,7 +45,5 @@ public class GroupCompensationLineCreateRequest
 	BigDecimal qtyEntered;
 	BigDecimal price;
 
-	@Nullable GroupTemplateLineId groupTemplateLineId;
-
-	@NonNull @With @Builder.Default ManualCompensationLinePosition position = ManualCompensationLinePosition.DEFAULT;
+	GroupTemplateLineId groupTemplateLineId;
 }

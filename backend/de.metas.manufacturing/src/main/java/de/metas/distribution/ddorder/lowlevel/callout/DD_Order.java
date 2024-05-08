@@ -61,7 +61,7 @@ public class DD_Order
 		final IDocumentNoInfo documentNoInfo = documentNoBuilderFactory
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(DocTypeId.optionalOfRepoId(ddOrder.getC_DocType_ID())
-						.map(docTypeDAO::getRecordById)
+						.map(docTypeDAO::getById)
 						.orElse(null))
 				.setOldDocumentNo(ddOrder.getDocumentNo())
 				.setDocumentModel(ddOrder)

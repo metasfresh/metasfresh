@@ -85,8 +85,8 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
 		if (productionDate != null)
 		{
-			final Age age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
-			storage.setValue(HUAttributeConstants.ATTR_Age, age.toStringValue());
+			final long age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
+			storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 		}
 		else
 		{

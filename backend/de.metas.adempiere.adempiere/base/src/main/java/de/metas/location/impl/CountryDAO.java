@@ -9,7 +9,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.location.AddressDisplaySequence;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
@@ -46,21 +45,18 @@ import java.util.Properties;
 
 /**
  * @author cg
+ *
  */
 public class CountryDAO implements ICountryDAO
 {
-	/**
-	 * Country Cache
-	 */
+	/** Country Cache */
 	private final CCache<Integer, IndexedCountries> countriesCache = CCache.<Integer, IndexedCountries>builder()
 			.tableName(I_C_Country.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
-	/**
-	 * C_Country_ID by AD_Client_ID
-	 */
+	/** C_Country_ID by AD_Client_ID */
 	private final CCache<Integer, String> countryCodeByADClientId = CCache.<Integer, String>builder()
 			.cacheName(I_C_Country.Table_Name + "#CountryCodeByAD_Client_ID")
 			.tableName(I_C_Country.Table_Name)
@@ -173,7 +169,8 @@ public class CountryDAO implements ICountryDAO
 
 	private static String retrieveCountryCodeIdByADClientId(final int adClientId)
 	{
-		final I_AD_Client client = Services.get(IClientDAO.class).getById(adClientId);
+		final Properties ctx = Env.getCtx();
+		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
 		final I_AD_Language lang = Services.get(ILanguageDAO.class).retrieveByAD_Language(client.getAD_Language());
 		return lang.getCountryCode();
 	}
@@ -240,14 +237,14 @@ public class CountryDAO implements ICountryDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static CountrySequences toCountrySequences(final I_C_Country_Sequence record)
+	private static CountrySequences toCountrySequences(final I_C_Country_Sequence record)
 	{
 		return CountrySequences.builder()
 				.adLanguage(record.getAD_Language())
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				//
-				.addressDisplaySequence(AddressDisplaySequence.ofNullable(record.getDisplaySequence()))
-				.localAddressDisplaySequence(AddressDisplaySequence.ofNullable(record.getDisplaySequenceLocal()))
+				.addressDisplaySequence(record.getDisplaySequence())
+				.localAddressDisplaySequence(record.getDisplaySequenceLocal())
 				.build();
 	}
 
@@ -299,13 +296,6 @@ public class CountryDAO implements ICountryDAO
 	{
 		final I_C_Country country = getById(countryId);
 		return CurrencyId.optionalOfRepoId(country.getC_Currency_ID());
-	}
-
-	@Override
-	public boolean isEnforceCorrectionInvoice(final CountryId countryId)
-	{
-		final I_C_Country country = getById(countryId);
-		return country.isEnforceCorrectionInvoice();
 	}
 
 	private static final class IndexedCountries

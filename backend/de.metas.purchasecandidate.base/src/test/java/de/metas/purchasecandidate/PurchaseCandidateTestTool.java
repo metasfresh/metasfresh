@@ -16,7 +16,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public final class PurchaseCandidateTestTool
 				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
 				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.of(OrderId.ofRepoId(1), SALES_ORDER_LINE_ID))
-				.orgId(OrgId.ofRepoId(Env.CTXVALUE_AD_Org_ID_Any))
+				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
 				.productId(productId)
 				.attributeSetInstanceId(attributeSetInstanceId)

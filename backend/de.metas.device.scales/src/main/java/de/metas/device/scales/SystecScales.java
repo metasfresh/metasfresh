@@ -22,7 +22,7 @@ package de.metas.device.scales;
  * #L%
  */
 
-import de.metas.device.scales.impl.ScalesGetWeightHandler;
+import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.impl.systec.AbstractSystecCmd;
 import de.metas.device.scales.impl.systec.ISystecCmd;
 import de.metas.device.scales.impl.systec.SystecCmdRM;
@@ -46,9 +46,9 @@ public class SystecScales extends AbstractTcpScales
 	}
 
 	@SuppressWarnings("rawtypes")
-	private ScalesGetWeightHandler mkHandler(final AbstractSystecCmd cmd)
+	private ScalesGetGrossWeightHandler mkHandler(final AbstractSystecCmd cmd)
 	{
-		return new ScalesGetWeightHandler<ISystecCmd>()
+		return new ScalesGetGrossWeightHandler<ISystecCmd>()
 				.setCmd(cmd)
 				.setWeightFieldName("Bruttogewicht")
 				.setUOMFieldName("Einheit")

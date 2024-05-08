@@ -1,8 +1,7 @@
 package org.eevolution.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_BOM
  *  @author metasfresh (generated) 
@@ -52,7 +51,7 @@ public interface I_PP_Order_BOM
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set BOM Type.
+	 * Set Stücklisten-Zugehörigkeit.
 	 * Type of BOM
 	 *
 	 * <br>Type: List
@@ -62,7 +61,7 @@ public interface I_PP_Order_BOM
 	void setBOMType (@Nullable java.lang.String BOMType);
 
 	/**
-	 * Get BOM Type.
+	 * Get Stücklisten-Zugehörigkeit.
 	 * Type of BOM
 	 *
 	 * <br>Type: List
@@ -98,8 +97,30 @@ public interface I_PP_Order_BOM
 	String COLUMNNAME_BOMUse = "BOMUse";
 
 	/**
-	 * Set Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -108,8 +129,8 @@ public interface I_PP_Order_BOM
 	void setCopyFrom (@Nullable java.lang.String CopyFrom);
 
 	/**
-	 * Get Copy BOM Lines From.
-	 * Copy BOM Lines from an exising BOM
+	 * Get Copy From.
+	 * Copy From Record
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -144,28 +165,6 @@ public interface I_PP_Order_BOM
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Description.
@@ -258,31 +257,6 @@ public interface I_PP_Order_BOM
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Serial No. Sequence.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
-
-	/**
-	 * Get Serial No. Sequence.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getLotNo_Sequence_ID();
-
-	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
-
-	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
-
-	ModelColumn<I_PP_Order_BOM, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_PP_Order_BOM.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
-	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
-
-	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -310,7 +284,7 @@ public interface I_PP_Order_BOM
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Change Notice.
+	 * Set Änderungsmeldung.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -320,7 +294,7 @@ public interface I_PP_Order_BOM
 	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
-	 * Get Change Notice.
+	 * Get Änderungsmeldung.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir

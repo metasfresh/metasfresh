@@ -122,17 +122,13 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
 				PurchaseOrderFromItemsAggregator.newInstance(docTypeId);
 
-		final List<PurchaseCandidate> purchaseCandidates = getPurchaseCandidates();
-		if (!purchaseCandidates.isEmpty())
-		{
-			PurchaseCandidateToOrderWorkflow.builder()
-					.purchaseCandidateRepo(purchaseCandidateRepo)
-					.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-					.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
-					.build()
-					.executeForPurchaseCandidates(purchaseCandidates);
+		PurchaseCandidateToOrderWorkflow.builder()
+				.purchaseCandidateRepo(purchaseCandidateRepo)
+				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
+				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build()
+				.executeForPurchaseCandidates(getPurchaseCandidates());
 
-		}
 		return Result.SUCCESS;
 	}
 
@@ -152,10 +148,15 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 			throw new AdempiereException("No purchase candidates enqueued");
 		}
 
-		return purchaseCandidateRepo.streamAllByIds(purchaseCandidateIds)
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.streamAllByIds(purchaseCandidateIds)
 				// only those not processed; those locked are OK because *we* locked them
 				.filter(purchaseCandidate -> !purchaseCandidate.isProcessed())
 				.collect(ImmutableList.toImmutableList());
+		if (purchaseCandidates.isEmpty())
+		{
+			throw new AdempiereException("No eligible purchase candidates enqueued");
+		}
 
+		return purchaseCandidates;
 	}
 }

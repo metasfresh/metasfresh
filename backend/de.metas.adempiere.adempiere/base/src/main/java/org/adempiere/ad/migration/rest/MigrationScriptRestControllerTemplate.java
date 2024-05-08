@@ -25,11 +25,13 @@ package org.adempiere.ad.migration.rest;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -74,7 +76,7 @@ public abstract class MigrationScriptRestControllerTemplate
 		try
 		{
 			final Path migrationScriptsDirectory = Files.createTempDirectory(tempDirectoryPrefix + "_migration_scripts_" + LocalDate.now() + "_");
-			MigrationScriptFileLoggerHolder.setMigrationScriptDirectory(migrationScriptsDirectory);
+			MigrationScriptFileLogger.setMigrationScriptDirectory(migrationScriptsDirectory);
 		}
 		catch (final IOException ex)
 		{
@@ -91,10 +93,10 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathIfPresent().orElse(null);
+		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
 
 		return JSONMigrationScriptsInfo.builder()
-				.enabled(MigrationScriptFileLoggerHolder.isEnabled())
+				.enabled(Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT))
 				.migrationScriptDirectory(toString(getMigrationScriptsDirectoryPath()))
 				.currentScript(toString(currentScriptPath))
 				.scripts(getMigrationScriptFileNames())
@@ -132,7 +134,12 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getCurrentScriptPath()
 	{
-		return MigrationScriptFileLoggerHolder.getCurrentScriptPath();
+		final Path currentScriptPath = MigrationScriptFileLoggerHolder.getCurrentScriptPathOrNull();
+		if (currentScriptPath == null)
+		{
+			throw new AdempiereException("No current script file found");
+		}
+		return currentScriptPath;
 	}
 
 	private List<String> getMigrationScriptFileNames()
@@ -154,7 +161,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 	private Path getMigrationScriptsDirectoryPath()
 	{
-		return MigrationScriptFileLoggerHolder.getMigrationScriptDirectory();
+		return MigrationScriptFileLogger.getMigrationScriptDirectory();
 	}
 
 	@GetMapping("/enableIt")
@@ -162,8 +169,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		MigrationScriptFileLoggerHolder.setEnabled(true);
-		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
+		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, true);
+		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
 		if (!enabled)
 		{
 			throw new AdempiereException("Failed to enable migration scripts");
@@ -175,8 +182,8 @@ public abstract class MigrationScriptRestControllerTemplate
 	{
 		assertAuth();
 
-		MigrationScriptFileLoggerHolder.setEnabled(false);
-		final boolean enabled = MigrationScriptFileLoggerHolder.isEnabled();
+		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, false);
+		final boolean enabled = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
 		if (enabled)
 		{
 			throw new AdempiereException("Failed to disable migration scripts");
@@ -215,7 +222,7 @@ public abstract class MigrationScriptRestControllerTemplate
 
 			@PathVariable("filename") final String filename,
 
-			@Parameter(description = "Decides over the reponse's " + HttpHeaders.CONTENT_DISPOSITION + " header value; If set to <code>false</code>, the file is returned as attachment (download)") //
+			@ApiParam("Decides over the reponse's " + HttpHeaders.CONTENT_DISPOSITION + " header value; If set to <code>false</code>, the file is returned as attachment (download)") //
 			@RequestParam(name = "inline", required = false, defaultValue = "true") final boolean inline)
 	{
 		assertAuth();

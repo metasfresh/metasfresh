@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1494329261L;
+	private static final long serialVersionUID = 1869693003L;
 
     /** Standard Constructor */
     public X_AD_Tab (final Properties ctx, final int AD_Tab_ID, @Nullable final String trxName)
@@ -454,18 +454,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public void setIsAutodetectDefaultDateFilter (final boolean IsAutodetectDefaultDateFilter)
-	{
-		set_Value (COLUMNNAME_IsAutodetectDefaultDateFilter, IsAutodetectDefaultDateFilter);
-	}
-
-	@Override
-	public boolean isAutodetectDefaultDateFilter() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAutodetectDefaultDateFilter);
-	}
-
-	@Override
 	public void setIsCheckParentsChanged (final boolean IsCheckParentsChanged)
 	{
 		set_Value (COLUMNNAME_IsCheckParentsChanged, IsCheckParentsChanged);
@@ -511,18 +499,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public boolean isInsertRecord() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInsertRecord);
-	}
-
-	@Override
-	public void setIsQueryIfNoFilters (final boolean IsQueryIfNoFilters)
-	{
-		set_Value (COLUMNNAME_IsQueryIfNoFilters, IsQueryIfNoFilters);
-	}
-
-	@Override
-	public boolean isQueryIfNoFilters() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsQueryIfNoFilters);
 	}
 
 	@Override
@@ -658,30 +634,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	@Override
-	public void setNotFound_Message (final @Nullable java.lang.String NotFound_Message)
-	{
-		set_Value (COLUMNNAME_NotFound_Message, NotFound_Message);
-	}
-
-	@Override
-	public java.lang.String getNotFound_Message() 
-	{
-		return get_ValueAsString(COLUMNNAME_NotFound_Message);
-	}
-
-	@Override
-	public void setNotFound_MessageDetail (final @Nullable java.lang.String NotFound_MessageDetail)
-	{
-		set_Value (COLUMNNAME_NotFound_MessageDetail, NotFound_MessageDetail);
-	}
-
-	@Override
-	public java.lang.String getNotFound_MessageDetail() 
-	{
-		return get_ValueAsString(COLUMNNAME_NotFound_MessageDetail);
-	}
-
-	@Override
 	public void setOrderByClause (final @Nullable java.lang.String OrderByClause)
 	{
 		set_Value (COLUMNNAME_OrderByClause, OrderByClause);
@@ -742,18 +694,6 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public java.lang.String getQuickInput_CloseButton_Caption() 
 	{
 		return get_ValueAsString(COLUMNNAME_QuickInput_CloseButton_Caption);
-	}
-
-	@Override
-	public void setQuickInputLayout (final @Nullable java.lang.String QuickInputLayout)
-	{
-		set_Value (COLUMNNAME_QuickInputLayout, QuickInputLayout);
-	}
-
-	@Override
-	public java.lang.String getQuickInputLayout() 
-	{
-		return get_ValueAsString(COLUMNNAME_QuickInputLayout);
 	}
 
 	@Override

@@ -19,7 +19,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -71,7 +70,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 			final Properties ctx,
 			final String internalName,
 			final boolean throwEx,
-			@Nullable final String trxName)
+			final String trxName)
 	{
 		final I_AD_InputDataSource result = retriveDataSource(ctx, internalName, trxName);
 
@@ -87,7 +86,7 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 		/* package */ I_AD_InputDataSource retriveDataSource(
 			final @CacheCtx Properties ctx,
 			final String internalName,
-			final @Nullable @CacheTrx String trxName)
+			final @CacheTrx String trxName)
 	{
 
 		final I_AD_InputDataSource result = Services.get(IQueryBL.class)

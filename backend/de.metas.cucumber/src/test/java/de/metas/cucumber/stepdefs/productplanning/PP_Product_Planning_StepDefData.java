@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.productplanning;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.material.planning.ProductPlanning;
+import org.eevolution.model.I_PP_Product_Planning;
 
-public class PP_Product_Planning_StepDefData extends StepDefData<ProductPlanning>
+public class PP_Product_Planning_StepDefData extends StepDefData<I_PP_Product_Planning>
 {
 	public PP_Product_Planning_StepDefData()
 	{
-		super(ProductPlanning.class);
+		super(I_PP_Product_Planning.class);
 	}
 }

@@ -1,18 +1,11 @@
 package org.compiere.util;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.LocalDateAndOrgId;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -27,9 +20,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -38,10 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Teo Sarca
+ *
  */
 public class TimeUtilTest
 {
-	@BeforeEach
+	@AfterEach
 	public void beforeEach()
 	{
 		SystemTime.resetTimeSource();
@@ -55,7 +47,6 @@ public class TimeUtilTest
 
 	private static Timestamp createTimestamp(final int year, int month, int day)
 	{
-		//noinspection deprecation
 		return TimeUtil.getDay(year, month, day);
 	}
 
@@ -98,233 +89,309 @@ public class TimeUtilTest
 	{
 		final String message = "Error for validFrom=" + validFrom + ", validTo=" + validTo + ", now=" + now;
 		final boolean isValidActual = TimeUtil.isValid(validFrom, validTo, now);
-		Assertions.assertEquals(isValid, isValidActual, message);
+		Assert.assertEquals(message, isValid, isValidActual);
 	}
 
-	@Nested
-	class max_with_Duration
+	@Test
+	public void test_trunc_second()
 	{
-		@Test
-		public void test()
-		{
-			final Duration min = Duration.ofMinutes(1);
-			final Duration max = Duration.ofMinutes(2);
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
 
-			//noinspection ConstantValue
-			assertThat(TimeUtil.max((Duration)null, null)).isNull();
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-			assertThat(TimeUtil.max(min, null)).isSameAs(min);
-			assertThat(TimeUtil.max(null, min)).isSameAs(min);
-			assertThat(TimeUtil.max(min, min)).isSameAs(min);
-			assertThat(TimeUtil.max(max, max)).isSameAs(max);
-			assertThat(TimeUtil.max(min, max)).isSameAs(max);
-			assertThat(TimeUtil.max(max, min)).isSameAs(max);
-		}
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_SECOND);
+
+		Assert.assertEquals("Date " + date + " was not correctly truncated to seconds", dateTruncExpected, dateTruncActual);
 	}
 
-	@Nested
-	class min_with_JUL_Date
+	private static Date truncAndCheckMillis(final Date date, final String trunc)
 	{
-		@Test
-		public void test()
-		{
-			final Timestamp date1 = createTimestamp(2014, 1, 1);
-			final Timestamp date1_copy = createTimestamp(2014, 1, 1);
-			final Timestamp date2 = createTimestamp(2014, 1, 2);
-
-			// NULLs check
-			assertThat(TimeUtil.min(null, (Date)null)).isSameAs(null);
-			assertThat(TimeUtil.min(date1, null)).isSameAs(date1);
-			assertThat(TimeUtil.min(null, date1)).isSameAs(date1);
-
-			// Same (reference) value check
-			assertThat(TimeUtil.min(date1, date1)).isSameAs(date1);
-
-			// Same (value) check
-			assertThat(TimeUtil.min(date1, date1_copy)).isSameAs(date1);
-
-			assertThat(TimeUtil.min(date1, date2)).isSameAs(date1);
-			assertThat(TimeUtil.min(date2, date1)).isSameAs(date1);
-		}
+		Date dateTrunc = TimeUtil.trunc(date, trunc);
+		final long dateTruncMillis = TimeUtil.truncToMillis(date, trunc);
+		Assert.assertEquals("trunc() and truncToMillis() shall match for '" + date + "' but trunc date was '" + dateTrunc + "'", dateTruncMillis, dateTrunc.getTime());
+		return dateTrunc;
 	}
 
-	@SuppressWarnings({ "unused", "JUnitMalformedDeclaration" })
-	abstract static class MinMaxTemporalTest
+	@Test
+	public void test_trunc_minute()
 	{
-		abstract <DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate);
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
 
-		@Test
-		void zonedDateTime()
-		{
-			final ZonedDateTime minDate = LocalDateTime.parse("2023-11-01T10:00").atZone(ZoneId.of("UTC-8"));
-			final ZonedDateTime maxDate = LocalDateTime.parse("2023-11-01T11:00").atZone(ZoneId.of("UTC-8"));
-			test(minDate, maxDate);
-		}
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		@Test
-		void localDateTime()
-		{
-			final LocalDateTime minDate = LocalDateTime.parse("2023-11-01T10:00");
-			final LocalDateTime maxDate = LocalDateTime.parse("2023-11-01T11:00");
-			test(minDate, maxDate);
-		}
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MINUTE);
 
-		@Test
-		void localDate()
-		{
-			final LocalDate minDate = LocalDate.parse("2023-11-01");
-			final LocalDate maxDate = LocalDate.parse("2023-11-02");
-			test(minDate, maxDate);
-		}
-
-		@Test
-		void localTime()
-		{
-			final LocalTime minDate = LocalTime.parse("10:40");
-			final LocalTime maxDate = LocalTime.parse("10:41");
-			test(minDate, maxDate);
-		}
-
-		@Test
-		void instant()
-		{
-			final Instant minDate = LocalDate.parse("2023-11-01").atStartOfDay().toInstant(ZoneOffset.UTC);
-			final Instant maxDate = LocalDate.parse("2023-11-02").atStartOfDay().toInstant(ZoneOffset.UTC);
-			test(minDate, maxDate);
-		}
-
+		Assert.assertEquals("Date " + date + " was not correctly truncated to minutes", dateTruncExpected, dateTruncActual);
 	}
 
-	@Nested
-	class min_with_ZonedDateTime
+	@Test
+	public void test_trunc_hour()
 	{
-		@Test
-		void null_params()
-		{
-			final ZoneId zone = ZoneId.systemDefault();
-			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
 
-			assertThat(TimeUtil.min(null, (ZonedDateTime)null)).isNull();
-			assertThat(TimeUtil.min(date1, null)).isSameAs(date1);
-			assertThat(TimeUtil.min(null, date1)).isSameAs(date1);
-		}
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
 
-		@Test
-		void same_values()
-		{
-			final ZoneId zone = ZoneId.systemDefault();
-			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_HOUR);
 
-			assertThat(TimeUtil.min(date1, date1)).isSameAs(date1);
-		}
-
-		@Test
-		void equal_values()
-		{
-			final ZoneId zone = ZoneId.systemDefault();
-			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-			final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-
-			assertThat(TimeUtil.min(date1, date1_copy)).isEqualTo(date1);
-		}
-
-		@Test
-		void standardCases()
-		{
-			final ZoneId zone = ZoneId.systemDefault();
-			final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
-			final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
-
-			assertThat(TimeUtil.min(date1, date2)).isSameAs(date1);
-			assertThat(TimeUtil.min(date2, date1)).isSameAs(date1);
-		}
+		Assert.assertEquals("Date " + date + " was not correctly truncated to hours", dateTruncExpected, dateTruncActual);
 	}
 
-	@Nested
-	class minNotNull_with_Temporal extends MinMaxTemporalTest
+	@Test
+	public void test_trunc_day()
 	{
-		@Override
-		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
-		{
-			assertThat(TimeUtil.minNotNull(minDate, minDate)).isSameAs(minDate);
-			assertThat(TimeUtil.minNotNull(maxDate, maxDate)).isSameAs(maxDate);
-			assertThat(TimeUtil.minNotNull(minDate, maxDate)).isSameAs(minDate);
-			assertThat(TimeUtil.minNotNull(maxDate, minDate)).isSameAs(minDate);
-		}
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.YEAR, 2013);
+		cal.set(Calendar.MONTH, 4);
+		cal.set(Calendar.DAY_OF_MONTH, 3);
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
+
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
+
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_DAY);
+
+		Assert.assertEquals("Date " + date + " was not correctly truncated to day", dateTruncExpected, dateTruncActual);
 	}
 
-	@Nested
-	class minOfNullables_with_Temporal extends MinMaxTemporalTest
+	@Test
+	public void test_trunc_week()
 	{
-		@Override
-		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
-		{
-			assertThat(TimeUtil.minOfNullables((DT)null, null)).isNull();
-			assertThat(TimeUtil.minOfNullables(null, minDate)).isSameAs(minDate);
-			assertThat(TimeUtil.minOfNullables(minDate, null)).isSameAs(minDate);
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.YEAR, 2013);
+		cal.set(Calendar.MONTH, Calendar.MARCH);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
 
-			assertThat(TimeUtil.minOfNullables(minDate, minDate)).isSameAs(minDate);
-			assertThat(TimeUtil.minOfNullables(maxDate, maxDate)).isSameAs(maxDate);
-			assertThat(TimeUtil.minOfNullables(minDate, maxDate)).isSameAs(minDate);
-			assertThat(TimeUtil.minOfNullables(maxDate, minDate)).isSameAs(minDate);
-		}
+		cal.setFirstDayOfWeek(Calendar.MONDAY);
+		cal.set(Calendar.MONTH, Calendar.FEBRUARY);
+		cal.set(Calendar.DAY_OF_MONTH, 25);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
+
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_WEEK);
+
+		Assert.assertEquals("Date " + date + " was not correctly truncated to week", dateTruncExpected, dateTruncActual);
 	}
 
-	@Nested
-	class maxNotNull_with_Temporal extends MinMaxTemporalTest
+	/**
+	 * Make sure {@link TimeUtil#TRUNC_WEEK} is compliant with postgresql's <code>date_trunc('week', ...)</code>.
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void test_trunc_week_compliantWithPostgresql() throws Exception
 	{
-		@Override
-		<DT extends Temporal & Comparable<?>> void test(DT minDate, DT maxDate)
-		{
-			assertThat(TimeUtil.maxNotNull(minDate, minDate)).isSameAs(minDate);
-			assertThat(TimeUtil.maxNotNull(maxDate, maxDate)).isSameAs(maxDate);
-			assertThat(TimeUtil.maxNotNull(minDate, maxDate)).isSameAs(maxDate);
-			assertThat(TimeUtil.maxNotNull(maxDate, minDate)).isSameAs(maxDate);
-		}
+		test_trunc("2015-06-22", "2015-06-28", TimeUtil.TRUNC_WEEK);
+		//
+		test_trunc("2015-06-29", "2015-06-29", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-06-30", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-07-01", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-07-02", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-07-03", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-07-04", TimeUtil.TRUNC_WEEK);
+		test_trunc("2015-06-29", "2015-07-05", TimeUtil.TRUNC_WEEK);
+		//
+		test_trunc("2015-07-06", "2015-07-06", TimeUtil.TRUNC_WEEK);
 	}
 
-	@Nested
-	class maxOfNullables_with_Temporal extends MinMaxTemporalTest
+	private void test_trunc(final String expectedStr, final String dateStr, final String truncType) throws ParseException
 	{
-		@Override
-		<DT extends Temporal & Comparable<?>> void test(@Nullable DT minDate, @Nullable DT maxDate)
-		{
-			//noinspection ConstantValue
-			assertThat(TimeUtil.maxOfNullables((DT)null, null)).isNull();
-			assertThat(TimeUtil.maxOfNullables(minDate, null)).isSameAs(minDate);
-			assertThat(TimeUtil.maxOfNullables(null, minDate)).isSameAs(minDate);
+		final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-			assertThat(TimeUtil.maxOfNullables(minDate, minDate)).isSameAs(minDate);
-			assertThat(TimeUtil.maxOfNullables(minDate, maxDate)).isSameAs(maxDate);
-			assertThat(TimeUtil.maxOfNullables(maxDate, minDate)).isSameAs(maxDate);
-		}
+		final Date expected = dateFormat.parse(expectedStr);
+		final Date date = dateFormat.parse(dateStr);
+
+		final Date actual = truncAndCheckMillis(date, truncType);
+		final String message = "Invalid date for expectedStr=" + expectedStr + ", dateStr=" + dateStr + ", truncType=" + truncType;
+		Assert.assertEquals(message, expected, actual);
+	}
+
+	@Test
+	public void test_trunc_month()
+	{
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.YEAR, 2013);
+		cal.set(Calendar.MONTH, Calendar.MARCH);
+		cal.set(Calendar.DAY_OF_MONTH, 25);
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
+
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
+
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MONTH);
+
+		Assert.assertEquals("Date " + date + " was not correctly truncated to month", dateTruncExpected, dateTruncActual);
+	}
+
+	@Test
+	public void test_trunc_year()
+	{
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(SystemTime.millis());
+		cal.set(Calendar.YEAR, 2013);
+		cal.set(Calendar.MONTH, Calendar.MARCH);
+		cal.set(Calendar.DAY_OF_MONTH, 25);
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		cal.set(Calendar.MINUTE, 12);
+		cal.set(Calendar.SECOND, 42);
+		cal.set(Calendar.MILLISECOND, 13);
+		final Date date = new Date(cal.getTimeInMillis());
+
+		cal.set(Calendar.MONTH, Calendar.JANUARY);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		final Date dateTruncExpected = new Date(cal.getTimeInMillis());
+
+		final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_YEAR);
+
+		Assert.assertEquals("Date " + date + " was not correctly truncated to year", dateTruncExpected, dateTruncActual);
+	}
+
+	@Test
+	public void testDateMin()
+	{
+		final Timestamp date1 = createTimestamp(2014, 1, 1);
+		final Timestamp date1_copy = createTimestamp(2014, 1, 1);
+		final Timestamp date2 = createTimestamp(2014, 1, 2);
+		final Timestamp date3 = createTimestamp(2014, 1, 3);
+
+		// NULLs check
+		assertDateMin(null, null, null);
+		assertDateMin(date1, date1, null);
+		assertDateMin(date1, null, date1);
+
+		// Same (reference) value check
+		assertDateMin(date1, date1, date1);
+
+		// Same (value) check
+		assertDateMin(date1, date1, date1_copy);
+
+		assertDateMin(date1, date1, date2);
+		assertDateMin(date1, date2, date1);
+		assertDateMin(date2, date2, date3);
+		assertDateMin(date2, date3, date2);
+	}
+
+	private void assertDateMin(final Date dateExpected, final Date date1, final Date date2)
+	{
+		final Date dateMin = TimeUtil.min(date1, date2);
+
+		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
+				dateExpected, dateMin);
+	}
+
+	@Test
+	public void testZonedDateTimeMin()
+	{
+		final ZoneId zone = ZoneId.systemDefault();
+		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
+
+		// NULLs check
+		assertZonedDateTimeMin(null, null, null);
+		assertZonedDateTimeMin(date1, date1, null);
+		assertZonedDateTimeMin(date1, null, date1);
+
+		// Same (reference) value check
+		assertZonedDateTimeMin(date1, date1, date1);
+
+		// Same (value) check
+		assertZonedDateTimeMin(date1, date1, date1_copy);
+
+		assertZonedDateTimeMin(date1, date1, date2);
+		assertZonedDateTimeMin(date1, date2, date1);
+		assertZonedDateTimeMin(date2, date2, date3);
+		assertZonedDateTimeMin(date2, date3, date2);
+	}
+
+	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
+	{
+		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
+
+		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
+				dateExpected, dateMin);
 	}
 
 	@Test
 	public void test_isSameDay()
 	{
-		final Timestamp t1 = createTimestamp(1, 1, 1);
-		final Timestamp t2 = createTimestamp(2, 2, 2);
-		final Timestamp t3 = createTimestamp(3, 3, 3);
+		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
 
-		final Timestamp t4 = createTimestamp(1, 1, 1);
-		final Timestamp t5 = createTimestamp(2, 2, 2);
+		final Timestamp t1 = createTimestamp(01, 01, 01);
+		final Timestamp t2 = createTimestamp(02, 02, 02);
+		final Timestamp t3 = createTimestamp(03, 03, 03);
+
+		final Timestamp t4 = createTimestamp(01, 01, 01);
+		final Timestamp t5 = createTimestamp(02, 02, 02);
 
 		assertSameDay(true, t1, t4);
 		assertSameDay(true, t2, t5);
 		assertSameDay(false, t3, t5);
 	}
 
-	private void assertSameDay(final boolean expected, Date date1, Date date2)
+	private final void assertSameDay(final boolean expected, Date date1, Date date2)
 	{
 		final boolean actual = TimeUtil.isSameDay(date1, date2);
 		final String message = "Invalid isSameDay for date1=" + date1 + ", date2=" + date2;
-		Assertions.assertEquals(expected, actual, message);
+		Assert.assertEquals(message, expected, actual);
 	}
 
 	@Test
 	public void test_formatElapsed()
 	{
+		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
+
 		assertFormatElapsed("1.000 s", 1000);
 		assertFormatElapsed("1.234 s", 1234);
 		assertFormatElapsed("1.000 h", 3601234);
@@ -334,14 +401,23 @@ public class TimeUtilTest
 	private void assertFormatElapsed(final String expected, final long elapsedMS)
 	{
 		final String actual = TimeUtil.formatElapsed(elapsedMS);
-		Assertions.assertEquals(expected, actual, "Invalid formatElapsed for elapsedMS=" + elapsedMS);
+		Assert.assertEquals("Invalid formatElapsed for elapsedMS=" + elapsedMS, expected, actual);
 	}
 
 	@Test
 	public void test_copyOf()
 	{
-		Assertions.assertNull(TimeUtil.copyOf(null)); // null test
-		Assertions.assertEquals(123456, TimeUtil.copyOf(new Timestamp(123456)).getTime()); // straight forward test
+		Assert.assertNull(TimeUtil.copyOf((Timestamp)null)); // null test
+		Assert.assertEquals(123456, TimeUtil.copyOf(new Timestamp(123456)).getTime()); // straight forward test
+	}
+
+	/**
+	 * Make sure the {@link TimeUtil#asTimestamp(Date)} returns null for null. We do this check because a lot of BL depends on that.
+	 */
+	@Test
+	public void test_asTimestamp_for_Null()
+	{
+		Assert.assertNull(TimeUtil.asTimestamp((Date)null));
 	}
 
 	@Test
@@ -353,7 +429,7 @@ public class TimeUtilTest
 
 		final int actual52 = TimeUtil.getWeekNumber(january1);
 
-		Assertions.assertEquals(expected52, actual52);
+		Assert.assertEquals(expected52, actual52);
 
 		final Date january2 = Timestamp.valueOf("2017-01-02 10:10:10.0");
 
@@ -361,7 +437,7 @@ public class TimeUtilTest
 
 		final int actual1 = TimeUtil.getWeekNumber(january2);
 
-		Assertions.assertEquals(expected1, actual1);
+		Assert.assertEquals(expected1, actual1);
 
 	}
 
@@ -375,7 +451,45 @@ public class TimeUtilTest
 
 		final int actual = TimeUtil.getDayOfWeek(january1);
 
-		Assertions.assertEquals(expected, actual);
+		Assert.assertEquals(expected, actual);
+	}
+
+	@Test
+	public void asTimestamp_LocalTime()
+	{
+		final Timestamp expectedTimestamp = Timestamp.valueOf(LocalDateTime.of(1970, Month.JANUARY, 1, 15, 15, 0));
+
+		final LocalTime initialTime = LocalTime.of(15, 15);
+		final Timestamp timestampFromLocalTime = TimeUtil.asTimestamp(initialTime);
+
+		assertThat(timestampFromLocalTime).isEqualTo(expectedTimestamp);
+	}
+
+	@Test
+	public void asLocalDate_XMLGregorianCalendar() throws DatatypeConfigurationException
+	{
+		final Timestamp timestamp = Timestamp.valueOf("2018-10-04 15:43:10.1");
+
+		final GregorianCalendar c = new GregorianCalendar();
+		c.setTime(timestamp);
+		final XMLGregorianCalendar xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
+
+		// invoke the method under test
+		final LocalDate result = TimeUtil.asLocalDate(xmlGregorianCalendar);
+
+		assertThat(result.getYear()).isEqualTo(2018);
+		assertThat(result.getMonth()).isEqualTo(Month.OCTOBER);
+		assertThat(result.getDayOfMonth()).isEqualTo(4);
+	}
+
+	@Test
+	public void asDate()
+	{
+		final Date nowDate = new Date();
+		final Timestamp nowTimestamp = new Timestamp(nowDate.getTime());
+		assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that noone magically fixed timestamp
+
+		assertThat(TimeUtil.asDate(nowTimestamp)).isEqualTo(nowDate);
 	}
 
 	@Test
@@ -409,6 +523,23 @@ public class TimeUtilTest
 	}
 
 	@Test
+	public void testMaxDuration()
+	{
+		testMaxDuration(null, null, null);
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
+		testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
+	}
+
+	private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
+	{
+		final Duration actual = TimeUtil.max(duration1, duration2);
+		assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
 	public void test_isLastDayOfMonth()
 	{
 		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 1));
@@ -437,6 +568,7 @@ public class TimeUtilTest
 
 		assertThat(TimeUtil.isDateOrTimeObject(null)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject(1)).isFalse();
 		assertThat(TimeUtil.isDateOrTimeObject(new BigDecimal("1234"))).isFalse();
 	}
@@ -458,351 +590,29 @@ public class TimeUtilTest
 		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
 	}
 
-	@Nested
-	class trunc
+	@Test
+	public void test_asTimestamp_asLocalDateWithTimeZone()
 	{
-		private Date truncAndCheckMillis(final Date date, final String trunc)
-		{
-			Date dateTrunc = TimeUtil.trunc(date, trunc);
-			final long dateTruncMillis = TimeUtil.truncToMillis(date, trunc);
-			Assertions.assertEquals(dateTruncMillis, dateTrunc.getTime(), "trunc() and truncToMillis() shall match for '" + date + "' but trunc date was '" + dateTrunc + "'");
-			return dateTrunc;
-		}
+		SystemTime.setFixedTimeSource("2020-04-29T13:14:00+05:00");
 
-		@SuppressWarnings("SameParameterValue")
-		private void test_trunc(final String expectedStr, final String dateStr, final String truncType) throws ParseException
-		{
-			final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		final Timestamp timestamp = TimeUtil.asTimestamp(
+				LocalDate.parse("2020-04-30")
+						.atTime(LocalTime.of(23, 59, 59))
+						.atZone(ZoneId.of("UTC-8")));
 
-			final Date expected = dateFormat.parse(expectedStr);
-			final Date date = dateFormat.parse(dateStr);
-
-			final Date actual = truncAndCheckMillis(date, truncType);
-			final String message = "Invalid date for expectedStr=" + expectedStr + ", dateStr=" + dateStr + ", truncType=" + truncType;
-			Assertions.assertEquals(expected, actual, message);
-		}
-
-		@Test
-		public void toSecond()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_SECOND);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to seconds");
-		}
-
-		@Test
-		public void toMinute()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MINUTE);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to minutes");
-		}
-
-		@Test
-		public void toHour()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.HOUR_OF_DAY, 14);
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_HOUR);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to hours");
-		}
-
-		@Test
-		public void toDay()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.YEAR, 2013);
-			cal.set(Calendar.MONTH, 4);
-			cal.set(Calendar.DAY_OF_MONTH, 3);
-			cal.set(Calendar.HOUR_OF_DAY, 14);
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_DAY);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to day");
-		}
-
-		@Test
-		public void toWeek()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.YEAR, 2013);
-			cal.set(Calendar.MONTH, Calendar.MARCH);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.set(Calendar.HOUR_OF_DAY, 14);
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.setFirstDayOfWeek(Calendar.MONDAY);
-			cal.set(Calendar.MONTH, Calendar.FEBRUARY);
-			cal.set(Calendar.DAY_OF_MONTH, 25);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_WEEK);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to week");
-		}
-
-		/**
-		 * Make sure {@link TimeUtil#TRUNC_WEEK} is compliant with postgresql's <code>date_trunc('week', ...)</code>.
-		 */
-		@Test
-		public void toWeek_CheckIsCompliantWithPostgresql() throws Exception
-		{
-			test_trunc("2015-06-22", "2015-06-28", TimeUtil.TRUNC_WEEK);
-			//
-			test_trunc("2015-06-29", "2015-06-29", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-06-30", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-07-01", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-07-02", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-07-03", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-07-04", TimeUtil.TRUNC_WEEK);
-			test_trunc("2015-06-29", "2015-07-05", TimeUtil.TRUNC_WEEK);
-			//
-			test_trunc("2015-07-06", "2015-07-06", TimeUtil.TRUNC_WEEK);
-		}
-
-		@Test
-		public void toMonth()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.YEAR, 2013);
-			cal.set(Calendar.MONTH, Calendar.MARCH);
-			cal.set(Calendar.DAY_OF_MONTH, 25);
-			cal.set(Calendar.HOUR_OF_DAY, 14);
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_MONTH);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to month");
-		}
-
-		@Test
-		public void toYear()
-		{
-			final GregorianCalendar cal = new GregorianCalendar();
-			cal.setTimeInMillis(SystemTime.millis());
-			cal.set(Calendar.YEAR, 2013);
-			cal.set(Calendar.MONTH, Calendar.MARCH);
-			cal.set(Calendar.DAY_OF_MONTH, 25);
-			cal.set(Calendar.HOUR_OF_DAY, 14);
-			cal.set(Calendar.MINUTE, 12);
-			cal.set(Calendar.SECOND, 42);
-			cal.set(Calendar.MILLISECOND, 13);
-			final Date date = new Date(cal.getTimeInMillis());
-
-			cal.set(Calendar.MONTH, Calendar.JANUARY);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			final Date dateTruncExpected = new Date(cal.getTimeInMillis());
-
-			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_YEAR);
-
-			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to year");
-		}
+		final LocalDate localDate = TimeUtil.asLocalDate(timestamp, ZoneId.of("UTC-8"));
+		assertThat(localDate).isEqualTo("2020-04-30");
 	}
 
-	@Nested
-	class asDate
+	@Test
+	public void testMaxLocalDate()
 	{
-		@Test
-		void ofTimestamp()
-		{
-			final Date nowDate = new Date();
-			final Timestamp nowTimestamp = new Timestamp(nowDate.getTime());
-			assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that none magically fixed timestamp
-
-			assertThat(TimeUtil.asDate(nowTimestamp)).isEqualTo(nowDate);
-		}
+		assertThat(TimeUtil.maxOfNullables(null, LocalDate.parse("2021-02-10")))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.maxOfNullables(LocalDate.parse("2021-02-10"), null))
+				.isEqualTo(LocalDate.parse("2021-02-10"));
+		assertThat(TimeUtil.max(LocalDate.parse("2021-02-10"), LocalDate.parse("2021-02-11")))
+				.isEqualTo(LocalDate.parse("2021-02-11"));
 	}
 
-	@Nested
-	class asTimestamp
-	{
-		/**
-		 * Make sure the {@link TimeUtil#asTimestamp(Date)} returns null for null. We do this check because a lot of BL depends on that.
-		 */
-		@Test
-		void nullParam() {assertThat(TimeUtil.asTimestamp((Date)null)).isNull();}
-
-		@Test
-		void ofLocalTime()
-		{
-			final LocalTime localTime = LocalTime.parse("15:15");
-			assertThat(TimeUtil.asTimestamp(localTime))
-					.isEqualTo(Timestamp.valueOf(LocalDate.parse("1970-01-01").atTime(localTime)));
-		}
-
-		@Test
-		void ofZonedDateTime()
-		{
-			SystemTime.setFixedTimeSource("2020-04-29T13:14:00+05:00");
-
-			final ZonedDateTime zonedDateTime = LocalDate.parse("2020-04-30")
-					.atTime(LocalTime.of(23, 59, 59))
-					.atZone(ZoneId.of("UTC-8"));
-
-			final Timestamp timestamp = TimeUtil.asTimestamp(zonedDateTime);
-			final LocalDate localDate = TimeUtil.asLocalDate(timestamp, ZoneId.of("UTC-8"));
-			assertThat(localDate).isEqualTo("2020-04-30");
-		}
-
-		@Test
-		void ofInstantAndOrgId()
-		{
-			final InstantAndOrgId instantAndOrgId = InstantAndOrgId.ofInstant(Instant.parse("2022-06-03T13:14:15.00Z"), OrgId.MAIN);
-			assertThat(TimeUtil.asTimestamp(instantAndOrgId)).isEqualTo(instantAndOrgId.toTimestamp());
-		}
-	}
-
-	@Nested
-	class asLocalDate
-	{
-		@Test
-		public void ofXMLGregorianCalendar() throws DatatypeConfigurationException
-		{
-			final Timestamp timestamp = Timestamp.valueOf("2018-10-04 15:43:10.1");
-
-			final GregorianCalendar c = new GregorianCalendar();
-			c.setTime(timestamp);
-			final XMLGregorianCalendar xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
-
-			// invoke the method under test
-			final LocalDate result = TimeUtil.asLocalDate(xmlGregorianCalendar);
-
-			assertThat(result.getYear()).isEqualTo(2018);
-			assertThat(result.getMonth()).isEqualTo(Month.OCTOBER);
-			assertThat(result.getDayOfMonth()).isEqualTo(4);
-		}
-
-		@Test
-		void ofLocalDateAndOrgId()
-		{
-			final LocalDateAndOrgId localDateAndOrgId = LocalDateAndOrgId.ofLocalDate(LocalDate.parse("2022-03-04"), OrgId.MAIN);
-			assertThat(TimeUtil.asLocalDate(localDateAndOrgId)).isEqualTo("2022-03-04");
-		}
-	}
-	@Nested
-	public class isOverlapping
-	{
-		@Nullable
-		Timestamp ts(@Nullable final String localDateStr)
-		{
-			return localDateStr != null
-					? Timestamp.from(LocalDate.parse(localDateStr).atStartOfDay().atZone(SystemTime.zoneId()).toInstant())
-					: null;
-		}
-
-		@Test
-		void a__a__b________b()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-02"), ts("2023-10-05"), ts("2023-10-10")))
-					.isFalse();
-		}
-
-		@Test
-		void a__ab__________b()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-02"), ts("2023-10-02"), ts("2023-10-10")))
-					.isFalse();
-		}
-
-		@Test
-		void a__b__a________b()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-02"), ts("2023-10-10")))
-					.isTrue();
-		}
-
-		@Test
-		void b__a__a________b()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-10"), ts("2023-10-02"), ts("2023-10-03")))
-					.isTrue();
-		}
-
-		@Test
-		void b_______a___b__a()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-07"), ts("2023-10-05"), ts("2023-10-10")))
-					.isTrue();
-		}
-
-		@Test
-		void b__________ba__a()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-07"), ts("2023-10-07"), ts("2023-10-10")))
-					.isFalse();
-		}
-
-		@Test
-		void b________b__a__a()
-		{
-			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-07"), ts("2023-10-10")))
-					.isFalse();
-		}
-	}
 }

@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.api;
  */
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -33,8 +32,6 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.shippingnotification.ShippingNotificationFromShipmentScheduleProducer;
-import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -42,7 +39,6 @@ import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -50,10 +46,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -106,14 +99,15 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
-	 * <p>
+	 *
 	 * Task 08255
+	 *
 	 */
 	void updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Close the given Shipment Schedule.
-	 * <p>
+	 *
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
@@ -131,20 +125,17 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
 
-	/**
-	 * Used by a model interceptor to figure out if the given {@code shipmentSchedule}'s {@code IsClosed} value is jsut cange from {@code true} to {@code false}.
-	 */
+	/** Used by a model interceptor to figure out if the given {@code shipmentSchedule}'s {@code IsClosed} value is jsut cange from {@code true} to {@code false}. */
 	boolean isJustOpened(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	/**
 	 * Creates a storage query for the given {@code shipmentSchedule}.
 	 *
 	 * @param considerAttributes {@code true} if the query shall be strict with respect to the given {@code shipmentSchedule}'s ASI.
-	 * @param excludeAllReserved if {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.
+	 * @param excludeAllReserved if {@code true}, then even exclude HUs that are reserved to the given {@code shipmentSchedule}'s order line itself.   
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes, boolean excludeAllReserved);
 
-	@NonNull
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	Optional<Quantity> getCatchQtyOverride(I_M_ShipmentSchedule shipmentScheduleRecord);
@@ -155,19 +146,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
 
-	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
+	Map<ShipmentScheduleId,I_M_ShipmentSchedule> getByIds(Set<ShipmentScheduleId> ids);
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
 	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
-
-	Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull OrderId orderId);
-
-	Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull Collection<OrderId> orderIds);
-
-	boolean anyMatchByOrderId(OrderId salesOrderId);
-
-	boolean anyMatchByOrderIds(@NonNull Collection<OrderId> orderIds);
 
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
@@ -180,6 +163,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
 	void applyUserChangesInTrx(ShipmentScheduleUserChangeRequestsList userChanges);
+
+	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -205,10 +190,4 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
 
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
-
-	ImmutableSet<OrderId> getOrderIds(@NonNull IQueryFilter<? extends I_M_ShipmentSchedule> filter);
-
-	ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer();
-
-	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
 }

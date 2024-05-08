@@ -30,7 +30,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
-import de.metas.tax.api.VatCodeId;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -222,12 +221,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
-				.vatCodeId(VatCodeId.ofRepoIdOrNull(orderLineQuickInput.getC_VAT_Code_ID()))
 				.qty(Quantitys.create(quickInputQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-				.conditionsId(ConditionsId.ofRepoIdOrNull(orderLineQuickInput.getC_Flatrate_Conditions_ID()))
 				.build();
 	}
 
@@ -270,13 +267,6 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			to.setExplodedFrom_BOMLine_ID(candidate.getExplodedFromBOMLineId().getRepoId());
 		}
-		final VatCodeId vatCodeId = candidate.getVatCodeId();
-		if (vatCodeId != null)
-		{
-			to.setC_VAT_Code_ID(vatCodeId.getRepoId());
-		}
-
-		to.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(candidate.getConditionsId()));
 	}
 
 	private PlainHUPackingAware createQuickInputPackingAware(@NonNull final OrderLineCandidate candidate)

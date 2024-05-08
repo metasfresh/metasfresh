@@ -1,29 +1,28 @@
 package de.metas.cache.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.experimental.UtilityClass;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -35,12 +34,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,44 +49,26 @@ import java.util.List;
 @UtilityClass
 final class ColumnSqlCacheInvalidateRequestFactories
 {
-	private final static Logger logger = LogManager.getLogger(ColumnSqlCacheInvalidateRequestFactories.class);
-
-	@Nullable
-	public static ModelCacheInvalidateRequestFactory ofDescriptorOrNull(@NonNull final ColumnSqlSourceDescriptor descriptor)
+	public static ModelCacheInvalidateRequestFactory ofDescriptor(@NonNull final ColumnSqlSourceDescriptor descriptor)
 	{
 		final FetchTargetRecordsMethod fetchTargetRecordsMethod = descriptor.getFetchTargetRecordsMethod();
-		final String targetTableName = descriptor.getTargetTableName();
 		if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.SQL)
 		{
 			return FetchFromSQL.builder()
-					.targetTableName(targetTableName)
+					.targetTableName(descriptor.getTargetTableName())
 					.sqlToGetTargetRecordIdBySourceRecordId(descriptor.getSqlToGetTargetRecordIdBySourceRecordId())
 					.build();
 		}
 		else if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.LINK_COLUMN)
 		{
-			final POInfo targetTableInfo = POInfo.getPOInfoNotNull(targetTableName);
-			final String targetTableKeyColumnName = targetTableInfo.getSingleKeyColumnName();
-			final String sourceLinkColumnName = descriptor.getSourceLinkColumnNameNotNull();
-
-			if (!targetTableInfo.isPhysicalColumn(sourceLinkColumnName))
-			{
-				logger.warn("Column " + targetTableName + "." + sourceLinkColumnName + " it's expected to exist and be a physical column");
-				return null;
-			}
-			//noinspection UnnecessaryLocalVariable
-			final String targetLinkColumnName = sourceLinkColumnName;
-
-			return FetchUsingSourceLinkColumn.builder()
-					.targetTableName(targetTableName)
-					.targetKeyColumnName(targetTableKeyColumnName)
-					.targetLinkColumnName(targetLinkColumnName)
-					.sourceLinkColumnName(sourceLinkColumnName)
+			return FetchUsingLinkColumn.builder()
+					.targetTableName(descriptor.getTargetTableName())
+					.linkColumnName(descriptor.getLinkColumnName())
 					.build();
 		}
 		else
 		{
-			throw AdempiereException.newWithPlainMessage("Fetch method not supported for " + descriptor);
+			throw new AdempiereException("Fetch method not supported for " + descriptor);
 		}
 	}
 
@@ -117,8 +98,12 @@ final class ColumnSqlCacheInvalidateRequestFactories
 		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTNUSED)
 		{
 			final int sourceRecordId = sourceModel.getRecordId();
-			final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceModel.getTableName());
-			if (sourceRecordId < InterfaceWrapperHelper.getFirstValidIdByColumnName(keyColumnName))
+			return createRequestsFromSourceRecordId(sourceRecordId);
+		}
+
+		private List<CacheInvalidateRequest> createRequestsFromSourceRecordId(final int sourceRecordId)
+		{
+			if (sourceRecordId <= 0)
 			{
 				return ImmutableList.of();
 			}
@@ -161,76 +146,35 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 	@ToString
 	@EqualsAndHashCode
-	private static class FetchUsingSourceLinkColumn implements ModelCacheInvalidateRequestFactory
+	private static class FetchUsingLinkColumn implements ModelCacheInvalidateRequestFactory
 	{
-		@NonNull private final String targetTableName;
-		@NonNull private final String targetKeyColumnName;
-		@NonNull private final String targetLinkColumnName;
-		@NonNull private final String sourceLinkColumnName;
-
-		private final boolean isTargetLinkColumnSameAsKeyColumn;
-		@Nullable private final String sqlGetTargetRecordIdByLinkId;
+		private final String targetTableName;
+		private final String linkColumnName;
 
 		@Builder
-		private FetchUsingSourceLinkColumn(
+		private FetchUsingLinkColumn(
 				@NonNull final String targetTableName,
-				@NonNull final String targetKeyColumnName,
-				@NonNull final String targetLinkColumnName,
-				@NonNull final String sourceLinkColumnName)
+				@Nullable final String linkColumnName)
 		{
-			this.targetTableName = targetTableName;
-			this.targetKeyColumnName = targetKeyColumnName;
-			this.targetLinkColumnName = targetLinkColumnName;
-			this.sourceLinkColumnName = sourceLinkColumnName;
+			Check.assumeNotEmpty(targetTableName, "targetTableName is not empty");
+			Check.assumeNotEmpty(linkColumnName, "linkColumnName is not empty");
 
-			if (targetLinkColumnName.equals(targetKeyColumnName))
-			{
-				this.isTargetLinkColumnSameAsKeyColumn = true;
-				this.sqlGetTargetRecordIdByLinkId = null;
-			}
-			else
-			{
-				this.isTargetLinkColumnSameAsKeyColumn = false;
-				this.sqlGetTargetRecordIdByLinkId = "SELECT " + targetKeyColumnName + " FROM " + targetTableName + " WHERE " + targetLinkColumnName + "=?";
-			}
+			this.targetTableName = targetTableName;
+			this.linkColumnName = linkColumnName;
 		}
 
 		@Override
 		public List<CacheInvalidateRequest> createRequestsFromModel(@NonNull final ICacheSourceModel sourceModel, final ModelCacheInvalidationTiming timing_NOTUSED)
 		{
-			final int linkId = sourceModel.getValueAsInt(sourceLinkColumnName, -1);
-			return getTargetRecordIdsByLinkId(linkId)
-					.stream()
-					.map(targetRecordId -> CacheInvalidateRequest.rootRecord(targetTableName, targetRecordId))
-					.collect(ImmutableList.toImmutableList());
-		}
-
-		private ImmutableSet<Integer> getTargetRecordIdsByLinkId(final int linkId)
-		{
-			if (linkId < 0)
+			final int targetRecordId = sourceModel.getValueAsInt(linkColumnName, -1);
+			if (targetRecordId < 0)
 			{
-				return ImmutableSet.of();
+				return ImmutableList.of();
 			}
-
-			if (isTargetLinkColumnSameAsKeyColumn)
+			else
 			{
-				return ImmutableSet.of(linkId);
+				return ImmutableList.of(CacheInvalidateRequest.rootRecord(targetTableName, targetRecordId));
 			}
-
-			final ImmutableSet.Builder<Integer> targetRecordIds = ImmutableSet.builder();
-			DB.forEachRow(
-					Check.assumeNotNull(this.sqlGetTargetRecordIdByLinkId, "sqlGetTargetRecordIdByLinkId shall not be null"),
-					ImmutableList.of(linkId),
-					rs -> {
-						final int targetRecordId = rs.getInt(1);
-						if (targetRecordId > 0)
-						{
-							targetRecordIds.add(targetRecordId);
-						}
-					});
-			return targetRecordIds.build();
 		}
-
 	}
-
 }

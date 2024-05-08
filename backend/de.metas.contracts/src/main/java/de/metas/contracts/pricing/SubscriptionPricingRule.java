@@ -166,9 +166,9 @@ public class SubscriptionPricingRule implements IPricingRule
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, countryId, null)
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
-				.addEqualsFilter(I_M_PriceList.COLUMNNAME_IsSOPriceList, true)
+				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
+				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
+				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
 				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
 				.create()
 				.first();
@@ -183,7 +183,7 @@ public class SubscriptionPricingRule implements IPricingRule
 		// don't set a ReferencedObject, so that this rule's 'applies()' method will return false
 		subscriptionPricingCtx.setReferencedObject(null);
 
-		// set the price list from subscription's M_Pricing_System
+		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
 		subscriptionPricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(subscriptionPriceList.getM_PricingSystem_ID()));
 		subscriptionPricingCtx.setPriceListVersionId(null);

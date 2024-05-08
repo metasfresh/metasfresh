@@ -22,26 +22,29 @@
 
 package de.metas.handlingunits.picking.plan.generator;
 
-import de.metas.picking.api.PackageableList;
+import com.google.common.collect.ImmutableList;
+import de.metas.picking.api.Packageable;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Collection;
+
 @Value
 public class CreatePickingPlanRequest
 {
-	@NonNull PackageableList packageables;
+	@NonNull ImmutableList<Packageable> packageables;
 	boolean considerAttributes;
 
 	@Builder
 	private CreatePickingPlanRequest(
-			@NonNull final PackageableList packageables,
+			@NonNull final Collection<Packageable> packageables,
 			final boolean considerAttributes)
 	{
-		Check.assume(!packageables.isEmpty(), "packageables shall not be empty");
+		Check.assumeNotEmpty(packageables, "packageables shall not be empty");
 
-		this.packageables = packageables;
+		this.packageables = ImmutableList.copyOf(packageables);
 		this.considerAttributes = considerAttributes;
 	}
 }

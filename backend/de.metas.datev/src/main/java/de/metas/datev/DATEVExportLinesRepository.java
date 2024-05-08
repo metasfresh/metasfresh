@@ -1,24 +1,23 @@
 package de.metas.datev;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.sql.Timestamp;
+
 import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.model.IQuery;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
 import de.metas.datev.model.I_DATEV_Export;
 import de.metas.datev.model.I_DATEV_ExportLine;
 import de.metas.datev.model.I_RV_DATEV_Export_Fact_Acct_Invoice;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.IQuery;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Component;
-
-import java.sql.Timestamp;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -30,12 +29,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,9 +44,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Component
 public class DATEVExportLinesRepository
 {
-	private static final String SYS_CONFIG_ONE_LINE_PER_INVOICETAX = "DATEVExportLines_OneLinePerInvoiceTax";
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
 	public int deleteAllByExportId(final int datevExportId)
 	{
 		return Services.get(IQueryBL.class)
@@ -83,9 +79,7 @@ public class DATEVExportLinesRepository
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_RV_DATEV_Export_Fact_Acct_Invoice> queryBuilder = queryBL.createQueryBuilder(I_RV_DATEV_Export_Fact_Acct_Invoice.class)
-				.addEqualsFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_AD_Org_ID, datevExport.getAD_Org_ID());
-
+		final IQueryBuilder<I_RV_DATEV_Export_Fact_Acct_Invoice> queryBuilder = queryBL.createQueryBuilder(I_RV_DATEV_Export_Fact_Acct_Invoice.class);
 		if (datevExport.getDateAcctFrom() != null)
 		{
 			queryBuilder.addCompareFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_DateAcct, Operator.GREATER_OR_EQUAL, datevExport.getDateAcctFrom());
@@ -102,14 +96,6 @@ public class DATEVExportLinesRepository
 					I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_C_Invoice_ID,
 					I_DATEV_ExportLine.COLUMN_C_Invoice_ID,
 					exportLinesQuery);
-		}
-
-		// we gonna show one line per tax
-		boolean isOneLinePerInvoiceTax = sysConfigBL.getBooleanValue(SYS_CONFIG_ONE_LINE_PER_INVOICETAX, false);
-		if (isOneLinePerInvoiceTax)
-		{
-			final String wc = I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_TaxAmt + " <> " + I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_Amt;
-			queryBuilder.filter(TypedSqlQueryFilter.of(wc));
 		}
 
 		return queryBuilder.create();

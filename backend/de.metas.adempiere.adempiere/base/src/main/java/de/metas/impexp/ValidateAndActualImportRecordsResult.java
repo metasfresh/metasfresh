@@ -4,9 +4,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.nio.file.Path;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -17,12 +14,12 @@ import java.nio.file.Path;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +30,9 @@ import java.nio.file.Path;
 @Builder
 public class ValidateAndActualImportRecordsResult
 {
-	@NonNull ValidateImportRecordsResult importRecordsValidation;
-	@NonNull ActualImportRecordsResult actualImport;
-	@Nullable Path sqlMigrationScript;
+	@NonNull
+	ValidateImportRecordsResult importRecordsValidation;
+
+	@NonNull
+	ActualImportRecordsResult actualImport;
 }

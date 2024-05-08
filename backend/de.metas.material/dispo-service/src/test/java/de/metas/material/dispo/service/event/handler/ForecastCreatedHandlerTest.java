@@ -82,7 +82,6 @@ public class ForecastCreatedHandlerTest
 	private DimensionService dimensionService;
 
 	int forecastLineId;
-
 	@BeforeEach
 	public void init()
 	{
@@ -102,7 +101,7 @@ public class ForecastCreatedHandlerTest
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepository);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		forecastCreatedHandler = new ForecastCreatedHandler(
 				new CandidateChangeService(ImmutableList.of(
 						new StockUpCandiateHandler(
@@ -119,7 +118,6 @@ public class ForecastCreatedHandlerTest
 
 		return forecastLine;
 	}
-
 	/**
 	 * We create a forecast event with quantity = 8, and there is no projected stock quantity.<br>
 	 * We assert that the method under test fires a MaterialDemandEvent with a quantity of 8 - 0 = 8.
@@ -190,12 +188,12 @@ public class ForecastCreatedHandlerTest
 		final ForecastLine forecastLine = ForecastLine.builder()
 				.forecastLineId(forecastLineId)
 				.materialDescriptor(MaterialDescriptor.builder()
-											.productDescriptor(createProductDescriptor())
-											.warehouseId(WAREHOUSE_ID)
-											.customerId(BPARTNER_ID)
-											.quantity(new BigDecimal("8"))
-											.date(NOW)
-											.build())
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.customerId(BPARTNER_ID)
+						.quantity(new BigDecimal("8"))
+						.date(NOW)
+						.build())
 				.build();
 
 		final Forecast forecast = Forecast.builder().forecastId(200)
@@ -213,7 +211,7 @@ public class ForecastCreatedHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		verify(postMaterialEventService)
-				.enqueueEventNow(eventCaptor.capture());
+				.postEventAsync(eventCaptor.capture());
 
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 

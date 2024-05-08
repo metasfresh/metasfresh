@@ -11,6 +11,8 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -55,9 +57,9 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 			@Nullable final List<RelatedProcessDescriptor> processes)
 	{
 		super(viewId,
-				TranslatableStrings.empty(),
-				rows,
-				NullDocumentFilterDescriptorsProvider.instance);
+			  TranslatableStrings.empty(),
+			  rows,
+			  NullDocumentFilterDescriptorsProvider.instance);
 
 		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
 	}
@@ -84,6 +86,18 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 	{
 		final InvoiceRows invoiceRows = getRowsData();
 		invoiceRows.addInvoice(invoiceId);
+	}
+
+	@Override
+	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	public void markPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)

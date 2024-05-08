@@ -911,29 +911,6 @@ public interface I_C_BP_BankAccount
 	String COLUMNNAME_RoutingNo = "RoutingNo";
 
 	/**
-	 * Set Swift code.
-	 * Swift Code or BIC
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSwiftCode (@Nullable java.lang.String SwiftCode);
-
-	/**
-	 * Get Swift code.
-	 * Swift Code or BIC
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSwiftCode();
-
-	ModelColumn<I_C_BP_BankAccount, Object> COLUMN_SwiftCode = new ModelColumn<>(I_C_BP_BankAccount.class, "SwiftCode", null);
-	String COLUMNNAME_SwiftCode = "SwiftCode";
-
-	/**
 	 * Set SEPA Creditor Identifier.
 	 *
 	 * <br>Type: String

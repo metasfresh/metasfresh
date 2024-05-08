@@ -34,6 +34,8 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
@@ -61,7 +63,6 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final ProductBOMVersionsDAO bomVersionsDAO;
 	private final ProductBOMService productBOMService;
 
-	@SuppressWarnings("unused")
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
@@ -125,8 +126,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	@Override
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
-		// cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class); // not needed anymore because we have a dedicated cache for S_Resource
-		// cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class); // not needed anymore because we have a dedicated cache for S_ResourceType
+		cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class);
+		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
 
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
 	}

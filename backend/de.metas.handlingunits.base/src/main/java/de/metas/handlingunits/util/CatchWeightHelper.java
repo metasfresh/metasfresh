@@ -1,6 +1,10 @@
 package de.metas.handlingunits.util;
 
-import de.metas.handlingunits.HuId;
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -8,7 +12,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -22,12 +25,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /*
  * #%L
@@ -54,36 +51,6 @@ import java.math.RoundingMode;
 @UtilityClass
 public class CatchWeightHelper
 {
-	@Nullable
-	public StockQtyAndUOMQty extractQtysOrNull(
-			final ProductId productId,
-			final HuId huId)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
-
-		return extractQtysOrNull(huContext, productId, handlingUnitsBL.getById(huId));
-	}
-
-	@Nullable
-	public StockQtyAndUOMQty extractQtysOrNull(
-			final IHUContext huContext,
-			final ProductId productId,
-			final I_M_HU huRecord)
-	{
-		final IHUProductStorage storage = huContext
-				.getHUStorageFactory()
-				.getStorage(huRecord)
-				.getProductStorageOrNull(productId);
-
-		if (storage == null)
-		{
-			return null;
-		}
-
-		return extractQtys(huContext, productId, storage.getQty(), huRecord);
-	}
-
 	public StockQtyAndUOMQty extractQtys(
 			final ProductId productId,
 			final I_M_HU huRecord)
@@ -95,9 +62,7 @@ public class CatchWeightHelper
 		return extractQtys(huContext, productId, huRecord);
 	}
 
-	/**
-	 * Use if your calling code has a {@code huContext}, because there might be not-yet-flushed-to-DB stuff stuff that we would miss when not using that {@code huContext}.
-	 */
+	/** Use if your calling code has a {@code huContext}, because there might be not-yet-flushed-to-DB stuff stuff that we would miss when not using that {@code huContext}. */
 	public StockQtyAndUOMQty extractQtys(
 			final IHUContext huContext,
 			final ProductId productId,
@@ -122,46 +87,31 @@ public class CatchWeightHelper
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(pickedQty, UOMConversionContext.of(productId), stockUOMId);
 
 		final StockQtyAndUOMQtyBuilder qtyPicked = StockQtyAndUOMQty.builder()
 				.productId(productId)
 				.stockQty(stockQty);
 
-		final UomId catchUomId = productBL.getCatchUOMId(productId).orElse(null);
-		if (catchUomId != null)
+		final Optional<UomId> optCatchUomId = productBL.getCatchUOMId(productId);
+		if (optCatchUomId.isPresent())
 		{
+			final UomId catchUomId = optCatchUomId.get();
+
 			assertUomWeightable(catchUomId);
 
-			final IAttributeStorage attributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(huRecord);
+			final IAttributeStorage attributeStorage = huContext
+					.getHUAttributeStorageFactory()
+					.getAttributeStorage(huRecord);
+
 			final IWeightable weightable = Weightables.wrap(attributeStorage);
-			final Quantity huWeightNet = Quantity.of(weightable.getWeightNet(), weightable.getWeightNetUOM());
 
-			final Quantity weight;
-			if (stockQty.signum() >= 0)
-			{
-				weight = huWeightNet;
-			}
-			else
-			{
-				final Quantity huQty = huContext.getHUStorageFactory().getStorage(huRecord).getQuantity(productId)
-						.map(qty -> uomConversionBL.convertQuantityTo(qty, UOMConversionContext.of(productId), stockUOMId))
-						.orElse(null);
-				if (huQty == null || huQty.signum() == 0)
-				{
-					throw new AdempiereException("Cannot determine catch weight because HU's qty is zero");
-				}
-				else
-				{
-					final BigDecimal factor = stockQty.toBigDecimal().divide(huQty.toBigDecimal(), 12, RoundingMode.HALF_UP);
-					weight = huWeightNet.multiply(factor).roundToUOMPrecision();
-				}
-			}
-
+			final Quantity weight = Quantity.of(weightable.getWeightNet(), weightable.getWeightNetUOM());
 			final Quantity catchQty = uomConversionBL.convertQuantityTo(weight, UOMConversionContext.of(productId), catchUomId);
+
 			qtyPicked.uomQty(catchQty);
 		}
-
 		return qtyPicked.build();
 	}
 

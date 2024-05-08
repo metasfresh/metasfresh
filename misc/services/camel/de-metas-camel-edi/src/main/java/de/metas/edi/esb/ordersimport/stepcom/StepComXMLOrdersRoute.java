@@ -22,11 +22,9 @@
 
 package de.metas.edi.esb.ordersimport.stepcom;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
-import de.metas.edi.esb.jaxb.stepcom.orders.ObjectFactory;
-import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -36,11 +34,11 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.model.ProcessorDefinition;
 import org.springframework.stereotype.Component;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-
-import static de.metas.edi.esb.commons.route.notifyreplicationtrx.NotifyReplicationTrxRoute.NOTIFY_REPLICATION_TRX_UPDATE;
-import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
+import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.jaxb.stepcom.orders.ObjectFactory;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 
 @Component
 public class StepComXMLOrdersRoute
@@ -105,27 +103,19 @@ public class StepComXMLOrdersRoute
 		final JaxbDataFormat olCandsJaxbDataFormat = new JaxbDataFormat(Constants.JAXB_ContextPath);
 		olCandsJaxbDataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
-		// @formatter:off
-
 		// process the unmarshalled output
+		// @formatter:off
 		ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Splitting XML document into individual C_OLCands...")
-				.doTry()
-					.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
-						.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object -> XML document...")
+				.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 
-						.marshal(olCandsJaxbDataFormat)
+					.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object -> XML document...")
 
-						.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
-						.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
-						.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
-					.end()
-					.process(StepComXMLOrdersBean::prepareNotifyReplicationTrxDone)
-					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
-				.endDoTry()
-				.doCatch(Exception.class)
-					.process(StepComXMLOrdersBean::prepareNotifyReplicationTrxError)
-					.to(direct(NOTIFY_REPLICATION_TRX_UPDATE))
+					.marshal(olCandsJaxbDataFormat)
+
+					.log(LoggingLevel.INFO, "EDI: Sending XML Order document to metasfresh...")
+					.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+					.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
 				.end();
 		// @formatter:on
 	}

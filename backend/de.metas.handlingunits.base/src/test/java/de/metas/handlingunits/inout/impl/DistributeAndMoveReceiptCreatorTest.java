@@ -1,7 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
-import de.metas.acct.api.ProductActivityProvider;
-import de.metas.ad_reference.ADReferenceService;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
@@ -18,7 +17,6 @@ import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
-import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Locator;
@@ -64,10 +62,10 @@ public class DistributeAndMoveReceiptCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(
 				new LotNumberQuarantineRepository(),
@@ -77,7 +75,6 @@ public class DistributeAndMoveReceiptCreatorTest
 						new DDOrderMoveScheduleService(
 								ddOrderLowLevelDAO,
 								new DDOrderMoveScheduleRepository(),
-								ADReferenceService.newMocked(),
 								huReservationService)));
 	}
 

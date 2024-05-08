@@ -19,6 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+
 /**
  * 	Request Update Model
  *  @author Jorg Janke
@@ -26,6 +29,7 @@ import java.util.Properties;
  *  
  *  @author Teo Sarca
  *  		<li>FR [ 2884541 ] MRequestUpdate should detect automatically the fields
+ *  			https://sourceforge.net/tracker/?func=detail&aid=2884541&group_id=176962&atid=879335
  */
 public class MRequestUpdate extends X_R_RequestUpdate
 {
@@ -34,13 +38,24 @@ public class MRequestUpdate extends X_R_RequestUpdate
 	 */
 	private static final long serialVersionUID = -8862921042436867124L;
 
-	@SuppressWarnings("unused")
-	public MRequestUpdate (Properties ctx, int R_RequestUpdate_ID, String trxName)
+	/**
+	 * 	Standard Constructor
+	 *	@param ctx context
+	 *	@param R_RequestUpdate_ID id
+	 *	@param trxName trx
+	 */
+	public MRequestUpdate (Properties ctx, int R_RequestUpdate_ID,
+		String trxName)
 	{
 		super (ctx, R_RequestUpdate_ID, trxName);
 	}	//	MRequestUpdate
 
-	@SuppressWarnings("unused")
+	/**
+	 * 	Load Constructor
+	 *	@param ctx context
+	 *	@param rs result set
+	 *	@param trxName trx
+	 */
 	public MRequestUpdate (Properties ctx, ResultSet rs, String trxName)
 	{
 		super (ctx, rs, trxName);
@@ -77,6 +92,25 @@ public class MRequestUpdate extends X_R_RequestUpdate
 	{
 		return getResult() != null;
 	}	//	isNewInfo
+	
+	/**
+	 * 	Get Name of creator
+	 *	@return name
+	 */
+	public String getCreatedByName()
+	{
+		I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getCreatedBy());
+		return user.getName();
+	}	//	getCreatedByName
+
+	/**
+	 * 	Get Confidential Entry Text (for jsp)
+	 *	@return text
+	 */
+	public String getConfidentialEntryText()
+	{
+		return MRefList.getListName(getCtx(), CONFIDENTIALTYPEENTRY_AD_Reference_ID, getConfidentialTypeEntry());
+	}	//	getConfidentialTextEntry
 
 	/**
 	 * 	Before Save

@@ -16,13 +16,14 @@
  *****************************************************************************/
 package org.compiere.print;
 
-import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.Clob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Properties;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,13 +38,13 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import java.sql.Clob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Properties;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Data Engine.
@@ -92,7 +93,7 @@ public class DataEngine
 	}	//	DataEngine
 
 	/**	Logger							*/
-	private static final Logger	log = LogManager.getLogger(DataEngine.class);
+	private static Logger	log = LogManager.getLogger(DataEngine.class);
 
 	/**	Synonym							*/
 	private	String			m_synonym = "A";
@@ -385,12 +386,12 @@ public class DataEngine
 
 					if (ColumnSQL.length() > 0)
 					{
-						eSql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName, "(" + ColumnSQL + ")");
+						eSql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName, "(" + ColumnSQL + ")");
 						lookupSQL = ColumnSQL;
 					}
 					else
 					{
-						eSql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName);
+						eSql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_language), ColumnName, tableName);
 					}
 
 					//	TableName

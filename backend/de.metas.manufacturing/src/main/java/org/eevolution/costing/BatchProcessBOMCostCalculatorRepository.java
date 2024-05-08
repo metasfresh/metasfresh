@@ -13,7 +13,6 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -34,11 +33,11 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -104,28 +103,27 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 	@Override
 	public Optional<BOM> getBOM(final ProductId productId)
 	{
-		final ProductPlanning productPlanning = Services.get(IProductPlanningDAO.class)
+		final I_PP_Product_Planning productPlanning = Services.get(IProductPlanningDAO.class)
 				.find(ProductPlanningQuery.builder()
 							  .orgId(orgId)
 							  .productId(productId)
-							  .includeWithNullProductId(false)
 							  .build())
 				.orElse(null);
 
 		ProductBOMVersionsId bomVersionsId = null;
 		if (productPlanning != null)
 		{
-			bomVersionsId = productPlanning.getBomVersionsId();
+			bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanning.getPP_Product_BOMVersions_ID());
 		}
 		else
 		{
 			createNotice(productId, "@NotFound@ @PP_Product_Planning_ID@");
 		}
 
-		final ProductBOMId productBOMId;
+		ProductBOMId productBOMId;
 		if (bomVersionsId != null)
 		{
-			productBOMId = productBOMsRepo.getLatestBOMIdByVersionAndType(bomVersionsId, PPOrderDocBaseType.MANUFACTURING_ORDER.getBOMTypes()).orElse(null);
+			productBOMId = productBOMsRepo.getLatestBOMByVersion(bomVersionsId).orElse(null);
 		}
 		else
 		{

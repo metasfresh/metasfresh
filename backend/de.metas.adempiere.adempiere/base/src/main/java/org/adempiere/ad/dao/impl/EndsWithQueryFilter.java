@@ -25,26 +25,33 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import lombok.NonNull;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import de.metas.util.Check;
 
 /**
  * @author cg
  *
  */
-public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+/* package */ class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
-	private final String columnName;
-	private final String endsWithString;
 
-	public EndsWithQueryFilter(@NonNull final String columnName, @NonNull final String endsWithString)
+	private String columnName;
+	private String endsWithString;
+
+	public EndsWithQueryFilter(final String columnName, final String endsWithString)
 	{
+		super();
+
+		Check.assumeNotNull(columnName, "columnName not null");
+		Check.assumeNotNull(endsWithString, "endsWithString not null");
 		this.columnName = columnName;
 		this.endsWithString = endsWithString;
 	}
@@ -73,8 +80,13 @@ public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else  if (value instanceof String)
 		{
-			return ((String)value).endsWith(endsWithString);
-
+			if (((String)value).endsWith(endsWithString))
+			{
+				return true;
+			}
+			
+			return false;
+			
 		}
 		else
 		{
@@ -86,19 +98,29 @@ public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
 
-	private void buildSql()
+	private final void buildSql()
 	{
 		if (sqlBuilt)
 		{
 			return;
 		}
 
-		final String sqlWhereClause = columnName
-				+ " LIKE "
-				+ "'%'||? ";
-		this.sqlParams = Collections.singletonList(endsWithString);
+		final StringBuilder sqlWhereClause = new StringBuilder();
 
-		this.sqlWhereClause = sqlWhereClause;
+		sqlWhereClause.append(columnName);
+
+		sqlWhereClause.append(" LIKE ");
+
+		sqlWhereClause.append("'%'||? ");
+		this.sqlParams = Arrays.asList((Object)endsWithString);
+
+		this.sqlWhereClause = sqlWhereClause.toString();
 		this.sqlBuilt = true;
 	}
+
+	protected void resetSqlBuilt()
+	{
+		this.sqlBuilt = false;
+	}
+
 }

@@ -1,5 +1,10 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.math.BigDecimal;
+
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -10,11 +15,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /*
  * #%L

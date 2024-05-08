@@ -23,9 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -41,13 +39,14 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,9 +58,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -113,7 +110,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final BigDecimal grossWeightInKg = CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE);
+		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -124,7 +121,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		for (final PackageId packageId : mpackageIds)
 		{
 			final DhlCustomDeliveryDataDetail.DhlCustomDeliveryDataDetailBuilder dataDetailBuilder = DhlCustomDeliveryDataDetail.builder();
-			dataDetailBuilder.packageId(packageId);
+			dataDetailBuilder.packageId(packageId.getRepoId());
 
 			// implement handling for DE -> DE and DE -> International packages
 			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
@@ -195,23 +192,17 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
 			@NonNull final I_C_BPartner deliverToBPartner,
+			//final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlShipperProduct serviceType,
-			final BigDecimal grossWeightKg,
+			final int grossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final DeliveryOrderLine.DeliveryOrderLineBuilder orderLineBuilder = DeliveryOrderLine.builder()
-				.grossWeightKg(grossWeightKg)
-				.packageDimensions(packageDimensions);
-		final List<DeliveryOrderLine> deliveryOrderLines = mpackageIds.stream()
-				.map(orderLineBuilder::packageId)
-				.map(DeliveryOrderLine.DeliveryOrderLineBuilder::build)
-				.collect(ImmutableList.toImmutableList());
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
@@ -242,7 +233,12 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-				.deliveryOrderLines(deliveryOrderLines)
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(mpackageIds.size())
+						.packageIds(mpackageIds)
+						.grossWeightKg(grossWeightKg)
+						.packageDimensions(packageDimensions)
+						.build())
 				//
 				.build();
 	}

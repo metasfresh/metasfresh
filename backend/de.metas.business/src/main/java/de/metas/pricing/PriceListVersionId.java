@@ -7,8 +7,6 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.business
@@ -52,7 +50,7 @@ public class PriceListVersionId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_PriceList_Version_ID");
 	}
 
-	public static int toRepoId(@Nullable final PriceListVersionId id)
+	public static int toRepoId(final PriceListVersionId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

@@ -26,10 +26,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.common.util.Check;
 import de.metas.common.util.NumberUtils;
-import io.swagger.v3.oas.models.media.IntegerSchema;
 import lombok.NonNull;
 import lombok.Value;
-import org.springdoc.core.SpringDocUtils;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -40,10 +38,6 @@ import java.util.function.Function;
 public class JsonMetasfreshId
 {
 	int value;
-
-	static {
-		SpringDocUtils.getConfig().replaceWithSchema(JsonMetasfreshId.class, new IntegerSchema());
-	}
 
 	@JsonCreator
 	public static JsonMetasfreshId of(@NonNull final Object value)
@@ -61,23 +55,14 @@ public class JsonMetasfreshId
 	@Nullable
 	public static JsonMetasfreshId ofOrNull(@Nullable final Integer value)
 	{
-		if (isNullOrNegative(value))
+		if (isEmpty(value))
 		{
 			return null;
 		}
 		return new JsonMetasfreshId(value);
 	}
 
-	@Nullable
-	public static JsonMetasfreshId ofOrNull(@Nullable final String value)
-	{
-		return Optional.ofNullable(value)
-				.map(Integer::parseInt)
-				.map(JsonMetasfreshId::ofOrNull)
-				.orElse(null);
-	}
-
-	private static boolean isNullOrNegative(@Nullable final Integer value)
+	private static boolean isEmpty(@Nullable final Integer value)
 	{
 		return value == null || value < 0;
 	}
@@ -95,11 +80,6 @@ public class JsonMetasfreshId
 	public int getValue()
 	{
 		return value;
-	}
-
-	@NonNull
-	public <T> T mapValue(@NonNull final Function<Integer, T> mapper) {
-		return mapper.apply(value);
 	}
 
 	public static boolean equals(@Nullable final JsonMetasfreshId id1, @Nullable final JsonMetasfreshId id2)

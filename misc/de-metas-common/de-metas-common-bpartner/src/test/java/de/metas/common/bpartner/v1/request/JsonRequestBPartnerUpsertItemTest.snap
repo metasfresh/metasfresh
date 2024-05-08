@@ -1,30 +1,94 @@
-de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
+JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
   {
+    "bpartnerIdentifier": "ext-12345",
     "bpartnerComposite": {
       "bpartner": {
-        "activeSet": false,
+        "externalIdSet": false,
         "code": "code",
         "codeSet": true,
-        "companyNameSet": false,
-        "customerSet": false,
-        "externalIdSet": false,
-        "globalIdset": false,
-        "groupSet": false,
-        "invoiceRuleSet": false,
-        "languageSet": false,
+        "activeSet": false,
+        "nameSet": false,
         "name2Set": false,
         "name3Set": false,
-        "nameSet": false,
+        "companyNameSet": false,
+        "vendorSet": false,
+        "customerSet": false,
         "parentIdSet": false,
         "phoneSet": false,
-        "syncAdviseSet": false,
+        "languageSet": false,
+        "invoiceRuleSet": false,
+        "urlSet": false,
         "url2Set": false,
         "url3Set": false,
-        "urlSet": false,
+        "groupSet": false,
+        "globalIdset": false,
         "vatIdSet": false,
-        "vendorSet": false
+        "syncAdviseSet": false
       }
-    },
-    "bpartnerIdentifier": "ext-12345"
+    }
+  }
+]
+
+
+de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
+  {
+    "bpartnerIdentifier" : "ext-12345",
+    "bpartnerComposite" : {
+      "bpartner" : {
+        "externalIdSet" : false,
+        "code" : "code",
+        "codeSet" : true,
+        "activeSet" : false,
+        "nameSet" : false,
+        "name2Set" : false,
+        "name3Set" : false,
+        "companyNameSet" : false,
+        "vendorSet" : false,
+        "customerSet" : false,
+        "parentIdSet" : false,
+        "phoneSet" : false,
+        "languageSet" : false,
+        "invoiceRuleSet" : false,
+        "urlSet" : false,
+        "url2Set" : false,
+        "url3Set" : false,
+        "groupSet" : false,
+        "globalIdset" : false,
+        "vatIdSet" : false,
+        "syncAdviseSet" : false
+      }
+    }
+  }
+]
+
+
+de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
+  {
+    "bpartnerIdentifier" : "ext-12345",
+    "bpartnerComposite" : {
+      "bpartner" : {
+        "externalIdSet" : false,
+        "code" : "code",
+        "codeSet" : true,
+        "activeSet" : false,
+        "nameSet" : false,
+        "name2Set" : false,
+        "name3Set" : false,
+        "companyNameSet" : false,
+        "vendorSet" : false,
+        "customerSet" : false,
+        "parentIdSet" : false,
+        "phoneSet" : false,
+        "languageSet" : false,
+        "invoiceRuleSet" : false,
+        "urlSet" : false,
+        "url2Set" : false,
+        "url3Set" : false,
+        "groupSet" : false,
+        "globalIdset" : false,
+        "syncAdviseSet" : false,
+        "vatIdSet" : false
+      }
+    }
   }
 ]

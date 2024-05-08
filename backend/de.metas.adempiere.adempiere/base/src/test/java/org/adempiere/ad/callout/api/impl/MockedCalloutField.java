@@ -230,11 +230,9 @@ public class MockedCalloutField implements ICalloutField
 	@Override
 	public <T> T getModelBeforeChanges(Class<T> modelClass)
 	{
-		final T modelConv = InterfaceWrapperHelper.create(model, modelClass);
+		final T modelConv = InterfaceWrapperHelper.createOld(model, modelClass);
 		Check.assumeNotNull(modelConv, "modelConv not null");
-		final T modelOld = InterfaceWrapperHelper.createOld(modelConv, modelClass);
-		Check.assumeNotNull(modelOld, "modelOld not null");
-		return modelOld;
+		return modelConv;
 	}
 
 

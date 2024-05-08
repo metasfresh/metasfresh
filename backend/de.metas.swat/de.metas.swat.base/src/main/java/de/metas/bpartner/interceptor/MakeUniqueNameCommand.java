@@ -49,8 +49,6 @@ public final class MakeUniqueNameCommand
 	private final List<String> existingNames;
 	private final int maxLength;
 
-	public final static String BPARTNER_LOCATION_NAME_DEFAULT = ".";
-
 	@Builder
 	private MakeUniqueNameCommand(
 			@Nullable final String name,
@@ -64,7 +62,7 @@ public final class MakeUniqueNameCommand
 		this.existingNames = existingNames != null ? existingNames : ImmutableList.of();
 		this.maxLength = maxLength > 0 ? maxLength : Integer.MAX_VALUE;
 
-		if (Check.isEmpty(name, true) || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
+		if (Check.isEmpty(name, true) || ".".equals(name))
 		{
 			this.nameInitial = null;
 		}

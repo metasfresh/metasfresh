@@ -1,285 +1,551 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for S_ResourceType
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_S_ResourceType extends org.compiere.model.PO implements I_S_ResourceType, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 349098420L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -665473995L;
 
     /** Standard Constructor */
-    public X_S_ResourceType (final Properties ctx, final int S_ResourceType_ID, @Nullable final String trxName)
+    public X_S_ResourceType (Properties ctx, int S_ResourceType_ID, String trxName)
     {
       super (ctx, S_ResourceType_ID, trxName);
+      /** if (S_ResourceType_ID == 0)
+        {
+			setAllowUoMFractions (false); // N
+			setC_UOM_ID (0);
+			setIsDateSlot (false);
+			setIsSingleAssignment (false);
+			setIsTimeSlot (false);
+			setM_Product_Category_ID (0);
+			setName (null);
+			setOnFriday (true); // Y
+			setOnMonday (true); // Y
+			setOnSaturday (false);
+			setOnSunday (false);
+			setOnThursday (true); // Y
+			setOnTuesday (true); // Y
+			setOnWednesday (true); // Y
+			setS_ResourceType_ID (0);
+			setValue (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_S_ResourceType (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_S_ResourceType (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
+	/** Set Bruchteil der Mengeneinheit zulassen.
+		@param AllowUoMFractions 
+		Allow Unit of Measure Fractions
+	  */
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	public void setAllowUoMFractions (boolean AllowUoMFractions)
 	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+		set_Value (COLUMNNAME_AllowUoMFractions, Boolean.valueOf(AllowUoMFractions));
+	}
+
+	/** Get Bruchteil der Mengeneinheit zulassen.
+		@return Allow Unit of Measure Fractions
+	  */
+	@Override
+	public boolean isAllowUoMFractions () 
+	{
+		Object oo = get_Value(COLUMNNAME_AllowUoMFractions);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setAllowUoMFractions (final boolean AllowUoMFractions)
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_AllowUoMFractions, AllowUoMFractions);
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
 	}
 
 	@Override
-	public boolean isAllowUoMFractions() 
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
 	{
-		return get_ValueAsBoolean(COLUMNNAME_AllowUoMFractions);
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Unit of Measure
+	  */
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
+	/** Get Maßeinheit.
+		@return Unit of Measure
+	  */
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Abrechenbare Menge.
+		@param ChargeableQty Abrechenbare Menge	  */
 	@Override
-	public void setChargeableQty (final int ChargeableQty)
+	public void setChargeableQty (int ChargeableQty)
 	{
-		set_Value (COLUMNNAME_ChargeableQty, ChargeableQty);
+		set_Value (COLUMNNAME_ChargeableQty, Integer.valueOf(ChargeableQty));
 	}
 
+	/** Get Abrechenbare Menge.
+		@return Abrechenbare Menge	  */
 	@Override
-	public int getChargeableQty() 
+	public int getChargeableQty () 
 	{
-		return get_ValueAsInt(COLUMNNAME_ChargeableQty);
+		Integer ii = (Integer)get_Value(COLUMNNAME_ChargeableQty);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Tag.
+		@param IsDateSlot 
+		Resource has day slot availability
+	  */
+	@Override
+	public void setIsDateSlot (boolean IsDateSlot)
+	{
+		set_Value (COLUMNNAME_IsDateSlot, Boolean.valueOf(IsDateSlot));
+	}
+
+	/** Get Tag.
+		@return Resource has day slot availability
+	  */
+	@Override
+	public boolean isDateSlot () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDateSlot);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Nur einmalige Zuordnung.
+		@param IsSingleAssignment 
+		Only one assignment at a time (no double-booking or overlapping)
+	  */
+	@Override
+	public void setIsSingleAssignment (boolean IsSingleAssignment)
+	{
+		set_Value (COLUMNNAME_IsSingleAssignment, Boolean.valueOf(IsSingleAssignment));
+	}
+
+	/** Get Nur einmalige Zuordnung.
+		@return Only one assignment at a time (no double-booking or overlapping)
+	  */
+	@Override
+	public boolean isSingleAssignment () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSingleAssignment);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Zeitabschnitt.
+		@param IsTimeSlot 
+		Resource has time slot availability
+	  */
+	@Override
+	public void setIsTimeSlot (boolean IsTimeSlot)
+	{
+		set_Value (COLUMNNAME_IsTimeSlot, Boolean.valueOf(IsTimeSlot));
+	}
+
+	/** Get Zeitabschnitt.
+		@return Resource has time slot availability
+	  */
+	@Override
+	public boolean isTimeSlot () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTimeSlot);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setIsDateSlot (final boolean IsDateSlot)
+	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_IsDateSlot, IsDateSlot);
+		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
 	}
 
 	@Override
-	public boolean isDateSlot() 
+	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDateSlot);
+		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
+	/** Set Produkt Kategorie.
+		@param M_Product_Category_ID 
+		Kategorie eines Produktes
+	  */
 	@Override
-	public void setIsSingleAssignment (final boolean IsSingleAssignment)
-	{
-		set_Value (COLUMNNAME_IsSingleAssignment, IsSingleAssignment);
-	}
-
-	@Override
-	public boolean isSingleAssignment() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSingleAssignment);
-	}
-
-	@Override
-	public void setIsTimeSlot (final boolean IsTimeSlot)
-	{
-		set_Value (COLUMNNAME_IsTimeSlot, IsTimeSlot);
-	}
-
-	@Override
-	public boolean isTimeSlot() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsTimeSlot);
-	}
-
-	@Override
-	public void setM_Product_Category_ID (final int M_Product_Category_ID)
+	public void setM_Product_Category_ID (int M_Product_Category_ID)
 	{
 		if (M_Product_Category_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Category_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID);
+			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
 	}
 
+	/** Get Produkt Kategorie.
+		@return Kategorie eines Produktes
+	  */
 	@Override
-	public int getM_Product_Category_ID() 
+	public int getM_Product_Category_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
+	/** Set Freitag.
+		@param OnFriday 
+		Available on Fridays
+	  */
 	@Override
-	public void setOnFriday (final boolean OnFriday)
+	public void setOnFriday (boolean OnFriday)
 	{
-		set_Value (COLUMNNAME_OnFriday, OnFriday);
+		set_Value (COLUMNNAME_OnFriday, Boolean.valueOf(OnFriday));
 	}
 
+	/** Get Freitag.
+		@return Available on Fridays
+	  */
 	@Override
-	public boolean isOnFriday() 
+	public boolean isOnFriday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnFriday);
+		Object oo = get_Value(COLUMNNAME_OnFriday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Montag.
+		@param OnMonday 
+		Available on Mondays
+	  */
 	@Override
-	public void setOnMonday (final boolean OnMonday)
+	public void setOnMonday (boolean OnMonday)
 	{
-		set_Value (COLUMNNAME_OnMonday, OnMonday);
+		set_Value (COLUMNNAME_OnMonday, Boolean.valueOf(OnMonday));
 	}
 
+	/** Get Montag.
+		@return Available on Mondays
+	  */
 	@Override
-	public boolean isOnMonday() 
+	public boolean isOnMonday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnMonday);
+		Object oo = get_Value(COLUMNNAME_OnMonday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Samstag.
+		@param OnSaturday 
+		Available on Saturday
+	  */
 	@Override
-	public void setOnSaturday (final boolean OnSaturday)
+	public void setOnSaturday (boolean OnSaturday)
 	{
-		set_Value (COLUMNNAME_OnSaturday, OnSaturday);
+		set_Value (COLUMNNAME_OnSaturday, Boolean.valueOf(OnSaturday));
 	}
 
+	/** Get Samstag.
+		@return Available on Saturday
+	  */
 	@Override
-	public boolean isOnSaturday() 
+	public boolean isOnSaturday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnSaturday);
+		Object oo = get_Value(COLUMNNAME_OnSaturday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Sonntag.
+		@param OnSunday 
+		Available on Sundays
+	  */
 	@Override
-	public void setOnSunday (final boolean OnSunday)
+	public void setOnSunday (boolean OnSunday)
 	{
-		set_Value (COLUMNNAME_OnSunday, OnSunday);
+		set_Value (COLUMNNAME_OnSunday, Boolean.valueOf(OnSunday));
 	}
 
+	/** Get Sonntag.
+		@return Available on Sundays
+	  */
 	@Override
-	public boolean isOnSunday() 
+	public boolean isOnSunday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnSunday);
+		Object oo = get_Value(COLUMNNAME_OnSunday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Donnerstag.
+		@param OnThursday 
+		Available on Thursdays
+	  */
 	@Override
-	public void setOnThursday (final boolean OnThursday)
+	public void setOnThursday (boolean OnThursday)
 	{
-		set_Value (COLUMNNAME_OnThursday, OnThursday);
+		set_Value (COLUMNNAME_OnThursday, Boolean.valueOf(OnThursday));
 	}
 
+	/** Get Donnerstag.
+		@return Available on Thursdays
+	  */
 	@Override
-	public boolean isOnThursday() 
+	public boolean isOnThursday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnThursday);
+		Object oo = get_Value(COLUMNNAME_OnThursday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Dienstag.
+		@param OnTuesday 
+		Available on Tuesdays
+	  */
 	@Override
-	public void setOnTuesday (final boolean OnTuesday)
+	public void setOnTuesday (boolean OnTuesday)
 	{
-		set_Value (COLUMNNAME_OnTuesday, OnTuesday);
+		set_Value (COLUMNNAME_OnTuesday, Boolean.valueOf(OnTuesday));
 	}
 
+	/** Get Dienstag.
+		@return Available on Tuesdays
+	  */
 	@Override
-	public boolean isOnTuesday() 
+	public boolean isOnTuesday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnTuesday);
+		Object oo = get_Value(COLUMNNAME_OnTuesday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Mittwoch.
+		@param OnWednesday 
+		Available on Wednesdays
+	  */
 	@Override
-	public void setOnWednesday (final boolean OnWednesday)
+	public void setOnWednesday (boolean OnWednesday)
 	{
-		set_Value (COLUMNNAME_OnWednesday, OnWednesday);
+		set_Value (COLUMNNAME_OnWednesday, Boolean.valueOf(OnWednesday));
 	}
 
+	/** Get Mittwoch.
+		@return Available on Wednesdays
+	  */
 	@Override
-	public boolean isOnWednesday() 
+	public boolean isOnWednesday () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_OnWednesday);
+		Object oo = get_Value(COLUMNNAME_OnWednesday);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Ressourcenart.
+		@param S_ResourceType_ID Ressourcenart	  */
 	@Override
-	public void setS_ResourceType_ID (final int S_ResourceType_ID)
+	public void setS_ResourceType_ID (int S_ResourceType_ID)
 	{
 		if (S_ResourceType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_S_ResourceType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_ResourceType_ID, S_ResourceType_ID);
+			set_ValueNoCheck (COLUMNNAME_S_ResourceType_ID, Integer.valueOf(S_ResourceType_ID));
 	}
 
+	/** Get Ressourcenart.
+		@return Ressourcenart	  */
 	@Override
-	public int getS_ResourceType_ID() 
+	public int getS_ResourceType_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_S_ResourceType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_S_ResourceType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Endzeitpunkt.
+		@param TimeSlotEnd 
+		Time when timeslot ends
+	  */
 	@Override
-	public void setTimeSlotEnd (final @Nullable java.sql.Timestamp TimeSlotEnd)
+	public void setTimeSlotEnd (java.sql.Timestamp TimeSlotEnd)
 	{
 		set_Value (COLUMNNAME_TimeSlotEnd, TimeSlotEnd);
 	}
 
+	/** Get Endzeitpunkt.
+		@return Time when timeslot ends
+	  */
 	@Override
-	public java.sql.Timestamp getTimeSlotEnd() 
+	public java.sql.Timestamp getTimeSlotEnd () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_TimeSlotEnd);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_TimeSlotEnd);
 	}
 
+	/** Set Startzeitpunkt.
+		@param TimeSlotStart 
+		Time when timeslot starts
+	  */
 	@Override
-	public void setTimeSlotStart (final @Nullable java.sql.Timestamp TimeSlotStart)
+	public void setTimeSlotStart (java.sql.Timestamp TimeSlotStart)
 	{
 		set_Value (COLUMNNAME_TimeSlotStart, TimeSlotStart);
 	}
 
+	/** Get Startzeitpunkt.
+		@return Time when timeslot starts
+	  */
 	@Override
-	public java.sql.Timestamp getTimeSlotStart() 
+	public java.sql.Timestamp getTimeSlotStart () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_TimeSlotStart);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_TimeSlotStart);
 	}
 
+	/** Set Suchschlüssel.
+		@param Value 
+		Search key for the record in the format required - must be unique
+	  */
 	@Override
-	public void setValue (final java.lang.String Value)
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
+	/** Get Suchschlüssel.
+		@return Search key for the record in the format required - must be unique
+	  */
 	@Override
-	public java.lang.String getValue() 
+	public java.lang.String getValue () 
 	{
-		return get_ValueAsString(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }

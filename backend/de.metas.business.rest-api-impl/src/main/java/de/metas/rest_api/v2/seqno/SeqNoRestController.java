@@ -25,9 +25,9 @@ package de.metas.rest_api.v2.seqno;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v2.seqno.JsonSeqNoResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -51,14 +51,14 @@ public class SeqNoRestController
 	}
 
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "SeqNo for the next AD_SeqNo_ID successfully retrieved"),
-			@ApiResponse(responseCode = "401", description = "You are not authorized to invoke seqNo endpoint"),
-			@ApiResponse(responseCode = "403", description = "Accessing a related resource is forbidden"),
-			@ApiResponse(responseCode = "422", description = "The request could not be processed")
+			@ApiResponse(code = 200, message = "SeqNo for the next AD_SeqNo_ID successfully retrieved"),
+			@ApiResponse(code = 401, message = "You are not authorized to invoke seqNo endpoint"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request could not be processed")
 	})
 	@GetMapping("/{AD_SeqNo_ID}/next")
 	public ResponseEntity<JsonSeqNoResponse> getNextSeqNo(
-			@Parameter(required = true, description = AD_SEQ_NO_ID_DOC) //
+			@ApiParam(required = true, value = AD_SEQ_NO_ID_DOC) //
 			@PathVariable("AD_SeqNo_ID") //
 			@NonNull final Integer sequenceId
 	)

@@ -16,26 +16,25 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.Msg;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-
 import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.Msg;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 
 
 /**
@@ -45,6 +44,7 @@ import java.util.Properties;
  *
  *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  * 			<li> FR [ 2520591 ] Support multiples calendar for Org
+ *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *  @version $Id: MMovementConfirm.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  */
 public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
@@ -312,7 +312,7 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 			return IDocument.STATUS_Invalid;
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getUpdated(), DocBaseType.MaterialMovement, getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getUpdated(), MDocType.DOCBASETYPE_MaterialMovement, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -321,7 +321,8 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 		MMovementLineConfirm[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			throw AdempiereException.noLines();
+			m_processMsg = "@NoLines@";
+			return IDocument.STATUS_Invalid;
 		}
 		boolean difference = false;
 		for (int i = 0; i < lines.length; i++)
@@ -676,9 +677,9 @@ public class MMovementConfirm extends X_M_MovementConfirm implements IDocument
 	}	//	getSummary
 
 	@Override
-	public InstantAndOrgId getDocumentDate()
+	public LocalDate getDocumentDate()
 	{
-		return InstantAndOrgId.ofTimestamp(getCreated(), OrgId.ofRepoId(getAD_Org_ID()));
+		return TimeUtil.asLocalDate(getCreated());
 	}
 
 	/**

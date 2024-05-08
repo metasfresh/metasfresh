@@ -16,8 +16,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
-import de.metas.ui.web.window.descriptor.NotFoundMessages;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -48,7 +47,7 @@ import java.util.Map;
  * #L%
  */
 
-@Schema(description = "layout")
+@ApiModel("layout")
 public final class JSONDocumentLayout
 {
 	public static JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONDocumentLayoutOptions options)
@@ -111,14 +110,6 @@ public final class JSONDocumentLayout
 	@JsonInclude(Include.NON_EMPTY)
 	private final String emptyResultHint;
 
-	@JsonProperty("notFoundMessage")
-	@JsonInclude(Include.NON_EMPTY)
-	private final String notFoundMessage;
-
-	@JsonProperty("notFoundMessageDetail")
-	@JsonInclude(Include.NON_EMPTY)
-	private final String notFoundMessageDetail;
-
 	/**
 	 * Other properties
 	 */
@@ -139,8 +130,7 @@ public final class JSONDocumentLayout
 
 		internalName = null;
 
-		final String adLanguage = options.getAdLanguage();
-		caption = layout.getCaption(adLanguage);
+		caption = layout.getCaption(options.getAdLanguage());
 
 		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), options);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), options);
@@ -187,10 +177,6 @@ public final class JSONDocumentLayout
 		emptyResultText = null;
 		emptyResultHint = null;
 
-		final NotFoundMessages notFoundMessages = singleRowLayout.getNotFoundMessages();
-		this.notFoundMessage = notFoundMessages != null ? notFoundMessages.getMessage().translate(adLanguage) : null;
-		this.notFoundMessageDetail = notFoundMessages != null ? notFoundMessages.getDetail().translate(adLanguage) : null;
-
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties().toMap());
@@ -212,8 +198,7 @@ public final class JSONDocumentLayout
 		internalName = detailLayout.getInternalName();
 
 		final DocumentLayoutSingleRow singleRowLayout = detailLayout.getSingleRowLayout();
-		final String adLanguage = jsonOpts.getAdLanguage();
-		caption = singleRowLayout.getCaption(adLanguage);
+		caption = singleRowLayout.getCaption(jsonOpts.getAdLanguage());
 
 		documentSummaryElement = null;
 		docActionElement = null;
@@ -225,10 +210,6 @@ public final class JSONDocumentLayout
 
 		emptyResultText = null;
 		emptyResultHint = null;
-
-		final NotFoundMessages notFoundMessages = singleRowLayout.getNotFoundMessages();
-		this.notFoundMessage = notFoundMessages != null ? notFoundMessages.getMessage().translate(adLanguage) : null;
-		this.notFoundMessageDetail = notFoundMessages != null ? notFoundMessages.getDetail().translate(adLanguage) : null;
 	}
 
 	@Override

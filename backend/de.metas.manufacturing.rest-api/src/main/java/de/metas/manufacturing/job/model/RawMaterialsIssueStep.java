@@ -2,7 +2,6 @@ package de.metas.manufacturing.job.model;
 
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
-import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -36,8 +35,6 @@ public class RawMaterialsIssueStep
 	@With
 	@Nullable PPOrderIssueSchedule.Issued issued;
 
-	@Nullable ScaleTolerance scaleTolerance;
-
 	public boolean isIssued()
 	{
 		return issued != null;
@@ -47,19 +44,7 @@ public class RawMaterialsIssueStep
 	{
 		if (isIssued())
 		{
-			throw new AdempiereException(PPOrderIssueScheduleService.MSG_AlreadyIssued)
-					.markAsUserValidationError()
-					.setParameter("step", this);
+			throw new AdempiereException("Already issued");
 		}
-	}
-
-	@Value
-	@Builder
-	public static class ScaleTolerance
-	{
-		@NonNull
-		Quantity positiveTolerance;
-		@NonNull
-		Quantity negativeTolerance;
 	}
 }

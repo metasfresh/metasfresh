@@ -22,7 +22,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
-import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -81,8 +80,7 @@ public class C_Invoice_Candidate
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override })
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
@@ -98,22 +96,6 @@ public class C_Invoice_Candidate
 			{
 				invoiceCandidateHandlerBL.setDeliveredData(icRecord);
 			}
-
-			if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
-					&& (icRecord.getQtyToInvoiceInUOM_Override() != null))
-			{
-				final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
-				if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
-				{
-					icRecord.setQtyToInvoice_Override(null);
-				}
-			}
-			else if ((isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
-					&& (icRecord.getQtyToInvoice_Override() != null))
-			{
-				icRecord.setQtyToInvoiceInUOM_Override(null);
-			}
-
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 		}
@@ -242,14 +224,14 @@ public class C_Invoice_Candidate
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
 	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29">task</a>
+	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-		if (adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
+		if (adTableDAO.retrieveTableId(org.compiere.model.I_M_InOutLine.Table_Name) == ic.getAD_Table_ID())
 		{
 			final I_M_InOutLine iol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_M_InOutLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(iol.getM_InOut().getC_Order_ID());
@@ -258,7 +240,7 @@ public class C_Invoice_Candidate
 		{
 			final I_C_OrderLine ol = InterfaceWrapperHelper.create(InterfaceWrapperHelper.getCtx(ic), ic.getRecord_ID(), I_C_OrderLine.class, InterfaceWrapperHelper.getTrxName(ic));
 			ic.setC_Order_ID(ol.getC_Order_ID());
-			ic.setC_OrderSO_ID(ol.getC_OrderSO_ID());
+
 		}
 	}
 
@@ -373,7 +355,7 @@ public class C_Invoice_Candidate
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
 	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29">task</a>
+	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
@@ -451,6 +433,7 @@ public class C_Invoice_Candidate
 
 		invoiceCandDAO.invalidateCand(ic);
 	}
+
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.

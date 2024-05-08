@@ -1,10 +1,8 @@
 package de.metas.material.planning.pporder.impl;
 
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.ProductId;
 import de.metas.uom.impl.UOMTestHelper;
-import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -14,13 +12,12 @@ import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -48,19 +45,13 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 {
 	private UOMTestHelper helper;
 
-	private PPOrderBOMBL ppOrderBOMBL;
+	private final PPOrderBOMBL ppOrderBOMBL = new PPOrderBOMBL();
 
 	//
 	// Master data
 	private I_C_UOM uomMm;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
-
-	@BeforeAll
-	public static void beforeClass()
-	{
-		AdempiereTestHelper.get().forceStaticInit();
-	}
 
 	@BeforeEach
 	public void init()
@@ -69,11 +60,8 @@ public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 
 		POJOWrapper.setDefaultStrictValues(false);
 
-		ppOrderBOMBL = new PPOrderBOMBL(); // need to init this *after* we entered unit test mode, because of the IService it uses.
-
 		// NOTE: after this, model validators will be also registered
 		helper = new UOMTestHelper(Env.getCtx());
-		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
 
 		createMasterData();
 	}

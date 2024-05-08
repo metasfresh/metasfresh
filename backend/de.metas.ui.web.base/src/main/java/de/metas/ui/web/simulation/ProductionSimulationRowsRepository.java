@@ -33,14 +33,14 @@ import lombok.NonNull;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 public class ProductionSimulationRowsRepository
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
-
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final PPOrderCandidateDAO ppOrderCandidateDAO;
+
 	private final LookupDataSource productLookup;
 	private final LookupDataSource attributeSetInstanceLookup;
 	private final LookupDataSource warehouseLookup;
@@ -48,13 +48,14 @@ public class ProductionSimulationRowsRepository
 	@Builder
 	public ProductionSimulationRowsRepository(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
 	{
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 
-		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
-		attributeSetInstanceLookup = lookupDataSourceFactory.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);
-		warehouseLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Warehouse.Table_Name);
+		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
+		attributeSetInstanceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);
+		warehouseLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
 	}
 
 	public ProductionSimulationRows getByOrderLineDescriptor(@NonNull final OrderLineDescriptor orderLineDescriptor)

@@ -36,6 +36,7 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.Login;
@@ -47,7 +48,7 @@ import java.util.Set;
 @Interceptor(I_AD_User_Login.class)
 public class AD_User_Login
 {
-	public static final AD_User_Login instance = new AD_User_Login();
+	public static final transient AD_User_Login instance = new AD_User_Login();
 
 	private AD_User_Login()
 	{
@@ -135,11 +136,12 @@ public class AD_User_Login
 			throw new AdempiereException("User is assigned to more than one AD_Client");
 		}
 		final ClientId clientId = clientIds.iterator().next();
+		final String clientName = Services.get(IClientDAO.class).getClientNameById(clientId);
 
 		//
 		// 3. Get AD_Orgs
 		// => Context update: AD_Client_ID
-		final Set<OrgId> orgIds = login.setClientAndGetOrgs(clientId);
+		final Set<OrgId> orgIds = login.setClientAndGetOrgs(clientId, clientName);
 		final OrgId orgId;
 		if (orgIds == null || orgIds.isEmpty())
 		{

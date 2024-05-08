@@ -63,7 +63,7 @@ import lombok.NonNull;
 	private static final AdWindowId WINDOW_ID_SalesOrder_DEFAULT = AdWindowId.ofRepoId(143); // sales order window id = 143
 	private static final AdWindowId WINDOW_ID_PurchaseOrder_DEFAULT = AdWindowId.ofRepoId(181); // purchase order window id = 181
 
-	private final ProductLookupDescriptor productLookupDescriptor;
+	private ProductLookupDescriptor productLookupDescriptor;
 
 	public CableSalesOrderLineQuickInputDescriptorFactory()
 	{
@@ -83,8 +83,8 @@ import lombok.NonNull;
 		final AdWindowId purchaseOrderWindowId = windowDAO.getAdWindowId(I_C_OrderLine.Table_Name, SOTrx.PURCHASE, WINDOW_ID_PurchaseOrder_DEFAULT);
 
 		return ImmutableSet.of(
-				MatchingKey.includedTab(salesOrderWindowId, I_C_OrderLine.Table_Name),
-				MatchingKey.includedTab(purchaseOrderWindowId, I_C_OrderLine.Table_Name));
+				MatchingKey.includedDocument(DocumentType.Window, salesOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name),
+				MatchingKey.includedDocument(DocumentType.Window, purchaseOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name));
 	}
 
 	@Override
@@ -162,7 +162,7 @@ import lombok.NonNull;
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCallout(CableSalesOrderLineQuickInputDescriptorFactory::onProductChangedCallout)
+				.addCallout(calloutField -> onProductChangedCallout(calloutField))
 				.addCharacteristic(Characteristic.PublicField);
 	}
 

@@ -62,17 +62,15 @@ import com.jgoodies.looks.plastic.PlasticComboBoxUI;
  */
 public class AdempiereComboBoxUI extends PlasticComboBoxUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JComboBox#getUIClassID()}.
-	 */
-	public static final String uiClassID = "ComboBoxUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JComboBox.class, "ComboBoxUI");
 
 	private static final String KEY_EnableAutoCompletion = "ComboBox.AutoCompletion";
 	
 	/**
 	 * Create UI
-	 *
+	 * 
+	 * @param c
 	 * @return new instance of {@link AdempiereComboBoxUI}
 	 */
 	public static ComponentUI createUI(final JComponent c)
@@ -141,7 +139,8 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	@Override
 	protected JButton createArrowButton()
 	{
-		return super.createArrowButton();
+		 final JButton button = super.createArrowButton();
+		 return button;
 	}
 
 	public JButton getArrowButton()
@@ -152,6 +151,7 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	/**
 	 * Set Icon of arrow button
 	 * 
+	 * @param defaultIcon
 	 */
 	public void setIcon(Icon defaultIcon)
 	{
@@ -208,7 +208,7 @@ public class AdempiereComboBoxUI extends PlasticComboBoxUI
 	{
 		private static final long serialVersionUID = 3226003169560939486L;
 
-		public AdempiereComboPopup(final JComboBox<Object> combo)
+		public AdempiereComboPopup(final JComboBox<?> combo)
 		{
 			super(combo);
 		}

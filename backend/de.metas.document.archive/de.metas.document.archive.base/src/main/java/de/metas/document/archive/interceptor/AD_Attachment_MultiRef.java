@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.interceptor;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.order.IOrderDAO;

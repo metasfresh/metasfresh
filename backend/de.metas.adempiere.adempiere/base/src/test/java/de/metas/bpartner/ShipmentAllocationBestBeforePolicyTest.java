@@ -1,8 +1,6 @@
 package de.metas.bpartner;
 
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Value;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -10,7 +8,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+
+import lombok.Value;
 
 /*
  * #%L
@@ -22,12 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -74,13 +74,6 @@ public class ShipmentAllocationBestBeforePolicyTest
 				.sorted(ShipmentAllocationBestBeforePolicy.Newest_First.comparator(BestBeforeDateHolder::getBestBeforeDate))
 				.collect(Collectors.toList());
 		assertThat(result).containsExactly(bb_2019_09_01, bb_null);
-	}
-
-	@Test
-	public void test_ReferenceListAwareEnums_getAD_Reference_ID()
-	{
-		assertThat(ReferenceListAwareEnums.getAD_Reference_ID(ShipmentAllocationBestBeforePolicy.Expiring_First))
-				.isEqualTo(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID.getRepoId());
 	}
 
 	@Value(staticConstructor = "of")

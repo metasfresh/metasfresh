@@ -1,8 +1,10 @@
+package de.metas.handlingunits.model.validator;
+
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +22,12 @@
  * #L%
  */
 
-package de.metas.handlingunits.model.validator;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
-import de.metas.contracts.modular.invoiceCandidate.ProFormaSOInvoiceCandidateVetoer;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
@@ -36,7 +35,6 @@ import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.HuInOutInvoiceCandidateVetoer;
@@ -91,6 +89,8 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
@@ -120,18 +120,14 @@ public final class Main extends AbstractModuleInterceptor
 	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
 
-	private final HUUniqueAttributesService huUniqueAttributesService;
-
 	public Main(
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DDOrderService ddOrderService,
-			@NonNull final PickingBOMService pickingBOMService,
-			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
+			@NonNull final PickingBOMService pickingBOMService)
 	{
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
-		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 
 	@Override
@@ -146,9 +142,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU(huUniqueAttributesService));
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(huUniqueAttributesService));
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Label_Config());
+		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE);
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration());
@@ -238,7 +233,28 @@ public final class Main extends AbstractModuleInterceptor
 
 	public static void setupPricing()
 	{
-		HUPricing.install();
+		ProductPrices.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
+
+		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
+		//
+		// From skype chat:
+		// <pre>
+		// [Dienstag, 4. Februar 2014 15:33] Cis:
+		//
+		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
+		// more concretely: we have two rules:
+		// IFCO A, with Red
+		// IFCO B with Blue
+		//
+		// And we put a product in IFCO A with Blue
+		//
+		// HU pricing rule won't find a match,
+		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
+		//
+		// <pre>
+		// ..and that's why we register the filter here.
+		//
+		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
 	}
 
 	public void setupTourPlanning()
@@ -357,8 +373,6 @@ public final class Main extends AbstractModuleInterceptor
 		{
 			Services.get(IInvoiceCandBL.class)
 					.registerVetoer(new HuInOutInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
-			Services.get(IInvoiceCandBL.class)
-					.registerVetoer(new ProFormaSOInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
 		}
 
 		// Order - Fast Input

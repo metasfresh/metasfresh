@@ -7,8 +7,6 @@ import { scanBarcodeLocation } from '../../../routes/scan';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 
-export const COMPONENTTYPE_ScanBarcode = 'common/scanBarcode';
-
 const ScanActivity = (props) => {
   const history = useHistory();
   const { applicationId, wfProcessId, activityState } = props;

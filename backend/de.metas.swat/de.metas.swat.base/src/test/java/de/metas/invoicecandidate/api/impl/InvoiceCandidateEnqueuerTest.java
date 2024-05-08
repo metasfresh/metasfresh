@@ -147,7 +147,6 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 				.setSOTrx(true)
 				.setManual(false)
 				.setDateInvoiced(LocalDate.parse("2020-06-01"))
-				.setDateToInvoice(LocalDate.parse("2020-06-01"))
 				.build();
 		//
 		// Enqueue them to be invoiced

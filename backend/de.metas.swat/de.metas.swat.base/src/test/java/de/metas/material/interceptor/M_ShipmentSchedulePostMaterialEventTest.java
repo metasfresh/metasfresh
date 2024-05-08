@@ -7,13 +7,10 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
-import de.metas.material.event.shipmentschedule.OldShipmentScheduleData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.product.ProductId;
@@ -98,7 +95,7 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		}
 
 		@Override
-		I_M_ShipmentSchedule toOldValues(final I_M_ShipmentSchedule shipmentSchedule)
+		I_M_ShipmentSchedule toOldValues(I_M_ShipmentSchedule shipmentSchedule)
 		{
 			return oldShipmentSchedule;
 		}
@@ -119,7 +116,7 @@ public class M_ShipmentSchedulePostMaterialEventTest
 				new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory(),
 				new ReplenishInfoRepository());
 
-		final I_M_Product productRecord = BusinessTestHelper.createProduct("Product", BusinessTestHelper.createUomKg());
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("Product",BusinessTestHelper.createUomKg());
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
 		final I_M_Warehouse warehouseRecord = BusinessTestHelper.createWarehouse("Warehouse");
@@ -162,15 +159,13 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		assertThat(result).isInstanceOf(ShipmentScheduleCreatedEvent.class);
 
 		final ShipmentScheduleCreatedEvent createdEvent = (ShipmentScheduleCreatedEvent)result;
-		final ShipmentScheduleDetail shipmentScheduleDetail = createdEvent.getShipmentScheduleDetail();
-		assertThat(shipmentScheduleDetail).isNotNull();
 		assertThat(createdEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 		assertThat(createdEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(createdEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(createdEvent.getMaterialDescriptor().getProductId()).isEqualTo(productId.getRepoId());
 		assertThat(createdEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(warehouseId);
-		assertThat(shipmentScheduleDetail.getReservedQuantity()).isEqualByComparingTo(FIVE);
+		assertThat(createdEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 		assertThat(createdEvent.getDocumentLineDescriptor()).isEqualTo(orderLineDescriptor);
 	}
 
@@ -208,25 +203,14 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		assertThat(result).isInstanceOf(ShipmentScheduleUpdatedEvent.class);
 
 		final ShipmentScheduleUpdatedEvent updatedEvent = (ShipmentScheduleUpdatedEvent)result;
-		final ShipmentScheduleDetail shipmentScheduleDetail = updatedEvent.getShipmentScheduleDetail();
-		assertThat(shipmentScheduleDetail).isNotNull();
-
 		assertThat(updatedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 		assertThat(updatedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(updatedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(updatedEvent.getMaterialDescriptor().getProductId()).isEqualTo(productId.getRepoId());
 		assertThat(updatedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(warehouseId);
-
-		assertThat(shipmentScheduleDetail.getReservedQuantity()).isEqualByComparingTo(FIVE);
-		assertThat(shipmentScheduleDetail.getReservedQuantityDelta()).isEqualByComparingTo(FIVE);
-
-		final OldShipmentScheduleData oldShipmentScheduleData = shipmentScheduleDetail.getOldShipmentScheduleData();
-		assertThat(oldShipmentScheduleData).isNotNull();
-		final MaterialDescriptor oldMaterialDescriptor = oldShipmentScheduleData.getOldMaterialDescriptor();
-		assertThat(oldMaterialDescriptor).isNotNull();
-		assertThat(oldMaterialDescriptor.getDate()).isNotEqualTo(updatedEvent.getMaterialDescriptor().getDate());
-		assertThat(oldMaterialDescriptor.getQuantity()).isEqualByComparingTo(TWENTY);
-		assertThat(oldShipmentScheduleData.getOldReservedQuantity()).isEqualByComparingTo(FOUR);
+		assertThat(updatedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
+		assertThat(updatedEvent.getReservedQuantityDelta()).isEqualByComparingTo(ONE);
+		assertThat(updatedEvent.getOrderedQuantityDelta()).isEqualByComparingTo(TEN.negate());
 	}
 
 	@Test
@@ -239,14 +223,11 @@ public class M_ShipmentSchedulePostMaterialEventTest
 		assertThat(result).isInstanceOf(ShipmentScheduleDeletedEvent.class);
 
 		final ShipmentScheduleDeletedEvent deletedEvent = (ShipmentScheduleDeletedEvent)result;
-		final ShipmentScheduleDetail shipmentScheduleDetail = deletedEvent.getShipmentScheduleDetail();
-		assertThat(shipmentScheduleDetail).isNotNull();
-
 		assertThat(deletedEvent.getShipmentScheduleId()).isEqualTo(shipmentSchedule.getM_ShipmentSchedule_ID());
 		assertThat(deletedEvent.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID2);
 		assertThat(deletedEvent.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(TEN);
 		assertThat(deletedEvent.getMaterialDescriptor().getProductId()).isEqualTo(productId.getRepoId());
 		assertThat(deletedEvent.getMaterialDescriptor().getWarehouseId()).isEqualTo(warehouseId);
-		assertThat(shipmentScheduleDetail.getReservedQuantity()).isEqualByComparingTo(FIVE);
+		assertThat(deletedEvent.getReservedQuantity()).isEqualByComparingTo(FIVE);
 	}
 }

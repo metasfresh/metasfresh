@@ -11,5 +11,6 @@ cypress/config.js
 /cypress/config.js.remote
 /cypress/config.js.local
 /metasfresh-e2e.iml
+
 /cypress/config.js_template_local
 /cypress/config.js_template_remote

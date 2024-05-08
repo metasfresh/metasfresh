@@ -22,19 +22,16 @@ package de.metas.fresh.freshQtyOnHand.api;
  * #L%
  */
 
-import de.metas.fresh.freshQtyOnHand.FreshQtyOnHandId;
+
+import java.util.List;
+
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
-
-import java.util.List;
 
 public interface IFreshQtyOnHandDAO extends ISingletonService
 {
 
 	List<I_Fresh_QtyOnHand_Line> retrieveLines(I_Fresh_QtyOnHand qtyOnHandHeader);
 
-	@NonNull
-	I_Fresh_QtyOnHand getById(@NonNull FreshQtyOnHandId freshQtyOnHandId);
 }

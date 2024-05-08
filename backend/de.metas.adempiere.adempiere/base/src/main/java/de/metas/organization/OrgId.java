@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -12,7 +11,6 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -113,6 +111,7 @@ public class OrgId implements RepoIdAware
 		return orgId != null ? orgId.getRepoId() : ANY.repoId;
 	}
 
+
 	@Override
 	@JsonValue
 	public int getRepoId()
@@ -132,17 +131,6 @@ public class OrgId implements RepoIdAware
 	{
 		return !isAny();
 	}
-
-	public void ifRegular(@NonNull final Consumer<OrgId> consumer)
-	{
-		if (isRegular())
-		{
-			consumer.accept(this);
-		}
-	}
-
-	@Nullable
-	public OrgId asRegularOrNull() {return isRegular() ? this : null;}
 
 	public static boolean equals(@Nullable final OrgId id1, @Nullable final OrgId id2)
 	{

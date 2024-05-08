@@ -22,122 +22,53 @@
 
 package de.metas.common.bpartner.v2.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.SyncAdvise;
-import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@ToString
-@EqualsAndHashCode
-@Schema(description = "Contains the bank account to be inserted or delete. The bank account is identified by IBAN.")
+@ApiModel(description = "Contains the bank account to be inserted or delete. The bank account is identified by IBAN.")
 public class JsonRequestBankAccountUpsertItem
 {
-	@NonNull
-	@Schema(minLength = 1)
-	@JsonProperty("identifier")
-	private String identifier;
-
-	@NonNull
-	@Schema(minLength = 1)
+	@ApiModelProperty(position = 10, allowEmptyValue = false)
 	@JsonProperty("iban")
-	private String iban;
+	final String iban;
 
-	@JsonProperty("name")
-	private String name;
-	@Schema(hidden = true)
-	private boolean nameSet;
-
-	@JsonProperty("qrIban")
-	private String qrIban;
-	@Schema(hidden = true)
-	private boolean qrIbanSet;
-
-	@Schema(nullable = true)
+	@ApiModelProperty(position = 20, allowEmptyValue = true)
 	@JsonProperty("currencyCode")
-	private String currencyCode;
-	@Schema(hidden = true)
-	private boolean currencyCodeSet;
+	final String currencyCode;
 
-	@Schema(description = "If not specified but required (e.g. because a new bank account is created), then `true` is assumed")
+	@ApiModelProperty(position = 30, required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	@JsonProperty("active")
-	private Boolean active;
-	@Schema(hidden = true)
-	private boolean activeSet;
+	Boolean active;
 
-	@Schema(description = "If not specified but required (e.g. because a new bank account is created), then `false` is assumed")
-	@JsonInclude(Include.NON_NULL)
-	@JsonProperty("isDefault")
-	private Boolean isDefault;
-	@Schema(hidden = true)
-	private boolean isDefaultSet;
-
-	@Schema(description = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 40, required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
-	public void setIdentifier(final String identifier)
-	{
-		this.identifier = identifier;
-	}
-
-	public void setIban(final String iban)
+	@JsonCreator
+	public JsonRequestBankAccountUpsertItem(
+			@JsonProperty("iban") @NonNull String iban,
+			@JsonProperty("currencyCode") @Nullable final String currencyCode,
+			@JsonProperty("active") @Nullable final Boolean active,
+			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.iban = iban;
-	}
-
-	public void setName(final String name)
-	{
-		this.name = name;
-		this.nameSet = true;
-	}
-
-	public void setQrIban(final String qrIban)
-	{
-		this.qrIban = qrIban;
-		this.qrIbanSet = true;
-	}
-
-	public void setCurrencyCode(final String currencyCode)
-	{
 		this.currencyCode = currencyCode;
-		this.currencyCodeSet = true;
-	}
-
-	public void setActive(final Boolean active)
-	{
 		this.active = active;
-		this.activeSet = true;
-	}
-
-	public void setIsDefault(final Boolean isDefault)
-	{
-		this.isDefault = isDefault;
-		this.isDefaultSet = true;
-	}
-
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
-	{
 		this.syncAdvise = syncAdvise;
-	}
-
-	public boolean getIsActive()
-	{
-		return activeSet && CoalesceUtil.coalesceNotNull(active, true);
 	}
 }

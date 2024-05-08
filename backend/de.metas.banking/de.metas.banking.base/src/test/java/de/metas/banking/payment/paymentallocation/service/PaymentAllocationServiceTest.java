@@ -22,10 +22,8 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -109,8 +107,7 @@ import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 public class PaymentAllocationServiceTest
 {
@@ -140,7 +137,7 @@ public class PaymentAllocationServiceTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
-		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository());
+		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService);
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();
@@ -154,11 +151,10 @@ public class PaymentAllocationServiceTest
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		serviceInvoiceDocTypeId = docTypeDAO.createDocType(IDocTypeDAO.DocTypeCreateRequest.builder()
-				.ctx(Env.getCtx())
-				.name("invoice processing fee vendor invoice")
-				.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-				.glCategoryId(GLCategoryId.ofRepoId(123))
-				.build());
+																   .ctx(Env.getCtx())
+																   .name("invoice processing fee vendor invoice")
+																   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+																   .build());
 
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -342,6 +338,7 @@ public class PaymentAllocationServiceTest
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
 
 	}
+
 
 	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable()
 	{

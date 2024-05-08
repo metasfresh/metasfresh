@@ -19,5 +19,4 @@ public class PickingJobCreateRequest
 	@NonNull OrderId salesOrderId;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
-	boolean isAllowPickingAnyHU;
 }

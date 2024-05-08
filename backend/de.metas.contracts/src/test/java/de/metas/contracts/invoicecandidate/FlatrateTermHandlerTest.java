@@ -1,5 +1,6 @@
 package de.metas.contracts.invoicecandidate;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -13,8 +14,6 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -25,7 +24,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.IProductActivityProvider;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
@@ -38,8 +36,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -47,6 +45,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.sql.Timestamp;
+import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -61,7 +61,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
-	private IProductActivityProvider productActivityProvider;
+	private IProductAcctDAO productAcctDAO;
 	private ITaxBL taxBL;
 
 	private OrgId orgId;
@@ -69,13 +69,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	private UomId uomId;
 
 	private DocTypeId invoiceDocTypeId;
-
-	@Override
-	protected void init()
-	{
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL());
-	}
 
 	@BeforeAll
 	public static void configure()
@@ -87,7 +80,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	@BeforeEach
 	public void before()
 	{
-		productActivityProvider = Mockito.mock(IProductActivityProvider.class);
+		productAcctDAO = Mockito.mock(IProductAcctDAO.class);
 		taxBL = Mockito.mock(ITaxBL.class);
 
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -133,15 +126,16 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.startDate(TimeUtil.getDay(2013, 5, 27)) // yesterday
 				.build();
 
-		Services.registerService(IProductActivityProvider.class, productActivityProvider);
+		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
-		Mockito.when(productActivityProvider.getActivityForAcct(
+		Mockito.when(productAcctDAO.retrieveActivityForAcct(
 						clientId,
 						orgId,
 						productId1))
 				.thenReturn(activityId);
 
+		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		Mockito.when(taxBL.getTaxNotNull(
 						term1,
@@ -149,12 +143,11 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						term1.getM_Product_ID(),
 						term1.getStartDate(),
 						OrgId.ofRepoId(term1.getAD_Org_ID()),
-						null,
+						(WarehouseId)null,
 						CoalesceUtil.coalesceSuppliersNotNull(
 								() -> ContractLocationHelper.extractDropshipLocationId(term1),
 								() -> ContractLocationHelper.extractBillToLocationId(term1)),
-						SOTrx.SALES,
-						null))
+						SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();

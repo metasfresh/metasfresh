@@ -35,11 +35,12 @@ import javax.annotation.Nullable;
 @Builder
 public class InvoiceCandidateAllocCreateRequest
 {
-	@NonNull I_C_Invoice_Candidate invoiceCand;
-	@NonNull I_C_InvoiceLine invoiceLine;
-	@NonNull StockQtyAndUOMQty qtysInvoiced;
-	
-	@Nullable String note;
+	@NonNull
+	final I_C_Invoice_Candidate invoiceCand;
+	@NonNull final I_C_InvoiceLine invoiceLine;
+	@NonNull final StockQtyAndUOMQty qtysInvoiced;
+	@Nullable
+	final String note;
 
 	@NonNull InvoiceLineAllocType invoiceLineAllocType;
 

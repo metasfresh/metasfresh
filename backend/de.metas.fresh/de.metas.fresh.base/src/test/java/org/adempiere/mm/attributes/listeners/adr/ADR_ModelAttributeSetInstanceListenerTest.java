@@ -22,19 +22,10 @@ package org.adempiere.mm.attributes.listeners.adr;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ADRefList;
-import de.metas.ad_reference.ADRefListId;
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.AdRefListRepositoryMocked;
-import de.metas.ad_reference.AdRefTableRepositoryMocked;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.edi.api.impl.EDIOLCandBL;
 import de.metas.fresh.model.I_C_BPartner;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.organization.OrgId;
@@ -47,17 +38,13 @@ import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTes
 import org.adempiere.mm.attributes.spi.impl.ADRAttributeGenerator;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -107,7 +94,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	 */
 	private Boolean isEDIInput_ReturnValue = null;
 
-	@BeforeEach
+	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -133,7 +120,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 					, I_C_BPartner.ADRZertifizierung_L_GMAA_GMNF_GMVD
 					, I_C_BPartner.ADRZertifizierung_L_GMNF
 					, I_C_BPartner.ADRZertifizierung_L_GMVD
-					//
+										   //
 			);
 		}
 
@@ -149,39 +136,6 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 			}
 		};
 		Services.registerService(IEDIOLCandBL.class, ediOLCandBL);
-
-		SpringContextHolder.registerJUnitBean(newADReferenceService());
-	}
-
-	private ADReferenceService newADReferenceService()
-	{
-		final AdRefListRepositoryMocked adRefListRepository = new AdRefListRepositoryMocked();
-		adRefListRepository.put(adRefList(I_C_BPartner.ADRZertifizierung_L_AD_Reference_ID, "ADR", I_C_BPartner.ADRZertifizierung_L_GMAA));
-
-		final AdRefTableRepositoryMocked adRefTableRepository = new AdRefTableRepositoryMocked();
-
-		return new ADReferenceService(adRefListRepository, adRefTableRepository);
-	}
-
-	private ADRefList adRefList(int referenceRepoId, String name, String... values)
-	{
-		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
-
-		final AtomicInteger nextADRefListRepoId = new AtomicInteger(1);
-
-		return ADRefList.builder()
-				.referenceId(referenceId)
-				.name(name)
-				.items(Stream.of(values)
-						.map(value -> ADRefListItem.builder()
-								.referenceId(referenceId)
-								.refListId(ADRefListId.ofRepoId(nextADRefListRepoId.getAndIncrement()))
-								.value(value)
-								.valueName(value)
-								.name(TranslatableStrings.anyLanguage(value))
-								.build())
-						.collect(ImmutableList.toImmutableList()))
-				.build();
 	}
 
 	private void setADR_Vendor(final String adrValue)
@@ -216,7 +170,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	/**
 	 * Expectation: always set the ADR attribute for purchase documents
 	 *
-	 * @implSpec task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
+	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
 	 */
 	@Test
 	public void test_PurchaseOrder()

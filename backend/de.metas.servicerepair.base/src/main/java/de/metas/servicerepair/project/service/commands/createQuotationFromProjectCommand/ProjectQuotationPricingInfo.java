@@ -33,7 +33,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -49,5 +48,5 @@ public class ProjectQuotationPricingInfo
 	@NonNull PriceListId priceListId;
 	@NonNull PriceListVersionId priceListVersionId;
 	@NonNull CurrencyId currencyId;
-	@Nullable CountryId countryId;
+	@NonNull CountryId countryId;
 }

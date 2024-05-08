@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2027960379L;
+	private static final long serialVersionUID = 1341313327L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -24,11 +24,10 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
     public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
-	}
+    }
 
-	/**
-	 * Load Meta Data
-	 */
+
+	/** Load Meta Data */
 	@Override
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
@@ -36,9 +35,9 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setAddress(final @Nullable java.lang.String Address)
+	public void setAddress (final @Nullable java.lang.String Address)
 	{
-		set_Value(COLUMNNAME_Address, Address);
+		set_Value (COLUMNNAME_Address, Address);
 	}
 
 	@Override
@@ -160,32 +159,20 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	{
 		if (C_SalesRegion_ID < 1) 
 			set_Value (COLUMNNAME_C_SalesRegion_ID, null);
-		else
-			set_Value(COLUMNNAME_C_SalesRegion_ID, C_SalesRegion_ID);
+		else 
+			set_Value (COLUMNNAME_C_SalesRegion_ID, C_SalesRegion_ID);
 	}
 
 	@Override
-	public int getC_SalesRegion_ID()
+	public int getC_SalesRegion_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_SalesRegion_ID);
 	}
 
 	@Override
-	public void setDelivery_Info(final @Nullable java.lang.String Delivery_Info)
+	public void setEMail (final @Nullable java.lang.String EMail)
 	{
-		set_Value(COLUMNNAME_Delivery_Info, Delivery_Info);
-	}
-
-	@Override
-	public java.lang.String getDelivery_Info()
-	{
-		return get_ValueAsString(COLUMNNAME_Delivery_Info);
-	}
-
-	@Override
-	public void setEMail(final @Nullable java.lang.String EMail)
-	{
-		set_Value(COLUMNNAME_EMail, EMail);
+		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
 	@Override
@@ -321,7 +308,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public boolean isEphemeral() 
+	public boolean isEphemeral()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
 	}
@@ -486,33 +473,9 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setSAP_BPartnerCode (final @Nullable java.lang.String SAP_BPartnerCode)
+	public void setSetup_Place_No (final @Nullable java.lang.String Setup_Place_No)
 	{
-		set_Value(COLUMNNAME_SAP_BPartnerCode, SAP_BPartnerCode);
-	}
-
-	@Override
-	public java.lang.String getSAP_BPartnerCode()
-	{
-		return get_ValueAsString(COLUMNNAME_SAP_BPartnerCode);
-	}
-
-	@Override
-	public void setSAP_PaymentMethod(final @Nullable java.lang.String SAP_PaymentMethod)
-	{
-		set_Value(COLUMNNAME_SAP_PaymentMethod, SAP_PaymentMethod);
-	}
-
-	@Override
-	public java.lang.String getSAP_PaymentMethod()
-	{
-		return get_ValueAsString(COLUMNNAME_SAP_PaymentMethod);
-	}
-
-	@Override
-	public void setSetup_Place_No(final @Nullable java.lang.String Setup_Place_No)
-	{
-		set_Value(COLUMNNAME_Setup_Place_No, Setup_Place_No);
+		set_Value (COLUMNNAME_Setup_Place_No, Setup_Place_No);
 	}
 
 	@Override
@@ -531,18 +494,6 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
-	}
-
-	@Override
-	public void setVATaxID (final @Nullable java.lang.String VATaxID)
-	{
-		set_Value (COLUMNNAME_VATaxID, VATaxID);
-	}
-
-	@Override
-	public java.lang.String getVATaxID() 
-	{
-		return get_ValueAsString(COLUMNNAME_VATaxID);
 	}
 
 	@Override

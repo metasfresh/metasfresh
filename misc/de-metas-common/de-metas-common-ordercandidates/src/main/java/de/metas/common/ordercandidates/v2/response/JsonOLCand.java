@@ -5,8 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -76,7 +75,7 @@ public class JsonOLCand
 	BigDecimal qty;
 	int uomId;
 
-	@Schema(description = "Effective number of items - in the product's stock UOM - the order line candidate was created with.")
+	@ApiModelProperty(value = "Effective number of items - in the product's stock UOM - the order line candidate was created with.")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -97,9 +96,6 @@ public class JsonOLCand
 	JsonOrderLineGroup jsonOrderLineGroup;
 	String description;
 	Integer line;
-
-	JsonMetasfreshId sectionCodeId;
-	JsonMetasfreshId auctionId;
 
 	@JsonCreator
 	@Builder
@@ -129,9 +125,7 @@ public class JsonOLCand
 			@JsonProperty("warehouseDestId") final int warehouseDestId,
 			@JsonProperty("jsonOrderLineGroup") final JsonOrderLineGroup jsonOrderLineGroup,
 			@JsonProperty("description") final String description,
-			@JsonProperty("line") final Integer line,
-			@JsonProperty("sectionCodeId") final JsonMetasfreshId sectionCodeId,
-			@JsonProperty("auctionId") final JsonMetasfreshId auctionId)
+			@JsonProperty("line") final Integer line)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -159,8 +153,6 @@ public class JsonOLCand
 		this.jsonOrderLineGroup = jsonOrderLineGroup;
 		this.description = description;
 		this.line = line;
-		this.sectionCodeId = sectionCodeId;
-		this.auctionId = auctionId;
 	}
 
 }

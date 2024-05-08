@@ -2,6 +2,8 @@ package de.metas.handlingunits.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for M_HU_QRCode
  *  @author metasfresh (generated) 
  */
@@ -56,7 +58,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setattributes (String attributes);
+	void setattributes (java.lang.String attributes);
 
 	/**
 	 * Get attributes.
@@ -65,7 +67,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getattributes();
+	java.lang.String getattributes();
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_attributes = new ModelColumn<>(I_M_HU_QRCode.class, "attributes", null);
 	String COLUMNNAME_attributes = "attributes";
@@ -103,7 +105,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDisplayableQRCode (String DisplayableQRCode);
+	void setDisplayableQRCode (java.lang.String DisplayableQRCode);
 
 	/**
 	 * Get Displayable QR Code.
@@ -113,7 +115,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getDisplayableQRCode();
+	java.lang.String getDisplayableQRCode();
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_DisplayableQRCode = new ModelColumn<>(I_M_HU_QRCode.class, "DisplayableQRCode", null);
 	String COLUMNNAME_DisplayableQRCode = "DisplayableQRCode";
@@ -140,6 +142,31 @@ public interface I_M_HU_QRCode
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_QRCode.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Handling Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_ID (int M_HU_ID);
+
+	/**
+	 * Get Handling Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_HU();
+
+	void setM_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_HU);
+
+	ModelColumn<I_M_HU_QRCode, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_HU_QRCode.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set HU QR Code.
@@ -170,7 +197,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRenderedQRCode (String RenderedQRCode);
+	void setRenderedQRCode (java.lang.String RenderedQRCode);
 
 	/**
 	 * Get Rendered QR Code.
@@ -180,7 +207,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getRenderedQRCode();
+	java.lang.String getRenderedQRCode();
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_HU_QRCode.class, "RenderedQRCode", null);
 	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
@@ -192,7 +219,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setUniqueId (String UniqueId);
+	void setUniqueId (java.lang.String UniqueId);
 
 	/**
 	 * Get Unique ID.
@@ -201,7 +228,7 @@ public interface I_M_HU_QRCode
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getUniqueId();
+	java.lang.String getUniqueId();
 
 	ModelColumn<I_M_HU_QRCode, Object> COLUMN_UniqueId = new ModelColumn<>(I_M_HU_QRCode.class, "UniqueId", null);
 	String COLUMNNAME_UniqueId = "UniqueId";

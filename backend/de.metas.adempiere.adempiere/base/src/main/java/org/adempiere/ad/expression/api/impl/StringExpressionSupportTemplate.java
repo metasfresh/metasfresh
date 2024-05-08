@@ -369,7 +369,7 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 				}
 				else if (onVariableNotFound == OnVariableNotFound.Fail)
 				{
-					throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + parameter);
+					throw new ExpressionEvaluationException("@NotFound@: " + parameter);
 				}
 				else
 				{

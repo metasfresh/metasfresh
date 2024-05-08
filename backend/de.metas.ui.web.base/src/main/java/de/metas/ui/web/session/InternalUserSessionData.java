@@ -1,9 +1,7 @@
 package de.metas.ui.web.session;
 
 import com.google.common.base.MoreObjects;
-import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
-import de.metas.letter.BoilerPlateId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.ui.web.session.json.WebuiSessionId;
@@ -58,7 +56,7 @@ import java.util.Properties;
 @Primary
 @SessionScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @lombok.Data
-		/* package */ class InternalUserSessionData implements Serializable
+/* package */ class InternalUserSessionData implements Serializable
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
@@ -80,8 +78,6 @@ import java.util.Properties;
 	private String userFullname;
 	private String userEmail;
 	private String avatarId;
-	private BoilerPlateId defaultBoilerPlateId;
-	private ConditionsId defaultFlatrateConditionsId;
 
 	//
 	// Defaults
@@ -211,11 +207,6 @@ import java.util.Properties;
 	public OrgId getOrgId()
 	{
 		return Env.getOrgId(getCtx());
-	}
-
-	public String getOrgName()
-	{
-		return Env.getContext(getCtx(), Env.CTXNAME_AD_Org_Name);
 	}
 
 	public UserId getLoggedUserId()

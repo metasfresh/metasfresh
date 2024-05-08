@@ -49,7 +49,7 @@ public final class Async_Constants
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	/**
@@ -57,7 +57,7 @@ public final class Async_Constants
 	 */
 	public static final Topic WORKPACKAGE_LIFECYCLE_TOPIC = Topic.builder()
 			.name("de.metas.async.WorkpackageLifeCycle")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	public static final int C_OlCandProcessor_ID_Default = 1000003;
@@ -72,7 +72,6 @@ public final class Async_Constants
 	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
 	public static final String C_Async_Batch_InternalName_ShipmentSchedule = "ShipmentSchedule_Processing";
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate_Processing = "InvoiceCandidate_Processing";
-	public static final String C_Async_Batch_InternalName_DunningCandidate_Processing = "DunningCandidate_Processing";
 	public static final String C_Async_Batch_InternalName_EnqueueScheduleForOrder = "EnqueueScheduleForOrder";
 	public static final String C_Async_Batch_InternalName_EnqueueInvoiceCandidateCreation = "EnqueueInvoiceCandidateCreation";
 
@@ -86,7 +85,6 @@ public final class Async_Constants
 	 */
 	public static final String C_Async_Batch_InternalName_ProcessOLCands = "ProcessOLCands";
 	public static final String C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting = "AutomaticallyInvoicePdfPrinting";
-	public static final String C_Async_Batch_InternalName_AutomaticallyDunningPdfPrinting = "AutomaticallyDunningPdfPrinting";
 
 	public static final String SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION = "SKIP_WP_PROCESSOR_FOR_AUTOMATION";
 	public static final String SYS_Config_WaitTimeOutMS = "de.metas.async.AsyncBatchObserver.WaitTimeOutMS";

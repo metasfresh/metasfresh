@@ -1,7 +1,17 @@
 package de.metas.ui.web.quickinput;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+
 import de.metas.cache.CCache;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -10,16 +20,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -136,13 +137,13 @@ public class QuickInputDescriptorFactoryService
 		return getQuickInputEntityDescriptorOrNull(key) != null;
 	}
 
-	private static QuickInputDescriptorKey createQuickInputDescriptorKey(final DocumentEntityDescriptor includedDocumentDescriptor)
+	private static final QuickInputDescriptorKey createQuickInputDescriptorKey(final DocumentEntityDescriptor includedDocumentDescriptor)
 	{
 		return QuickInputDescriptorKey.builder()
-				.documentType(includedDocumentDescriptor.getDocumentType()) // i.e. Window
-				.documentTypeId(includedDocumentDescriptor.getDocumentTypeId()) // i.e. AD_Window_ID
+				.documentType(includedDocumentDescriptor.getDocumentType())
+				.documentTypeId(includedDocumentDescriptor.getDocumentTypeId())
 				.includedTableName(Optional.ofNullable(includedDocumentDescriptor.getTableNameOrNull()))
-				.includedTabId(Check.assumeNotNull(includedDocumentDescriptor.getDetailId(), "Entity shall be included tab: {}", includedDocumentDescriptor))
+				.includedTabId(includedDocumentDescriptor.getDetailId())
 				.soTrx(includedDocumentDescriptor.getSOTrx())
 				.build();
 	}
@@ -205,7 +206,7 @@ public class QuickInputDescriptorFactoryService
 
 		if (matchingFactories.size() > 1)
 		{
-			logger.warn("More than one factory found for {}. Using the first one.", matchingFactories);
+			logger.warn("More than one factory found for {}. Using the first one: {}", matchingFactories);
 		}
 
 		return matchingFactories.get(0);
@@ -215,10 +216,19 @@ public class QuickInputDescriptorFactoryService
 	@lombok.Value
 	private static class QuickInputDescriptorKey
 	{
-		@NonNull DocumentType documentType;
-		@NonNull DocumentId documentTypeId;
-		@NonNull Optional<String> includedTableName;
-		@NonNull DetailId includedTabId;
-		@NonNull Optional<SOTrx> soTrx;
+		@NonNull
+		DocumentType documentType;
+
+		@NonNull
+		DocumentId documentTypeId;
+
+		@NonNull
+		Optional<String> includedTableName;
+
+		@NonNull
+		DetailId includedTabId;
+
+		@NonNull
+		Optional<SOTrx> soTrx;
 	}
 }

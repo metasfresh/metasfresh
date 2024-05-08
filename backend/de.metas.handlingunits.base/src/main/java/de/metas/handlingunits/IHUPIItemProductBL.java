@@ -22,6 +22,11 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import java.util.List;
+
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -30,12 +35,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
-import java.util.List;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
@@ -64,7 +63,7 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	/**
 	 * Builds and set Name and Description field.
-	 * <p>
+	 *
 	 * Name will be build using {@link IHUPIItemProductDisplayNameBuilder#buildItemProductDisplayName()} via {@link #buildDisplayName()}.
 	 *
 	 * @see #buildDisplayName()
@@ -73,19 +72,9 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	ITranslatableString getDisplayName(HUPIItemProductId piItemProductId);
 
-	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_PI_Item_Product itemProduct)
+	static I_C_UOM extractUOMOrNull(final I_M_HU_PI_Item_Product itemProduct)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
 		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
-	}
-
-	static I_C_UOM extractUOM(@NonNull final I_M_HU_PI_Item_Product itemProduct)
-	{
-		final I_C_UOM uom = extractUOMOrNull(itemProduct);
-		if (uom == null)
-		{
-			throw new AdempiereException("Cannot determine UOM of " + itemProduct.getName());
-		}
-		return uom;
 	}
 }

@@ -4,13 +4,14 @@ import { connect } from 'react-redux';
 import { get } from 'lodash';
 import classnames from 'classnames';
 
+import { fetchTopActions } from '../../actions/Actions';
 import { dropdownRequest } from '../../actions/GenericActions';
 
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 import Prompt from '../../components/app/Prompt';
 
 /**
- * @file Document Status/Action Button (Complete, Reverse)
+ * @file Class based component.
  * @module ActionButton
  * @extends Component
  */
@@ -42,7 +43,7 @@ class ActionButton extends PureComponent {
   /**
    * @method handleKeyDown
    * @summary ToDo: Describe the method
-   * @param {object} e
+   * @param {object} event
    * @todo Write the documentation
    */
   handleKeyDown = (e) => {
@@ -231,12 +232,15 @@ class ActionButton extends PureComponent {
    * @param {boolean} option
    */
   processStatus = (status, option) => {
-    const { onChange } = this.props;
+    const { onChange, docId, windowType, activeTab, fetchTopActions } =
+      this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
     if (changePromise instanceof Promise) {
       changePromise.then(() => {
+        fetchTopActions(windowType, docId, activeTab);
+
         return this.fetchStatusList();
       });
     }
@@ -291,7 +295,9 @@ class ActionButton extends PureComponent {
    */
   isDisabled = () => {
     const { modalVisible, readonly, processStatus } = this.props;
-    return readonly || processStatus === 'pending' || modalVisible;
+    return readonly || processStatus === 'pending' || modalVisible
+      ? true
+      : false;
   };
 
   /**
@@ -376,6 +382,7 @@ ActionButton.defaultProps = { readonly: false };
  */
 ActionButton.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
   data: PropTypes.any,
   onChange: PropTypes.func,
   dropdownOpenCallback: PropTypes.any,
@@ -393,6 +400,6 @@ const mapStateToProps = ({ windowHandler, appHandler }) => ({
   processStatus: appHandler.processStatus,
 });
 
-export default connect(mapStateToProps, null, null, {
+export default connect(mapStateToProps, { fetchTopActions }, null, {
   forwardRef: true,
 })(ActionButton);

@@ -25,8 +25,6 @@ package de.metas.picking.rest_api.json;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
-import de.metas.i18n.ITranslatableString;
-import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,7 +33,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.function.Function;
 
 @Value
 @Builder
@@ -44,7 +41,6 @@ public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;
 
-	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -57,26 +53,21 @@ public class JsonPickingJobStep
 	// PickFrom alternatives
 	@NonNull Map<String, JsonPickingJobStepPickFrom> pickFromAlternatives;
 
-	public static JsonPickingJobStep of(
-			final PickingJobStep step,
-			final JsonOpts jsonOpts,
-			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById)
+	public static JsonPickingJobStep of(final PickingJobStep step, final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(
-				step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN));
 
-		final ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
+		ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
 				.stream()
 				.filter(PickingJobStepPickFromKey::isAlternative)
 				.map(step::getPickFrom)
-				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
+				.map(JsonPickingJobStepPickFrom::of)
 				.collect(ImmutableMap.toImmutableMap(JsonPickingJobStepPickFrom::getAlternativeId, alt -> alt));
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
-				.productId(step.getProductId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())

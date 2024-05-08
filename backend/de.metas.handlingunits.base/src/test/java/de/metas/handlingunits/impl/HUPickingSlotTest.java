@@ -22,12 +22,11 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.model.I_M_PickingSlot_HU;
-import de.metas.handlingunits.picking.PickingCandidateRepository;
-import de.metas.handlingunits.picking.PickingSlotConnectedComponent;
-import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -37,10 +36,11 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Properties;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 
 public class HUPickingSlotTest
 {
@@ -53,7 +53,6 @@ public class HUPickingSlotTest
 		AdempiereTestHelper.get().init();
 		
 		SpringContextHolder.registerJUnitBean(new PickingCandidateRepository());
-		SpringContextHolder.registerJUnitBean((PickingSlotConnectedComponent)slotId -> false);
 
 		huPickingSlotBL = new HUPickingSlotBL();
 	}

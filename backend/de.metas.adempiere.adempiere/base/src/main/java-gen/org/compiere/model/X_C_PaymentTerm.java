@@ -1,275 +1,472 @@
-// Generated Model - DO NOT CHANGE
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_PaymentTerm
- *  @author metasfresh (generated) 
- */
-@SuppressWarnings("unused")
-public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_PaymentTerm, org.compiere.model.I_Persistent 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.5.4a - $Id$ */
+public class X_C_PaymentTerm extends PO implements I_C_PaymentTerm, I_Persistent 
 {
 
-	private static final long serialVersionUID = -915123046L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 20090915L;
 
     /** Standard Constructor */
-    public X_C_PaymentTerm (final Properties ctx, final int C_PaymentTerm_ID, @Nullable final String trxName)
+    public X_C_PaymentTerm (Properties ctx, int C_PaymentTerm_ID, String trxName)
     {
       super (ctx, C_PaymentTerm_ID, trxName);
+      /** if (C_PaymentTerm_ID == 0)
+        {
+			setAfterDelivery (false);
+			setC_PaymentTerm_ID (0);
+			setDiscount (Env.ZERO);
+			setDiscount2 (Env.ZERO);
+			setDiscountDays (0);
+			setDiscountDays2 (0);
+			setGraceDays (0);
+			setIsDueFixed (false);
+			setIsValid (false);
+			setName (null);
+			setNetDays (0);
+			setValue (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_C_PaymentTerm (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_PaymentTerm (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
+    /** AccessLevel
+      * @return 3 - Client - Org 
+      */
+    protected int get_AccessLevel()
+    {
+      return accessLevel.intValue();
+    }
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+    /** Load Meta Data */
+    protected POInfo initPO (Properties ctx)
+    {
+      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      return poi;
+    }
+
+    public String toString()
+    {
+      StringBuffer sb = new StringBuffer ("X_C_PaymentTerm[")
+        .append(get_ID()).append("]");
+      return sb.toString();
+    }
+
+	/** Set After Delivery.
+		@param AfterDelivery 
+		Due after delivery rather than after invoicing
+	  */
+	public void setAfterDelivery (boolean AfterDelivery)
 	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+		set_Value (COLUMNNAME_AfterDelivery, Boolean.valueOf(AfterDelivery));
 	}
 
-	/** 
-	 * BaseLineType AD_Reference_ID=541725
-	 * Reference name: Base Line Types List
-	 */
-	public static final int BASELINETYPE_AD_Reference_ID=541725;
-	/** After Delivery = AD */
-	public static final String BASELINETYPE_AfterDelivery = "AD";
-	/** After Bill of Landing = ABL */
-	public static final String BASELINETYPE_AfterBillOfLanding = "ABL";
-	/** Invoice Date = ID */
-	public static final String BASELINETYPE_InvoiceDate = "ID";
-	@Override
-	public void setBaseLineType (final java.lang.String BaseLineType)
+	/** Get After Delivery.
+		@return Due after delivery rather than after invoicing
+	  */
+	public boolean isAfterDelivery () 
 	{
-		set_Value (COLUMNNAME_BaseLineType, BaseLineType);
+		Object oo = get_Value(COLUMNNAME_AfterDelivery);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public java.lang.String getBaseLineType() 
-	{
-		return get_ValueAsString(COLUMNNAME_BaseLineType);
-	}
-
-	/** 
-	 * CalculationMethod AD_Reference_ID=541726
-	 * Reference name: Calculation Method List
-	 */
-	public static final int CALCULATIONMETHOD_AD_Reference_ID=541726;
-	/** Base Line Date +X days = BLDX */
-	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDays = "BLDX";
-	/** Base Line Date +X days and then end of month = BLDXE */
-	public static final String CALCULATIONMETHOD_BaseLineDatePlusXDaysAndThenEndOfMonth = "BLDXE";
-	/** End of the month of baseline date plus X days = EBLDX */
-	public static final String CALCULATIONMETHOD_EndOfTheMonthOfBaselineDatePlusXDays = "EBLDX";
-	@Override
-	public void setCalculationMethod (final java.lang.String CalculationMethod)
-	{
-		set_Value (COLUMNNAME_CalculationMethod, CalculationMethod);
-	}
-
-	@Override
-	public java.lang.String getCalculationMethod() 
-	{
-		return get_ValueAsString(COLUMNNAME_CalculationMethod);
-	}
-
-	@Override
-	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
+	/** Set Payment Term.
+		@param C_PaymentTerm_ID 
+		The terms of Payment (timing, discount)
+	  */
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_PaymentTerm_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
+			set_ValueNoCheck (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	@Override
-	public int getC_PaymentTerm_ID() 
+	/** Get Payment Term.
+		@return The terms of Payment (timing, discount)
+	  */
+	public int getC_PaymentTerm_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	/** Set Description.
+		@param Description 
+		Optional short description of the record
+	  */
+	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	@Override
-	public java.lang.String getDescription() 
+	/** Get Description.
+		@return Optional short description of the record
+	  */
+	public String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (String)get_Value(COLUMNNAME_Description);
 	}
 
-	@Override
-	public void setDiscount (final BigDecimal Discount)
+	/** Set Discount %.
+		@param Discount 
+		Discount in percent
+	  */
+	public void setDiscount (BigDecimal Discount)
 	{
 		set_Value (COLUMNNAME_Discount, Discount);
 	}
 
-	@Override
-	public BigDecimal getDiscount() 
+	/** Get Discount %.
+		@return Discount in percent
+	  */
+	public BigDecimal getDiscount () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Discount);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
-	@Override
-	public void setDiscount2 (final BigDecimal Discount2)
+	/** Set Discount 2 %.
+		@param Discount2 
+		Discount in percent
+	  */
+	public void setDiscount2 (BigDecimal Discount2)
 	{
 		set_Value (COLUMNNAME_Discount2, Discount2);
 	}
 
-	@Override
-	public BigDecimal getDiscount2() 
+	/** Get Discount 2 %.
+		@return Discount in percent
+	  */
+	public BigDecimal getDiscount2 () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Discount2);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount2);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
-	@Override
-	public void setDiscountDays (final int DiscountDays)
+	/** Set Discount Days.
+		@param DiscountDays 
+		Number of days from invoice date to be eligible for discount
+	  */
+	public void setDiscountDays (int DiscountDays)
 	{
-		set_Value (COLUMNNAME_DiscountDays, DiscountDays);
+		set_Value (COLUMNNAME_DiscountDays, Integer.valueOf(DiscountDays));
 	}
 
-	@Override
-	public int getDiscountDays() 
+	/** Get Discount Days.
+		@return Number of days from invoice date to be eligible for discount
+	  */
+	public int getDiscountDays () 
 	{
-		return get_ValueAsInt(COLUMNNAME_DiscountDays);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DiscountDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setDiscountDays2 (final int DiscountDays2)
+	/** Set Discount Days 2.
+		@param DiscountDays2 
+		Number of days from invoice date to be eligible for discount
+	  */
+	public void setDiscountDays2 (int DiscountDays2)
 	{
-		set_Value (COLUMNNAME_DiscountDays2, DiscountDays2);
+		set_Value (COLUMNNAME_DiscountDays2, Integer.valueOf(DiscountDays2));
 	}
 
-	@Override
-	public int getDiscountDays2() 
+	/** Get Discount Days 2.
+		@return Number of days from invoice date to be eligible for discount
+	  */
+	public int getDiscountDays2 () 
 	{
-		return get_ValueAsInt(COLUMNNAME_DiscountDays2);
+		Integer ii = (Integer)get_Value(COLUMNNAME_DiscountDays2);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setDocumentNote (final @Nullable java.lang.String DocumentNote)
+	/** Set Document Note.
+		@param DocumentNote 
+		Additional information for a Document
+	  */
+	public void setDocumentNote (String DocumentNote)
 	{
 		set_Value (COLUMNNAME_DocumentNote, DocumentNote);
 	}
 
-	@Override
-	public java.lang.String getDocumentNote() 
+	/** Get Document Note.
+		@return Additional information for a Document
+	  */
+	public String getDocumentNote () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocumentNote);
+		return (String)get_Value(COLUMNNAME_DocumentNote);
 	}
 
+	/**
+	 * Set External ID.
+	 * @param ExternalId External ID
+	 */
 	@Override
-	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	public void setExternalId(java.lang.String ExternalId)
 	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
+		set_Value(COLUMNNAME_ExternalId, ExternalId);
 	}
 
+	/**
+	 * Get External ID.
+	 * @return External ID
+	 */
 	@Override
-	public java.lang.String getExternalId() 
+	public java.lang.String getExternalId()
 	{
-		return get_ValueAsString(COLUMNNAME_ExternalId);
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
 	}
 
-	@Override
-	public void setGraceDays (final int GraceDays)
+
+	/** Set Fix month cutoff.
+		@param FixMonthCutoff 
+		Last day to include for next due date
+	  */
+	public void setFixMonthCutoff (int FixMonthCutoff)
 	{
-		set_Value (COLUMNNAME_GraceDays, GraceDays);
+		set_Value (COLUMNNAME_FixMonthCutoff, Integer.valueOf(FixMonthCutoff));
 	}
 
-	@Override
-	public int getGraceDays() 
+	/** Get Fix month cutoff.
+		@return Last day to include for next due date
+	  */
+	public int getFixMonthCutoff () 
 	{
-		return get_ValueAsInt(COLUMNNAME_GraceDays);
+		Integer ii = (Integer)get_Value(COLUMNNAME_FixMonthCutoff);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setIsAllowOverrideDueDate (final boolean IsAllowOverrideDueDate)
+	/** Set Fix month day.
+		@param FixMonthDay 
+		Day of the month of the due date
+	  */
+	public void setFixMonthDay (int FixMonthDay)
 	{
-		set_Value (COLUMNNAME_IsAllowOverrideDueDate, IsAllowOverrideDueDate);
+		set_Value (COLUMNNAME_FixMonthDay, Integer.valueOf(FixMonthDay));
 	}
 
-	@Override
-	public boolean isAllowOverrideDueDate() 
+	/** Get Fix month day.
+		@return Day of the month of the due date
+	  */
+	public int getFixMonthDay () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowOverrideDueDate);
+		Integer ii = (Integer)get_Value(COLUMNNAME_FixMonthDay);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setIsDefault (final boolean IsDefault)
+	/** Set Fix month offset.
+		@param FixMonthOffset 
+		Number of months (0=same, 1=following)
+	  */
+	public void setFixMonthOffset (int FixMonthOffset)
 	{
-		set_Value (COLUMNNAME_IsDefault, IsDefault);
+		set_Value (COLUMNNAME_FixMonthOffset, Integer.valueOf(FixMonthOffset));
 	}
 
-	@Override
-	public boolean isDefault() 
+	/** Get Fix month offset.
+		@return Number of months (0=same, 1=following)
+	  */
+	public int getFixMonthOffset () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+		Integer ii = (Integer)get_Value(COLUMNNAME_FixMonthOffset);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setIsNextBusinessDay (final boolean IsNextBusinessDay)
+	/** Set Grace Days.
+		@param GraceDays 
+		Days after due date to send first dunning letter
+	  */
+	public void setGraceDays (int GraceDays)
 	{
-		set_Value (COLUMNNAME_IsNextBusinessDay, IsNextBusinessDay);
+		set_Value (COLUMNNAME_GraceDays, Integer.valueOf(GraceDays));
 	}
 
-	@Override
-	public boolean isNextBusinessDay() 
+	/** Get Grace Days.
+		@return Days after due date to send first dunning letter
+	  */
+	public int getGraceDays () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsNextBusinessDay);
+		Integer ii = (Integer)get_Value(COLUMNNAME_GraceDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setIsValid (final boolean IsValid)
+	/** Set Default.
+		@param IsDefault 
+		Default value
+	  */
+	public void setIsDefault (boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsValid, IsValid);
+		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
 	}
 
-	@Override
-	public boolean isValid() 
+	/** Get Default.
+		@return Default value
+	  */
+	public boolean isDefault () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsValid);
+		Object oo = get_Value(COLUMNNAME_IsDefault);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setName (final java.lang.String Name)
+	/** Set Fixed due date.
+		@param IsDueFixed 
+		Payment is due on a fixed date
+	  */
+	public void setIsDueFixed (boolean IsDueFixed)
+	{
+		set_Value (COLUMNNAME_IsDueFixed, Boolean.valueOf(IsDueFixed));
+	}
+
+	/** Get Fixed due date.
+		@return Payment is due on a fixed date
+	  */
+	public boolean isDueFixed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDueFixed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Next Business Day.
+		@param IsNextBusinessDay 
+		Payment due on the next business day
+	  */
+	public void setIsNextBusinessDay (boolean IsNextBusinessDay)
+	{
+		set_Value (COLUMNNAME_IsNextBusinessDay, Boolean.valueOf(IsNextBusinessDay));
+	}
+
+	/** Get Next Business Day.
+		@return Payment due on the next business day
+	  */
+	public boolean isNextBusinessDay () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsNextBusinessDay);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Valid.
+		@param IsValid 
+		Element is valid
+	  */
+	public void setIsValid (boolean IsValid)
+	{
+		set_Value (COLUMNNAME_IsValid, Boolean.valueOf(IsValid));
+	}
+
+	/** Get Valid.
+		@return Element is valid
+	  */
+	public boolean isValid () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsValid);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	@Override
-	public java.lang.String getName() 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
+	public String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (String)get_Value(COLUMNNAME_Name);
 	}
 
-	@Override
-	public void setName_Invoice (final @Nullable java.lang.String Name_Invoice)
-	{
-		set_Value (COLUMNNAME_Name_Invoice, Name_Invoice);
-	}
+    /** Get Record ID/ColumnName
+        @return ID/ColumnName pair
+      */
+    public KeyNamePair getKeyNamePair() 
+    {
+        return new KeyNamePair(get_ID(), getName());
+    }
 
-	@Override
-	public java.lang.String getName_Invoice() 
-	{
-		return get_ValueAsString(COLUMNNAME_Name_Invoice);
-	}
-
-	/** 
-	 * NetDay AD_Reference_ID=167
-	 * Reference name: Weekdays
-	 */
+	/** NetDay AD_Reference_ID=167 */
 	public static final int NETDAY_AD_Reference_ID=167;
 	/** Sunday = 7 */
 	public static final String NETDAY_Sunday = "7";
@@ -285,51 +482,79 @@ public class X_C_PaymentTerm extends org.compiere.model.PO implements I_C_Paymen
 	public static final String NETDAY_Friday = "5";
 	/** Saturday = 6 */
 	public static final String NETDAY_Saturday = "6";
-	@Override
-	public void setNetDay (final @Nullable java.lang.String NetDay)
+	/** Set Net Day.
+		@param NetDay 
+		Day when payment is due net
+	  */
+	public void setNetDay (String NetDay)
 	{
+
 		set_Value (COLUMNNAME_NetDay, NetDay);
 	}
 
-	@Override
-	public java.lang.String getNetDay() 
+	/** Get Net Day.
+		@return Day when payment is due net
+	  */
+	public String getNetDay () 
 	{
-		return get_ValueAsString(COLUMNNAME_NetDay);
+		return (String)get_Value(COLUMNNAME_NetDay);
 	}
 
-	@Override
-	public void setNetDays (final int NetDays)
+	/** Set Net Days.
+		@param NetDays 
+		Net Days in which payment is due
+	  */
+	public void setNetDays (int NetDays)
 	{
-		set_Value (COLUMNNAME_NetDays, NetDays);
+		set_Value (COLUMNNAME_NetDays, Integer.valueOf(NetDays));
 	}
 
-	@Override
-	public int getNetDays() 
+	/** Get Net Days.
+		@return Net Days in which payment is due
+	  */
+	public int getNetDays () 
 	{
-		return get_ValueAsInt(COLUMNNAME_NetDays);
+		Integer ii = (Integer)get_Value(COLUMNNAME_NetDays);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
-	@Override
-	public void setProcessing (final boolean Processing)
+	/** Set Process Now.
+		@param Processing Process Now	  */
+	public void setProcessing (boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Processing);
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	@Override
-	public boolean isProcessing() 
+	/** Get Process Now.
+		@return Process Now	  */
+	public boolean isProcessing () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
-	@Override
-	public void setValue (final java.lang.String Value)
+	/** Set Search Key.
+		@param Value 
+		Search key for the record in the format required - must be unique
+	  */
+	public void setValue (String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	@Override
-	public java.lang.String getValue() 
+	/** Get Search Key.
+		@return Search key for the record in the format required - must be unique
+	  */
+	public String getValue () 
 	{
-		return get_ValueAsString(COLUMNNAME_Value);
+		return (String)get_Value(COLUMNNAME_Value);
 	}
 }

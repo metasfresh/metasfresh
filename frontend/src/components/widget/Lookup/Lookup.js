@@ -395,7 +395,6 @@ class Lookup extends Component {
       subentity,
       subentityId,
       viewId,
-      attribute,
       autoFocus,
       newRecordWindowId,
       codeSelected,
@@ -476,7 +475,6 @@ class Lookup extends Component {
           windowType,
           parameterName,
           entity,
-          attribute, // is view attribute?
           dataId,
           isModal,
           rank,
@@ -671,7 +669,6 @@ Lookup.propTypes = {
   subentity: PropTypes.string,
   subentityId: PropTypes.string,
   viewId: PropTypes.string,
-  attribute: PropTypes.bool, // is view attribute?
   rank: PropTypes.string, // e.g. "primary"
   readonly: PropTypes.bool,
   placeholder: PropTypes.string,

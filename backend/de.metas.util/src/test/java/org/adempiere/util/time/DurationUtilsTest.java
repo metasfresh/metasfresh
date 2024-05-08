@@ -23,16 +23,13 @@
 package org.adempiere.util.time;
 
 import de.metas.util.time.DurationUtils;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class DurationUtilsTest
 {
@@ -41,69 +38,47 @@ public class DurationUtilsTest
 	@Test
 	public void testRounding1Month()
 	{
-		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(1), ChronoUnit.MONTHS));
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(1), ChronoUnit.MONTHS));
 	}
 
 	@Test
 	public void testNegative()
 	{
-		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(-0.5), ChronoUnit.HOURS));
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(-0.5), ChronoUnit.HOURS));		
 	}
-
+	
+	
 	@Test
 	public void testRoundingHalfDay()
 	{
 		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.5), ChronoUnit.DAYS);
-		assertThat(duration.getSeconds()).isCloseTo(4 * 60 * 60, ACCURACY_PERCENTAGE);
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((long)(4 * 60 * 60), ACCURACY_PERCENTAGE);
 	}
 
 	@Test
 	public void testRoundingHalfHour()
 	{
 		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.5), ChronoUnit.HOURS);
-		assertThat(duration.getSeconds()).isCloseTo((long)(0.5 * 60 * 60), ACCURACY_PERCENTAGE);
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((long)(0.5 * 60 * 60), ACCURACY_PERCENTAGE);
 	}
 
 	@Test
 	public void testRounding014Hour()
 	{
 		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.14), ChronoUnit.HOURS);
-		assertThat(duration.getSeconds()).isCloseTo((long)(0.14 * 60 * 60), ACCURACY_PERCENTAGE);
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((long)(0.14 * 60 * 60), ACCURACY_PERCENTAGE);
 	}
 
 	@Test
 	public void testRounding00001Seconds()
 	{
-		assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(0.0001), ChronoUnit.SECONDS));
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(0.0001), ChronoUnit.SECONDS));
 	}
 
 	@Test
 	public void testRoundingUpHalfHour()
 	{
 		final Duration duration = DurationUtils.toWorkDurationRoundUp(BigDecimal.valueOf(0.5), ChronoUnit.HOURS);
-		assertThat(duration.getSeconds()).isCloseTo((60 * 60), ACCURACY_PERCENTAGE);
-	}
-
-	@Nested
-	class isCompleteDays
-	{
-		@Test
-		void zero()
-		{
-			assertThat(DurationUtils.isCompleteDays(Duration.ZERO)).isTrue();
-		}
-
-		@Test
-		void twoDays()
-		{
-			assertThat(DurationUtils.isCompleteDays(Duration.ofDays(2))).isTrue();
-		}
-
-		@Test
-		void twoDays_oneHour()
-		{
-			assertThat(DurationUtils.isCompleteDays(Duration.ofDays(2).plus(Duration.ofHours(1)))).isFalse();
-		}
-
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((60 * 60), ACCURACY_PERCENTAGE);
 	}
 }

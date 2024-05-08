@@ -27,7 +27,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -46,7 +45,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.organization.OrgId;
-import de.metas.pricing.tax.TaxCategoryDAO;
 import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -85,7 +83,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 	public void init() throws IOException
 	{
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bPartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
+		final BPartnerCompositeRepository bPartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 
 		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
 
@@ -97,7 +95,7 @@ public class ExportExternalReferenceToRabbitMQServiceTest
 		exportExternalReferenceToRabbitMQService = new ExportExternalReferenceToRabbitMQService(
 				new DataExportAuditRepository(),
 				new DataExportAuditLogRepository(),
-				new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO()),
+				new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()),
 				new ExternalSystemMessageSender(new RabbitTemplate(), new Queue(QUEUE_NAME_MF_TO_ES)),
 				externalReferenceRepository,
 				new UserGroupRepository(),

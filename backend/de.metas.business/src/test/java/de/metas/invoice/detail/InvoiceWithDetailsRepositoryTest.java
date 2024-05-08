@@ -55,7 +55,7 @@ public class InvoiceWithDetailsRepositoryTest
 	@Test
 	void save()
 	{
-		final LocalDate localDate = LocalDate.parse("2020-06-17");
+		final LocalDate localDate = TimeUtil.asLocalDate("2020-06-17");
 
 		// given
 		final InvoiceWithDetails invoiceWithDetails = InvoiceWithDetails.builder()

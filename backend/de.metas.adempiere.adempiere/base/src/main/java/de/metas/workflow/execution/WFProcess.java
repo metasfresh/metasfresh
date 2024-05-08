@@ -41,8 +41,6 @@ import de.metas.workflow.WFResponsibleId;
 import de.metas.workflow.WFState;
 import de.metas.workflow.Workflow;
 import de.metas.workflow.WorkflowId;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -57,36 +55,36 @@ public class WFProcess
 {
 	private static final Logger log = LogManager.getLogger(WFProcess.class);
 
-	@NonNull private final WorkflowExecutionContext context;
-	@NonNull private final WorkflowExecutionSupportingServicesFacade services;
-	@NonNull @Getter(AccessLevel.PACKAGE) private final Workflow workflow;
+	@NonNull
+	private final WorkflowExecutionContext context;
 
-	@NonNull private final WFProcessState state;
+	@NonNull
+	private final WFProcessState state;
 
-	@NonNull private final ArrayList<WFActivity> activities;
+	@NonNull
+	private final ArrayList<WFActivity> activities;
 
-	@Nullable private String processingResultMessage;
-	@Nullable private Throwable processingResultException;
+	@Nullable
+	private String processingResultMessage;
+	@Nullable
+	private Throwable processingResultException;
 
-	WFProcess(@NonNull final WorkflowExecutionContext context, @NonNull final WorkflowId workflowId)
+	WFProcess(@NonNull final WorkflowExecutionContext context)
 	{
 		this.context = context;
-		this.services = context.getServices();
-		this.workflow = this.services.getWorkflowById(workflowId);
-		this.state = createState(context, workflow);
+		this.state = createState(context);
 		this.activities = new ArrayList<>();
 	}
 
-	private static WFProcessState createState(@NonNull final WorkflowExecutionContext context, @NonNull final Workflow workflow)
+	private static WFProcessState createState(final WorkflowExecutionContext context)
 	{
 		return WFProcessState.builder()
 				.wfProcessId(null)
-				.workflowId(workflow.getId())
-				.priority(workflow.getPriority())
+				.priority(context.getWorkflow().getPriority())
 				.documentRef(context.getDocumentRef())
 				.wfState(WFState.NotStarted)
 				.processed(false)
-				.wfResponsibleId(workflow.getResponsibleId())
+				.wfResponsibleId(context.getWFResponsibleId())
 				.initialUserId(context.getUserId())
 				.userId(context.getUserId())
 				.build();
@@ -98,8 +96,6 @@ public class WFProcess
 			@NonNull final List<WFActivityState> wfActivityStates)
 	{
 		this.context = context;
-		this.services = this.context.getServices();
-		this.workflow = services.getWorkflowById(wfProcessState.getWorkflowId());
 		this.state = wfProcessState;
 
 		activities = new ArrayList<>(wfActivityStates.size());
@@ -110,10 +106,10 @@ public class WFProcess
 	}
 
 	@NonNull
-	WorkflowExecutionContext getContext() {return context;}
+	WorkflowExecutionContext getContext() { return context; }
 
 	@Nullable
-	WFProcessId getWfProcessIdOrNull() {return state.getWfProcessId();}
+	WFProcessId getWfProcessIdOrNull() { return state.getWfProcessId(); }
 
 	WFProcessId getWfProcessId()
 	{
@@ -125,34 +121,34 @@ public class WFProcess
 		return wfProcessId;
 	}
 
-	void setWfProcessId(@NonNull final WFProcessId wfProcessId) {state.setWfProcessId(wfProcessId);}
+	void setWfProcessId(@NonNull final WFProcessId wfProcessId) { state.setWfProcessId(wfProcessId); }
 
 	@NonNull
-	public WorkflowId getWorkflowId() {return workflow.getId();}
+	public WorkflowId getWorkflowId() { return getContext().getWorkflow().getId(); }
 
-	int getPriority() {return state.getPriority();}
+	int getPriority() { return state.getPriority(); }
 
 	@NonNull WFResponsibleId getWfResponsibleId()
 	{
 		return state.getWfResponsibleId();
 	}
 
-	@NonNull UserId getInitialUserId() {return state.getInitialUserId();}
+	@NonNull UserId getInitialUserId() { return state.getInitialUserId(); }
 
-	@NonNull UserId getUserId() {return Check.assumeNotNull(state.getUserId(), "user is set: {}", state);}
+	@NonNull UserId getUserId() { return state.getUserId(); }
 
-	@NonNull Optional<DocStatus> getDocumentStatus() {return context.getDocumentStatus(getDocumentRef());}
+	@NonNull Optional<DocStatus> getDocumentStatus() { return context.getDocumentStatus(getDocumentRef()); }
 
-	@NonNull TableRecordReference getDocumentRef() {return state.getDocumentRef();}
+	@NonNull TableRecordReference getDocumentRef() { return state.getDocumentRef(); }
 
 	@NonNull
-	public WFState getState() {return state.getWfState();}
+	public WFState getState() { return state.getWfState(); }
 
-	private void setState(@NonNull final WFState wfState) {state.setWfState(wfState);}
+	private void setState(@NonNull final WFState wfState) { state.setWfState(wfState); }
 
-	public boolean isProcessed() {return state.isProcessed();}
+	public boolean isProcessed() { return state.isProcessed(); }
 
-	private void setProcessed() {state.setProcessed(true);}
+	private void setProcessed() { state.setProcessed(true); }
 
 	/**
 	 * Set Process State and update Actions
@@ -342,7 +338,7 @@ public class WFProcess
 		log.debug("Last activity: {}", lastActivity);
 
 		//	transitions from the last processed node
-		final ImmutableList<WFNodeTransition> transitions = workflow.getTransitionsFromNode(
+		final ImmutableList<WFNodeTransition> transitions = getWorkflow().getTransitionsFromNode(
 				lastActivity.getNode().getId(),
 				context.getClientId());
 		if (transitions.isEmpty())
@@ -370,7 +366,7 @@ public class WFProcess
 			final BooleanWithReason allow = transition.checkAllowGoingAwayFrom(lastActivity);
 			if (allow.isFalse())
 			{
-				final WFNode nextNode = workflow.getNodeById(transition.getNextNodeId());
+				final WFNode nextNode = context.getNodeById(transition.getNextNodeId());
 				logAudit(lastActivity.getNode().getId(),
 						"Transition to " + nextNode.getName().getDefaultValue()
 								+ " not valid because: " + allow.getReason().getDefaultValue());
@@ -379,7 +375,7 @@ public class WFProcess
 
 			//	Start new Activity...
 			final WFActivity activity = newActivity(transition.getNextNodeId());
-			activity.start();
+			activity.run();
 
 			//	only the first valid if XOR
 			if (splitType.isXOR())
@@ -413,7 +409,10 @@ public class WFProcess
 
 	}
 
-	void save() {context.save(this);}
+	private Workflow getWorkflow()
+	{
+		return context.getWorkflow();
+	}
 
 	/**
 	 * Start WF Execution
@@ -428,15 +427,15 @@ public class WFProcess
 
 		//
 		// Make sure is saved
-		save();
+		context.save(this);
 
-		final WFNodeId firstWFNodeId = workflow.getFirstNodeId();
+		final WFNodeId firstWFNodeId = getWorkflow().getFirstNodeId();
 		changeWFStateTo(WFState.Running);
 		try
 		{
 			//	Start first Activity with first Node
 			final WFActivity firstActivity = newActivity(firstWFNodeId);
-			firstActivity.start();
+			firstActivity.run();
 		}
 		catch (final Throwable ex)
 		{
@@ -447,31 +446,13 @@ public class WFProcess
 		}
 	}
 
-	public void resumeWork()
-	{
-		if (!getState().isValidAction(WFAction.Resume))
-		{
-			log.warn("Cannot resume from state {}", getState());
-			return;
-		}
+	@Nullable
+	public AdIssueId getIssueId() { return state.getIssueId(); }
 
-		for (final WFActivity activity : getActiveActivities())
-		{
-			if (activity.getState().isSuspended())
-			{
-				activity.resume();
-			}
-		}
-
-	}
+	private void setIssueId(@NonNull final AdIssueId issueId) { state.setIssueId(issueId); }
 
 	@Nullable
-	public AdIssueId getIssueId() {return state.getIssueId();}
-
-	private void setIssueId(@NonNull final AdIssueId issueId) {state.setIssueId(issueId);}
-
-	@Nullable
-	public String getTextMsg() {return state.getTextMsg();}
+	public String getTextMsg() { return state.getTextMsg(); }
 
 	private void setTextMsg(@Nullable final String textMsg)
 	{
@@ -525,8 +506,8 @@ public class WFProcess
 	}
 
 	@Nullable
-	public String getProcessingResultMessage() {return processingResultMessage;}
+	public String getProcessingResultMessage() { return processingResultMessage; }
 
 	@Nullable
-	public Throwable getProcessingResultException() {return processingResultException;}
+	public Throwable getProcessingResultException() { return processingResultException; }
 }

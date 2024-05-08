@@ -1,6 +1,11 @@
 package de.metas.ui.web.process.view;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
 import com.google.common.base.Preconditions;
+
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumentExtractor;
 import de.metas.ui.web.view.IView;
@@ -9,13 +14,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -68,12 +71,12 @@ public final class ViewActionParamDescriptor
 			}
 			else
 			{
-				lookupDescriptorProvider = LookupDescriptorProviders.sharedInstance().sql()
+				lookupDescriptorProvider = SqlLookupDescriptor.builder()
 						.setCtxTableName(null) // tableName
 						.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(parameterAnnotation.sqlLookupTableName()))
 						.setDisplayType(DisplayType.Search)
 						.setReadOnlyAccess()
-						.build();
+						.buildProvider();
 			}
 		}
 		

@@ -22,13 +22,14 @@
 
 package de.metas.i18n;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /**
  * AD_Message.Value
@@ -45,7 +46,7 @@ public final class AdMessageKey
 	@Nullable
 	public static AdMessageKey ofNullable(@Nullable final String value)
 	{
-		return value != null && Check.isNotBlank(value) ? of(value) : null;
+		return Check.isNotBlank(value) ? of(value) : null;
 	}
 
 	private final String value;
@@ -73,5 +74,4 @@ public final class AdMessageKey
 		return "@" + toAD_Message() + "@";
 	}
 
-	public boolean startsWith(final String prefix) {return value.startsWith(prefix);}
 }

@@ -22,12 +22,10 @@
 
 package de.metas.externalsystem.shopware6;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -77,18 +75,6 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	@Nullable
 	String shopwareIdJSONPath;
 
-	boolean syncAvailableForSalesToShopware6;
-
-	@NonNull
-	OrderProcessingConfig orderProcessingConfig;
-
-	/**
-	 * Percentage - e.g. 90% - of the actually availabe stock that we report to shopware.
-	 * Can be used to maintain a safety margin.
-	 */
-	@NonNull
-	Percent percentageToDeductFromAvailableForSales;
-
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
@@ -107,10 +93,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String value,
 			final @NonNull ProductLookup productLookup,
 			final @Nullable String metasfreshIdJSONPath,
-			final @Nullable String shopwareIdJSONPath,
-			final boolean syncAvailableForSalesToShopware6,
-			final @NonNull OrderProcessingConfig orderProcessingConfig,
-			final @Nullable Percent percentageToDeductFromAvailableForSales)
+			final @Nullable String shopwareIdJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -130,9 +113,6 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.productLookup = productLookup;
 		this.metasfreshIdJSONPath = metasfreshIdJSONPath;
 		this.shopwareIdJSONPath = shopwareIdJSONPath;
-		this.syncAvailableForSalesToShopware6 = syncAvailableForSalesToShopware6;
-		this.orderProcessingConfig = orderProcessingConfig;
-		this.percentageToDeductFromAvailableForSales = CoalesceUtil.coalesceNotNull(percentageToDeductFromAvailableForSales, Percent.ZERO);
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

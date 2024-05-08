@@ -3,11 +3,11 @@ import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
-import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
+import { getCaptionFromHeaders } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
-import { useApplicationInfo } from '../../reducers/applications';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -26,8 +26,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
     return null;
   }
 
-  const applicationInfo = useApplicationInfo({ applicationId });
-  const homeLocation = useHomeLocation();
+  const applicationInfo = getApplicationInfo(applicationId) ?? {};
 
   const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
   const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
@@ -39,7 +38,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   return (
     <div className="app-container">
       <div className="app-header">
-        <div className="columns is-mobile">
+        <div className="columns is-mobile is-size-3">
           <div className="column is-2 app-icon">
             <span className="icon">
               <i className={applicationInfo.iconClassNames} />
@@ -58,7 +57,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-footer">
         <div className="columns is-mobile">
           <div className="column is-half">
-            <button className="button is-fullwidth" onClick={() => history.goBack()}>
+            <button className="button is-fullwidth is-size-4" onClick={() => history.goBack()}>
               <span className="icon">
                 <i className="fas fa-chevron-left" />
               </span>
@@ -66,9 +65,9 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </button>
           </div>
           <div className="column is-half">
-            <button className="button is-fullwidth" onClick={() => history.push(homeLocation.location)}>
+            <button className="button is-fullwidth is-size-4" onClick={() => history.push('/')}>
               <span className="icon">
-                <i className={homeLocation.iconClassName} />
+                <i className="fas fa-home" />
               </span>
               <span>{trl('general.Home')}</span>
             </button>
@@ -82,6 +81,18 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
 ApplicationLayout.propTypes = {
   applicationId: PropTypes.string,
   Component: PropTypes.any.isRequired,
+};
+
+const getApplicationInfo = (knownApplicationId) => {
+  let applicationId;
+  if (knownApplicationId) {
+    applicationId = knownApplicationId;
+  } else {
+    const routerMatch = useRouteMatch();
+    applicationId = routerMatch.params.applicationId;
+  }
+
+  return useSelector((state) => getApplicationInfoById({ state, applicationId }));
 };
 
 const isWFProcessRequiredButNotLoaded = () => {

@@ -48,8 +48,6 @@ public class OrderBOMLineQtyChangeRequest
 	Quantity qtyScrappedToAdd;
 	@Nullable
 	Quantity qtyRejectedToAdd;
-	@Nullable
-	Quantity roundToScaleQuantity;
 
 	@NonNull
 	@Builder.Default
@@ -66,7 +64,6 @@ public class OrderBOMLineQtyChangeRequest
 				.qtyIssuedOrReceivedToAdd(convertNullable.apply(getQtyIssuedOrReceivedToAdd()))
 				.qtyScrappedToAdd(convertNullable.apply(getQtyScrappedToAdd()))
 				.qtyRejectedToAdd(convertNullable.apply(getQtyRejectedToAdd()))
-				.roundToScaleQuantity(convertNullable.apply(getRoundToScaleQuantity()))
 				.build();
 	}
 

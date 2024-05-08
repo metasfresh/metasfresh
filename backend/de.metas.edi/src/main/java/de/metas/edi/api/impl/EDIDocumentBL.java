@@ -22,8 +22,24 @@ package de.metas.edi.api.impl;
  * #L%
  */
 
-import ch.qos.logback.classic.Level;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
+
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -58,20 +74,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
-import org.slf4j.Logger;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 public class EDIDocumentBL implements IEDIDocumentBL
 {
@@ -133,12 +135,18 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		// task 09811: guard against NPE when invoice is not yet completed and therefore doesn'T yet have a docType
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final I_C_DocType docType = invoice.getC_DocType_ID() > 0
-				? docTypeDAO.getRecordById(invoice.getC_DocType_ID())
-				: docTypeDAO.getRecordById(invoice.getC_DocTypeTarget_ID());
+				? docTypeDAO.getById(invoice.getC_DocType_ID())
+				: docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 
 		final boolean invoiceIsRMCreditMemo = docType != null
 				&& Services.get(IInvoiceBL.class).isCreditMemo(docType.getDocBaseType())
 				&& X_C_DocType.DOCSUBTYPE_GS_Retoure.equals(docType.getDocSubType());
+
+		if (invoice.getC_Order_ID() <= 0 && !invoiceIsRMCreditMemo)
+		{
+			// an order must be linked to an invoice for successful EDI export
+			feedback.add(new EDIFillMandatoryException(null, null, org.compiere.model.I_C_Invoice.COLUMNNAME_C_Order_ID));
+		}
 
 		// an invoice order must have AT LEAST one M_InOut for successful EDI export
 		if (invoice.getC_Order_ID() > 0 // to avoid NPE in OrderDAO impl

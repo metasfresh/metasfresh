@@ -68,7 +68,7 @@ public class C_Payment_UpdateOrderAndInvoiceId extends JavaProcess implements IP
 
 	private List<I_C_Payment> getSelectedPayments()
 	{
-		return retrieveActiveSelectedRecordsQueryBuilder(I_C_Payment.class)
+		return retrieveSelectedRecordsQueryBuilder(I_C_Payment.class)
 				.create()
 				.list();
 	}

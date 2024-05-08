@@ -22,6 +22,18 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Util;
+
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -40,17 +52,6 @@ import de.metas.util.Check;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Util;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class AggregationBL implements IAggregationBL
 {
@@ -139,7 +140,6 @@ public class AggregationBL implements IAggregationBL
 		result.setPrinted(template.isPrinted());
 		result.setQtysToInvoice(template.getQtysToInvoice());
 		result.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
-		result.setC_VAT_Code_ID(template.getC_VAT_Code_ID());
 
 		return result;
 	}
@@ -272,7 +272,7 @@ public class AggregationBL implements IAggregationBL
 		ic.setC_Invoice_Candidate_HeaderAggregation_Effective(null); // effective
 	}
 
-	private void setLineAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
+	private void setLineAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		final AggregationKey lineAggregationKey = mkLineAggregationKey(ic);
 		ic.setLineAggregationKey(lineAggregationKey.getAggregationKeyString());
@@ -280,7 +280,7 @@ public class AggregationBL implements IAggregationBL
 
 	}
 
-	private void resetLineAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
+	private void resetLineAggregationKey(final I_C_Invoice_Candidate ic)
 	{
 		ic.setLineAggregationKey(null);
 	}

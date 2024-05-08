@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.material.MovementType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -125,7 +124,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "11";
-			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
+			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
 			iol111 = createInvoiceCandidateInOutLine(ic1, inOut11, qtysDelivered_10, inOutDocumentNo + "_1");
 			completeInOut(inOut11);
 		}
@@ -134,7 +133,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(TWENTY, productId, TWO_HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "12";
-			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
+			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered_20, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
@@ -145,7 +144,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		{
 
 			final String inOutDocumentNo = "21";
-			inOut21 = createInOut(ic2.getBill_BPartner_ID(), ic2.getC_Order_ID(), inOutDocumentNo, MovementType.CustomerShipment);
+			inOut21 = createInOut(ic2.getBill_BPartner_ID(), ic2.getC_Order_ID(), inOutDocumentNo);
 			iol211 = createInvoiceCandidateInOutLine(ic2, inOut21, qtysDelivered_50, inOutDocumentNo + "_1");
 			completeInOut(inOut21);
 		}

@@ -12,15 +12,12 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -29,13 +26,9 @@ public class PickingJobCreateRepoRequest
 	@NonNull OrgId orgId;
 	@NonNull OrderId salesOrderId;
 	@NonNull InstantAndOrgId preparationDate;
-	@NonNull InstantAndOrgId deliveryDate;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
-	boolean isPickingReviewRequired;
-	@NonNull BPartnerLocationId handoverLocationId;
-	boolean isAllowPickingAnyHU;
 
 	@Singular @NonNull ImmutableList<Line> lines;
 
@@ -48,10 +41,6 @@ public class PickingJobCreateRepoRequest
 	public static class Line
 	{
 		@NonNull ProductId productId;
-		@NonNull Quantity qtyToPick;
-		@NonNull OrderAndLineId salesOrderAndLineId;
-		@Nullable ShipmentScheduleId shipmentScheduleId;
-		@Nullable UomId catchWeightUomId;
 		@Singular @NonNull ImmutableList<Step> steps;
 
 		@Builder.Default

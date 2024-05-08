@@ -23,7 +23,6 @@
 package de.metas.invoice;
 
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -31,7 +30,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Value
 public class InvoiceQuery
@@ -41,22 +39,18 @@ public class InvoiceQuery
 	OrgId orgId;
 	String documentNo;
 	DocBaseAndSubType docType;
-	Collection<DocStatus> docStatuses;
-
 
 	@Builder(toBuilder = true)
 	public InvoiceQuery(@Nullable final Integer invoiceId,
 			@Nullable final ExternalId externalId,
 			@NonNull final OrgId orgId,
 			@Nullable final String documentNo,
-			@Nullable final DocBaseAndSubType docType,
-			@Nullable final Collection<DocStatus> docStatuses)
+			@Nullable final DocBaseAndSubType docType)
 	{
 		this.invoiceId = invoiceId;
 		this.externalId = externalId;
 		this.orgId = orgId;
 		this.documentNo = documentNo;
 		this.docType = docType;
-		this.docStatuses = docStatuses;
 	}
 }

@@ -3,7 +3,6 @@ package de.metas.handlingunits.storage;
 import java.util.List;
 import java.util.stream.Stream;
 
-import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -21,8 +20,6 @@ import de.metas.quantity.Quantity;
 public interface IHUStorage extends IGenericHUStorage
 {
 	I_M_HU getM_HU();
-
-	@NonNull IHUProductStorage getSingleHUProductStorage();
 
 	List<IHUProductStorage> getProductStorages();
 
@@ -104,8 +101,4 @@ public interface IHUStorage extends IGenericHUStorage
 	 * @return <code>C_UOM</code> or null
 	 */
 	I_C_UOM getC_UOMOrNull();
-
-	boolean isSingleProductWithQtyEqualsTo(@NonNull ProductId productId, @NonNull Quantity qty);
-
-	boolean isSingleProductStorageMatching(@NonNull ProductId productId);
 }

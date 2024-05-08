@@ -1,13 +1,16 @@
 package de.metas.costing;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -34,15 +37,16 @@ import org.adempiere.service.ClientId;
 @Value
 public class CostSegment
 {
-	@NonNull CostingLevel costingLevel;
+	@Getter(AccessLevel.NONE)
+	CostingLevel costingLevel; // we have it here only for toString()
 
-	@NonNull AcctSchemaId acctSchemaId;
-	@NonNull CostTypeId costTypeId;
+	AcctSchemaId acctSchemaId;
+	CostTypeId costTypeId;
 
-	@NonNull ClientId clientId;
-	@NonNull OrgId orgId;
-	@NonNull ProductId productId;
-	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	ClientId clientId;
+	OrgId orgId;
+	ProductId productId;
+	AttributeSetInstanceId attributeSetInstanceId;
 
 	@Builder(toBuilder = true)
 	private CostSegment(
@@ -75,11 +79,5 @@ public class CostSegment
 	public CostSegmentAndElement withCostElementId(@NonNull final CostElementId costElementId)
 	{
 		return CostSegmentAndElement.of(this, costElementId);
-	}
-
-	public boolean isMatching(@NonNull final OrgId orgId)
-	{
-		final OrgId orgIdEffective = costingLevel.effectiveValue(orgId);
-		return OrgId.equals(this.orgId, orgIdEffective);
 	}
 }

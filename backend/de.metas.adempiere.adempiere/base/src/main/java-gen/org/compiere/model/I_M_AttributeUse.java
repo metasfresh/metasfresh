@@ -99,28 +99,7 @@ public interface I_M_AttributeUse
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Mandatory for Manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMandatoryOnManufacturing (@Nullable java.lang.String MandatoryOnManufacturing);
-
-	/**
-	 * Get Mandatory for Manufacturing.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMandatoryOnManufacturing();
-
-	ModelColumn<I_M_AttributeUse, Object> COLUMN_MandatoryOnManufacturing = new ModelColumn<>(I_M_AttributeUse.class, "MandatoryOnManufacturing", null);
-	String COLUMNNAME_MandatoryOnManufacturing = "MandatoryOnManufacturing";
-
-	/**
-	 * Set Mandatory for Picking.
+	 * Set Mandatory On Picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -129,7 +108,7 @@ public interface I_M_AttributeUse
 	void setMandatoryOnPicking (@Nullable java.lang.String MandatoryOnPicking);
 
 	/**
-	 * Get Mandatory for Picking.
+	 * Get Mandatory On Picking.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -141,7 +120,7 @@ public interface I_M_AttributeUse
 	String COLUMNNAME_MandatoryOnPicking = "MandatoryOnPicking";
 
 	/**
-	 * Set Mandatory for Receipt.
+	 * Set Mandatory On Receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -150,7 +129,7 @@ public interface I_M_AttributeUse
 	void setMandatoryOnReceipt (@Nullable java.lang.String MandatoryOnReceipt);
 
 	/**
-	 * Get Mandatory for Receipt.
+	 * Get Mandatory On Receipt.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -162,7 +141,7 @@ public interface I_M_AttributeUse
 	String COLUMNNAME_MandatoryOnReceipt = "MandatoryOnReceipt";
 
 	/**
-	 * Set Mandatory for Shipping.
+	 * Set Mandatory On Shipment.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -171,7 +150,7 @@ public interface I_M_AttributeUse
 	void setMandatoryOnShipment (@Nullable java.lang.String MandatoryOnShipment);
 
 	/**
-	 * Get Mandatory for Shipping.
+	 * Get Mandatory On Shipment.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -183,8 +162,8 @@ public interface I_M_AttributeUse
 	String COLUMNNAME_MandatoryOnShipment = "MandatoryOnShipment";
 
 	/**
-	 * Set Attribute.
-	 * Produkt-Merkmal
+	 * Set Merkmal.
+	 * Product Attribute
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -193,8 +172,8 @@ public interface I_M_AttributeUse
 	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
-	 * Get Attribute.
-	 * Produkt-Merkmal
+	 * Get Merkmal.
+	 * Product Attribute
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -205,7 +184,7 @@ public interface I_M_AttributeUse
 	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
-	 * Set Attribute Set.
+	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
@@ -215,7 +194,7 @@ public interface I_M_AttributeUse
 	void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
-	 * Get Attribute Set.
+	 * Get Merkmals-Satz.
 	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir

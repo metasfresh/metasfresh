@@ -3,7 +3,6 @@ package de.metas.distribution.ddorder.material_dispo;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -12,12 +11,10 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,10 +27,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -89,14 +88,14 @@ public class DDOrderProducer
 			@Nullable final String traceId)
 	{
 		final Map<FromToWarehouse, I_DD_Order> warehouses2ddOrder = new HashMap<>();
-
+		
 		for (final DDOrderLine linePojo : ddOrder.getLines())
 		{
 			final I_DD_NetworkDistributionLine networkDistributionLineRecord = load(linePojo.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class);
 			final FromToWarehouse fromToWarehouseKey = FromToWarehouse.create(linePojo);
 
 			final I_DD_Order ddOrderRecord = warehouses2ddOrder.computeIfAbsent(
-					fromToWarehouseKey,
+					fromToWarehouseKey, 
 					key -> createDDOrderRecord(key, ddOrder, dateOrdered, traceId));
 
 			createDDOrderLine(ddOrder, linePojo, networkDistributionLineRecord, fromToWarehouseKey, ddOrderRecord);
@@ -104,18 +103,18 @@ public class DDOrderProducer
 
 		return ImmutableList.copyOf(warehouses2ddOrder.values());
 	}
-
+	
 	private I_DD_Order createDDOrderRecord(
-			@NonNull final FromToWarehouse fromToWarehouse,
+			@NonNull final FromToWarehouse fromToWarehouse, 
 			@NonNull final DDOrder ddOrder,
 			@NonNull final Date dateOrdered,
 			@Nullable final String ddOrderRequestedEventTrace)
 	{
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrder.getProductPlanningId());
-		final ProductPlanning productPlanning = productPlanningsRepo.getById(productPlanningId);
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
 		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(ddOrder.getOrgId());
-
+		
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrder.getMaterialDispoGroupId());
 		ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.setValue(ddOrderRecord, ddOrderRequestedEventTrace);
@@ -126,8 +125,8 @@ public class DDOrderProducer
 		ddOrderRecord.setPP_Plant_ID(ddOrder.getPlantId());
 		ddOrderRecord.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
 		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
-		ddOrderRecord.setAD_User_ID(UserId.toRepoId(productPlanning.getPlannerId())); // FIXME: improve performances/cache and retrive Primary BP's User
-		ddOrderRecord.setSalesRep_ID(UserId.toRepoId(productPlanning.getPlannerId()));
+		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
+		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
 
 		ddOrderRecord.setC_DocType_ID(getDocTypeId(ddOrder.getOrgId()).getRepoId());
 
@@ -151,10 +150,10 @@ public class DDOrderProducer
 		ddOrderRecord.setM_Warehouse_From_ID(fromToWarehouse.getWarehouseFromId().getRepoId());
 		ddOrderRecord.setM_Warehouse_To_ID(fromToWarehouse.getWarehouseToId().getRepoId());
 
-		ddOrderRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
+		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
 		ddOrderLowLevelService.save(ddOrderRecord);
-
+		
 		return ddOrderRecord;
 	}
 
@@ -166,10 +165,10 @@ public class DDOrderProducer
 			final I_DD_NetworkDistributionLine networkDistributionLine = InterfaceWrapperHelper.load(linePojo.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class);
 			final WarehouseId warehouseFromId = WarehouseId.ofRepoId(networkDistributionLine.getM_WarehouseSource_ID());
 			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkDistributionLine.getM_Warehouse_ID());
-
+			
 			return new FromToWarehouse(warehouseFromId, warehouseToId);
 		}
-
+		
 		@NonNull
 		WarehouseId warehouseFromId;
 
@@ -199,16 +198,16 @@ public class DDOrderProducer
 		ddOrderline.setDD_NetworkDistributionLine_ID(networkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
 
 		// get supply source warehouse and locator
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseFromId());
+		final LocatorId locatorFromId = warehouseBL.getDefaultLocatorId(fromToWarehouse.getWarehouseFromId());
 
 		// get supply target warehouse and locator
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseToId());
+		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(fromToWarehouse.getWarehouseToId());
 
 		//
 		// Locator From/To
 		ddOrderline.setM_Locator_ID(locatorFromId.getRepoId());
 		ddOrderline.setM_LocatorTo_ID(locatorToId.getRepoId());
-
+		
 		//
 		// Product, UOM, Qty
 		// NOTE: we assume qtyToMove is in "mrpContext.getC_UOM()" which shall be the Product's stocking UOM
@@ -241,13 +240,13 @@ public class DDOrderProducer
 		// Save DD Order Line
 			ddOrderLowLevelService.save(ddOrderline);
 	}
-
+	
 	private DocTypeId getDocTypeId(final OrgId orgId)
 	{
 		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.DistributionOrder)
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());

@@ -2,6 +2,7 @@ package de.metas.banking.callout;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -26,7 +27,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -51,7 +52,6 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-@SuppressWarnings("NewClassNamingConvention")
 public class C_BankStatementLine_Test
 {
 	private C_BankStatementLine callout;
@@ -66,6 +66,7 @@ public class C_BankStatementLine_Test
 		final BankStatementBL bankStatementBL = new BankStatementBL(
 				new BankAccountService(
 						bankRepo = new BankRepository(),
+						new BankAccountAcctRepository(),
 						new CurrencyRepository()),
 				new MoneyService(new CurrencyRepository()));
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -90,7 +91,6 @@ public class C_BankStatementLine_Test
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(111);
-		bankAccount.setC_BPartner_ID(1001);
 		saveRecord(bankAccount);
 
 		final I_C_BankStatement bankStatement = newInstance(I_C_BankStatement.class);

@@ -1,80 +1,167 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Cost
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_M_Cost extends org.compiere.model.PO implements I_M_Cost, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1485331934L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -698731871L;
 
     /** Standard Constructor */
-    public X_M_Cost (final Properties ctx, final int M_Cost_ID, @Nullable final String trxName)
+    public X_M_Cost (Properties ctx, int M_Cost_ID, String trxName)
     {
       super (ctx, M_Cost_ID, trxName);
+      /** if (M_Cost_ID == 0)
+        {
+			setC_AcctSchema_ID (0);
+			setC_Currency_ID (0);
+			setC_UOM_ID (0);
+			setCurrentCostPrice (BigDecimal.ZERO);
+			setCurrentCostPriceLL (BigDecimal.ZERO);
+			setCurrentQty (BigDecimal.ZERO);
+			setFutureCostPrice (BigDecimal.ZERO);
+			setM_AttributeSetInstance_ID (0);
+			setM_Cost_ID (0);
+			setM_CostElement_ID (0);
+			setM_CostType_ID (0);
+			setM_Product_ID (0);
+        } */
     }
 
     /** Load Constructor */
-    public X_M_Cost (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_M_Cost (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
 
 	@Override
-	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
 		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
+	/** Set Buchführungs-Schema.
+		@param C_AcctSchema_ID 
+		Rules for accounting
+	  */
 	@Override
-	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
+	/** Get Buchführungs-Schema.
+		@return Rules for accounting
+	  */
 	@Override
-	public int getC_AcctSchema_ID() 
+	public int getC_AcctSchema_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Currency_ID (final int C_Currency_ID)
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public int getC_Currency_ID() 
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -100,280 +187,426 @@ public class X_M_Cost extends org.compiere.model.PO implements I_M_Cost, org.com
 	public static final String COSTINGMETHOD_UserDefined = "U";
 	/** _ = x */
 	public static final String COSTINGMETHOD__ = "x";
-	/** MovingAverageInvoice = M */
-	public static final String COSTINGMETHOD_MovingAverageInvoice = "M";
+	/** Set Kostenrechnungsmethode.
+		@param CostingMethod 
+		Indicates how Costs will be calculated
+	  */
 	@Override
-	public void setCostingMethod (final @Nullable java.lang.String CostingMethod)
+	public void setCostingMethod (java.lang.String CostingMethod)
 	{
+
 		throw new IllegalArgumentException ("CostingMethod is virtual column");	}
 
+	/** Get Kostenrechnungsmethode.
+		@return Indicates how Costs will be calculated
+	  */
 	@Override
-	public java.lang.String getCostingMethod() 
+	public java.lang.String getCostingMethod () 
 	{
-		return get_ValueAsString(COLUMNNAME_CostingMethod);
+		return (java.lang.String)get_Value(COLUMNNAME_CostingMethod);
 	}
 
+	/** Set Betrag Kumuliert.
+		@param CumulatedAmt 
+		Betrag Kumuliert
+	  */
 	@Override
-	public void setCumulatedAmt (final @Nullable BigDecimal CumulatedAmt)
+	public void setCumulatedAmt (java.math.BigDecimal CumulatedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmt, CumulatedAmt);
 	}
 
+	/** Get Betrag Kumuliert.
+		@return Betrag Kumuliert
+	  */
 	@Override
-	public BigDecimal getCumulatedAmt() 
+	public java.math.BigDecimal getCumulatedAmt () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Menge Kumuliert.
+		@param CumulatedQty 
+		Menge Kumuliert
+	  */
 	@Override
-	public void setCumulatedQty (final @Nullable BigDecimal CumulatedQty)
+	public void setCumulatedQty (java.math.BigDecimal CumulatedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQty, CumulatedQty);
 	}
 
+	/** Get Menge Kumuliert.
+		@return Menge Kumuliert
+	  */
 	@Override
-	public BigDecimal getCumulatedQty() 
+	public java.math.BigDecimal getCumulatedQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CumulatedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Kostenpreis aktuell.
+		@param CurrentCostPrice 
+		Der gegenwärtig verwendete Kostenpreis
+	  */
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
-	}
-
-	@Override
-	public int getC_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public void setCurrentCostPrice (final BigDecimal CurrentCostPrice)
+	public void setCurrentCostPrice (java.math.BigDecimal CurrentCostPrice)
 	{
 		set_Value (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
 
+	/** Get Kostenpreis aktuell.
+		@return Der gegenwärtig verwendete Kostenpreis
+	  */
 	@Override
-	public BigDecimal getCurrentCostPrice() 
+	public java.math.BigDecimal getCurrentCostPrice () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPrice);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Current Cost Price Lower Level.
+		@param CurrentCostPriceLL 
+		Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
+	  */
 	@Override
-	public void setCurrentCostPriceLL (final BigDecimal CurrentCostPriceLL)
+	public void setCurrentCostPriceLL (java.math.BigDecimal CurrentCostPriceLL)
 	{
 		set_Value (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
 	}
 
+	/** Get Current Cost Price Lower Level.
+		@return Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
+	  */
 	@Override
-	public BigDecimal getCurrentCostPriceLL() 
+	public java.math.BigDecimal getCurrentCostPriceLL () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentCostPriceLL);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPriceLL);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Menge aktuell.
+		@param CurrentQty 
+		Menge aktuell
+	  */
 	@Override
-	public void setCurrentQty (final BigDecimal CurrentQty)
+	public void setCurrentQty (java.math.BigDecimal CurrentQty)
 	{
 		set_Value (COLUMNNAME_CurrentQty, CurrentQty);
 	}
 
+	/** Get Menge aktuell.
+		@return Menge aktuell
+	  */
 	@Override
-	public BigDecimal getCurrentQty() 
+	public java.math.BigDecimal getCurrentQty () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrentQty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Kostenpreis Zukünftig.
+		@param FutureCostPrice Kostenpreis Zukünftig	  */
 	@Override
-	public void setFutureCostPrice (final BigDecimal FutureCostPrice)
+	public void setFutureCostPrice (java.math.BigDecimal FutureCostPrice)
 	{
 		set_Value (COLUMNNAME_FutureCostPrice, FutureCostPrice);
 	}
 
+	/** Get Kostenpreis Zukünftig.
+		@return Kostenpreis Zukünftig	  */
 	@Override
-	public BigDecimal getFutureCostPrice() 
+	public java.math.BigDecimal getFutureCostPrice () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FutureCostPrice);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FutureCostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
+	/** Set Future Cost Price Lower Level.
+		@param FutureCostPriceLL Future Cost Price Lower Level	  */
 	@Override
-	public void setFutureCostPriceLL (final @Nullable BigDecimal FutureCostPriceLL)
+	public void setFutureCostPriceLL (java.math.BigDecimal FutureCostPriceLL)
 	{
 		set_Value (COLUMNNAME_FutureCostPriceLL, FutureCostPriceLL);
 	}
 
+	/** Get Future Cost Price Lower Level.
+		@return Future Cost Price Lower Level	  */
 	@Override
-	public BigDecimal getFutureCostPriceLL() 
+	public java.math.BigDecimal getFutureCostPriceLL () 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FutureCostPriceLL);
-		return bd != null ? bd : BigDecimal.ZERO;
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FutureCostPriceLL);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Kosten fixiert.
+		@param IsCostFrozen Kosten fixiert	  */
+	@Override
+	public void setIsCostFrozen (boolean IsCostFrozen)
+	{
+		set_Value (COLUMNNAME_IsCostFrozen, Boolean.valueOf(IsCostFrozen));
+	}
+
+	/** Get Kosten fixiert.
+		@return Kosten fixiert	  */
+	@Override
+	public boolean isCostFrozen () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCostFrozen);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	@Override
-	public void setIsCostFrozen (final boolean IsCostFrozen)
-	{
-		set_Value (COLUMNNAME_IsCostFrozen, IsCostFrozen);
-	}
-
-	@Override
-	public boolean isCostFrozen() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCostFrozen);
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
 	@Override
-	public int getM_AttributeSetInstance_ID() 
+	public int getM_AttributeSetInstance_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Product Cost.
+		@param M_Cost_ID Product Cost	  */
+	@Override
+	public void setM_Cost_ID (int M_Cost_ID)
+	{
+		if (M_Cost_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Cost_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Cost_ID, Integer.valueOf(M_Cost_ID));
+	}
+
+	/** Get Product Cost.
+		@return Product Cost	  */
+	@Override
+	public int getM_Cost_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Cost_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_M_CostElement getM_CostElement()
+	public org.compiere.model.I_M_CostElement getM_CostElement() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
 	}
 
 	@Override
-	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
+	public void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement)
 	{
 		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
 	}
 
+	/** Set Kostenart.
+		@param M_CostElement_ID 
+		Product Cost Element
+	  */
 	@Override
-	public void setM_CostElement_ID (final int M_CostElement_ID)
+	public void setM_CostElement_ID (int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, M_CostElement_ID);
+			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, Integer.valueOf(M_CostElement_ID));
 	}
 
+	/** Get Kostenart.
+		@return Product Cost Element
+	  */
 	@Override
-	public int getM_CostElement_ID() 
+	public int getM_CostElement_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_CostElement_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostElement_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setM_Cost_ID (final int M_Cost_ID)
-	{
-		if (M_Cost_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Cost_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Cost_ID, M_Cost_ID);
-	}
-
-	@Override
-	public int getM_Cost_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Cost_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_CostType getM_CostType()
+	public org.compiere.model.I_M_CostType getM_CostType() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class);
 	}
 
 	@Override
-	public void setM_CostType(final org.compiere.model.I_M_CostType M_CostType)
+	public void setM_CostType(org.compiere.model.I_M_CostType M_CostType)
 	{
 		set_ValueFromPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class, M_CostType);
 	}
 
+	/** Set Kostenkategorie.
+		@param M_CostType_ID 
+		Type of Cost (e.g. Current, Plan, Future)
+	  */
 	@Override
-	public void setM_CostType_ID (final int M_CostType_ID)
+	public void setM_CostType_ID (int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_CostType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_CostType_ID, M_CostType_ID);
+			set_ValueNoCheck (COLUMNNAME_M_CostType_ID, Integer.valueOf(M_CostType_ID));
 	}
 
+	/** Get Kostenkategorie.
+		@return Type of Cost (e.g. Current, Plan, Future)
+	  */
 	@Override
-	public int getM_CostType_ID() 
+	public int getM_CostType_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_CostType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Percent.
+		@param Percent 
+		Percentage
+	  */
 	@Override
-	public void setPercent (final int Percent)
+	public void setPercent (int Percent)
 	{
-		set_Value (COLUMNNAME_Percent, Percent);
+		set_Value (COLUMNNAME_Percent, Integer.valueOf(Percent));
 	}
 
+	/** Get Percent.
+		@return Percentage
+	  */
 	@Override
-	public int getPercent() 
+	public int getPercent () 
 	{
-		return get_ValueAsInt(COLUMNNAME_Percent);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Percent);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessed (boolean Processed)
 	{
 		throw new IllegalArgumentException ("Processed is virtual column");	}
 
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

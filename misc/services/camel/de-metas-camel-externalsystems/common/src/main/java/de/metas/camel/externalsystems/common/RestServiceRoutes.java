@@ -31,8 +31,7 @@ import lombok.NonNull;
 public enum RestServiceRoutes
 {
 	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	GRS("/grs", RestServiceAuthority.GRS);
 
 	@NonNull
 	private final String path;

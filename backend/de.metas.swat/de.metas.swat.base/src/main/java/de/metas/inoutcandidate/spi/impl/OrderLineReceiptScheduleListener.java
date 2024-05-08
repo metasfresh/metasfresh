@@ -1,8 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.order.OrderLineId;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -14,9 +11,6 @@ import de.metas.util.Services;
 public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAdapter
 {
 	public static final OrderLineReceiptScheduleListener INSTANCE = new OrderLineReceiptScheduleListener();
-
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private OrderLineReceiptScheduleListener()
 	{
@@ -36,9 +30,8 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 			return; // shall not happen
 		}
 
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		orderBL.closeLine(orderLine);
-
-		invoiceCandBL.closeDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 	}
 
 	/**
@@ -59,7 +52,7 @@ public class OrderLineReceiptScheduleListener extends ReceiptScheduleListenerAda
 			return; // shall not happen
 		}
 
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		orderBL.reopenLine(orderLine);
-		invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 	}
 }

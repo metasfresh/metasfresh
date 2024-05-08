@@ -23,9 +23,9 @@
 package de.metas.common.util;
 
 import lombok.experimental.UtilityClass;
-import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 
 @UtilityClass
@@ -37,7 +37,6 @@ public class EmptyUtil
 	 * <li>an empty array</li>
 	 * <li>a blank string</li>
 	 */
-	@Contract("null -> true")
 	public boolean isEmpty(@Nullable final Object value)
 	{
 		if (value == null)
@@ -61,7 +60,6 @@ public class EmptyUtil
 		return false;
 	}
 
-	@Contract("null -> true")
 	public boolean isEmpty(@Nullable final String str)
 	{
 		return isEmpty(str, false);
@@ -70,7 +68,6 @@ public class EmptyUtil
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
-	@Contract("null -> true")
 	public boolean isBlank(@Nullable final String str)
 	{
 		return isEmpty(str, true);
@@ -79,7 +76,6 @@ public class EmptyUtil
 	/**
 	 * @return return true if the string is not null, has length > 0, and does not contain only whitespace.
 	 */
-	@Contract("!null -> true")
 	public boolean isNotBlank(@Nullable final String str)
 	{
 		return !isEmpty(str, true);
@@ -92,7 +88,6 @@ public class EmptyUtil
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
-	@Contract("null, _ -> true")
 	public boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		if (str == null)
@@ -101,18 +96,17 @@ public class EmptyUtil
 		}
 		if (trimWhitespaces)
 		{
-			return str.trim().isEmpty();
+			return str.trim().length() == 0;
 		}
 		else
 		{
-			return str.isEmpty();
+			return str.length() == 0;
 		}
 	}    // isEmpty
 
 	/**
 	 * @return true if the array is null or it's length is zero.
 	 */
-	@Contract("null -> true")
 	public <T> boolean isEmpty(@Nullable final T[] arr)
 	{
 		return arr == null || arr.length == 0;
@@ -121,7 +115,6 @@ public class EmptyUtil
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	@Contract("null -> true")
 	public boolean isEmpty(@Nullable final Collection<?> collection)
 	{
 		return collection == null || collection.isEmpty();

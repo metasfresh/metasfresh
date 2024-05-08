@@ -9,7 +9,6 @@ import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJob_Scenarios_Test
@@ -67,7 +66,6 @@ class PickingJob_Scenarios_Test
 						.pickerId(UserId.ofRepoId(1234))
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
-						.isAllowPickingAnyHU(false) // we need a plan built
 						.build());
 		System.out.println("Created " + pickingJob);
 		final PickingJobStepId stepId = CollectionUtils.singleElement(pickingJob.streamSteps().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
@@ -85,7 +83,7 @@ class PickingJob_Scenarios_Test
 		HuId pickFromHUId;
 		{
 			System.out.println("After pick: " + pickingJob);
-			assertThat(pickFromHUId = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHUId()).isNotEqualTo(vhu1);
+			assertThat(pickFromHUId = pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU().getId()).isNotEqualTo(vhu1);
 			HUStorageExpectation.newExpectation().product(productId).qty("100").assertExpected(pickFromHUId);
 			HUStorageExpectation.newExpectation().product(productId).qty("30").assertExpected(vhu1);
 
@@ -143,14 +141,11 @@ class PickingJob_Scenarios_Test
 						.pickerId(UserId.ofRepoId(1234))
 						.salesOrderId(orderAndLineId.getOrderId())
 						.deliveryBPLocationId(helper.shipToBPLocationId)
-						.isAllowPickingAnyHU(false) // we need a plan built
 						.build());
 		System.out.println("Created " + pickingJob);
-		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-		final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+		final PickingJobStepId stepId = CollectionUtils.singleElement(pickingJob.streamSteps().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
 
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.PICK)
@@ -175,12 +170,10 @@ class PickingJob_Scenarios_Test
 											.actualPickedHUId(vhu1)
 											.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
 											.build()))
-									   .productId(productId)
 							.build());
 		}
 
 		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
 				.pickingStepId(stepId)
 				.pickFromKey(PickingJobStepPickFromKey.MAIN)
 				.eventType(PickingJobStepEventType.UNPICK)

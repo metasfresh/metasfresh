@@ -25,7 +25,7 @@ const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   draftStep.qtyIssued = qtyPicked;
-  draftStep.qtyRejected = Math.max(draftStep.qtyToIssue - qtyPicked, 0);
+  draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   updateStepAndRollup({
@@ -69,21 +69,42 @@ const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) =>
 };
 
 const updateLineFromSteps = ({ draftLine }) => {
+  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
   draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
   draftLine.qtyToIssueRemaining = Math.max(draftLine.qtyToIssue - draftLine.qtyIssued, 0);
-  draftLine.completeStatus = computeLineStatus({ draftLine });
 };
 
-const computeLineStatus = ({ draftLine }) => {
-  if (!draftLine.qtyIssued) {
-    return CompleteStatus.NOT_STARTED;
+const computeLineStatusFromSteps = ({ draftLine }) => {
+  const stepIds = extractDraftMapKeys(draftLine.steps);
+
+  const stepStatuses = [];
+  let hasCompletedAlternativeSteps = false;
+  stepIds.forEach((stepId) => {
+    const draftStep = draftLine.steps[stepId];
+
+    const status = draftStep.completeStatus;
+    const isAlternativeStep = draftStep.qtyToIssue === 0;
+    if (!isAlternativeStep) {
+      if (!stepStatuses.includes(status)) {
+        stepStatuses.push(status);
+      }
+    } else {
+      if (status === CompleteStatus.COMPLETED) {
+        hasCompletedAlternativeSteps = true;
+      }
+    }
+  });
+
+  let lineStatus =
+    stepStatuses.length > 0
+      ? CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses)
+      : CompleteStatus.NOT_STARTED;
+
+  if (lineStatus === CompleteStatus.NOT_STARTED && hasCompletedAlternativeSteps) {
+    lineStatus = CompleteStatus.COMPLETED;
   }
-  const minQtyToIssueForCompletion = draftLine.qtyToIssueMin ?? draftLine.qtyToIssue;
-  if (draftLine.qtyIssued >= minQtyToIssueForCompletion) {
-    return CompleteStatus.COMPLETED;
-  } else {
-    return CompleteStatus.IN_PROGRESS;
-  }
+
+  return lineStatus;
 };
 
 // @VisibleForTesting
@@ -142,17 +163,12 @@ const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
       productName: line.productName,
-      productValue: line.productValue,
       uom: line.uom,
-      hazardSymbols: line.hazardSymbols ?? [],
-      allergens: line.allergens ?? [],
       weightable: line.weightable,
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,
-      qtyToIssueTolerance: line.qtyToIssueTolerance,
-      userInstructions: line.userInstructions,
-      seqNo: line.seqNo,
+      qtyToIssueTolerancePerc: line.qtyToIssueTolerancePerc,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;
@@ -165,10 +181,8 @@ registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
-    draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
     updateActivityBottomUp({ draftActivityDataStored });
   },
 });

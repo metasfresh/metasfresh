@@ -25,7 +25,6 @@ package de.metas.process;
 import org.compiere.model.Null;
 
 import javax.annotation.Nullable;
-import java.util.function.Supplier;
 
 /**
  * Let your process implement this interface if you want to provide some default values for process parameters. Those values will be set when the UI parameters panel will be presented to user.
@@ -42,31 +41,12 @@ public interface IProcessDefaultParametersProvider
 	 *
 	 * @param parameter never {@code null}.
 	 * @return <ul>
-	 * <li>not null value
-	 * <li>{@link Null#NULL} to specify that we provide a null value
-	 * <li>{@link #DEFAULT_VALUE_NOTAVAILABLE} to advice the caller that we don't have a default value for given parameter and the caller can search forward in other places.
-	 * <li>Important: if the field is a lookup field (table, search etc), then the callers expects an integer <b>ID</b>, not the actual model.
-	 * </ul>
+	 *         <li>not null value
+	 *         <li>{@link Null#NULL} to specify that we provide a null value
+	 *         <li>{@link #DEFAULT_VALUE_NOTAVAILABLE} to advice the caller that we don't have a default value for given parameter and the caller can search forward in other places.
+	 *         <li>Important: if the field is a lookup field (table, search etc), then the callers expects an integer <b>ID</b>, not the actual model.
+	 *         </ul>
 	 */
 	@Nullable
 	Object getParameterDefaultValue(final IProcessDefaultParameter parameter);
-
-	static Object firstAvailableValue(final Supplier<?>... defaultValueSuppliers)
-	{
-		if (defaultValueSuppliers == null)
-		{
-			return DEFAULT_VALUE_NOTAVAILABLE;
-		}
-
-		for (final Supplier<?> defaultValueSupplier : defaultValueSuppliers)
-		{
-			final Object defaultValue = defaultValueSupplier.get();
-			if (defaultValue != DEFAULT_VALUE_NOTAVAILABLE)
-			{
-				return defaultValue;
-			}
-		}
-
-		return DEFAULT_VALUE_NOTAVAILABLE;
-	}
 }

@@ -10,7 +10,7 @@ Map build(
         final boolean forceSkipBackend = false,
         final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
-
+    
     final dockerImages = [:]
     String publishedDBInitDockerImageName
 
@@ -87,7 +87,7 @@ Map build(
                         .withWorkDir('metasfresh-webui-api/target/docker');
                 final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-                final DockerConf appDockerConf = reportDockerConf
+final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
                 final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
@@ -104,13 +104,13 @@ Map build(
 
                 currentBuild.description = """${currentBuild.description}<br/>
 				This build created the following deployable docker images 
-			    <ul>
-                <li><code>${publishedMsv3ServerImageName}</code></li>
-                <li><code>${publishedWebuiApiImageName}</code></li>
-                <li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-                <li><code>${publishedAppImageName}</code></li>
-                <!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
-                </ul>
+				<ul>
+				<li><code>${publishedMsv3ServerImageName}</code></li>
+				<li><code>${publishedWebuiApiImageName}</code></li>
+				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+				<li><code>${publishedAppImageName}</code></li>
+				<!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
+				</ul>
 				"""
 
                 if(forceSkipCucumber) {
@@ -121,7 +121,6 @@ Map build(
                         cucumberBuildFile.build(mvnConf, scmVars)
                     }
                 }
-
 //                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 //                testSQLMigrationScripts(
 //                        params.MF_SQL_SEED_DUMP_URL,

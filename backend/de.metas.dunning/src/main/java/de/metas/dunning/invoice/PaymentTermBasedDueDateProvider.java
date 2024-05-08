@@ -44,6 +44,10 @@ public class PaymentTermBasedDueDateProvider
 	public LocalDate provideDueDateOrNull(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice invoiceRecord = load(invoiceId, I_C_Invoice.class);
-		return TimeUtil.asLocalDate(invoiceRecord.getDueDate());
+
+		final IInvoiceSourceDAO invoiceSourceDAO = Services.get(IInvoiceSourceDAO.class);
+		final Timestamp dueDate = invoiceSourceDAO.retrieveDueDate(invoiceRecord);
+
+		return TimeUtil.asLocalDate(dueDate);
 	}
 }

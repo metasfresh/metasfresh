@@ -1,32 +1,9 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated) 
@@ -35,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1090812976L;
+	private static final long serialVersionUID = 388225374L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -172,18 +149,6 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setIsSyncAvailableForSalesToShopware6 (final boolean IsSyncAvailableForSalesToShopware6)
-	{
-		set_Value (COLUMNNAME_IsSyncAvailableForSalesToShopware6, IsSyncAvailableForSalesToShopware6);
-	}
-
-	@Override
-	public boolean isSyncAvailableForSalesToShopware6() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSyncAvailableForSalesToShopware6);
-	}
-
-	@Override
 	public void setJSONPathConstantBPartnerLocationID (final @Nullable java.lang.String JSONPathConstantBPartnerLocationID)
 	{
 		set_Value (COLUMNNAME_JSONPathConstantBPartnerLocationID, JSONPathConstantBPartnerLocationID);
@@ -286,44 +251,6 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public int getM_PriceList_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PriceList_ID);
-	}
-
-	/** 
-	 * OrderProcessing AD_Reference_ID=541831
-	 * Reference name: Order Processing
-	 */
-	public static final int ORDERPROCESSING_AD_Reference_ID=541831;
-	/** None = N */
-	public static final String ORDERPROCESSING_None = "N";
-	/** Sales Order = O */
-	public static final String ORDERPROCESSING_SalesOrder = "O";
-	/** Sales Order and Shipment = S */
-	public static final String ORDERPROCESSING_SalesOrderAndShipment = "S";
-	/** Sales Order, Shipment and Invoice = I */
-	public static final String ORDERPROCESSING_SalesOrderShipmentAndInvoice = "I";
-	@Override
-	public void setOrderProcessing (final java.lang.String OrderProcessing)
-	{
-		set_Value (COLUMNNAME_OrderProcessing, OrderProcessing);
-	}
-
-	@Override
-	public java.lang.String getOrderProcessing() 
-	{
-		return get_ValueAsString(COLUMNNAME_OrderProcessing);
-	}
-
-	@Override
-	public void setPercentageOfAvailableForSalesToSync (final BigDecimal PercentageOfAvailableForSalesToSync)
-	{
-		set_Value (COLUMNNAME_PercentageOfAvailableForSalesToSync, PercentageOfAvailableForSalesToSync);
-	}
-
-	@Override
-	public BigDecimal getPercentageOfAvailableForSalesToSync() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PercentageOfAvailableForSalesToSync);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 

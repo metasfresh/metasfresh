@@ -119,12 +119,26 @@ FROM M_ProductPrice pp
     (
     SELECT vip.M_HU_PI_Item_Product_ID, vip.M_Product_ID
     FROM report.Valid_PI_Item_Product_V vip
-    -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
+         -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
-      AND EXISTS(SELECT 1 FROM report.Valid_PI_Item_Product_V v WHERE v.M_Product_ID = pp.M_Product_ID)
+      AND CASE
+              WHEN
+                  EXISTS(SELECT 1 FROM report.Valid_PI_Item_Product_V v WHERE v.M_Product_ID = pp.M_Product_ID AND v.hasPartner IS TRUE AND v.C_BPartner_ID = $1)
+                  THEN vip.C_BPartner_ID = $1
+                  ELSE vip.C_BPartner_ID IS NULL
+          END
     ) bpProductPackingMaterial ON TRUE
 
-         LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID) ppa ON TRUE
+         LEFT OUTER JOIN LATERAL report.getProductPriceAndAttributes(M_ProductPrice_ID := pp.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa ON TRUE
+
+         LEFT OUTER JOIN m_hu_pi_item_product hupip ON (CASE
+                                                            WHEN pp.m_hu_pi_item_product_id IS NULL
+                                                                THEN hupip.m_hu_pi_item_product_id = bpProductPackingMaterial.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
+                                                                ELSE hupip.m_product_id = bpProductPackingMaterial.m_product_id AND hupip.isActive = 'Y'
+                                                        END)
+         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
+         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
 
          INNER JOIN M_PriceList_Version plv ON plv.M_PriceList_Version_ID = pp.M_PriceList_Version_ID AND plv.IsActive = 'Y'
 
@@ -136,19 +150,19 @@ FROM M_ProductPrice pp
     -- limited to the same PriceList because the Parameter validation rule is enforcing this
          LEFT JOIN M_PriceList_Version plv2 ON plv2.M_PriceList_ID = plv.M_PriceList_ID AND plv2.IsActive = 'Y'
          LEFT OUTER JOIN LATERAL (
-    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature,pp2.m_hu_pi_item_product_id
+    SELECT COALESCE(ppa2.PriceStd, pp2.PriceStd) AS PriceStd, ppa2.signature
     FROM M_ProductPrice pp2
-             INNER JOIN report.getProductPriceAndAttributes(M_ProductPrice_ID := pp2.M_ProductPrice_ID) ppa2 ON TRUE
+             INNER JOIN report.getProductPriceAndAttributes(M_ProductPrice_ID := pp2.M_ProductPrice_ID, M_HU_PI_Item_Product_ID := bpProductPackingMaterial.m_hu_pi_item_product_id) ppa2 ON TRUE
 
     WHERE pp2.M_Product_ID = pp.M_Product_ID
       AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
       AND pp2.IsActive = 'Y'
-      --AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
-      --(pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
+      AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
+           (pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
       AND pp2.isAttributeDependant = pp.isAttributeDependant
       --avoid comparing different product prices in same pricelist
       AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
-        /* we have to make sure that only prices with the same attributes are compared. Note:
+        /* we have to make sure that only prices with the same attributes and packing instructions are compared. Note:
         * - If there is an Existing Attribute Price but no signature related columns are filled the signature will be ''
         * - If there are no Attribute Prices the signature will be null
         * This is important, because otherwise an empty attribute price will be compared to the regular price AND the alternate attribute price */
@@ -159,15 +173,6 @@ FROM M_ProductPrice pp
          LEFT JOIN M_Pricelist pl2 ON plv2.M_PriceList_ID = pl2.M_Pricelist_ID AND pl2.isActive = 'Y'
          INNER JOIN C_Currency c ON pl.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
          LEFT JOIN C_Currency c2 ON pl2.C_Currency_ID = c2.C_CUrrency_ID AND c2.isActive = 'Y'
-
-         LEFT OUTER JOIN m_hu_pi_item_product hupip ON (CASE
-                                                            WHEN pp2.m_hu_pi_item_product_id IS NULL
-                                                                THEN hupip.m_hu_pi_item_product_id = bpProductPackingMaterial.m_hu_pi_item_product_ID AND hupip.isActive = 'Y'
-                                                                ELSE hupip.m_product_id = bpProductPackingMaterial.m_product_id AND hupip.isActive = 'Y'
-                                                        END)
-         LEFT OUTER JOIN m_hu_pi_item it ON it.M_HU_PI_Item_ID = hupip.M_HU_PI_Item_ID AND it.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
-         LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
 
 WHERE plv.M_Pricelist_Version_ID = $2
   AND plv2.M_Pricelist_Version_ID = COALESCE($3, plv.m_pricelist_version_id)
@@ -181,5 +186,3 @@ $$
     LANGUAGE sql
     STABLE
 ;
-
-

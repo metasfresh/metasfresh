@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI_cctop_invoic_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1115794842L;
+	private static final long serialVersionUID = 461094956L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_v (Properties ctx, int EDI_cctop_invoic_v_ID, String trxName)
@@ -213,19 +213,7 @@ public class X_EDI_cctop_invoic_v extends org.compiere.model.PO implements I_EDI
 	}
 
 	@Override
-	public void setEDIDesadvDocumentNo (String EDIDesadvDocumentNo)
-	{
-		set_ValueNoCheck (COLUMNNAME_EDIDesadvDocumentNo, EDIDesadvDocumentNo);
-	}
-
-	@Override
-	public String getEDIDesadvDocumentNo()
-	{
-		return get_ValueAsString(COLUMNNAME_EDIDesadvDocumentNo);
-	}
-
-	@Override
-	public void setGrandTotal (BigDecimal GrandTotal)
+	public void setGrandTotal (java.math.BigDecimal GrandTotal)
 	{
 		set_Value (COLUMNNAME_GrandTotal, GrandTotal);
 	}

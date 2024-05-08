@@ -1,11 +1,10 @@
 package de.metas.ui.web.order.products_proposal.process;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.view.BasePLVProductsProposalViewFactory;
 import de.metas.ui.web.order.products_proposal.view.ProductsProposalView;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /*
  * #%L
@@ -31,8 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList extends ProductsProposalViewBasedProcess
 {
-	private static final AdMessageKey MSG_MissingBasePriceListVersion = AdMessageKey.of("WEBUI_Missing_Base_PriceList_Version");
-
 	@Autowired
 	private BasePLVProductsProposalViewFactory basePLVProductsProposalViewFactory;
 
@@ -41,8 +38,7 @@ public class WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList extends P
 	{
 		if (!getView().getBasePriceListVersionId().isPresent())
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_MissingBasePriceListVersion);
-			return ProcessPreconditionsResolution.reject(msg);
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no base price list set");
 		}
 
 		return ProcessPreconditionsResolution.accept();

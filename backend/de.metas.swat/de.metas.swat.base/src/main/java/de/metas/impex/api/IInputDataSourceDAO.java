@@ -5,7 +5,6 @@ import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.util.ISingletonService;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -35,7 +34,7 @@ public interface IInputDataSourceDAO extends ISingletonService
 {
 	I_AD_InputDataSource getById(final InputDataSourceId id);
 
-	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, @Nullable String trxName);
+	I_AD_InputDataSource retrieveInputDataSource(Properties ctx, String internalName, boolean throwEx, String trxName);
 
 	InputDataSourceId retrieveInputDataSourceIdByInternalName(String internalName);
 

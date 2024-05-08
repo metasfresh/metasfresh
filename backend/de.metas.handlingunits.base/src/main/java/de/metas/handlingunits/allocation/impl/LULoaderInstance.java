@@ -7,7 +7,6 @@ import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -26,10 +25,11 @@ import java.util.TreeSet;
 
 /**
  * Loading Unit(LU) loader instance. It creates and wraps one loading unit {@link I_M_HU} to which it can add TU, if they match. Used by {@link LULoader}.
- * <p>
+ *
  * Equally {@code true}: This class is responsible for adding Transport Units (TUs) to a particular LU handling unit (which will be created using {@link HULoader} in class constructor).
  *
  * @author tsa
+ *
  */
 /* package */class LULoaderInstance
 {
@@ -44,11 +44,10 @@ import java.util.TreeSet;
 	private final String huStatus;
 
 	private final I_M_HU luHU;
-	private final AttributeSetAggregator collectedAttributes;
 
 	/**
 	 * LU Item Instances.
-	 * <p>
+	 *
 	 * NOTE: we use {@link SortedSet} because we want items to be sorted by priority. For this we relly on {@link LULoaderItemInstance#compareTo(LULoaderItemInstance)}.
 	 */
 	private final SortedSet<LULoaderItemInstance> luItemInstances = new TreeSet<>();
@@ -106,7 +105,7 @@ import java.util.TreeSet;
 		});
 
 		luHU = huBuilder.create(luPIVersion);
-		collectedAttributes = new AttributeSetAggregator();
+
 	}
 
 	@Override
@@ -186,17 +185,7 @@ import java.util.TreeSet;
 						"Unable to create and add a LULoaderItemInstance for newly created item={}; luItemInstances={}; huContext={}",
 						newItem, luItemInstances, huContext);
 
-				if (newItemInstace.addTU(tuHU))
-				{
-					final IAttributeStorage tuAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(tuHU);
-					collectedAttributes.collect(tuAttributes);
-
-					return true;
-				}
-				else
-				{
-					return false;
-				}
+				return newItemInstace.addTU(tuHU);
 			}
 		}
 
@@ -254,7 +243,7 @@ import java.util.TreeSet;
 
 		//
 		// Check same Locator
-		if (!LocatorId.equalsByRepoId(tuHU.getM_Locator_ID(), getLocatorRepoId()))
+		if(!LocatorId.equalsByRepoId(tuHU.getM_Locator_ID(), getLocatorRepoId()))
 		{
 			return false;
 		}
@@ -280,13 +269,5 @@ import java.util.TreeSet;
 	private int getLocatorRepoId()
 	{
 		return LocatorId.toRepoId(locatorId);
-	}
-
-	void close()
-	{
-		final IAttributeStorage luAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(luHU);
-		luAttributes.setSaveOnChange(true);
-
-		collectedAttributes.updateAggregatedValuesTo(luAttributes);
 	}
 }

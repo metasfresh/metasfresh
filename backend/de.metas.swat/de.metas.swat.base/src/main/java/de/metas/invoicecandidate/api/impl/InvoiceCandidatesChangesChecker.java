@@ -22,7 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import de.metas.i18n.BooleanWithReason;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
@@ -61,10 +60,6 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		return new HashMap<>(_infosBeforeChanges);
 	}
 
-	/**
-	 * If changes are detected, then they are logged to Loggable and an excecption is thrown
-	 * @throws AdempiereException if there are changes. The exception contains the respective ICs and their changes as exception-parameters.
-	 */
 	@Override
 	public void assertNoChanges(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
@@ -72,52 +67,44 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		final Map<Integer, InvoiceCandidateInfo> infosBeforeChanges = getInfosBeforeChanges();
 
 		boolean hasChanges = false;
-		final AdempiereException exception = new AdempiereException("@HasChanges@").appendParametersToMessage();
 		for (final InvoiceCandidateInfo infoAfterChange : infosAfterChanges.values())
 		{
 			final int invoiceCandidateId = infoAfterChange.getC_Invoice_Candidate_ID();
 			final InvoiceCandidateInfo infoBeforeChange = infosBeforeChanges.remove(invoiceCandidateId);
 
-			final BooleanWithReason checkHasChanges = checkHasChanges(infoAfterChange, infoBeforeChange);
-			if (checkHasChanges.isTrue())
+			if (checkHasChanges(infoAfterChange, infoBeforeChange))
 			{
 				hasChanges = true;
-				exception.setParameter("C_Invoice_Candidate_ID=" + invoiceCandidateId, checkHasChanges.getReason());
 			}
 		}
 
 		for (final InvoiceCandidateInfo infoBeforeChange : infosBeforeChanges.values())
 		{
 			final InvoiceCandidateInfo infoAfterChange = null;
-			final BooleanWithReason checkHasChanges = checkHasChanges(infoAfterChange, infoBeforeChange);
-			if(checkHasChanges.isTrue())
-			{
-				hasChanges = true;
-				exception.setParameter("C_Invoice_Candidate_ID=" + infoBeforeChange.getC_Invoice_Candidate_ID(), checkHasChanges.getReason());
-			}
+			checkHasChanges(infoAfterChange, infoBeforeChange);
+			hasChanges = true;
 		}
 
 		if (hasChanges)
 		{
-			throw exception;
+			throw new AdempiereException("@HasChanges@");
 		}
 	}
 
 	/**
 	 * Checks if there are changes between initial version or current version of an invoice candidate.
+	 *
+	 * @return true if changes found
 	 */
-	private BooleanWithReason checkHasChanges(
-			@Nullable final InvoiceCandidateInfo infoAfterChange,
-			@Nullable final InvoiceCandidateInfo infoBeforeChange)
+	private boolean checkHasChanges(final InvoiceCandidateInfo infoAfterChange, final InvoiceCandidateInfo infoBeforeChange)
 	{
 		//
 		// Case: Invoice candidate present in news list but missing in olds list
 		// (shall not happen)
 		if (infoBeforeChange == null)
 		{
-			final String msg = "Missing(old): " + infoAfterChange;
-			Loggables.addLog(msg);
-			return BooleanWithReason.trueBecause(msg);
+			Loggables.addLog("Missing(old): " + infoAfterChange);
+			return true;
 		}
 
 		//
@@ -125,15 +112,14 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		// (shall not happen)
 		if (infoAfterChange == null)
 		{
-			final String msg = "Missing(new): " + infoBeforeChange;
-			Loggables.addLog(msg);
-			return BooleanWithReason.trueBecause(msg);
+			Loggables.addLog("Missing(new): " + infoBeforeChange);
+			return true;
 		}
 
 		//
 		// Case: we have the old version and the new version
 		// => check if they are equal
-		return infoBeforeChange.checkHasChanges(infoAfterChange);
+		return !infoBeforeChange.checkEquals(infoAfterChange);
 	}
 
 	/**
@@ -188,13 +174,15 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 
 		/**
 		 * Compares this invoice candidate info (old version) object with given info (new version) and logs if there are any differences.
+		 *
+		 * @return <code>true</code> if the objects are equal.
 		 */
-		public BooleanWithReason checkHasChanges(final InvoiceCandidateInfo infoAfterChange)
+		public boolean checkEquals(final InvoiceCandidateInfo infoAfterChange)
 		{
 			final InvoiceCandidateInfo infoBeforeChange = this;
 
 			Check.assume(infoAfterChange.getC_Invoice_Candidate_ID() == infoBeforeChange.getC_Invoice_Candidate_ID(),
-						 "Old info {} and New info {} shall share the same C_Invoice_Candidate_ID", infoBeforeChange, infoAfterChange);
+					"Old info {} and New info {} shall share the same C_Invoice_Candidate_ID", infoBeforeChange, infoAfterChange);
 			boolean hasChanges = false;
 			final TokenizedStringBuilder changesInfo = new TokenizedStringBuilder(", ");
 			if (infoAfterChange.getLineNetAmt().compareTo(infoBeforeChange.getLineNetAmt()) != 0)
@@ -208,18 +196,12 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 				hasChanges = true;
 			}
 
-			final BooleanWithReason checkEqualsResult;
 			if (hasChanges)
 			{
-				final String msg = infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo;
-				Loggables.addLog(msg);
-				checkEqualsResult = BooleanWithReason.trueBecause(msg);
+				Loggables.addLog(infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo);
 			}
-			else
-			{
-				checkEqualsResult = BooleanWithReason.FALSE;
-			}
-			return checkEqualsResult;
+
+			return !hasChanges;
 		}
 
 		public int getC_Invoice_Candidate_ID()

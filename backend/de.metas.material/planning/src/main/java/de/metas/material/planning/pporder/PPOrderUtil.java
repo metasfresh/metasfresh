@@ -5,7 +5,6 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.IProductDAO;
@@ -26,6 +25,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -210,12 +210,11 @@ public class PPOrderUtil
 				.warehouseId(ppOrderData.getWarehouseId())
 				.plantId(ppOrderData.getPlantId())
 				.productId(productId)
-				.includeWithNullProductId(false)
 				.attributeSetInstanceId(asiId)
 				.build();
 
 		return productPlanningDAO.find(productPlanningQuery)
-				.map(ProductPlanning::isPickDirectlyIfFeasible)
+				.map(I_PP_Product_Planning::isPickDirectlyIfFeasible)
 				.orElse(false);
 	}
 }

@@ -1,13 +1,9 @@
 package de.metas.costing;
 
-import de.metas.costing.methods.CostAmountAndQtyDetailed;
-import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.costing.methods.CostAmountType;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
 /*
  * #%L
@@ -34,22 +30,21 @@ import lombok.With;
 @Value
 public class CostDetailCreateResult
 {
-	@NonNull CostSegment costSegment;
-	@NonNull CostElement costElement;
-	@NonNull @With @Getter CostAmountAndQtyDetailed amtAndQty;
+	CostSegment costSegment;
+	CostElement costElement;
+	CostAmount amt;
+	Quantity qty;
 
 	@Builder
 	private CostDetailCreateResult(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElement costElement,
-			@NonNull final CostAmountAndQtyDetailed amtAndQty)
+			@NonNull final CostAmount amt,
+			@NonNull final Quantity qty)
 	{
 		this.costSegment = costSegment;
 		this.costElement = costElement;
-		this.amtAndQty = amtAndQty;
+		this.amt = amt;
+		this.qty = qty;
 	}
-
-	public CostAmountAndQty getAmtAndQty(@NonNull final CostAmountType type) {return amtAndQty.getAmtAndQty(type);}
-
-	public CostAmountDetailed getAmt() {return amtAndQty.getAmt();}
 }

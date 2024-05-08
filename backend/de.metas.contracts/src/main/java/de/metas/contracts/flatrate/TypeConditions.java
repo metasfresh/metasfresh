@@ -33,11 +33,9 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_C
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_InterimInvoice;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MarginCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MediatedCommission;
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_QualityBasedInvoicing;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund;
@@ -58,10 +56,8 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
 	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
 	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
-	CALL_ORDER(TYPE_CONDITIONS_CallOrder),
-
-	INTERIM_INVOICE(TYPE_CONDITIONS_InterimInvoice),
-	MODULAR_CONTRACT(TYPE_CONDITIONS_ModularContract);
+	CALL_ORDER(TYPE_CONDITIONS_CallOrder)
+	;
 
 	@Getter
 	private final String code;
@@ -83,19 +79,4 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	}
 
 	private static final ReferenceListAwareEnums.ValuesIndex<TypeConditions> typesByCode = ReferenceListAwareEnums.index(values());
-
-	public boolean isModularContractType()
-	{
-		return MODULAR_CONTRACT.equals(this);
-	}
-
-	public boolean isInterimContractType()
-	{
-		return INTERIM_INVOICE.equals(this);
-	}
-
-	public boolean isModularOrInterim()
-	{
-		return isModularContractType() || isInterimContractType();
-	}
 }

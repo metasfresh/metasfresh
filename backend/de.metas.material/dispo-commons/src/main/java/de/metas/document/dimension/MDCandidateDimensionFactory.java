@@ -23,7 +23,6 @@
 package de.metas.document.dimension;
 
 import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.order.OrderId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import lombok.NonNull;
@@ -46,7 +45,6 @@ public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candid
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				.salesOrderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -58,19 +56,11 @@ public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candid
 	}
 
 	@Override
-	public void updateRecord(@NonNull final I_MD_Candidate record, @NonNull final Dimension from)
+	public void updateRecord(final I_MD_Candidate record, final Dimension from)
 	{
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_OrderSO_ID(OrderId.toRepoId(from.getSalesOrderId()));
-
-		updateRecordUserElements(record, from);
-	}
-
-	@Override
-	public void updateRecordUserElements(@NonNull final I_MD_Candidate record,@NonNull final Dimension from)
-	{
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -78,6 +68,7 @@ public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candid
 		record.setUserElementString5(from.getUserElementString5());
 		record.setUserElementString6(from.getUserElementString6());
 		record.setUserElementString7(from.getUserElementString7());
+
 	}
 }
 

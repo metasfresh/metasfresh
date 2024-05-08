@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1318796591L;
+	private static final long serialVersionUID = -376628303L;
 
     /** Standard Constructor */
     public X_C_Bank (final Properties ctx, final int C_Bank_ID, @Nullable final String trxName)
@@ -137,18 +138,6 @@ public class X_C_Bank extends org.compiere.model.PO implements I_C_Bank, org.com
 	public boolean isCashBank() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCashBank);
-	}
-
-	@Override
-	public void setIsImportAsSingleSummaryLine (final boolean IsImportAsSingleSummaryLine)
-	{
-		set_Value (COLUMNNAME_IsImportAsSingleSummaryLine, IsImportAsSingleSummaryLine);
-	}
-
-	@Override
-	public boolean isImportAsSingleSummaryLine() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsImportAsSingleSummaryLine);
 	}
 
 	@Override

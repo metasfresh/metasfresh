@@ -30,5 +30,5 @@ import de.metas.util.ISingletonService;
 
 public interface IProductActivityProvider extends ISingletonService
 {
-	ActivityId getActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
+	ActivityId retrieveActivityForAcct(ClientId clientId, OrgId orgId, ProductId productId);
 }

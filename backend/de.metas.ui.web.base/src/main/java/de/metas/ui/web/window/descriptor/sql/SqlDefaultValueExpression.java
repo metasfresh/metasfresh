@@ -111,7 +111,7 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 			return new SqlDefaultValueExpression<>(stringExpression, String.class, (rs) -> rs.getString(1));
 		}
 
-		throw ExpressionCompileException.newWithPlainMessage("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);
+		throw new ExpressionCompileException("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);
 	}
 
 	private static ZonedDateTime retrieveZonedDateTime(final ResultSet rs) throws SQLException
@@ -231,9 +231,7 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 			{
 				if (onVariableNotFound == OnVariableNotFound.Fail)
 				{
-					throw ExpressionEvaluationException.newWithPlainMessage("Got no result for " + this)
-							.setParameter("SQL", sql)
-							.appendParametersToMessage();
+					throw new ExpressionEvaluationException("Got no result for " + this + " (SQL: " + sql + ")");
 				}
 				logger.warn("Got no result for {} (SQL: {})", this, sql);
 				return noResultValue;

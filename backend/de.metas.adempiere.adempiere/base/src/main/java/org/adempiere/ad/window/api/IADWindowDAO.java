@@ -1,31 +1,8 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.adempiere.ad.window.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
-import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -45,12 +22,8 @@ import org.compiere.model.I_AD_Window;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
-/**
- * @implNote Please consider using {@link ADWindowService} when possible. Also consider proxying your DAO methods there.
- */
 public interface IADWindowDAO extends ISingletonService
 {
 
@@ -63,7 +36,6 @@ public interface IADWindowDAO extends ISingletonService
 
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
-	@NonNull
 	AdWindowId getWindowIdByInternalName(String internalName);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
@@ -97,7 +69,7 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	WindowCopyResult copyWindow(@NonNull WindowCopyRequest request);
+	void copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
@@ -129,8 +101,6 @@ public interface IADWindowDAO extends ISingletonService
 	@Deprecated
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 
-	AdTabId copyTabToWindow(@NonNull AdTabId sourceTabId, @NonNull AdWindowId targetWindowId);
-
 	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
 
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
@@ -138,6 +108,4 @@ public interface IADWindowDAO extends ISingletonService
 	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
 
 	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
-
-	Optional<QuickInputConfigLayout> getQuickInputConfigLayout(AdTabId adTabId);
 }

@@ -23,37 +23,28 @@
 package de.metas.cucumber.stepdefs;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public abstract class StepDefData<T>
 {
-	protected final Logger logger = LogManager.getLogger(getClass());
-	private final HashMap<StepDefDataIdentifier, RecordDataItem<T>> records = new HashMap<>();
+	private final Map<String, RecordDataItem<T>> records = new HashMap<>();
 
 	private final Class<T> clazz;
-
-	private boolean checkDuplicatesDisabled = false;
 
 	/**
 	 * @param clazz used if this stepdef is about model classes. In that case the record's {@link TableRecordReference} is stored, and the given clazz is then used when the record is loaded again.
@@ -65,94 +56,29 @@ public abstract class StepDefData<T>
 
 	public void put(
 			@NonNull final String identifier,
-			@NonNull final T record)
+			@NonNull final T productRecord)
 	{
-		put(StepDefDataIdentifier.ofString(identifier), record);
-	}
-
-	public void put(
-			@NonNull final StepDefDataIdentifier identifier,
-			@NonNull final T record)
-	{
-		final RecordDataItem<T> recordDataItem = newRecordDataItem(record);
-
-		assertNotAlreadyMappedToOtherIdentifier(identifier, record, null);
+		final RecordDataItem<T> recordDataItem = createRecordDataItem(productRecord);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
 				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
 				.isNull();
-
-		logger.info("put: {}={}", identifier, record);
-	}
-
-	private void assertNotAlreadyMappedToOtherIdentifier(final @NonNull StepDefDataIdentifier identifier, final @NonNull T record, final @Nullable T oldRecord)
-	{
-		if (checkDuplicatesDisabled)
-		{
-			return;
-		}
-
-		if (!(this instanceof StepDefDataGetIdAware))
-		{
-			return;
-		}
-		//noinspection unchecked
-		final StepDefDataGetIdAware<RepoIdAware, T> thisIdAware = (StepDefDataGetIdAware<RepoIdAware, T>)this;
-
-		final RepoIdAware id = thisIdAware.extractIdFromRecord(record);
-
-		//
-		// If we are just updating the same record, don't validate if we have other identifiers referencing it
-		if (oldRecord != null)
-		{
-			final RepoIdAware oldId = thisIdAware.extractIdFromRecord(oldRecord);
-			if (Objects.equals(id, oldId))
-			{
-				return;
-			}
-		}
-
-		if (thisIdAware.isAllowDuplicateRecordsForSameIdentifier(id))
-		{
-			return;
-		}
-
-		final StepDefDataIdentifier otherIdentifier = thisIdAware.getFirstIdentifierById(id, identifier).orElse(null);
-		if (otherIdentifier != null)
-		{
-			throw new AdempiereException("Cannot map `" + record + "` with ID `" + id + "` to identifier `" + identifier + "` because it was already mapped to `" + otherIdentifier + "`");
-		}
-	}
-
-	public IAutoCloseable temporaryDisableDuplicatesChecking()
-	{
-		final boolean prev_checkDuplicatesDisabled = this.checkDuplicatesDisabled;
-		this.checkDuplicatesDisabled = true;
-		return () -> this.checkDuplicatesDisabled = prev_checkDuplicatesDisabled;
 	}
 
 	public void putOrReplace(
 			@NonNull final String identifier,
-			@NonNull final T record)
-	{
-		putOrReplace(StepDefDataIdentifier.ofString(identifier), record);
-	}
-
-	public void putOrReplace(
-			@NonNull final StepDefDataIdentifier identifier,
-			@NonNull final T record)
+			@NonNull final T productRecord)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
+
 		if (oldRecord == null)
 		{
-			put(identifier, record);
+			put(identifier, productRecord);
 		}
 		else
 		{
-			assertNotAlreadyMappedToOtherIdentifier(identifier, record, oldRecord.getRecord());
-			records.replace(identifier, newRecordDataItem(record));
-			logger.info("replace: {}={}", identifier, record);
+			records.replace(identifier, createRecordDataItem(productRecord));
 		}
 	}
 
@@ -166,7 +92,7 @@ public abstract class StepDefData<T>
 	}
 
 	public void putIfMissing(
-			@NonNull final StepDefDataIdentifier identifier,
+			@NonNull final String identifier,
 			@NonNull final T record)
 	{
 		final RecordDataItem<T> oldRecord = records.get(identifier);
@@ -182,12 +108,6 @@ public abstract class StepDefData<T>
 	@NonNull
 	public T get(@NonNull final String identifier)
 	{
-		return get(StepDefDataIdentifier.ofString(identifier));
-	}
-
-	@NonNull
-	public T get(@NonNull final StepDefDataIdentifier identifier)
-	{
 		final T record = getRecordDataItem(identifier).getRecord();
 
 		if (record instanceof PO)
@@ -199,19 +119,7 @@ public abstract class StepDefData<T>
 	}
 
 	@NonNull
-	public <ET extends T> ET get(@NonNull final String identifier, @NonNull final Class<ET> type)
-	{
-		return InterfaceWrapperHelper.create(get(identifier), type);
-	}
-
-	@NonNull
 	public RecordDataItem<T> getRecordDataItem(@NonNull final String identifier)
-	{
-		return getRecordDataItem(StepDefDataIdentifier.ofString(identifier));
-	}
-
-	@NonNull
-	public RecordDataItem<T> getRecordDataItem(@NonNull final StepDefDataIdentifier identifier)
 	{
 		final RecordDataItem<T> recordDataItem = records.get(identifier);
 		assertThat(recordDataItem).as("Missing recordDataItem for identifier=%s", identifier).isNotNull();
@@ -222,56 +130,39 @@ public abstract class StepDefData<T>
 	@NonNull
 	public Optional<T> getOptional(@NonNull final String identifier)
 	{
-		return getOptional(StepDefDataIdentifier.ofString(identifier));
-	}
-
-	@NonNull
-	public Optional<T> getOptional(@NonNull final StepDefDataIdentifier identifier)
-	{
 		return Optional.ofNullable(records.get(identifier)).map(RecordDataItem::getRecord);
-	}
-
-	public ImmutableSet<StepDefDataIdentifier> getIdentifiers()
-	{
-		return records.keySet().stream().collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ImmutableList<T> getRecords()
 	{
-		return streamRecords().collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	public Stream<T> streamRecords()
-	{
-		return records.values().stream().map(RecordDataItem::getRecord);
+		return records.values().stream().map(RecordDataItem::getRecord).collect(ImmutableList.toImmutableList());
 	}
 
 	/**
-	 * @param record the item to store.
-	 *               In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
+	 * @param productRecord the item to store.
+	 *                      In case of a model interface, we just store its ID and class, to avoid problems with DB-transactions or other sorts of leaks.
 	 */
-	@NonNull
-	private StepDefData.RecordDataItem<T> newRecordDataItem(final @NonNull T record)
+	@NotNull
+	private StepDefData.RecordDataItem<T> createRecordDataItem(final @NotNull T productRecord)
 	{
-		if (InterfaceWrapperHelper.isModelInterface(record.getClass()) && clazz != null)
+		if (InterfaceWrapperHelper.isModelInterface(productRecord.getClass()) && clazz != null)
 		{
 			final Instant updated = InterfaceWrapperHelper
-					.getValueOptional(record, InterfaceWrapperHelper.COLUMNNAME_Updated)
+					.getValueOptional(productRecord, InterfaceWrapperHelper.COLUMNNAME_Updated)
 					.map(TimeUtil::asInstant)
 					.orElse(Instant.MIN);
 
 			// just store ID and table name, to avoid any leaks
-			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(record), InterfaceWrapperHelper.getId(record));
+			final TableRecordReference tableRecordReference = TableRecordReference.of(InterfaceWrapperHelper.getModelTableName(productRecord), InterfaceWrapperHelper.getId(productRecord));
 
-			return new RecordDataItem<>(null,
-					tableRecordReference,
-					clazz,
-					Instant.now(),
-					updated);
+			return new RecordDataItem<>((T)null,
+										tableRecordReference,
+										clazz,
+										Instant.now(),
+										updated);
 
 		}
-		return new RecordDataItem<>(record, null, null, Instant.now(), Instant.MIN);
+		return new RecordDataItem<T>(productRecord, null, null, Instant.now(), Instant.MIN);
 	}
 
 	@Value
@@ -299,20 +190,15 @@ public abstract class StepDefData<T>
 				return record;
 			}
 
-			if (tableRecordReference != null)
+			try
 			{
-				try
-				{
-					return tableRecordReference.getModel(tableRecordReferenceClazz);
-				}
-				catch (final RuntimeException e)
-				{
-					throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-							.setParameter("recordDataItem", this);
-				}
+				return tableRecordReference.getModel(tableRecordReferenceClazz);
 			}
-
-			throw new AdempiereException("Cannot get the record of " + this);
+			catch (final RuntimeException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
+						.setParameter("recordDataItem", this);
+			}
 		}
 
 	}

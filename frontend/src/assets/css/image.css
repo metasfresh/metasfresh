@@ -1,0 +1,75 @@
+.image-source-options {
+    margin: 0 .5rem .5rem .5rem;
+}
+
+.image-source-options .input{
+    display: none;
+}
+
+.image-source-options [class^=meta-icon]{
+    float: left;
+    font-size: 1rem;
+}
+
+.image-source-options [class^=meta-icon]:before{
+    float: left;
+}
+
+.image-placeholder{
+    width: 200px;
+    height: 150px;
+    border: solid 1px $brand-light-color;
+    border-radius: 4px;
+    margin: 0 .5rem;
+    display: table;
+}
+
+.image-placeholder .placeholder-value{
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+}
+
+.camera-preview{
+    position: fixed;
+    bottom: 7.5%;
+    right: 50%;
+    margin-right: -50%;
+    width: 100%;
+    height: 85%;
+    cursor: pointer;
+    z-index:1000;
+    text-align: center;
+}
+
+.camera-preview video{
+    width: auto;
+    height: 100%;
+}
+
+.camera-preview .preview-loader{
+    opacity: 0;
+    background-color: rgba(0, 0, 0, .5);
+    transition: opacity .2s;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.camera-preview.loading .preview-loader{
+    opacity: 1;
+}
+
+.image-widget {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+}
+
+.image-preview {
+    width: 200px;
+}

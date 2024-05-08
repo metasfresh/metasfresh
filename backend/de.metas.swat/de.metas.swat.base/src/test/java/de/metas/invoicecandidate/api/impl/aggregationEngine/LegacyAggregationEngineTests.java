@@ -1,43 +1,63 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.bpartner.BPartnerLocationId;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.impl.AggregationEngine;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.MoneyService;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_DocType;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyRepository;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 
 /**
  *
@@ -50,14 +70,6 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 {
 	private static final BigDecimal HUNDRET = new BigDecimal("100");
 
-	@BeforeEach
-	public void init()
-	{
-		super.init();
-
-		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
-	}
-	
 	@Test
 	public void test_simple01()
 	{
@@ -97,7 +109,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		InterfaceWrapperHelper.refresh(ic2);
 		InterfaceWrapperHelper.refresh(ic3);
 
-		final AggregationEngine engine = newAggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -161,7 +173,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = newAggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -213,7 +225,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = newAggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -266,7 +278,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = newAggregationEngine();
+		final AggregationEngine engine = AggregationEngine.newInstance();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -320,7 +332,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice
 		{
-			final AggregationEngine engine = newAggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			engine.addInvoiceCandidate(ic1);
 			engine.addInvoiceCandidate(ic2);
 
@@ -446,7 +458,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice (again) for IC2_split, IC3
 		{
-			final AggregationEngine engine = newAggregationEngine();
+			final AggregationEngine engine = AggregationEngine.newInstance();
 			// engine2.addIC(ic1); // already processed
 			// engine2.addIC(ic2); // already processed
 			engine.addInvoiceCandidate(ic2_split);

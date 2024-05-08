@@ -24,7 +24,8 @@ package de.metas.common.rest_api.v1;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,17 +33,17 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-@Schema(description = "Specifies a document type that needs to be present in metasfresh in order to be looked up.")
+@ApiModel(description = "Specifies a document type that needs to be present in metasfresh in order to be looked up.")
 public class JsonDocTypeInfo
 {
-	@Schema( //
-			minLength = 1, //
-			description = "This translates to <code>C_DocType.DocBaseType</code>.\n")
+	@ApiModelProperty( //
+			allowEmptyValue = false, //
+			value = "This translates to <code>C_DocType.DocBaseType</code>.\n")
 	private String docBaseType;
 
-	@Schema( //
-			minLength = 1, //
-			description = "This translates to <code>C_DocType.DocSubType</code>.\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to <code>C_DocType.DocSubType</code>.\n"
 					+ "An empty value means that the matching <code>C_DocType</code> record's <code>DocSubType</code> needs to be <code>null</code>")
 	private String docSubType;
 

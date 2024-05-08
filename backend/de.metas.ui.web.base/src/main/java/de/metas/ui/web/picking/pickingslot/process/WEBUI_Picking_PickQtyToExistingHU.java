@@ -2,12 +2,10 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.OrderId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -26,7 +24,6 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_AGGREGATING_CUS_TO_DIFF_ORDER_IS_FORBIDDEN;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
@@ -68,9 +65,9 @@ public class WEBUI_Picking_PickQtyToExistingHU
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal qtyCUsPerTU;
+	private static final String PARAM_QTY_CU = "QtyCU";
+	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -98,28 +95,17 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	protected Quantity getQtyToPack()
 	{
 		final I_C_UOM uom = getCurrentShipmentScheuduleUOM();
-		return Quantity.of(qtyCUsPerTU, uom);
-	}
-
-	protected boolean isAggregatingCUsToDifferentOrders()
-	{
-		final OrderId pickingForOrderId = getCurrentlyPickingOrderId();
-		if (pickingForOrderId == null)
-		{
-			//dev-note: unknown order means different order at this point
-			//(the only valid scenario for this situation is subscription where we would be talking about different shipments)
-			return true;
-		}
-
-		return !getSingleSelectedRow().thereIsAnOpenPickingForOrderId(pickingForOrderId);
+		return Quantity.of(qtyCU, uom);
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+
 		validatePickingToHU();
 
-		pickHUsAndPackTo(getSourceHUIds(), getQtyToPack(), getPackToHuId());
+		pickHUsAndPackTo(getSourceHUIds(), getQtyToPack(), pickingSlotRow.getHuId());
 
 		invalidateView();
 		invalidateParentView();
@@ -130,7 +116,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (Objects.equals(PARAM_QtyCUsPerTU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
 			return retrieveQtyToPick().toBigDecimal();
 		}
@@ -190,37 +176,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 			return Optional.of(ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS)));
 		}
 
-		if (getPickingConfig().isForbidAggCUsForDifferentOrders() && isAggregatingCUsToDifferentOrders())
-		{
-			return Optional.of(ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_AGGREGATING_CUS_TO_DIFF_ORDER_IS_FORBIDDEN)));
-		}
-
 		return Optional.empty();
-	}
-
-	@NonNull
-	protected HuId getPackToHuId()
-	{
-		final PickingSlotRow selectedRow = getSingleSelectedRow();
-		if (!getPickingConfig().isForbidAggCUsForDifferentOrders())
-		{
-			return selectedRow.getHuId();
-		}
-
-		final OrderId orderId = getCurrentlyPickingOrderId();
-		if (orderId == null)
-		{
-			throw new AdempiereException(MSG_WEBUI_PICKING_AGGREGATING_CUS_TO_DIFF_ORDER_IS_FORBIDDEN);
-		}
-
-		if (!selectedRow.isLU())
-		{
-			return selectedRow.getHuId();
-		}
-
-		return selectedRow.findRowMatching(row -> !row.isLU() && row.thereIsAnOpenPickingForOrderId(orderId))
-				.map(PickingSlotRow::getHuId)
-				.orElseThrow(() -> new AdempiereException(MSG_WEBUI_PICKING_AGGREGATING_CUS_TO_DIFF_ORDER_IS_FORBIDDEN));
 	}
 
 }

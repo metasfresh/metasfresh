@@ -22,7 +22,6 @@
 
 package de.metas.rest_api.v2.bpartner;
 
-import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite.JsonRequestCompositeBuilder;
@@ -34,24 +33,16 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.model.I_C_CreditLimit_Type;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.fail;
 
 @UtilityClass
 public class MockedDataUtil
@@ -79,14 +70,6 @@ public class MockedDataUtil
 		bPartner.setPhone("bPartner.phone");
 		bPartner.setUrl("bPartner.url");
 		bPartner.setVatId("bPartner.vatId");
-		bPartner.setSectionCodeValue(BPartnerRecordsUtil.createSectionCode("bPartner.sectionCode").getValue());
-		bPartner.setCustomerPaymentTermIdentifier(String.valueOf(BPartnerRecordsUtil.createPaymentTerm().getC_PaymentTerm_ID()));
-		bPartner.setVendorPaymentTermIdentifier(String.valueOf(BPartnerRecordsUtil.createPaymentTerm().getC_PaymentTerm_ID()));
-		bPartner.setIncotermsCustomerValue(BPartnerRecordsUtil.createIncoterms("bpartner.customerIncoterms").getValue());
-		bPartner.setIncotermsVendorValue(BPartnerRecordsUtil.createIncoterms("bpartner.vendorIncoterms").getValue());
-		bPartner.setStorageWarehouse(true);
-		bPartner.setPaymentRule(JsonPaymentRule.OnCredit);
-		bPartner.setPaymentRulePO(JsonPaymentRule.Cash);
 
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
@@ -117,11 +100,6 @@ public class MockedDataUtil
 
 		result.contacts(contactUpsert.build());
 
-		final JsonRequestCreditLimitUpsert.JsonRequestCreditLimitUpsertBuilder creditLimitUpsertBuilder = JsonRequestCreditLimitUpsert.builder()
-				.requestItem(createMockCreditLimit());
-
-		result.creditLimits(creditLimitUpsertBuilder.build());
-
 		return result.build();
 	}
 
@@ -141,11 +119,6 @@ public class MockedDataUtil
 		location.setCountryCode(countryCode);
 		location.setGln(prefix + "_gln");
 		location.setPostal(prefix + "_postal");
-		location.setHandoverLocation(true);
-		location.setVisitorsAddress(true);
-		location.setRemitTo(true);
-		location.setReplicationLookupDefault(true);
-		location.setVatId(prefix + "_vatID");
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
@@ -169,31 +142,5 @@ public class MockedDataUtil
 				.contactIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
 				.contact(jsonRequestContact)
 				.build();
-	}
-
-	@NonNull
-	private JsonRequestCreditLimitUpsertItem createMockCreditLimit()
-	{
-		createCreditLimitType();
-
-		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
-		jsonRequestCreditLimitUpsertItem.setType("Insurance");
-		jsonRequestCreditLimitUpsertItem.setAmount(JsonMoney.builder()
-														  .amount(BigDecimal.valueOf(10))
-														  .currencyCode("CHF")
-														  .build());
-		jsonRequestCreditLimitUpsertItem.setActive(true);
-		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.of(2022, 11, 2));
-
-		return jsonRequestCreditLimitUpsertItem;
-	}
-
-	private void createCreditLimitType()
-	{
-		final I_C_CreditLimit_Type creditLimitType = newInstance(I_C_CreditLimit_Type.class);
-		creditLimitType.setName("Insurance");
-		creditLimitType.setIsActive(true);
-
-		saveRecord(creditLimitType);
 	}
 }

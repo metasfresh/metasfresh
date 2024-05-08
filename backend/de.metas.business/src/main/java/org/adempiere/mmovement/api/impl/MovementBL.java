@@ -22,7 +22,6 @@ package org.adempiere.mmovement.api.impl;
  * #L%
  */
 
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -53,6 +52,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
 
 import java.math.BigDecimal;
 
@@ -70,7 +70,7 @@ public class MovementBL implements IMovementBL
 	public DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.MaterialMovement)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialMovement)
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());
@@ -114,7 +114,7 @@ public class MovementBL implements IMovementBL
 	@Override
 	public void setC_Activities(final I_M_MovementLine movementLine)
 	{
-		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).getActivityForAcct(
+		final ActivityId productActivityId = Services.get(IProductActivityProvider.class).retrieveActivityForAcct(
 				ClientId.ofRepoId(movementLine.getAD_Client_ID()),
 				OrgId.ofRepoId(movementLine.getAD_Org_ID()),
 				ProductId.ofRepoId(movementLine.getM_Product_ID()));

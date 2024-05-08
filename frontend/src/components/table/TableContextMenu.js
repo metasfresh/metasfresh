@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import counterpart from 'counterpart';
-import cx from 'classnames';
 
 import Loader from '../app/Loader';
 
@@ -151,18 +150,6 @@ class TableContextMenu extends Component {
     });
   };
 
-  onZoomIntoClicked = async () => {
-    const { handleZoomInto } = this.props;
-    const { contextMenu } = this.state;
-
-    this.setState({ loadingZoomInto: true });
-    try {
-      await handleZoomInto(contextMenu.fieldName);
-    } finally {
-      this.setState({ loadingZoomInto: false });
-    }
-  };
-
   render() {
     const {
       blur,
@@ -171,12 +158,12 @@ class TableContextMenu extends Component {
       handleAdvancedEdit,
       handleDelete,
       handleFieldEdit,
+      handleZoomInto,
       supportOpenRecord,
       docId,
     } = this.props;
 
-    const { contextMenu, loadingZoomInto } = this.state;
-
+    const { contextMenu } = this.state;
     const positionY =
       contextMenu.y > TBL_CONTEXT_MENU_Y_MAX
         ? contextMenu.y - TBL_CONTEXT_Y_OFFSET
@@ -185,26 +172,12 @@ class TableContextMenu extends Component {
       contextMenu.x > TBL_CONTEXT_MENU_X_MAX
         ? contextMenu.x - TBL_CONTEXT_X_OFFSET
         : contextMenu.x;
-    const isSingleRowSelected = selected.length === 1;
-
-    const isShowZoomIntoOption = contextMenu.supportZoomInto;
-    const isShowEditOption =
-      isSingleRowSelected &&
+    const isSelectedOne = selected.length === 1;
+    const showFieldEdit =
+      isSelectedOne &&
       mainTable &&
       contextMenu.supportFieldEdit &&
       handleFieldEdit;
-    const isShowAdvancedEditOption =
-      isSingleRowSelected && !mainTable && handleAdvancedEdit;
-    const isShowOpenInNewTabOption =
-      supportOpenRecord && mainTable && isSingleRowSelected;
-    const isShowDeleteOption = !!handleDelete;
-
-    const isDisplayed =
-      isShowZoomIntoOption ||
-      isShowEditOption ||
-      isShowAdvancedEditOption ||
-      isShowOpenInNewTabOption ||
-      isShowDeleteOption;
 
     return (
       <div
@@ -217,7 +190,14 @@ class TableContextMenu extends Component {
         style={{
           left: positionX,
           top: positionY,
-          display: isDisplayed ? 'block' : 'none',
+          display:
+            supportOpenRecord === false &&
+            (!contextMenu.supportZoomInto ||
+              !showFieldEdit ||
+              !isSelectedOne ||
+              !handleDelete)
+              ? 'none'
+              : 'block',
           height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
         }}
         className={
@@ -227,52 +207,50 @@ class TableContextMenu extends Component {
         onBlur={blur}
       >
         <div className="context-menu-main-options">
-          {isShowZoomIntoOption && (
-            <ContextMenuItem
-              caption={counterpart.translate('window.table.zoomInto')}
-              icon="meta-icon-share"
-              onClick={this.onZoomIntoClicked}
-              disabled={loadingZoomInto}
-            />
+          {contextMenu.supportZoomInto && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleZoomInto(contextMenu.fieldName)}
+            >
+              <i className="meta-icon-share" />
+              {` ${counterpart.translate('window.table.zoomInto')}`}
+            </div>
           )}
 
-          {isShowEditOption && (
-            <ContextMenuItem
-              caption={counterpart.translate('window.table.editField')}
-              icon="meta-icon-edit"
-              onClick={handleFieldEdit}
-            />
+          {showFieldEdit && (
+            <div className="context-menu-item" onClick={handleFieldEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.editField')}`}
+              <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
+            </div>
           )}
 
-          {(isShowZoomIntoOption || isShowEditOption) && (
+          {(contextMenu.supportZoomInto || showFieldEdit) && (
             <hr className="context-menu-separator" />
           )}
 
-          {isShowAdvancedEditOption && (
-            <ContextMenuItem
-              caption={counterpart.translate('window.table.advancedEdit')}
-              icon="meta-icon-edit"
-              shortcut={keymap.ADVANCED_EDIT}
-              onClick={handleAdvancedEdit}
-            />
+          {isSelectedOne && !mainTable && (
+            <div className="context-menu-item" onClick={handleAdvancedEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.advancedEdit')}`}
+              <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
+            </div>
           )}
 
-          {isShowOpenInNewTabOption && (
-            <ContextMenuItem
-              caption={counterpart.translate('window.table.openInNewTab')}
-              icon="meta-icon-file"
-              shortcut={keymap.OPEN_SELECTED}
-              onClick={this.handleOpenNewTab}
-            />
+          {mainTable && (
+            <div className="context-menu-item" onClick={this.handleOpenNewTab}>
+              <i className="meta-icon-file" />
+              {` ${counterpart.translate('window.table.openInNewTab')}`}
+              <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
+            </div>
           )}
 
-          {isShowDeleteOption && (
-            <ContextMenuItem
-              caption={counterpart.translate('window.delete.caption')}
-              icon="meta-icon-trash"
-              shortcut={keymap.REMOVE_SELECTED}
-              onClick={handleDelete}
-            />
+          {handleDelete && (
+            <div className="context-menu-item" onClick={handleDelete}>
+              <i className="meta-icon-trash" />
+              {` ${counterpart.translate('window.delete.caption')}`}
+              <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
+            </div>
           )}
         </div>
 
@@ -296,17 +274,18 @@ class TableContextMenu extends Component {
       <Fragment>
         <hr className="context-menu-separator" />
         {references.map((reference) => (
-          <ContextMenuItem
+          <div
+            className="context-menu-item"
             key={`reference_${reference.id}`}
-            caption={reference.caption}
-            icon="meta-icon-share"
             onClick={() => {
               this.handleReferenceClick(
                 reference.targetWindowId,
                 reference.filter
               );
             }}
-          />
+          >
+            <i className="meta-icon-share" /> {reference.caption}
+          </div>
         ))}
         {loadingReferences ? <Loader /> : null}
       </Fragment>
@@ -334,35 +313,6 @@ TableContextMenu.propTypes = {
   handleZoomInto: PropTypes.func,
   updateTableHeight: PropTypes.func,
   supportOpenRecord: PropTypes.bool,
-};
-
-const ContextMenuItem = ({
-  icon,
-  caption,
-  shortcut,
-  onClick,
-  pending = false,
-}) => {
-  return (
-    <div
-      className={cx('context-menu-item', {
-        'context-menu-item-pending': pending,
-      })}
-      onClick={!pending ? onClick : null}
-    >
-      {icon && <i className={icon} />}
-      {` ${caption}`}
-      {shortcut && <span className="tooltip-inline">{shortcut}</span>}
-    </div>
-  );
-};
-
-ContextMenuItem.propTypes = {
-  caption: PropTypes.string.isRequired,
-  icon: PropTypes.string,
-  shortcut: PropTypes.string,
-  onClick: PropTypes.func.isRequired,
-  pending: PropTypes.bool,
 };
 
 export default connect()(TableContextMenu);

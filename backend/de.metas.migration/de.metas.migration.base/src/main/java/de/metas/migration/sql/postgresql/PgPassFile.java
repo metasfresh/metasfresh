@@ -22,8 +22,6 @@ package de.metas.migration.sql.postgresql;
  * #L%
  */
 
-import org.apache.commons.lang3.SystemUtils;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -31,6 +29,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang3.SystemUtils;
 
 public class PgPassFile
 {

@@ -25,19 +25,19 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.activity.repository.ActivityRepository;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabel;
-import de.metas.serviceprovider.external.label.IssueLabelService;
+import de.metas.serviceprovider.external.label.IssueLabelRepository;
+import de.metas.serviceprovider.external.project.ExternalProjectType;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
-import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -53,9 +53,9 @@ import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -65,10 +65,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
 
 import static de.metas.serviceprovider.issue.Status.INVOICED;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
+import static de.metas.serviceprovider.model.X_S_IssueLabel.LABEL_AD_Reference_ID;
 
 @Service
 public class IssueImporterService
@@ -80,8 +80,8 @@ public class IssueImporterService
 	private final IssueRepository issueRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ITrxManager trxManager;
-	private final IssueLabelService issueLabelService;
-	private final ActivityRepository activityRepository;
+	private final IADReferenceDAO referenceDAO;
+	private final IssueLabelRepository issueLabelRepository;
 
 	public IssueImporterService(
 			final ImportQueue<ImportIssueInfo> importIssuesQueue,
@@ -89,31 +89,30 @@ public class IssueImporterService
 			final IssueRepository issueRepository,
 			final ExternalReferenceRepository externalReferenceRepository,
 			final ITrxManager trxManager,
-			final IssueLabelService issueLabelService,
-			final ActivityRepository activityRepository)
+			final IADReferenceDAO referenceDAO,
+			final IssueLabelRepository issueLabelRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.milestoneRepository = milestoneRepository;
 		this.issueRepository = issueRepository;
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.trxManager = trxManager;
-		this.issueLabelService = issueLabelService;
-		this.activityRepository = activityRepository;
+		this.referenceDAO = referenceDAO;
+		this.issueLabelRepository = issueLabelRepository;
 	}
 
-	@NonNull
-	public ImmutableSet<IssueId> importIssues(
+	public void importIssues(
 			@NonNull final ImmutableList<ImportIssuesRequest> requestList,
 			@NonNull final IssueImporter issueImporter)
 	{
 		final CompletableFuture<Void> completableFuture =
 				CompletableFuture.runAsync(() -> issueImporter.start(requestList));
 
-		final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
-
 		while (!completableFuture.isDone() || !importIssuesQueue.isEmpty())
 		{
 			final ImmutableList<ImportIssueInfo> issueInfos = importIssuesQueue.drainAll();
+
+			final ArrayList<IssueId> importedIdsCollector = new ArrayList<>();
 
 			issueInfos.forEach(issue -> trxManager.runInNewTrx(() -> importIssue(issue, importedIdsCollector)));
 
@@ -124,8 +123,6 @@ public class IssueImporterService
 		{
 			extractAndPropagateAdempiereException(completableFuture);
 		}
-
-		return ImmutableSet.copyOf(importedIdsCollector);
 	}
 
 	@VisibleForTesting
@@ -147,16 +144,16 @@ public class IssueImporterService
 				return;
 			}
 
-			final ImportIssueInfo importIssueInfoWithCustomLabels = appendCustomLabels(importIssueInfo, existingEffortIssue);
+			createMissingRefListForLabels(importIssueInfo.getIssueLabels());
 
-			if (importIssueInfoWithCustomLabels.getMilestone() != null)
+			if (importIssueInfo.getMilestone() != null)
 			{
-				importMilestone(importIssueInfoWithCustomLabels.getMilestone());
+				importMilestone(importIssueInfo.getMilestone());
 			}
 
 			final IssueEntity issueEntity = existingEffortIssue
-					.map(issue -> mergeIssueInfoWithEntity(importIssueInfoWithCustomLabels, issue))
-					.orElseGet(() -> buildIssue(importIssueInfoWithCustomLabels));
+					.map(issue -> mergeIssueInfoWithEntity(importIssueInfo, issue))
+					.orElseGet(() -> buildIssue(importIssueInfo));
 
 			issueRepository.save(issueEntity);
 
@@ -164,9 +161,9 @@ public class IssueImporterService
 			{
 				final ExternalReference issueExternalRef = ExternalReference
 						.builder()
-						.externalSystem(importIssueInfoWithCustomLabels.getExternalIssueId().getExternalSystem())
+						.externalSystem(importIssueInfo.getExternalIssueId().getExternalSystem())
 						.externalReferenceType(ExternalServiceReferenceType.ISSUE_ID)
-						.externalReference(importIssueInfoWithCustomLabels.getExternalIssueId().getId())
+						.externalReference(importIssueInfo.getExternalIssueId().getId())
 						.orgId(issueEntity.getOrgId())
 						.recordId(issueEntity.getIssueId().getRepoId())
 						.build();
@@ -174,7 +171,7 @@ public class IssueImporterService
 				externalReferenceRepository.save(issueExternalRef);
 			}
 
-			issueLabelService.persistLabels(issueEntity.getIssueId(), importIssueInfoWithCustomLabels.getIssueLabels());
+			issueLabelRepository.persistLabels(issueEntity.getIssueId(), importIssueInfo.getIssueLabels());
 
 			importedIdsCollector.add(issueEntity.getIssueId());
 		}
@@ -237,7 +234,6 @@ public class IssueImporterService
 				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		return IssueEntity.builder()
-				.clientId(Env.getClientId())
 				.orgId(importIssueInfo.getOrgId())
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
@@ -248,7 +244,7 @@ public class IssueImporterService
 				.searchKey(importIssueInfo.getSearchKey())
 				.description(importIssueInfo.getDescription())
 				.type(IssueType.EXTERNAL)
-				.isEffortIssue(importIssueInfo.isEffortIssue())
+				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
 				.estimatedEffort(importIssueInfo.getEstimation())
 				.budgetedEffort(importIssueInfo.getBudget())
 				.roughEstimation(importIssueInfo.getRoughEstimation())
@@ -261,7 +257,6 @@ public class IssueImporterService
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
-				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 	}
 
@@ -290,7 +285,7 @@ public class IssueImporterService
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
 				.assigneeId(importIssueInfo.getAssigneeId())
-				.isEffortIssue(importIssueInfo.isEffortIssue())
+				.isEffortIssue(ExternalProjectType.EFFORT.equals(importIssueInfo.getExternalProjectType()))
 				.description(importIssueInfo.getDescription())
 				.externalIssueNo(NumberUtils.asBigDecimal(importIssueInfo.getExternalIssueNo()))
 				.externalIssueURL(importIssueInfo.getExternalIssueURL())
@@ -301,7 +296,6 @@ public class IssueImporterService
 				.roughEstimation(importIssueInfo.getRoughEstimation())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.budgetedEffort(importIssueInfo.getBudget())
-				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 
 		mergedIssueEntity.setEstimatedEffortIfNotSet(importIssueInfo.getEstimation());
@@ -344,6 +338,24 @@ public class IssueImporterService
 		return MilestoneId.ofRepoIdOrNull(milestoneId);
 	}
 
+	private void createMissingRefListForLabels(@NonNull final ImmutableList<IssueLabel> issueLabels)
+	{
+		issueLabels.stream()
+				.filter(label -> referenceDAO.retrieveListItemOrNull(LABEL_AD_Reference_ID, label.getValue()) == null)
+				.map(this::buildRefList)
+				.forEach(referenceDAO::saveRefList);
+	}
+
+	private IADReferenceDAO.ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
+	{
+		return IADReferenceDAO.ADRefListItemCreateRequest
+				.builder()
+				.name(TranslatableStrings.constant(issueLabel.getValue()))
+				.value(issueLabel.getValue())
+				.referenceId(ReferenceId.ofRepoId(LABEL_AD_Reference_ID))
+				.build();
+	}
+
 	private void extractAndPropagateAdempiereException(final CompletableFuture completableFuture)
 	{
 		try
@@ -358,53 +370,5 @@ public class IssueImporterService
 		{
 			throw AdempiereException.wrapIfNeeded(ex1);
 		}
-	}
-
-	@NonNull
-	public ImportIssueInfo appendCustomLabels(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssueEntity)
-	{
-		if (importIssueInfo.isEffortIssue())
-		{
-			return importIssueInfo;
-		}
-
-		final IssueLabel costCenterLabel = getOrCreateCostCenterLabel(importIssueInfo, existingIssueEntity);
-
-		final boolean containsCostCenterLabel = !importIssueInfo.filterLabels(costCenterLabel::equals).isEmpty();
-
-		if (containsCostCenterLabel)
-		{
-			return importIssueInfo;
-		}
-
-		final ImmutableList<IssueLabel> allLabels = Stream.concat(importIssueInfo.getIssueLabels().stream(), Stream.of(costCenterLabel))
-				.collect(ImmutableList.toImmutableList());
-
-		return importIssueInfo.withIssueLabels(allLabels);
-	}
-
-	@NonNull
-	private IssueLabel getOrCreateCostCenterLabel(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssue)
-	{
-		final IssueLabel costCenterLabel = importIssueInfo.getSingleLabel(label -> label.matchesType(GithubImporterConstants.LabelType.COST_CENTER))
-				.orElse(null);
-
-		if (costCenterLabel != null)
-		{
-			return costCenterLabel;
-		}
-
-		return existingIssue
-				.filter(entity -> entity.getCostCenterActivityId() != null)
-				.map(IssueEntity::getCostCenterActivityId)
-				.map(activityRepository::getById)
-				.map(activity -> IssueLabel.builder()
-						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(activity.getValue()))
-						.orgId(activity.getOrgId())
-						.build())
-				.orElseGet(() -> IssueLabel.builder()
-						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(importIssueInfo.getRepositoryName() + "_" + importIssueInfo.getExternalIssueNo()))
-						.orgId(importIssueInfo.getOrgId())
-						.build());
 	}
 }

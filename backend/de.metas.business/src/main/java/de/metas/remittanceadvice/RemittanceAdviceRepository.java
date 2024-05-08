@@ -299,7 +299,6 @@ public class RemittanceAdviceRepository
 				.documentNumber(record.getDocumentNo())
 				.externalDocumentNumber(record.getExternalDocumentNo())
 				.documentDate(TimeUtil.asInstant(record.getDateDoc()))
-				.paymentDate(TimeUtil.asInstant(record.getPaymentDate()))
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.docStatus(record.getDocStatus())
 

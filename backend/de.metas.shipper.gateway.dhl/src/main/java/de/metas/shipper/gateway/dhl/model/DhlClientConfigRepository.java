@@ -51,7 +51,6 @@ public class DhlClientConfigRepository
 				.createQueryBuilder(I_DHL_Shipper_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_Shipper_Config.COLUMNNAME_M_Shipper_ID, shipperId)
-				.orderBy(I_DHL_Shipper_Config.COLUMNNAME_DHL_Shipper_Config_ID)
 				.create()
 				.first();
 		if (configPO == null)

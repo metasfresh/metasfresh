@@ -18,7 +18,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.GuavaCollectors;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -50,7 +51,7 @@ import java.util.Set;
  * #L%
  */
 
-@Schema(description = "element")
+@ApiModel("element")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @ToString
 public final class JSONDocumentLayoutElement
@@ -118,7 +119,7 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	final BarcodeScannerType barcodeScannerType;
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = true)
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;

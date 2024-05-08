@@ -17,10 +17,8 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.document.DocBaseType;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InvoiceDimensionFactory;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
@@ -29,7 +27,7 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -40,6 +38,7 @@ import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
@@ -50,19 +49,16 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.CountryId;
-import de.metas.material.MovementType;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -90,7 +86,6 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -100,16 +95,16 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_PaymentTerm;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -119,7 +114,6 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
@@ -149,8 +143,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	@Getter
 	protected ProductId productId;
 	@Getter
-	protected PaymentTermId paymentTermId;
-	@Getter
 	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
@@ -179,10 +171,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
-		dimensionFactories.add(new ReceiptScheduleDimensionFactoryTestWrapper());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
 		dimensionFactories.add(new InvoiceLineDimensionFactory());
-		dimensionFactories.add(new InvoiceDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
@@ -260,21 +251,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_Product product = BusinessTestHelper.createProduct("product", stockUomRecord);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
-		final I_C_PaymentTerm paymentTerm = InterfaceWrapperHelper.create(ctx, I_C_PaymentTerm.class, trxName);
-		paymentTerm.setValue("paymentTerm");
-		paymentTerm.setName("paymentTerm");
-		paymentTerm.setNetDays(10);
-		paymentTerm.setCalculationMethod(X_C_PaymentTerm.CALCULATIONMETHOD_BaseLineDatePlusXDays);
-		paymentTerm.setBaseLineType(X_C_PaymentTerm.BASELINETYPE_InvoiceDate);
-		paymentTerm.setAD_Org_ID(0);
-		InterfaceWrapperHelper.save(paymentTerm);
-		paymentTermId = PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
-
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
-
-
 
 		final I_C_UOM_Conversion uomConversionRecord = newInstance(I_C_UOM_Conversion.class);
 		uomConversionRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
@@ -403,7 +382,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
 		tax_NotFound.setValidFrom(plvDate);
 		tax_NotFound.setC_Country_ID(100);
-		tax_NotFound.setName("TaxNotFound");
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -416,7 +394,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
 		tax_Default.setValidFrom(plvDate);
 		tax_Default.setC_Country_ID(100);
-		tax_Default.setName("Default Tax");
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 
@@ -424,14 +401,14 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		final I_C_DocType docType_ARI = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_ARI.setName("ARI");
-		docType_ARI.setDocBaseType(DocBaseType.ARInvoice.getCode());
+		docType_ARI.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		docType_ARI.setIsSOTrx(true);
 		docType_ARI.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_ARI);
 
 		final I_C_DocType docType_API = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
 		docType_API.setName("API");
-		docType_API.setDocBaseType(DocBaseType.APInvoice.getCode());
+		docType_API.setDocBaseType(X_C_DocType.DOCBASETYPE_APInvoice);
 		docType_API.setIsSOTrx(false);
 		docType_API.setIsDefault(true);
 		InterfaceWrapperHelper.save(docType_API);
@@ -504,8 +481,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.setProductId(productId)
 				.setUomId(uomId)
 				.setDiscount(0)
-				.setPaymentTermId(paymentTermId)
-				.setDateToInvoice(LocalDate.parse("2020-06-01"))
 				.setC_Tax(tax_Default);
 	}
 
@@ -515,10 +490,10 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-															  final int priceEntered,
-															  final int qty,
-															  final boolean isManual,
-															  final boolean isSOTrx)
+			final int priceEntered,
+			final int qty,
+			final boolean isManual,
+			final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -535,11 +510,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	 * @see #createInvoiceCandidate()
 	 */
 	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
-															  final int priceEntered,
-															  final int qty,
-															  final int discount,
-															  final boolean isManual,
-															  final boolean isSOTrx)
+			final int priceEntered,
+			final int qty,
+			final int discount,
+			final boolean isManual,
+			final boolean isSOTrx)
 	{
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
@@ -551,11 +526,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				.build();
 	}
 
-	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo, MovementType movementType)
+	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo)
 	{
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
-		inOut.setMovementType(movementType.getCode());
-		inOut.setIsSOTrx(movementType.isOutboundTransaction());
 		inOut.setC_BPartner_ID(bpartnerId);
 		inOut.setC_Order_ID(orderId);
 
@@ -581,7 +554,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		{
 			inOutLine.setM_Product_ID(assumeGreaterThanZero(icRecord.getM_Product_ID(), "icRecord.getM_Product_ID()"));
 			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
-			inOutLine.setC_Order_ID(icRecord.getC_Order_ID());
 			inOutLine.setC_OrderLine_ID(icRecord.getC_OrderLine_ID());
 			inOutLine.setQtyEntered(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
 			inOutLine.setC_UOM_ID(qtysDelivered.getUOMQtyNotNull().getUomId().getRepoId());
@@ -682,7 +654,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			assertThat(existingInvalidCandidates).as("Existing invalid invoice candidates").isFalse();
+			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
 		}
 	}
 
@@ -766,11 +738,11 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		return InvoiceCandidateExpectation.newExpectation();
 	}
 
-	protected InvoicingParams createDefaultInvoicingParams()
+	protected PlainInvoicingParams createDefaultInvoicingParams()
 	{
-		return InvoicingParams.builder()
-				.ignoreInvoiceSchedule(true)
-				.consolidateApprovedICs(false)
-				.build();
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(true);
+		invoicingParams.setConsolidateApprovedICs(false);
+		return invoicingParams;
 	}
 }

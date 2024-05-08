@@ -1,12 +1,31 @@
 package org.compiere.apps;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.element.api.AdFieldId;
+import java.time.LocalDate;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.client
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.Properties;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -18,22 +37,27 @@ import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import java.time.LocalDate;
-import java.util.Properties;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * 
  * @author tsa
- * @implSpec task http://dewiki908/mediawiki/index.php/05731_Spaltenbreite_persitieren_%28103033707449%29
+ * @task http://dewiki908/mediawiki/index.php/05731_Spaltenbreite_persitieren_%28103033707449%29
  */
 public class AWindowSaveStateModel
 {
 	private static final String ACTION_Name = "org.compiere.apps.AWindowSaveStateModel.action";
 
-	private static final Logger logger = LogManager.getLogger(AWindowSaveStateModel.class);
-	private static final CCache<UserId, Boolean> userId2enabled = new CCache<>(I_AD_Role.Table_Name, 5, 0);
+	private static final transient Logger logger = LogManager.getLogger(AWindowSaveStateModel.class);
+	private static final transient CCache<UserId, Boolean> userId2enabled = new CCache<>(I_AD_Role.Table_Name, 5, 0);
 
 	public String getActionName()
 	{
@@ -84,28 +108,28 @@ public class AWindowSaveStateModel
 
 	public void save(final GridTab gridTab)
 	{
-		Services.get(ITrxManager.class).runInNewTrx(() -> save0(gridTab));
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> save0(gridTab, localTrxName));
 	}
 
-	private void save0(final GridTab gridTab)
+	private void save0(final GridTab gridTab, final String trxName)
 	{
 		Check.assumeNotNull(gridTab, "gridTab not null");
 		for (final GridField gridField : gridTab.getFields())
 		{
-			save(gridField);
+			save(gridField, trxName);
 		}
 	}
 
-	private void save(final GridField gridField)
+	private void save(final GridField gridField, final String trxName)
 	{
 		final GridFieldVO gridFieldVO = gridField.getVO();
-		final AdFieldId adFieldId = gridFieldVO.getAD_Field_ID();
-		if (adFieldId == null)
+		final int adFieldId = gridFieldVO.getAD_Field_ID();
+		if (adFieldId <= 0)
 		{
 			return;
 		}
 
-		final I_AD_Field adField = InterfaceWrapperHelper.load(adFieldId, I_AD_Field.class);
+		final I_AD_Field adField = InterfaceWrapperHelper.create(gridFieldVO.getCtx(), adFieldId, I_AD_Field.class, trxName);
 		if (adField == null)
 		{
 			return;

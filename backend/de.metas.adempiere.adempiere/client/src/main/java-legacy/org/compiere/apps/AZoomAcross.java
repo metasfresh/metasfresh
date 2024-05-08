@@ -64,10 +64,10 @@ public class AZoomAcross
 		this(invoker, retrieveZoomSourceOrNull(tableName, query, windowID));
 	}
 
-	private static IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final AdWindowId adWindowId)
+	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final AdWindowId adWindowId)
 	{
 		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), ITrx.TRXNAME_None)
-				.firstOnly(PO.class);
+				.firstOnly();
 		if (po == null)
 		{
 			return null;

@@ -121,7 +121,7 @@ public class StockDetailsRow implements IViewRow
 	{
 		this.huStockInfo = huStockInfo;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
 		this.hu = lookupFactory
 				.searchInTableLookup(I_M_HU.Table_Name)

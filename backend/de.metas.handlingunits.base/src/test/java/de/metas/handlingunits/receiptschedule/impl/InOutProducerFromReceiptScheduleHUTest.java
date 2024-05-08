@@ -24,16 +24,13 @@ package de.metas.handlingunits.receiptschedule.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.ProductActivityProvider;
-import de.metas.ad_reference.ADReferenceService;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -49,14 +46,11 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.impl.ReceiptMovementDateRule;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactoryTestWrapper;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.resource.ResourceService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -65,6 +59,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -73,9 +70,10 @@ import java.time.Month;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -90,7 +88,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		super.afterInitialize();
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
-		Services.registerService(IProductActivityProvider.class, ProductActivityProvider.createInstanceForUnitTesting());
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
@@ -100,65 +98,13 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 
 		final LotNumberQuarantineRepository lotNumberQuarantineRepository = new LotNumberQuarantineRepository();
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
-				new DDOrderMoveScheduleService(
-						ddOrderLowLevelDAO,
-						new DDOrderMoveScheduleRepository(),
-						ADReferenceService.newMocked(),
-						huReservationService));
+				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository(), huReservationService));
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
-	}
-
-	private List<I_M_HU> create10PaloxesAndAssignThemToTheReceiptSchedule()
-	{
-		final BigDecimal qtyOrdered = receiptSchedule.getQtyOrdered();
-		assertThat(qtyOrdered).isEqualByComparingTo("4300");
-
-		final List<I_M_HU> paloxes = createIncomingTradingUnits(
-				materialItemTomato_430, // Paloxe x 430 kg
-				materialItemProductTomato_430,
-				qtyOrdered,
-				weightGrossPaloxe // GrossWeight
-		);
-		assertThat(paloxes).hasSize(10);
-		final int paloxesCount = paloxes.size();
-		for (int i = 0; i < paloxesCount; i++)
-		{
-			final I_M_HU paloxe = paloxes.get(i);
-			POJOWrapper.setInstanceName(paloxe, "Paloxe-" + (i + 1) + "/" + paloxesCount);
-			POJOWrapper.save(paloxe);
-		}
-
-		initReceiptScheduleAllocations(paloxes);
-		newTUWeightsExpectations()
-				.setDefaultTUExpectation(standardPaloxeWeightExpectation)
-				.assertExpected(paloxes);
-
-		return paloxes;
-	}
-
-	private I_M_InOut generateReceiptFromReceiptSchedule(final Collection<I_M_HU> selectedHUsToReceive)
-	{
-		final Set<HuId> selectedHuIds = selectedHUsToReceive.stream()
-				.map(I_M_HU::getM_HU_ID)
-				.map(HuId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final CreateReceiptsParameters parameters = CreateReceiptsParameters
-				.builder()
-				.ctx(huContext.getCtx())
-				.receiptSchedules(Collections.singletonList(receiptSchedule))
-				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
-				.selectedHuIds(selectedHuIds)
-				.build();
-
-		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
-		assertThat(result.getInOuts()).hasSize(1);
-		return result.getInOuts().get(0);
 	}
 
 	/**
@@ -167,7 +113,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testNoASIChangeAndNoQualityIssues()
 	{
-		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		//
 		// Generate receipt
@@ -225,8 +171,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testDifferentASIAndQualityIssues()
 	{
-		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
-		assertThat(paloxes).hasSize(10); // guard
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
+		MatcherAssert.assertThat(paloxes.size(), is(10)); // guard
 
 		//
 		// Setup paloxe attribute structure
@@ -234,7 +180,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			{
 				final I_M_HU paloxe1 = paloxes.get(0);
 				final IAttributeStorage as1 = attributeStorageFactory.getAttributeStorage(paloxe1);
-				assertThat(as1.getAttributeValue(helper.attr_CountryMadeIn).isUseInASI()).as("precondition: CountryMadeIn.UseInASI").isTrue(); // else we will get different aggregates
+				Assertions.assertTrue(as1.getAttributeValue(helper.attr_CountryMadeIn).isUseInASI(), "precondition: CountryMadeIn.UseInASI"); // else we will get different aggregates
 				as1.setValue(helper.attr_CountryMadeIn, "DE");
 				as1.setValue(helper.attr_FragileSticker, "Y");
 				as1.setValue(helper.attr_QualityDiscountPercent, "5");
@@ -244,7 +190,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			{
 				final I_M_HU paloxe2 = paloxes.get(1);
 				final IAttributeStorage as2 = attributeStorageFactory.getAttributeStorage(paloxe2);
-				assertThat(as2.getAttributeValue(helper.attr_CountryMadeIn).isUseInASI()).as("precondition: CountryMadeIn.UseInASI").isTrue(); // else we will get different aggregates
+				Assertions.assertTrue(as2.getAttributeValue(helper.attr_CountryMadeIn).isUseInASI(), "precondition: CountryMadeIn.UseInASI"); // else we will get different aggregates
 				as2.setValue(helper.attr_CountryMadeIn, "RO");
 				as2.setValue(helper.attr_FragileSticker, "N");
 				as2.setValue(helper.attr_QualityDiscountPercent, "10");
@@ -383,7 +329,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	@Test
 	public void testSameASIAndQualityIssues_TU()
 	{
-		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		//
 		// Setup paloxe attribute structure
@@ -482,12 +428,12 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	}
 
 	/**
-	 * @implNote <a href="http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29">task</a>
+	 * @implNote task http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
 	 */
 	@Test
 	public void test_HU_LotNumberDate_propagated()
 	{
-		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
+		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
 		final LocalDate lotNumberDate1 = LocalDate.of(2016, Month.JANUARY, 22);
 		final LocalDate lotNumberDate2 = LocalDate.of(2016, Month.JANUARY, 23);
@@ -549,43 +495,55 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		//@formatter:on
 	}
 
-	@Test
-	public void testDimensionPropagated()
+	/**
+	 * Create 10 Paloxes and assign them to "the" receipt schedule of this test's base class.
+	 */
+	private List<I_M_HU> createStandardHUsAndAssignThemToTheReceiptSchedule()
 	{
-		final ReceiptScheduleDimensionFactory receiptScheduleDimensionFactory = new ReceiptScheduleDimensionFactoryTestWrapper();
-		receiptScheduleDimensionFactory.updateRecord(receiptSchedule, DimensionTest.newFullyPopulatedDimension());
-		InterfaceWrapperHelper.save(receiptSchedule);
-		final Dimension receiptScheduleDimension = new ReceiptScheduleDimensionFactoryTestWrapper().getFromRecord(receiptSchedule);
+		final BigDecimal qtyOrdered = receiptSchedule.getQtyOrdered();
+		MatcherAssert.assertThat("precondition: QtyOrdered", qtyOrdered, Matchers.comparesEqualTo(new BigDecimal("4300")));
 
-		final List<I_M_HU> paloxes = create10PaloxesAndAssignThemToTheReceiptSchedule();
+		final List<I_M_HU> paloxes = createIncomingTradingUnits(
+				materialItemTomato_430, // Paloxe x 430 kg
+				materialItemProductTomato_430,
+				qtyOrdered,
+				weightGrossPaloxe // GrossWeight
+		);
+		final int paloxesCount = paloxes.size();
+		Assertions.assertEquals(10, paloxesCount, "Invalid amount of paloxes created");
+		for (int i = 0; i < paloxesCount; i++)
+		{
+			final I_M_HU paloxe = paloxes.get(i);
+			POJOWrapper.setInstanceName(paloxe, "Paloxe-" + (i + 1) + "/" + paloxesCount);
+			POJOWrapper.save(paloxe);
+		}
 
-		//
-		// Generate receipt
-		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
+		initReceiptScheduleAllocations(paloxes);
+		newTUWeightsExpectations()
+				.setDefaultTUExpectation(standardPaloxeWeightExpectation)
+				.assertExpected(paloxes);
 
-		final StockQtyAndUOMQty qtys_4300 = StockQtyAndUOMQtys.create(
-				new BigDecimal("4300"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
-				new BigDecimal("4300"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+		return paloxes;
+	}
 
-		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
-				new BigDecimal("10"), ProductId.ofRepoId(pPaloxe.getM_Product_ID()),
-				new BigDecimal("10"), UomId.ofRepoId(uomEach.getC_UOM_ID()));
+	private I_M_InOut generateReceiptFromReceiptSchedule(final Collection<I_M_HU> selectedHUsToReceive)
+	{
+		final Properties ctx = huContext.getCtx();
+		final List<I_M_ReceiptSchedule> receiptSchedules = Collections.singletonList(receiptSchedule);
+		final Set<HuId> selectedHuIds = selectedHUsToReceive.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 
-		//
-		// Validate Receipt
-		//@formatter:off
-		InOutLineExpectations.newExpectations()
-				.newInOutLineExpectation()
-					.qtyEnteredTU(10)
-					.stockQtyAndMaybeCatchQty(qtys_4300).noASIDescription()
-					.inDispute(false)
-					.dimension(receiptScheduleDimension)
-					.endExpectation()
-				.newInOutLineExpectation()
-					.stockQtyAndMaybeCatchQty(qtys_10).noASIDescription()
-					.inDispute(false)
-					.endExpectation()
-				.assertExpected(receipt); // lines count expected: 2
-		//@formatter:on
+		final CreateReceiptsParameters parameters = CreateReceiptsParameters
+				.builder()
+				.ctx(ctx)
+				.receiptSchedules(receiptSchedules)
+				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
+				.selectedHuIds(selectedHuIds)
+				.build();
+
+		final InOutGenerateResult result = huReceiptScheduleBL.processReceiptSchedules(parameters);
+		return result.getInOuts().get(0);
 	}
 }

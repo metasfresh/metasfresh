@@ -44,7 +44,6 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -70,7 +69,6 @@ import org.compiere.model.I_M_Transaction;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -86,7 +84,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return {@code true} if the HULoader is currently doing its thing within this thread.
 	 */
 	boolean isHULoaderInProgress();
-
+	
 	I_M_HU getById(HuId huId);
 
 	List<I_M_HU> getByIds(Collection<HuId> huIds);
@@ -102,10 +100,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	IHUQueryBuilder createHUQueryBuilder();
 
 	ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull Collection<HuId> huIds);
-
-	List<I_M_HU> getBySelectionId(@NonNull PInstanceId selectionId);
-
-	Set<HuId> getHuIdsBySelectionId(@NonNull PInstanceId selectionId);
 
 	/**
 	 * @return default storage factory
@@ -208,6 +202,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
+	 *
 	 * <b>NOTE: for a full description of everything this method does, consult the javadoc of {@link #destroyIfEmptyStorage(IHUContext, I_M_HU)}.</b>
 	 *
 	 * @return true if given HU was fully destroyed now or it was already destroyed
@@ -277,18 +272,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable BPartnerId bpartnerId);
 
 	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
-
-	@NonNull
-	WarehouseId getWarehouseIdForHuId(@NonNull HuId huId);
-
-	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
-
-	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull I_M_HU_PI huPI,
-			@Nullable String huUnitType,
-			@Nullable BPartnerId bpartnerId);
-
-	void reactivateDestroyedHU(@NonNull I_M_HU hu,@NonNull IContextAware contextProvider);
 
 	@Builder
 	@Value
@@ -426,8 +409,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	void markDestroyed(IHUContext huContext, I_M_HU hu);
 
-	void saveHU(I_M_HU hu);
-
 	/**
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
@@ -447,8 +428,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	QtyTU getTUsCount(final I_M_HU tuOrAggregatedTU);
 
 	HuPackingInstructionsId getPackingInstructionsId(@NonNull I_M_HU hu);
-
-	HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull I_M_HU hu);
 
 	@Nullable
 	I_M_HU_PI getPI(I_M_HU hu);
@@ -472,8 +451,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PI getPI(@NonNull I_M_HU_PI_Item piItem);
 
-	I_M_HU_PI getPI(@NonNull HuPackingInstructionsVersionId piVersionId);
-
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_Item huItem);
 
@@ -492,9 +469,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
-
-	@Nullable
-	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
 
 	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
@@ -519,8 +493,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
 	}
-
-	LocatorId getLocatorId(HuId huId);
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{
@@ -609,7 +581,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
-	AttributesKey getAttributesKeyForInventory(@NonNull I_M_HU hu);
+	AttributesKey getStorageRelevantAttributesKey(@NonNull I_M_HU hu);
 
 	void setHUStatus(I_M_HU hu, IContextAware contextProvider, String huStatus);
 
@@ -620,6 +592,4 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
-
-	ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId);
 }

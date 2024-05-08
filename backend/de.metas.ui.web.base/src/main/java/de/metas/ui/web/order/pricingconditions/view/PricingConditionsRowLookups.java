@@ -5,7 +5,6 @@ import java.awt.Color;
 import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import de.metas.util.ColorId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -56,8 +55,13 @@ import lombok.NonNull;
  * #L%
  */
 
-class PricingConditionsRowLookups
+public class PricingConditionsRowLookups
 {
+	public static PricingConditionsRowLookups newInstance()
+	{
+		return new PricingConditionsRowLookups();
+	}
+
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource userLookup;
 	private final LookupDataSource productLookup;
@@ -66,17 +70,19 @@ class PricingConditionsRowLookups
 	private final LookupDataSource paymentTermLookup;
 	private final LookupDataSource currencyIdLookup;
 
-	private final CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
+	private CCache<Integer, String> temporaryPriceConditionsColorCache = CCache.newCache("temporaryPriceConditionsColor", 1, CCache.EXPIREMINUTES_Never);
 
-	public PricingConditionsRowLookups(final LookupDataSourceFactory lookupDataSourceFactory)
+	private PricingConditionsRowLookups()
 	{
-		bpartnerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
-		userLookup = lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name);
-		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
-		priceTypeLookup = lookupDataSourceFactory.listByAD_Reference_Value_ID(PriceSpecificationType.AD_Reference_ID);
-		pricingSystemLookup = lookupDataSourceFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
-		paymentTermLookup = lookupDataSourceFactory.searchByColumn(I_M_DiscountSchemaBreak.Table_Name, I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID);
-		currencyIdLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Currency.Table_Name);
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
+
+		bpartnerLookup = lookupFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		userLookup = lookupFactory.searchInTableLookup(I_AD_User.Table_Name);
+		productLookup = lookupFactory.searchInTableLookup(I_M_Product.Table_Name);
+		priceTypeLookup = lookupFactory.listByAD_Reference_Value_ID(PriceSpecificationType.AD_Reference_ID);
+		pricingSystemLookup = lookupFactory.searchInTableLookup(I_M_PricingSystem.Table_Name);
+		paymentTermLookup = lookupFactory.searchByColumn(I_M_DiscountSchemaBreak.Table_Name, I_M_DiscountSchemaBreak.COLUMNNAME_C_PaymentTerm_ID);
+		currencyIdLookup = lookupFactory.searchInTableLookup(I_C_Currency.Table_Name);
 	}
 
 	public LookupValue lookupBPartner(@Nullable final BPartnerId bpartnerId)
@@ -179,7 +185,7 @@ class PricingConditionsRowLookups
 
 	private String retrieveTemporaryPriceConditionsColor()
 	{
-		final ColorId temporaryPriceConditionsColorId = Services.get(IOrderLinePricingConditions.class).getTemporaryPriceConditionsColorId();
+		final int temporaryPriceConditionsColorId = Services.get(IOrderLinePricingConditions.class).getTemporaryPriceConditionsColorId();
 		return toHexString(Services.get(IColorRepository.class).getColorById(temporaryPriceConditionsColorId));
 	}
 

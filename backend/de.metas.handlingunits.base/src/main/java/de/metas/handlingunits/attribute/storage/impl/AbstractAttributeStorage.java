@@ -37,8 +37,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
-import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -59,7 +57,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -314,7 +311,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeValue getAttributeValue(@NonNull final AttributeCode attributeCode)
+	public final IAttributeValue getAttributeValue(final AttributeCode attributeCode)
 	{
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
 		if (NullAttributeValue.isNull(attributeValue))
@@ -457,20 +454,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 		final IAttributeValue value = getAttributeValue(attributeCode);
 		return value.getValueAsString();
-	}
-
-	@Override
-	@Nullable
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
-
-		if (NullAttributeValue.isNull(attributeValue))
-		{
-			return null;
-		}
-
-		return attributeValue.getValueAsString();
 	}
 
 	@Override
@@ -1135,8 +1118,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	@Override
 	public boolean isMandatory(
 			@NonNull final I_M_Attribute attribute,
-			@NonNull final Set<ProductId> productIds,
-			@Nullable final AttributeSourceDocument attributeSourceDocument)
+			final Set<ProductId> productIds,
+			final boolean isMaterialReceipt)
 	{
 		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 		if (getAttributeValue(attributeCode).isMandatory())
@@ -1145,27 +1128,24 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		return productIds.stream().anyMatch(productId -> isMandatoryForAttributeSet(attributeId, productId, attributeSourceDocument));
+		return productIds.stream().anyMatch(productId -> isMandatoryForAttributeSet(attributeId, productId, isMaterialReceipt));
 	}
 
 	private boolean isMandatoryForAttributeSet(
 			@NonNull final AttributeId attributeId,
 			@NonNull final ProductId productId,
-			@Nullable final AttributeSourceDocument attributeSourceDocument)
+			final boolean isMaterialReceipt)
 	{
-
-		if(attributeSourceDocument == null)
+		if (isMaterialReceipt)
+		{
+			return attributesBL.isMandatoryOnReceipt(productId, attributeId);
+		}
+		else
 		{
 			// NOTE: don't check M_Attribute.IsMandatory because
 			// we assume IAttributeValue.isMandatory implementation shall check that if it's relevant.
 			return false;
 		}
-		else
-		{
-			return attributesBL.isMandatoryOn(productId, attributeId, attributeSourceDocument);
-		}
-
-
 	}
 
 	@Nullable
@@ -1283,27 +1263,6 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		listeners.onAttributeStorageDisposed(this);
 	}
 
-	@Nullable
-	@Override
-	public AttributeValueId getAttributeValueIdOrNull(final AttributeCode attributeCode)
-	{
-		final I_M_Attribute attribute = getAttributeByValueKeyOrNull(attributeCode);
-		if (attribute == null)
-		{
-			return null;
-		}
-
-		final String value = getValueAsStringOrNull(attributeCode);
-		if (value == null)
-		{
-			return null;
-		}
-
-		return Optional.ofNullable(attributesBL.retrieveAttributeValueOrNull(attribute, value))
-				.map(AttributeListValue::getId)
-				.orElse(null);
-	}
-
 	@ToString
 	private static final class IndexedAttributeValues
 	{
@@ -1387,17 +1346,9 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 			return attributesById.containsKey(attributeId);
 		}
 
-		/**
-		 * @return this storage's attributes in the order in which they were added to the storage {@link de.metas.handlingunits.attribute.impl.HUAttributesBySeqNoComparator}.
-		 */
-		public ImmutableList<I_M_Attribute> getAttributes()
+		public Collection<I_M_Attribute> getAttributes()
 		{
-			final ImmutableList.Builder<I_M_Attribute> result = ImmutableList.builder();
-			for(final IAttributeValue attributeValue:attributeValues)
-			{
-				result.add(attributeValue.getM_Attribute());
-			}
-			return result.build();
+			return attributesByCode.values();
 		}
 
 		public I_M_Attribute getAttributeOrNull(final AttributeId attributeId)

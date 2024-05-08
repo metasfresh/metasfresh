@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
@@ -54,8 +53,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
-import de.metas.handlingunits.attribute.weightable.IWeightable;
-import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -78,28 +75,23 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -108,21 +100,17 @@ import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
-	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
+	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -135,8 +123,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -170,18 +157,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
 		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
-	}
-
-	@Override
-	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getBySelectionId(selectionId);
-	}
-
-	@Override
-	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
-	{
-		return handlingUnitsRepo.getHuIdsBySelectionId(selectionId);
 	}
 
 	@Override
@@ -318,12 +293,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
-		handlingUnitsRepo.saveHU(hu);
-	}
-
-	@Override
-	public void saveHU(final I_M_HU hu)
-	{
 		handlingUnitsRepo.saveHU(hu);
 	}
 
@@ -684,9 +653,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				Check.errorIf(maxDepth <= 0, "We navigated more than {} levels deep to get the top level of hu={}. It seems like a data error", maxDepth, hu);
 			}
 		}
-
-		husResult.sort(Comparator.comparing(I_M_HU::getM_HU_ID)); // make sure that our result is in defined ordering
-
 		return husResult;
 	}
 
@@ -835,17 +801,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPackingInstructionsId(piVersionId);
 	}
 
-	@Override
-	public HuPackingInstructionsId getEffectivePackingInstructionsId(@NonNull final I_M_HU hu)
-	{
-		final HuPackingInstructionsVersionId huPackingInstructionsVersionId = Optional.ofNullable(getEffectivePIVersion(hu))
-				.map(I_M_HU_PI_Version::getM_HU_PI_Version_ID)
-				.map(HuPackingInstructionsVersionId::ofRepoId)
-				.orElse(HuPackingInstructionsVersionId.VIRTUAL);
-
-		return getPackingInstructionsId(huPackingInstructionsVersionId);
-	}
-
 	private HuPackingInstructionsId getPackingInstructionsId(@NonNull final HuPackingInstructionsVersionId piVersionId)
 	{
 		final HuPackingInstructionsId knownPackingInstructionsId = piVersionId.getKnownPackingInstructionsIdOrNull();
@@ -883,10 +838,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id)
-	{
-		return handlingUnitsRepo.getPackingInstructionById(id);
-	}
+	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsId id) {return handlingUnitsRepo.getPackingInstructionById(id);}
 
 	@Override
 	public String getPIName(@NonNull final HuPackingInstructionsId id)
@@ -930,16 +882,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI getPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(piItem.getM_HU_PI_Version_ID());
-		return getPI(piVersionId);
-	}
-
-	@Override
-	public I_M_HU_PI getPI(@NonNull final HuPackingInstructionsVersionId piVersionId)
-	{
 		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePIVersionById(piVersionId);
 		return getPI(piVersion);
 	}
-
 
 	@NonNull
 	@Override
@@ -1000,12 +945,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 
 		return getIncludedPI(parentPIItem);
-	}
-
-	@Nullable
-	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
-	{
-		return getEffectivePI(getById(huId));
 	}
 
 	@Override
@@ -1081,17 +1020,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public AttributesKey getAttributesKeyForInventory(@NonNull final I_M_HU hu)
+	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
-		final Predicate<I_M_Attribute> nonWeightRelatedAttr =
-				attribute -> !Weightables.isWeightRelatedAttribute(AttributeCode.ofString(attribute.getValue()));
-		final ImmutableAttributeSet requestedAttributeSet = ImmutableAttributeSet.createSubSet(attributeStorage, nonWeightRelatedAttr);
+		final ImmutableAttributeSet storageRelevantSubSet = ImmutableAttributeSet.createSubSet(attributeStorage, I_M_Attribute::isStorageRelevant);
 
 		return AttributesKeys
-				.createAttributesKeyFromAttributeSet(requestedAttributeSet)
+				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
 				.orElse(AttributesKey.NONE);
 	}
 
@@ -1154,9 +1091,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull final HuPackingInstructionsId packingInstructionsId,
-			@Nullable final String huUnitType,
-			@Nullable final BPartnerId bpartnerId)
+			@NonNull HuPackingInstructionsId packingInstructionsId,
+			@Nullable String huUnitType,
+			@Nullable BPartnerId bpartnerId)
 	{
 		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(packingInstructionsId, huUnitType, bpartnerId);
 	}
@@ -1182,9 +1119,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
 		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
 
-		final InstantAndOrgId clearanceDate = clearanceStatusInfo.getClearanceDate();
-		hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
-
 		handlingUnitsRepo.saveHU(hu);
 
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
@@ -1201,8 +1135,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@NonNull
 	public ITranslatableString getClearanceStatusCaption(@NonNull final ClearanceStatus clearanceStatus)
 	{
-		final ADReferenceService adReferenceService = ADReferenceService.get();
-		return adReferenceService.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
+		return adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.CLEARANCESTATUS_AD_Reference_ID, clearanceStatus.getCode());
 	}
 
 	private boolean isWholeHierarchyCleared(@NonNull final I_M_HU hu)
@@ -1231,68 +1164,4 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return Check.isBlank(hu.getClearanceStatus()) ||
 				ClearanceStatus.Cleared.getCode().equals(hu.getClearanceStatus());
 	}
-
-	@Override
-	public ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId)
-	{
-		return handlingUnitsRepo.getClientAndOrgId(huId);
-	}
-
-	@Override
-	@NonNull
-	public WarehouseId getWarehouseIdForHuId(@NonNull final HuId huId)
-	{
-		final WarehouseId warehouseIdByLocatorRepoId = warehouseDAO.getWarehouseIdByLocatorRepoId(getById(huId).getM_Locator_ID());
-		Check.assumeNotNull(warehouseIdByLocatorRepoId, "Warehouse cannot be determined for hu: {}", huId);
-		return warehouseIdByLocatorRepoId;
-	}
-
-	@Override
-	public LocatorId getLocatorId(@NonNull final HuId huId)
-	{
-		final I_M_HU hu = handlingUnitsRepo.getById(huId);
-		return IHandlingUnitsBL.extractLocatorId(hu);
-	}
-
-	@Override
-	public Optional<HuId> getFirstHuIdByExternalLotNo(final String externalLotNo)
-	{
-		return handlingUnitsRepo.getFirstHuIdByExternalLotNo(externalLotNo);
-	}
-
-	@Override
-	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
-			@NonNull final I_M_HU_PI huPI,
-			@Nullable final String huUnitType,
-			@Nullable final BPartnerId bpartnerId)
-	{
-		return handlingUnitsRepo.retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
-	}
-
-	@Override
-	public void reactivateDestroyedHU(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider)
-	{
-		if (!isDestroyed(hu))
-		{
-			logger.debug("reactivateDestroyedHU called for a non destroyed HU! M_HU_ID={}", hu);
-			return;
-		}
-		final IHUContext huContext = createMutableHUContext(contextProvider);
-
-		final boolean allStoragesAreEmpty = getStorageFactory().getStorage(hu).isEmpty();
-
-		if (allStoragesAreEmpty)
-		{
-			final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
-			huAttributes.setSaveOnChange(true);
-
-			final IWeightable huWeight = Weightables.wrap(huAttributes);
-			huWeight.setWeightNet(BigDecimal.ZERO);
-		}
-
-		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-		hu.setIsActive(true);
-		handlingUnitsRepo.saveHU(hu);
-	}
-
 }

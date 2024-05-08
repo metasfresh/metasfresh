@@ -36,8 +36,6 @@ import org.springframework.util.SocketUtils;
 import java.io.IOException;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.core.CoreConstants.CONCURRENT_CONSUMERS_PROPERTY;
-import static de.metas.camel.externalsystems.core.CoreConstants.THREAD_POOL_SIZE_PROPERTY;
 import static org.assertj.core.api.Assertions.*;
 
 class CallDispatcherRouteBuilderTest extends CamelTestSupport
@@ -60,8 +58,6 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 
 			final String port = Integer.toString(appServerPort);
 			properties.setProperty("server.port", port);
-			properties.setProperty(THREAD_POOL_SIZE_PROPERTY, "3"); // supposed to be logged, so we need to set it to avoid a test-fail
-			properties.setProperty(CONCURRENT_CONSUMERS_PROPERTY, "4"); // supposed to be logged, so we need to set it to avoid a test-fail
 			return properties;
 		}
 		catch (final IOException e)

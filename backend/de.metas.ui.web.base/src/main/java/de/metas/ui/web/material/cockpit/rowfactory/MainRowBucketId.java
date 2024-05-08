@@ -1,15 +1,15 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import org.compiere.util.TimeUtil;
+
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.TimeUtil;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -53,14 +53,6 @@ public class MainRowBucketId
 				date);
 	}
 
-	@NonNull
-	public static MainRowBucketId createInstanceForQuantitiesRecord(
-			@NonNull final QtyDemandQtySupply qtyRecord,
-			@NonNull final LocalDate date)
-	{
-		return new MainRowBucketId(qtyRecord.getProductId(), date);
-	}
-
 	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final LocalDate date)
 	{
 		return new MainRowBucketId(productId, date);
@@ -68,13 +60,20 @@ public class MainRowBucketId
 
 	ProductId productId;
 	LocalDate date;
-	BigDecimal pmmQtyPromised = BigDecimal.ZERO;
-	BigDecimal qtyReserved = BigDecimal.ZERO;
-	BigDecimal qtyOrdered = BigDecimal.ZERO;
-	BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
-	BigDecimal qtyMrp = BigDecimal.ZERO;
-	BigDecimal qtyPromised = BigDecimal.ZERO;
-	BigDecimal qtyOnHand = BigDecimal.ZERO;
+
+	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
+
+	private BigDecimal qtyReserved = BigDecimal.ZERO;
+
+	private BigDecimal qtyOrdered = BigDecimal.ZERO;
+
+	private BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
+
+	private BigDecimal qtyMrp = BigDecimal.ZERO;
+
+	private BigDecimal qtyPromised = BigDecimal.ZERO;
+
+	private BigDecimal qtyOnHand = BigDecimal.ZERO;
 
 	private MainRowBucketId(
 			@NonNull final ProductId productId,

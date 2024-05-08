@@ -1,166 +1,286 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.dunning.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_DunningDoc
- *  @author metasfresh (generated)
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_DunningDoc, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2120654377L;
+	private static final long serialVersionUID = -1280603864L;
 
     /** Standard Constructor */
-    public X_C_DunningDoc (final Properties ctx, final int C_DunningDoc_ID, @Nullable final String trxName)
+    public X_C_DunningDoc (Properties ctx, int C_DunningDoc_ID, String trxName)
     {
       super (ctx, C_DunningDoc_ID, trxName);
+      /** if (C_DunningDoc_ID == 0)
+        {
+			setC_BPartner_ID (0);
+			setC_BPartner_Location_ID (0);
+			setC_DunningDoc_ID (0);
+			setC_DunningLevel_ID (0);
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
+			setDocumentNo (null);
+			setDunningDate (new Timestamp( System.currentTimeMillis() ));
+			setIsUseBPartnerAddress (false); // N
+			setProcessed (false); // N
+        } */
     }
 
     /** Load Constructor */
-    public X_C_DunningDoc (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_DunningDoc (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
+	/** Set Anschrift-Text.
+		@param BPartnerAddress Anschrift-Text	  */
 	@Override
-	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
 
+	/** Get Anschrift-Text.
+		@return Anschrift-Text	  */
 	@Override
-	public java.lang.String getBPartnerAddress ()
+	public java.lang.String getBPartnerAddress () 
 	{
-		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
+		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
 	}
 
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
 	@Override
-	public int getC_BPartner_ID ()
+	public int getC_BPartner_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
+	}
+
+	/** Set Standort.
+		@param C_BPartner_Location_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
 	}
 
+	/** Get Standort.
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
 	@Override
-	public int getC_BPartner_Location_ID ()
+	public int getC_BPartner_Location_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_DocType_ID (final int C_DocType_ID)
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
 	@Override
-	public int getC_DocType_ID ()
+	public int getC_DocType_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Dunning_Contact_ID (final int C_Dunning_Contact_ID)
+	public org.compiere.model.I_AD_User getC_Dunning_Contact() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Dunning_Contact_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setC_Dunning_Contact(org.compiere.model.I_AD_User C_Dunning_Contact)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Dunning_Contact_ID, org.compiere.model.I_AD_User.class, C_Dunning_Contact);
+	}
+
+	/** Set Mahnkontakt.
+		@param C_Dunning_Contact_ID Mahnkontakt	  */
+	@Override
+	public void setC_Dunning_Contact_ID (int C_Dunning_Contact_ID)
 	{
 		if (C_Dunning_Contact_ID < 1) 
 			set_Value (COLUMNNAME_C_Dunning_Contact_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Dunning_Contact_ID, C_Dunning_Contact_ID);
+			set_Value (COLUMNNAME_C_Dunning_Contact_ID, Integer.valueOf(C_Dunning_Contact_ID));
 	}
 
+	/** Get Mahnkontakt.
+		@return Mahnkontakt	  */
 	@Override
-	public int getC_Dunning_Contact_ID ()
+	public int getC_Dunning_Contact_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Dunning_Contact_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_Contact_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Dunning Document.
+		@param C_DunningDoc_ID Dunning Document	  */
 	@Override
-	public void setC_DunningDoc_ID (final int C_DunningDoc_ID)
+	public void setC_DunningDoc_ID (int C_DunningDoc_ID)
 	{
 		if (C_DunningDoc_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_DunningDoc_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DunningDoc_ID, C_DunningDoc_ID);
+			set_ValueNoCheck (COLUMNNAME_C_DunningDoc_ID, Integer.valueOf(C_DunningDoc_ID));
 	}
 
+	/** Get Dunning Document.
+		@return Dunning Document	  */
 	@Override
-	public int getC_DunningDoc_ID ()
+	public int getC_DunningDoc_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_DunningDoc_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DunningDoc_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public org.compiere.model.I_C_DunningLevel getC_DunningLevel()
+	public org.compiere.model.I_C_DunningLevel getC_DunningLevel() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_DunningLevel_ID, org.compiere.model.I_C_DunningLevel.class);
 	}
 
 	@Override
-	public void setC_DunningLevel(final org.compiere.model.I_C_DunningLevel C_DunningLevel)
+	public void setC_DunningLevel(org.compiere.model.I_C_DunningLevel C_DunningLevel)
 	{
 		set_ValueFromPO(COLUMNNAME_C_DunningLevel_ID, org.compiere.model.I_C_DunningLevel.class, C_DunningLevel);
 	}
 
+	/** Set Mahnstufe.
+		@param C_DunningLevel_ID Mahnstufe	  */
 	@Override
-	public void setC_DunningLevel_ID (final int C_DunningLevel_ID)
+	public void setC_DunningLevel_ID (int C_DunningLevel_ID)
 	{
 		if (C_DunningLevel_ID < 1) 
 			set_Value (COLUMNNAME_C_DunningLevel_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DunningLevel_ID, C_DunningLevel_ID);
+			set_Value (COLUMNNAME_C_DunningLevel_ID, Integer.valueOf(C_DunningLevel_ID));
 	}
 
+	/** Get Mahnstufe.
+		@return Mahnstufe	  */
 	@Override
-	public int getC_DunningLevel_ID ()
+	public int getC_DunningLevel_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_DunningLevel_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DunningLevel_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription ()
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -198,16 +318,24 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
+	/** Set Belegverarbeitung.
+		@param DocAction 
+		Der zukünftige Status des Belegs
+	  */
 	@Override
-	public void setDocAction (final java.lang.String DocAction)
+	public void setDocAction (java.lang.String DocAction)
 	{
+
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
+	/** Get Belegverarbeitung.
+		@return Der zukünftige Status des Belegs
+	  */
 	@Override
-	public java.lang.String getDocAction ()
+	public java.lang.String getDocAction () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocAction);
+		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -239,129 +367,155 @@ public class X_C_DunningDoc extends org.compiere.model.PO implements I_C_Dunning
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
 	@Override
-	public void setDocStatus (final java.lang.String DocStatus)
+	public void setDocStatus (java.lang.String DocStatus)
 	{
+
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
 	@Override
-	public java.lang.String getDocStatus ()
+	public java.lang.String getDocStatus () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocStatus);
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
+	/** Set Nr..
+		@param DocumentNo 
+		Document sequence number of the document
+	  */
 	@Override
-	public void setDocumentNo (final java.lang.String DocumentNo)
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
+	/** Get Nr..
+		@return Document sequence number of the document
+	  */
 	@Override
-	public java.lang.String getDocumentNo ()
+	public java.lang.String getDocumentNo () 
 	{
-		return get_ValueAsString(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
+	/** Set Dunning Date.
+		@param DunningDate 
+		Date of Dunning
+	  */
 	@Override
-	public void setDunningDate (final java.sql.Timestamp DunningDate)
+	public void setDunningDate (java.sql.Timestamp DunningDate)
 	{
 		set_Value (COLUMNNAME_DunningDate, DunningDate);
 	}
 
+	/** Get Dunning Date.
+		@return Date of Dunning
+	  */
 	@Override
-	public java.sql.Timestamp getDunningDate ()
+	public java.sql.Timestamp getDunningDate () 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DunningDate);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DunningDate);
 	}
 
+	/** Set Benutze abw. Adresse.
+		@param IsUseBPartnerAddress Benutze abw. Adresse	  */
 	@Override
-	public void setIsUseBPartnerAddress (final boolean IsUseBPartnerAddress)
+	public void setIsUseBPartnerAddress (boolean IsUseBPartnerAddress)
 	{
-		set_Value (COLUMNNAME_IsUseBPartnerAddress, IsUseBPartnerAddress);
+		set_Value (COLUMNNAME_IsUseBPartnerAddress, Boolean.valueOf(IsUseBPartnerAddress));
 	}
 
+	/** Get Benutze abw. Adresse.
+		@return Benutze abw. Adresse	  */
 	@Override
-	public boolean isUseBPartnerAddress ()
+	public boolean isUseBPartnerAddress () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsUseBPartnerAddress);
+		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Massenaustritt.
+		@param IsWriteOff Massenaustritt	  */
 	@Override
-	public void setIsWriteOff (final boolean IsWriteOff)
+	public void setIsWriteOff (boolean IsWriteOff)
 	{
 		throw new IllegalArgumentException ("IsWriteOff is virtual column");	}
 
+	/** Get Massenaustritt.
+		@return Massenaustritt	  */
 	@Override
-	public boolean isWriteOff ()
+	public boolean isWriteOff () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsWriteOff);
-	}
-
-	@Override
-	public org.compiere.model.I_M_SectionCode getM_SectionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
-	}
-
-	@Override
-	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
-	}
-
-	@Override
-	public void setM_SectionCode_ID (final int M_SectionCode_ID)
-	{
-		if (M_SectionCode_ID < 1)
-			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else
-			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
-	}
-
-	@Override
-	public int getM_SectionCode_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+		Object oo = get_Value(COLUMNNAME_IsWriteOff);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Verarbeitet.
-		@param Processed
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
 	@Override
-	public void setPOReference (final @Nullable java.lang.String POReference)
+	public void setProcessed (boolean Processed)
 	{
-		set_Value (COLUMNNAME_POReference, POReference);
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
 	@Override
-	public java.lang.String getPOReference()
+	public boolean isProcessed () 
 	{
-		return get_ValueAsString(COLUMNNAME_POReference);
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Process Now.
+		@param Processing Process Now	  */
 	@Override
-	public void setProcessed (final boolean Processed)
+	public void setProcessing (boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processed, Processed);
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
+	/** Get Process Now.
+		@return Process Now	  */
 	@Override
-	public boolean isProcessed ()
+	public boolean isProcessing () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setProcessing (final boolean Processing)
-	{
-		set_Value (COLUMNNAME_Processing, Processing);
-	}
-
-	@Override
-	public boolean isProcessing ()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

@@ -22,20 +22,22 @@ package org.adempiere.ad.modelvalidator;
  * #L%
  */
 
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Ints;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
+import java.lang.reflect.Method;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.EqualsBuilder;
 
-import java.lang.reflect.Method;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Ints;
+
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 
 @Getter
 /* package */final class Pointcut implements Comparable<Pointcut>
@@ -251,7 +253,7 @@ import java.lang.reflect.Method;
 		// => return a list of all columns of this model but without those that chall be ignored
 		else if (!ignoredColumns.isEmpty())
 		{
-			final ImmutableSet<String> modelColumnNames = ImmutableSet.copyOf(InterfaceWrapperHelper.getModelPhysicalColumnNames(modelClass));
+			final ImmutableSet<String> modelColumnNames = ImmutableSet.copyOf(InterfaceWrapperHelper.getModelColumnNames(modelClass));
 
 			final ImmutableSet.Builder<String> columnsToCheckForChanges = ImmutableSet.builder();
 			for (final String columnName : modelColumnNames)

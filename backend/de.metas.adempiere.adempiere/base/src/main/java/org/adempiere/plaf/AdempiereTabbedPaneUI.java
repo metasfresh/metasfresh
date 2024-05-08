@@ -136,11 +136,8 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
  */
 public final class AdempiereTabbedPaneUI extends MetalTabbedPaneUI
 {
-	/** 
-	 * The UI Class ID to bind this UI to
-	 * See {@link JTabbedPane#getUIClassID()}.
-	 */
-	public static final String uiClassID = "TabbedPaneUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JTabbedPane.class, "TabbedPaneUI");
 
 	public static final String KEY_AlignVerticalTabsWithHorizontalTabs_Enabled = "TabbedPane.AlignVerticalTabsWithHorizontalTabs";
 

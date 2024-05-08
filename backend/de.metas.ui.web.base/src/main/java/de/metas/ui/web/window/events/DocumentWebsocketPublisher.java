@@ -1,16 +1,9 @@
 package de.metas.ui.web.window.events;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.util.Services;
-import de.metas.websocket.sender.WebsocketSender;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -18,11 +11,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,15 +46,19 @@ import java.util.function.Consumer;
  * Publishes document related events to websocket endpoints.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Component
-@RequiredArgsConstructor
 public class DocumentWebsocketPublisher
 {
-	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final WebsocketSender websocketSender;
+	private final ThreadLocal<JSONDocumentChangedWebSocketEventCollector> THREAD_LOCAL_COLLECTOR = new ThreadLocal<>();
 
-	@NonNull private final ThreadLocal<JSONDocumentChangedWebSocketEventCollector> THREAD_LOCAL_COLLECTOR = new ThreadLocal<>();
+	private final WebsocketSender websocketSender;
+
+	public DocumentWebsocketPublisher(@NonNull final WebsocketSender websocketSender)
+	{
+		this.websocketSender = websocketSender;
+	}
 
 	private void forCollector(final Consumer<JSONDocumentChangedWebSocketEventCollector> consumer)
 	{
@@ -66,16 +66,33 @@ public class DocumentWebsocketPublisher
 		// Get the collector to use
 		final JSONDocumentChangedWebSocketEventCollector collector;
 		final boolean autoflush;
-		final JSONDocumentChangedWebSocketEventCollector contextCollector = getContextCollector();
-		if (contextCollector != null)
+
+		final JSONDocumentChangedWebSocketEventCollector threadLocalCollector = THREAD_LOCAL_COLLECTOR.get();
+		if (threadLocalCollector != null)
 		{
-			collector = contextCollector;
+			collector = threadLocalCollector;
 			autoflush = false;
 		}
 		else
 		{
-			collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
-			autoflush = true;
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			if (trxManager.isActive(trx))
+			{
+				collector = trx.getPropertyAndProcessAfterCommit(
+						JSONDocumentChangedWebSocketEventCollector.class.getName(),
+						JSONDocumentChangedWebSocketEventCollector::newInstance,
+						c -> {
+							sendAllAndClear(c, websocketSender);
+							c.markAsClosed();
+						});
+				autoflush = false;
+			}
+			else
+			{
+				collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
+				autoflush = true;
+			}
 		}
 
 		//
@@ -86,53 +103,19 @@ public class DocumentWebsocketPublisher
 		// Autoflush if needed
 		if (autoflush)
 		{
-			sendAllAndClose(collector, websocketSender);
+			sendAllAndClear(collector, websocketSender);
 		}
 	}
 
-	@Nullable
-	private JSONDocumentChangedWebSocketEventCollector getContextCollector()
+	private static void sendAllAndClear(final JSONDocumentChangedWebSocketEventCollector collector, final WebsocketSender websocketSender)
 	{
-		final JSONDocumentChangedWebSocketEventCollector threadLocalCollector = THREAD_LOCAL_COLLECTOR.get();
-		if (threadLocalCollector != null)
-		{
-			return threadLocalCollector;
-		}
-
-		return getActiveTrxCollector();
-	}
-
-	@Nullable
-	private JSONDocumentChangedWebSocketEventCollector getActiveTrxCollector()
-	{
-		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (trxManager.isActive(trx))
-		{
-			return trx.getPropertyAndProcessAfterCommit(
-					JSONDocumentChangedWebSocketEventCollector.class.getName(),
-					JSONDocumentChangedWebSocketEventCollector::newInstance,
-					c -> sendAllAndClose(c, websocketSender));
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	private static void sendAllAndClose(final JSONDocumentChangedWebSocketEventCollector collector, final WebsocketSender websocketSender)
-	{
-		final List<JSONDocumentChangedWebSocketEvent> events = collector.getEventsAndClose();
+		final List<JSONDocumentChangedWebSocketEvent> events = collector.getEventsAndClear();
 		websocketSender.convertAndSend(events);
 	}
 
 	public void staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
-		staleRootDocument(windowId, documentId, false);
-	}
-
-	public void staleRootDocument(final WindowId windowId, final DocumentId documentId, final boolean markActiveTabStaled)
-	{
-		forCollector(collector -> collector.staleRootDocument(windowId, documentId, markActiveTabStaled));
+		forCollector(collector -> collector.staleRootDocument(windowId, documentId));
 	}
 
 	public void staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)
@@ -184,48 +167,30 @@ public class DocumentWebsocketPublisher
 		event.getIncludedTabsInfos().forEach(tabInfo -> collector.mergeFrom(windowId, documentId, tabInfo));
 	}
 
-	public CloseableCollector temporaryCollectOnThisThread()
+	public IAutoCloseable temporaryCollectOnThisThread()
 	{
-		final CloseableCollector closeableCollector = new CloseableCollector();
-		closeableCollector.open();
-		return closeableCollector;
-	}
-
-	public class CloseableCollector implements IAutoCloseable
-	{
-		@NonNull private final JSONDocumentChangedWebSocketEventCollector collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
-		@NonNull private final AtomicBoolean closed = new AtomicBoolean(false);
-
-		@Override
-		public String toString()
+		if (THREAD_LOCAL_COLLECTOR.get() != null)
 		{
-			return "CloseableCollector[" + collector + "]";
+			throw new AdempiereException("A thread level collector was already set");
 		}
 
-		private void open()
+		final JSONDocumentChangedWebSocketEventCollector collector = JSONDocumentChangedWebSocketEventCollector.newInstance();
+		THREAD_LOCAL_COLLECTOR.set(collector);
+		return new IAutoCloseable()
 		{
-			if (THREAD_LOCAL_COLLECTOR.get() != null)
+			@Override
+			public String toString()
 			{
-				throw new AdempiereException("A thread level collector was already set");
+				return "AutoCloseable[" + collector + "]";
 			}
 
-			THREAD_LOCAL_COLLECTOR.set(collector);
-		}
-
-		@Override
-		public void close()
-		{
-			if (closed.getAndSet(true))
+			@Override
+			public void close()
 			{
-				return; // already closed
+				THREAD_LOCAL_COLLECTOR.set(null);
+				sendAllAndClear(collector, websocketSender);
+				collector.markAsClosed();
 			}
-
-			THREAD_LOCAL_COLLECTOR.set(null);
-			sendAllAndClose(collector, websocketSender);
-		}
-
-		@VisibleForTesting
-		ImmutableList<JSONDocumentChangedWebSocketEvent> getEvents() {return collector.getEvents();}
+		};
 	}
-
 }

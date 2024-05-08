@@ -44,6 +44,7 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.smooks.io.payload.JavaSource;
+import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -304,7 +305,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setChargenNo(voidString);
 
 		p100.setCUperTU(
-				formatNumber(packItem.getQtyCUsPerTU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
+				formatNumber(packItem.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
 							 decimalFormat));
 
 		// note that validateExchange() made sure there is at least one

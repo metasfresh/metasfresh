@@ -16,51 +16,33 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-import de.metas.acct.accounts.BPartnerGroupAccountType;
-import de.metas.acct.accounts.CostElementAccountType;
-import de.metas.acct.accounts.ProductAcctType;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.costing.AggregatedCostAmount;
-import de.metas.costing.CostAmount;
-import de.metas.costing.CostAmountAndQty;
-import de.metas.costing.CostElement;
-import de.metas.costing.ShipmentCosts;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.DocBaseType;
-import de.metas.document.engine.DocStatus;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.invoice.matchinv.MatchInvId;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
-import de.metas.order.costs.OrderCostService;
-import de.metas.order.costs.inout.InOutCost;
-import de.metas.quantity.Quantity;
-import de.metas.shippingnotification.ShippingNotificationCollection;
-import de.metas.shippingnotification.ShippingNotificationQuery;
-import de.metas.shippingnotification.acct.ShippingNotificationAcctService;
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
+
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MInOut;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.costing.CostAmount;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
 
 /**
  * Post Shipment/Receipt Documents.
@@ -70,37 +52,30 @@ import java.util.Set;
  *  Document Types:     MMS, MMR
  * </pre>
  *
+ * metas:
+ * <li>copied from // metas: from https://adempiere.svn.sourceforge.net/svnroot/adempiere/branches/metas/mvcForms/base/src/org/compiere/acct/Doc_InOut.java, Rev 10177
+ * <li>Changed for "US330: Geschaeftsvorfall (G113d): Summen-/ Saldenliste (2010070510000637)"
+ *
  * @author Jorg Janke
  * @author Armen Rizal, Goodwill Consulting
- * <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
- * <li>BF [ 2858043 ] Correct Included Tax in Average Costing
+ *         <li>BF [ 1745154 ] Cost in Reversing Material Related Docs
+ *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
+ *
  */
 public class Doc_InOut extends Doc<DocLine_InOut>
 {
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_InOut.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
 
-	@NonNull final IInOutBL inOutBL;
-	@NonNull final IOrderBL orderBL;
-	@NonNull final ShippingNotificationAcctService shippingNotificationAcctService;
-	@NonNull private final MatchInvoiceService matchInvoiceService;
-	@NonNull private final OrderCostService orderCostService;
+	private int m_Reversal_ID = 0;
+	private String m_DocStatus = "";
 
-	private InOutId m_reversalId = null;
-	private DocStatus m_docStatus = DocStatus.Unknown;
-
-	public Doc_InOut(
-			@NonNull final IInOutBL inOutBL,
-			@NonNull final IOrderBL orderBL,
-			@NonNull final ShippingNotificationAcctService shippingNotificationAcctService,
-			@NonNull final AcctDocContext ctx)
+	public Doc_InOut(final AcctDocContext ctx)
 	{
 		super(ctx);
-		this.inOutBL = inOutBL;
-		this.orderBL = orderBL;
-		this.shippingNotificationAcctService = shippingNotificationAcctService;
-		this.matchInvoiceService = services.getMatchInvoiceService();
-		this.orderCostService = services.getOrderCostService();
 	}
 
 	@Override
@@ -109,24 +84,15 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		setNoCurrency();
 		final I_M_InOut inout = getModel(I_M_InOut.class);
 		setDateDoc(inout.getMovementDate());
-		m_reversalId = InOutId.ofRepoIdOrNull(inout.getReversal_ID());// store original (voided/reversed) document
-		m_docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
+		m_Reversal_ID = inout.getReversal_ID();// store original (voided/reversed) document
+		m_DocStatus = inout.getDocStatus();
 		setDocLines(loadLines(inout));
 	}
 
 	private List<DocLine_InOut> loadLines(final I_M_InOut inout)
 	{
-		final ImmutableListMultimap<InOutAndLineId, InOutCost> inoutCostsByInOutLineId = Multimaps.index(
-				orderCostService.getByInOutId(InOutId.ofRepoId(inout.getM_InOut_ID())),
-				InOutCost::getInoutAndLineId);
-
-		final List<I_M_InOutLine> inoutLines = inOutBL.getLines(inout);
-		final ShippingNotificationCollection shippingNotifications = inout.isSOTrx()
-				? getShippingNotifications(inoutLines)
-				: ShippingNotificationCollection.EMPTY;
-
 		final List<DocLine_InOut> docLines = new ArrayList<>();
-		for (final I_M_InOutLine inoutLine : inoutLines)
+		for (final I_M_InOutLine inoutLine : inOutBL.getLines(inout))
 		{
 			if (inoutLine.isDescription()
 					|| inoutLine.getM_Product_ID() <= 0
@@ -135,14 +101,10 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				continue;
 			}
 
-			final ImmutableList<InOutCost> inoutCosts = inoutCostsByInOutLineId.get(InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID()));
-
-			final DocLine_InOut docLine = new DocLine_InOut(
-					this,
-					inoutLine,
-					inoutCosts,
-					shippingNotifications
-			);
+			final DocLine_InOut docLine = DocLine_InOut.builder()
+					.doc(this)
+					.inoutLine(inoutLine)
+					.build();
 			if (inOutBL.isReversal(inoutLine))
 			{
 				// NOTE: to be consistent with current logic
@@ -157,29 +119,14 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		return docLines;
-	}
+	}	// loadLines
 
-	private ShippingNotificationCollection getShippingNotifications(final List<I_M_InOutLine> inoutLines)
-	{
-		final ImmutableSet<OrderId> orderIds = extractOrderIds(inoutLines);
-		if (orderIds.isEmpty())
-		{
-			return ShippingNotificationCollection.EMPTY;
-		}
-
-		return shippingNotificationAcctService.getByQuery(ShippingNotificationQuery.completedOrClosedByOrderIds(orderIds));
-	}
-
-	private static ImmutableSet<OrderId> extractOrderIds(final List<I_M_InOutLine> inoutLines)
-	{
-		return inoutLines.stream().map(inoutLine -> OrderId.ofRepoIdOrNull(inoutLine.getC_Order_ID())).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
-	}
-
-	/**
-	 * @return zero (always balanced)
-	 */
+	/** @return zero (always balanced) */
 	@Override
-	protected BigDecimal getBalance() {return BigDecimal.ZERO;}
+	protected BigDecimal getBalance()
+	{
+		return BigDecimal.ZERO;
+	}
 
 	/**
 	 * Create Facts (the accounting logic) for MMS, MMR.
@@ -204,28 +151,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final DocBaseType docBaseType = getDocBaseType();
+		final String docBaseType = getDocumentType();
 
 		//
 		// *** Sales - Shipment
-		if (docBaseType.equals(DocBaseType.MaterialDelivery) && isSOTrx())
+		if (DOCTYPE_MatShipment.equals(docBaseType) && isSOTrx())
 		{
 			return createFacts_SalesShipment(as);
 		}
 		//
 		// *** Sales - Return
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && isSOTrx())
+		else if (DOCTYPE_MatReceipt.equals(docBaseType) && isSOTrx())
 		{
 			return createFacts_SalesReturn(as);
 		}
 		//
 		// *** Purchasing - Receipt
-		else if (docBaseType.equals(DocBaseType.MaterialReceipt) && !isSOTrx())
+		else if (DOCTYPE_MatReceipt.equals(docBaseType) && !isSOTrx())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
 		// *** Purchasing - return
-		else if (docBaseType.equals(DocBaseType.MaterialDelivery) && !isSOTrx())
+		else if (DOCTYPE_MatShipment.equals(docBaseType) && !isSOTrx())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
@@ -236,280 +183,158 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 	}
 
-	@NonNull
-	private Fact newFacts(final AcctSchema as)
-	{
-		return new Fact(this, as, PostingType.Actual)
-				.setCurrencyConversionContext(getCurrencyConversionContext(as));
-	}
-
 	private List<Fact> createFacts_SalesShipment(final AcctSchema as)
 	{
-		final ArrayList<Fact> facts = new ArrayList<>();
-		getDocLines().forEach(line -> facts.addAll(createFacts_SalesShipmentLine(as, line)));
-		return facts;
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		getDocLines().forEach(line -> createFacts_SalesShipmentLine(fact, line));
+		return ImmutableList.of(fact);
 	}
 
-	private List<Fact> createFacts_SalesShipmentLine(final AcctSchema as, final DocLine_InOut line)
+	private void createFacts_SalesShipmentLine(final Fact fact, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
 		{
-			return ImmutableList.of();
-		}
-
-		final ArrayList<Fact> facts = new ArrayList<>();
-		final ShipmentCosts costs = line.getCreateShipmentCosts(as);
-
-		createFacts_SalesShipmentLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_COGS_Acct,
-				ProductAcctType.P_Asset_Acct,
-				costs.getShippedButNotNotified(),
-				true);
-
-		createFacts_SalesShipmentLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_COGS_Acct,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				costs.getShippedAndNotified(),
-				false);
-
-		createFacts_SalesShipmentLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_Asset_Acct,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				costs.getNotifiedButNotShipped(),
-				false);
-
-		return facts;
-	}
-
-	private void createFacts_SalesShipmentLine(
-			@NonNull final ArrayList<Fact> facts,
-			@NonNull final AcctSchema as,
-			@NonNull final DocLine_InOut line,
-			@NonNull final ProductAcctType debitAccount,
-			@NonNull final ProductAcctType creditAccount,
-			@NonNull final CostAmountAndQty amountAndQty,
-			boolean addZeroLine)
-	{
-		if (!addZeroLine && amountAndQty.isZero())
-		{
 			return;
 		}
 
-		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
-		final Quantity qty = amountAndQty.getQty();
+		final AcctSchema as = fact.getAcctSchema();
+		final CostAmount costs = line.getCreateShipmentCosts(as);
 
-		final Fact fact = newFacts(as);
-		fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(debitAccount, as))
-				.setAmt(amount, null)
-				.setQty(qty)
-				.orgId(debitAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfLocator(line.getM_Locator_ID())
-				.toLocationOfBPartner(getBPartnerLocationId())
-				.alsoAddZeroLineIf(addZeroLine)
-				.buildAndAdd();
-		fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(creditAccount, as))
-				.setAmt(null, amount)
-				.orgId(creditAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
-				.setQty(qty.negate())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfLocator(line.getM_Locator_ID())
-				.toLocationOfBPartner(getBPartnerLocationId())
-				.alsoAddZeroLineIf(addZeroLine)
-				.buildAndAdd();
-
-		if (!fact.isEmpty())
+		//
+		// CoGS DR
+		final FactLine dr = fact.createLine(line,
+				line.getAccount(ProductAcctType.Cogs, as),
+				costs.getCurrencyId(),
+				mkCostsValueToUse(costs), null);
+		if (dr == null)
 		{
-			facts.add(fact);
+			throw newPostingException().setDetailMessage("FactLine DR not created: " + line);
 		}
-	}
+		dr.setM_Locator_ID(line.getM_Locator_ID());
+		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		dr.setAD_Org_ID(line.getOrderOrgId().getRepoId());		// Revenue X-Org
+		dr.setQty(line.getQty().negate());
 
-	private void createFacts_SalesReturnLine(
-			@NonNull final ArrayList<Fact> facts,
-			@NonNull final AcctSchema as,
-			@NonNull final DocLine_InOut line,
-			@NonNull final ProductAcctType debitAccount,
-			@NonNull final ProductAcctType creditAccount,
-			@NonNull final CostAmountAndQty amountAndQty,
-			boolean addZeroLine)
-	{
-		if (!addZeroLine && amountAndQty.isZero())
+		//
+		// Inventory CR
+		final FactLine cr = fact.createLine(line,
+				line.getAccount(ProductAcctType.Asset, as),
+				costs.getCurrencyId(),
+				null, mkCostsValueToUse(costs));
+		if (cr == null)
 		{
-			return;
+			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
 		}
-
-		final CostAmount amount = roundToStdPrecision(amountAndQty.getAmt());
-		final Quantity qty = amountAndQty.getQty();
-
-		final Fact fact = newFacts(as);
-		fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(debitAccount, as))
-				.setAmt(amount, null)
-				.setQty(qty)
-				.orgId(debitAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.alsoAddZeroLineIf(addZeroLine)
-				.buildAndAdd();
-		fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getAccount(creditAccount, as))
-				.setAmt(null, amount)
-				.setQty(qty.negate())
-				.orgId(creditAccount.isCOGS() ? line.getOrderOrgId() : line.getOrgId())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.alsoAddZeroLineIf(addZeroLine)
-				.buildAndAdd();
-
-		if (!fact.isEmpty())
-		{
-			facts.add(fact);
-		}
+		cr.setM_Locator_ID(line.getM_Locator_ID());
+		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 	}
 
 	private List<Fact> createFacts_SalesReturn(final AcctSchema as)
 	{
-		final ArrayList<Fact> facts = new ArrayList<>();
-		getDocLines().forEach(line -> facts.addAll(createFacts_SalesReturnLine(as, line)));
-		return facts;
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		getDocLines().forEach(line -> createFacts_SalesReturnLine(fact, line));
+
+		return ImmutableList.of(fact);
 	}
 
-	private List<Fact> createFacts_SalesReturnLine(final AcctSchema as, final DocLine_InOut line)
+	private void createFacts_SalesReturnLine(final Fact fact, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
 		{
-			return ImmutableList.of();
+			return;
 		}
 
-		final ArrayList<Fact> facts = new ArrayList<>();
-		final ShipmentCosts costs = line.getCreateShipmentCosts(as);
+		final AcctSchema as = fact.getAcctSchema();
+		final CostAmount costs = line.getCreateShipmentCosts(as);
 
-		createFacts_SalesReturnLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_Asset_Acct,
-				ProductAcctType.P_COGS_Acct,
-				costs.getShippedButNotNotified(),
-				true);
-		createFacts_SalesReturnLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				ProductAcctType.P_COGS_Acct,
-				costs.getShippedAndNotified(),
-				false);
-		createFacts_SalesReturnLine(
-				facts,
-				as,
-				line,
-				ProductAcctType.P_ExternallyOwnedStock_Acct,
-				ProductAcctType.P_Asset_Acct,
-				costs.getNotifiedButNotShipped(),
-				false);
+		//
+		// Inventory DR
+		final FactLine dr = fact.createLine(line,
+				line.getAccount(ProductAcctType.Asset, as),
+				costs.getCurrencyId(),
+				mkCostsValueToUse(costs), null);
+		if (dr == null)
+		{
+			throw newPostingException().addDetailMessage("FactLine DR not created: " + line);
+		}
+		dr.setM_Locator_ID(line.getM_Locator_ID());
+		dr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
 
-		return facts;
+		//
+		// CoGS CR
+		final FactLine cr = fact.createLine(line,
+				line.getAccount(ProductAcctType.Cogs, as),
+				costs.getCurrencyId(),
+				null, mkCostsValueToUse(costs));
+		if (cr == null)
+		{
+			throw newPostingException().setDetailMessage("FactLine CR not created: " + line);
+		}
+		cr.setM_Locator_ID(line.getM_Locator_ID());
+		cr.setLocationFromLocator(line.getM_Locator_ID(), true);    // from Loc
+		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), false);  // to Loc
+		cr.setAD_Org_ID(line.getOrderOrgId());		// Revenue X-Org
+		cr.setQty(line.getQty().negate());
 	}
 
 	private List<Fact> createFacts_PurchasingReceipt(final AcctSchema as)
 	{
-		return getDocLines()
-				.stream()
-				.flatMap(line -> createFacts_PurchasingReceiptLine(as, line).stream())
-				.collect(ImmutableList.toImmutableList());
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		getDocLines().forEach(line -> createFacts_PurchasingReceiptLine(fact, line));
+
+		return ImmutableList.of(fact);
 	}
 
-	private List<Fact> createFacts_PurchasingReceiptLine(final AcctSchema as, final DocLine_InOut line)
+	private void createFacts_PurchasingReceiptLine(final Fact fact, final DocLine_InOut line)
 	{
 		// Skip not stockable (e.g. service products) because they have no cost
 		if (!line.isItem())
 		{
-			return ImmutableList.of();
+			return;
 		}
 
-		final ArrayList<Fact> facts = new ArrayList<>();
-		final AggregatedCostAmount aggregatedCosts = line.getCreateReceiptCosts(as).retainOnlyAccountable(as);
-		for (final CostElement costElement : aggregatedCosts.getCostElements())
-		{
-			final CostAmount costs = aggregatedCosts.getCostAmountForCostElement(costElement).getMainAmt();
-			facts.add(createFacts_PurchasingReceiptLine(as, line, costElement, costs));
-		}
-
-		return facts;
-	}
-
-	private Fact createFacts_PurchasingReceiptLine(
-			@NonNull final AcctSchema as,
-			@NonNull final DocLine_InOut line,
-			@NonNull final CostElement costElement,
-			@NonNull final CostAmount costs)
-	{
-		final Fact fact = newFacts(as);
+		final AcctSchema as = fact.getAcctSchema();
+		final CostAmount costs = line.getCreateReceiptCosts(as);
 
 		//
 		// Inventory/Asset DR
-		final FactLine dr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getProductAssetAccount(as))
-				.setAmt(roundToStdPrecision(costs), null)
-				.setQty(line.getQty()) // (+) Qty
-				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.costElement(costElement)
-				.buildAndAdd();
+		final FactLine dr = fact.createLine(line,
+				line.getProductAssetAccount(as),
+				costs.getCurrencyId(),
+				mkCostsValueToUse(costs), null);
 		if (dr == null)
 		{
 			throw newPostingException().setDetailMessage("DR not created: " + line);
 		}
+		dr.setM_Locator_ID(line.getM_Locator_ID());
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
+		dr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
 
 		//
 		// NotInvoicedReceipt CR
-		final FactLine cr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(costElement.isMaterial()
-						? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
-						: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
-				.setAmt(null, roundToStdPrecision(costs))
-				.setQty(line.getQty().negate()) // (-) Qty
-				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.costElement(costElement)
-				.buildAndAdd();
+		final FactLine cr = fact.createLine(line,
+				getAccount(AccountType.NotInvoicedReceipts, as),
+				costs.getCurrencyId(),
+				null, mkCostsValueToUse(costs));
+		//
 		if (cr == null)
 		{
 			throw newPostingException().setDetailMessage("CR not created: " + line);
 		}
-
-		return fact;
+		cr.setM_Locator_ID(line.getM_Locator_ID());
+		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
+		cr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
+		cr.setQty(line.getQty().negate());
 	}
 
 	private List<Fact> createFacts_PurchasingReturn(final AcctSchema as)
 	{
-		final Fact fact = newFacts(as);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		getDocLines().forEach(line -> createFacts_PurchasingReturnLine(fact, line));
 
 		return ImmutableList.of(fact);
@@ -524,27 +349,25 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmountToPost(as).getMainAmt();
+		final CostAmount costs = line.getCreateReceiptCosts(as);
 
 		//
 		// NotInvoicedReceipt DR
-		final FactLine dr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
-				.setAmt(roundToStdPrecision(costs), null)
-				.setQty(line.getQty().negate())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.buildAndAdd();
+		final FactLine dr = fact.createLine(line, getAccount(AccountType.NotInvoicedReceipts, as),
+				costs.getCurrencyId(),
+				mkCostsValueToUse(costs), null);
 		if (dr == null)
 		{
 			throw newPostingException().setDetailMessage("DR not created: " + line);
 		}
-		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
+		dr.setM_Locator_ID(line.getM_Locator_ID());
+		dr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
+		dr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
+		dr.setQty(line.getQty().negate());
+		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctDr from Original Shipment/Receipt
-			if (!dr.updateReverseLine(I_M_InOut.Table_Name, m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!dr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -552,23 +375,21 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//
 		// Inventory/Asset CR
-		final FactLine cr = fact.createLine()
-				.setDocLine(line)
-				.setAccount(line.getProductAssetAccount(as))
-				.setAmt(null, roundToStdPrecision(costs))
-				.setQty(line.getQty())
-				.locatorId(line.getM_Locator_ID())
-				.fromLocationOfBPartner(getBPartnerLocationId())
-				.toLocationOfLocator(line.getM_Locator_ID())
-				.buildAndAdd();
+		final FactLine cr = fact.createLine(line,
+				line.getProductAssetAccount(as),
+				costs.getCurrencyId(),
+				null, mkCostsValueToUse(costs));
 		if (cr == null)
 		{
 			throw newPostingException().setDetailMessage("CR not created: " + line);
 		}
-		if (m_docStatus.isReversed() && m_reversalId != null && line.getReversalLine_ID() > 0)
+		cr.setM_Locator_ID(line.getM_Locator_ID());
+		cr.setLocationFromBPartner(getC_BPartner_Location_ID(), true);   // from Loc
+		cr.setLocationFromLocator(line.getM_Locator_ID(), false);   // to Loc
+		if (MInOut.DOCSTATUS_Reversed.equals(m_DocStatus) && m_Reversal_ID > 0 && line.getReversalLine_ID() > 0)
 		{
 			// Set AmtAcctCr from Original Shipment/Receipt
-			if (!cr.updateReverseLine(I_M_InOut.Table_Name, m_reversalId.getRepoId(), line.getReversalLine_ID(), BigDecimal.ONE))
+			if (!cr.updateReverseLine(getTableId(I_M_InOut.class), m_Reversal_ID, line.getReversalLine_ID(), BigDecimal.ONE))
 			{
 				throw newPostingException().setDetailMessage("Original Receipt not posted yet");
 			}
@@ -581,7 +402,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		postDependingMatchInvsIfNeeded();
 	}
 
-	private void postDependingMatchInvsIfNeeded()
+	private final void postDependingMatchInvsIfNeeded()
 	{
 		if (!services.getSysConfigBooleanValue(SYSCONFIG_PostMatchInvs, DEFAULT_PostMatchInvs))
 		{
@@ -597,32 +418,25 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 			return;
 		}
 
-		final Set<MatchInvId> matchInvIds = matchInvoiceService.getIdsProcessedButNotPostedByInOutLineIds(inoutLineIds);
+		final Set<MatchInvId> matchInvIds = matchInvDAO.retrieveIdsProcessedButNotPostedForInOutLines(inoutLineIds);
 		postDependingDocuments(I_M_MatchInv.Table_Name, matchInvIds);
 	}
 
-	@NonNull
-	private CostAmount roundToStdPrecision(@NonNull final CostAmount costs)
+	/**
+	 * Creating a not null cost value whose precision matches the given <code>C_Currency_ID</code>'s.
+	 * Goal of this method is to avoid the warnings in FactLine.setAmtSource().
+	 *
+	 * @return costs rounded to currency precision
+	 */
+	private BigDecimal mkCostsValueToUse(final CostAmount costs)
 	{
-		return costs.round(services::getCurrencyStandardPrecision);
-	}
+		if (costs == null)
+		{
+			return BigDecimal.ZERO;
+		}
 
-	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema ignoredAcctSchema)
-	{
-		final I_M_InOut inout = getModel(I_M_InOut.class);
-		return inOutBL.getCurrencyConversionContext(inout);
-	}
-
-	@Nullable
-	@Override
-	protected OrderId getSalesOrderId()
-	{
-		final Optional<OrderId> optionalSalesOrderId = CollectionUtils.extractSingleElementOrDefault(
-				getDocLines(),
-				docLine -> Optional.ofNullable(docLine.getSalesOrderId()),
-				Optional.empty());
-
-		//noinspection DataFlowIssue
-		return optionalSalesOrderId.orElse(null);
+		final CurrencyId currencyId = costs.getCurrencyId();
+		final CurrencyPrecision precision = services.getCurrencyStandardPrecision(currencyId);
+		return precision.round(costs.getValue());
 	}
 }   // Doc_InOut

@@ -62,21 +62,12 @@ public class GenerateShipmentsRequest
 	@NonNull
 	AsyncBatchId asyncBatchId;
 
-	@NonNull Boolean isCompleteShipment;
-	boolean isCloseShipmentSchedules;
+	@NonNull
+	Boolean isCompleteShipment;
 
 	@Nullable
 	Boolean isShipDateToday;
 
-	/**
-	 * The shipments are created via async-workpackage and this flag decides if the caller wants to wait for them.
-	 * By default, it is set to true for backwards compatibility.
-	 * 
-	 * @see ShipmentService#generateShipments(GenerateShipmentsRequest) 
-	 */
-	@Builder.Default
-	boolean waitForShipments = true;
-	
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();

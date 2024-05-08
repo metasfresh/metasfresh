@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
@@ -22,16 +20,17 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -44,15 +43,17 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
+import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -65,6 +66,7 @@ import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
 import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -92,7 +94,6 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@ExtendWith(SnapshotExtension.class)
 class CommissionInstanceRepositoryTest
 {
 	private static final long START_TIMESTAMP = 1568720955000L; // Tuesday, September 17, 2019 11:49:15 AM
@@ -110,8 +111,6 @@ class CommissionInstanceRepositoryTest
 	private I_C_UOM uom;
 	private ProductId commissionProductId;
 	private BPartnerId payerId;
-
-	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -134,6 +133,20 @@ class CommissionInstanceRepositoryTest
 		uom = BusinessTestHelper.createUOM("uom");
 	}
 
+	@BeforeAll
+	static void beforeAll()
+	{
+		SnapshotMatcher.start(
+				AdempiereTestHelper.SNAPSHOT_CONFIG,
+				AdempiereTestHelper.createSnapshotJsonFunction());
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
+	}
+
 	@Test
 	void getByDocumentId_InvoiceCandidateId()
 	{
@@ -143,7 +156,7 @@ class CommissionInstanceRepositoryTest
 		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceCandidateDocumentId(C_INVOICE_CANDIDATE_ID));
 
 		assertThat(result).isPresent();
-		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
 	}
 
 	private void createCommissionData_InvoiceCandidateId(@NonNull final OrgId orgId)
@@ -288,7 +301,7 @@ class CommissionInstanceRepositoryTest
 		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceLineDocumentId(invoiceLineId));
 
 		assertThat(result).isPresent();
-		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
 	}
 
 	private long incAndGetTimestamp()
@@ -458,6 +471,6 @@ class CommissionInstanceRepositoryTest
 
 		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getById(result);
-		expect.serializer("orderedJson").toMatchSnapshot(reloadedInstance);
+		SnapshotMatcher.expect(reloadedInstance).toMatchSnapshot();
 	}
 }

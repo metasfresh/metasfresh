@@ -39,7 +39,7 @@ public class DLM_Partition_Update_PartitionSize extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		retrieveActiveSelectedRecordsQueryBuilder(I_DLM_Partition.class)
+		retrieveSelectedRecordsQueryBuilder(I_DLM_Partition.class)
 				.create()
 				.list()
 				.forEach(p -> dlmService.updatePartitionSize(p));

@@ -7,7 +7,6 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -52,7 +51,6 @@ public class WEBUI_M_HU_Assign_QRCode extends JavaProcess implements IProcessPre
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final QRCodeConfigurationService qrCodeConfigurationService = SpringContextHolder.instance.getBean(QRCodeConfigurationService.class);
 
 	@Param(parameterName = "Barcode", mandatory = true, barcodeScannerType = ParamBarcodeScannerType.QRCode)
 	private String p_Barcode;
@@ -81,9 +79,8 @@ public class WEBUI_M_HU_Assign_QRCode extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(p_Barcode);
-		final HuId selectedHuId = HuId.ofRepoId(getRecord_ID());
-		final boolean ensureSingleAssignment = !qrCodeConfigurationService.isOneQrCodeForAggregatedHUsEnabledFor(handlingUnitsBL.getById(selectedHuId));
-		huQRCodesService.assign(huQRCode, selectedHuId, ensureSingleAssignment);
+
+		huQRCodesService.assign(huQRCode, HuId.ofRepoId(getRecord_ID()));
 
 		return MSG_OK;
 	}

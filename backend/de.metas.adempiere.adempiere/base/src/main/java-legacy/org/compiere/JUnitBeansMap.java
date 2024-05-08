@@ -31,11 +31,8 @@ import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @ToString
 /* package */ final class JUnitBeansMap
@@ -124,22 +121,10 @@ import java.util.stream.Collectors;
 	{
 		assertJUnitMode();
 
-		List<Object> beanObjs = map.get(ClassReference.of(beanType));
+		final List<Object> beanObjs = map.get(ClassReference.of(beanType));
 		if (beanObjs == null)
 		{
-			final List<Object> assignableBeans = map.values()
-					.stream()
-					.filter(Objects::nonNull)
-					.flatMap(Collection::stream)
-					.filter(impl -> beanType.isAssignableFrom(impl.getClass()))
-					.collect(Collectors.toList());
-
-			if (assignableBeans.isEmpty())
-			{
-				return null;
-			}
-
-			beanObjs = assignableBeans;
+			return null;
 		}
 
 		return beanObjs

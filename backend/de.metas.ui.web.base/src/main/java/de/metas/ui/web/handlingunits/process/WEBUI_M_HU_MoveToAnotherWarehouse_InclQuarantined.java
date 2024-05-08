@@ -22,25 +22,34 @@ package de.metas.ui.web.handlingunits.process;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.process.ProcessPreconditionsResolution;
-import java.util.List;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 
 /**
  * #2144
  * HU editor: Move selected HUs to another warehouse
  *
  * @author metas-dev <dev@metasfresh.com>
- * <p>
- * This process is completely similar with the basic structure for HU moving process.
+ *
+ *         This process is completely similar with the basic structure for HU moving process.
+ *
  */
 public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Template
 {
+	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	@Override
+	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
+	{
+		return super.getAvailableWarehouses(evalCtx);
+	}
 
 	@Override
-	public ProcessPreconditionsResolution checkHUsEligible(final List<I_M_HU> hus)
+	public void assertHUsEligible()
 	{
 		// Nothing to do. This process includes also quarantine HUs
-		return ProcessPreconditionsResolution.accept();
 	}
+
 }

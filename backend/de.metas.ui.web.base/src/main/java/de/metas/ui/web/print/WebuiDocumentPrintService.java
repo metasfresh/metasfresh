@@ -77,7 +77,7 @@ public class WebuiDocumentPrintService
 		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 	}
 
-	public Optional<ReportResultData> createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
+	public ReportResultData createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
 	{
 		final DocumentPath documentPath = request.getDocumentPath();
 		final Document document = documentCollection.getDocumentReadonly(documentPath);
@@ -101,7 +101,7 @@ public class WebuiDocumentPrintService
 																					   //.setJRDesiredOutputType(OutputType.PDF)
 																					   .build());
 
-		return Optional.ofNullable(result.getReportResultData());
+		return result.getReportResultData();
 	}
 
 	public JSONDocumentPrintingOptions getPrintingOptions(
@@ -139,7 +139,7 @@ public class WebuiDocumentPrintService
 									.docTypeId(documentBL.getDocTypeId(record).orElse(null))
 									.build());
 		}
-		catch (final Exception ex)
+		catch (Exception ex)
 		{
 			logger.warn("Failed retrieving DocOutBoundRecipient from {}. Returning empty.", recordRef, ex);
 			return Optional.empty();

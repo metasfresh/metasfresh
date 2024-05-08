@@ -2,7 +2,7 @@
  * #%L
  * metasfresh-material-cockpit
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -61,9 +61,6 @@ public class UpdateMainDataRequest
 
 	@Default
 	BigDecimal offeredQty = BigDecimal.ZERO;
-
-	@Default
-	BigDecimal offeredQtyNextDay = BigDecimal.ZERO;
 
 	@Default
 	BigDecimal qtyDemandPPOrder = BigDecimal.ZERO;

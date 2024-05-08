@@ -3,7 +3,6 @@ package de.metas.handlingunits.qrcodes.model.json;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.json.v1.JsonConverterV1;
 import lombok.NonNull;
@@ -13,12 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 @UtilityClass
 public class HUQRCodeJsonConverter
 {
-	private static final GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
-
-	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
-	{
-		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
-	}
+	public static GlobalQRCodeType GLOBAL_QRCODE_TYPE = GlobalQRCodeType.ofString("HU");
 
 	public static String toGlobalQRCodeJsonString(final HUQRCode qrCode)
 	{
@@ -37,15 +31,11 @@ public class HUQRCodeJsonConverter
 
 	public static HUQRCode fromGlobalQRCode(final GlobalQRCode globalQRCode)
 	{
-		if (!isHandled(globalQRCode))
+		if (!GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType()))
 		{
 			throw new AdempiereException("Invalid HU QR Code")
 					.setParameter("globalQRCode", globalQRCode); // avoid adding it to error message, it might be quite long
 		}
-
-		//
-		// IMPORTANT: keep in sync with huQRCodes.js
-		//
 
 		final GlobalQRCodeVersion version = globalQRCode.getVersion();
 		if (GlobalQRCodeVersion.equals(globalQRCode.getVersion(), JsonConverterV1.GLOBAL_QRCODE_VERSION))
@@ -58,16 +48,11 @@ public class HUQRCodeJsonConverter
 		}
 	}
 
-	public static JsonDisplayableQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
+	public static JsonRenderedHUQRCode toRenderedJson(@NonNull final HUQRCode huQRCode)
 	{
-		return JsonDisplayableQRCode.builder()
+		return JsonRenderedHUQRCode.builder()
 				.code(toGlobalQRCodeJsonString(huQRCode))
 				.displayable(huQRCode.toDisplayableQRCode())
 				.build();
-	}
-
-	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
-	{
-		return GlobalQRCodeType.equals(GLOBAL_QRCODE_TYPE, globalQRCode.getType());
 	}
 }

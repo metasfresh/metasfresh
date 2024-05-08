@@ -36,13 +36,10 @@ import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import java.util.Properties;
@@ -61,7 +58,6 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 	private final QueueProcessorStatistics statistics;
 	private final IWorkpackageLogsRepository logsRepository;
 
-	private PerformanceMonitoringService _performanceMonitoringService = null;
 
 	public AbstractQueueProcessor(
 			@NonNull final IWorkPackageQueue queue,
@@ -207,8 +203,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		try
 		{
 			final IWorkpackageProcessor workPackageProcessor = getWorkpackageProcessor(workPackage);
-			final PerformanceMonitoringService perfMonService = getPerfMonService();
-			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository, perfMonService);
+			final WorkpackageProcessorTask task = new WorkpackageProcessorTask(this, workPackageProcessor, workPackage, logsRepository);
 			executeTask(task);
 			success = true;
 			return true;
@@ -233,18 +228,6 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 		final int packageProcessorId = workPackage.getC_Queue_PackageProcessor_ID();
 
 		return factory.getWorkpackageProcessor(ctx, packageProcessorId);
-	}
-
-	private PerformanceMonitoringService getPerfMonService()
-	{
-		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
-		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
-		{
-			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
-		}
-		return performanceMonitoringService;
 	}
 
 	private IQueueProcessorEventDispatcher getEventDispatcher()

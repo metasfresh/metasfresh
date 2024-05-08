@@ -1,5 +1,10 @@
 package de.metas.ui.web.quickinput;
 
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -7,12 +12,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -38,13 +37,14 @@ import java.util.Set;
 
 /**
  * Quick input descriptor factory.
+ *
  * Implementations shall be annotated with {@link Component} and they will be automatically discovered and registered.
  */
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public interface IQuickInputDescriptorFactory
 {
 	/**
 	 * Gets matching keys on which this factory shall be registered.
+	 *
 	 * NOTE to implementors: This method will be called once, when the factory is discovered and registered,
 	 * so it's safe to compute the result just in time (instead of precomputing and storing it).
 	 */
@@ -65,25 +65,31 @@ public interface IQuickInputDescriptorFactory
 	/** Key used to identify the {@link IQuickInputDescriptorFactory} to be used */
 	@Value
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	class MatchingKey
+	public static final class MatchingKey
 	{
-		@Nullable DocumentType documentType;
-		@Nullable DocumentId documentTypeId;
-		@Nullable String tableName;
-
-		public static MatchingKey includedTab(final AdWindowId windowId, final String includedTabTableName)
+		public static MatchingKey includedDocument(final DocumentType documentType, final int documentTypeIdInt, final String tableName)
 		{
-			return includedDocument(DocumentType.Window, DocumentId.of(windowId), includedTabTableName);
+			final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
+			return new MatchingKey(documentType, documentTypeId, tableName);
 		}
 
-		public static MatchingKey includedDocument(final DocumentType rootDocumentType, final DocumentId rootDocumentTypeId, final String includedTableName)
+		public static MatchingKey includedDocument(
+				final DocumentType rootDocumentType,
+				final DocumentId rootDocumentTypeId,
+				final String includedTableName)
 		{
 			return new MatchingKey(rootDocumentType, rootDocumentTypeId, includedTableName);
 		}
 
 		public static MatchingKey ofTableName(final String tableName)
 		{
-			return new MatchingKey(null, null, tableName);
+			final DocumentType documentType = null;
+			final DocumentId documentTypeId = null;
+			return new MatchingKey(documentType, documentTypeId, tableName);
 		}
+
+		private final DocumentType documentType;
+		private final DocumentId documentTypeId;
+		private final String tableName;
 	}
 }

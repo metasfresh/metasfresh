@@ -1,16 +1,13 @@
-import { delete as del, get, post } from 'axios';
+import { post, get, delete as del } from 'axios';
 
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
-import { formatSortingQuery, getQueryString } from '../utils';
+import { formatSortingQuery } from '../utils';
 
-export function topActionsRequest(windowId, documentId, tabId = null) {
-  const url =
-    tabId == null
-      ? `${config.API_URL}/window/${windowId}/${documentId}/topActions`
-      : `${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions`;
-
-  return get(url);
+export function topActionsRequest(windowId, documentId, tabId) {
+  return get(`
+    ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions
+  `);
 }
 
 export function deleteRequest(
@@ -63,6 +60,17 @@ export function discardNewRequest({ windowId, documentId, tabId, rowId } = {}) {
   );
 }
 
+export function discardNewDocument({ windowType, documentId } = {}) {
+  return post(
+    config.API_URL +
+      '/window/' +
+      windowType +
+      '/' +
+      documentId +
+      '/discardChanges'
+  );
+}
+
 export function getTabRequest(tabId, windowType, docId, orderBy) {
   return getData({
     entity: 'window',
@@ -87,18 +95,8 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
-  const queryParams = {};
-  if (isAdvanced) {
-    queryParams.advanced = true;
-  }
-  const queryParamsString = getQueryString(queryParams);
-
-  return get(
-    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
-      queryParamsString ? `?${queryParamsString}` : ''
-    }`
-  ).then(({ data }) => data); // unbox
+export function getTabLayoutRequest(windowId, tabId) {
+  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
 }
 
 /**
@@ -138,6 +136,64 @@ export function formatParentUrl({ windowId, docId, rowId, target }) {
   return parentUrl;
 }
 
+export function startProcess(processType, pinstanceId) {
+  return get(`${config.API_URL}/process/${processType}/${pinstanceId}/start`);
+}
+
+export function getProcessData({
+  processId,
+  viewId,
+  documentType,
+  ids,
+  tabId,
+  rowId,
+  selectedTab,
+  childViewId,
+  childViewSelectedIds,
+  parentViewId,
+  parentViewSelectedIds,
+}) {
+  const payload = {
+    processId: processId,
+  };
+
+  if (viewId) {
+    payload.viewId = viewId;
+    payload.viewDocumentIds = ids;
+
+    if (childViewId) {
+      payload.childViewId = childViewId;
+      payload.childViewSelectedIds = childViewSelectedIds;
+    }
+
+    if (parentViewId) {
+      payload.parentViewId = parentViewId;
+      payload.parentViewSelectedIds =
+        parentViewSelectedIds instanceof Array
+          ? parentViewSelectedIds
+          : [parentViewSelectedIds];
+    }
+  } else {
+    payload.documentId = Array.isArray(ids) ? ids[0] : ids;
+    payload.documentType = documentType;
+    payload.tabId = tabId;
+    payload.rowId = rowId;
+  }
+
+  if (selectedTab) {
+    const { tabId, rowIds } = selectedTab;
+
+    if (tabId && rowIds) {
+      payload.selectedTab = {
+        tabId,
+        rowIds,
+      };
+    }
+  }
+
+  return post(`${config.API_URL}/process/${processId}`, payload);
+}
+
 /**
  * @method getPrintingOptions
  * @summary Get the printing options for a specified entity
@@ -161,30 +217,51 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
   );
 }
 
-export function getPrintUrl({ windowId, documentId, filename, options }) {
-  let filenameNorm = filename.replace(/[/\\?%*:|"<>]/g, '-');
-  filenameNorm = encodeURIComponent(filenameNorm);
+/**
+ * @method initQuickInput
+ * @summary Fetch data for table quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ */
+export function initQuickInput(entity, windowId, docId, tabId, subentity) {
+  tabId = tabId ? `/${tabId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
 
-  let url = `${config.API_URL}/window/${windowId}/${documentId}/print/${filenameNorm}`;
-  if (options) {
-    const optionsStr = getQueryString(options);
-    url += '?' + optionsStr;
-  }
-  return url;
+  return post(
+    `${config.API_URL}/${entity}/${windowId}/${docId}${tabId}${subentity}`
+  );
 }
 
-export function getPrintFile({ windowId, documentId, filename, options }) {
-  return get(getPrintUrl({ windowId, documentId, filename, options }));
-}
+/**
+ * @method completeRequest
+ * @summary Save changes in attributes/quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ * @param {string} subentityId
+ */
+export function completeRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId
+) {
+  docType = docType ? `/${docType}` : '';
+  docId = docId ? `/${docId}` : '';
+  tabId = tabId ? `/${tabId}` : '';
+  rowId = rowId ? `/${rowId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+  subentityId = subentityId ? `/${subentityId}` : '';
 
-export function getAttachments({ windowId, documentId }) {
-  return get(`${config.API_URL}/window/${windowId}/${documentId}/attachments`);
-}
-
-export function getAttachmentUrl({ windowId, documentId, attachmentEntryId }) {
-  return `${config.API_URL}/window/${windowId}/${documentId}/attachments/${attachmentEntryId}`;
-}
-
-export function deleteAttachment({ windowId, documentId, attachmentEntryId }) {
-  return del(getAttachmentUrl({ windowId, documentId, attachmentEntryId }));
+  return post(
+    `${config.API_URL}/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
+  );
 }

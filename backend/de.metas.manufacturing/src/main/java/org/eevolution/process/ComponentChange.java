@@ -46,7 +46,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.metas.ad_reference.ADReferenceService;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
@@ -55,6 +55,8 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
+
 
 /**
  *	Component Change into BOM
@@ -85,13 +87,13 @@ public class ComponentChange extends JavaProcess
 	protected void prepare()
 	{
 		int morepara = 0;
-
-		for (final ProcessInfoParameter para : getParametersAsArray())
+		
+		for (ProcessInfoParameter para : getParametersAsArray())
 		{
-			final String name = para.getParameterName();
+			String name = para.getParameterName();
 
 			if (para.getParameter() == null)
-				return;
+				;
 			else if (name.equals("M_Product_ID") && morepara == 0)
 			{    
 				p_M_Product_ID = para.getParameterAsInt();
@@ -121,9 +123,9 @@ public class ComponentChange extends JavaProcess
 		{
 			throw new FillMandatoryException("Action");
 		}
-
-		final List<Object> params = new ArrayList<>();
-		final StringBuffer whereClause = new StringBuffer();
+		
+		List<Object> params = new ArrayList<>();
+		StringBuffer whereClause = new StringBuffer();
 		
 		whereClause.append(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID+"=?");
 		params.add(p_M_Product_ID);
@@ -139,10 +141,10 @@ public class ComponentChange extends JavaProcess
 			params.add(p_ValidFrom);
 		}
 
-		final List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
+		List<I_PP_Product_BOMLine> components = new Query(getCtx(), I_PP_Product_BOMLine.Table_Name, whereClause.toString(), get_TrxName())
 													.setParameters(params)
 													.list(I_PP_Product_BOMLine.class);
-		for (final I_PP_Product_BOMLine bomline : components)
+		for(I_PP_Product_BOMLine bomline : components) 
 		{		
 			if (p_Action.equals(ACTION_Add))
 			{
@@ -170,14 +172,14 @@ public class ComponentChange extends JavaProcess
 			{
 				throw new LiberoException("Action not supported - "+p_Action);
 			}
-			addLog(ADReferenceService.get().retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
+			addLog(Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), ACTION_AD_Reference_ID, p_Action));
 		}                    
 		return "@OK@";
 	}	//	doIt
 
-	protected void actionAdd(final I_PP_Product_BOMLine bomline, final int line)
+	protected void actionAdd(I_PP_Product_BOMLine bomline, int line)
 	{
-		final I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
+		I_PP_Product_BOMLine newbomline = InterfaceWrapperHelper.copy()
 				.setFrom(bomline)
 				.copyToNew(I_PP_Product_BOMLine.class);
 		newbomline.setIsActive(true);
@@ -192,15 +194,15 @@ public class ComponentChange extends JavaProcess
 		newbomline.setValidFrom(newbomline.getUpdated());
 		saveRecord(newbomline);
 	}
-
-	protected void actionDeactivate(final I_PP_Product_BOMLine bomline)
+	
+	protected void actionDeactivate(I_PP_Product_BOMLine bomline)
 	{
 		bomline.setIsActive(false);
 		bomline.setM_ChangeNotice_ID(p_M_ChangeNotice_ID);
 		saveRecord(bomline);
 	}
 
-	protected void actionExpire(final I_PP_Product_BOMLine bomline)
+	protected void actionExpire(I_PP_Product_BOMLine bomline)
 	{
 		bomline.setIsActive(true);
 		bomline.setValidTo(bomline.getUpdated());

@@ -5,7 +5,7 @@ import queryString from 'query-string';
 
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
-import { getResetPasswordInfo } from '../api/login';
+import { getResetPasswordInfo } from '../api';
 import LoginRoute from './LoginRoute';
 
 import Translation from '../components/Translation';
@@ -25,10 +25,11 @@ const ResetPasswordRoute = ({ location, ...rest }) => {
   const token = query.token || null;
 
   useConstructor(() => {
-    getResetPasswordInfo(token)
-      .then(() => Translation.getMessages())
-      .catch((error) => console.log('Got error', error))
-      .finally(() => setPending(false));
+    getResetPasswordInfo(token).then(() => {
+      Translation.getMessages().then(() => {
+        setPending(false);
+      });
+    });
   });
 
   if (isLoggedIn) {

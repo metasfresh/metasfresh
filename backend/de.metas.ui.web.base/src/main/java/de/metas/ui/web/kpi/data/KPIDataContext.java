@@ -31,7 +31,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -43,11 +42,6 @@ import java.util.Set;
 @Builder(toBuilder = true)
 public class KPIDataContext
 {
-	public static final CtxName CTXNAME_AD_User_ID = CtxNames.parse("AD_User_ID");
-	public static final CtxName CTXNAME_AD_Role_ID = CtxNames.parse("AD_Role_ID");
-	public static final CtxName CTXNAME_AD_Client_ID = CtxNames.parse("AD_Client_ID");
-	public static final CtxName CTXNAME_AD_Org_ID = CtxNames.parse("AD_Org_ID");
-
 	@Nullable Instant from;
 	@Nullable Instant to;
 
@@ -90,22 +84,22 @@ public class KPIDataContext
 		for (final CtxName requiredParam : requiredParameters)
 		{
 			final String requiredParamName = requiredParam.getName();
-			if (CTXNAME_AD_User_ID.getName().equals(requiredParamName)
+			if ("AD_User_ID".equals(requiredParamName)
 					|| Env.CTXNAME_AD_User_ID.equals(requiredParamName))
 			{
 				userId_new = this.userId;
 			}
-			else if (CTXNAME_AD_Role_ID.getName().equals(requiredParamName)
+			else if ("AD_Role_ID".equals(requiredParamName)
 					|| Env.CTXNAME_AD_Role_ID.equals(requiredParamName))
 			{
 				roleId_new = this.roleId;
 			}
-			else if (CTXNAME_AD_Client_ID.getName().equals(requiredParamName)
+			else if ("AD_Client_ID".equals(requiredParamName)
 					|| Env.CTXNAME_AD_Client_ID.equals(requiredParamName))
 			{
 				clientId_new = this.clientId;
 			}
-			else if (CTXNAME_AD_Org_ID.getName().equals(requiredParamName)
+			else if ("AD_Org_ID".equals(requiredParamName)
 					|| Env.CTXNAME_AD_Org_ID.equals(requiredParamName))
 			{
 				orgId_new = this.orgId;

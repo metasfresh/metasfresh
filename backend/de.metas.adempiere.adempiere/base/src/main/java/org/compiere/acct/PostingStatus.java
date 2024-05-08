@@ -1,23 +1,17 @@
 package org.compiere.acct;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
+import de.metas.util.Check;
 
 /**
  * Posting Status.
- * <p>
+ * 
  * See AD_Reference_ID=234.
- *
+ * 
  * @author tsa
+ *
  */
-@AllArgsConstructor
-public enum PostingStatus implements ReferenceListAwareEnum
+public enum PostingStatus
 {
 	NotPosted("N"),
 	NotBalanced("b"),
@@ -28,20 +22,34 @@ public enum PostingStatus implements ReferenceListAwareEnum
 	Posted("Y"),
 	Error("E");
 
-	private static final ReferenceListAwareEnums.ValuesIndex<PostingStatus> index = ReferenceListAwareEnums.index(values());
+	private final String status;
 
-	@Getter @NonNull private final String code;
-	@Getter @NonNull private final AdMessageKey adMessage;
-
-	PostingStatus(@NonNull final String code)
+	PostingStatus(final String status)
 	{
-		this.code = code;
-		this.adMessage = AdMessageKey.of("PostingError-" + code);
+		Check.assumeNotEmpty(status, "status not empty");
+		this.status = status;
 	}
 
-	public static PostingStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public String getStatusCode()
+	{
+		return status;
+	}
 
-	public static PostingStatus ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+	public AdMessageKey getAD_Message()
+	{
+		return AdMessageKey.of("PostingError-" + getStatusCode());
+	}
 
-	public boolean isPosted() {return Posted.equals(this);}
+	public static PostingStatus forStatusCode(final String statusCode)
+	{
+		for (final PostingStatus status : values())
+		{
+			if (status.getStatusCode().equals(statusCode))
+			{
+				return status;
+			}
+		}
+
+		throw new IllegalArgumentException("No " + PostingStatus.class + " found for status code: " + statusCode);
+	}
 }

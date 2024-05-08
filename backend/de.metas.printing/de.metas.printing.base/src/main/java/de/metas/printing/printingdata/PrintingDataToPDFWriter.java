@@ -39,7 +39,7 @@ import java.io.OutputStream;
 
 public class PrintingDataToPDFWriter implements IAutoCloseable
 {
-	private final static Logger logger = LogManager.getLogger(PrintingDataToPDFWriter.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFWriter.class);
 
 	private final PdfCopy pdfCopy;
 	private final Document document;
@@ -79,51 +79,48 @@ public class PrintingDataToPDFWriter implements IAutoCloseable
 		}
 		logger.debug("Adding data={}; segment={}", data, segment);
 
-		int pagesAdded = 0;
-		for (int i = 0; i < segment.getCopies(); i++)
+		final PdfReader reader = new PdfReader(data.getData());
+
+		final int archivePageNums = reader.getNumberOfPages();
+
+		int pageFrom = segment.getPageFrom();
+		if (pageFrom <= 0)
 		{
-			final PdfReader reader = new PdfReader(data.getData());
-			final int archivePageNums = reader.getNumberOfPages();
-			
-			int pageFrom = segment.getPageFrom();
-			if (pageFrom <= 0)
-			{
-				// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
-				pageFrom = 1;
-			}
-			int pageTo = segment.getPageTo();
-			if (pageTo > archivePageNums)
-			{
-				// shall not happen at this point
-				logger.debug("Page to ({}) is greater then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
-				pageTo = archivePageNums;
-			}
-			if (pageFrom > pageTo)
-			{
-				// shall not happen at this point
-				logger.warn("Page from ({}) is greater then Page to ({}). Skipping: {}", pageFrom, pageTo, segment);
-				return 0;
-			}
-
-			logger.debug("PageFrom={}, PageTo={}, NumberOfPages={}", pageFrom, pageTo, archivePageNums);
-
-			for (int page = pageFrom; page <= pageTo; page++)
-			{
-				try
-				{
-					pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
-				}
-				catch (final BadPdfFormatException e)
-				{
-					throw new AdempiereException("@Invalid@ " + segment + " (Page: " + page + ")", e);
-				}
-				pagesAdded++;
-			}
-
-			pdfCopy.freeReader(reader);
-			reader.close();
+			// First page is 1 - See com.lowagie.text.pdf.PdfWriter.getImportedPage
+			pageFrom = 1;
+		}
+		int pageTo = segment.getPageTo();
+		if (pageTo > archivePageNums)
+		{
+			// shall not happen at this point
+			logger.debug("Page to ({}) is greater then number of pages. Considering number of pages: {}", new Object[] { pageTo, archivePageNums });
+			pageTo = archivePageNums;
+		}
+		if (pageFrom > pageTo)
+		{
+			// shall not happen at this point
+			logger.warn("Page from ({}) is greater then Page to ({}). Skipping: {}", pageFrom, pageTo, segment);
+			return 0;
 		}
 
+		logger.debug("PageFrom={}, PageTo={}, NumberOfPages={}", pageFrom, pageTo, archivePageNums);
+
+		int pagesAdded = 0;
+		for (int page = pageFrom; page <= pageTo; page++)
+		{
+			try
+			{
+				pdfCopy.addPage(pdfCopy.getImportedPage(reader, page));
+			}
+			catch (final BadPdfFormatException e)
+			{
+				throw new AdempiereException("@Invalid@ " + segment + " (Page: " + page + ")", e);
+			}
+			pagesAdded++;
+		}
+
+		pdfCopy.freeReader(reader);
+		reader.close();
 
 		logger.debug("Added {} pages", pagesAdded);
 		return pagesAdded;

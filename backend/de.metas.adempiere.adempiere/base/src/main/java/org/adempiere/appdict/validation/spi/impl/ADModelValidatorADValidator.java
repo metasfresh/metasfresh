@@ -22,19 +22,18 @@ package org.adempiere.appdict.validation.spi.impl;
  * #L%
  */
 
-import lombok.NonNull;
+
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_ModelValidator;
-import org.compiere.util.Util;
 
 public class ADModelValidatorADValidator extends AbstractADValidator<I_AD_ModelValidator>
 {
 	@Override
-	public void validate(@NonNull final I_AD_ModelValidator modelValidator)
+	public void validate(I_AD_ModelValidator modelValidator)
 	{
-		Util.validateJavaClassname(modelValidator.getModelValidationClass(), null);
+		validateJavaClassname(modelValidator.getModelValidationClass(), null);
 	}
 
 	@Override
@@ -47,7 +46,7 @@ public class ADModelValidatorADValidator extends AbstractADValidator<I_AD_ModelV
 
 			message.append("Error on ").append(modelValidator).append(" (IsActive=").append(modelValidator.isActive()).append("): ");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
 			message.append("Error (InterfaceWrapperHelper exception: ").append(e.getLocalizedMessage()).append(") on ").append(violation.getItem()).append(": ");
 		}

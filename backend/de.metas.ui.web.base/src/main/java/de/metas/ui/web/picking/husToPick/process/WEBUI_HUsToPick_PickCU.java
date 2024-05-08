@@ -1,7 +1,20 @@
 package de.metas.ui.web.picking.husToPick.process;
 
-import com.google.common.collect.ImmutableSet;
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -9,7 +22,6 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.AdMessageKey;
@@ -32,16 +44,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 /*
  * #%L
@@ -87,12 +89,12 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	@Param(parameterName = PARAM_M_Product_ID, mandatory = false)
 	private int scannedProductId;
 
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	private static final String PARAM_QtyCU = "QtyCU";
 	/**
 	 * Qty CU to be picked
 	 */
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal qtyCUsPerTU;
+	@Param(parameterName = PARAM_QtyCU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	private transient ProductId _productIdToPack; // lazy
 
@@ -131,7 +133,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
 			return packageableRow.getProductId();
 		}
-		else if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
+		else if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
 			final PackageableRow packageableRow = getSingleSelectedPackageableRow();
 			final BigDecimal qtyToDeliver = packageableRow.getQtyOrderedWithoutPicked().toBigDecimal();
@@ -189,13 +191,13 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		}
 	}
 
-	private BigDecimal getQtyCUsPerTU()
+	private BigDecimal getQtyCU()
 	{
-		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
+		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
+			throw new FillMandatoryException(PARAM_QtyCU);
 		}
-		return qtyCUsPerTU;
+		return qtyCU;
 	}
 
 	private ProductId getProductId()
@@ -270,7 +272,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
-				.setQuantity(getQtyCUsPerTU(), uom)
+				.setQuantity(getQtyCU(), uom)
 				.setDate(SystemTime.asZonedDateTime())
 				.setFromReferencedModel(null) // N/A
 				.setForceQtyAllocation(false)

@@ -99,11 +99,11 @@ import lombok.NonNull;
 		}
 		else
 		{
-			try (final CloseableReentrantLock ignored = parentLock.mutex.open())
+			try (final CloseableReentrantLock ignored = parentLock.mutex)
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);
-				parentLock.subtractCountLocked(lock.getCountTransferredFromParent());
+				parentLock.subtractCountLocked(lock.getCountLocked());
 				return lock;
 			}
 		}

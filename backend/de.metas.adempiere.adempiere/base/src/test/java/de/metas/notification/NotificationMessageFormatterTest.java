@@ -1,15 +1,24 @@
 package de.metas.notification;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.util.Services;
-import org.adempiere.test.AdempiereTestHelper;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.i18n.impl.PlainMsgBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,8 +49,6 @@ public class NotificationMessageFormatterTest
 	@Before
 	public void init()
 	{
-		AdempiereTestHelper.get().init();
-
 		mockedMsgBL = new MockedMsgBL();
 		Services.registerService(IMsgBL.class, mockedMsgBL);
 	}
@@ -81,5 +88,32 @@ public class NotificationMessageFormatterTest
 						NotificationMessageFormatter.createUrlWithTitle("http://www.metasfresh.com", "metas gmbH") //
 				));
 		assertThat(result).isEqualTo("the url is <a href=\"http://www.metasfresh.com\">metas gmbH</a>.");
+	}
+
+	private static final class MockedMsgBL extends PlainMsgBL
+	{
+		private final HashMap<AdMessageKey, String> msgTexts = new HashMap<>();
+
+		public void putMsgText(@NonNull final AdMessageKey adMessage, @NonNull final String msgText)
+		{
+			msgTexts.put(adMessage, msgText);
+		}
+
+		private String getMsgText(final AdMessageKey adMessage)
+		{
+			final String msgText = msgTexts.get(adMessage);
+			if (msgText == null)
+			{
+				throw new AdempiereException("No MsgText registered for " + adMessage + " in " + this);
+			}
+			return msgText;
+		}
+
+		@Override
+		public ITranslatableString getTranslatableMsgText(@NonNull final AdMessageKey adMessage, final Object... msgParameters)
+		{
+			final String msgText = getMsgText(adMessage);
+			return TranslatableStrings.constant(MessageFormat.format(msgText, msgParameters));
+		}
 	}
 }

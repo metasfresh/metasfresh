@@ -84,7 +84,7 @@ public class PPOrderChangedEventFactory
 		});
 
 		final ImmutableMap.Builder<Integer, PPOrderLine> oldLinesCollector = ImmutableMap.builder();
-
+		
 		final List<PPOrderLine> linesWithProductBomLine = linesWithAndWithoutProductBomLineId.get(true);
 		linesWithProductBomLine.forEach(line -> {
 			final ChangedPPOrderLineDescriptorBuilder builder = ChangedPPOrderLineDescriptor.builder()
@@ -171,7 +171,7 @@ public class PPOrderChangedEventFactory
 				.collect(ImmutableSet.toImmutableSet());
 
 		deletedLineIds.forEach(productBomLineId2ChangeBuilder::remove);
-
+		
 		final Map<Boolean, List<ChangedPPOrderLineDescriptor>> collection = collectMapEntriesWithAndWithoutNewPPorderLineId();
 
 		final List<ChangedPPOrderLineDescriptor> updatedPPOrderLines = collection.get(true);

@@ -6,8 +6,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import javax.annotation.Nullable;
 
 import de.metas.organization.OrgId;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;

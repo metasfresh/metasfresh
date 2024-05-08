@@ -34,17 +34,5 @@ public class UIComponent
 	@NonNull UIComponentType type;
 
 	@Builder.Default
-	@NonNull WFActivityAlwaysAvailableToUser alwaysAvailableToUser = WFActivityAlwaysAvailableToUser.DEFAULT;
-
-	@Builder.Default
 	@NonNull Params properties = Params.EMPTY;
-
-	public static UIComponentBuilder builderFrom(
-			@NonNull final UIComponentType type,
-			@NonNull final WFActivity wfActivity)
-	{
-		return builder()
-				.type(type)
-				.alwaysAvailableToUser(wfActivity.getAlwaysAvailableToUser());
-	}
 }

@@ -22,9 +22,9 @@ package org.adempiere.facet.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.util.collections.IncludeExcludeListPredicate;
-import lombok.NonNull;
+
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.facet.FacetCollectorRequestBuilder;
 import org.adempiere.facet.IFacet;
@@ -32,7 +32,10 @@ import org.adempiere.facet.IFacetCategory;
 import org.adempiere.facet.IFacetCollector;
 import org.adempiere.facet.IFacetCollectorResult;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.util.Check;
+import de.metas.util.collections.IncludeExcludeListPredicate;
 
 /**
  * {@link IFacetCollector} template implementation for the case when we are collecting facets only for a facet category.
@@ -55,8 +58,11 @@ public abstract class SingleFacetCategoryCollectorTemplate<ModelType> extends Ab
 	private final IFacetCategory facetCategory;
 	private final List<IFacetCategory> allFacetCategories;
 
-	public SingleFacetCategoryCollectorTemplate(final @NonNull IFacetCategory facetCategory)
+	public SingleFacetCategoryCollectorTemplate(final IFacetCategory facetCategory)
 	{
+		super();
+
+		Check.assumeNotNull(facetCategory, "facetCategory not null");
 		this.facetCategory = facetCategory;
 
 		this.allFacetCategories = ImmutableList.of(facetCategory);

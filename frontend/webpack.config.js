@@ -72,7 +72,7 @@ if (!fs.existsSync(path.join(__dirname, 'plugins.js'))) {
 module.exports = {
   mode: 'development',
   bail: true,
-  devtool: 'source-map',
+  devtool: 'eval-cheap-source-map',
   entry: entries,
   output: {
     path: '/',
@@ -95,7 +95,7 @@ module.exports = {
         },
       },
       {
-        test: /\.(css|scss)$/,
+        test: /\.css$/,
         use: [
           'style-loader',
           { loader: 'css-loader', options: { importLoaders: 1 } },

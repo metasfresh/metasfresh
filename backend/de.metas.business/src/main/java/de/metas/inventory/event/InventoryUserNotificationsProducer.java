@@ -54,7 +54,7 @@ public class InventoryUserNotificationsProducer
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.inventory.UserNotifications");
+	public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.inventory.UserNotifications");
 
 	/** M_Inventory internal use */
 	private static final AdWindowId WINDOW_INTERNAL_INVENTORY = AdWindowId.ofRepoId(341); // FIXME: HARDCODED

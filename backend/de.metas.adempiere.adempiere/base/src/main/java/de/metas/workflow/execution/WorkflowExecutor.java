@@ -30,19 +30,18 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.workflow.WFState;
-import de.metas.workflow.WorkflowId;
+import de.metas.workflow.Workflow;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TrxRunnableAdapter;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,28 +50,31 @@ public class WorkflowExecutor
 {
 	private static final AdMessageKey MSG_DocumentStatusChanged = AdMessageKey.of("DocumentStatusChangedNotification");
 
-	@NonNull private final WorkflowExecutionSupportingServicesFacade services = SpringContextHolder.instance.getBean(WorkflowExecutionSupportingServicesFacade.class);
-	@NonNull private final WFProcessRepository wfProcessRepository;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final WFProcessRepository wfProcessRepository;
 
-	@NonNull private final WorkflowExecutionContext context;
+	private final WorkflowExecutionContext context;
 
 	@Builder
 	private WorkflowExecutor(
-			@Nullable final ClientId clientId,
+			@NonNull final Workflow workflow,
+			@NonNull final ClientId clientId,
+			@NonNull final String adLanguage,
 			@NonNull final TableRecordReference documentRef,
 			@NonNull final UserId userId)
 	{
-		this.wfProcessRepository = services.getWfProcessRepository();
-
 		this.context = WorkflowExecutionContext.builder()
-				.services(services)
+				.workflow(workflow)
 				.clientId(clientId)
+				.adLanguage(adLanguage)
 				.documentRef(documentRef)
 				.userId(userId)
 				.build();
+
+		wfProcessRepository = context.getWfProcessRepository();
 	}
 
-	public WorkflowExecutionResult start(@NonNull WorkflowId workflowId)
+	public WorkflowExecutionResult start()
 	{
 		final HashSet<UserId> previousActiveInvokers = new HashSet<>();
 
@@ -90,9 +92,9 @@ public class WorkflowExecutor
 
 		//
 		// Start a new process
-		final WFProcess wfProcess = new WFProcess(context, workflowId);
+		final WFProcess wfProcess = new WFProcess(context);
 		final Mutable<Throwable> exceptionHolder = new Mutable<>();
-		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
@@ -196,9 +198,9 @@ public class WorkflowExecutor
 		return summary;
 	}
 
-	private void abort(@NonNull final WFProcess wfProcess)
+	public void abort(@NonNull final WFProcess wfProcess)
 	{
-		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
+		trxManager.runInThreadInheritedTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(final String localTrxName)
@@ -216,11 +218,11 @@ public class WorkflowExecutor
 
 	private List<WFProcess> getActiveProcesses()
 	{
-		final Set<WFProcessId> wfProcessIds = wfProcessRepository.getActiveProcessIds(context.getDocumentRef());
+		final List<WFProcessId> wfProcessIds = wfProcessRepository.getActiveProcessIds(context.getDocumentRef());
 		return getWFProcesses(wfProcessIds);
 	}
 
-	private List<WFProcess> getWFProcesses(final Collection<WFProcessId> wfProcessIds)
+	private List<WFProcess> getWFProcesses(final List<WFProcessId> wfProcessIds)
 	{
 		if (wfProcessIds.isEmpty())
 		{
@@ -238,28 +240,4 @@ public class WorkflowExecutor
 						wfActivityStates.get(wfProcessId)))
 				.collect(ImmutableList.toImmutableList());
 	}
-
-	public void resume()
-	{
-		getActiveProcesses().forEach(this::resume);
-	}
-
-	private void resume(@NonNull final WFProcess wfProcess)
-	{
-		services.runInThreadInheritedTrx(new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(final String localTrxName)
-			{
-				wfProcess.resumeWork();
-			}
-
-			@Override
-			public void doFinally()
-			{
-				context.save(wfProcess);
-			}
-		});
-	}
-
 }

@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -30,13 +31,11 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
+import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandUpdateSchedulerRequest;
-import de.metas.invoicecandidate.api.impl.InvoiceCandidatesChangesChecker;
+import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.lock.api.ILock;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -60,9 +59,10 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
-	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
 
 	private final IInvoiceGenerateResult _result;
+	private InvoicingParams _invoicingParams = null; // lazy loaded
 
 	/**
 	 * @param result result to be used when processing
@@ -116,7 +116,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// After invoices were generated, schedule another update invalid workpackage to update any remaining invoice candidates.
 		// This is a workaround and we do that because our testers reported that randomly, when we do mass invoicing,
 		// sometimes there are some invoice candidates invalidated.
-		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName));
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName, asyncBatchId));
 
 		return Result.SUCCESS;
 	}
@@ -136,8 +138,12 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 				_result, queueDAO, invoiceCandBL, invoiceCandDAO, workPackageBL);
 	}
 
-	private InvoicingParams getInvoicingParams()
+	private IInvoicingParams getInvoicingParams()
 	{
-		return InvoicingParams.ofParams(getParameters());
+		if (_invoicingParams == null)
+		{
+			_invoicingParams = new InvoicingParams(getParameters());
+		}
+		return _invoicingParams;
 	}
 }

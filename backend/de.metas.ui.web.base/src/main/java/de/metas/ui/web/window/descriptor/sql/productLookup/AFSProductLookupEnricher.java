@@ -28,8 +28,8 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -119,7 +119,6 @@ public class AFSProductLookupEnricher
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
 		final AvailableForSalesQuery.AvailableForSalesQueryBuilder queryBuilder = AvailableForSalesQuery.builder()
-				.orgId(orgId)
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
 				.salesOrderLookBehindHours(salesOrderLookBehindHours)

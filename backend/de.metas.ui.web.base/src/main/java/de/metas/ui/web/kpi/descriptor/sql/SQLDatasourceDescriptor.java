@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -39,6 +38,7 @@ import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -58,11 +58,11 @@ public class SQLDatasourceDescriptor
 
 	@NonNull IStringExpression sqlSelect;
 
-	private static final ImmutableSet<CtxName> PERMISSION_REQUIRED_PARAMS = ImmutableSet.of(
-			KPIDataContext.CTXNAME_AD_User_ID,
-			KPIDataContext.CTXNAME_AD_Role_ID,
-			KPIDataContext.CTXNAME_AD_Client_ID
-	);
+	private static final ImmutableSet<CtxName> PERMISSION_REQUIRED_PARAMS = ImmutableSet.<CtxName>builder()
+			.add(CtxNames.parse("AD_User_ID"))
+			.add(CtxNames.parse("AD_Role_ID"))
+			.add(CtxNames.parse("AD_Client_ID"))
+			.build();
 
 	@Builder
 	private SQLDatasourceDescriptor(

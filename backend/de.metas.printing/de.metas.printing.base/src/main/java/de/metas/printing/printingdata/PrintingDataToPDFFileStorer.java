@@ -27,12 +27,10 @@ import com.google.common.collect.ImmutableMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTray;
 import de.metas.printing.OutputType;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -55,13 +53,11 @@ import java.nio.file.Paths;
 @Service
 public class PrintingDataToPDFFileStorer
 {
-	private final static Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintingDataToPDFFileStorer.class);
 
 	@VisibleForTesting
 	final static String SYSCONFIG_STORE_PDF_BASE_DIRECTORY = "de.metas.printing.StorePDFBaseDirectory";
-	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEM_TIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
-
-	final static String SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME = "de.metas.printing.IncludePInstanceIdInFileName";
+	final static String SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME = "de.metas.printing.IncludeSystemTimeMSInFileName";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -79,7 +75,7 @@ public class PrintingDataToPDFFileStorer
 		}
 	}
 
-	private void storeInFileSystem0(@NonNull final PrintingData printingData)
+	public void storeInFileSystem0(@NonNull final PrintingData printingData)
 	{
 		final String baseDirectory = getBaseDirectory(printingData);
 
@@ -111,30 +107,21 @@ public class PrintingDataToPDFFileStorer
 	private String extractFileName(final @NonNull PrintingData printingData)
 	{
 		final boolean includeSystemTimeMS = sysConfigBL.getBooleanValue(
-				SYSCONFIG_STORE_PDF_INCLUDE_SYSTEM_TIME_MS_IN_FILENAME,
+				SYSCONFIG_STORE_PDF_INCLUDE_SYSTEMTIME_MS_IN_FILENAME,
 				true /*defaultValue*/,
-				ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, printingData.getOrgId()));
-
-		final boolean includePInstanceId = sysConfigBL.getBooleanValue(
-				SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME,
-				false /*defaultValue*/,
-				ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, printingData.getOrgId()));
+				ClientId.METASFRESH.getRepoId(),
+				printingData.getOrgId().getRepoId());
 
 		final StringBuilder result = new StringBuilder();
-
-		if (includePInstanceId && printingData.getPInstanceId() != null)
-		{
-			result.append(PInstanceId.toRepoId(printingData.getPInstanceId())).append("_");
-		}
-
 		if (includeSystemTimeMS)
 		{
-			result.append(SystemTime.millis()).append("_");
+			result
+					.append(SystemTime.millis())
+					.append("_");
 		}
-
 		return FileUtil.stripIllegalCharacters(result
-													   .append(printingData.getDocumentFileName())
-													   .toString());
+				.append(printingData.getDocumentFileName())
+				.toString());
 	}
 
 	@NonNull
@@ -183,13 +170,13 @@ public class PrintingDataToPDFFileStorer
 			{
 				final HardwareTray tray = printer.getTray(segment.getTrayId());
 				path = Paths.get(baseDirectory,
-								 FileUtil.stripIllegalCharacters(printer.getName()),
-								 FileUtil.stripIllegalCharacters(tray.getTrayNumber() + "-" + tray.getName()));
+						FileUtil.stripIllegalCharacters(printer.getName()),
+						FileUtil.stripIllegalCharacters(tray.getTrayNumber() + "-" + tray.getName()));
 			}
 			else
 			{
 				path = Paths.get(baseDirectory,
-								 FileUtil.stripIllegalCharacters(printer.getName()));
+						FileUtil.stripIllegalCharacters(printer.getName()));
 			}
 
 			path2Segments.put(path, segment);

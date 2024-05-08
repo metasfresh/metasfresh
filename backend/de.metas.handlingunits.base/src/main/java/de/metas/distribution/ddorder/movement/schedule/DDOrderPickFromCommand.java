@@ -71,7 +71,7 @@ class DDOrderPickFromCommand
 		schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
 		ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
 		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
-		inTransitLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseInTransitId);
+		inTransitLocatorId = warehouseBL.getDefaultLocatorId(warehouseInTransitId);
 
 		//
 		if (schedule.isPickedFrom())

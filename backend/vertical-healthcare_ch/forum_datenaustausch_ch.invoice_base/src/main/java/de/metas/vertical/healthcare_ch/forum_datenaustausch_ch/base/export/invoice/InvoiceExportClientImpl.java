@@ -74,8 +74,6 @@ import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType.KT;
-import static de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType.KV;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -129,10 +127,10 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	@Override
 	public boolean applies(@NonNull final InvoiceToExport invoice)
 	{
-		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocBaseAndSubType().getDocSubType());
+		final HealthCareInvoiceDocSubType docType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocSubType());
 		if (docType == null)
 		{
-			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocBaseAndSubType().getDocSubType());
+			logger.debug("The given invoice's DocSubType={} is not related to this export client implementation; -> return false", invoice.getDocSubType());
 			return false;
 		}
 		if (HealthCareInvoiceDocSubType.EA.equals(docType))
@@ -142,7 +140,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		}
 
 		final ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> //
-				converters = extractConverters(invoice.getInvoiceAttachments());
+		converters = extractConverters(invoice.getInvoiceAttachments());
 		if (converters.isEmpty())
 		{
 			return false;
@@ -168,7 +166,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 	public List<InvoiceExportResult> export(@NonNull final InvoiceToExport invoice)
 	{
 		final ImmutableMultimap<CrossVersionRequestConverter, InvoiceAttachment> //
-				converter2ConvertableAttachment = extractConverters(invoice.getInvoiceAttachments());
+		converter2ConvertableAttachment = extractConverters(invoice.getInvoiceAttachments());
 
 		final ImmutableList.Builder<InvoiceExportResult> exportResults = ImmutableList.builder();
 
@@ -204,7 +202,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 			@NonNull final List<InvoiceAttachment> invoiceAttachments)
 	{
 		final Builder<CrossVersionRequestConverter, InvoiceAttachment> //
-				result = ImmutableMultimap.builder();
+		result = ImmutableMultimap.builder();
 
 		for (final InvoiceAttachment attachment : invoiceAttachments)
 		{
@@ -308,12 +306,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 
 		// just hand through attachments/documents that already exist within the XML that was uploaded to us
 		final List<XmlDocument> documentsToExport = new ArrayList<>(xBody.getDocuments());
-
-		final HealthCareInvoiceDocSubType docSubType = HealthCareInvoiceDocSubType.ofCodeOrNull(invoice.getDocBaseAndSubType().getDocSubType());
-		if (!KT.equals(docSubType) && !KV.equals(docSubType))
-		{
-			documentsToExport.addAll(createDocuments(invoice.getInvoiceAttachments()));
-		}
+		documentsToExport.addAll(createDocuments(invoice.getInvoiceAttachments()));
 
 		return BodyMod
 				.builder()
@@ -470,7 +463,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		final ImmutableList.Builder<ServiceModWithSelector> serviceMods = ImmutableList.builder();
 
 		final ImmutableMap<Integer, XmlService> //
-				recordId2xService = Maps.uniqueIndex(xServices, XmlService::getRecordId);
+		recordId2xService = Maps.uniqueIndex(xServices, XmlService::getRecordId);
 
 		for (final InvoiceLine invoiceLine : invoice.getInvoiceLines())
 		{
@@ -500,9 +493,7 @@ public class InvoiceExportClientImpl implements InvoiceExportClient
 		return serviceMods.build();
 	}
 
-	/**
-	 * attach 2ndary attachments to our XML
-	 */
+	/** attach 2ndary attachments to our XML */
 	private List<XmlDocument> createDocuments(@NonNull final List<InvoiceAttachment> invoiceAttachments)
 	{
 		final ImmutableList.Builder<XmlDocument> xmldocuments = ImmutableList.builder();

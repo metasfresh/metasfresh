@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.process;
 
 import com.google.common.collect.ImmutableList;
@@ -31,8 +9,6 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.window.api.WindowCopyResult;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
@@ -149,8 +125,6 @@ public interface IADProcessDAO extends ISingletonService
 
 	void save(I_AD_Process process);
 
-	void copyWindowRelatedProcesses(WindowCopyResult windowCopyResult);
-
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
@@ -158,7 +132,4 @@ public interface IADProcessDAO extends ISingletonService
 	ProcessType retrieveProcessType(@NonNull AdProcessId processId);
 
 	ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds();
-
-	@NonNull
-	List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull AdValRuleId valRuleId);
 }

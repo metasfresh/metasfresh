@@ -41,8 +41,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
-import javax.annotation.Nullable;
-
 public interface IPrintJobBL extends ISingletonService
 {
 	/**
@@ -65,7 +63,6 @@ public interface IPrintJobBL extends ISingletonService
 	@Getter
 	class ContextForAsyncProcessing
 	{
-		@Nullable
 		PInstanceId adPInstanceId;
 
 		@Default

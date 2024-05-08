@@ -22,10 +22,10 @@
 
 package de.metas.common.bpartner.v1.request;
 
-import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -37,151 +37,160 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE
 @EqualsAndHashCode
 public class JsonRequestContact
 {
-	@Schema
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	private JsonExternalId externalId;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean externalIdSet;
 
-	@Schema
+	@ApiModelProperty(position = 20, dataType = "java.lang.Integer")
 	private JsonMetasfreshId metasfreshBPartnerId;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean metasfreshBPartnerIdSet;
 
-	@Schema(description = "Translated to `AD_User.Value`")
+	@ApiModelProperty(position = 30, value = "Translated to `AD_User.Value`")
 	private String code;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean codeSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@ApiModelProperty(position = 40, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	private Boolean active;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	private String name;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
-	@Schema
+	@ApiModelProperty(position = 60)
 	private String firstName;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean firstNameSet;
 
-	@Schema
+	@ApiModelProperty(position = 70)
 	private String lastName;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean lastNameSet;
 
-	@Schema
+	@ApiModelProperty(position = 80)
 	private String email;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean emailSet;
 
-	@Schema
+	@ApiModelProperty(position = 90)
 	private String phone;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean phoneSet;
 
-	@Schema
+	@ApiModelProperty(position = 100)
 	private String fax;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean faxSet;
 
-	@Schema
+	@ApiModelProperty(position = 110)
 	private String mobilePhone;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean mobilePhoneSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 120, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean defaultContact;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean defaultContactSet;
 
-	@Schema(description = "Only one location per request may have `shipToDefault == true`.\n"
+	@ApiModelProperty(position = 130, //
+			value = "Only one location per request may have `shipToDefault == true`.\n"
 					+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 					+ "If `true`, then " //
 					+ "* another possibly exiting metasfresh contact might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	private Boolean shipToDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean shipToDefaultSet;
 
-	@Schema(description = "Only one location per request may have `billToDefault == true`.\n"
+	@ApiModelProperty(position = 140, //
+			value = "Only one location per request may have `billToDefault == true`.\n"
 					+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 					+ "If `true`, then " //
 					+ "* another possibly exiting metasfresh contact might be set to `billToDefault = false`, even if it is not specified in this request.")
 	private Boolean billToDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 150, //
+			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean newsletter;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean newsletterSet;
 
-	@Schema
+	@ApiModelProperty(position = 160)
 	private String description;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 170, //
+			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean sales;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean salesSet;
 
-	@Schema(description = "Only one location per request may have `salesDefault == true`.\n"
+	@ApiModelProperty(position = 180, //
+			value = "Only one location per request may have `salesDefault == true`.\n"
 					+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 					+ "If `true`, then " //
 					+ "* `sales` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh contact might be set to `salesDefault = false`, even if it is not specified in this request.")
 	private Boolean salesDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean salesDefaultSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 190, //
+			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean purchase;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean purchaseSet;
 
-	@Schema(description = "Only one location per request may have `purchaseDefault == true`.\n"
+	@ApiModelProperty(position = 200, //
+			value = "Only one location per request may have `purchaseDefault == true`.\n"
 					+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
 					+ "If `true`, then " //
 					+ "* `purchase` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh contact might be set to `purchaseDefault = false`, even if it is not specified in this request.")
 	private Boolean purchaseDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean purchaseDefaultSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 210, //
+			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	private Boolean subjectMatter;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean subjectMatterSet;
 
-	@Schema(description = "Sync advise about this contact's individual properties.\n"
-					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC) // shall be last
+	@ApiModelProperty(position = 220, // shall be last
+			value = "Sync advise about this contact's individual properties.\n"
+					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(final JsonExternalId externalId)

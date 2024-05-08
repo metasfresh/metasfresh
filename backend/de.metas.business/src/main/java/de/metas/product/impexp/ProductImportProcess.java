@@ -34,7 +34,6 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -98,7 +97,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	@Override
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
-		return ImmutableMap.<String, Object> builder()
+		return ImmutableMap.<String, Object>builder()
 				.put(I_I_Product.COLUMNNAME_ProductType, X_I_Product.PRODUCTTYPE_Item)
 				.build();
 	}
@@ -148,7 +147,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			return ImportRecordResult.Nothing;
 		}
 		// Product
-		if (newProduct)			// Insert new Product
+		if (newProduct)            // Insert new Product
 		{
 			final I_M_Product product = createMProduct(importRecord);
 			if (Check.isEmpty(product.getName()))
@@ -164,23 +163,23 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		// Update Product
 		{
 			final String sqlt = DB.convertSqlToNative("UPDATE M_PRODUCT "
-					+ "SET (Value,Name,Description,DocumentNote,Help,"
-					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
-					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,Updated,UpdatedBy, "
-					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
-					+ ", " + I_I_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
-					+ ")= "
-					+ "(SELECT Value,coalesce(I_Product.Name, I_Product.Value),Description,DocumentNote,Help,"
-					+ "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
-					+ "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
-					+ "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
-					+ "Discontinued,DiscontinuedBy,now(),UpdatedBy, "
-					+ "RawMaterialOrigin_ID, M_CustomsTariff_ID"
-					+ ", " + I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
-					+ " FROM I_Product WHERE I_Product_ID=" + I_Product_ID + ") "
-					+ "WHERE M_Product_ID=" + M_Product_ID);
+															  + "SET (Value,Name,Description,DocumentNote,Help,"
+															  + "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
+															  + "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
+															  + "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
+															  + "Discontinued,DiscontinuedBy,Updated,UpdatedBy, "
+															  + "RawMaterialOrigin_ID, M_CustomsTariff_ID"
+															  + ", " + I_I_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
+															  + ")= "
+															  + "(SELECT Value,coalesce(I_Product.Name, I_Product.Value),Description,DocumentNote,Help,"
+															  + "Package_UOM_ID, PackageSize, IsSold, IsStocked, "
+															  + "UPC,SKU,C_UOM_ID,M_Product_Category_ID,Classification,ProductType,"
+															  + "Volume,Weight,NetWeight,ShelfWidth,ShelfHeight,ShelfDepth,UnitsPerPallet,"
+															  + "Discontinued,DiscontinuedBy,now(),UpdatedBy, "
+															  + "RawMaterialOrigin_ID, M_CustomsTariff_ID"
+															  + ", " + I_M_Product.COLUMNNAME_M_ProductPlanningSchema_Selector // #3406
+															  + " FROM I_Product WHERE I_Product_ID=" + I_Product_ID + ") "
+															  + "WHERE M_Product_ID=" + M_Product_ID);
 			PreparedStatement pstmt_updateProduct = null;
 			try
 			{
@@ -250,12 +249,16 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		final BigDecimal priceList = imp.getPriceList();
 		final BigDecimal priceStd = imp.getPriceStd();
 		final BigDecimal priceLimit = imp.getPriceLimit();
+		if (priceStd.signum() == 0 && priceLimit.signum() == 0 && priceList.signum() == 0)
+		{
+			return;
+		}
 
 		//
 		// Get/Create Product Price record
 		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
 		final I_M_ProductPrice pp = Optional
-				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId, TaxCategoryId.ofRepoIdOrNull(taxCategoryId)))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
 				.orElseGet(() -> newInstance(I_M_ProductPrice.class));
 
 		pp.setM_PriceList_Version_ID(priceListVersionId);    // FK
@@ -329,5 +332,5 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		product.setIsPurchased(importRecord.isPurchased());
 
 		return product;
-	}	// MProduct
+	}    // MProduct
 }

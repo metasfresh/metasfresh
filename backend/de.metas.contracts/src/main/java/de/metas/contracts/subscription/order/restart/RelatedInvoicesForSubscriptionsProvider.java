@@ -5,9 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;

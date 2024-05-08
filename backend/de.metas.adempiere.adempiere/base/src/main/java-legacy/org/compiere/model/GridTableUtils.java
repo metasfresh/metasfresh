@@ -1,21 +1,23 @@
 package org.compiere.model;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
-import de.metas.util.StringUtils;
-import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.SecureEngine;
-import org.slf4j.Logger;
-
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.SecureEngine;
+import org.slf4j.Logger;
+
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -73,7 +75,7 @@ final class GridTableUtils
 								&& (columnName.endsWith("_ID") || columnName.endsWith("_Acct")
 										|| columnName.equals("AD_Key") || columnName.equals("AD_Display"))
 						|| columnName.endsWith("atedBy")
-						|| IColumnBL.isRecordIdColumnName(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
+						|| Services.get(IColumnBL.class).isRecordIdColumnName(columnName) && DisplayType.Button == displayType // metas: Record_ID buttons are Integer IDs
 				)
 				{
 					rowData[j] = new Integer(rs.getInt(j + 1));	// Integer

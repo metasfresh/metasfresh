@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -44,32 +44,40 @@ public class JsonProductInfo
 		ITEM, SERVICE
 	}
 
-	@Schema(description = "This translates to `M_Product.Value`. At least one of `code` or `externalId` is mandatory")
+	@ApiModelProperty( //
+			value = "This translates to `M_Product.Value`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
-	@Schema(description = "This translates to `M_Product.ExternalId`. At least one of `code` or `externalId` is mandatory")
+	@ApiModelProperty( //
+			value = "This translates to `M_Product.ExternalId`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
 	String externalId;
 
-	@Schema(description = "This translates to `M_Product.Name`.\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_Product.Name`.\n"
 					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	String name;
 
-	@Schema(nullable = true, description = "This translates to `M_Product.ProductType`.\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_Product.ProductType`.\n"
 					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
 	Type type;
 
-	@Schema(nullable = true,
-			description = "This translates to `C_UOM.X12DE355`.\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `C_UOM.X12DE355`.\n"
 					+ "The respective UOM needs to exist in metasfresh and then its ID is set as `M_Product.C_UOM_ID`.\n"
 					+ "If this property is empty, and a product with the given `code` does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	String uomCode;
 
-	@Schema(nullable = true,
-			description = "This translates to `M_ProductPrice.PriceStd`. \n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `M_ProductPrice.PriceStd`. \n"
 					+ "IMPORTANT: this is used only when the product is created. If product exists, priceStd is IGNORED.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal priceStd;

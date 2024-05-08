@@ -126,7 +126,7 @@ export const SET_INCLUDED_VIEW = 'SET_INCLUDED_VIEW';
 
 /**
  * @constant
- * @type {string} Clear/reset includedView state
+ * @type {string} Remove the included view's windowId
  */
 export const UNSET_INCLUDED_VIEW = 'UNSET_INCLUDED_VIEW';
 

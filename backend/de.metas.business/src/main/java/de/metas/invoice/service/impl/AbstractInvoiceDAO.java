@@ -1,6 +1,5 @@
 package de.metas.invoice.service.impl;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -14,25 +13,18 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
-import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
-import de.metas.invoice.InvoiceTax;
-import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
-import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -41,8 +33,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,13 +42,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -88,8 +76,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
-	public static final Logger logger = LogManager.getLogger(AbstractInvoiceDAO.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
@@ -195,7 +184,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
+		return Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice, true);
 	}
 
 	@Override
@@ -281,45 +270,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId)
-	{
-		return retrieveTaxRecords(invoiceId)
-				.stream()
-				.map(AbstractInvoiceDAO::fromRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId)
-	{
-		return queryBL.createQueryBuilder(I_C_InvoiceTax.class)
-				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	public void deleteTaxes(@NonNull final InvoiceId invoiceId)
-	{
-		queryBL.createQueryBuilder(I_C_InvoiceTax.class)
-				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.create()
-				.deleteDirectly();
-	}
-
-	private static InvoiceTax fromRecord(final I_C_InvoiceTax record)
-	{
-		return InvoiceTax.builder()
-				.taxId(TaxId.ofRepoId(record.getC_Tax_ID()))
-				.taxAmt(record.getTaxAmt())
-				.taxBaseAmt(record.getTaxBaseAmt())
-				.isTaxIncluded(record.isTaxIncluded())
-				.isReverseCharge(record.isReverseCharge())
-				.reverseChargeTaxAmt(record.getReverseChargeTaxAmt())
-				.build();
-	}
-
-	@Override
 	public List<I_C_Invoice> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
 		final IQueryBL queryBL = this.queryBL;
@@ -349,7 +299,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		// Check if there are fact accounts created for each document
 		final IQueryBuilder<I_Fact_Acct> factAcctQuery = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
-				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
@@ -424,7 +374,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Nullable
 	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
 	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		if (!invoiceBL.isInvoice(invoice))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
@@ -525,7 +474,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list();
 	}
 
-	@NonNull
 	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
 	{
 		if (query.getInvoiceId() != null)
@@ -534,7 +482,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 		if (query.getExternalId() != null)
 		{
-			return getInvoiceIdByExternalId(query);
+			return getInvoiceIdByExternalIdIfExists(query);
 		}
 		if (!Check.isEmpty(query.getDocType()))
 		{
@@ -555,37 +503,12 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list(modelClass);
 	}
 
-	@Override
-	public ImmutableList<I_C_Invoice> retrieveUnpaid(@NonNull final UnpaidInvoiceQuery query)
-	{
-		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
-				.setLimit(query.getQueryLimit());
-
-		if (query.getAdditionalFilter() != null)
-		{
-			queryBuilder.filter(query.getAdditionalFilter());
-		}
-
-		if (!query.getOnlyDocStatuses().isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
-		}
-
-		return queryBuilder
-				.create()
-				.listImmutable(I_C_Invoice.class);
-	}
-
-	@NonNull
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
-		final DocBaseType docBaseType = docType.getDocBaseType();
+		final String docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
 		final String docSubType = docType.getDocSubType();
 
 		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
@@ -602,13 +525,11 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
 				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
 
-		final int invoiceRepoId = queryBuilder.create()
-				.firstIdOnly();
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
-	@NonNull
-	private Optional<InvoiceId> getInvoiceIdByExternalId(@NonNull final InvoiceQuery query)
+	private Optional<InvoiceId> getInvoiceIdByExternalIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
@@ -618,14 +539,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
 
-		final Collection<DocStatus> docStatuses = query.getDocStatuses();
-		if (docStatuses != null && !docStatuses.isEmpty())
-		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
-		}
-
-		final int invoiceRepoId = queryBuilder.create()
-				.firstIdOnly(); // this firstIdOnly() corresponds to the UC "c_invoice_uc_externalId_org"
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
 		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
 	}
 
@@ -688,99 +602,10 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				DocTypeId.ofRepoIdOrNull(serviceFeeInvoiceCandidate.getC_DocType_ID()),
 				DocTypeId.ofRepoId(serviceFeeInvoiceCandidate.getC_DocTypeTarget_ID()));
 
-		final I_C_DocType docTypeRecord = docTypeDAO.getRecordById(docTypeId);
+		final I_C_DocType docTypeRecord = docTypeDAO.getById(docTypeId);
 
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		return docBaseAndSubType.equals(targetDocType);
-	}
-
-	public Collection<String> retrievePaidInvoiceDocNosForFilter(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> filter)
-	{
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, true)
-				.addFilter(filter)
-				.setLimit(QueryLimit.TEN)
-				.create()
-				.stream()
-				.map(org.compiere.model.I_C_Invoice::getDocumentNo)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@Override
-	@Nullable
-	public I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine)
-	{
-		if (inOutLine == null)
-		{
-			return null;
-		}
-
-		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Processed, true);
-
-		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID());
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
-
-		final @NonNull IQueryFilter<I_C_InvoiceLine> filter = queryBL.createCompositeQueryFilter(I_C_InvoiceLine.class)
-				.setJoinOr()
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLineId)
-				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID, orderLineId);
-
-		queryBuilder.addFilter(filter);
-
-		final ImmutableList<I_C_InvoiceLine> invoiceLines = queryBuilder.list();
-		if (invoiceLines.isEmpty())
-		{
-			logger.debug("None C_InvoiceLine found. Returning null.");
-			return null;
-		}
-
-		final ArrayList<I_C_InvoiceLine> matchedByInOutLine = new ArrayList<>();
-		final ArrayList<I_C_InvoiceLine> matchedByOrderLine = new ArrayList<>();
-		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
-		{
-			if (invoiceLine.getM_InOutLine_ID() == inoutLineId.getRepoId())
-			{
-				matchedByInOutLine.add(invoiceLine);
-			}
-			if (orderLineId != null && invoiceLine.getC_OrderLine_ID() == orderLineId.getRepoId())
-			{
-				matchedByOrderLine.add(invoiceLine);
-			}
-		}
-
-		if (!matchedByInOutLine.isEmpty())
-		{
-			if (matchedByInOutLine.size() > 1)
-			{
-				logger.warn("More than one invoice line of M_InOutLine_ID={} ({}). Returning null.", inoutLineId, matchedByInOutLine);
-				return null;
-			}
-			return matchedByInOutLine.get(0);
-		}
-
-		if (!matchedByOrderLine.isEmpty())
-		{
-			if (matchedByOrderLine.size() > 1)
-			{
-				logger.warn("More than one invoice line of C_OrderLine_ID={} ({}). Returning null.", orderLineId, matchedByOrderLine);
-				return null;
-			}
-			return matchedByOrderLine.get(0);
-		}
-
-		return null;
-	}
-
-	@Override
-	public Stream<org.compiere.model.I_C_Invoice> stream(@NonNull final IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter)
-	{
-		return queryBL.createQueryBuilder(org.compiere.model.I_C_Invoice.class)
-				.filter(invoiceFilter)
-				.create()
-				.iterateAndStream();
 	}
 }

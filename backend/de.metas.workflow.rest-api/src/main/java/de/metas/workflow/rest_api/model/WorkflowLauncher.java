@@ -22,6 +22,7 @@
 
 package de.metas.workflow.rest_api.model;
 
+import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,7 +36,7 @@ public class WorkflowLauncher
 {
 	@NonNull MobileApplicationId applicationId;
 
-	@NonNull WorkflowLauncherCaption caption;
+	@NonNull ITranslatableString caption;
 
 	@Nullable WFProcessId startedWFProcessId;
 

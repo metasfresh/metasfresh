@@ -6,17 +6,16 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
+import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -41,6 +40,7 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
@@ -52,9 +52,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -84,10 +82,9 @@ import java.util.stream.Stream;
  * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
-public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
+public final class HUEditorRow implements IViewRow
 {
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
-
 
 	public static Builder builder(final WindowId windowId)
 	{
@@ -102,7 +99,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	private final DocumentPath documentPath;
 	private final HUEditorRowId rowId;
 	private final HUEditorRowType type;
-	@Getter private final boolean topLevel;
+	private final boolean topLevel;
 	private final boolean processed;
 	@Getter
 	private final BPartnerId bpartnerId;
@@ -110,7 +107,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	private final LocatorId locatorId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
-	@Getter @ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
+	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
 	private final HuId huId;
 
 	public static final String FIELDNAME_HUCode = I_M_HU.COLUMNNAME_Value;
@@ -202,7 +199,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 			})
 	private final JSONLookupValue uom;
 
-
 	public static final String FIELDNAME_HUStatus = I_M_HU.COLUMNNAME_HUStatus;
 	@ViewColumn(fieldName = FIELDNAME_HUStatus,//
 			widgetType = DocumentFieldWidgetType.Lookup, //
@@ -230,20 +226,8 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 	public static final String FIELDNAME_ClearanceStatus = I_M_HU.COLUMNNAME_ClearanceStatus;
 	@ViewColumn(fieldName = FIELDNAME_ClearanceStatus, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)})
 	private final JSONLookupValue clearanceStatus;
-
-
-	public static final String FIELDNAME_PROJECT = I_M_HU.COLUMNNAME_C_Project_ID;
-	@ViewColumn(fieldName = FIELDNAME_PROJECT, //
-			captionKey = FIELDNAME_PROJECT, //
-			widgetType = DocumentFieldWidgetType.Text, //
-			layouts = {
-				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 95, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 95)
-			})
-	private final JSONLookupValue project;
-
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -280,7 +264,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		qtyCU = builder.qtyCU;
 		weightGross = builder.getWeightGross();
 		bestBeforeDate = builder.getBestBeforeDate();
-		project = builder.project;
 
 		clearanceStatus = builder.clearanceStatus;
 
@@ -296,10 +279,10 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-					.viewRowId(rowId.toDocumentId())
-					.huId(huId)
-					.provider(attributesProvider)
-					.build());
+													 .viewRowId(rowId.toDocumentId())
+													 .huId(huId)
+													 .provider(attributesProvider)
+													 .build());
 		}
 		else
 		{
@@ -337,11 +320,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
-	}
-
-	public JSONLookupValue getClearanceStatus()
-	{
-		return clearanceStatus;
 	}
 
 	public HUEditorRowId getHURowId()
@@ -425,10 +403,9 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 				.anyMatch(row -> childId.equals(row.getId()));
 	}
 
-	@Override
-	public HuUnitType getHUUnitTypeOrNull()
+	public HuId getHuId()
 	{
-		return getType().toHUUnitTypeOrNull();
+		return huId;
 	}
 
 	/**
@@ -444,6 +421,22 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		}
 
 		return Services.get(IHandlingUnitsDAO.class).getById(huId);
+	}
+
+	public HUToReport getAsHUToReport()
+	{
+		final HUToReport huToReport = getAsHUToReportOrNull();
+		if (huToReport == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + HUToReport.class);
+		}
+		return huToReport;
+	}
+
+	public HUToReport getAsHUToReportOrNull()
+	{
+		// allow reports for all types ; see task https://github.com/metasfresh/metasfresh/issues/5540
+		return HUEditorRowAsHUToReport.of(this);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()
@@ -470,11 +463,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 	public JSONLookupValue getHUStatusDisplay()
 	{
 		return huStatusDisplay;
-	}
-
-	public JSONLookupValue getProjectDisplay()
-	{
-		return project;
 	}
 
 	public boolean isHUStatusPlanning()
@@ -512,19 +500,15 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		return getType() == HUEditorRowType.LU;
 	}
 
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasIncludedTUs()
 	{
 		return getIncludedRows().stream().anyMatch(HUEditorRow::isTU);
 	}
 
-	@Override
-	public Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows()
+	public boolean isTopLevel()
 	{
-		return getIncludedRows().stream().map(HUEditorRow::toHUReportAwareViewRow);
+		return topLevel;
 	}
-
-	private HUReportAwareViewRow toHUReportAwareViewRow() {return this;}
 
 	public String getSummary()
 	{
@@ -652,30 +636,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		return rowDisplayNameNorm.contains(stringFilterNorm);
 	}
 
-	@NonNull
-	public ImmutableSet<HuId> getAllHuIds()
-	{
-		final ImmutableSet.Builder<HuId> huIdCollector = ImmutableSet.builder();
-		huIdCollector.add(getHuId());
-
-		final Stack<HUEditorRow> rowsToProcess = new Stack<>();
-		if (includedRows != null)
-		{
-			includedRows.forEach(rowsToProcess::push);
-		}
-
-		while (!rowsToProcess.isEmpty())
-		{
-			final HUEditorRow currentRow = rowsToProcess.pop();
-			huIdCollector.add(currentRow.getHuId());
-
-			Optional.ofNullable(currentRow.getIncludedRows())
-					.ifPresent(inclRows -> inclRows.forEach(rowsToProcess::push));
-		}
-
-		return huIdCollector.build();
-	}
-
 	//
 	//
 	//
@@ -698,7 +658,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 		private String packingInfo;
 		private JSONLookupValue product;
-		private JSONLookupValue project;
 		private Boolean isOwnPalette;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
@@ -823,12 +782,6 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		public Builder setProduct(final JSONLookupValue product)
 		{
 			this.product = product;
-			return this;
-		}
-
-		public Builder setProject(final JSONLookupValue project)
-		{
-			this.project = project;
 			return this;
 		}
 

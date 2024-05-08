@@ -1,10 +1,7 @@
 package org.compiere.util;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 /*
  * #%L
@@ -16,40 +13,41 @@ import java.util.Optional;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+
+
 /**
  * Extend {@link Evaluatee} interface with more methods.
- * <p>
+ * 
  * To create {@link Evaluatee2} instances, please use {@link Evaluatees}.
- *
+
  * @author tsa
+ *
  */
 public interface Evaluatee2 extends Evaluatee
 {
 	/**
 	 * Check if variableName exists.
 	 * Note: that in case when is not sure if the variable exist, the implementation of this method should return true
-	 *
 	 * @return true if the variable exists
 	 */
 	boolean has_Variable(String variableName);
-
+	
 	/**
-	 * Get Old Variable Value
-	 *
-	 * @param variableName name
-	 * @return value
+	 * 	Get Old Variable Value
+	 *	@param variableName name
+	 *	@return value
 	 */
 	@Nullable
 	String get_ValueOldAsString(String variableName);
@@ -80,14 +78,6 @@ public interface Evaluatee2 extends Evaluatee
 	{
 		final String valueStr = get_ValueOldAsString(variableName);
 		return Evaluatee.convertToDate(variableName, valueStr, defaultValue);
-	}
-
-	@Override
-	default Optional<Object> get_ValueIfExists(@NonNull final String variableName, @NonNull final Class<?> targetType)
-	{
-		return has_Variable(variableName)
-				? Evaluatee.super.get_ValueIfExists(variableName, targetType)
-				: Optional.empty();
 	}
 
 }

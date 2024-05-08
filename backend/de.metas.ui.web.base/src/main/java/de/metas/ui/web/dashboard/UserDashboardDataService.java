@@ -26,14 +26,11 @@ import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
-import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
-import de.metas.ui.web.kpi.data.KPIPermissionsProvider;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
@@ -65,7 +62,6 @@ public class UserDashboardDataService
 				.kpiRepository(kpiRepository)
 				.esSystem(Services.get(IESSystem.class))
 				.sysConfigBL(Services.get(ISysConfigBL.class))
-				.kpiPermissionsProvider(new KPIPermissionsProvider(Services.get(IUserRolePermissionsDAO.class)))
 				.build();
 	}
 
@@ -110,12 +106,11 @@ public class UserDashboardDataService
 				.build();
 	}
 
-	public KPIDataResult getKPIData(@NonNull final KPIId kpiId, @NonNull final KPIDataContext kpiDataContext)
+	public KPIDataResult getKPIData(@NonNull final KPIId kpiId)
 	{
 		return kpiDataProvider.getKPIData(KPIDataRequest.builder()
 				.kpiId(kpiId)
 				.timeRangeDefaults(KPITimeRangeDefaults.DEFAULT)
-				.context(kpiDataContext)
 				.maxStaleAccepted(Duration.ofDays(100))
 				.build());
 	}

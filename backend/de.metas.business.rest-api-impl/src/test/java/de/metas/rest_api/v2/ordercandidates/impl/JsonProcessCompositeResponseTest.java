@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,7 +27,10 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import org.assertj.core.api.Assertions;
@@ -61,17 +64,26 @@ public class JsonProcessCompositeResponseTest
 	{
 
 		final JsonProcessCompositeResponse request = JsonProcessCompositeResponse.builder()
-				.orderResponse(getJsonGenerateOrderResponse())
+				.olCandProcessResponse(getJsonOLCandProcessResponse())
 				.shipmentResponse(getJsonCreateShipmentResponse())
 				.build();
 
 		testSerializeDeserialize(request);
 	}
 
-	private JsonGenerateOrdersResponse getJsonGenerateOrderResponse()
+	private JsonOLCandProcessResponse getJsonOLCandProcessResponse()
 	{
-		return JsonGenerateOrdersResponse.builder()
+		final JsonOLCandClearingResponse olCandClearingResponse = JsonOLCandClearingResponse.builder()
+				.olCandIdToValidationStatus(ImmutableMap.of(1, true))
+				.successfullyCleared(true).build();
+
+		final JsonGenerateOrdersResponse generateOrdersResponse = JsonGenerateOrdersResponse.builder()
 				.orderIds(ImmutableList.of(JsonMetasfreshId.of(2)))
+				.build();
+
+		return JsonOLCandProcessResponse.builder()
+				.jsonOLCandClearingResponse(olCandClearingResponse)
+				.jsonGenerateOrdersResponse(generateOrdersResponse)
 				.build();
 	}
 

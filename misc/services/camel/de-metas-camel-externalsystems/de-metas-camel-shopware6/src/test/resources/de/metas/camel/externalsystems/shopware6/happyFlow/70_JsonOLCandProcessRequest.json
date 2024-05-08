@@ -1,7 +1,7 @@
 {
   "externalHeaderId": "externalHeaderId",
   "inputDataSourceName": "int-Shopware",
-  "ship": true,
-  "invoice": true,
+  "ship": false,
+  "invoice": false,
   "closeOrder": false
 }

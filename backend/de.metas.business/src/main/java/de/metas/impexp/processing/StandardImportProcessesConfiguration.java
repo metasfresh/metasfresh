@@ -1,9 +1,7 @@
 package de.metas.impexp.processing;
 
-import de.metas.pricing.rules.campaign_price.impexp.CampaignPriceImportProcess;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
-import org.compiere.model.I_I_Campaign_Price;
 import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_Postal;
 import org.compiere.model.I_I_Product;
@@ -66,6 +64,5 @@ public class StandardImportProcessesConfiguration
 		importProcessesFactory.registerImportProcess(I_I_Replenish.class, ReplenishmentImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_Postal.class, PostalCodeImportProcess.class);
 		importProcessesFactory.registerImportProcess(I_I_DataEntry_Record.class, DataEntryRecordsImportProcess.class);
-		importProcessesFactory.registerImportProcess(I_I_Campaign_Price.class, CampaignPriceImportProcess.class);
 	}
 }

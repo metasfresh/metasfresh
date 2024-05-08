@@ -26,10 +26,10 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemPart;
 import de.metas.picking.service.PackingItemsMap;
@@ -75,8 +75,6 @@ import java.util.function.Predicate;
  */
 public class HU2PackingItemsAllocator
 {
-	private static final AdMessageKey OVER_DELIVERY_NOT_ALLOWED_ERROR_MSG = AdMessageKey
-			.of("de.metas.handlingunits.picking.candidate.commands.OverDeliveryNotAllowed");
 
 	//
 	// Services
@@ -87,6 +85,7 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
 	/**
 	 * Cannot fully load:
@@ -526,8 +525,9 @@ public class HU2PackingItemsAllocator
 				}
 				case FAIL:
 				{
-					throw new AdempiereException(OVER_DELIVERY_NOT_ALLOWED_ERROR_MSG,
-												 currentQtyToDeliver, qtyPacked);
+					throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+							.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
+							.setParameter("qtyPacked to be Delivered", qtyPacked);
 				}
 				default:
 				{

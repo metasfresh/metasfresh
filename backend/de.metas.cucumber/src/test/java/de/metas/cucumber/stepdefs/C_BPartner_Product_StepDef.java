@@ -26,14 +26,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
@@ -42,8 +38,6 @@ import org.compiere.model.I_M_Product;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_BPartner_Product_StepDef
@@ -84,16 +78,6 @@ public class C_BPartner_Product_StepDef
 		}
 	}
 
-	@Given("metasfresh contains C_BPartner_Product")
-	public void create_C_BPartner_Product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			createBPartnerProduct(dataTableRow);
-		}
-	}
-
 	private void locateBPartnerProductByProductAndBPartner(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -107,7 +91,7 @@ public class C_BPartner_Product_StepDef
 
 		final String bpartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		bpartnerProductTable.putOrReplace(bpartnerProductIdentifier, bPartnerProduct);
+		bpartnerProductTable.put(bpartnerProductIdentifier, bPartnerProduct);
 	}
 
 	private void verifyBPartnerProductInfo(@NonNull final Map<String, String> row)
@@ -129,69 +113,17 @@ public class C_BPartner_Product_StepDef
 
 		final BPartnerProduct bPartnerProduct = bpartnerProductTable.get(bpartnerProductIdentifier);
 
-		final SoftAssertions softly = new SoftAssertions();
-
-		softly.assertThat(bPartnerProduct.getActive()).isEqualTo(isActive);
-		softly.assertThat(bPartnerProduct.getSeqNo()).isEqualTo(seqNo);
-		softly.assertThat(bPartnerProduct.getProductNo()).isEqualTo(productNo);
-		softly.assertThat(bPartnerProduct.getDescription()).isEqualTo(description);
-		softly.assertThat(bPartnerProduct.getCuEAN()).isEqualTo(ean);
-		softly.assertThat(bPartnerProduct.getGtin()).isEqualTo(gtin);
-		softly.assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(customerLabelName);
-		softly.assertThat(bPartnerProduct.getIngredients()).isEqualTo(ingredients);
-		softly.assertThat(bPartnerProduct.getIsExcludedFromSales()).isEqualTo(isExcludedFromSale);
-		softly.assertThat(bPartnerProduct.getExclusionFromSalesReason()).isEqualTo(exclusionFromSaleReason);
-		softly.assertThat(bPartnerProduct.getIsExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
-		softly.assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
-
-		final Boolean currentVendor = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor);
-		if (currentVendor != null)
-		{
-			softly.assertThat(bPartnerProduct.getCurrentVendor()).isEqualTo(currentVendor);
-		}
-
-		softly.assertAll();
-	}
-
-	private void createBPartnerProduct(@NonNull final Map<String, String> tableRow)
-	{
-		final String bPartnerProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
-
-		final I_C_BPartner_Product bPartnerProductRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-
-		bPartnerProductRecord.setM_Product_ID(productId);
-		bPartnerProductRecord.setC_BPartner_ID(bPartnerId);
-
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			bPartnerProductRecord.setGTIN(gtin);
-		}
-
-		final String eanCu = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_EAN_CU);
-
-		if (Check.isNotBlank(eanCu))
-		{
-			bPartnerProductRecord.setEAN_CU(eanCu);
-		}
-
-		bPartnerProductRecord.setShelfLifeMinDays(0);
-		bPartnerProductRecord.setShelfLifeMinPct(0);
-
-		saveRecord(bPartnerProductRecord);
-
-		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.ofBPartnerProductRecord(bPartnerProductRecord));
+		assertThat(bPartnerProduct.getActive()).isEqualTo(isActive);
+		assertThat(bPartnerProduct.getSeqNo()).isEqualTo(seqNo);
+		assertThat(bPartnerProduct.getProductNo()).isEqualTo(productNo);
+		assertThat(bPartnerProduct.getDescription()).isEqualTo(description);
+		assertThat(bPartnerProduct.getCuEAN()).isEqualTo(ean);
+		assertThat(bPartnerProduct.getGtin()).isEqualTo(gtin);
+		assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(customerLabelName);
+		assertThat(bPartnerProduct.getIngredients()).isEqualTo(ingredients);
+		assertThat(bPartnerProduct.getIsExcludedFromSales()).isEqualTo(isExcludedFromSale);
+		assertThat(bPartnerProduct.getExclusionFromSalesReason()).isEqualTo(exclusionFromSaleReason);
+		assertThat(bPartnerProduct.getIsExcludedFromPurchase()).isEqualTo(isExcludedFromPurchase);
+		assertThat(bPartnerProduct.getExclusionFromPurchaseReason()).isEqualTo(exclusionFromPurchaseReason);
 	}
 }

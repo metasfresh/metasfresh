@@ -75,7 +75,7 @@ public final class StringExpressionsHelper
 		}
 		else if (onVariableNotFound == OnVariableNotFound.Fail)
 		{
-			throw ExpressionEvaluationException.newWithTranslatableMessage("@NotFound@: " + token);
+			throw new ExpressionEvaluationException("@NotFound@: " + token);
 		}
 		else
 		{

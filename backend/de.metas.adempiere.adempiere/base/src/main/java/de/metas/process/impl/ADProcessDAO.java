@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.process.impl;
 
 import ch.qos.logback.classic.Level;
@@ -46,17 +24,12 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.ad.window.api.WindowCopyResult;
-import org.adempiere.ad.window.api.WindowCopyResult.TabCopyResult;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -73,8 +46,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -90,7 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
@@ -480,7 +451,7 @@ public class ADProcessDAO implements IADProcessDAO
 		// NOTE: don't use parameterized SQL queries because this script will be logged as a migration script (task
 
 		final String sqlDelete = "DELETE FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + targetProcessParaId;
-		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Process_Para_Trl (AD_Process_Para_ID, AD_Language, " +
@@ -489,7 +460,7 @@ public class ADProcessDAO implements IADProcessDAO
 				" SELECT " + targetProcessParaId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Process_Para_Trl WHERE AD_Process_Para_ID = " + sourceProcessParaId;
-		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Process_Para_Trl inserted: {}", countInsert);
 	}
 
@@ -639,58 +610,12 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public void copyWindowRelatedProcesses(final WindowCopyResult windowCopyResult)
-	{
-		final ImmutableMap<AdTabId, AdTabId> targetTabIdsBySourceTabId = windowCopyResult.getTabs()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						TabCopyResult::getSourceTabId,
-						TabCopyResult::getTargetTabId
-				));
-
-		final HashSet<AdTabId> tabIdsToFilter = new HashSet<>();
-		tabIdsToFilter.add(null);
-		tabIdsToFilter.addAll(targetTabIdsBySourceTabId.keySet());
-
-		final List<I_AD_Table_Process> sourceRecords = queryBL.createQueryBuilder(I_AD_Table_Process.class)
-				.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, windowCopyResult.getSourceWindowId())
-				.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Tab_ID, tabIdsToFilter)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-
-		for (final I_AD_Table_Process sourceRecord : sourceRecords)
-		{
-			final AdTabId sourceTabId = AdTabId.ofRepoIdOrNull(sourceRecord.getAD_Tab_ID());
-			final AdTabId targetTabId = sourceTabId != null
-					? targetTabIdsBySourceTabId.get(sourceTabId)
-					: null;
-			if (sourceTabId != null && targetTabId == null)
-			{
-				// shall not happen
-				throw new AdempiereException("No target tab provided for source tab " + sourceTabId)
-						.appendParametersToMessage()
-						.setParameter("windowCopyResult", windowCopyResult);
-			}
-
-			final I_AD_Table_Process targetRecord = InterfaceWrapperHelper.copy()
-					.setFrom(sourceRecord)
-					.setSkipCalculatedColumns(true)
-					.copyToNew(I_AD_Table_Process.class);
-			targetRecord.setAD_Window_ID(windowCopyResult.getTargetWindowId().getRepoId());
-			targetRecord.setAD_Tab_ID(AdTabId.toRepoId(targetTabId));
-			targetRecord.setEntityType(windowCopyResult.getTargetEntityType());
-			InterfaceWrapperHelper.save(targetRecord);
-		}
-	}
-
-	@Override
 	public void updateColumnNameByAdElementId(
 			@NonNull final AdElementId adElementId,
 			@Nullable final String newColumnName)
 	{
 		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Process_Para which is using given AD_Element_ID
-		DB.executeUpdateAndThrowExceptionOnFail(
+		DB.executeUpdateEx(
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
@@ -711,16 +636,5 @@ public class ADProcessDAO implements IADProcessDAO
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
 				.listIds(AdProcessId::ofRepoId);
-	}
-
-	@NonNull
-	@Override
-	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
-	{
-		return queryBL.createQueryBuilder(I_AD_Process.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId))
-				.create()
-				.list();
 	}
 }

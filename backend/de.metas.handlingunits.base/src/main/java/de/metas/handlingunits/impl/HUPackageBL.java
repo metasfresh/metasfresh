@@ -8,7 +8,6 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.model.validator.M_InOut;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -98,7 +97,7 @@ public class HUPackageBL implements IHUPackageBL
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
 
-		getShipmentForHU(hu).ifPresent(inOut -> this.updatePackageFromInout(inOut, mpackage));
+		getShipmentForHU(hu).ifPresent(inOutId -> mpackage.setM_InOut_ID(inOutId.getRepoId()));
 
 		save(mpackage);
 
@@ -109,12 +108,6 @@ public class HUPackageBL implements IHUPackageBL
 		save(mpackageHU);
 
 		return mpackage;
-	}
-
-	private void updatePackageFromInout(final I_M_InOut inOut, final I_M_Package mpackage)
-	{
-		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
-		mpackage.setPackageWeight(inOut.getWeight());
 	}
 
 	@Override
@@ -201,7 +194,7 @@ public class HUPackageBL implements IHUPackageBL
 		}
 	}
 
-	private Optional<I_M_InOut> getShipmentForHU(@NonNull final I_M_HU hu)
+	private Optional<InOutId> getShipmentForHU(@NonNull final I_M_HU hu)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 
@@ -223,7 +216,9 @@ public class HUPackageBL implements IHUPackageBL
 
 		final Map<InOutLineId, I_M_InOut> shipmentByLineId = inOutDAO.retrieveInOutByLineIds(shipmentLineIds);
 
-		final Set<I_M_InOut> inOutIds = shipmentByLineId.values().stream()
+		final Set<InOutId> inOutIds = shipmentByLineId.values().stream()
+				.map(I_M_InOut::getM_InOut_ID)
+				.map(InOutId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (inOutIds.size() != 1)

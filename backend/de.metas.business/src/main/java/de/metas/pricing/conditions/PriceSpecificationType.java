@@ -6,7 +6,6 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.ad_reference.ReferenceId;
 import lombok.Getter;
 
 /*
@@ -44,7 +43,7 @@ public enum PriceSpecificationType
 	/** The price is specified by a fixed amount and a currency */
 	FIXED_PRICE("F");
 
-	public static final ReferenceId AD_Reference_ID = ReferenceId.ofRepoId(540862);
+	public static final int AD_Reference_ID = 540862;
 
 	@Getter
 	private final String code;

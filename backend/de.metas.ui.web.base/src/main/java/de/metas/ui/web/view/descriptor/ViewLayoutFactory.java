@@ -22,6 +22,11 @@
 
 package de.metas.ui.web.view.descriptor;
 
+import java.util.Collection;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import de.metas.cache.CCache;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
@@ -35,10 +40,6 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
 
 public class ViewLayoutFactory
 {
@@ -87,7 +88,7 @@ public class ViewLayoutFactory
 				.profileId(viewLayoutKey.getProfileId())
 				.filters(filters)
 				.treeSupport(hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed)
-				.geoLocationSupport(geoLocationDocumentService.containsGeoLocationFilter(filters));
+				.geoLocationSupport(geoLocationDocumentService.hasGeoLocationSupport(viewLayoutOrig.getFieldNames()));
 
 		//
 		// Customize the view layout
@@ -115,11 +116,16 @@ public class ViewLayoutFactory
 	}
 
 	@Value
-	private static class ViewLayoutKey
+	private static final class ViewLayoutKey
 	{
-		@NonNull WindowId windowId;
-		@NonNull JSONViewDataType viewDataType;
-		@Nullable ViewProfileId profileId;
+		@NonNull
+		final WindowId windowId;
+
+		@NonNull
+		final JSONViewDataType viewDataType;
+
+		@Nullable
+		final ViewProfileId profileId;
 	}
 
 }

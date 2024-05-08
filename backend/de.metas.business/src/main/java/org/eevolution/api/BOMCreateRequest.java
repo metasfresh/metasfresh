@@ -3,7 +3,6 @@ package org.eevolution.api;
 import com.google.common.collect.ImmutableList;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -54,8 +53,6 @@ public class BOMCreateRequest
 	Instant validFrom;
 	Boolean isActive;
 	AttributeSetInstanceId attributeSetInstanceId;
-	@Nullable
-	ResourceId resourceId;
 	ImmutableList<BOMLine> lines;
 
 	@Builder
@@ -70,7 +67,6 @@ public class BOMCreateRequest
 			@Nullable final Instant validFrom,
 			@Nullable final Boolean isActive,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
-			@Nullable final ResourceId resourceId,
 			@NonNull @Singular final ImmutableList<BOMLine> lines)
 	{
 		Check.assumeNotEmpty(lines, "lines is not empty");
@@ -85,7 +81,6 @@ public class BOMCreateRequest
 		this.isActive = isActive;
 		this.lines = lines;
 		this.validFrom = validFrom != null ? validFrom : Instant.now();
-		this.resourceId = resourceId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
 	}
 
@@ -114,9 +109,6 @@ public class BOMCreateRequest
 
 		@Nullable
 		BigDecimal scrap;
-
-		@Nullable
-		String help;
 
 		@Nullable
 		AttributeSetInstanceId attributeSetInstanceId;

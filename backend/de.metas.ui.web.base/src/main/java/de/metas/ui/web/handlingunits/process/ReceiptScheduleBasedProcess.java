@@ -1,22 +1,28 @@
 package de.metas.ui.web.handlingunits.process;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.blockstatus.BPartnerBlockStatusService;
-import de.metas.handlingunits.model.I_M_HU;
+import java.time.LocalDate;
+import java.util.Collection;
+
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
-import java.util.Collection;
-import java.util.List;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
+import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -42,65 +48,79 @@ import java.util.List;
 
 public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements IProcessPrecondition
 {
-	private static final AdMessageKey MSG_HU_WITH_BLOCKED_PARTNER = AdMessageKey.of("CannotReceiveHUWithBlockedPartner");
-
-	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	protected final BPartnerBlockStatusService bPartnerBlockStatusService = SpringContextHolder.instance.getBean(BPartnerBlockStatusService.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
 		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
 	}
 
-	protected ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
+	protected void updateAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return receiptSchedules.stream()
-				.map(this::checkEligibleForReceivingHUs)
-				.filter(ProcessPreconditionsResolution::isRejected)
-				.findFirst()
-				.orElseGet(ProcessPreconditionsResolution::accept);
+		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
+		setAttributeLotNumber(hu, huAttributes);
+		setAttributeBBD(receiptSchedule, huAttributes);
+		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
-	protected ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	private void setAttributeLotNumber(final @NonNull I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
 	{
-		// Receipt schedule shall not be already closed
-		if (receiptScheduleBL.isClosed(receiptSchedule))
-		{
-			return ProcessPreconditionsResolution.reject("receipt schedule closed");
-		}
 
-		// Receipt schedule shall not be about packing materials
-		if (receiptSchedule.isPackagingMaterial())
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
+				&& Check.isBlank(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
+				&& huAttributesBL.isAutomaticallySetLotNumber()
+		)
 		{
-			return ProcessPreconditionsResolution.reject("not applying for packing materials");
+			final String lotNumberToSet = hu.getValue();
+			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
+			huAttributes.saveChangesIfNeeded();
 		}
-
-		if (bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(receiptSchedule.getC_BPartner_ID())))
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_HU_WITH_BLOCKED_PARTNER));
-		}
-
-		return ProcessPreconditionsResolution.accept();
 	}
 
-	protected ProcessPreconditionsResolution checkSingleBPartner(@NonNull final List<I_M_ReceiptSchedule> receiptSchedules)
+	private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-		//
-		// If more than one line selected, make sure the lines make sense together
-		// * enforce same BPartner (task https://github.com/metasfresh/metasfresh-webui/issues/207)
-		if (receiptSchedules.size() > 1)
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
+				&& huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate) == null
+				&& huAttributesBL.isAutomaticallySetBestBeforeDate()
+		)
 		{
-			final long bpartnersCount = receiptSchedules
-					.stream()
-					.map(receiptScheduleBL::getBPartnerEffectiveId)
-					.distinct()
-					.count();
-			if (bpartnersCount != 1)
+			final LocalDate bestBeforeDate = computeBestBeforeDate(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()), TimeUtil.asLocalDate(receiptSchedule.getMovementDate()));
+			if (bestBeforeDate != null)
 			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("select only one BPartner");
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				huAttributes.saveChangesIfNeeded();
 			}
 		}
+	}
 
-		return ProcessPreconditionsResolution.accept();
+	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
+	{
+			if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
+		{
+			final int bpId = receiptSchedule.getC_BPartner_ID();
+			if (bpId > 0)
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_Vendor_BPartner_ID, bpId);
+				huAttributes.setSaveOnChange(true);
+				huAttributes.saveChangesIfNeeded();
+			}
+		}
+	}
+
+	@Nullable
+	LocalDate computeBestBeforeDate(@NonNull final ProductId productId, final @NonNull LocalDate datePromised)
+	{
+		final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
+
+		if (guaranteeDaysMin <= 0)
+		{
+			return null;
+		}
+
+		return datePromised.plusDays(guaranteeDaysMin);
 	}
 }

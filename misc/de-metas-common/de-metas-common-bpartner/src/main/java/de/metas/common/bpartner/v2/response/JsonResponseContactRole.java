@@ -25,7 +25,7 @@ package de.metas.common.bpartner.v2.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,7 +36,7 @@ public class JsonResponseContactRole
 	public static final String NAME = "name";
 	public static final String UNIQUE_PER_BPARTNER = "uniquePerBPartner";
 
-	@Schema(required = true)
+	@ApiModelProperty(required = true)
 	String name;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)

@@ -16,23 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPGroupDAO;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+
 import de.metas.common.util.time.SystemTime;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.currency.ICurrencyBL;
-import de.metas.document.DocBaseType;
-import de.metas.inout.InOutLineId;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -42,10 +32,18 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Properties;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 
 /**
  * Match PO Model.
@@ -54,16 +52,21 @@ import java.util.Properties;
  * - Creates PPV acct
  *
  * @author Jorg Janke
- * @author Bayu Cahya, Sistematika
- * <li>BF [ 2240484 ] Re MatchingPO, MMatchPO doesn't contains Invoice info
- * @author Teo Sarca, www.arhipac.ro
- * <li>BF [ 2314749 ] MatchPO not considering currency PriceMatchDifference
- * @author Armen Rizal, Goodwill Consulting
- * <li>BF [ 2215840 ] MatchPO Bug Collection
- * <li>BF [ 2858043 ] Correct Included Tax in Average Costing
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * <li>FR [ 2520591 ] Support multiples calendar for Org
  * @version $Id: MMatchPO.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
+ *
+ * @author Bayu Cahya, Sistematika
+ *         <li>BF [ 2240484 ] Re MatchingPO, MMatchPO doesn't contains Invoice info
+ *
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>BF [ 2314749 ] MatchPO not considering currency PriceMatchDifference
+ *
+ * @author Armen Rizal, Goodwill Consulting
+ *         <li>BF [ 2215840 ] MatchPO Bug Collection
+ *         <li>BF [ 2858043 ] Correct Included Tax in Average Costing
+ *
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class MMatchPO extends X_M_MatchPO
 {
@@ -71,7 +74,6 @@ public class MMatchPO extends X_M_MatchPO
 
 	private static final Logger logger = LogManager.getLogger(MMatchPO.class);
 
-	@SuppressWarnings("unused")
 	public MMatchPO(final Properties ctx, final int M_MatchPO_ID, final String trxName)
 	{
 		super(ctx, M_MatchPO_ID, trxName);
@@ -111,12 +113,12 @@ public class MMatchPO extends X_M_MatchPO
 		if (invoiceCurrency_ID != orderCurrency_ID)
 		{
 			priceActual = Services.get(ICurrencyBL.class).convert(
-					priceActual,
-					CurrencyId.ofRepoId(invoiceCurrency_ID),
+					priceActual, 
+					CurrencyId.ofRepoId(invoiceCurrency_ID), 
 					CurrencyId.ofRepoId(orderCurrency_ID),
-					invoice.getDateInvoiced().toInstant(),
+					TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					ClientId.ofRepoId(getAD_Client_ID()),
+					ClientId.ofRepoId(getAD_Client_ID()), 
 					OrgId.ofRepoId(getAD_Org_ID()));
 		}
 		return priceActual;
@@ -125,24 +127,23 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		//
-		// Set Acct Date
-		if (getDateAcct() == null
-				|| InterfaceWrapperHelper.isValueChanged(this, I_M_MatchPO.COLUMNNAME_M_InOutLine_ID)
-				|| InterfaceWrapperHelper.isValueChanged(this, I_M_MatchPO.COLUMNNAME_C_InvoiceLine_ID))
-		{
-			Timestamp dateAcct = computeDateAcct();
-			setDateAcct(dateAcct);
-		}
-
-		//
 		// Set Trx Date
 		if (getDateTrx() == null)
 		{
 			setDateTrx(SystemTime.asDayTimestamp());
 		}
 
-		//
+		// Set Acct Date
+		if (getDateAcct() == null)
+		{
+			Timestamp ts = getNewerDateAcct();
+			if (ts == null)
+			{
+				ts = getDateTrx();
+			}
+			setDateAcct(ts);
+		}
+
 		// Set ASI from Receipt
 		final int mpoASIId = getM_AttributeSetInstance_ID();
 		if (mpoASIId <= 0 && getM_InOutLine_ID() > 0)
@@ -156,11 +157,15 @@ public class MMatchPO extends X_M_MatchPO
 		// If newRecord, set c_invoiceline_id while null
 		if (newRecord && getC_InvoiceLine_ID() <= 0)
 		{
-			final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
-
-			final InOutLineId inoutLineId = InOutLineId.ofRepoId(getM_InOutLine_ID());
-			matchInvoiceService.suggestMaterialInvoiceLineId(inoutLineId, AttributeSetInstanceId.ofRepoIdOrNone(mpoASIId))
-					.ifPresent(invoiceLineId -> setC_InvoiceLine_ID(invoiceLineId.getRepoId()));
+			final List<I_M_MatchInv> matchInvs = Services.get(IMatchInvDAO.class).retrieveForInOutLine(getM_InOutLine());
+			for (final I_M_MatchInv matchInv : matchInvs)
+			{
+				if (matchInv.getC_InvoiceLine_ID() > 0 && matchInv.getM_AttributeSetInstance_ID() == mpoASIId)
+				{
+					setC_InvoiceLine_ID(matchInv.getC_InvoiceLine_ID());
+					break;
+				}
+			}
 		}
 		// end Bayu
 
@@ -186,7 +191,7 @@ public class MMatchPO extends X_M_MatchPO
 					}
 				}
 			}
-		}    // find order line
+		}	// find order line
 
 		// Price Match Approval
 		if (getC_OrderLine_ID() > 0
@@ -223,7 +228,7 @@ public class MMatchPO extends X_M_MatchPO
 		}
 
 		return true;
-	}    // beforeSave
+	}	// beforeSave
 
 	@Override
 	protected boolean afterSave(final boolean newRecord, final boolean success)
@@ -245,7 +250,7 @@ public class MMatchPO extends X_M_MatchPO
 				{
 					// a new delivery line was linked to the order line => add the qty
 					orderLine.setQtyDelivered(orderLine.getQtyDelivered().add(getQty()));
-					orderLine.setDateDelivered(getDateTrx());    // overwrite=last
+					orderLine.setDateDelivered(getDateTrx());	// overwrite=last
 				}
 				else if (getM_InOutLine_ID() <= 0 && !newRecord)
 				{
@@ -260,7 +265,7 @@ public class MMatchPO extends X_M_MatchPO
 				{
 					// a new invoice line was linked to the order line => add the qty
 					orderLine.setQtyInvoiced(orderLine.getQtyInvoiced().add(getQty()));
-					orderLine.setDateInvoiced(getDateTrx());    // overwrite=last
+					orderLine.setDateInvoiced(getDateTrx());	// overwrite=last
 				}
 				else if (getC_InvoiceLine_ID() <= 0 && !newRecord)
 				{
@@ -284,53 +289,58 @@ public class MMatchPO extends X_M_MatchPO
 
 		//
 		return true;
-	}    // afterSave
+	}	// afterSave
 
-	@NonNull
-	private Timestamp computeDateAcct()
+	/**
+	 * Get the later Date Acct from invoice or shipment
+	 *
+	 * @return date or null
+	 */
+	private Timestamp getNewerDateAcct()
 	{
 		Timestamp invoiceDate = null;
 		Timestamp shipDate = null;
 
 		if (getC_InvoiceLine_ID() > 0)
 		{
-			invoiceDate = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited,
-					"SELECT i.DateAcct "
-							+ "FROM C_InvoiceLine il"
-							+ " INNER JOIN C_Invoice i ON (i.C_Invoice_ID=il.C_Invoice_ID) "
-							+ "WHERE C_InvoiceLine_ID=?",
-					getC_InvoiceLine_ID());
+			final String sql = "SELECT i.DateAcct "
+					+ "FROM C_InvoiceLine il"
+					+ " INNER JOIN C_Invoice i ON (i.C_Invoice_ID=il.C_Invoice_ID) "
+					+ "WHERE C_InvoiceLine_ID=?";
+			invoiceDate = DB.getSQLValueTS(null, sql, getC_InvoiceLine_ID());
 		}
 		//
 		if (getM_InOutLine_ID() > 0)
 		{
-			shipDate = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited,
-					"SELECT io.DateAcct "
-							+ "FROM M_InOutLine iol"
-							+ " INNER JOIN M_InOut io ON (io.M_InOut_ID=iol.M_InOut_ID) "
-							+ "WHERE iol.M_InOutLine_ID=?",
-					getM_InOutLine_ID());
+			final String sql = "SELECT io.DateAcct "
+					+ "FROM M_InOutLine iol"
+					+ " INNER JOIN M_InOut io ON (io.M_InOut_ID=iol.M_InOut_ID) "
+					+ "WHERE iol.M_InOutLine_ID=?";
+			shipDate = DB.getSQLValueTS(null, sql, getM_InOutLine_ID());
 		}
-
-		Timestamp dateAcct = TimeUtil.max(invoiceDate, shipDate);
-		if (dateAcct == null)
+		//
+		// Assuming that order date is always earlier
+		if (invoiceDate == null)
 		{
-			dateAcct = getDateTrx();
+			return shipDate;
 		}
-		if (dateAcct == null)
+		if (shipDate == null)
 		{
-			dateAcct = SystemTime.asDayTimestamp();
+			return invoiceDate;
 		}
-
-		return dateAcct;
-	}
+		if (invoiceDate.after(shipDate))
+		{
+			return invoiceDate;
+		}
+		return shipDate;
+	}	// getNewerDateAcct
 
 	@Override
 	protected boolean beforeDelete()
 	{
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.MatchPO, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_MatchPO, getAD_Org_ID());
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
 		}
@@ -371,12 +381,13 @@ public class MMatchPO extends X_M_MatchPO
 	@Override
 	public String toString()
 	{
-		return "MMatchPO["
-				+ getM_MatchPO_ID()
-				+ ",Qty=" + getQty()
-				+ ",C_OrderLine_ID=" + getC_OrderLine_ID()
-				+ ",M_InOutLine_ID=" + getM_InOutLine_ID()
-				+ ",C_InvoiceLine_ID=" + getC_InvoiceLine_ID()
-				+ "]";
+		return new StringBuilder("MMatchPO[")
+				.append(getM_MatchPO_ID())
+				.append(",Qty=").append(getQty())
+				.append(",C_OrderLine_ID=").append(getC_OrderLine_ID())
+				.append(",M_InOutLine_ID=").append(getM_InOutLine_ID())
+				.append(",C_InvoiceLine_ID=").append(getC_InvoiceLine_ID())
+				.append("]")
+				.toString();
 	}
-}    // MMatchPO
+}	// MMatchPO

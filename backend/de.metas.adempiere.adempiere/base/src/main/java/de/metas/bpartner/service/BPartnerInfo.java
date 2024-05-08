@@ -13,7 +13,6 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 /*
  * #%L
@@ -112,14 +111,6 @@ public class BPartnerInfo
 				: this;
 	}
 
-
-	public BPartnerInfo withContactId(@Nullable final BPartnerContactId	contactId)
-	{
-		return !BPartnerContactId.equals(this.contactId, contactId)
-				? toBuilder().contactId(contactId).build()
-				: this;
-	}
-
 	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()
 	{
 		if (bpartnerLocationId == null)
@@ -127,14 +118,5 @@ public class BPartnerInfo
 			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
 		}
 		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
-	}
-
-	@NonNull
-	public BPartnerLocationId getBPartnerLocationIdOrError()
-	{
-		return Optional.ofNullable(bpartnerLocationId)
-				.orElseThrow(() -> new AdempiereException("No BPartnerLocation available!")
-						.appendParametersToMessage()
-						.setParameter("C_BPartner_ID", bpartnerId.getRepoId()));
 	}
 }

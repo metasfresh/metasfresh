@@ -16,17 +16,17 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.document.engine.DocStatus;
-import org.adempiere.exceptions.AdempiereException;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Properties;
+
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Properties;
+import de.metas.document.engine.DocStatus;
 
 /**
  * Recurring Model
@@ -137,10 +137,9 @@ public class MRecurring extends X_C_Recurring
 		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Project))
 		{
-			throw new AdempiereException("Legacy feature not supported");
-			// MProject project = MProject.copyFrom(getCtx(), getC_Project_ID(), dateDoc, get_TrxName());
-			// run.setC_Project_ID(project.getC_Project_ID());
-			// msg += project.getValue();
+			MProject project = MProject.copyFrom(getCtx(), getC_Project_ID(), dateDoc, get_TrxName());
+			run.setC_Project_ID(project.getC_Project_ID());
+			msg += project.getValue();
 		}
 		// metas-tsa: commented out because
 		// * we moved MJournalBatch to de.metas.acct

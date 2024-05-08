@@ -39,6 +39,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
@@ -75,7 +77,7 @@ public class C_RemittanceAdvice
 			return;
 		}
 
-		final I_C_DocType docType = docTypeDAO.getRecordById(docTypeId);
+		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(docType)
@@ -93,7 +95,14 @@ public class C_RemittanceAdvice
 			ifColumnsChanged = I_C_RemittanceAdvice.COLUMNNAME_C_Payment_Doctype_Target_ID)
 	public void setIsSOTrxFromPaymentDocType(@NonNull final I_C_RemittanceAdvice record)
 	{
-		final I_C_DocType targetPaymentDocType = docTypeDAO.getRecordById(record.getC_Payment_Doctype_Target_ID());
+		final I_C_DocType targetPaymentDocType = docTypeDAO.getById(record.getC_Payment_Doctype_Target_ID());
+
+		if (targetPaymentDocType == null)
+		{
+			throw new AdempiereException("No doc type found for C_Payment_Doctype_Target_ID!")
+					.appendParametersToMessage()
+					.setParameter("C_Payment_Doctype_Target_ID", record.getC_Payment_Doctype_Target_ID());
+		}
 
 		record.setIsSOTrx(targetPaymentDocType.isSOTrx());
 	}

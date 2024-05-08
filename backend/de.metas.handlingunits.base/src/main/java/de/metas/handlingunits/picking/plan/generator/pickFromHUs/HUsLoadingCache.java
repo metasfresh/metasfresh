@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.plan.generator.pickFromHUs;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -18,6 +19,7 @@ import org.adempiere.warehouse.LocatorId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HUsLoadingCache
 {
@@ -50,11 +52,6 @@ public class HUsLoadingCache
 		return husById.computeIfAbsent(huId, handlingUnitsBL::getById);
 	}
 
-	public Collection<I_M_HU> getHUsByIds(final Collection<HuId> huIds)
-	{
-		return CollectionUtils.getAllOrLoad(husById, huIds, handlingUnitsBL::getByIdsReturningMap);
-	}
-
 	private void addToCache(final List<I_M_HU> hus)
 	{
 		hus.forEach(this::addToCache);
@@ -67,7 +64,12 @@ public class HUsLoadingCache
 
 	public void warmUpCacheForHuIds(final Collection<HuId> huIds)
 	{
-		getHUsByIds(huIds);
+		CollectionUtils.getAllOrLoad(husById, huIds, this::retrieveHUs);
+	}
+
+	private Map<HuId, I_M_HU> retrieveHUs(final Collection<HuId> huIds)
+	{
+		return Maps.uniqueIndex(handlingUnitsBL.getByIds(huIds), HUsLoadingCache::extractHUId);
 	}
 
 	public HuId getTopLevelHUId(final HuId huId)

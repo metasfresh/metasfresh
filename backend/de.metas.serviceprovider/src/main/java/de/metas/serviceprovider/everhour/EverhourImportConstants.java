@@ -32,8 +32,7 @@ public interface EverhourImportConstants
 	@AllArgsConstructor
 	@Getter enum EverhourImporterSysConfig
 	{
-		ACCESS_TOKEN("de.metas.issue.tracking.everhour.accessToken"),
-		BPARTNER_USER_IMPORT("de.metas.serviceprovider.everhour.bpartnerUserImport");
+		ACCESS_TOKEN("de.metas.issue.tracking.everhour.accessToken");
 
 		private final String name;
 	}

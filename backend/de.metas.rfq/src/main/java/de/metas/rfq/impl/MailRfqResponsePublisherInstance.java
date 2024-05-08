@@ -1,5 +1,6 @@
 package de.metas.rfq.impl;
 
+import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;

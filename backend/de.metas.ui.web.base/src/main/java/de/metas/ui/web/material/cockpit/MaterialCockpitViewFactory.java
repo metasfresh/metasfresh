@@ -24,7 +24,6 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -33,10 +32,10 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_DocumentDetail_Display;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_PricingConditions;
-import de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -60,7 +59,6 @@ import java.util.List;
 		viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class MaterialCockpitViewFactory implements IViewFactory
 {
-	public static final String SYSCFG_Layout = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.layout";
 	/**
 	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
 	 */
@@ -69,8 +67,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	private final MaterialCockpitRowsLoader materialCockpitRowsLoader;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
-	private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
-
+	
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -78,19 +75,17 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
 			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory,
-			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
-			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository)
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
 	{
 		this.materialCockpitRowsLoader = materialCockpitRowsLoader;
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
-		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
 
 		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
 
 	@Override
-	public MaterialCockpitView createView(@NonNull final CreateViewRequest request)
+	public IView createView(@NonNull final CreateViewRequest request)
 	{
 		assertWindowIdOfRequestIsCorrect(request);
 
@@ -109,7 +104,6 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_DocumentDetail_Display.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_PricingConditions.class))
 				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_ShowStockDetails.class))
-				.relatedProcessDescriptor(createProcessDescriptor(MD_Cockpit_SetProcurementStatus.class))
 				.build();
 	}
 
@@ -119,8 +113,8 @@ public class MaterialCockpitViewFactory implements IViewFactory
 		final WindowId windowId = viewId.getWindowId();
 
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-				"The parameter request needs to have WindowId={}, but has {} instead; request={};",
-				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
+						  "The parameter request needs to have WindowId={}, but has {} instead; request={};",
+						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
 	}
 
 	private MaterialCockpitRowsData createRowsData(
@@ -128,15 +122,15 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader)
 	{
 		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
-		final MaterialCockpitDetailsRowAggregation detailsRowAggregation = retrieveDetailsRowAggregation();
+		final boolean includePerPlantDetailRows = retrieveIsIncludePerPlantDetailRows();
 		if (date == null)
 		{
-			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of(), qtyDemandSupplyRepository);
+			return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, ImmutableList.of());
 		}
 
-		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
+		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, includePerPlantDetailRows);
 
-		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows, qtyDemandSupplyRepository);
+		return new MaterialCockpitRowsData(includePerPlantDetailRows, materialCockpitRowFactory, rows);
 	}
 
 	@Override
@@ -146,10 +140,9 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@Nullable final ViewProfileId profileId)
 	{
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
-				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
+						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
+						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
-		final String commaSeparatedFieldNames = sysConfigBL.getValue(SYSCFG_Layout, (String)null);
 		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);
 
 		final ViewLayout.Builder viewlayOutBuilder = ViewLayout.builder()
@@ -158,7 +151,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
 				.setAllowOpeningRowDetails(false)
-				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType, commaSeparatedFieldNames)
+				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();
@@ -179,14 +172,12 @@ public class MaterialCockpitViewFactory implements IViewFactory
 				.build();
 	}
 
-	private MaterialCockpitDetailsRowAggregation retrieveDetailsRowAggregation()
+	private boolean retrieveIsIncludePerPlantDetailRows()
 	{
-		final String sysConfigValue = sysConfigBL.getValue(
-				MaterialCockpitUtil.SYSCONFIG_DETAILS_ROW_AGGREGATION,
-				MaterialCockpitDetailsRowAggregation.NONE.getValue(),
+		return Services.get(ISysConfigBL.class).getBooleanValue(
+				MaterialCockpitUtil.SYSCONFIG_INCLUDE_PER_PLANT_DETAIL_ROWS,
+				false,
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
-
-		return MaterialCockpitDetailsRowAggregation.getValueOrDefault(sysConfigValue);
 	}
 }

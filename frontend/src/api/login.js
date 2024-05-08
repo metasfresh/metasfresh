@@ -20,19 +20,6 @@ export function checkLoginRequest() {
   return axios.get(`${config.API_URL}/login/isLoggedIn`);
 }
 
-export function login2FA(code) {
-  return axios.post(
-    `${config.API_URL}/login/2fa`,
-    { code },
-    {
-      validateStatus: () => {
-        // returning true so that we can get the error message
-        return true;
-      },
-    }
-  );
-}
-
 export function loginCompletionRequest(role) {
   return axios.post(`${config.API_URL}/login/loginComplete`, role);
 }
@@ -98,6 +85,6 @@ export function resetPasswordComplete(token, form) {
   });
 }
 
-export function getPasswordResetAvatarUrl(token) {
+export function resetPasswordGetAvatar(token) {
   return `${config.API_URL}/login/resetPassword/${token}/avatar`;
 }

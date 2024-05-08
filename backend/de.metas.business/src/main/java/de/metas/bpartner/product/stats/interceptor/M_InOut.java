@@ -1,15 +1,7 @@
 package de.metas.bpartner.product.stats.interceptor;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.product.stats.BPartnerProductStatsEventSender;
-import de.metas.bpartner.product.stats.InOutChangedEvent;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.lang.SOTrx;
-import de.metas.material.MovementType;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.util.Set;
+
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOutLine;
@@ -18,7 +10,17 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.Set;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.product.stats.BPartnerProductStatsEventSender;
+import de.metas.bpartner.product.stats.InOutChangedEvent;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -102,7 +104,7 @@ public class M_InOut
 	private boolean isMaterialReturn(final I_M_InOut inout)
 	{
 		final String movementType = inout.getMovementType();
-		return MovementType.isMaterialReturn(movementType);
+		return Services.get(IInOutBL.class).isReturnMovementType(movementType);
 	}
 
 	private Set<ProductId> extractProductIds(final I_M_InOut inout)

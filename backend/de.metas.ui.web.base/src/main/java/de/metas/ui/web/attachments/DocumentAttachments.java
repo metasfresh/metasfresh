@@ -17,6 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,8 +25,8 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -34,9 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -63,10 +62,11 @@ import java.util.stream.Stream;
 
 /**
  * Document attachments facade.
- * <p>
+ *
  * NOTE to developers: introduced to hide behind legacy attachments code.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 final class DocumentAttachments
 {
@@ -75,7 +75,6 @@ final class DocumentAttachments
 	private static final String ID_SEPARATOR = "_";
 	private static final Splitter ID_Splitter = Splitter.on(ID_SEPARATOR);
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
-	private static final DocumentId NEWEST_DOCUMENT_ID = DocumentId.of("NEWEST");
 
 	private final AttachmentEntryService attachmentEntryService;
 
@@ -83,7 +82,6 @@ final class DocumentAttachments
 	private final TableRecordReference recordRef;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final DocumentWebsocketPublisher websocketPublisher;
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Builder
 	private DocumentAttachments(
@@ -115,7 +113,7 @@ final class DocumentAttachments
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
-		final Stream<DocumentArchiveEntry> archives = archiveDAO.retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ofInt(10))
+		final Stream<DocumentArchiveEntry> archives = Services.get(IArchiveDAO.class).retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ofInt(10))
 				.stream()
 				.map(archive -> DocumentArchiveEntry.of(buildId(ID_PREFIX_Archive, archive.getAD_Archive_ID()), archive));
 
@@ -141,54 +139,8 @@ final class DocumentAttachments
 		notifyRelatedDocumentTabsChanged();
 	}
 
-	@NonNull
-	public IDocumentAttachmentEntry getNewest()
+	public IDocumentAttachmentEntry getEntry(final DocumentId id)
 	{
-		final Optional<IDocumentAttachmentEntry> newestAttachment = getNewestAttachment();
-		final Optional<IDocumentAttachmentEntry> newestArchive = this.getNewestArchive();
-		if (!newestAttachment.isPresent() && !newestArchive.isPresent())
-		{
-			throw new EntityNotFoundException(NEWEST_DOCUMENT_ID.toJson());
-		}
-		final IDocumentAttachmentEntry archiveEntry = newestArchive.orElse(null);
-		final IDocumentAttachmentEntry attachmentEntry = newestAttachment.orElse(null);
-		if (archiveEntry == null)
-		{
-			return attachmentEntry;
-		}
-		if (attachmentEntry == null)
-		{
-			return archiveEntry;
-		}
-		final Instant archiveCreatedOn = archiveEntry.getCreated();
-		final Instant attachmentCreatedOn = attachmentEntry.getCreated();
-		return archiveCreatedOn.compareTo(attachmentCreatedOn) > 0 ? archiveEntry : attachmentEntry;
-	}
-
-	@NonNull
-	private Optional<IDocumentAttachmentEntry> getNewestAttachment()
-	{
-		return attachmentEntryService.getByReferencedRecord(recordRef)
-				.stream()
-				.map(entry -> DocumentAttachmentEntry.of(DocumentId.of(entry.getId()), entry))
-				.map(IDocumentAttachmentEntry::cast)
-				.findFirst();
-	}
-
-	private Optional<IDocumentAttachmentEntry> getNewestArchive()
-	{
-		return archiveDAO.retrieveLastArchives(Env.getCtx(), recordRef, QueryLimit.ONE)
-				.stream()
-				.findFirst()
-				.map(archive -> DocumentArchiveEntry.of(DocumentId.of(archive.getAD_Archive_ID()), archive));
-	}
-
-	public IDocumentAttachmentEntry getEntry(@NonNull final DocumentId id)
-	{
-		if (NEWEST_DOCUMENT_ID.equals(id))
-		{
-			return getNewest();
-		}
 		final IPair<String, Integer> prefixAndId = toPrefixAndEntryId(id);
 		final String idPrefix = prefixAndId.getLeft();
 		final int entryId = prefixAndId.getRight();
@@ -205,7 +157,7 @@ final class DocumentAttachments
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
 			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
-			final I_AD_Archive archive = archiveDAO.retrieveArchiveOrNull(recordRef, archiveId);
+			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -235,7 +187,7 @@ final class DocumentAttachments
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
 			final ArchiveId archiveId = ArchiveId.ofRepoId(entryId);
-			final I_AD_Archive archive = archiveDAO.retrieveArchiveOrNull(recordRef, archiveId);
+			final I_AD_Archive archive = Services.get(IArchiveDAO.class).retrieveArchiveOrNull(recordRef, archiveId);
 			if (archive == null)
 			{
 				throw new EntityNotFoundException(id.toJson());

@@ -87,10 +87,9 @@ public class C_Order
 		{
 			if (!subscriptionBL.isSubscription(ol))
 			{
-				logger.debug("Order line " + ol + " has no subscription or module contract assigned");
+				logger.debug("Order line " + ol + " has no subscription");
 				continue;
 			}
-
 			handleSubscriptionOrderLine(ol);
 		}
 	}

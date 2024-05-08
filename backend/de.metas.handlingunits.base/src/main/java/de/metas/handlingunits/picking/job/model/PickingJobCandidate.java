@@ -43,5 +43,4 @@ public class PickingJobCandidate
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	boolean partiallyPickedBefore;
-	@Nullable BPartnerLocationId handoverLocationId;
 }

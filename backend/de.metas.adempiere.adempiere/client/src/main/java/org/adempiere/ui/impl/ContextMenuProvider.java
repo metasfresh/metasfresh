@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ui.IContextMenuAction;
@@ -102,11 +101,6 @@ public class ContextMenuProvider implements IContextMenuProvider
 
 	private ArrayKey createActionClassKey(int displayType, int adColumnId, int adFieldId)
 	{
-		return createActionClassKey(displayType, adColumnId, AdFieldId.ofRepoIdOrNull(adFieldId));
-	}
-
-	private ArrayKey createActionClassKey(int displayType, int adColumnId, AdFieldId adFieldId)
-	{
 		return new ArrayKey(displayType, adColumnId, adFieldId);
 	}
 
@@ -151,7 +145,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		addActionClassesToList(ctx, gridField, actionClasses, ACTIONCLASSKEY_Global);
 		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(gridField.getDisplayType(), -1, -1));
 		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(DISPLAYTYPE_None, gridField.getAD_Column_ID(), -1));
-		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(DISPLAYTYPE_None, -1, gridField.getVO().getAD_Field_ID()));
+		addActionClassesToList(ctx, gridField, actionClasses, createActionClassKey(DISPLAYTYPE_None, -1, gridField.getVO().AD_Field_ID));
 
 		final List<IContextMenuAction> actions = getInstances(menuCtx, actionClasses);
 		final IContextMenuAction rootAction = new RootContextMenuAction(actions);

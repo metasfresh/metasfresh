@@ -3,7 +3,6 @@ package de.metas.handlingunits.allocation.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
@@ -41,6 +40,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -77,7 +77,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
-	private boolean _isExternalProperty = false; // default false
 
 	/**
 	 *
@@ -268,9 +267,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-		huBuilder.setHUClearanceStatusInfo(CoalesceUtil.coalesce(getHUClearanceStatusInfo(), request.getClearanceStatusInfo()));
-		huBuilder.setIsExternalProperty(isExternalProperty());
-
+		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
 
 		return huBuilder;
 	}
@@ -438,7 +435,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final ImmutableList<I_M_HU> getCreatedHUs()
+	public final List<I_M_HU> getCreatedHUs()
 	{
 		if (_createdHUs.isEmpty())
 		{
@@ -517,7 +514,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 			//
 			// Create current actual request, perform the allocation to current HU and merge the result back
-			prepareToLoad(request.getHuContext(), currentHU);
+			prepareToLoad(request.getHUContext(), currentHU);
 			final IAllocationRequest currentRequest = AllocationUtils.createQtyRequestForRemaining(request, result);
 			final IAllocationResult currentResult = loadHU(currentHU, currentRequest);
 			AllocationUtils.mergeAllocationResult(result, currentResult);
@@ -615,7 +612,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		//
 		// Notify that we finished the loading
-		loadFinished(result, request.getHuContext());
+		loadFinished(result, request.getHUContext());
 
 		return result;
 	}
@@ -734,18 +731,5 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	public final ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
 		return _huClearanceStatusInfo;
-	}
-
-	@Override
-	public final IHUProducerAllocationDestination setIsExternalProperty(final boolean isExternalProperty)
-	{
-		assertConfigurable();
-		_isExternalProperty = isExternalProperty;
-		return this;
-	}
-
-	public final boolean isExternalProperty()
-	{
-		return _isExternalProperty;
 	}
 }

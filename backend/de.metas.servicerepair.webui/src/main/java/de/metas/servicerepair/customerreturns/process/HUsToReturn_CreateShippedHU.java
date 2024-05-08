@@ -213,7 +213,7 @@ public class HUsToReturn_CreateShippedHU
 	{
 		final I_M_InOut customerReturns = getCustomerReturns();
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(customerReturns.getM_Warehouse_ID());
-		return warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+		return warehouseBL.getDefaultLocatorId(warehouseId);
 	}
 
 	private I_M_InOut getCustomerReturns()

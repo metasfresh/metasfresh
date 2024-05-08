@@ -1,20 +1,20 @@
 package de.metas.costing;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.AcctSchemaCosting;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.costing.methods.CostAmountDetailed;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Set;
+import java.util.stream.IntStream;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.junit.Test;
 
-import java.util.stream.IntStream;
+import com.google.common.collect.ImmutableSet;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 
 /*
  * #%L
@@ -48,37 +48,20 @@ public class AggregatedCostAmountTest
 	{
 		final AggregatedCostAmount amt = AggregatedCostAmount.builder()
 				.costSegment(createCostSegment())
-				.amount(createCostElement(1, CostingMethod.AverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(1000, currencyId))).build())
-				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
-				.amount(createCostElement(3, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(10, currencyId))).build())
-				.amount(createCostElement(4, CostingMethod.AveragePO), CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
-				.amount(createCostElement(5, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(100, currencyId))).build())
-				.amount(createCostElement(6, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(10, currencyId))).build())
-				.amount(createCostElement(7, CostingMethod.MovingAverageInvoice), CostAmountDetailed.builder().mainAmt((CostAmount.of(1, currencyId))).build())
+				.amount(createCostElement(1, CostingMethod.AverageInvoice), CostAmount.of(1000, currencyId))
+				.amount(createCostElement(2, CostingMethod.AveragePO), CostAmount.of(100, currencyId))
+				.amount(createCostElement(3, CostingMethod.AveragePO), CostAmount.of(10, currencyId))
+				.amount(createCostElement(4, CostingMethod.AveragePO), CostAmount.of(1, currencyId))
 				.build();
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO)).orElseThrow().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, null).get())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.AveragePO, 2, 4)).orElseThrow().getMainAmt())
-				.isEqualTo(CostAmount.of(101, currencyId));
-
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice)).orElseThrow().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, ImmutableSet.of()).get())
 				.isEqualTo(CostAmount.of(111, currencyId));
 
-		assertThat(amt.getTotalAmount(acctSchemaCosting(CostingMethod.MovingAverageInvoice, 5, 7)).orElseThrow().getMainAmt())
+		assertThat(amt.getTotalAmount(CostingMethod.AveragePO, costElementIds(2, 4)).get())
 				.isEqualTo(CostAmount.of(101, currencyId));
-	}
-
-	private AcctSchemaCosting acctSchemaCosting(final CostingMethod costingMethod, int... postOnlyCostElementIds)
-	{
-		return AcctSchemaCosting.builder()
-				.costingPrecision(CurrencyPrecision.ofInt(4))
-				.costTypeId(CostTypeId.ofRepoId(1))
-				.costingLevel(CostingLevel.Client)
-				.costingMethod(costingMethod)
-				.postOnlyCostElementIds(costElementIds(postOnlyCostElementIds))
-				.build();
 	}
 
 	private CostSegment createCostSegment()
@@ -105,7 +88,7 @@ public class AggregatedCostAmountTest
 				.build();
 	}
 
-	private static ImmutableSet<CostElementId> costElementIds(final int... ids)
+	private static Set<CostElementId> costElementIds(final int... ids)
 	{
 		return IntStream.of(ids)
 				.mapToObj(CostElementId::ofRepoId)

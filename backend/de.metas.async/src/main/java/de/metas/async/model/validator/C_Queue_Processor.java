@@ -22,14 +22,14 @@ package de.metas.async.model.validator;
  * #L%
  */
 
-import de.metas.async.model.I_C_Queue_Processor;
-import de.metas.async.processor.IQueueProcessorExecutorService;
-import de.metas.async.processor.IQueueProcessorsExecutor;
-import de.metas.async.processor.QueueProcessorId;
-import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
+
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.processor.IQueueProcessorsExecutor;
+import de.metas.util.Services;
 
 @Validator(I_C_Queue_Processor.class)
 public class C_Queue_Processor
@@ -41,9 +41,7 @@ public class C_Queue_Processor
 		if (queueProcessorExecutorService.isInitialized())
 		{
 			final IQueueProcessorsExecutor executor = queueProcessorExecutorService.getExecutor();
-
-			final QueueProcessorId queueProcessorId = QueueProcessorId.ofRepoId(queueProcessorDef.getC_Queue_Processor_ID());
-			executor.removeQueueProcessor(queueProcessorId);
+			executor.removeQueueProcessor(queueProcessorDef.getC_Queue_Processor_ID());
 		}
 	}
 }

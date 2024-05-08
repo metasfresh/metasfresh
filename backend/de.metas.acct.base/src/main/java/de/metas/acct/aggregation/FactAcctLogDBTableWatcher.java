@@ -23,12 +23,12 @@
 package de.metas.acct.aggregation;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.acct.aggregation.legacy.FactAcctLogProcessResult;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import java.time.Duration;
@@ -37,7 +37,7 @@ public class FactAcctLogDBTableWatcher implements Runnable
 {
 	private static final Logger logger = LogManager.getLogger(FactAcctLogDBTableWatcher.class);
 	private final ISysConfigBL sysConfigBL;
-	private final FactAcctLogService factAcctLogService;
+	private final IFactAcctLogBL factAcctLogBL;
 
 	private static final String SYSCONFIG_PollIntervalInSeconds = "de.metas.acct.aggregation.FactAcctLogDBTableWatcher.pollIntervalInSeconds";
 	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
@@ -49,10 +49,10 @@ public class FactAcctLogDBTableWatcher implements Runnable
 	@Builder
 	private FactAcctLogDBTableWatcher(
 			@NonNull final ISysConfigBL sysConfigBL,
-			@NonNull final FactAcctLogService factAcctLogService)
+			@NonNull final IFactAcctLogBL factAcctLogBL)
 	{
 		this.sysConfigBL = sysConfigBL;
-		this.factAcctLogService = factAcctLogService;
+		this.factAcctLogBL = factAcctLogBL;
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class FactAcctLogDBTableWatcher implements Runnable
 			{
 				sleep();
 			}
-			catch (final InterruptedException e)
+			catch (InterruptedException e)
 			{
 				logger.info("Got interrupt request. Exiting.");
 				return;
@@ -112,7 +112,7 @@ public class FactAcctLogDBTableWatcher implements Runnable
 		do
 		{
 			final QueryLimit retrieveBatchSize = getRetrieveBatchSize();
-			final FactAcctLogProcessResult result = factAcctLogService.processAll(retrieveBatchSize);
+			final FactAcctLogProcessResult result = factAcctLogBL.processAll(Env.getCtx(), retrieveBatchSize);
 
 			finalResult = finalResult.combineWith(result);
 			mightHaveMore = retrieveBatchSize.isLessThanOrEqualTo(result.getProcessedLogRecordsCount());

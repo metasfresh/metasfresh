@@ -22,11 +22,12 @@
 
 package de.metas.common.procurement.sync.util;
 
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class UUIDsTest
 {

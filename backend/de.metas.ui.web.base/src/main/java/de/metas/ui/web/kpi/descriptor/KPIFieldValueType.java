@@ -22,13 +22,11 @@
 
 package de.metas.ui.web.kpi.descriptor;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
 public enum KPIFieldValueType
 {
 	String,
-	URL,
 	Number,
 	Date,
 	DateTime;
@@ -37,14 +35,7 @@ public enum KPIFieldValueType
 	{
 		if (DisplayType.isText(displayType))
 		{
-			if (displayType == DisplayType.URL)
-			{
-				return URL;
-			}
-			else
-			{
-				return String;
-			}
+			return String;
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
@@ -60,17 +51,17 @@ public enum KPIFieldValueType
 		}
 		else
 		{
-			throw new AdempiereException("Display type not supported: " + DisplayType.getDescription(displayType));
+			throw new IllegalArgumentException("Display type not supported: " + DisplayType.getDescription(displayType));
 		}
 	}
 
-	public String toJson() {return name();}
+	public String toJson()
+	{
+		return name();
+	}
 
-	public boolean isDate() {return this == Date || this == DateTime;}
-
-	public boolean isURL() {return this == URL;}
-
-	public boolean isStringStrict() {return this == String;}
-
-	public boolean isString() {return isStringStrict() || isURL();}
+	public boolean isDate()
+	{
+		return this == Date || this == DateTime;
+	}
 }

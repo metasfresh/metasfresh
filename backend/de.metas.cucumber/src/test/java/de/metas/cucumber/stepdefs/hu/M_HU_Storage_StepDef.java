@@ -22,8 +22,6 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.model.I_M_HU;
@@ -45,7 +43,6 @@ import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_HU_Storag
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_M_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMNNAME_Qty;
 import static de.metas.handlingunits.model.I_M_HU_Storage.COLUMN_M_HU_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_HU_Storage_StepDef
@@ -94,24 +91,5 @@ public class M_HU_Storage_StepDef
 			final String huStorageIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_Storage_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huStorageTable.putOrReplace(huStorageIdentifier, huStorageRecord);
 		}
-	}
-
-	@And("update M_HU_Storage:")
-	public void update_M_HU_Storages(@NonNull final DataTable dataTable) throws Throwable
-	{
-		DataTableRows.of(dataTable).forEach(this::update_M_HU_Storage);
-	}
-
-	private void update_M_HU_Storage(@NonNull final DataTableRow tableRow)
-	{
-		final I_M_HU_Storage huStorage = tableRow.getAsIdentifier(COLUMNNAME_M_HU_Storage_ID).lookupIn(huStorageTable);
-		assertThat(huStorage).isNotNull();
-		tableRow.getAsOptionalBigDecimal(COLUMNNAME_Qty).ifPresent(huStorage::setQty);
-		tableRow.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
-				.map(productTable::get)
-				.map(I_M_Product::getM_Product_ID)
-				.ifPresent(huStorage::setM_Product_ID);
-
-		saveRecord(huStorage);
 	}
 }

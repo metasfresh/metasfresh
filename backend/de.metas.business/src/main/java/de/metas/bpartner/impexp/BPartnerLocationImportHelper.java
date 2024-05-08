@@ -1,10 +1,15 @@
 package de.metas.bpartner.impexp;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.impexp.BPartnersCache.BPartner;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -13,10 +18,6 @@ import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
 
 /*
  * #%L
@@ -106,7 +107,7 @@ import org.compiere.model.ModelValidationEngine;
 
 		if (bpartnerLocation != null)
 		{
-			updateBPartnerLocation(bpartner, bpartnerLocation, importRecord);
+			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
 		}
 
 		return bpartnerLocation;
@@ -137,7 +138,7 @@ import org.compiere.model.ModelValidationEngine;
 			bpartnerLocation.setAD_Org_ID(bpartner.getOrgId());
 			bpartnerLocation.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 
-			updateBPartnerLocation(bpartner, bpartnerLocation, importRecord);
+			updateExistingBPartnerLocation(bpartner, bpartnerLocation, importRecord);
 
 			return bpartnerLocation;
 		}
@@ -147,7 +148,7 @@ import org.compiere.model.ModelValidationEngine;
 		}
 	}
 
-	private void updateBPartnerLocation(
+	private void updateExistingBPartnerLocation(
 			@NonNull final BPartner bpartner,
 			@NonNull final I_C_BPartner_Location bpartnerLocation,
 			@NonNull final I_I_BPartner from)
@@ -183,9 +184,6 @@ import org.compiere.model.ModelValidationEngine;
 				.build());
 
 		bpartnerLocation.setC_Location_ID(locationId.getRepoId());
-		bpartnerLocation.setBPartnerName(importRecord.getlocation_bpartner_name());
-		bpartnerLocation.setName(CoalesceUtil.firstNotBlank(importRecord.getlocation_name(), bpartnerLocation.getName(), "."));
-		bpartnerLocation.setDelivery_Info(importRecord.getDelivery_Info());
 	}
 
 	private static void updateBillToAndShipToFlags(

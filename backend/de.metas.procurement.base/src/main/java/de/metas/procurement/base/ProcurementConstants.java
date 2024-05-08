@@ -1,9 +1,10 @@
 package de.metas.procurement.base;
 
+import org.slf4j.Logger;
+
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ public final class ProcurementConstants
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.procurement.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	private ProcurementConstants()

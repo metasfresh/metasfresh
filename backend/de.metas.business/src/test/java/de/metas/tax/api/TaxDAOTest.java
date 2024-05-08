@@ -24,6 +24,7 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.LocationId;
@@ -59,7 +60,7 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class TaxDAOTest
 {
@@ -72,6 +73,7 @@ class TaxDAOTest
 	private static final OrgId ORG_ID = OrgId.ofRepoId(10);
 	private static final LocationId locationId = LocationId.ofRepoId(11);
 	private static final BPartnerId bPartnerId = BPartnerId.ofRepoId(12);
+	private static final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId,13);
 
 	private static final int ORG_COUNTRY_ID = 1000;
 	private static final String ORG_COUNTRY_CODE = "AA";
@@ -301,7 +303,6 @@ class TaxDAOTest
 	private TaxId createTaxData(final TypeOfDestCountry typeOfDestCountry, final int countryId, final int toCountryId)
 	{
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
-		tax.setName(typeOfDestCountry + "-" + countryId + "-" + toCountryId);
 		tax.setAD_Org_ID(ORG_ID.getRepoId());
 		tax.setC_Country_ID(countryId);
 		tax.setTo_Country_ID(toCountryId);

@@ -2,10 +2,10 @@ package de.metas.handlingunits.stock;
 
 import java.util.stream.Stream;
 
-import de.metas.ad_reference.ADReferenceService;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -49,10 +49,6 @@ import lombok.NonNull;
 @Repository
 public class HUStockInfoRepository
 {
-	private final ADReferenceService adReferenceService;
-
-	public HUStockInfoRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
-
 	public Stream<HUStockInfo> getByQuery(@NonNull final HUStockInfoQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -96,9 +92,10 @@ public class HUStockInfoRepository
 
 	private HUStockInfo ofRecord(@NonNull final I_M_HU_Stock_Detail_V record)
 	{
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
-		final ITranslatableString huStatus = adReferenceService.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
+		final ITranslatableString huStatus = adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
 
 		return HUStockInfo.builder()
 				.attributeId(AttributeId.ofRepoIdOrNull(record.getM_Attribute_ID()))

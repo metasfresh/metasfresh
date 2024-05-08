@@ -1,20 +1,31 @@
-import { original, produce } from 'immer';
+import { produce, original } from 'immer';
 
 import {
-  DELETE_ATTRIBUTES,
   FETCH_ATTRIBUTES_DATA,
   FETCH_ATTRIBUTES_LAYOUT,
+  DELETE_ATTRIBUTES,
   PATCH_ATTRIBUTES,
   SET_ATTRIBUTES_DATA,
+  FETCH_QUICKINPUT_DATA,
+  FETCH_QUICKINPUT_LAYOUT,
+  DELETE_QUICKINPUT,
+  SET_QUICKINPUT_DATA,
+  PATCH_QUICKINPUT_PENDING,
+  PATCH_QUICKINPUT_DONE,
 } from '../constants/ActionTypes';
 import { parseToDisplay } from '../utils/documentListHelper';
 
-// @VisibleForTesting
 export const initialState = {
   attributes: {
     dataId: null,
     fields: {},
     elements: [],
+  },
+  quickInput: {
+    layout: null,
+    data: null,
+    id: null,
+    inProgress: false,
   },
 };
 
@@ -77,6 +88,57 @@ const reducer = produce((draftState, action) => {
 
       break;
     }
+
+    case FETCH_QUICKINPUT_DATA: {
+      const { data, id } = action.payload;
+
+      draftState.quickInput.data = data;
+      draftState.quickInput.id = id;
+
+      break;
+    }
+
+    case FETCH_QUICKINPUT_LAYOUT: {
+      const { layout } = action.payload;
+
+      draftState.quickInput.layout = layout;
+
+      break;
+    }
+
+    case SET_QUICKINPUT_DATA: {
+      const { fieldData } = action.payload;
+      const currentData = original(draftState.quickInput.data);
+
+      Object.keys(fieldData).map((fieldName) => {
+        draftState.quickInput.data[fieldName] = {
+          ...currentData[fieldName],
+          ...fieldData[fieldName],
+        };
+      });
+
+      break;
+    }
+
+    case PATCH_QUICKINPUT_PENDING:
+      draftState.quickInput.inProgress = true;
+
+      break;
+
+    case PATCH_QUICKINPUT_DONE:
+      draftState.quickInput.inProgress = false;
+
+      break;
+
+    case DELETE_QUICKINPUT:
+      draftState.quickInput = {
+        layout: null,
+        data: null,
+        id: null,
+        inProgress: false,
+      };
+
+      break;
   }
 }, initialState);
 

@@ -1,14 +1,17 @@
 package de.metas.mforecast;
 
-import de.metas.document.engine.DocStatus;
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.util.TimeUtil;
+
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Forecast;
 
 /*
  * #%L
@@ -58,18 +61,70 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public int getC_Currency_ID(final DocumentTableFields docFields)
 	{
-		final I_M_Forecast forecast = extractForecast(docFields);
-		return InstantAndOrgId.ofTimestamp(forecast.getDatePromised(), OrgId.ofRepoId(forecast.getAD_Org_ID()));
+		return -1;
 	}
 
 	@Override
-	public DocStatus completeIt(final DocumentTableFields docFields)
+	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
+	{
+		return BigDecimal.ZERO;
+	}
+
+	@Override
+	public File createPDF(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public String completeIt(final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setDocAction(IDocument.ACTION_None);
-		return DocStatus.Completed;
+		return IDocument.STATUS_Completed;
+	}
+
+	@Override
+	public void approveIt(final DocumentTableFields docFields)
+	{
+	}
+
+	@Override
+	public void rejectIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void voidIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void closeIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void unCloseIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void reverseCorrectIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void reverseAccrualIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -78,5 +133,12 @@ class ForecastDocumentHandler implements DocumentHandler
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setProcessed(false);
 		forecast.setDocAction(IDocument.ACTION_Complete);
+	}
+
+	@Override
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
+	{
+		final I_M_Forecast forecast = extractForecast(docFields);
+		return TimeUtil.asLocalDate(forecast.getDatePromised());
 	}
 }

@@ -1,8 +1,7 @@
 package de.metas.printing.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Printing_Queue
  *  @author metasfresh (generated) 

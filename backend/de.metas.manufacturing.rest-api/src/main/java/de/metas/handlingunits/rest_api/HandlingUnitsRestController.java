@@ -2,7 +2,7 @@
  * #%L
  * de.metas.manufacturing.rest-api
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,14 +23,11 @@
 package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
-import de.metas.ad_reference.ADRefList;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
-import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttributesRequest;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.global_qrcodes.GlobalQRCode;
@@ -41,27 +38,20 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import lombok.Builder;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
@@ -77,10 +67,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
@@ -88,58 +75,39 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 
 @RequestMapping(value = { HandlingUnitsRestController.HU_REST_CONTROLLER_PATH })
 @RestController
-@RequiredArgsConstructor
 @Profile(Profiles.PROFILE_App)
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
-	private static final String SYS_CONFIG_BY_SERIAL_NO_HUStatuses = "de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses";
-
-	/**
-	 * {@code M_Attribute.Value}s of attributes to include, even if empty.
-	 */
-	private static final String SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE = "de.metas.handlingunits.rest_api.bySerialNo.includedHUAttributesEvenIfEmpty";
-
-	private static final String MORE_THAN_ONE_HU_FOUND_PARAM_NAME = "moreThanOneHUParamName";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final InventoryCandidateService inventoryCandidateService;
 	private final HandlingUnitsService handlingUnitsService;
 	private final HUQRCodesService huQRCodesService;
 
+	public HandlingUnitsRestController(
+			@NonNull final InventoryCandidateService inventoryCandidateService,
+			@NonNull final HandlingUnitsService handlingUnitsService,
+			@NonNull final HUQRCodesService huQRCodesService)
+	{
+		this.inventoryCandidateService = inventoryCandidateService;
+		this.handlingUnitsService = handlingUnitsService;
+		this.huQRCodesService = huQRCodesService;
+	}
+
 	@GetMapping("/bySerialNo/{serialNo}")
-	@Operation(summary = "Retrieves a singular HU by serialNo.",
-			description = "- **HU-Status**: By default, the endpoint takes into consideration only HUs with status = 'Active'.\n"
-					+ "  But custom HU statuses can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.onlyHUStatuses`"
-					+ "- **Empty HU-Attributes**: By default, the endpoint excludes all HU-attributes that are empty (null or empty string).\n"
-					+ "  But the `M_Attribute.Value`s of HU-Attributes to **always** return can be set via SysConfig: `de.metas.handlingunits.rest_api.bySerialNo.includedEmptyAttributesAlsoIfEmpty`"
-					+ "- **HU-Attribute-Ordering**: the HU's attributes are ordered according to the `SeqNo` of the PI-Attributes in the HU's packing-instruction `M_HU_PI_Version`."
-	)
 	public ResponseEntity<JsonGetSingleHUResponse> getBySerialNo(
 			@PathVariable("serialNo") @NonNull final String serialNo)
 	{
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
-		final Supplier<I_M_HU> huSupplier = () -> retrieveHUIdBySerialNo(serialNo, clientAndOrgId);
-
-		return toSingleHUResponseEntity(huSupplier, clientAndOrgId);
+		return toSingleHUResponseEntity(() -> retrieveActiveHUIdBySerialNo(serialNo));
 	}
 
-	@NonNull
-	private I_M_HU retrieveHUIdBySerialNo(
-			final @NonNull String serialNo,
-			@NonNull final ClientAndOrgId clientAndOrgId)
+	private I_M_HU retrieveActiveHUIdBySerialNo(final @NonNull String serialNo)
 	{
-
-		final ImmutableSet<String> onlyHUStatuses = extractStringSet(
-				SYS_CONFIG_BY_SERIAL_NO_HUStatuses,
-				X_M_HU.HUSTATUS_Active,
-				clientAndOrgId);
-
 		final List<I_M_HU> hus = handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addHUStatusesToInclude(onlyHUStatuses)
+				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNo)
 				.list();
 		if (hus.isEmpty())
@@ -157,56 +125,39 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/byQRCode")
-	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
+			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
 		return getByIdSupplier(() -> {
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
 			if (globalQRCode != null)
 			{
 				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				final HUQRCodeAssignment huqrCodeAssignment = huQRCodesService.getHUAssignmentByQRCode(huQRCode).orElse(null);
-				if (huqrCodeAssignment == null)
-				{
-					return null; // NOT FOUND
-				}
-
-				if (!huqrCodeAssignment.isSingleHUAssigned())
-				{
-					throw new AdempiereException("More than one HU assigned to QR")
-							.appendParametersToMessage()
-							.setParameter("huQRCode", request.getQrCode())
-							.setParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME, true);
-				}
-
-				return GetByIdRequest.builder()
-						.huId(huqrCodeAssignment.getSingleHUId())
-						.expectedQRCode(huQRCode)
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
+				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
 			}
 			else
 			{
-				return GetByIdRequest.builder()
-						.huId(HuId.ofHUValue(request.getQrCode()))
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
+				return HuId.ofHUValue(request.getQrCode());
 			}
-		});
+		}, request.isIncludeAllowedClearanceStatuses());
 	}
 
 	@GetMapping("/byId/{M_HU_ID}")
 	public ResponseEntity<JsonGetSingleHUResponse> getById(
-			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(HuId.ofRepoId(huRepoId))
-				.build());
+		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
 	}
 
-	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(
-			@NonNull final Supplier<I_M_HU> huSupplier,
-			@NonNull final ClientAndOrgId clientAndOrgId)
+	@NonNull
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
+	{
+		final boolean getAllowedClearanceStatuses = false;
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
+	}
+
+	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
@@ -218,16 +169,9 @@ public class HandlingUnitsRestController
 				throw new AdempiereException("No HU found");
 			}
 
-			final ImmutableSet<String> attributesToInclude = extractStringSet(SYS_CONFIG_EMPTY_ATTRIBUTES_TO_INCLUDE, "", clientAndOrgId);
-
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService.toJson(LoadJsonHURequest.builder()
-							.hu(hu)
-							.adLanguage(adLanguage)
-							.excludeEmptyAttributes(true)
-							.emptyAttributesToInclude(attributesToInclude)
-							.build()))
-					.build());
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
+											 .build());
 		}
 		catch (final Exception ex)
 		{
@@ -235,21 +179,6 @@ public class HandlingUnitsRestController
 					.error(JsonErrors.ofThrowable(ex, adLanguage))
 					.build());
 		}
-	}
-
-	private ImmutableSet<String> extractStringSet(
-			@NonNull final String sysConfigValue,
-			@NonNull final String defaultValue,
-			@NonNull final ClientAndOrgId clientAndOrgId)
-	{
-		return Arrays.stream(sysConfigBL
-						.getValue(
-								sysConfigValue,
-								defaultValue,
-								clientAndOrgId)
-						.split(","))
-				.map(String::trim)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@PostMapping("/byId/{M_HU_ID}/dispose")
@@ -286,7 +215,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
+	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
@@ -345,127 +274,47 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/move")
-	public void moveHU(
+	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-										  .huId(request.getHuId())
-										  .huQRCode(huQRCode)
-										  .numberOfTUs(request.getNumberOfTUs())
-										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-										  .build());
-	}
-
-	@PostMapping("/bulk/move")
-	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
-	{
-		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
-				.map(HUQRCode::fromGlobalQRCodeJsonString)
-				.collect(ImmutableList.toImmutableList());
-
-		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
-				.huQrCodes(huQrCodes)
+				.huId(request.getHuId())
+				.huQRCode(huQRCode)
 				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
 				.build());
-	}
 
-	@PutMapping("/byId/{M_HU_ID}/qty")
-	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(
-			@PathVariable("M_HU_ID") final int huId,
-			@RequestBody @NonNull final JsonHUQtyChangeRequest request)
-	{
-		final HuId huWithChangedQty = handlingUnitsService.updateQty(HuId.ofRepoId(huId), request);
-		return getByIdSupplier(() -> GetByIdRequest.builder()
-				.huId(huWithChangedQty)
-				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
-				.build());
-	}
-
-	@PostMapping("/huLabels/print")
-	public void printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
-	{
-		handlingUnitsService.printHULabels(request);
-	}
-
-	@GetMapping("/huLabels/printingOptions")
-	public List<JsonHULabelPrintingOption> getPrintingOptions()
-	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
-	}
-
-	@GetMapping("/byDisplayableQrCode/{displayableQrCode}")
-	public List<JsonHU> getHUsByDisplayableQrCode(@PathVariable("displayableQrCode") final String displayableQrCode)
-	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return handlingUnitsService.getHUsForDisplayableQrCode(displayableQrCode, adLanguage);
-	}
-
-	@PostMapping("/list/byQRCode")
-	public List<JsonHU> listByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
-	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return handlingUnitsService.getHUsByQrCode(request, adLanguage);
+		// IMPORTANT: don't retrieve by ID because the ID might be different
+		// (e.g. we extracted one TU from an aggregated TU),
+		// but the QR Code is always the same.
+		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 
 	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final GetByIdRequest request = requestSupplier.get();
-			if (request == null)
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
 			{
 				return ResponseEntity.notFound().build();
 			}
 
-			final HuId huId = request.getHuId();
-			final HUQRCode expectedQRCode = request.getExpectedQRCode();
-			final boolean includeAllowedClearanceStatuses = request.isIncludeAllowedClearanceStatuses();
-
-			final JsonHU jsonHU = handlingUnitsService
-					.getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
-					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId));
-
-			return ResponseEntity.ok(JsonGetSingleHUResponse.builder().result(jsonHU).build());
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+											 .result(handlingUnitsService
+															 .getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+															 .withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
+											 .build());
 		}
 		catch (final Exception e)
 		{
-			return ResponseEntity.badRequest()
-					.body(JsonGetSingleHUResponse.builder()
-								  .error(JsonErrors.ofThrowable(e, adLanguage))
-								  .multipleHUsFound(wereMultipleHUsFound(e))
-								  .build());
+			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
+															.error(JsonErrors.ofThrowable(e, adLanguage))
+															.build());
 		}
-	}
-
-	private static boolean wereMultipleHUsFound(final Exception e)
-	{
-		return Optional.of(e)
-				.filter(error -> error instanceof AdempiereException)
-				.map(error -> (AdempiereException)error)
-				.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME))
-				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
-				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
-				.orElse(false);
-	}
-
-	//
-	//
-	//
-
-	@Value
-	@Builder
-	private static class GetByIdRequest
-	{
-		@NonNull HuId huId;
-		@Nullable
-		HUQRCode expectedQRCode;
-
-		boolean includeAllowedClearanceStatuses;
 	}
 }

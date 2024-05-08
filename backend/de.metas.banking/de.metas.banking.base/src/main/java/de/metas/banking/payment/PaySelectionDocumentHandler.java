@@ -1,14 +1,16 @@
 package de.metas.banking.payment;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.DocumentHandler;
-import de.metas.document.engine.DocumentTableFields;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.time.LocalDate;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
+import org.compiere.util.TimeUtil;
+
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentTableFields;
+import de.metas.document.engine.IDocument;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,10 +49,10 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public InstantAndOrgId getDocumentDate(@NonNull final DocumentTableFields docFields)
+	public LocalDate getDocumentDate(@NonNull final DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
-		return InstantAndOrgId.ofTimestamp(paySelection.getPayDate(), OrgId.ofRepoId(paySelection.getAD_Org_ID()));
+		return TimeUtil.asLocalDate(paySelection.getPayDate());
 	}
 
 	@Override
@@ -60,13 +62,13 @@ public class PaySelectionDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public DocStatus completeIt(DocumentTableFields docFields)
+	public String completeIt(DocumentTableFields docFields)
 	{
 		final I_C_PaySelection paySelection = extractPaySelection(docFields);
 
 		Services.get(IPaySelectionBL.class).completePaySelection(paySelection);
 
-		return DocStatus.Completed;
+		return IDocument.STATUS_Completed;
 	}
 
 	@Override

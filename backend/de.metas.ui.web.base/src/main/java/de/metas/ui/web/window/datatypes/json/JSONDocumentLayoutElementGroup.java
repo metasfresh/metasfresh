@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.util.GuavaCollectors;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-@Schema(description = "elementGroup")
+@ApiModel("elementGroup")
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @ToString
 public final class JSONDocumentLayoutElementGroup
@@ -60,13 +61,14 @@ public final class JSONDocumentLayoutElementGroup
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
 
-	@Schema
+	@ApiModelProperty(allowEmptyValue = true)
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Getter
 	private final JSONLayoutType type;
 
-	@Schema(description = "Number of equal-width-columns into which the included elementsLines shall be displayed:\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Number of equal-width-columns into which the included elementsLines shall be displayed:\n"
 			+ "Notes:\n"
 			+ "* one element line per cell"
 			+ "* an empty element line shall be rendered as empty cell"
@@ -82,7 +84,8 @@ public final class JSONDocumentLayoutElementGroup
 	@Getter
 	private final String internalName;
 
-	@Schema(description = "Container for elementy that are supposed to be displayed next to each other\n"
+	@ApiModelProperty( //
+			allowEmptyValue = true, value = "Container for elementy that are supposed to be displayed next to each other\n"
 			+ "Notes:"
 			+ "* individual element lines might be empty for layout purposes; see <code>columnCount</code>\n"
 			+ "* in most of the cases, each elementLine has one element")

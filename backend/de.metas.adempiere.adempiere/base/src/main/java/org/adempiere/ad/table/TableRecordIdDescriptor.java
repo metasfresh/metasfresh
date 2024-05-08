@@ -2,10 +2,7 @@ package org.adempiere.ad.table;
 
 import de.metas.util.Check;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.table.api.TableAndColumnName;
-import org.jetbrains.annotations.NotNull;
 
 /*
  * #%L
@@ -28,12 +25,12 @@ import org.jetbrains.annotations.NotNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 /**
+ * 
  * Example of how this could work in the real life:
- *
+ * 
  * <h1>Case 1 (Ad_Table_ID, Record_ID)</h1>
- *
+ * 
  * <li>Have a table Origin
  * <li>Have a table Target
  * <li>The table Origin has the column AD_Table_ID and Record_ID
@@ -42,9 +39,9 @@ import org.jetbrains.annotations.NotNull;
  * <li>Origin = originTableName
  * <li>Origin.Record_ID = recordIdColumnName
  * <li>Target = targetTableName
- *
+ * 
  * <h1>Case 2 (Prefix_Ad_Table_ID, Prefix_Record_ID)</h1>>
- *
+ * 
  * <li>Have a table Origin
  * <li>Have a table Target
  * <li>The table Origin has the column Target_AD_Table_ID and Target_Record_ID
@@ -54,10 +51,14 @@ import org.jetbrains.annotations.NotNull;
  * <li>Origin.Target_Record_ID = recordIdColumnName
  * <li>Target = targetTableName
  *
+ * @see PartitionerServiceOld#augmentPartitionerConfig(PartitionerConfig, java.util.List)
+ * @see DLMReferenceException#getTableReferenceDescriptor()
+ *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 @Value
-public class TableRecordIdDescriptor
+public final class TableRecordIdDescriptor
 {
 	/**
 	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName</code>.
@@ -68,37 +69,25 @@ public class TableRecordIdDescriptor
 			final String targetTableName)
 	{
 		return builder()
-				.originTableName(originTableName)
 				.targetTableName(targetTableName)
+				.originTableName(originTableName)
 				.recordIdColumnName(recordIdColumnName)
 				.build();
 	}
 
-	public static TableRecordIdDescriptor of(
-			@NonNull final String originTableName,
-			@NonNull final TableAndColumnName tableAndRecordIdColumnName)
-	{
-		return builder()
-				.originTableName(originTableName)
-				.targetTableName(tableAndRecordIdColumnName.getTableNameAsString())
-				.recordIdColumnName(tableAndRecordIdColumnName.getColumnNameAsString())
-				.build();
-	}
-
-
-	@NonNull String originTableName;
-	@NonNull String recordIdColumnName;
-	@NonNull String targetTableName;
+	private final String originTableName;
+	private final String recordIdColumnName;
+	private final String targetTableName;
 
 	@Builder
 	private TableRecordIdDescriptor(
-			@NotNull final String targetTableName,
-			@NotNull final String originTableName,
-			@NotNull final String recordIdColumnName)
+			final String targetTableName,
+			final String originTableName,
+			final String recordIdColumnName)
 	{
-		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not empty");
-		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not empty");
-		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not empty");
+		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not null");
+		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not null");
+		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not null");
 
 		this.targetTableName = targetTableName;
 		this.originTableName = originTableName;

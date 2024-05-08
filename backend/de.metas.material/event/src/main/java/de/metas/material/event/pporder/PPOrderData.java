@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
@@ -37,6 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_S_Resource;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -51,10 +51,9 @@ public class PPOrderData
 	ClientAndOrgId clientAndOrgId;
 
 	/**
-	 * The {@link ResourceId} of the plant, as specified by the respective product planning record.
+	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
 	ResourceId plantId;
-	@Nullable ResourceId workstationId;
 
 	WarehouseId warehouseId;
 
@@ -93,17 +92,11 @@ public class PPOrderData
 	 */
 	BigDecimal qtyDelivered;
 
-	HUPIItemProductId packingMaterialId;
-
-	String lotForLot;
-
-
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
 			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
 			@JsonProperty("plantId") @NonNull final ResourceId plantId,
-			@JsonProperty("workstationId") @Nullable ResourceId workstationId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
@@ -114,13 +107,10 @@ public class PPOrderData
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
-			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId,
-			@JsonProperty("lotForLot") final String lotForLot)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
-		this.workstationId = workstationId;
 		this.warehouseId = warehouseId;
 		this.bpartnerId = bpartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set
@@ -132,8 +122,6 @@ public class PPOrderData
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
-		this.packingMaterialId = packingMaterialId;
-		this.lotForLot = lotForLot;
 	}
 
 	@JsonIgnore

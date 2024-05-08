@@ -1,9 +1,7 @@
 package de.metas.ui.web.session;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.ConditionsId;
 import de.metas.i18n.Language;
-import de.metas.letter.BoilerPlateId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -15,12 +13,12 @@ import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.session.json.WebuiSessionId;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -154,14 +152,13 @@ public class UserSession
 	/**
 	 * @return true if we are running in a webui thread (i.e. NOT a background daemon thread)
 	 */
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean isWebuiThread()
 	{
 		return RequestContextHolder.getRequestAttributes() != null;
 	}
 
 	// services
-	static final Logger logger = LogManager.getLogger(UserSession.class);
+	static final transient Logger logger = LogManager.getLogger(UserSession.class);
 	private final transient ApplicationEventPublisher eventPublisher;
 
 	private static UserSession _staticUserSession = null;
@@ -236,7 +233,7 @@ public class UserSession
 
 	public void assertLoggedIn()
 	{
-		if (!isLoggedIn())
+		if (!getData().isLoggedIn())
 		{
 			throw new NotLoggedInException();
 		}
@@ -255,7 +252,7 @@ public class UserSession
 
 	public void assertNotLoggedIn()
 	{
-		if (isLoggedIn())
+		if (getData().isLoggedIn())
 		{
 			throw new AlreadyLoggedInException();
 		}
@@ -294,11 +291,6 @@ public class UserSession
 	public OrgId getOrgId()
 	{
 		return getData().getOrgId();
-	}
-
-	public String getOrgName()
-	{
-		return getData().getOrgName();
 	}
 
 	public String getAD_Language()
@@ -392,16 +384,6 @@ public class UserSession
 		return getData().getUserEmail();
 	}
 
-	public BoilerPlateId getDefaultBoilerPlateId()
-	{
-		return getData().getDefaultBoilerPlateId();
-	}
-
-	public ConditionsId getDefaultFlatrateConditionsId()
-	{
-		return getData().getDefaultFlatrateConditionsId();
-	}
-
 	public String getUserFullname()
 	{
 		return getData().getUserFullname();
@@ -429,22 +411,6 @@ public class UserSession
 		final String userFullnameOld = data.getUserFullname();
 		data.setUserFullname(userFullname);
 		return userFullnameOld;
-	}
-
-	public BoilerPlateId setNewDefaultBoilerPlateIdAndReturnOld(final @Nullable BoilerPlateId defaultBoilerPlateId)
-	{
-		final InternalUserSessionData data = getData();
-		final BoilerPlateId oldDefaultBoilerPlate = data.getDefaultBoilerPlateId();
-		data.setDefaultBoilerPlateId(defaultBoilerPlateId);
-		return oldDefaultBoilerPlate;
-	}
-
-	public ConditionsId setNewDefaultFlatrateConditionsIdAndReturnOld(final @Nullable ConditionsId defaultFlatrateConditionsId)
-	{
-		final InternalUserSessionData data = getData();
-		final ConditionsId oldDefaultFlatrateConditionsId = data.getDefaultFlatrateConditionsId();
-		data.setDefaultFlatrateConditionsId(defaultFlatrateConditionsId);
-		return oldDefaultFlatrateConditionsId;
 	}
 
 	/**

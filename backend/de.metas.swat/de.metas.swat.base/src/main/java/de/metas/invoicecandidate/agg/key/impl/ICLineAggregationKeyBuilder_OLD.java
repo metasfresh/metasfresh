@@ -46,7 +46,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
-	public static final ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
+	public static final transient ICLineAggregationKeyBuilder_OLD instance = new ICLineAggregationKeyBuilder_OLD();
 
 	private static final List<String> columnNames = ImmutableList.<String> builder()
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_Agg_ID)
@@ -60,7 +60,6 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			.add(I_C_Invoice_Candidate.COLUMNNAME_C_UOM_ID)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_IsPrinted)
 			.add(I_C_Invoice_Candidate.COLUMNNAME_Line)
-			.add(I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID)
 			.build();
 
 	private ICLineAggregationKeyBuilder_OLD()
@@ -140,9 +139,6 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 			sb.append("/" + uomName);
 		}
 
-		// Use DocTypeID in aggregation
-		sb.append("/").append(ic.getC_DocTypeInvoice_ID() > 0 ? ic.getC_DocTypeInvoice_ID() : 0);
-
 		//
 		// 07442
 		// Also add activity and tax
@@ -190,6 +186,9 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 	/**
 	 * Creates a {@link NumberFormat} instance to be used to format amounts, using Bill BPartner's locale and invoice candidate currency.
+	 *
+	 * @param ic
+	 * @return
 	 */
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{

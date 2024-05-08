@@ -60,8 +60,7 @@ class UserDashboardItemChangeRequest
 		final UserDashboardItemChangeRequest.UserDashboardItemChangeRequestBuilder changeRequestBuilder = UserDashboardItemChangeRequest.builder()
 				.itemId(itemId)
 				.widgetType(widgetType)
-				.adLanguage(adLanguage)
-				.position(-1);
+				.adLanguage(adLanguage);
 
 		//
 		// Extract change actions

@@ -1,27 +1,26 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_PrinterHW
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_PrinterHW, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1403843343L;
+	private static final long serialVersionUID = -516711222L;
 
     /** Standard Constructor */
-    public X_AD_PrinterHW (final Properties ctx, final int AD_PrinterHW_ID, @Nullable final String trxName)
+    public X_AD_PrinterHW (Properties ctx, int AD_PrinterHW_ID, String trxName)
     {
       super (ctx, AD_PrinterHW_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_AD_PrinterHW (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_AD_PrinterHW (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +28,18 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	protected org.compiere.model.POInfo initPO(Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAD_PrinterHW_ID (final int AD_PrinterHW_ID)
+	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID)
 	{
 		if (AD_PrinterHW_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_PrinterHW_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_PrinterHW_ID, AD_PrinterHW_ID);
+			set_ValueNoCheck (COLUMNNAME_AD_PrinterHW_ID, Integer.valueOf(AD_PrinterHW_ID));
 	}
 
 	@Override
@@ -50,7 +49,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	}
 
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -58,26 +57,11 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
-	{
-		if (ExternalSystem_Config_ID < 1) 
-			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
-		else 
-			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
-	}
-
-	@Override
-	public int getExternalSystem_Config_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
-	}
-
-	@Override
-	public void setHostKey (final @Nullable java.lang.String HostKey)
+	public void setHostKey (java.lang.String HostKey)
 	{
 		set_ValueNoCheck (COLUMNNAME_HostKey, HostKey);
 	}
@@ -85,11 +69,11 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	@Override
 	public java.lang.String getHostKey() 
 	{
-		return get_ValueAsString(COLUMNNAME_HostKey);
+		return (java.lang.String)get_Value(COLUMNNAME_HostKey);
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_ValueNoCheck (COLUMNNAME_Name, Name);
 	}
@@ -97,7 +81,7 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	@Override
 	public java.lang.String getName() 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -112,14 +96,15 @@ public class X_AD_PrinterHW extends org.compiere.model.PO implements I_AD_Printe
 	/** Queue = Queue */
 	public static final String OUTPUTTYPE_Queue = "Queue";
 	@Override
-	public void setOutputType (final java.lang.String OutputType)
+	public void setOutputType (java.lang.String OutputType)
 	{
+
 		set_Value (COLUMNNAME_OutputType, OutputType);
 	}
 
 	@Override
 	public java.lang.String getOutputType() 
 	{
-		return get_ValueAsString(COLUMNNAME_OutputType);
+		return (java.lang.String)get_Value(COLUMNNAME_OutputType);
 	}
 }

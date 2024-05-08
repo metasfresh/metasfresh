@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pickingV2.packageable;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
@@ -30,7 +31,6 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -46,6 +46,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.warehouse.WarehouseTypeId;
 
@@ -53,6 +54,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -105,7 +107,7 @@ public final class PackageableRow implements IViewRow
 	private final ViewRowFieldNameAndJsonValuesHolder<PackageableRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PackageableRow.class);
 	private final PackageableRowId rowId;
 	@Getter
-	private final PackageableList packageables;
+	private final ImmutableList<Packageable> packageables;
 	@Getter
 	private final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
@@ -120,11 +122,11 @@ public final class PackageableRow implements IViewRow
 			final LookupValue lockedByUser,
 			final LookupValue shipper,
 			final ITranslatableString lineNetAmt,
-			@NonNull final PackageableList packageables,
+			@NonNull @Singular final Collection<Packageable> packageables,
 			@NonNull final ZoneId timeZone,
 			@Nullable final String poReference)
 	{
-		Check.assume(!packageables.isEmpty(), "packageables shall not be empty");
+		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
 		this.rowId = PackageableRowId.of(orderId, warehouseTypeId);
 		this.orderDocumentNo = orderDocumentNo;
@@ -139,12 +141,12 @@ public final class PackageableRow implements IViewRow
 		this.preparationDate = calculateEarliestPreparationTime(packageables)
 				.map(instant -> instant.toZonedDateTime(timeZone))
 				.orElse(null);
-		this.packageables = packageables;
-		this.shipmentScheduleIds = packageables.getShipmentScheduleIds();
+		this.packageables = ImmutableList.copyOf(packageables);
+		this.shipmentScheduleIds = extractShipmentScheduleIds(packageables);
 	}
 
 	@Nullable
-	private static LocalDate calculateEarliestDeliveryDate(final PackageableList packageables)
+	private static LocalDate calculateEarliestDeliveryDate(final Collection<Packageable> packageables)
 	{
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 		return packageables.stream()
@@ -156,12 +158,19 @@ public final class PackageableRow implements IViewRow
 				.orElse(null);
 	}
 
-	private static Optional<InstantAndOrgId> calculateEarliestPreparationTime(final PackageableList packageables)
+	private static Optional<InstantAndOrgId> calculateEarliestPreparationTime(final Collection<Packageable> packageables)
 	{
 		return packageables.stream()
 				.map(Packageable::getPreparationDate)
 				.filter(Objects::nonNull)
 				.min(InstantAndOrgId::compareTo);
+	}
+
+	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<Packageable> packageables)
+	{
+		return packageables.stream()
+				.map(Packageable::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

@@ -37,7 +37,6 @@ import de.metas.uom.UOMType;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
@@ -244,12 +243,6 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
-	{
-		throw new AttributeNotFoundException(attributeCode, this);
-	}
-
-	@Override
 	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
@@ -316,7 +309,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public boolean isMandatory(final @NonNull I_M_Attribute attribute, final @NonNull Set<ProductId> productIds, final @Nullable AttributeSourceDocument attributeSourceDocument)
+	public boolean isMandatory(final @NonNull I_M_Attribute attribute, final Set<ProductId> productIds, final boolean isMaterialReceipt)
 	{
 		return false;
 	}

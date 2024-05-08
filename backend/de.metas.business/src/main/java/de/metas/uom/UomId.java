@@ -4,15 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -91,51 +83,6 @@ public class UomId implements RepoIdAware
 	public static boolean equals(@Nullable final UomId id1, @Nullable final UomId id2)
 	{
 		return Objects.equals(id1, id2);
-	}
-
-	@NonNull
-	@SafeVarargs
-	public static <T> UomId getCommonUomIdOfAll(
-			@NonNull final Function<T, UomId> getUomId,
-			@NonNull final String name,
-			@Nullable final T... objects)
-	{
-		if (objects == null || objects.length == 0)
-		{
-			throw new AdempiereException("No " + name + " provided");
-		}
-		else if (objects.length == 1 && objects[0] != null)
-		{
-			return getUomId.apply(objects[0]);
-		}
-		else
-		{
-			UomId commonUomId = null;
-			for (final T object : objects)
-			{
-				if (object == null)
-				{
-					continue;
-				}
-
-				final UomId uomId = getUomId.apply(object);
-				if (commonUomId == null)
-				{
-					commonUomId = uomId;
-				}
-				else if (!UomId.equals(commonUomId, uomId))
-				{
-					throw new AdempiereException("All given " + name + "(s) shall have the same UOM: " + Arrays.asList(objects));
-				}
-			}
-
-			if (commonUomId == null)
-			{
-				throw new AdempiereException("At least one non null " + name + " instance was expected: " + Arrays.asList(objects));
-			}
-
-			return commonUomId;
-		}
 	}
 
 	public boolean isEach() {return EACH.equals(this);}

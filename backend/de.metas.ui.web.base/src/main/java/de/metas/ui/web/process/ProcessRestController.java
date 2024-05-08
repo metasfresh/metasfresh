@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.ui.web.process;
 
 import com.google.common.base.Stopwatch;
@@ -28,8 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
@@ -73,8 +49,8 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -102,10 +78,32 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2016 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  * This is the rest controller used when processes are invoked from the <b>WebUI</b>.
  */
-@Tag(name = "ProcessRestController")
+@Api
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 public class ProcessRestController
@@ -113,7 +111,7 @@ public class ProcessRestController
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/process";
 
 	private static final Logger logger = LogManager.getLogger(ProcessRestController.class);
-	private final ImmutableMap<ProcessHandlerType, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
+	private final ImmutableMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType;
 	private final UserSession userSession;
 	private final IViewsRepository viewsRepo;
 	private final DocumentCollection documentsCollection;
@@ -171,7 +169,7 @@ public class ProcessRestController
 
 	private IProcessInstancesRepository getRepository(@NonNull final ProcessId processId)
 	{
-		final ProcessHandlerType processHandlerType = processId.getProcessHandlerType();
+		final String processHandlerType = processId.getProcessHandlerType();
 		final IProcessInstancesRepository processInstanceRepo = pinstancesRepositoriesByHandlerType.get(processHandlerType);
 		if (processInstanceRepo == null)
 		{
@@ -185,7 +183,6 @@ public class ProcessRestController
 		return pinstancesRepositoriesByHandlerType.values();
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/layout")
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
@@ -209,7 +206,6 @@ public class ProcessRestController
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PostMapping("/{processId}")
 	public JSONProcessInstance createInstanceFromRequest(
 			@PathVariable("processId") final String processIdStr,
@@ -232,11 +228,7 @@ public class ProcessRestController
 			DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 			if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 			{
-				if (viewId == null)
-				{
-					throw new AdempiereException("viewId is expected to be set");
-				}
-				final IView view = viewsRepo.getView(Check.assumeNotNull(viewId, "viewId shall not be null"));
+				final IView view = viewsRepo.getView(viewId);
 				singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 			}
 
@@ -262,7 +254,6 @@ public class ProcessRestController
 		return getInstance(processId, pinstanceId);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/{pinstanceId}")
 	public JSONProcessInstance getInstance(
 			@PathVariable("processId") final String processIdStr,
@@ -286,7 +277,6 @@ public class ProcessRestController
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@PatchMapping("/{processId}/{pinstanceId}")
 	public List<JSONDocument> processParametersChangeEvents(
 			@PathVariable("processId") final String processIdStr //
@@ -318,7 +308,6 @@ public class ProcessRestController
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping(value = "/{processId}/{pinstanceId}/start")
 	public JSONProcessInstanceResult startProcess(
 			@PathVariable("processId") final String processIdStr,
@@ -347,8 +336,7 @@ public class ProcessRestController
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
-	@Operation(summary = "Retrieves and serves a report that was previously created by a reporting process.")
+	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,
@@ -376,12 +364,11 @@ public class ProcessRestController
 			headers.setContentType(MediaType.parseMediaType(reportContentType));
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-
+			
 			return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		}
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //

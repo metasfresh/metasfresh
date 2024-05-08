@@ -48,7 +48,6 @@ import java.util.function.UnaryOperator;
 public class PickingJobStep
 {
 	@NonNull PickingJobStepId id;
-	boolean isGeneratedOnFly;
 
 	@NonNull OrderAndLineId salesOrderAndLineId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
@@ -73,7 +72,6 @@ public class PickingJobStep
 	@Jacksonized
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
-			final boolean isGeneratedOnFly,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			//
@@ -89,7 +87,6 @@ public class PickingJobStep
 			@NonNull final PackToSpec packToSpec)
 	{
 		this.id = id;
-		this.isGeneratedOnFly = isGeneratedOnFly;
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.productId = productId;
@@ -102,8 +99,6 @@ public class PickingJobStep
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
-
-	public boolean isNothingPicked() {return pickFroms.isNothingPicked();}
 
 	public PickingJobStep reduceWithPickedEvent(
 			@NonNull PickingJobStepPickFromKey key,

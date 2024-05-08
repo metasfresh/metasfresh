@@ -16,20 +16,43 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import ch.qos.logback.classic.Level;
-import de.metas.acct.api.IPostingService;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.metal.MetalTheme;
+
+import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
 import org.adempiere.plaf.UIDefaultsEditorDialog;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.grid.ed.VDate;
 import org.compiere.model.MSequence;
 import org.compiere.print.CPrinter;
@@ -47,21 +70,13 @@ import org.compiere.util.SupportInfo;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.plaf.metal.MetalTheme;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IPostingService;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 
 /**
  * Customize settings like L&F, AutoCommit, etc. & Diagnostics
@@ -224,7 +239,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(MigrationScriptFileLoggerHolder.getMigrationScriptDirectory().toString());
+		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory().toString());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));
@@ -503,7 +518,7 @@ public final class Preference extends CDialog
 		// AdempiereSys
 		adempiereSys.setSelected(Ini.isPropertyBool(Ini.P_ADEMPIERESYS));
 		// LogMigrationScript
-		logMigrationScript.setSelected(MigrationScriptFileLoggerHolder.isEnabled());
+		logMigrationScript.setSelected(Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT));
 		if (Env.getAD_Client_ID(Env.getCtx()) > 20)
 		{
 			adempiereSys.setSelected(false);
@@ -638,7 +653,7 @@ public final class Preference extends CDialog
 		// AdempiereSys
 		Ini.setProperty(Ini.P_ADEMPIERESYS, adempiereSys.isSelected());
 		// LogMigrationScript
-		MigrationScriptFileLoggerHolder.setEnabled(logMigrationScript.isSelected());
+		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, logMigrationScript.isSelected());
 		// AutoLogin
 		Ini.setProperty(Ini.P_A_LOGIN, (autoLogin.isSelected()));
 		// Save Password

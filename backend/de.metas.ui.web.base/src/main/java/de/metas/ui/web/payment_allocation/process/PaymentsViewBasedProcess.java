@@ -115,11 +115,7 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 
 	protected final void invalidatePaymentsAndInvoicesViews()
 	{
-		final InvoicesView invoicesView = getInvoicesView();
-
-		invoicesView.unmarkPreparedForAllocation(DocumentIdsSelection.ALL);
-
-		invalidateView(invoicesView);
+		invalidateView(getInvoicesView());
 		invalidateView(getPaymentsView());
 	}
 }

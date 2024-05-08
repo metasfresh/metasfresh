@@ -55,12 +55,6 @@ public class ShipperTransportationId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ShipperTransportation_ID");
 	}
 
-
-	public static int toRepoId(@Nullable final ShipperTransportationId shipperTransportationId)
-	{
-		return shipperTransportationId != null ? shipperTransportationId.getRepoId() : -1;
-	}
-
 	@Override
 	@JsonValue
 	public int getRepoId()

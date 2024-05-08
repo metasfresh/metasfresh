@@ -1,27 +1,16 @@
 package de.metas.ui.web.window.descriptor;
 
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
-import de.metas.util.Functions;
-import de.metas.util.Functions.MemoizingFunction;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.DisplayType;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Function;
+
+import javax.annotation.Nullable;
+
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
+import de.metas.util.Functions;
+import de.metas.util.Functions.MemoizingFunction;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -45,116 +34,13 @@ import java.util.function.Function;
  * #L%
  */
 
-@Component
+@UtilityClass
 public class LookupDescriptorProviders
 {
-	public static LookupDescriptorProviders sharedInstance()
-	{
-		return SpringContextHolder.instance.getBeanOr(LookupDescriptorProviders.class, _sharedInstance);
-	}
+	/** Provider which returns <code>Optional.empty()</code> for any scope) */
+	public static LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
 
-	private static final LookupDescriptorProviders _sharedInstance = new LookupDescriptorProviders(null);
-
-	/**
-	 * Provider which returns <code>Optional.empty()</code> for any scope)
-	 */
-	public static final LookupDescriptorProvider NULL = new NullLookupDescriptorProvider();
-
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private ADReferenceService _adReferenceService;
-
-	private static final String SYSCONFIG_PageLength = "webui.lookup.pageLength";
-	private static final int DEFAULT_PageLength = 10;
-
-	public LookupDescriptorProviders(
-			@Nullable final ADReferenceService adReferenceService)
-	{
-		this._adReferenceService = adReferenceService;
-	}
-
-	public ADReferenceService getAdReferenceService()
-	{
-		ADReferenceService adReferenceService = this._adReferenceService;
-		if (adReferenceService == null)
-		{
-			adReferenceService = this._adReferenceService = ADReferenceService.get();
-		}
-		return adReferenceService;
-	}
-
-	public SqlLookupDescriptorProviderBuilder sql()
-	{
-		return new SqlLookupDescriptorProviderBuilder(getAdReferenceService())
-				.setPageLength(sysConfigBL.getIntValue(SYSCONFIG_PageLength, DEFAULT_PageLength));
-	}
-
-	public LookupDescriptorProvider searchByAD_Val_Rule_ID(
-			@NonNull final ReferenceId AD_Reference_Value_ID,
-			@Nullable final AdValRuleId AD_Val_Rule_ID)
-	{
-		return sql()
-				.setCtxTableName(null) // tableName
-				.setCtxColumnName(null)
-				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
-				.setAD_Val_Rule_ID(AD_Val_Rule_ID)
-				.setDisplayType(DisplayType.Search)
-				.setReadOnlyAccess()
-				.build();
-	}
-
-	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName)
-	{
-		return prepareSearchInTable(lookupTableName).build();
-	}
-
-	@NonNull
-	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final AdValRuleId ruleId)
-	{
-		return prepareSearchInTable(lookupTableName).setAD_Val_Rule_ID(ruleId).build();
-	}
-
-	@NonNull
-	public LookupDescriptorProvider searchInTable(@NonNull final String lookupTableName, @Nullable final IValidationRule rule)
-	{
-		return prepareSearchInTable(lookupTableName).addValidationRule(rule).build();
-	}
-
-	private SqlLookupDescriptorProviderBuilder prepareSearchInTable(@NonNull final String lookupTableName)
-	{
-		return sql()
-				.setCtxTableName(null) // tableName
-				.setCtxColumnName(InterfaceWrapperHelper.getKeyColumnName(lookupTableName))
-				.setDisplayType(DisplayType.Search)
-				.setReadOnlyAccess();
-	}
-
-	public LookupDescriptorProvider listByAD_Reference_Value_ID(@NonNull final ReferenceId AD_Reference_Value_ID)
-	{
-		return sql()
-				.setCtxTableName(null) // tableName
-				.setCtxColumnName(null)
-				.setDisplayType(DisplayType.List)
-				.setAD_Reference_Value_ID(AD_Reference_Value_ID)
-				.setReadOnlyAccess()
-				.build();
-	}
-
-	public LookupDescriptor productAttributes()
-	{
-		return sql()
-				.setCtxTableName(null) // tableName
-				.setCtxColumnName(I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID)
-				.setDisplayType(DisplayType.PAttribute)
-				.setReadOnlyAccess()
-				.build()
-				.provide()
-				.orElseThrow(() -> new AdempiereException("No lookup descriptor found for Product Attributes"));
-
-	}
-
-	/**
-	 * @return provider which returns given {@link LookupDescriptor} for any scope
-	 */
+	/** @return provider which returns given {@link LookupDescriptor} for any scope */
 	public static LookupDescriptorProvider singleton(@NonNull final LookupDescriptor lookupDescriptor)
 	{
 		return new SingletonLookupDescriptorProvider(lookupDescriptor);
@@ -165,17 +51,11 @@ public class LookupDescriptorProviders
 		return lookupDescriptor != null ? singleton(lookupDescriptor) : NULL;
 	}
 
-	/**
-	 * @return provider which calls the given function (memoized)
-	 */
+	/** @return provider which calls the given function (memoized) */
 	public static LookupDescriptorProvider fromMemoizingFunction(final Function<LookupScope, LookupDescriptor> providerFunction)
 	{
 		return new MemoizingFunctionLookupDescriptorProvider(providerFunction);
 	}
-
-	//
-	//
-	//
 
 	private static class NullLookupDescriptorProvider implements LookupDescriptorProvider
 	{
@@ -186,7 +66,6 @@ public class LookupDescriptorProviders
 		}
 	}
 
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@ToString
 	private static class SingletonLookupDescriptorProvider implements LookupDescriptorProvider
 	{

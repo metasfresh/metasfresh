@@ -28,24 +28,24 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import org.adempiere.ad.element.api.AdWindowId;
 
 import javax.annotation.Nullable;
 
 @Value
-class GenericTargetWindowInfo
+public class GenericTargetWindowInfo
 {
 	@NonNull ImmutableTranslatableString name;
 	@NonNull AdWindowId targetWindowId;
 
 	@NonNull String targetWindowInternalName;
 	@NonNull String targetTableName;
-	@Nullable @With SOTrx soTrx;
+	@Nullable
+	SOTrx soTrx;
 	boolean targetHasIsSOTrxColumn;
-	@Nullable @With String tabSqlWhereClause;
+	@Nullable String tabSqlWhereClause;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private GenericTargetWindowInfo(
 			@NonNull final ImmutableTranslatableString name,
 			@NonNull final AdWindowId targetWindowId,

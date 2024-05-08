@@ -22,20 +22,22 @@ package de.metas.payment.api.impl;
  * #L%
  */
 
-import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
 import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.util.Services;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
 {
@@ -78,7 +80,7 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(payment.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx().toInstant(), // ConvDate
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
 						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
 						ClientId.ofRepoId(line.getAD_Client_ID()),
 						OrgId.ofRepoId(line.getAD_Org_ID()));

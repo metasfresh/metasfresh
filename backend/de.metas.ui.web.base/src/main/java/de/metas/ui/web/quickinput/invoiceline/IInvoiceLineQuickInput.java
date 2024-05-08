@@ -1,9 +1,9 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
+import java.math.BigDecimal;
+
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.compiere.model.I_M_Product;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -44,11 +44,5 @@ public interface IInvoiceLineQuickInput
 	//@formatter:off
 	String COLUMNNAME_Qty = "Qty";
 	BigDecimal getQty();
-	//@formatter:on
-
-	//@formatter:off
-	String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
-	void setC_VAT_Code_ID(int C_VAT_Code_ID);
-	int getC_VAT_Code_ID();
 	//@formatter:on
 }

@@ -1,6 +1,19 @@
 package de.metas.dunning.order.restart;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.springframework.stereotype.Component;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
@@ -9,17 +22,6 @@ import de.metas.invoice.InvoiceId;
 import de.metas.util.RelatedRecordsProvider;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import de.metas.common.util.pair.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import de.metas.common.util.pair.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /*
  * #%L
@@ -64,7 +66,7 @@ public class RelatedDunningsForInvoicesProvider implements RelatedRecordsProvide
 
 		final List<Integer> dunningDocIds = Services.get(IQueryBL.class).createQueryBuilder(I_C_Dunning_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_C_Invoice.class))
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Invoice.class))
 				.addInArrayFilter(I_C_Dunning_Candidate.COLUMN_Record_ID, invoiceIds)
 				.andCollectChildren(I_C_DunningDoc_Line_Source.COLUMN_C_Dunning_Candidate_ID)
 				.addOnlyActiveRecordsFilter()

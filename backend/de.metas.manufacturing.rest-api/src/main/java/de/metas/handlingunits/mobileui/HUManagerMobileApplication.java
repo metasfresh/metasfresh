@@ -2,7 +2,6 @@ package de.metas.handlingunits.mobileui;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
 import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.service.MobileApplication;
@@ -20,10 +19,7 @@ public class HUManagerMobileApplication implements MobileApplication
 			.build();
 
 	@Override
-	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
-
-	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
+	public @NonNull MobileApplicationInfo getApplicationInfo()
 	{
 		return APPLICATION_INFO;
 	}

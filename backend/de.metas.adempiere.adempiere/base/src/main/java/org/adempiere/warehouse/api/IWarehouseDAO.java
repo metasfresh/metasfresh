@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -13,11 +12,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -28,8 +27,9 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import static de.metas.common.util.Check.assume;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -56,8 +56,6 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 public interface IWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
-
-	<T extends I_M_Warehouse> T getByIdInTrx(@NonNull WarehouseId warehouseId, @NonNull Class<T> modelType);
 
 	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
 
@@ -90,10 +88,6 @@ public interface IWarehouseDAO extends ISingletonService
 
 	@Deprecated
 	Set<WarehouseId> getWarehouseIdsForLocatorRepoIds(Set<Integer> locatorRepoIds);
-
-	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
-
-	List<I_M_Locator> getLocatorByIds(Collection<LocatorId> locatorIds);
 
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
@@ -129,8 +123,6 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId getInTransitWarehouseId(OrgId adOrgId);
 
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
-
-	Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull OrgId orgId);
 
 	List<I_M_Warehouse> getAllWarehouses();
 
@@ -188,31 +180,23 @@ public interface IWarehouseDAO extends ISingletonService
 		boolean includeAnyOrg;
 		boolean outOfTrx;
 
-		/**
-		 * Applied if not empty. {@code AND}ed with {@code name} if given.
-		 */
-		String name;
-
 		@Builder
 		private WarehouseQuery(
 				@Nullable final String value,
 				@Nullable final ExternalId externalId,
 				@NonNull final OrgId orgId,
 				@Nullable final Boolean includeAnyOrg,
-				@Nullable final Boolean outOfTrx,
-				@Nullable final String name)
+				@Nullable final Boolean outOfTrx)
 		{
-			final boolean valueIsSet = Check.isNotBlank(value);
+			final boolean valueIsSet = !isEmpty(value, true);
 			final boolean externalIdIsSet = externalId != null;
-			final boolean nameIsSet = Check.isNotBlank(name);
-			assume(valueIsSet || externalIdIsSet || nameIsSet, "At least one of value, externalId or name has to be specified");
+			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
 
 			this.value = value;
 			this.externalId = externalId;
 			this.orgId = orgId;
 			this.includeAnyOrg = coalesceNotNull(includeAnyOrg, false);
 			this.outOfTrx = coalesceNotNull(outOfTrx, false);
-			this.name = name;
 		}
 	}
 
@@ -221,16 +205,4 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
-
-	@NonNull
-	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
-
-	@NonNull
-	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
-
-	void save(@NonNull Warehouse warehouse);
-
-	@NonNull
-	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
-
 }

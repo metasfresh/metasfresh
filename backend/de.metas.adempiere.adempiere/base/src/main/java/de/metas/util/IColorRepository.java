@@ -22,11 +22,9 @@ package de.metas.util;
  * #L%
  */
 
-import lombok.NonNull;
-
 public interface IColorRepository extends ISingletonService
 {
-	MFColor getColorById(@NonNull ColorId adColorId);
+	MFColor getColorById(int adColorId);
 
 	ColorId saveFlatColorAndReturnId(String flatColorHexString);
 

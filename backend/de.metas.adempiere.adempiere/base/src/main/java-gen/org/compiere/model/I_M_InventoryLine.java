@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_InventoryLine
  *  @author metasfresh (generated) 
@@ -52,7 +53,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Assigned to.
+	 * Set Zugewiesen an.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -61,7 +62,7 @@ public interface I_M_InventoryLine
 	void setAssignedTo (@Nullable java.lang.String AssignedTo);
 
 	/**
-	 * Get Assigned to.
+	 * Get Zugewiesen an.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -73,7 +74,8 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_AssignedTo = "AssignedTo";
 
 	/**
-	 * Set Costs.
+	 * Set Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -82,7 +84,8 @@ public interface I_M_InventoryLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Costs.
+	 * Get Kosten.
+	 * Additional document charges
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -273,6 +276,7 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Set Counted.
+	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -282,6 +286,7 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Get Counted.
+	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -293,7 +298,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_IsCounted = "IsCounted";
 
 	/**
-	 * Set Override Cost Price.
+	 * Set IsExplicitCostPrice.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -302,7 +307,7 @@ public interface I_M_InventoryLine
 	void setIsExplicitCostPrice (boolean IsExplicitCostPrice);
 
 	/**
-	 * Get Override Cost Price.
+	 * Get IsExplicitCostPrice.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -483,54 +488,6 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InventoryLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Modular Contract.
-	 * A document linked to a modular contract will generate modular contract logs
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
-
-	/**
-	 * Get Modular Contract.
-	 * A document linked to a modular contract will generate modular contract logs
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getModular_Flatrate_Term_ID();
-
-	ModelColumn<I_M_InventoryLine, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_M_InventoryLine.class, "Modular_Flatrate_Term_ID", null);
-	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
-
-	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -638,7 +595,7 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
-	 * Set Reverse Line.
+	 * Set Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -647,7 +604,7 @@ public interface I_M_InventoryLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Reverse Line.
+	 * Get Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

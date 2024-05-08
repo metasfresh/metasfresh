@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import de.pentabyte.springfox.ApiEnum;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
@@ -56,12 +56,6 @@ public class SyncAdvise
 			.ifExists(IfExists.DONT_UPDATE)
 			.build();
 
-	public static final SyncAdvise REPLACE = SyncAdvise
-			.builder()
-			.ifNotExists(IfNotExists.CREATE)
-			.ifExists(IfExists.REPLACE)
-			.build();
-
 	public enum IfNotExists
 	{
 		CREATE(false/* fail */, true/* create */),
@@ -74,41 +68,26 @@ public class SyncAdvise
 		@Getter
 		private final boolean create;
 
-		IfNotExists(final boolean fail, final boolean create)
+		private IfNotExists(boolean fail, boolean create)
 		{
 			this.fail = fail;
 			this.create = create;
 		}
 	}
 
-	@Schema(enumAsRef = true, description = "IfExists: \n" +
-			"* `UPDATE_MERGE` - Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched\n" +
-			"* `DONT_UPDATE`\n" +
-			"* `REPLACE` - Replace data for the target resource with the information present in the request.\n" +
-			"")
 	public enum IfExists
 	{
-		UPDATE_MERGE(true/* updateMerge */, false/* replace */),
+		@ApiEnum("Insert/update data that is specified in this request entity (incl. setting properties to `null`), but leave *other* pre-existing data untouched")
+		UPDATE_MERGE(true/* updateMerge */),
 
-		DONT_UPDATE(false/* updateMerge */, false/* replace */),
-		
-		REPLACE(false/* updateMerge */, true/* replace */);
+		DONT_UPDATE(false/* updateMerge */);
 
 		@Getter
 		private final boolean update;
 
-		@Getter
-		private final boolean replace;
-
-		IfExists(final boolean update, final boolean replace)
+		IfExists(boolean update)
 		{
 			this.update = update;
-			this.replace = replace;
-		}
-
-		public boolean isReplace()
-		{
-			return this == REPLACE;
 		}
 	}
 
@@ -134,9 +113,7 @@ public class SyncAdvise
 		return IfNotExists.FAIL.equals(ifNotExists);
 	}
 
-	/**
-	 * If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching.
-	 */
+	/** If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching. */
 	@JsonIgnore
 	public boolean isLoadReadOnly()
 	{

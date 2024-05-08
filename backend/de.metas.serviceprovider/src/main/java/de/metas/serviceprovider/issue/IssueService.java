@@ -56,13 +56,13 @@ public class IssueService
 			issueHierarchy
 					.getUpStreamForId(request.getCurrentParentId())
 					.forEach(issue -> {
-								 issue.addAggregatedEffort(request.getCurrentAggregatedEffort());
-								 issue.addInvoiceableChildEffort(request.getCurrentInvoicableEffort());
-								 recomputeLatestActivityOnSubIssues(issue);
+						issue.addAggregatedEffort(request.getCurrentAggregatedEffort());
+						issue.addInvoiceableChildEffort(request.getCurrentInvoicableEffort());
+						recomputeLatestActivityOnSubIssues(issue);
 
-								 issueRepository.save(issue);
-							 }
-					);
+						issueRepository.save(issue);
+					}
+			);
 		}
 
 		if (request.getOldParentId() != null)
@@ -98,45 +98,20 @@ public class IssueService
 
 		issueRepository.save(issueEntity);
 
-		if (issueEntity.getParentIssueId() != null)
+		if(issueEntity.getParentIssueId() != null)
 		{
 			issueRepository
 					.buildUpStreamIssueHierarchy(issueEntity.getParentIssueId())
 					.getUpStreamForId(issueEntity.getParentIssueId())
 					.forEach(parentIssue ->
-							 {
-								 parentIssue.addAggregatedEffort(request.getBookedEffort());
+					{
+						parentIssue.addAggregatedEffort(request.getBookedEffort());
 
-								 recomputeLatestActivityOnSubIssues(parentIssue);
+						recomputeLatestActivityOnSubIssues(parentIssue);
 
-								 issueRepository.save(parentIssue);
-							 });
+						issueRepository.save(parentIssue);
+					});
 		}
-	}
-
-	public void processIssue(@NonNull final IssueId issueId)
-	{
-		final IssueEntity invoicedIssue = getById(issueId)
-				.toBuilder()
-				.status(Status.INVOICED)
-				.processed(true)
-				.invoicingErrorMsg(null)
-				.isInvoicingError(false)
-				.build();
-
-		issueRepository.save(invoicedIssue);
-	}
-
-	@NonNull
-	public IssueEntity getById(@NonNull final IssueId issueId)
-	{
-		return issueRepository.getById(issueId);
-	}
-
-	@NonNull
-	public void save(@NonNull final IssueEntity issueEntity)
-	{
-		issueRepository.save(issueEntity);
 	}
 
 	private void recomputeLatestActivityOnSubIssues(@NonNull final IssueEntity issueEntity)

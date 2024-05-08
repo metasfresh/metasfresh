@@ -22,24 +22,29 @@
 
 package de.metas.common.bpartner.v1.request;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.assertj.core.api.Assertions.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-@ExtendWith(SnapshotExtension.class)
+import lombok.NonNull;
+
 public class JsonRequestBPartnerUpsertTest
 {
-	private final ObjectMapper mapper = new ObjectMapper();
-	private Expect expect;
+	private ObjectMapper mapper = new ObjectMapper();
+	
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start();
+	}
 
 	@Test
 	public void deserialize_1() throws IOException
@@ -52,7 +57,7 @@ public class JsonRequestBPartnerUpsertTest
 		assertThat(contact.getFax()).isNull();
 		assertThat(contact.isFaxSet()).isTrue();
 
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	private JsonRequestBPartnerUpsert deserialize(@NonNull final String jsonResourceName) throws IOException

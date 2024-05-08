@@ -1,5 +1,6 @@
 package de.metas.material.event.eventbus;
 
+import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -12,6 +13,8 @@ import de.metas.material.event.MaterialEventConfiguration;
 import de.metas.material.event.MaterialEventObserver;
 import lombok.NonNull;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -67,7 +70,7 @@ public final class MetasfreshEventBusService
 			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		logger.info("Creating MaterialEventBusService for distributed event dispatching");
-		return new MetasfreshEventBusService(Type.DISTRIBUTED, materialEventConverter, eventBusFactory, materialEventObserver);
+		return new MetasfreshEventBusService(Type.REMOTE, materialEventConverter, eventBusFactory, materialEventObserver);
 	}
 
 	/**
@@ -96,12 +99,12 @@ public final class MetasfreshEventBusService
 		return eventBusFactory.getEventBus(eventBusTopic);
 	}
 
-	public void enqueueEvent(@NonNull final MaterialEvent event)
+	public void postEvent(@NonNull final MaterialEvent event, @Nullable final QueueWorkPackageId workPackageId)
 	{
 		materialEventObserver.reportEventEnqueued(event);
 
-		final Event realEvent = materialEventConverter.fromMaterialEvent(event);
-		getEventBus().enqueueEvent(realEvent);
+		final Event realEvent = materialEventConverter.fromMaterialEvent(event, workPackageId);
+		getEventBus().postEvent(realEvent);
 	}
 
 	public void subscribe(@NonNull final IEventListener internalListener)

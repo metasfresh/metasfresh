@@ -95,9 +95,6 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
-	@Getter
-	private final boolean queryIfNoFilters;
-
 	public static Builder builder()
 	{
 		return new Builder();
@@ -160,8 +157,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		rowIdsConverter = builder.getRowIdsConverter();
 
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
-
-		queryIfNoFilters = builder.queryIfNoFilters;
 	}
 
 	@Override
@@ -339,7 +334,6 @@ public class SqlViewBinding implements SqlEntityBinding
 	//
 	//
 
-	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private String _sqlTableName;
@@ -363,8 +357,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		private SqlDocumentFilterConverterDecorator sqlDocumentFilterConverterDecorator = null;
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
-
-		private boolean queryIfNoFilters = true;
 
 		private Builder()
 		{
@@ -606,12 +598,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
-			return this;
-		}
-
-		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
-		{
-			this.queryIfNoFilters = queryIfNoFilters;
 			return this;
 		}
 	}

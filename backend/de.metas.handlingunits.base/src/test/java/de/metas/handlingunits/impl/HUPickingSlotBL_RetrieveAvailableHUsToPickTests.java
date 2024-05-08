@@ -23,6 +23,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngineService;
+import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageEngine;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.storage.spi.hu.impl.HUStorageRecord_HUPart;
@@ -37,11 +38,13 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -293,6 +296,8 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	/**
 	 * Like {@link #testVhuWithTuAndLuAndPickingCandidateForLu(boolean)}, but the LU is not flagged by a picking candidate but by a {@link I_M_Source_HU}.<br>
 	 * Because of the source HU, LU shall still not be returned.
+	 *
+	 * @param onlyTopLevelHUs
 	 */
 	@Test
 	public void testVhuWithTuAndLuAndSourceHuForLu()
@@ -465,7 +470,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 			Mockito.doReturn(ImmutableList.of(storageRecord))
 					.when(storageEngine)
-					.retrieveStorageRecords(ArgumentMatchers.any(IContextAware.class), ArgumentMatchers.anyList());
+					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anyListOf(IStorageQuery.class));
 		}
 
 		final List<I_M_HU> result = new HUPickingSlotBL()

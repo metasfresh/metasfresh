@@ -6,7 +6,6 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -168,7 +167,7 @@ public class PPOrderLineRowTest
 				.product(JSONLookupValue.of(35, "product"))
 				.quantity(new Quantity(BigDecimal.TEN, uom))
 				.rowId(PPOrderLineRowId.ofIssuedOrReceivedHU(DocumentId.of(40), HuId.ofRepoId(10)))
-				.type(HUEditorRowType.TU)
+				.type(PPOrderLineType.HU_TU)
 				.topLevelHU(true)
 				.huStatus(JSONLookupValue.of(X_M_HU.HUSTATUS_Active, "Active"))
 				.build();

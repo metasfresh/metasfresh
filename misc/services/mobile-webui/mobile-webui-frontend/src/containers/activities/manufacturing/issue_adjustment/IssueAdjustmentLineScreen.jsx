@@ -8,7 +8,7 @@ import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/w
 import { issueAdjustmentScanScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
-import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
+import { buildQtyWithToleranceString } from '../issue/RawMaterialIssueLineScreen';
 
 const IssueAdjustmentLineScreen = () => {
   const {
@@ -22,7 +22,7 @@ const IssueAdjustmentLineScreen = () => {
     qtyToIssue,
     qtyToIssueMin,
     qtyToIssueMax,
-    qtyToIssueTolerance,
+    qtyToIssueTolerancePerc,
     qtyToIssueRemaining,
     qtyIssued,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
@@ -36,12 +36,7 @@ const IssueAdjustmentLineScreen = () => {
           { caption: trl('general.Product'), value: productName },
           {
             caption: trl('activities.mfg.issues.qtyToIssueTarget'),
-            value: formatQtyToHumanReadableStr({
-              qty: qtyToIssue,
-              uom,
-              tolerance: qtyToIssueTolerance,
-              precision: 999,
-            }),
+            value: buildQtyWithToleranceString({ qty: qtyToIssue, uom, tolerance: qtyToIssueTolerancePerc }),
           },
           {
             caption: trl('activities.mfg.issues.qtyToIssueTarget') + ' (min)',
@@ -82,7 +77,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueTolerance: line?.qtyToIssueTolerance,
+    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
     qtyToIssueMin: line?.qtyToIssueMin,
     qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,

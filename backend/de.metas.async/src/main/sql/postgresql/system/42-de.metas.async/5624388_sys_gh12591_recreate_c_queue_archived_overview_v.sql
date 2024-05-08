@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS dlm.c_queue_archived_overview_v;
+DROP VIEW dlm.c_queue_archived_overview_v;
 
 CREATE OR REPLACE VIEW dlm.c_queue_archived_overview_v AS
 SELECT

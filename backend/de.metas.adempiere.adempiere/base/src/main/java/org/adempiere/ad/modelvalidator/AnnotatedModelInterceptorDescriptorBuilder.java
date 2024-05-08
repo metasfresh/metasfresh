@@ -7,6 +7,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.Pointcut.PointcutBuilder;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -267,7 +268,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 				.build());
 	}
 
-	private Pointcut.PointcutBuilder preparePointcut(PointcutType type, final Method method)
+	private PointcutBuilder preparePointcut(PointcutType type, final Method method)
 	{
 		return Pointcut.builder()
 				.type(type)

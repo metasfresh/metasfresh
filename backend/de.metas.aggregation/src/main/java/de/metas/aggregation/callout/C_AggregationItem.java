@@ -26,9 +26,7 @@ package de.metas.aggregation.callout;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.column.AdColumnId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.MinimalColumnInfo;
+import org.compiere.model.I_AD_Column;
 
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -39,8 +37,6 @@ import de.metas.util.Services;
 @Callout(I_C_AggregationItem.class)
 public class C_AggregationItem
 {
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
 	@CalloutMethod(columnNames = I_C_AggregationItem.COLUMNNAME_Included_Aggregation_ID)
 	public void onIncluded_Aggregation_ID(final I_C_AggregationItem aggregationItem, final ICalloutField field)
 	{
@@ -60,14 +56,13 @@ public class C_AggregationItem
 	@CalloutMethod(columnNames = I_C_AggregationItem.COLUMNNAME_AD_Column_ID)
 	public void onAD_Column_ID(final I_C_AggregationItem aggregationItem, final ICalloutField field)
 	{
-		final AdColumnId adColumnId = AdColumnId.ofRepoIdOrNull(aggregationItem.getAD_Column_ID());
-		if (adColumnId == null)
+		if (aggregationItem.getAD_Column_ID() <= 0)
 		{
 			return;
 		}
 
 		//
-		final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(adColumnId);
+		final I_AD_Column column = aggregationItem.getAD_Column();
 		aggregationItem.setEntityType(column.getEntityType());
 	}
 

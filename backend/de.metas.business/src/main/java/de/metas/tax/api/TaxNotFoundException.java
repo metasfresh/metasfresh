@@ -24,9 +24,10 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.MLocation;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -44,14 +45,14 @@ public class TaxNotFoundException extends AdempiereException
 
 	private final OrgId orgId;
 
-	private final Instant shipDate;
+	private final LocalDate shipDate;
 	private final CountryId shipFromCountryId;
 	private final LocationId shipFromC_Location_ID;
 
 	private final CountryId shipToCountryId;
 	private final BPartnerLocationAndCaptureId shipToC_Location_ID;
 
-	private final Instant billDate;
+	private final LocalDate billDate;
 	private final CountryId billFromCountryId;
 	private final LocationId billFromC_Location_ID;
 	private final LocationId billToC_Location_ID;
@@ -92,8 +93,8 @@ public class TaxNotFoundException extends AdempiereException
 		this.orgId = orgId;
 		setParameter("orgId", orgId);
 
-		this.shipDate = shipDate != null ? shipDate.toInstant() : null;
-		setParameter("shipDate", this.shipDate);
+		this.shipDate = TimeUtil.asLocalDate(shipDate);
+		setParameter("shipDate", shipDate);
 
 		this.shipFromC_Location_ID = shipFromC_Location_ID;
 		setParameter("shipFromC_Location_ID", shipFromC_Location_ID != null ? shipFromC_Location_ID.getRepoId() : null);
@@ -105,8 +106,8 @@ public class TaxNotFoundException extends AdempiereException
 		this.shipToCountryId = shipToCountryId;
 		setParameter("shipToCountryId", shipToCountryId);
 
-		this.billDate = billDate != null? billDate.toInstant() : null;
-		setParameter("billDate", this.billDate);
+		this.billDate = TimeUtil.asLocalDate(billDate);
+		setParameter("billDate", billDate);
 		this.billFromC_Location_ID = billFromC_Location_ID;
 		setParameter("billFromC_Location_ID", billFromC_Location_ID != null ? billFromC_Location_ID.getRepoId() : null);
 		this.billFromCountryId = billFromCountryId;
@@ -155,7 +156,7 @@ public class TaxNotFoundException extends AdempiereException
 		// Ship info
 		if (shipDate != null)
 		{
-			message.append(" - ").appendADElement("ShipDate").append(": ").appendDateTime(shipDate);
+			message.append(" - ").appendADElement("ShipDate").append(": ").appendDate(shipDate);
 		}
 		if (shipFromC_Location_ID != null || shipFromCountryId != null)
 		{
@@ -177,7 +178,7 @@ public class TaxNotFoundException extends AdempiereException
 		// Bill info
 		if (billDate != null)
 		{
-			message.append(" - ").appendADElement("BillDate").append(": ").appendDateTime(billDate);
+			message.append(" - ").appendADElement("BillDate").append(": ").appendDate(billDate);
 		}
 		if (billFromC_Location_ID != null || billFromCountryId != null)
 		{

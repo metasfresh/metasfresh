@@ -24,7 +24,7 @@ package de.metas.serviceprovider.github;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
@@ -38,7 +38,7 @@ import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.github.config.GithubConfigRepository;
+
 import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -79,7 +79,6 @@ import static de.metas.serviceprovider.TestConstants.MOCK_PARENT_EXTERNAL_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PARENT_ISSUE_NO;
 import static de.metas.serviceprovider.TestConstants.MOCK_PARENT_ISSUE_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_UPDATED_AT;
 import static de.metas.serviceprovider.TestConstants.MOCK_VALUE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
@@ -93,26 +92,21 @@ public class GithubImporterServiceTest
 	private final GithubClient mockGithubClient = Mockito.mock(GithubClient.class);
 
 	private final ImportQueue<ImportIssueInfo> importIssuesQueue =
-			new ImportQueue<>(ISSUE_QUEUE_CAPACITY, IMPORT_LOG_MESSAGE_PREFIX);
+			new ImportQueue<>(ISSUE_QUEUE_CAPACITY,IMPORT_LOG_MESSAGE_PREFIX);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
 	private ExternalReferenceRepository externalReferenceRepository;
 
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
 	private final LabelService labelService = new LabelService();
 
 	private final GithubImporterService githubImporterService =
-			new GithubImporterService(importIssuesQueue,
-									  mockGithubClient,
-									  externalReferenceRepository,
-									  issueRepository,
-									  externalProjectRepository,
-									  labelService,
-									  new GithubConfigRepository(queryBL));
+			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
 	@Before
 	public void init()
 	{
@@ -220,7 +214,6 @@ public class GithubImporterServiceTest
 				.build();
 	}
 
-	@SuppressWarnings("SameParameterValue")
 	private FetchIssueByIdRequest getMockFetchIssueByIdRequest(final Integer issueNo)
 	{
 		return FetchIssueByIdRequest.builder()
@@ -257,7 +250,6 @@ public class GithubImporterServiceTest
 				.title(MOCK_NAME)
 				.labelList(labels)
 				.githubMilestone(githubMilestone)
-				.updatedAt(MOCK_UPDATED_AT)
 				.build();
 	}
 
@@ -346,7 +338,6 @@ public class GithubImporterServiceTest
 		assertEquals(childIssue.getProjectId(), MOCK_PROJECT_ID);
 		assertEquals(childIssue.getExternalProjectType(), MOCK_EXTERNAL_PROJECT_TYPE);
 		assertEquals(childIssue.getExternalParentIssueId().getId(), MOCK_PARENT_EXTERNAL_ID);
-		assertEquals(childIssue.getUpdatedAt(), MOCK_UPDATED_AT);
 
 		checkMilestoneAndLabels(childIssue);
 	}

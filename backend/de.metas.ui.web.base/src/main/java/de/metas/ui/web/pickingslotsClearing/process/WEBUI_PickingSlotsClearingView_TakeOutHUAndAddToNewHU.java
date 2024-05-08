@@ -1,5 +1,11 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
+import java.math.BigDecimal;
+
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -22,11 +28,6 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -64,9 +65,9 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 	@Param(parameterName = PARAM_M_HU_PI_ID, mandatory = true)
 	private I_M_HU_PI targetHUPI;
 	//
-	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU, mandatory = true)
-	private BigDecimal qtyCUsPerTU;
+	private static final String PARAM_QtyCU = "QtyCU";
+	@Param(parameterName = PARAM_QtyCU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -93,7 +94,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if (PARAM_QtyCUsPerTU.equals(parameter.getColumnName()))
+		if (PARAM_QtyCU.equals(parameter.getColumnName()))
 		{
 			final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
 			return retrieveQtyCU(fromHU);
@@ -107,9 +108,9 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 	@Override
 	protected String doIt() throws Exception
 	{
-		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
+		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
+			throw new FillMandatoryException(PARAM_QtyCU);
 		}
 
 		final I_M_HU fromHU = getSingleSelectedPickingSlotTopLevelHU();
@@ -121,7 +122,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 		HULoader.of(source, destination)
 				.setAllowPartialUnloads(false)
 				.setAllowPartialLoads(false)
-				.load(prepareUnloadRequest(fromHU, qtyCUsPerTU).setForceQtyAllocation(true).create());
+				.load(prepareUnloadRequest(fromHU, qtyCU).setForceQtyAllocation(true).create());
 
 		// If the source HU was destroyed, then "remove" it from picking slots
 		if (handlingUnitsBL.isDestroyedRefreshFirst(fromHU))
@@ -155,7 +156,7 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHUAndAddToNewHU
 		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(singleProductId);
 
 		final LUTUProducerDestination lutuProducerDestination = createNewHUProducer(pickingRow, targetHUPI);
-		lutuProducerDestination.addCUPerTU(singleProductId, qtyCUsPerTU, uom);
+		lutuProducerDestination.addCUPerTU(singleProductId, qtyCU, uom);
 
 		return lutuProducerDestination;
 	}

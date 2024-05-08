@@ -22,7 +22,7 @@ package de.metas.async.processor;
  * #L%
  */
 
-import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
+import de.metas.async.model.I_C_Queue_Processor;
 
 /**
  * Responsible for managing registered {@link IQueueProcessor}.
@@ -40,14 +40,14 @@ public interface IQueueProcessorsExecutor
 	 * 
 	 * @param processorDef
 	 */
-	void addQueueProcessor(QueueProcessorDescriptor processorDef);
+	void addQueueProcessor(I_C_Queue_Processor processorDef);
 
 	/**
 	 * Unregisters the {@link IQueueProcessor} for given C_Queue_Processor_ID.
 	 * 
 	 * @param queueProcessorId
 	 */
-	void removeQueueProcessor(final QueueProcessorId queueProcessorId);
+	void removeQueueProcessor(final int queueProcessorId);
 
 	/**
 	 * Stops all {@link de.metas.async.processor.impl.planner.QueueProcessorPlanner} and {@link IQueueProcessor} threads

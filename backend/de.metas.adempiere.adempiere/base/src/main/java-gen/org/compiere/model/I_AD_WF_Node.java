@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for AD_WF_Node
  *  @author metasfresh (generated) 
@@ -183,7 +184,8 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set External Process.
+	 * Set Externer Prozess.
+	 * Operation System Task
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -192,7 +194,8 @@ public interface I_AD_WF_Node
 	void setAD_Task_ID (int AD_Task_ID);
 
 	/**
-	 * Get External Process.
+	 * Get Externer Prozess.
+	 * Operation System Task
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -230,8 +233,8 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_WF_Block_ID = "AD_WF_Block_ID";
 
 	/**
-	 * Set Start Node.
-	 * Workflow Node, step or process
+	 * Set Knoten.
+	 * Workflow Node (activity), step or process
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -240,8 +243,8 @@ public interface I_AD_WF_Node
 	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
 	/**
-	 * Get Start Node.
-	 * Workflow Node, step or process
+	 * Get Knoten.
+	 * Workflow Node (activity), step or process
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -273,7 +276,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
 
 	/**
-	 * Set Workflow Responsible.
+	 * Set Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
@@ -283,7 +286,7 @@ public interface I_AD_WF_Node
 	void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
 
 	/**
-	 * Get Workflow Responsible.
+	 * Get Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
@@ -323,7 +326,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -333,7 +336,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -367,7 +370,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_AttributeName = "AttributeName";
 
 	/**
-	 * Set Attribute Value.
+	 * Set Merkmals-Wert.
 	 * Value of the Attribute
 	 *
 	 * <br>Type: String
@@ -377,7 +380,7 @@ public interface I_AD_WF_Node
 	void setAttributeValue (@Nullable java.lang.String AttributeValue);
 
 	/**
-	 * Get Attribute Value.
+	 * Get Merkmals-Wert.
 	 * Value of the Attribute
 	 *
 	 * <br>Type: String
@@ -410,32 +413,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
-
-	/**
-	 * Get Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Doc_Approval_Strategy_ID();
-
-	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
-
-	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
-
-	ModelColumn<I_AD_WF_Node, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_AD_WF_Node.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
-	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
-
-	/**
-	 * Set Cost.
+	 * Set Kosten.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -445,7 +423,7 @@ public interface I_AD_WF_Node
 	void setCost (BigDecimal Cost);
 
 	/**
-	 * Get Cost.
+	 * Get Kosten.
 	 * Cost information
 	 *
 	 * <br>Type: CostPrice
@@ -505,7 +483,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -515,7 +493,7 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * The targeted status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -663,8 +641,9 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_EMailRecipient = "EMailRecipient";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -673,8 +652,9 @@ public interface I_AD_WF_Node
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -755,7 +735,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Centrally maintained.
+	 * Set Zentral verwaltet.
 	 * Information maintained in System Element table
 	 *
 	 * <br>Type: YesNo
@@ -765,7 +745,7 @@ public interface I_AD_WF_Node
 	void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
 
 	/**
-	 * Get Centrally maintained.
+	 * Get Zentral verwaltet.
 	 * Information maintained in System Element table
 	 *
 	 * <br>Type: YesNo
@@ -929,49 +909,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
 
 	/**
-	 * Set Always available to user.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPP_AlwaysAvailableToUser (@Nullable java.lang.String PP_AlwaysAvailableToUser);
-
-	/**
-	 * Get Always available to user.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPP_AlwaysAvailableToUser();
-
-	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_AlwaysAvailableToUser = new ModelColumn<>(I_AD_WF_Node.class, "PP_AlwaysAvailableToUser", null);
-	String COLUMNNAME_PP_AlwaysAvailableToUser = "PP_AlwaysAvailableToUser";
-
-	/**
-	 * Set User Instructions.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPP_UserInstructions (@Nullable java.lang.String PP_UserInstructions);
-
-	/**
-	 * Get User Instructions.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPP_UserInstructions();
-
-	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_UserInstructions = new ModelColumn<>(I_AD_WF_Node.class, "PP_UserInstructions", null);
-	String COLUMNNAME_PP_UserInstructions = "PP_UserInstructions";
-
-	/**
-	 * Set Priority.
+	 * Set Priorität.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
 	 * <br>Type: Integer
@@ -981,7 +919,7 @@ public interface I_AD_WF_Node
 	void setPriority (int Priority);
 
 	/**
-	 * Get Priority.
+	 * Get Priorität.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
 	 * <br>Type: Integer
@@ -995,7 +933,6 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Set Queuing Time.
-	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1005,7 +942,6 @@ public interface I_AD_WF_Node
 
 	/**
 	 * Get Queuing Time.
-	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1017,7 +953,7 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Mail Template.
+	 * Set EMail-Vorlage.
 	 * Text templates for mailings
 	 *
 	 * <br>Type: TableDir
@@ -1027,7 +963,7 @@ public interface I_AD_WF_Node
 	void setR_MailText_ID (int R_MailText_ID);
 
 	/**
-	 * Get Mail Template.
+	 * Get EMail-Vorlage.
 	 * Text templates for mailings
 	 *
 	 * <br>Type: TableDir
@@ -1042,6 +978,33 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_AD_WF_Node.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set Setup Time.
@@ -1088,28 +1051,6 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SplitElement = new ModelColumn<>(I_AD_WF_Node.class, "SplitElement", null);
 	String COLUMNNAME_SplitElement = "SplitElement";
-
-	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set Start Mode.

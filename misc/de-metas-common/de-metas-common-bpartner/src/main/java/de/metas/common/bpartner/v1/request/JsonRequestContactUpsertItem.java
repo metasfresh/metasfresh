@@ -22,29 +22,31 @@
 
 package de.metas.common.bpartner.v1.request;
 
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.*;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-
 @Value
 @Builder(toBuilder = true)
-@Schema(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestContactUpsertItem
 {
-	@Schema(minLength = 1,
-			description = CONTACT_IDENTIFIER_DOC + "\n"
+	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+			value = CONTACT_IDENTIFIER_DOC + "\n"//
 					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.\n"
 					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact."
 					+ "This is deprecated and will no longer be available with v2.") //
 	@NonNull
 	final String contactIdentifier;
 
-	@Schema(description = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@ApiModelProperty(allowEmptyValue = false, //
+			position = 20, value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestContact contact;
 

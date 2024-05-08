@@ -1,347 +1,432 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for GL_Journal
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_GL_Journal 
 {
 
-	String Table_Name = "GL_Journal";
+    /** TableName=GL_Journal */
+    public static final String Table_Name = "GL_Journal";
 
-//	/** AD_Table_ID=224 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=224 */
+    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 1 - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_Client>(I_GL_Journal.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_Org>(I_GL_Journal.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Accounting Schema.
+	 * Set Buchführungs-Schema.
 	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_AcctSchema_ID (int C_AcctSchema_ID);
+	public void setC_AcctSchema_ID (int C_AcctSchema_ID);
 
 	/**
-	 * Get Accounting Schema.
+	 * Get Buchführungs-Schema.
 	 * Rules for accounting
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_AcctSchema_ID();
+	public int getC_AcctSchema_ID();
 
-	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema();
+//
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
-
-	ModelColumn<I_GL_Journal, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_GL_Journal.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
-	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+    /** Column definition for C_AcctSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_AcctSchema>(I_GL_Journal.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+    /** Column name C_AcctSchema_ID */
+    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
-	 * Set Conversiontype.
+	 * Set Kursart.
+	 * Currency Conversion Rate Type
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_ConversionType_ID (int C_ConversionType_ID);
+	public void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Conversiontype.
+	 * Get Kursart.
+	 * Currency Conversion Rate Type
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_ConversionType_ID();
+	public int getC_ConversionType_ID();
 
-	String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
+	public org.compiere.model.I_C_ConversionType getC_ConversionType();
+
+	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType);
+
+    /** Column definition for C_ConversionType_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_ConversionType> COLUMN_C_ConversionType_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_ConversionType>(I_GL_Journal.class, "C_ConversionType_ID", org.compiere.model.I_C_ConversionType.class);
+    /** Column name C_ConversionType_ID */
+    public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
 
 	/**
-	 * Set Currency.
+	 * Set Währung.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Currency_ID (int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Currency.
+	 * Get Währung.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Currency_ID();
+	public int getC_Currency_ID();
 
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_Currency>(I_GL_Journal.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Document Type.
+	 * Set Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_DocType_ID (int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Document Type.
+	 * Get Belegart.
 	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_DocType_ID();
+	public int getC_DocType_ID();
 
-	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_C_DocType>(I_GL_Journal.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Control Amount.
+	 * Set Kontrollbetrag.
 	 * If not zero, the Debit amount of the document must be equal this amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setControlAmt (@Nullable BigDecimal ControlAmt);
+	public void setControlAmt (java.math.BigDecimal ControlAmt);
 
 	/**
-	 * Get Control Amount.
+	 * Get Kontrollbetrag.
 	 * If not zero, the Debit amount of the document must be equal this amount
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getControlAmt();
+	public java.math.BigDecimal getControlAmt();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_ControlAmt = new ModelColumn<>(I_GL_Journal.class, "ControlAmt", null);
-	String COLUMNNAME_ControlAmt = "ControlAmt";
+    /** Column definition for ControlAmt */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_ControlAmt = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "ControlAmt", null);
+    /** Column name ControlAmt */
+    public static final String COLUMNNAME_ControlAmt = "ControlAmt";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Created = new ModelColumn<>(I_GL_Journal.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_User>(I_GL_Journal.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Currency Rate.
+	 * Set Wechselkurs.
+	 * Currency Conversion Rate
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCurrencyRate (BigDecimal CurrencyRate);
+	public void setCurrencyRate (java.math.BigDecimal CurrencyRate);
 
 	/**
-	 * Get Currency Rate.
+	 * Get Wechselkurs.
+	 * Currency Conversion Rate
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getCurrencyRate();
+	public java.math.BigDecimal getCurrencyRate();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_CurrencyRate = new ModelColumn<>(I_GL_Journal.class, "CurrencyRate", null);
-	String COLUMNNAME_CurrencyRate = "CurrencyRate";
+    /** Column definition for CurrencyRate */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "CurrencyRate", null);
+    /** Column name CurrencyRate */
+    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
 
 	/**
-	 * Set Accounting Date.
+	 * Set Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateAcct (java.sql.Timestamp DateAcct);
+	public void setDateAcct (java.sql.Timestamp DateAcct);
 
 	/**
-	 * Get Accounting Date.
+	 * Get Buchungsdatum.
 	 * Accounting Date
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateAcct();
+	public java.sql.Timestamp getDateAcct();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_DateAcct = new ModelColumn<>(I_GL_Journal.class, "DateAcct", null);
-	String COLUMNNAME_DateAcct = "DateAcct";
+    /** Column definition for DateAcct */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "DateAcct", null);
+    /** Column name DateAcct */
+    public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
-	 * Set Document Date.
+	 * Set Belegdatum.
+	 * Datum des Belegs
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateDoc (java.sql.Timestamp DateDoc);
+	public void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Document Date.
+	 * Get Belegdatum.
+	 * Datum des Belegs
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getDateDoc();
+	public java.sql.Timestamp getDateDoc();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_DateDoc = new ModelColumn<>(I_GL_Journal.class, "DateDoc", null);
-	String COLUMNNAME_DateDoc = "DateDoc";
+    /** Column definition for DateDoc */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "DateDoc", null);
+    /** Column name DateDoc */
+    public static final String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Description = new ModelColumn<>(I_GL_Journal.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * Set Belegverarbeitung.
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocAction (java.lang.String DocAction);
+	public void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Process Batch.
-	 * Der zukünftige Status des Belegs
+	 * Get Belegverarbeitung.
+	 * The targeted status of the document
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocAction();
+	public java.lang.String getDocAction();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_DocAction = new ModelColumn<>(I_GL_Journal.class, "DocAction", null);
-	String COLUMNNAME_DocAction = "DocAction";
+    /** Column definition for DocAction */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "DocAction", null);
+    /** Column name DocAction */
+    public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Status.
+	 * Set Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (java.lang.String DocStatus);
+	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Status.
+	 * Get Belegstatus.
+	 * The current status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocStatus();
+	public java.lang.String getDocStatus();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_DocStatus = new ModelColumn<>(I_GL_Journal.class, "DocStatus", null);
-	String COLUMNNAME_DocStatus = "DocStatus";
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Document No.
+	 * Set Beleg Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (java.lang.String DocumentNo);
+	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Document No.
+	 * Get Beleg Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDocumentNo();
+	public java.lang.String getDocumentNo();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_DocumentNo = new ModelColumn<>(I_GL_Journal.class, "DocumentNo", null);
-	String COLUMNNAME_DocumentNo = "DocumentNo";
+    /** Column definition for DocumentNo */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "DocumentNo", null);
+    /** Column name DocumentNo */
+    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
 	 * Set Budget.
@@ -351,7 +436,7 @@ public interface I_GL_Journal
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGL_Budget_ID (int GL_Budget_ID);
+	public void setGL_Budget_ID (int GL_Budget_ID);
 
 	/**
 	 * Get Budget.
@@ -361,287 +446,272 @@ public interface I_GL_Journal
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getGL_Budget_ID();
+	public int getGL_Budget_ID();
 
-	@Nullable org.compiere.model.I_GL_Budget getGL_Budget();
+	public org.compiere.model.I_GL_Budget getGL_Budget();
 
-	void setGL_Budget(@Nullable org.compiere.model.I_GL_Budget GL_Budget);
+	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget);
 
-	ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new ModelColumn<>(I_GL_Journal.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
-	String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
+    /** Column definition for GL_Budget_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Budget>(I_GL_Journal.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
+    /** Column name GL_Budget_ID */
+    public static final String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
 
 	/**
-	 * Set GL Category.
+	 * Set Hauptbuch - Kategorie.
 	 * General Ledger Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setGL_Category_ID (int GL_Category_ID);
+	public void setGL_Category_ID (int GL_Category_ID);
 
 	/**
-	 * Get GL Category.
+	 * Get Hauptbuch - Kategorie.
 	 * General Ledger Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getGL_Category_ID();
+	public int getGL_Category_ID();
 
-	org.compiere.model.I_GL_Category getGL_Category();
+	public org.compiere.model.I_GL_Category getGL_Category();
 
-	void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
+	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
 
-	ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new ModelColumn<>(I_GL_Journal.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
-	String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
-
-	/**
-	 * Set GL Journal en_US 315.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setGL_Journal_ID (int GL_Journal_ID);
+    /** Column definition for GL_Category_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Category>(I_GL_Journal.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
+    /** Column name GL_Category_ID */
+    public static final String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
 
 	/**
-	 * Get GL Journal en_US 315.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getGL_Journal_ID();
-
-	ModelColumn<I_GL_Journal, Object> COLUMN_GL_Journal_ID = new ModelColumn<>(I_GL_Journal.class, "GL_Journal_ID", null);
-	String COLUMNNAME_GL_Journal_ID = "GL_Journal_ID";
-
-	/**
-	 * Set Journal Run.
+	 * Set Journal-Lauf.
+	 * General Ledger Journal Batch
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGL_JournalBatch_ID (int GL_JournalBatch_ID);
+	public void setGL_JournalBatch_ID (int GL_JournalBatch_ID);
 
 	/**
-	 * Get Journal Run.
+	 * Get Journal-Lauf.
+	 * General Ledger Journal Batch
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getGL_JournalBatch_ID();
+	public int getGL_JournalBatch_ID();
 
-	@Nullable org.compiere.model.I_GL_JournalBatch getGL_JournalBatch();
+	public org.compiere.model.I_GL_JournalBatch getGL_JournalBatch();
 
-	void setGL_JournalBatch(@Nullable org.compiere.model.I_GL_JournalBatch GL_JournalBatch);
+	public void setGL_JournalBatch(org.compiere.model.I_GL_JournalBatch GL_JournalBatch);
 
-	ModelColumn<I_GL_Journal, org.compiere.model.I_GL_JournalBatch> COLUMN_GL_JournalBatch_ID = new ModelColumn<>(I_GL_Journal.class, "GL_JournalBatch_ID", org.compiere.model.I_GL_JournalBatch.class);
-	String COLUMNNAME_GL_JournalBatch_ID = "GL_JournalBatch_ID";
+    /** Column definition for GL_JournalBatch_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_JournalBatch> COLUMN_GL_JournalBatch_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_JournalBatch>(I_GL_Journal.class, "GL_JournalBatch_ID", org.compiere.model.I_GL_JournalBatch.class);
+    /** Column name GL_JournalBatch_ID */
+    public static final String COLUMNNAME_GL_JournalBatch_ID = "GL_JournalBatch_ID";
 
 	/**
-	 * Set Active.
+	 * Set Journal.
+	 * General Ledger Journal
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setGL_Journal_ID (int GL_Journal_ID);
+
+	/**
+	 * Get Journal.
+	 * General Ledger Journal
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getGL_Journal_ID();
+
+    /** Column definition for GL_Journal_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_GL_Journal_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "GL_Journal_ID", null);
+    /** Column name GL_Journal_ID */
+    public static final String COLUMNNAME_GL_Journal_ID = "GL_Journal_ID";
+
+	/**
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_IsActive = new ModelColumn<>(I_GL_Journal.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Approved.
+	 * Set Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsApproved (boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/**
-	 * Get Approved.
+	 * Get Freigegeben.
 	 * Indicates if this document requires approval
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isApproved();
+	public boolean isApproved();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_IsApproved = new ModelColumn<>(I_GL_Journal.class, "IsApproved", null);
-	String COLUMNNAME_IsApproved = "IsApproved";
+    /** Column definition for IsApproved */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "IsApproved", null);
+    /** Column name IsApproved */
+    public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Printed.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsPrinted (boolean IsPrinted);
+	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Printed.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPrinted();
+	public boolean isPrinted();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_IsPrinted = new ModelColumn<>(I_GL_Journal.class, "IsPrinted", null);
-	String COLUMNNAME_IsPrinted = "IsPrinted";
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
+    /** Column definition for IsPrinted */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_IsPrinted = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "IsPrinted", null);
+    /** Column name IsPrinted */
+    public static final String COLUMNNAME_IsPrinted = "IsPrinted";
 
 	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_GL_Journal, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_GL_Journal.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Posting status.
+	 * Set Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPosted (boolean Posted);
+	public void setPosted (boolean Posted);
 
 	/**
-	 * Get Posting status.
+	 * Get Verbucht.
 	 * Posting status
 	 *
-	 * <br>Type: List
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isPosted();
+	public boolean isPosted();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Posted = new ModelColumn<>(I_GL_Journal.class, "Posted", null);
-	String COLUMNNAME_Posted = "Posted";
-
-	/**
-	 * Set Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPostingError_Issue_ID (int PostingError_Issue_ID);
+    /** Column definition for Posted */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Posted = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Posted", null);
+    /** Column name Posted */
+    public static final String COLUMNNAME_Posted = "Posted";
 
 	/**
-	 * Get Posting Error.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPostingError_Issue_ID();
-
-	String COLUMNNAME_PostingError_Issue_ID = "PostingError_Issue_ID";
-
-	/**
-	 * Set Posting Type.
+	 * Set Buchungsart.
+	 * The type of posted amount for the transaction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostingType (java.lang.String PostingType);
+	public void setPostingType (java.lang.String PostingType);
 
 	/**
-	 * Get Posting Type.
+	 * Get Buchungsart.
+	 * The type of posted amount for the transaction
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPostingType();
+	public java.lang.String getPostingType();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_PostingType = new ModelColumn<>(I_GL_Journal.class, "PostingType", null);
-	String COLUMNNAME_PostingType = "PostingType";
+    /** Column definition for PostingType */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "PostingType", null);
+    /** Column name PostingType */
+    public static final String COLUMNNAME_PostingType = "PostingType";
 
 	/**
-	 * Set Processed.
+	 * Set Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessed (boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Processed.
+	 * Get Verarbeitet.
+	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessed();
+	public boolean isProcessed();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Processed = new ModelColumn<>(I_GL_Journal.class, "Processed", null);
-	String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Processed */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Processed", null);
+    /** Column name Processed */
+    public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Process Now.
+	 * Set Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProcessing (boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/**
-	 * Get Process Now.
+	 * Get Verarbeiten.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isProcessing();
+	public boolean isProcessing();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Processing = new ModelColumn<>(I_GL_Journal.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
+    /** Column definition for Processing */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Processing", null);
+    /** Column name Processing */
+    public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Reversal ID.
@@ -651,7 +721,7 @@ public interface I_GL_Journal
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setReversal_ID (int Reversal_ID);
+	public void setReversal_ID (int Reversal_ID);
 
 	/**
 	 * Get Reversal ID.
@@ -661,14 +731,16 @@ public interface I_GL_Journal
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getReversal_ID();
+	public int getReversal_ID();
 
-	@Nullable org.compiere.model.I_GL_Journal getReversal();
+	public org.compiere.model.I_GL_Journal getReversal();
 
-	void setReversal(@Nullable org.compiere.model.I_GL_Journal Reversal);
+	public void setReversal(org.compiere.model.I_GL_Journal Reversal);
 
-	ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Journal> COLUMN_Reversal_ID = new ModelColumn<>(I_GL_Journal.class, "Reversal_ID", org.compiere.model.I_GL_Journal.class);
-	String COLUMNNAME_Reversal_ID = "Reversal_ID";
+    /** Column definition for Reversal_ID */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Journal> COLUMN_Reversal_ID = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_GL_Journal>(I_GL_Journal.class, "Reversal_ID", org.compiere.model.I_GL_Journal.class);
+    /** Column name Reversal_ID */
+    public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
 	 * Set Total Credit.
@@ -678,7 +750,7 @@ public interface I_GL_Journal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTotalCr (BigDecimal TotalCr);
+	public void setTotalCr (java.math.BigDecimal TotalCr);
 
 	/**
 	 * Get Total Credit.
@@ -688,10 +760,12 @@ public interface I_GL_Journal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getTotalCr();
+	public java.math.BigDecimal getTotalCr();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_TotalCr = new ModelColumn<>(I_GL_Journal.class, "TotalCr", null);
-	String COLUMNNAME_TotalCr = "TotalCr";
+    /** Column definition for TotalCr */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_TotalCr = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "TotalCr", null);
+    /** Column name TotalCr */
+    public static final String COLUMNNAME_TotalCr = "TotalCr";
 
 	/**
 	 * Set Total Debit.
@@ -701,7 +775,7 @@ public interface I_GL_Journal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTotalDr (BigDecimal TotalDr);
+	public void setTotalDr (java.math.BigDecimal TotalDr);
 
 	/**
 	 * Get Total Debit.
@@ -711,33 +785,40 @@ public interface I_GL_Journal
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getTotalDr();
+	public java.math.BigDecimal getTotalDr();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_TotalDr = new ModelColumn<>(I_GL_Journal.class, "TotalDr", null);
-	String COLUMNNAME_TotalDr = "TotalDr";
+    /** Column definition for TotalDr */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_TotalDr = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "TotalDr", null);
+    /** Column name TotalDr */
+    public static final String COLUMNNAME_TotalDr = "TotalDr";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_GL_Journal, Object> COLUMN_Updated = new ModelColumn<>(I_GL_Journal.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_GL_Journal, Object>(I_GL_Journal.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_GL_Journal, org.compiere.model.I_AD_User>(I_GL_Journal.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

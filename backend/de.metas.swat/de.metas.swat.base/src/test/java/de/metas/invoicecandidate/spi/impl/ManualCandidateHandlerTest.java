@@ -22,6 +22,34 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_InvoiceSchedule;
+import org.compiere.model.X_C_Order;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import ch.qos.logback.classic.Level;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
@@ -29,7 +57,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -43,32 +70,6 @@ import de.metas.money.MoneyService;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.assertj.core.api.Assertions;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_InvoiceSchedule;
-import org.compiere.model.X_C_Order;
-import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.Properties;
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
 
 @Ignore
 @RunWith(SpringRunner.class)
@@ -529,9 +530,9 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		// Tests isCreditMemo. Needs to be manual and have a price actual override (which is why manualIc2 would return false)
 		manualIc1.setPriceActual_Override(new BigDecimal("-50"));
-		Assertions.assertThat(invoiceCandBL.isCreditMemo(manualIc1)).isTrue();
-		Assertions.assertThat(invoiceCandBL.isCreditMemo(manualIc2)).isFalse();
-		Assertions.assertThat(invoiceCandBL.isCreditMemo(ic1)).isFalse();
+		Assert.assertTrue(invoiceCandBL.isCreditMemo(manualIc1));
+		Assert.assertTrue(!(invoiceCandBL.isCreditMemo(manualIc2)));
+		Assert.assertTrue(!(invoiceCandBL.isCreditMemo(ic1)));
 
 		// Currently not tested. We must have an invoice rule that is in the list, but not covered in BL.
 		// ic1.setInvoiceRule_Override("Invalid rule");
@@ -785,7 +786,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 
 		final I_C_Tax tax = tax(new BigDecimal("4"));
-		docType(DocBaseType.ARInvoice, null);
+		docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
 
 		final I_AD_User user = user("1");
 		user.setC_BPartner_ID(bpartner("1").getC_BPartner_ID());

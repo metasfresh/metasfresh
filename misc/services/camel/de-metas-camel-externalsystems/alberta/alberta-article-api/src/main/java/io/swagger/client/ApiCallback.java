@@ -12,8 +12,10 @@
 
 package io.swagger.client;
 
-import java.util.List;
+import java.io.IOException;
+
 import java.util.Map;
+import java.util.List;
 
 /**
  * Callback for asynchronous API call.

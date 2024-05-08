@@ -24,7 +24,8 @@ package de.metas.common.bpartner.v1.request;
 
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -34,141 +35,151 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE
 @Getter
 @ToString
 @EqualsAndHashCode
-@Schema(description = "Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
+@ApiModel(description = "Locations can be inserted/updated, or just looked up. For lookup, metasfresh tries first the `externalId` and then the `gln`.")
 public class JsonRequestLocation
 {
-	@Schema(description = "This translates to `C_BPartner_Location.ExternalId`.\n"
+	@ApiModelProperty(position = 10, dataType = "java.lang.String", //
+			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to). "
 					+ "This is deprecated and will no longer be available with v2.")
 	private JsonExternalId externalId;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean externalIdSet;
 
-	@Schema(description = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
+	@ApiModelProperty(position = 20, //
+			value = "If not specified but required (e.g. because a new location is created), then `true` is assumed")
 	private Boolean active;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@Schema(description = "This translates to `C_BPartner_Location.Name`")
+	@ApiModelProperty(position = 30, //
+			value = "This translates to `C_BPartner_Location.Name`")
 	private String name;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
-	@Schema(description = "This translates to `C_BPartner_Location.BPartnerName`")
+	@ApiModelProperty(position = 40, //
+			value = "This translates to `C_BPartner_Location.BPartnerName`")
 	private String bpartnerName;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean bpartnerNameSet;
 
-	@Schema
+	@ApiModelProperty(position = 50)
 	private String address1;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean address1Set;
 
-	@Schema
+	@ApiModelProperty(position = 60)
 	private String address2;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean address2Set;
 
-	@Schema
+	@ApiModelProperty(position = 70)
 	private String address3;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean address3Set;
 
-	@Schema
+	@ApiModelProperty(position = 80)
 	private String address4;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean address4Set;
 
-	@Schema
+	@ApiModelProperty(position = 90)
 	private String poBox;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean poBoxSet;
 
-	@Schema(description = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
+	@ApiModelProperty(position = 100, //
+			value = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
 					+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
 					+ "* countryCode\n"
 					+ "* city\n"
 					+ "* region\n")
 	private String postal;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean postalSet;
 
-	@Schema
+	@ApiModelProperty(position = 110)
 	private String city;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean citySet;
 
-	@Schema(description = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
+	@ApiModelProperty(position = 120, //
+			value = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
 					+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
 	private String district;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean districtSet;
 
-	@Schema
+	@ApiModelProperty(position = 130)
 	private String region;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean regionSet;
 
-	@Schema
+	@ApiModelProperty(position = 140)
 	private String countryCode;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean countryCodeSet;
 
-	@Schema(description = "This translates to `C_BPartner_Location.GLN`")
+	@ApiModelProperty(position = 150, //
+			value = "This translates to `C_BPartner_Location.GLN`")
 	private String gln;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean glnSet;
 
-	@Schema
+	@ApiModelProperty(position = 160)
 	private Boolean shipTo;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean shipToSet;
 
-	@Schema(description = "Only one location per request may have `shipToDefault == true`.\n"
+	@ApiModelProperty(position = 170, //
+			value = "Only one location per request may have `shipToDefault == true`.\n"
 					+ "If `true`, then " //
 					+ "* `shipTo` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh location might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	private Boolean shipToDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean shipToDefaultSet;
 
-	@Schema
+	@ApiModelProperty(position = 180)
 	private Boolean billTo;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean billToSet;
 
-	@Schema(description = "Only one location per request may have `billToDefault == true`.\n"
+	@ApiModelProperty(position = 190, //
+			value = "Only one location per request may have `billToDefault == true`.\n"
 					+ "If `true`, then " //
 					+ "* `billTo` is always be assumed to be `true` as well"
 					+ "* another possibly exiting metasfresh location might be set to `billToDefault = false`, even if it is not specified in this request.")
 	private Boolean billToDefault;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
-	@Schema(description = "Sync advise about this location's individual properties.\n"
+	@ApiModelProperty(position = 200, // shall be last
+			value = "Sync advise about this location's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
 
-	@Schema(hidden = true)
+	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
 	public void setExternalId(final JsonExternalId externalId)

@@ -19,8 +19,6 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-import javax.annotation.Nullable;
-
 /**
  * Validation rule used to filter out attribute handler {@link I_AD_JavaClass}es which are not compatible with current {@link I_M_Attribute}.
  *
@@ -74,7 +72,10 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 			// generator shall have the same type as our attribute
 			final IAttributeValueGenerator generator = (IAttributeValueGenerator)handler;
 			final String generatorAcceptsValueType = generator.getAttributeValueType();
-			return generatorAcceptsValueType == null || valueType.equals(generatorAcceptsValueType);
+			if (generatorAcceptsValueType != null && !valueType.equals(generatorAcceptsValueType))
+			{
+				return false;
+			}
 		}
 
 		//
@@ -83,7 +84,7 @@ public class AttributeGeneratorValidationRule extends AbstractJavaValidationRule
 	}
 
 	@Override
-	public Set<String> getParameters(@Nullable final String contextTableName)
+	public Set<String> getParameters()
 	{
 		return PARAMETERS;
 	}

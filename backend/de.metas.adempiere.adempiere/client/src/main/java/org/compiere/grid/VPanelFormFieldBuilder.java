@@ -22,8 +22,12 @@ package org.compiere.grid;
  * #L%
  */
 
-import de.metas.util.Check;
-import de.metas.util.Services;
+
+import java.awt.event.ActionListener;
+import java.beans.VetoableChangeListener;
+import java.util.EventListener;
+
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,16 +40,14 @@ import org.compiere.model.GridFieldVO;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import java.awt.event.ActionListener;
-import java.beans.VetoableChangeListener;
-import java.util.EventListener;
-import java.util.Objects;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Creates and adds a new form field to {@link VPanel}.
- * <p>
+ * 
  * To start adding a new form field, please call {@link VPanel#newFormField()}.
- * <p>
+ * 
  * When you are done, call {@link #add()} and your field will be added to {@link VPanel}.
  * 
  * @author tsa
@@ -57,6 +59,7 @@ public final class VPanelFormFieldBuilder
 	private int displayType;
 	private String header;
 	private String columnName;
+	private int displayLength = 0;
 	private boolean readOnly = false;
 
 	public static final boolean DEFAULT_SameLine = true; // default=true, there is business logic which depends on this
@@ -90,7 +93,7 @@ public final class VPanelFormFieldBuilder
 		final GridFieldVO fieldVO = GridFieldVO.createStdField(Env.getCtx(),
 				windowNo,
 				0, // TabNo
-				null, // AD_Window_ID
+				(AdWindowId)null, // AD_Window_ID
 				0, // AD_Tab_ID
 				false, // tabReadOnly
 				true, // applyRolePermissions
@@ -108,9 +111,8 @@ public final class VPanelFormFieldBuilder
 		fieldVO.setMandatory(isMandatory());
 		fieldVO.setAutocomplete(isAutocomplete());
 		fieldVO.setDisplayType(getDisplayType());
-		fieldVO.setAD_Reference_Value_ID(null); // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);
+		fieldVO.setAD_Reference_Value_ID(0); // otherwise buttons with Column_ID = 0 cause errors in VEditorFactory.getEditor(field, false);
 		fieldVO.setAD_Column_ID(getAD_Column_ID());
-		int displayLength = 0;
 		layoutConstraints.setDisplayLength(displayLength);
 		fieldVO.setIsReadOnly(readOnly);
 		if (fieldVO.getAD_Column_ID() > 0)
@@ -137,7 +139,7 @@ public final class VPanelFormFieldBuilder
 		if (bindEditorToModel)
 		{
 			editor.addVetoableChangeListener(evt -> {
-				if (!Objects.equals(field.getColumnName(), evt.getPropertyName()))
+				if (!Check.equals(field.getColumnName(), evt.getPropertyName()))
 				{
 					return;
 				}
@@ -238,7 +240,7 @@ public final class VPanelFormFieldBuilder
 	/**
 	 * Default: {@link #DEFAULT_SameLine}
 	 * 
-	 * @param sameLine If true, the new Field will be added in the same line.
+	 * @param sameline If true, the new Field will be added in the same line.
 	 */
 	public VPanelFormFieldBuilder setSameLine(boolean sameLine)
 	{
@@ -322,6 +324,12 @@ public final class VPanelFormFieldBuilder
 	public VPanelFormFieldBuilder setBindEditorToModel(boolean bindEditorToModel)
 	{
 		this.bindEditorToModel = bindEditorToModel;
+		return this;
+	}
+
+	public VPanelFormFieldBuilder setDisplayLength(int displayLength)
+	{
+		this.displayLength = displayLength;
 		return this;
 	}
 

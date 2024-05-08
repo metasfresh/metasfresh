@@ -15,7 +15,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +56,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = DocumentAttachmentsRestController.ENDPOINT)
-@FieldDefaults(makeFinal = true)
 public class DocumentAttachmentsRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/attachments";
@@ -178,16 +176,10 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
-		final DocumentId entryId = DocumentId.of(entryIdStr.toUpperCase());
+		final DocumentId entryId = DocumentId.of(entryIdStr);
 		final IDocumentAttachmentEntry entry = getDocumentAttachments(windowIdStr, documentId)
 				.getEntry(entryId);
 
-		return toResponseBody(entry);
-	}
-
-	@NonNull
-	private static ResponseEntity<StreamingResponseBody> toResponseBody(@NonNull final IDocumentAttachmentEntry entry)
-	{
 		final AttachmentEntryType type = entry.getType();
 		switch (type)
 		{

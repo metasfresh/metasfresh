@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.core.authorization;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
@@ -35,8 +36,6 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 import static de.metas.camel.externalsystems.core.CoreConstants.CUSTOM_FROM_MF_ROUTE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -82,7 +81,7 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 				.process(this::processCustomMessage);
 	}
 
-	private void processCustomMessage(@NonNull final Exchange exchange) throws IOException
+	private void processCustomMessage(@NonNull final Exchange exchange) throws JsonProcessingException
 	{
 		final JsonExternalSystemMessage message = exchange.getIn().getBody(JsonExternalSystemMessage.class);
 
@@ -98,7 +97,7 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 		}
 	}
 
-	private void handleAuthorizationMessage(@NonNull final JsonExternalSystemMessage authorizationMessage) throws IOException
+	private void handleAuthorizationMessage(@NonNull final JsonExternalSystemMessage authorizationMessage) throws JsonProcessingException
 	{
 		final JsonExternalSystemMessagePayload messagePayload = JsonObjectMapperHolder.sharedJsonObjectMapper()
 				.readValue(authorizationMessage.getPayload(), JsonExternalSystemMessagePayload.class);

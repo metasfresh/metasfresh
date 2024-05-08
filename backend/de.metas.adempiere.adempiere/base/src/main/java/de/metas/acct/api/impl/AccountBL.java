@@ -31,33 +31,28 @@ import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAccountDimensionValidator;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.sales_region.SalesRegion;
-import de.metas.sales_region.SalesRegionId;
-import de.metas.sales_region.SalesRegionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_SectionCode;
 import org.slf4j.Logger;
 
 public class AccountBL implements IAccountBL
 {
 	private static final Logger log = LogManager.getLogger(AccountBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
@@ -87,7 +82,7 @@ public class AccountBL implements IAccountBL
 				continue;
 			}
 
-			String segmentCombination = SEGMENT_COMBINATION_NA;        // not defined
+			String segmentCombination = SEGMENT_COMBINATION_NA;		// not defined
 			String segmentDescription = SEGMENT_DESCRIPTION_NA;
 
 			final AcctSchemaElementType elementType = element.getElementType();
@@ -95,10 +90,9 @@ public class AccountBL implements IAccountBL
 
 			if (AcctSchemaElementType.Organization.equals(elementType))
 			{
-				final OrgId orgId = OrgId.ofRepoIdOrAny(account.getAD_Org_ID());
-				if (orgId.isRegular())
+				if (account.getAD_Org_ID() > 0)
 				{
-					final I_AD_Org org = orgDAO.getById(orgId);
+					final I_AD_Org org = account.getAD_Org();
 					segmentCombination = org.getValue();
 					segmentDescription = org.getName();
 				}
@@ -204,13 +198,11 @@ public class AccountBL implements IAccountBL
 			}
 			else if (AcctSchemaElementType.SalesRegion.equals(elementType))
 			{
-				final SalesRegionId salesRegionId = SalesRegionId.ofRepoIdOrNull(account.getC_SalesRegion_ID());
-				if (salesRegionId != null)
+				if (account.getC_SalesRegion_ID() > 0)
 				{
-					final SalesRegionService salesRegionService = SpringContextHolder.instance.getBean(SalesRegionService.class);
-					final SalesRegion salesRegion = salesRegionService.getById(salesRegionId);
-					segmentCombination = salesRegion.getValue();
-					segmentDescription = salesRegion.getName();
+					final I_C_SalesRegion loc = account.getC_SalesRegion();
+					segmentCombination = loc.getValue();
+					segmentDescription = loc.getName();
 				}
 				else if (element.isMandatory())
 				{
@@ -222,9 +214,9 @@ public class AccountBL implements IAccountBL
 			{
 				if (account.getC_Project_ID() > 0)
 				{
-					// final I_C_Project project = account.getC_Project();
-					// segmentCombination = project.getValue();
-					// segmentDescription = project.getName();
+					final I_C_Project project = account.getC_Project();
+					segmentCombination = project.getValue();
+					segmentDescription = project.getName();
 				}
 				else if (element.isMandatory())
 				{
@@ -257,33 +249,6 @@ public class AccountBL implements IAccountBL
 				else if (element.isMandatory())
 				{
 					log.warn("Mandatory Element missing: Campaign");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SalesOrder.equals(elementType))
-			{
-				if (account.getC_OrderSO_ID() > 0)
-				{
-					final I_C_Order order = account.getC_OrderSO();
-					segmentCombination = order.getDocumentNo();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: C_Order_ID");
-					fullyQualified = false;
-				}
-			}
-			else if (AcctSchemaElementType.SectionCode.equals(elementType))
-			{
-				if (account.getM_SectionCode_ID() > 0)
-				{
-					final I_M_SectionCode sectionCode = account.getM_SectionCode();
-					segmentCombination = sectionCode.getValue();
-					segmentDescription = sectionCode.getName();
-				}
-				else if (element.isMandatory())
-				{
-					log.warn("Mandatory Element missing: C_Order_ID");
 					fullyQualified = false;
 				}
 			}
@@ -338,7 +303,7 @@ public class AccountBL implements IAccountBL
 		{
 			account.setIsFullyQualified(fullyQualified);
 		}
-	}    // setValueDescription
+	}	// setValueDescription
 
 	@Override
 	public void validate(final I_C_ValidCombination account)

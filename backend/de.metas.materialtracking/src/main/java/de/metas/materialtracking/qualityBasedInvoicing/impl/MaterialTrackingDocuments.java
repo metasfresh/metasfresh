@@ -32,6 +32,7 @@ import java.util.Set;
 
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.impl.PricingBL;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;

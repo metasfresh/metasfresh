@@ -1,19 +1,20 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.util.Optional;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_MailBox;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
 import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_MailBox;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -70,7 +71,7 @@ public class DerKurierShipperConfigRepository
 				.firstOnly(I_DerKurier_Shipper_Config.class);
 		if (shipperConfigRecord == null)
 		{
-			return Optional.empty();
+			Optional.empty();
 		}
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()

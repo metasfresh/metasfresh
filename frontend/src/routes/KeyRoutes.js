@@ -89,18 +89,17 @@ BoardRoute.propTypes = {
  */
 const RawMasterWindowRoute = (props) => {
   const dispatch = useDispatch();
-  const {
-    match: { params: matchParams },
-    location: { search: urlSearchParams },
-  } = props;
-
-  const { windowId, docId } = matchParams;
+  const { match } = props;
 
   useEffect(() => {
-    dispatch(createWindow({ windowId, docId, urlSearchParams }));
-  }, [windowId, docId, urlSearchParams]);
+    const {
+      match: { params },
+    } = props;
 
-  return <MasterWindow {...props} params={matchParams} />;
+    dispatch(createWindow({ windowId: params.windowId, docId: params.docId }));
+  }, [match]);
+
+  return <MasterWindow {...props} params={match.params} />;
 };
 
 RawMasterWindowRoute.propTypes = {

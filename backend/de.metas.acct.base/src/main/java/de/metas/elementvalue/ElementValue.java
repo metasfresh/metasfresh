@@ -42,8 +42,7 @@ public class ElementValue
 	@NonNull String value;
 	@NonNull String name;
 	@NonNull String accountSign;
-	@NonNull AccountType accountType;
-	boolean isActive;
+	@NonNull String accountType;
 	boolean isSummary;
 	boolean isDocControlled;
 	boolean isPostActual;
@@ -52,9 +51,4 @@ public class ElementValue
 	@Nullable ElementValueId parentId;
 	int seqNo;
 	@Nullable String defaultAccountName;
-	boolean isOpenItem;
-
-	public String toShortString() {return value + "_" + name;}
-
-	public boolean isBalanceSheet() {return accountType.isBalanceSheet();}
 }

@@ -15,7 +15,7 @@ SELECT NULL::numeric                     AS ad_org_id,
        NULL::numeric                     AS c_payment_id,
        NULL::numeric                     AS c_bpartner_id,
        NULL::character varying           AS DocumentNo,
-       NULL::timestamp WITH TIME ZONE    AS paymentdate,
+       NULL::timestamp WITHOUT TIME ZONE AS paymentdate,
        NULL::timestamp WITHOUT TIME ZONE AS dateacct, -- task 09643: separate transaction date form accounting date
        NULL::numeric                     AS C_Currency_ID,
        NULL::character(3)                AS currency_code,
@@ -51,7 +51,7 @@ SELECT p.AD_Org_ID,
        p.c_currency_id                  AS C_Currency_ID,
        c.ISO_Code                       AS currency_code,
        p.PayAmt                         AS payAmt,
-       paymentavailable(p.C_Payment_ID) AS openAmt,
+       paymentAvailable(p.C_Payment_ID) AS openAmt,
        p.MultiplierAP::numeric          AS multiplierAP,
        p.C_ConversionType_ID            AS C_ConversionType_ID,
        p.source_currency_id             AS FixedConversion_SourceCurrency_ID,
@@ -68,7 +68,6 @@ WHERE (
   AND p.Processed = 'Y'
   AND p.C_Charge_ID IS NULL
   AND ($2 IS NULL OR $2 = 0 OR p.AD_Org_ID = $2)
-  AND paymentavailable(p.C_Payment_ID) != 0
 ORDER BY p.DateTrx, p.DocumentNo
     ;
 $BODY$

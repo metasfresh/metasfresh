@@ -62,7 +62,6 @@ import de.metas.rest_api.v2.externlasystem.dto.InvokeExternalSystemProcessReques
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
@@ -80,7 +79,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 @Service
 public class ExternalSystemService
 {
-	private static final Logger logger = LogManager.getLogger(ExternalSystemService.class);
+	private static final transient Logger logger = LogManager.getLogger(ExternalSystemService.class);
 	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -116,7 +115,12 @@ public class ExternalSystemService
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
 	{
-		final ExternalSystemParentConfig externalSystemParentConfig = getExternalSystemParentConfigFor(invokeExternalSystemProcessRequest);
+		final ExternalSystemParentConfig externalSystemParentConfig =
+				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
+														   invokeExternalSystemProcessRequest.getChildSystemConfigValue())
+				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
+						.appendParametersToMessage()
+						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
 
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(invokeExternalSystemProcessRequest
 																							.getExternalSystemType()
@@ -170,7 +174,8 @@ public class ExternalSystemService
 		{
 			final List<ProcessInfoLog> processInfoLogList = request.getLogs()
 					.stream()
-					.map(ExternalSystemService::extractProcessLogInfo)
+					.map(JsonPInstanceLog::getMessage)
+					.map(ProcessInfoLog::ofMessage)
 					.collect(Collectors.toList());
 
 			instanceDAO.saveProcessInfoLogs(pInstanceId, processInfoLogList);
@@ -282,25 +287,5 @@ public class ExternalSystemService
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
-	}
-
-	@NonNull
-	private ExternalSystemParentConfig getExternalSystemParentConfigFor(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
-	{
-		return externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
-														  invokeExternalSystemProcessRequest.getChildSystemConfigValue())
-				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
-						.appendParametersToMessage()
-						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
-	}
-
-	@NonNull
-	private static ProcessInfoLog extractProcessLogInfo(@NonNull final JsonPInstanceLog pInstanceLog)
-	{
-		final TableRecordReference tableRecordReference = Optional.ofNullable(pInstanceLog.getTableRecordReference())
-				.map(jsonRecordRef -> TableRecordReference.of(jsonRecordRef.getTableName(), jsonRecordRef.getRecordId().getValue()))
-				.orElse(null);
-
-		return ProcessInfoLog.ofMessageAndTableReference(pInstanceLog.getMessage(), tableRecordReference, ITrx.TRXNAME_None);
 	}
 }

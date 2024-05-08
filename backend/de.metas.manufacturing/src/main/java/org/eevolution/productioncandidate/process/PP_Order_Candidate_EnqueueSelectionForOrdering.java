@@ -26,7 +26,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
@@ -41,29 +40,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
-import org.eevolution.productioncandidate.async.EnqueuePPOrderCandidateRequest;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 
 import java.math.BigDecimal;
 
 public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess implements IProcessPrecondition
 {
-	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
-
-	private static final String PARAM_COMPLETE_DOCUMENT = "IsDocComplete";
-	@Param(parameterName = PARAM_COMPLETE_DOCUMENT)
-	private Boolean isDocComplete;
-
-	private static final String PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "AutoProcessCandidatesAfterProduction";
-	@Param(parameterName = PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION)
-	private boolean autoProcessCandidatesAfterProduction;
-
-	private static final String PARAM_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION = "AutoCloseCandidatesAfterProduction";
-	@Param(parameterName = PARAM_AUTO_CLOSE_CANDIDATES_AFTER_PRODUCTION)
-	private boolean autoCloseCandidatesAfterProduction;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -81,15 +66,8 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 
-		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
-				.adPInstanceId(pinstanceId)
-				.ctx(Env.getCtx())
-				.isCompleteDocOverride(isDocComplete)
-				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
-				.autoCloseCandidatesAfterProduction(autoCloseCandidatesAfterProduction)
-				.build();
-
-		ppOrderCandidateEnqueuer.enqueueSelection(enqueuePPOrderCandidateRequest);
+		ppOrderCandidateEnqueuer
+				.enqueueSelection(pinstanceId, getCtx());
 
 		return MSG_OK;
 	}
@@ -104,7 +82,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		}
 	}
 
-	protected int createSelection()
+	private int createSelection()
 	{
 		final IQueryBuilder<I_PP_Order_Candidate> queryBuilder = createOCQueryBuilder();
 
@@ -120,7 +98,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 				.createSelection(adPInstanceId);
 	}
 
-	protected IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
+	private IQueryBuilder<I_PP_Order_Candidate> createOCQueryBuilder()
 	{
 		final IQueryFilter<I_PP_Order_Candidate> userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
 
@@ -136,7 +114,6 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 				.addCompareFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
-				.orderBy(I_PP_Order_Candidate.COLUMNNAME_SeqNo)
-				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID);
+				.addOnlyContextClient();
 	}
 }

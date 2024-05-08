@@ -49,7 +49,7 @@ public class C_Order_AutoProcess_Async
 {
 	private static final Logger logger = LogManager.getLogger(C_Order_AutoProcess_Async.class);
 
-	public final static String SYS_Config_AUTO_SHIP_AND_INVOICE = "AUTO_SHIP_AND_INVOICE";
+	private final static String SYS_Config_AUTO_SHIP_AND_INVOICE = "AUTO_SHIP_AND_INVOICE";
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -68,12 +68,9 @@ public class C_Order_AutoProcess_Async
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createMissingShipmentSchedules(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isSOTrx())
-		{
-			trxManager
-					.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
-					.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
-		}
+		trxManager
+				.getTrxListenerManager(InterfaceWrapperHelper.getTrxName(orderRecord))
+				.runAfterCommit(() -> enqueueGenerateSchedulesAfterCommit(orderRecord));
 	}
 
 	private void enqueueGenerateSchedulesAfterCommit(@NonNull final I_C_Order orderRecord)

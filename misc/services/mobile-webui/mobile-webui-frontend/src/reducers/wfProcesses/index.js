@@ -1,4 +1,6 @@
 import { produce } from 'immer';
+
+import { NOT_STARTED } from '../../constants/CompleteStatus';
 import { workflowReducer } from './workflow';
 import { scanReducer } from './scan';
 import { activityUserConfirmationReducer } from './confirmation';
@@ -8,7 +10,6 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
-import { toQRCodeString } from '../../utils/qrCode/hu';
 
 export const getWfProcess = (globalState, wfProcessId) => {
   if (!wfProcessId) {
@@ -33,39 +34,26 @@ export const getActivitiesInOrder = (wfProcess) => {
   return activityIdsInOrder.map((activityId) => activitiesById[activityId]);
 };
 
-export const getFirstActivityByComponentType = ({ state, wfProcessId, componentType }) => {
-  const wfProcess = getWfProcess(state, wfProcessId);
-  const activityIdsInOrder = wfProcess.activityIdsInOrder ?? [];
-  const activitiesById = wfProcess.activities ?? {};
-  for (const activityId of activityIdsInOrder) {
-    const activity = activitiesById[activityId];
-    if (activity?.componentType === componentType) {
-      return activity;
+export const isWorkflowNotStarted = (wfProcess) => {
+  const activitiesById = wfProcess?.activities ?? {};
+  const activities = Object.values(activitiesById);
+
+  for (let i = 0; i < activities.length; i += 1) {
+    const activityStatus = activities[i].dataStored.completeStatus;
+    if (activityStatus !== NOT_STARTED) {
+      return false;
     }
   }
 
-  return null;
+  return true;
 };
 
 export const getActivityById = (state, wfProcessId, activityId) => {
-  const wfProcess = getWfProcess(state, wfProcessId);
-  return getActivityByIdFromWFProcess(wfProcess, activityId);
-};
-
-export const getActivityByIdFromWFProcess = (wfProcess, activityId) => {
-  return wfProcess?.activities?.[activityId] ?? {};
+  return getWfProcess(state, wfProcessId)?.activities?.[activityId];
 };
 
 export const getLineByIdFromActivity = (activity, lineId) => {
-  return getLinesFromActivity(activity)[lineId];
-};
-
-export const getLinesArrayFromActivity = (activity) => {
-  return Object.values(activity?.dataStored?.lines ?? {});
-};
-
-const getLinesFromActivity = (activity) => {
-  return activity?.dataStored?.lines ?? {};
+  return activity?.dataStored?.lines?.[lineId];
 };
 
 export const getLineByIdFromWFProcess = (wfProcess, activityId, lineId) => {
@@ -90,29 +78,12 @@ export const getSteps = (state, wfProcessId, activityId, lineId) => {
 
 export const getStepById = (state, wfProcessId, activityId, lineId, stepId) => {
   const line = getLineById(state, wfProcessId, activityId, lineId);
-  return getStepByIdFromLine(line, stepId);
+  return line?.steps?.[stepId];
 };
 
 export const getStepByIdFromActivity = (activity, lineId, stepId) => {
   const line = getLineByIdFromActivity(activity, lineId);
-  return getStepByIdFromLine(line, stepId);
-};
-
-export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
-};
-
-export const getNonIssuedStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
-  const qrCodeNorm = toQRCodeString(qrCode);
-  const line = getLineByIdFromActivity(activity, lineId);
-  const steps = getStepsArrayFromLine(line);
-  return steps.filter((step) => !isStepIssued(step)).find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
-};
-
-export const getNonIssuedStepByHuIdFromActivity = (activity, lineId, huId) => {
-  const line = getLineByIdFromActivity(activity, lineId);
-  const steps = getStepsArrayFromLine(line);
-  return steps.filter((step) => !isStepIssued(step)).find((step) => step.huId === huId);
 };
 
 export const getQtyRejectedReasonsFromActivity = (activity) => {
@@ -122,8 +93,6 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
 export const getScaleDeviceFromActivity = (activity) => {
   return activity?.dataStored?.scaleDevice;
 };
-
-const isStepIssued = (step) => step.qtyIssued > 0 || step.qtyRejected > 0;
 
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });

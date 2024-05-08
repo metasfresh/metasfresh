@@ -29,7 +29,7 @@ SELECT COALESCE(dt_trl.printname, dt.PrintName)                                 
        doc.GrandTotal - doc.PaidAmt                                                         AS openamt,
        dl.amt                                                                               AS FeeAmt,
        invoiceopen(dc.Record_ID, 0::numeric) + dl.amt                                       AS totalamt,
-       doc.DueDate AS DueDate,
+       paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp WITH TIME ZONE) AS DueDate,
        dc.DaysDue
 FROM C_DunningDoc dd
          LEFT JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID
@@ -44,8 +44,7 @@ FROM C_DunningDoc dd
                 COALESCE(i.DateInvoiced, o.DateOrdered)                                                  AS DocumentDate,
                 COALESCE(i.C_Doctype_ID, o.C_Doctype_ID)                                                 AS C_Doctype_ID,
                 COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID)                                         AS C_PaymentTerm_ID,
-                COALESCE(i.GrandTotal, o.GrandTotal)                                                     AS GrandTotal,
-                i.DueDate
+                COALESCE(i.GrandTotal, o.GrandTotal)                                                     AS GrandTotal
          FROM C_Dunning_Candidate sub_dc
                   LEFT JOIN C_Invoice_v i ON sub_dc.Record_ID = i.C_Invoice_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y') AND i.isActive = 'Y'
                   LEFT JOIN C_Order o ON sub_dc.Record_ID = o.C_Order_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order' AND isActive = 'Y') AND o.isActive = 'Y'

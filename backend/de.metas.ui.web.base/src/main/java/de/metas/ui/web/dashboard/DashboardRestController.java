@@ -26,11 +26,11 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import de.metas.websocket.producers.WebSocketProducersRegistry;
 import de.metas.websocket.sender.WebsocketSender;
-import io.swagger.v3.oas.annotations.Parameter;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -89,8 +89,7 @@ public class DashboardRestController
 			@NonNull final UserDashboardRepository dashboardRepo,
 			@NonNull final UserDashboardDataService dashboardDataService,
 			@NonNull final WebSocketProducersRegistry websocketProducersRegistry,
-			@NonNull final WebsocketSender websocketSender,
-			@NonNull final IViewsRepository viewRepo)
+			@NonNull final WebsocketSender websocketSender, final IViewsRepository viewRepo)
 	{
 		this.userSession = userSession;
 		this.dashboardRepo = dashboardRepo;
@@ -114,10 +113,10 @@ public class DashboardRestController
 	}
 
 	@GetMapping("/kpis")
-	public JSONDashboard getKPIsDashboard() {return getJSONDashboard(DashboardWidgetType.KPI);}
+	public JSONDashboard getKPIsDashboard() { return getJSONDashboard(DashboardWidgetType.KPI); }
 
 	@GetMapping("/targetIndicators")
-	public JSONDashboard getTargetIndicatorsDashboard() {return getJSONDashboard(DashboardWidgetType.TargetIndicator);}
+	public JSONDashboard getTargetIndicatorsDashboard() { return getJSONDashboard(DashboardWidgetType.TargetIndicator); }
 
 	private JSONDashboard getJSONDashboard(@NonNull final DashboardWidgetType widgetType)
 	{
@@ -198,30 +197,28 @@ public class DashboardRestController
 
 		final Collection<KPI> kpis = dashboardRepo.getKPIsAvailableToAdd();
 
-		final KPIDataContext kpiDataContext = KPIDataContext.ofUserSession(userSession);
 		final KPIJsonOptions jsonOpts = newKPIJsonOptions();
 		return kpis.stream()
-				.map(kpi -> toJsonKPI(kpi, kpiDataContext, jsonOpts))
+				.map(kpi -> toJsonKPI(kpi, jsonOpts))
 				.sorted(Comparator.comparing(JsonKPI::getCaption))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : Integer.MAX_VALUE)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Nullable
-	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIDataContext kpiDataContext, @NonNull final KPIJsonOptions jsonOpts)
+	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIJsonOptions jsonOpts)
 	{
-		KPIDataResult sampleData = null;
+		KPIDataResult data = null;
 		try
 		{
-			sampleData = dashboardDataService.getKPIData(kpi.getId(), kpiDataContext);
+			data = dashboardDataService.getKPIData(kpi.getId());
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching sample data for {}, context={}", kpi, kpiDataContext, ex);
+			logger.warn("Failed fetching sample data for {}", kpi, ex);
 		}
 
-		return JsonKPI.of(kpi, sampleData, jsonOpts);
+		return JsonKPI.of(kpi, data, jsonOpts);
 	}
 
 	@PostMapping("/kpis/new")
@@ -262,9 +259,9 @@ public class DashboardRestController
 	@GetMapping("/kpis/{itemId}/data")
 	public JsonKPIDataResult getKPIData(
 			@PathVariable("itemId") final int itemId,
-			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage start, in case ofValueAndField temporal data") final long fromMillis,
-			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage end, in case ofValueAndField temporal data") final long toMillis,
-			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @Parameter(description = "if true, the server will format the values") final boolean prettyValues)
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
 	{
 		return getKPIData(
 				DashboardWidgetType.KPI,
@@ -277,9 +274,9 @@ public class DashboardRestController
 	@GetMapping("/targetIndicators/{itemId}/data")
 	public JsonKPIDataResult getTargetIndicatorData(
 			@PathVariable("itemId") final int itemId,
-			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage start, in case ofValueAndField temporal data") final long fromMillis,
-			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @Parameter(description = "interval rage end, in case ofValueAndField temporal data") final long toMillis,
-			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @Parameter(description = "if true, the server will format the values") final boolean prettyValues)
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
 	{
 		return getKPIData(
 				DashboardWidgetType.TargetIndicator,
@@ -383,13 +380,13 @@ public class DashboardRestController
 		final WindowId targetWindowId = getTargetWindowId(detailsInfo);
 
 		return viewRepo.createView(CreateViewRequest.builder(targetWindowId)
-						.addStickyFilters(DocumentFilter.builder()
-								.filterId("userDashboardItem")
-								.caption(detailsInfo.getFilterCaption())
-								.addParameter(DocumentFilterParam.ofSqlWhereClause(detailsInfo.getSqlWhereClause()))
-								.build())
-						.setUseAutoFilters(true)
+				.addStickyFilters(DocumentFilter.builder()
+						.filterId("userDashboardItem")
+						.caption(detailsInfo.getFilterCaption())
+						.addParameter(DocumentFilterParam.ofSqlWhereClause(detailsInfo.getSqlWhereClause()))
 						.build())
+				.setUseAutoFilters(true)
+				.build())
 				.getViewId();
 	}
 

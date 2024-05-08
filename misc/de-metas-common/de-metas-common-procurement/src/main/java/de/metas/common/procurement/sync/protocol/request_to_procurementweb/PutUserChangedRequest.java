@@ -22,6 +22,8 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

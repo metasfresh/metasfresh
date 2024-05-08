@@ -261,7 +261,7 @@ public class ESRImportDAO implements IESRImportDAO
 		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 
 		// Use wild cards because we won't match after the bank account no (first digits) and the check digit (the last one)
-		final String esrReferenceNoToMatch = "%" + esrReferenceNumber + "%";
+		final String esrReferenceNoToMatch = "%" + esrReferenceNumber + "_";
 
 		final I_C_ReferenceNo referenceNoRecord = queryBL.createQueryBuilder(I_C_ReferenceNo.class)
 				.addOnlyActiveRecordsFilter()
@@ -384,20 +384,31 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchSimilarESRLine(@NonNull final I_ESR_ImportLine esrImportLine)
+	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText,
+			final int excludeESRImportLineID)
 	{
-		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+		if (esrImportLineText == null)
+		{
+			return Collections.emptyList();
+		}
+
+		final String strippedText = esrImportLineText.trim();
+
+		final IQueryBuilder<I_ESR_ImportLine> esrimportLineIQueryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, esrImportLine.getESR_ImportLine_ID())
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_Amount, esrImportLine.getAmount())
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_Invoice_ID, esrImportLine.getC_Invoice_ID())
-				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_PaymentDate, esrImportLine.getPaymentDate())
+				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true);
+
+		if (excludeESRImportLineID > 0)
+		{
+			esrimportLineIQueryBuilder.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, excludeESRImportLineID);
+		}
+		return esrimportLineIQueryBuilder
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}
 
 	@Override
-	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull final Set<ESRImportId> esrImportIds)
+	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(final Set<ESRImportId> esrImportIds)
 	{
 		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_ESR_ImportLine.class)
@@ -426,12 +437,7 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .build())
 				.stream().iterator();
 
-		if(!paymentIdIterator.hasNext())
-		{
-			return Optional.empty(); // no point searching ESR_ImportLines
-		}
-		
-		final List<I_ESR_ImportLine> lines = fetchSimilarESRLine(esrLine);
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
 
 		while (paymentIdIterator.hasNext())
 		{

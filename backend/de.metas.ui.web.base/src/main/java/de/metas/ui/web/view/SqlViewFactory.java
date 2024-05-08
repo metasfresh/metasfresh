@@ -212,14 +212,10 @@ public class SqlViewFactory implements IViewFactory
 		else
 		{
 			return webuiDocumentReferencesService.getDocumentReferenceFilter(
-							referencedDocumentPath,
-							targetWindowId,
-							documentReferenceId,
-							RelatedDocumentsPermissionsFactory.allowAll())
-					.orElseThrow(() -> new AdempiereException("No related documents found")
-							.setParameter("targetWindowId", targetWindowId)
-							.setParameter("referencedDocumentPath", referencedDocumentPath)
-							.setParameter("documentReferenceId", documentReferenceId));
+					referencedDocumentPath,
+					targetWindowId,
+					documentReferenceId,
+					RelatedDocumentsPermissionsFactory.allowAll());
 		}
 	}
 

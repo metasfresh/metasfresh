@@ -44,12 +44,12 @@ class DateFilterUtil
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
-				.fieldName(DateFilterVO.PARAM_Date)
-				.displayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
-				.widgetType(DocumentFieldWidgetType.LocalDate)
-				.operator(Operator.EQUAL)
-				.mandatory(true)
-				.showIncrementDecrementButtons(true);
+				.setFieldName(DateFilterVO.PARAM_Date)
+				.setDisplayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
+				.setWidgetType(DocumentFieldWidgetType.LocalDate)
+				.setOperator(Operator.EQUAL)
+				.setMandatory(true)
+				.setShowIncrementDecrementButtons(true);
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)

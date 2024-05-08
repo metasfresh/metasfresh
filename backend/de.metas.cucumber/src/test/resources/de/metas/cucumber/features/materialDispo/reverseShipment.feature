@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor6
 Feature: Shipping HUs interaction with material schedule
 
   Background:

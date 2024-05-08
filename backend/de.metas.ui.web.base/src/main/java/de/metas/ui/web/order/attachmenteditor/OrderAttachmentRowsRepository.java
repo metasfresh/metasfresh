@@ -49,16 +49,15 @@ public class OrderAttachmentRowsRepository
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
-			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.albertaPatientRepository = albertaPatientRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
-		patientLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
-		payerLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
-		pharmacyLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
+		patientLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		payerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		pharmacyLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
 	public OrderAttachmentRows getByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)

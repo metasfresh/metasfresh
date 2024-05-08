@@ -16,15 +16,18 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
+
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.tax.api.ITaxBL;
+import de.metas.util.Services;
 
 /**
  *  Tax Model
@@ -160,7 +163,23 @@ public class MTax extends X_C_Tax
 			.append(", Region=").append(getC_Region_ID()).append("|").append(getTo_Region_ID())
 			.append("]");
 		return sb.toString();
-	}
+	}	//	toString
+
+	
+	/**
+	 * 	Calculate Tax - no rounding
+	 *	@param amount amount
+	 *	@param taxIncluded if true tax is calculated from gross otherwise from net 
+	 *	@param scale scale 
+	 *	@return  tax amount
+	 *
+	 * @deprecated Please use {@link ITaxBL#calculateTax(I_C_Tax, BigDecimal, boolean, int)}
+	 */
+	@Deprecated
+	public BigDecimal calculateTax (BigDecimal amount, boolean taxIncluded, int scale)
+	{
+		return Services.get(ITaxBL.class).calculateTax(this, amount, taxIncluded, scale);
+	}	//	calculateTax
 
 	/**
 	 * 	After Save

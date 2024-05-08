@@ -1,57 +1,15 @@
 package de.metas.ui.web.bankstatement_reconciliation.actions;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineReference;
-import de.metas.banking.PaySelectionId;
-import de.metas.banking.api.BankAccountService;
-import de.metas.banking.model.validator.PaySelectionBankStatementListener;
-import de.metas.banking.payment.IBankStatementPaymentBL;
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.banking.payment.impl.BankStatementPaymentBL;
-import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
-import de.metas.banking.service.BankStatementCreateRequest;
-import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.banking.service.IBankStatementDAO;
-import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.banking.service.impl.BankStatementBL;
-import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.i18n.IMsgBL;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.money.MoneyService;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.DefaultPaymentBuilder;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.api.PaymentReconcileReference;
-import de.metas.payment.esr.api.impl.ESRImportBL;
-import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.model.X_ESR_Import;
-import de.metas.payment.esr.model.validator.ESRBankStatementListener;
-import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineAndPaymentsToReconcileRepository;
-import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineRow;
-import de.metas.ui.web.bankstatement_reconciliation.PaymentToReconcileRow;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -71,13 +29,54 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.annotation.Nullable;
-import java.time.LocalDate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.PaySelectionId;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.model.validator.PaySelectionBankStatementListener;
+import de.metas.banking.payment.IBankStatementPaymentBL;
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.banking.payment.impl.BankStatementPaymentBL;
+import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementLineCreateRequest;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.banking.service.impl.BankStatementBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.DefaultPaymentBuilder;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.esr.api.impl.ESRImportBL;
+import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_Import;
+import de.metas.payment.esr.model.validator.ESRBankStatementListener;
+import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineAndPaymentsToReconcileRepository;
+import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineRow;
+import de.metas.ui.web.bankstatement_reconciliation.PaymentToReconcileRow;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -148,12 +147,10 @@ public class ReconcilePaymentsCommandTest
 			}
 		};
 
-		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
-
-		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
+		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService);
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
-		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository, LookupDataSourceFactory.sharedInstance());
+		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
 		rowsRepo.setBpartnerLookup(new MockedBPartnerLookupDataSource());
 
 		createMasterdata();
@@ -220,7 +217,7 @@ public class ReconcilePaymentsCommandTest
 
 	@Builder(builderMethodName = "bankStatementLineRow", builderClassName = "BankStatementLineRowBuilder")
 	private BankStatementLineRow createBankStatementLineRow(
-			@NonNull final DocStatus docStatus,
+			@NonNull DocStatus docStatus,
 			@NonNull final Money statementAmt)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()

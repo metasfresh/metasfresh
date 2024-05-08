@@ -67,7 +67,7 @@ public class KPI
 	@Nullable ElasticsearchDatasourceDescriptor elasticsearchDatasource;
 	@Nullable SQLDatasourceDescriptor sqlDatasource;
 
-	// Performance tuning
+	// Performance tunning
 	@NonNull Duration allowedStaleDuration;
 
 	@Builder
@@ -201,11 +201,5 @@ public class KPI
 	public boolean isZoomToDetailsAvailable()
 	{
 		return sqlDatasource != null;
-	}
-
-	@NonNull
-	public SQLDatasourceDescriptor getSqlDatasourceNotNull()
-	{
-		return Check.assumeNotNull(getSqlDatasource(), "Not an SQL data source: {}", this);
 	}
 }

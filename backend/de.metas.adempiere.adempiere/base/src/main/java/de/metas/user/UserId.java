@@ -6,14 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -49,16 +46,11 @@ public class UserId implements RepoIdAware
 	 */
 	public static final UserId JSON_REPORTS = new UserId(540057);
 
+	@JsonCreator
 	public static UserId ofRepoId(final int repoId)
 	{
 		final UserId userId = ofRepoIdOrNull(repoId);
 		return Check.assumeNotNull(userId, "Unable to create a userId for repoId={}", repoId);
-	}
-
-	@JsonCreator
-	public static UserId ofObject(@NonNull final Object repoIdObj)
-	{
-		return RepoIdAwares.ofObject(repoIdObj, UserId.class, UserId::ofRepoId);
 	}
 
 	@Nullable
@@ -80,12 +72,6 @@ public class UserId implements RepoIdAware
 		{
 			return repoId >= 0 ? new UserId(repoId) : null;
 		}
-	}
-
-	@Nullable
-	public static UserId ofIntegerOrNull(@Nullable final Integer repoId)
-	{
-		return repoId != null && repoId > 0 ? ofRepoIdOrNull(repoId) : null;
 	}
 
 	public static UserId ofRepoIdOrSystem(final int repoId)
@@ -144,13 +130,5 @@ public class UserId implements RepoIdAware
 	public boolean isRegularUser()
 	{
 		return !isSystemUser();
-	}
-
-	public void ifRegularUser(@NonNull final Consumer<UserId> consumer)
-	{
-		if (isRegularUser())
-		{
-			consumer.accept(this);
-		}
 	}
 }

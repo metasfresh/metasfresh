@@ -1,6 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor6
-Feature: Product price validation (not attribute dependant S0144_1)
+Feature: Product price validation
 
   Background:
 #  Prerequisite:

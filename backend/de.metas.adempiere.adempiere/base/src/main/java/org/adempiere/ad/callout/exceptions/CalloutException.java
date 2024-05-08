@@ -22,7 +22,6 @@ package org.adempiere.ad.callout.exceptions;
  * #L%
  */
 
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -37,8 +36,8 @@ public class CalloutException extends AdempiereException
 	 */
 	private static final long serialVersionUID = 2766621229698377244L;
 
-	@Getter private ICalloutInstance calloutInstance = null;
-	@Getter private ICalloutExecutor calloutExecutor = null;
+	private ICalloutInstance calloutInstance = null;
+	private ICalloutExecutor calloutExecutor = null;
 
 	private ICalloutField field;
 
@@ -47,9 +46,14 @@ public class CalloutException extends AdempiereException
 		super(message, cause);
 	}
 
-	protected CalloutException(final String message)
+	public CalloutException(final String message)
 	{
 		super(message);
+	}
+
+	public CalloutException(final Throwable cause)
+	{
+		super(cause);
 	}
 
 	@Override
@@ -57,6 +61,11 @@ public class CalloutException extends AdempiereException
 	{
 		super.setParameter(name, value);
 		return this;
+	}
+
+	public ICalloutInstance getCalloutInstance()
+	{
+		return calloutInstance;
 	}
 
 	public CalloutException setCalloutInstance(final ICalloutInstance calloutInstance)
@@ -73,6 +82,11 @@ public class CalloutException extends AdempiereException
 			setCalloutInstance(calloutInstance);
 		}
 		return this;
+	}
+
+	public ICalloutExecutor getCalloutExecutor()
+	{
+		return calloutExecutor;
 	}
 
 	public CalloutException setCalloutExecutor(final ICalloutExecutor calloutExecutor)

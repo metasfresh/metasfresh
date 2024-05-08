@@ -1,4 +1,3 @@
-@ghActions:run_on_executor5
 Feature: Validate BPartner is sent to RabbitMQ
 
   Background:

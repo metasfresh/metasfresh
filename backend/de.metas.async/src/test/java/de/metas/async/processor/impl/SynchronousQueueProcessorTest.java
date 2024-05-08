@@ -10,8 +10,6 @@ import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.IWorkpackageProcessorFactory;
-import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
-import de.metas.async.processor.descriptor.model.QueueProcessorDescriptor;
 import de.metas.async.processor.impl.planner.SynchronousProcessorPlanner;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
@@ -131,9 +129,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		TestingClassInstanceProvider.instance.throwExceptionForClassName(
 				StaticMockedWorkpackageProcessor.class.getName(),
 				new ClassNotFoundException("unit test method test_WorkpackageProcessorClassNotFound("));
-
-		final QueueProcessorDescriptor queueProcessorDescriptor = QueueProcessorDescriptorRepository.mapToQueueProcessor(queueProcessorDef);
-		final IWorkPackageQueue workpackageQueueForProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDescriptor);
+		final IWorkPackageQueue workpackageQueueForProcessing = workPackageQueueFactory.getQueueForPackageProcessing(queueProcessorDef);
 
 		//
 		// Create processor and run
@@ -164,7 +160,7 @@ public class SynchronousQueueProcessorTest extends QueueProcessorTestBase
 		TestingClassInstanceProvider.instance.clearExceptionsForClassNames();
 
 		// Validate the processor. If valid (i.e. no exceptions will be thrown), the processor will be removed from blacklist
-		workpackageProcessorFactory.validateWorkpackageProcessor(QueueProcessorDescriptorRepository.mapToPackageProcessor(packageProcessor1));
+		workpackageProcessorFactory.validateWorkpackageProcessor(packageProcessor1);
 		Assert.assertFalse("Package processor " + packageProcessor1 + " shall not be blacklisted anymore",
 				workpackageProcessorFactory.isWorkpackageProcessorBlacklisted(packageProcessor1.getC_Queue_PackageProcessor_ID()));
 

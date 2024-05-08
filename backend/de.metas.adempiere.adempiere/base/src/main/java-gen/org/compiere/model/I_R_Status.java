@@ -1,500 +1,312 @@
+/******************************************************************************
+ * Product: Adempiere ERP & CRM Smart Business Solution                       *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
+ * This program is free software, you can redistribute it and/or modify it    *
+ * under the terms version 2 of the GNU General Public License as published   *
+ * by the Free Software Foundation. This program is distributed in the hope   *
+ * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
+ * See the GNU General Public License for more details.                       *
+ * You should have received a copy of the GNU General Public License along    *
+ * with this program, if not, write to the Free Software Foundation, Inc.,    *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * For the text or an alternative of this public license, you may reach us    *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
+ * or via info@compiere.org or http://www.compiere.org/license.html           *
+ *****************************************************************************/
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for R_Status
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
+ *  @version Release 3.5.4a
  */
-@SuppressWarnings("unused")
 public interface I_R_Status 
 {
 
-	String Table_Name = "R_Status";
+    /** TableName=R_Status */
+    public static final String Table_Name = "R_Status";
 
-//	/** AD_Table_ID=776 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=776 */
+    public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
+    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Client_ID();
+    /** AccessLevel = 6 - System - Client 
+     */
+    BigDecimal accessLevel = BigDecimal.valueOf(6);
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Load Meta Data */
 
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
+	/** Get Client.
+	  * Client/Tenant for this installation.
+	  */
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/**
-	 * Set CalendarColor.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCalendarColor (@Nullable java.lang.String CalendarColor);
+	/** Set Organization.
+	  * Organizational entity within client
+	  */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/**
-	 * Get CalendarColor.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCalendarColor();
+	/** Get Organization.
+	  * Organizational entity within client
+	  */
+	public int getAD_Org_ID();
 
-	ModelColumn<I_R_Status, Object> COLUMN_CalendarColor = new ModelColumn<>(I_R_Status.class, "CalendarColor", null);
-	String COLUMNNAME_CalendarColor = "CalendarColor";
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
+	/** Get Created.
+	  * Date this record was created
+	  */
+	public Timestamp getCreated();
 
-	ModelColumn<I_R_Status, Object> COLUMN_Created = new ModelColumn<>(I_R_Status.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
+	/** Get Created By.
+	  * User who created this records
+	  */
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
-	/**
-	 * Set Description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDescription (@Nullable java.lang.String Description);
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
 
-	/**
-	 * Get Description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getDescription();
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
 
-	ModelColumn<I_R_Status, Object> COLUMN_Description = new ModelColumn<>(I_R_Status.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column name Help */
+    public static final String COLUMNNAME_Help = "Help";
 
-	/**
-	 * Set Help.
-	 * Comment or Hint
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHelp (@Nullable java.lang.String Help);
+	/** Set Comment/Help.
+	  * Comment or Hint
+	  */
+	public void setHelp (String Help);
 
-	/**
-	 * Get Help.
-	 * Comment or Hint
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHelp();
+	/** Get Comment/Help.
+	  * Comment or Hint
+	  */
+	public String getHelp();
 
-	ModelColumn<I_R_Status, Object> COLUMN_Help = new ModelColumn<>(I_R_Status.class, "Help", null);
-	String COLUMNNAME_Help = "Help";
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/**
-	 * Set Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsActive (boolean IsActive);
+	/** Set Active.
+	  * The record is active in the system
+	  */
+	public void setIsActive (boolean IsActive);
 
-	/**
-	 * Get Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isActive();
+	/** Get Active.
+	  * The record is active in the system
+	  */
+	public boolean isActive();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsActive = new ModelColumn<>(I_R_Status.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column name IsClosed */
+    public static final String COLUMNNAME_IsClosed = "IsClosed";
 
-	/**
-	 * Set Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsClosed (boolean IsClosed);
+	/** Set Closed Status.
+	  * The status is closed
+	  */
+	public void setIsClosed (boolean IsClosed);
 
-	/**
-	 * Get Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isClosed();
+	/** Get Closed Status.
+	  * The status is closed
+	  */
+	public boolean isClosed();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsClosed = new ModelColumn<>(I_R_Status.class, "IsClosed", null);
-	String COLUMNNAME_IsClosed = "IsClosed";
+    /** Column name IsDefault */
+    public static final String COLUMNNAME_IsDefault = "IsDefault";
 
-	/**
-	 * Set Default.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDefault (boolean IsDefault);
+	/** Set Default.
+	  * Default value
+	  */
+	public void setIsDefault (boolean IsDefault);
 
-	/**
-	 * Get Default.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDefault();
+	/** Get Default.
+	  * Default value
+	  */
+	public boolean isDefault();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsDefault = new ModelColumn<>(I_R_Status.class, "IsDefault", null);
-	String COLUMNNAME_IsDefault = "IsDefault";
+    /** Column name IsFinalClose */
+    public static final String COLUMNNAME_IsFinalClose = "IsFinalClose";
 
-	/**
-	 * Set Final Close.
-	 * Entries with Final Close cannot be re-opened
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsFinalClose (boolean IsFinalClose);
+	/** Set Final Close.
+	  * Entries with Final Close cannot be re-opened
+	  */
+	public void setIsFinalClose (boolean IsFinalClose);
 
-	/**
-	 * Get Final Close.
-	 * Entries with Final Close cannot be re-opened
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isFinalClose();
+	/** Get Final Close.
+	  * Entries with Final Close cannot be re-opened
+	  */
+	public boolean isFinalClose();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsFinalClose = new ModelColumn<>(I_R_Status.class, "IsFinalClose", null);
-	String COLUMNNAME_IsFinalClose = "IsFinalClose";
+    /** Column name IsOpen */
+    public static final String COLUMNNAME_IsOpen = "IsOpen";
 
-	/**
-	 * Set "Offen"-Status.
-	 * The status is closed
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsOpen (boolean IsOpen);
+	/** Set Open Status.
+	  * The status is closed
+	  */
+	public void setIsOpen (boolean IsOpen);
 
-	/**
-	 * Get "Offen"-Status.
-	 * The status is closed
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isOpen();
+	/** Get Open Status.
+	  * The status is closed
+	  */
+	public boolean isOpen();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsOpen = new ModelColumn<>(I_R_Status.class, "IsOpen", null);
-	String COLUMNNAME_IsOpen = "IsOpen";
+    /** Column name IsWebCanUpdate */
+    public static final String COLUMNNAME_IsWebCanUpdate = "IsWebCanUpdate";
 
-	/**
-	 * Set Web Can Update.
-	 * Entry can be updated from the Web
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsWebCanUpdate (boolean IsWebCanUpdate);
+	/** Set Web Can Update.
+	  * Entry can be updated from the Web
+	  */
+	public void setIsWebCanUpdate (boolean IsWebCanUpdate);
 
-	/**
-	 * Get Web Can Update.
-	 * Entry can be updated from the Web
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isWebCanUpdate();
+	/** Get Web Can Update.
+	  * Entry can be updated from the Web
+	  */
+	public boolean isWebCanUpdate();
 
-	ModelColumn<I_R_Status, Object> COLUMN_IsWebCanUpdate = new ModelColumn<>(I_R_Status.class, "IsWebCanUpdate", null);
-	String COLUMNNAME_IsWebCanUpdate = "IsWebCanUpdate";
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
-	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setName (java.lang.String Name);
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public void setName (String Name);
 
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getName();
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
+	  */
+	public String getName();
 
-	ModelColumn<I_R_Status, Object> COLUMN_Name = new ModelColumn<>(I_R_Status.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column name Next_Status_ID */
+    public static final String COLUMNNAME_Next_Status_ID = "Next_Status_ID";
 
-	/**
-	 * Set Next Status.
-	 * Move to next status automatically after timeout
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setNext_Status_ID (int Next_Status_ID);
+	/** Set Next Status.
+	  * Move to next status automatically after timeout
+	  */
+	public void setNext_Status_ID (int Next_Status_ID);
 
-	/**
-	 * Get Next Status.
-	 * Move to next status automatically after timeout
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getNext_Status_ID();
+	/** Get Next Status.
+	  * Move to next status automatically after timeout
+	  */
+	public int getNext_Status_ID();
 
-	@Nullable org.compiere.model.I_R_Status getNext_Status();
+	public I_R_Status getNext_Status() throws RuntimeException;
 
-	void setNext_Status(@Nullable org.compiere.model.I_R_Status Next_Status);
+    /** Column name R_StatusCategory_ID */
+    public static final String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
 
-	ModelColumn<I_R_Status, org.compiere.model.I_R_Status> COLUMN_Next_Status_ID = new ModelColumn<>(I_R_Status.class, "Next_Status_ID", org.compiere.model.I_R_Status.class);
-	String COLUMNNAME_Next_Status_ID = "Next_Status_ID";
+	/** Set Status Category.
+	  * Request Status Category
+	  */
+	public void setR_StatusCategory_ID (int R_StatusCategory_ID);
 
-	/**
-	 * Set Status.
-	 * Request Status
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setR_Status_ID (int R_Status_ID);
+	/** Get Status Category.
+	  * Request Status Category
+	  */
+	public int getR_StatusCategory_ID();
 
-	/**
-	 * Get Status.
-	 * Request Status
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getR_Status_ID();
+	public I_R_StatusCategory getR_StatusCategory() throws RuntimeException;
 
-	ModelColumn<I_R_Status, Object> COLUMN_R_Status_ID = new ModelColumn<>(I_R_Status.class, "R_Status_ID", null);
-	String COLUMNNAME_R_Status_ID = "R_Status_ID";
+    /** Column name R_Status_ID */
+    public static final String COLUMNNAME_R_Status_ID = "R_Status_ID";
 
-	/**
-	 * Set Status-Kategorie.
-	 * Request Status Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setR_StatusCategory_ID (int R_StatusCategory_ID);
+	/** Set Status.
+	  * Request Status
+	  */
+	public void setR_Status_ID (int R_Status_ID);
 
-	/**
-	 * Get Status-Kategorie.
-	 * Request Status Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getR_StatusCategory_ID();
+	/** Get Status.
+	  * Request Status
+	  */
+	public int getR_Status_ID();
 
-	org.compiere.model.I_R_StatusCategory getR_StatusCategory();
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
 
-	void setR_StatusCategory(org.compiere.model.I_R_StatusCategory R_StatusCategory);
-
-	ModelColumn<I_R_Status, org.compiere.model.I_R_StatusCategory> COLUMN_R_StatusCategory_ID = new ModelColumn<>(I_R_Status.class, "R_StatusCategory_ID", org.compiere.model.I_R_StatusCategory.class);
-	String COLUMNNAME_R_StatusCategory_ID = "R_StatusCategory_ID";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
+	/** Set Sequence.
+	  * Method of ordering records;
  lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
+	  */
+	public void setSeqNo (int SeqNo);
 
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
+	/** Get Sequence.
+	  * Method of ordering records;
  lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
+	  */
+	public int getSeqNo();
 
-	ModelColumn<I_R_Status, Object> COLUMN_SeqNo = new ModelColumn<>(I_R_Status.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
+    /** Column name TimeoutDays */
+    public static final String COLUMNNAME_TimeoutDays = "TimeoutDays";
 
-	/**
-	 * Set Timeout in Days.
-	 * Timeout in Days to change Status automatically
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTimeoutDays (int TimeoutDays);
+	/** Set Timeout in Days.
+	  * Timeout in Days to change Status automatically
+	  */
+	public void setTimeoutDays (int TimeoutDays);
 
-	/**
-	 * Get Timeout in Days.
-	 * Timeout in Days to change Status automatically
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getTimeoutDays();
+	/** Get Timeout in Days.
+	  * Timeout in Days to change Status automatically
+	  */
+	public int getTimeoutDays();
 
-	ModelColumn<I_R_Status, Object> COLUMN_TimeoutDays = new ModelColumn<>(I_R_Status.class, "TimeoutDays", null);
-	String COLUMNNAME_TimeoutDays = "TimeoutDays";
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
-	/**
-	 * Set Update Status.
-	 * Automatically change the status after entry from web
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setUpdate_Status_ID (int Update_Status_ID);
+	/** Get Updated.
+	  * Date this record was updated
+	  */
+	public Timestamp getUpdated();
 
-	/**
-	 * Get Update Status.
-	 * Automatically change the status after entry from web
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getUpdate_Status_ID();
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	@Nullable org.compiere.model.I_R_Status getUpdate_Status();
+	/** Get Updated By.
+	  * User who updated this records
+	  */
+	public int getUpdatedBy();
 
-	void setUpdate_Status(@Nullable org.compiere.model.I_R_Status Update_Status);
+    /** Column name Update_Status_ID */
+    public static final String COLUMNNAME_Update_Status_ID = "Update_Status_ID";
 
-	ModelColumn<I_R_Status, org.compiere.model.I_R_Status> COLUMN_Update_Status_ID = new ModelColumn<>(I_R_Status.class, "Update_Status_ID", org.compiere.model.I_R_Status.class);
-	String COLUMNNAME_Update_Status_ID = "Update_Status_ID";
+	/** Set Update Status.
+	  * Automatically change the status after entry from web
+	  */
+	public void setUpdate_Status_ID (int Update_Status_ID);
 
-	/**
-	 * Get Updated.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getUpdated();
+	/** Get Update Status.
+	  * Automatically change the status after entry from web
+	  */
+	public int getUpdate_Status_ID();
 
-	ModelColumn<I_R_Status, Object> COLUMN_Updated = new ModelColumn<>(I_R_Status.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+	public I_R_Status getUpdate_Status() throws RuntimeException;
 
-	/**
-	 * Get Updated By.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getUpdatedBy();
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/** Set Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public void setValue (String Value);
 
-	/**
-	 * Set Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValue (java.lang.String Value);
-
-	/**
-	 * Get Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getValue();
-
-	ModelColumn<I_R_Status, Object> COLUMN_Value = new ModelColumn<>(I_R_Status.class, "Value", null);
-	String COLUMNNAME_Value = "Value";
+	/** Get Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public String getValue();
 }

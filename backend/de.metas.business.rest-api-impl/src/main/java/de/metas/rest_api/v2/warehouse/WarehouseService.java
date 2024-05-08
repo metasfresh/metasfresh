@@ -54,7 +54,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ExternalIdentifierResolver;
+import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
@@ -63,6 +63,7 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
@@ -83,13 +84,14 @@ public class WarehouseService
 {
 	private static final String ALL = "ALL";
 
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@NonNull
-	private final ExternalIdentifierResolver externalIdentifierResolver;
+	private final ProductRestService productRestService;
 	@NonNull
 	private final HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull
@@ -99,39 +101,28 @@ public class WarehouseService
 	@NonNull
 	private final JsonAttributeService jsonAttributeService;
 
-	@NonNull
-	private final WarehouseRestService warehouseRestService;
-
 	public WarehouseService(
-			@NonNull final ExternalIdentifierResolver externalIdentifierResolver,
+			@NonNull final ProductRestService productRestService,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
 			@NonNull final InventoryService inventoryService,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
-			@NonNull final JsonAttributeService jsonAttributeService,
-			@NonNull final WarehouseRestService warehouseRestService)
+			@NonNull final JsonAttributeService jsonAttributeService)
 	{
-		this.externalIdentifierResolver = externalIdentifierResolver;
+		this.productRestService = productRestService;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 		this.inventoryService = inventoryService;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.jsonAttributeService = jsonAttributeService;
-		this.warehouseRestService = warehouseRestService;
 	}
 
-	@NonNull
-	public WarehouseId resolveWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
-	{
-		return ExternalIdentifier.ofIdentifierCandidate(warehouseIdentifier)
-				.flatMap(identifier -> warehouseRestService.resolveWarehouseExternalIdentifier(identifier, orgId))
-				.orElseGet(() -> getWarehouseByIdentifier(orgId, warehouseIdentifier));
-	}
-	
 	@NonNull
 	public WarehouseId getWarehouseByIdentifier(@NonNull final OrgId orgId, @NonNull final String warehouseIdentifier)
 	{
 		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
 
 		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final WarehouseId result;
 		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
@@ -165,11 +156,6 @@ public class WarehouseService
 		return result;
 	}
 
-	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
-	{
-		return warehouseDAO.getWarehouseName(warehouseId);
-	}
-
 	public JsonOutOfStockResponse handleOutOfStockRequest(
 			@NonNull final String warehouseIdentifier,
 			@NonNull final JsonOutOfStockNoticeRequest outOfStockInfoRequest)
@@ -189,7 +175,7 @@ public class WarehouseService
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
-		final ProductId productId = externalIdentifierResolver.resolveProductExternalIdentifier(productIdentifier, orgId)
+		final ProductId productId = productRestService.resolveProductExternalIdentifier(productIdentifier, orgId)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceIdentifier(productIdentifier.getRawValue())
 						.resourceName("M_Product")

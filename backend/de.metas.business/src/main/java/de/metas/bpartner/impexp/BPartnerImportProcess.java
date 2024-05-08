@@ -22,23 +22,14 @@
 
 package de.metas.bpartner.impexp;
 
-import de.metas.banking.api.BankRepository;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPPrintFormat;
-import de.metas.bpartner.service.BPPrintFormatQuery;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.bpartner.service.BPartnerPrintFormatRepository;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-import de.metas.report.PrintFormatId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.table.api.AdTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
@@ -48,14 +39,23 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MContactInterest;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_I_BPartner;
 
-import javax.annotation.Nullable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import de.metas.banking.api.BankRepository;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPPrintFormat;
+import de.metas.bpartner.service.BPPrintFormatQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.BPartnerPrintFormatRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Imports {@link I_I_BPartner} records to {@link I_C_BPartner}.
@@ -82,8 +82,8 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 	}
 
 	public BPartnerImportProcess(
-			@Nullable final BPartnerCreditLimitRepository creditLimitRepo,
-			@Nullable final BankRepository bankRepository)
+			@Nullable BPartnerCreditLimitRepository creditLimitRepo,
+			@Nullable BankRepository bankRepository)
 	{
 		bpartnerImporter = BPartnerImportHelper.newInstance().setProcess(this);
 		bpartnerLocationImporter = BPartnerLocationImportHelper.newInstance().setProcess(this);
@@ -202,9 +202,9 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		return bpartnerImportResult;
 	}
 
-	private void createUpdateInterestArea(final I_I_BPartner importRecord)
+	private final void createUpdateInterestArea(final I_I_BPartner importRecord)
 	{
-		final int interestAreaId = importRecord.getR_InterestArea_ID();
+		int interestAreaId = importRecord.getR_InterestArea_ID();
 		if (interestAreaId <= 0)
 		{
 			return;
@@ -224,7 +224,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		ci.save();		// don't subscribe or re-activate
 	}
 
-	private void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
+	private final void createBPPrintFormatIfNeeded(@NonNull final I_I_BPartner importRecord)
 	{
 		if (importRecord.getAD_PrintFormat_ID() <= 0
 				|| importRecord.getC_BP_PrintFormat_ID() > 0)
@@ -232,35 +232,35 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 			return;
 		}
 
-		final PrintFormatId printFormatId = PrintFormatId.ofRepoId(importRecord.getAD_PrintFormat_ID());
-		final AdTableId adTableId;
+		final int printFormatId = importRecord.getAD_PrintFormat_ID();
+		final int adTableId;
 		final DocTypeId docTypeId;
 		// for vendors we have print format for purchase order
 		if (importRecord.isVendor())
 		{
 			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(DocBaseType.PurchaseOrder)
+					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
-			adTableId = AdTableId.ofRepoId(getTableId(I_C_Order.class));
+			adTableId = getTableId(I_C_Order.class);
 		}
 		// for customer we have print format for delivery
 		else
 		{
 			docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-					.docBaseType(DocBaseType.MaterialReceipt)
+					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
 
-			adTableId = AdTableId.ofRepoId(getTableId(I_M_InOut.class));
+			adTableId = getTableId(I_M_InOut.class);
 		}
 
 		final BPartnerPrintFormatRepository repo = SpringContextHolder.instance.getBean(BPartnerPrintFormatRepository.class);
 		final BPPrintFormatQuery bpPrintFormatQuery = BPPrintFormatQuery.builder()
 				.printFormatId(printFormatId)
-				.docTypeId(docTypeId)
+				.docTypeId(docTypeId.getRepoId())
 				.adTableId(adTableId)
 				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 				.build();
@@ -270,7 +270,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 		{
 			bpPrintFormat = BPPrintFormat.builder()
 					.adTableId(adTableId)
-					.docTypeId(docTypeId)
+					.docTypeId(docTypeId.getRepoId())
 					.printFormatId(printFormatId)
 					.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
 					.build();

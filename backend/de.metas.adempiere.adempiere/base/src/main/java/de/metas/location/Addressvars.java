@@ -22,12 +22,8 @@
 
 package de.metas.location;
 
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-@Getter
 public enum Addressvars
 {
 	BPartner("BP"),
@@ -48,8 +44,6 @@ public enum Addressvars
 
 	Postal("P"),
 
-	POBox("PB"),
-
 	Address1("A1"),
 
 	Address2("A2"),
@@ -58,5 +52,15 @@ public enum Addressvars
 
 	Address4("A4");
 
-	@NonNull private final String name;
+	private final String name;
+
+	Addressvars(@NonNull final String name)
+	{
+		this.name = name;
+	}
+
+	public String getName()
+	{
+		return name;
+	}
 }

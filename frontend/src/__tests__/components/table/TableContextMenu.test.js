@@ -54,7 +54,6 @@ describe('TableContextMenu', () => {
   it('has the tooltip present when row is selected', () => {
     tableCMenuProps.selected = ['1000001'];
     tableCMenuProps.mainTable = false;
-    tableCMenuProps.handleAdvancedEdit = jest.fn();
     const wrapperTableCMenu = mount(
       <Provider store={store}>
         <TableContextMenu {...tableCMenuProps} />
@@ -69,7 +68,6 @@ describe('TableContextMenu', () => {
   it('should have open selected keymap', () => {
     tableCMenuProps.selected = ['1000001'];
     tableCMenuProps.mainTable = true;
-    tableCMenuProps.supportOpenRecord = true;
     const wrapperTableCMenu = mount(
       <Provider store={store}>
         <TableContextMenu {...tableCMenuProps} />

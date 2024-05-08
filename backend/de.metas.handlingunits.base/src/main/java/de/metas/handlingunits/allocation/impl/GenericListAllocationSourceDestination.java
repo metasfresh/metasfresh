@@ -28,7 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;

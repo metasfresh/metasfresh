@@ -1,11 +1,9 @@
 package de.metas.inoutcandidate.api.impl;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import de.metas.inout.InOutLineId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.ShipmentScheduleQtyPickedId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -24,7 +22,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -75,8 +74,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule <b>AND</b> which were already delivered.
-	 *
-	 * @param shipmentSchedule
 	 */
 	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -91,7 +88,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 	 * <li>already referenced by a shipment line, if <code>onShipmentLine</code> is true
 	 * <li>or NOT referenced by a shipment line, if <code>onShipmentLine</code> is false
 	 */
-	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createShipmentLineFilter(
+	private final IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createShipmentLineFilter(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			final boolean onShipmentLine)
 	{
@@ -156,7 +153,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		return queryBuilder.create()
 				.list(clazz);
 	}
-
+	
 	@NonNull
 	@Override
 	public BigDecimal retrieveNotOnShipmentLineQty(final I_M_ShipmentSchedule shipmentSchedule)
@@ -217,25 +214,6 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.addColumn(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID);
 
 		return queryBuilder
-				.create()
-				.list(modelClass);
-	}
-
-	@Override
-	@NonNull
-	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveQtyPickedRecordsByIds(
-			@NonNull final Collection<ShipmentScheduleQtyPickedId> qtyPickedRecordIds,
-			@NonNull final Class<T> modelClass)
-	{
-		if (qtyPickedRecordIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_QtyPicked_ID, qtyPickedRecordIds)
 				.create()
 				.list(modelClass);
 	}
@@ -328,42 +306,29 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 		return retrieveOnShipmentLineRecordsQuery(shipmentSchedule).create().list();
 	}
 
-	@Override
-	public <T extends I_M_ShipmentSchedule_QtyPicked> ImmutableListMultimap<ShipmentScheduleId, T> retrieveNotOnShipmentLineRecordsByScheduleIds(
-			@NonNull final Set<ShipmentScheduleId> scheduleIds,
-			@NonNull Class<T> type)
+	public ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
-		return retrieveRecordsByScheduleIds(scheduleIds, false, type);
-	}
+		final boolean onShipmentLine = true;
 
-	@Override
-	public ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull final Set<ShipmentScheduleId> scheduleIds)
-	{
-		return retrieveRecordsByScheduleIds(scheduleIds, true, I_M_ShipmentSchedule_QtyPicked.class);
-	}
-
-	private <T extends I_M_ShipmentSchedule_QtyPicked> ImmutableListMultimap<ShipmentScheduleId, T> retrieveRecordsByScheduleIds(
-			@NonNull final Set<ShipmentScheduleId> scheduleIds,
-			final boolean onShipmentLine,
-			@NonNull final Class<T> type)
-	{
-		if (scheduleIds.isEmpty())
-		{
-			return ImmutableListMultimap.of();
-		}
-
-		return queryBL
+		final List<I_M_ShipmentSchedule_QtyPicked> records = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(createOnShipmentLineFilter(scheduleIds, onShipmentLine))
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID)
-				.orderBy(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID)
 				.create()
-				.stream(type)
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
-						record -> record
-				));
+				.list();
+
+		final HashMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2QtyPicked = new HashMap<>();
+
+		records.forEach( qtyPickedRecord -> {
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(qtyPickedRecord.getM_ShipmentSchedule_ID());
+
+			final ArrayList<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = new ArrayList<>();
+			qtyPickedList.add(qtyPickedRecord);
+
+			scheduleId2QtyPicked.merge(shipmentScheduleId, qtyPickedList, (oldList, newList) -> {oldList.addAll(newList);return oldList;});
+		});
+
+		return ImmutableMap.copyOf(scheduleId2QtyPicked);
 	}
 
 	/**

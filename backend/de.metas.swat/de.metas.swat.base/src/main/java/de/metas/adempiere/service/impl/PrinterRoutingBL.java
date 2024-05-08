@@ -25,25 +25,17 @@ package de.metas.adempiere.service.impl;
  * #L%
  */
 
-import de.metas.adempiere.model.I_AD_Printer;
-import de.metas.adempiere.model.I_AD_PrinterRouting;
-import de.metas.adempiere.model.X_AD_Printer;
-import de.metas.adempiere.model.X_AD_PrinterRouting;
-import de.metas.adempiere.service.IPrinterRoutingBL;
-import de.metas.adempiere.service.IPrinterRoutingDAO;
-import de.metas.adempiere.service.IPrintingService;
+import java.util.List;
+import java.util.Properties;
+
+import javax.print.PrintService;
+import javax.print.PrintServiceLookup;
+
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.process.AdProcessId;
-import de.metas.process.ProcessInfo;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -52,10 +44,20 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-import java.util.List;
-import java.util.Properties;
+import de.metas.adempiere.model.I_AD_Printer;
+import de.metas.adempiere.model.I_AD_PrinterRouting;
+import de.metas.adempiere.model.X_AD_Printer;
+import de.metas.adempiere.model.X_AD_PrinterRouting;
+import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.adempiere.service.IPrinterRoutingDAO;
+import de.metas.adempiere.service.IPrintingService;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa

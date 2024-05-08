@@ -2,12 +2,9 @@ package de.metas.handlingunits.attribute;
 
 import java.util.Set;
 
-import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.ISingletonService;
-
-import javax.annotation.Nullable;
 
 public interface IHUPIAttributesDAO extends ISingletonService
 {
@@ -23,6 +20,7 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	 * <br>
 	 * NOTE: all attributes will be returned out of transaction no matter what transaction <code>version</code> has (this is because we want to make use of caching)
 	 *
+	 * @param piVersionId
 	 * @return available PI attributes
 	 */
 	PIAttributes retrievePIAttributes(HuPackingInstructionsVersionId piVersionId);
@@ -30,17 +28,17 @@ public interface IHUPIAttributesDAO extends ISingletonService
 	PIAttributes retrievePIAttributesByIds(Set<Integer> piAttributeIds);
 
 	/**
+	 *
+	 * @param huPIAttribute
 	 * @return
 	 *         <ul>
 	 *         <li>true if this attribute was defined by the standard template
 	 *         <li>false if this attribute is a customization on a particular element (e.g.HU, ASI etc)
 	 *         </ul>
-	 * task FRESH-578 #275
+	 * @task FRESH-578 #275
 	 */
 	boolean isTemplateAttribute(I_M_HU_PI_Attribute huPIAttribute);
 
 	void deleteByVersionId(HuPackingInstructionsVersionId versionId);
-
-	@Nullable I_M_HU_PI_Attribute getById(@Nullable HuPackingInstructionsAttributeId huPIAttributeId);
 
 }

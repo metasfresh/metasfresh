@@ -26,20 +26,15 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.money.CurrencyId;
-import de.metas.rest_api.utils.MetasfreshId;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 
 @ToString
 public class ShortTermBankAccountIndex
 {
-	@Getter
 	private final BPartnerComposite bpartnerComposite;
 
 	private final HashMap<BPartnerBankAccountId, BPartnerBankAccount> bankAccountsById = new HashMap<>();
@@ -66,49 +61,20 @@ public class ShortTermBankAccountIndex
 		bankAccountsById.remove(bpartnerBankAccountId);
 	}
 
-	public BPartnerBankAccount extract(@NonNull final MetasfreshId metasfreshId)
+	public BPartnerBankAccount extract(final String iban)
 	{
-		if (bpartnerComposite.getBpartner().getId() == null)
-		{
-			throw new AdempiereException("BPBankAccountId belongs to a different BPartner!")
-					.appendParametersToMessage()
-					.setParameter("BPBankAccountId", metasfreshId.getValue());
-		}
-
-		final BPartnerBankAccountId bPartnerBankAccountId = BPartnerBankAccountId.ofRepoId(bpartnerComposite.getBpartner().getId(),
-																						   metasfreshId.getValue());
-
-		final BPartnerBankAccount bankAccount = bankAccountsById.get(bPartnerBankAccountId);
-
-		if (bankAccount == null)
-		{
-			throw new AdempiereException("BPBankAccountId belongs to a different BPartner!")
-					.appendParametersToMessage()
-					.setParameter("BPBankAccountId", metasfreshId.getValue());
-		}
-
-		return bankAccount;
-	}
-
-	@Nullable
-	public BPartnerBankAccount extractOrNull(@NonNull final String iban)
-	{
-		if (bpartnerComposite.getBpartner().getId() == null)
-		{
-			return null;
-		}
-
 		return bankAccountsByIBAN.get(iban);
 	}
 
-	public BPartnerBankAccount newBankAccount(
-			@NonNull final String iban,
-			@NonNull final CurrencyId currencyId)
+	public BPartnerBankAccount newBankAccount(@NonNull final String iban, @NonNull final CurrencyId currencyId)
 	{
 		final BPartnerBankAccount bankAccount = BPartnerBankAccount.builder()
 				.iban(iban)
 				.currencyId(currencyId)
 				.build();
+
+		// bankAccountsById.put(?, bankAccount);
+		bankAccountsByIBAN.put(bankAccount.getIban(), bankAccount);
 
 		bpartnerComposite.addBankAccount(bankAccount);
 

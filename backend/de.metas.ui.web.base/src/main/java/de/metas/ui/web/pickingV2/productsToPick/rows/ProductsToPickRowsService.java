@@ -58,19 +58,16 @@ public class ProductsToPickRowsService
 {
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
 	private final PickingCandidateService pickingCandidateService;
-	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private static final AdMessageKey MSG_TYPE_UNALLOCATED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.UnAllocated_Type_Error");
 	private static final AdMessageKey MSG_TYPE_NOT_SUPPORTED = AdMessageKey.of("de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService.TypeRow_NotSupported");
 
 	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
-			@NonNull final PickingCandidateService pickingCandidateService,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this.pickingConfigRepo = pickingConfigRepo;
 		this.pickingCandidateService = pickingCandidateService;
-		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	public ProductsToPickRowsData createProductsToPickRowsData(final PackageableRow packageableRow)
@@ -85,7 +82,7 @@ public class ProductsToPickRowsService
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)
-				.locatorLookup(lookupDataSourceFactory.searchInTableLookup(I_M_Locator.Table_Name))
+				.locatorLookup(LookupDataSourceFactory.instance.searchInTableLookup(I_M_Locator.Table_Name))
 				.considerAttributes(pickingConfig.isConsiderAttributes())
 				.build();
 	}

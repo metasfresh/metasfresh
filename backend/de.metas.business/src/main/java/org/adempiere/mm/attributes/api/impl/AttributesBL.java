@@ -36,6 +36,7 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,7 +45,6 @@ import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -212,45 +212,33 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public boolean isMandatoryOn(@NonNull final ProductId productId,
-			@NonNull final AttributeId attributeId,
-			@NonNull AttributeSourceDocument attributeSourceDocument)
+	public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-
-		final AttributeSetAttribute attribute = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId).orElse(null);
-
-		if (attribute == null)
+		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnReceipt)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
+		if (mandatoryOnReceipt != null)
 		{
-			return false;
+			return mandatoryOnReceipt;
 		}
 
-		final Boolean mandatory;
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
+	}
 
-		if (attributeSourceDocument.isMaterialReceipt())
-		{
-			mandatory = attribute.getMandatoryOnReceipt().toBooleanOrNull();
-		}
-		else if (attributeSourceDocument.isManufacturing())
-		{
-			mandatory = attribute.getMandatoryOnManufacturing().toBooleanOrNull();
-		}
-		else if (attributeSourceDocument.isPicking())
-		{
-			mandatory = attribute.getMandatoryOnPicking().toBooleanOrNull();
-		}
-		else if (attributeSourceDocument.isShipment())
-		{
-			mandatory = attribute.getMandatoryOnShipment().toBooleanOrNull();
-		}
-		else
-		{
-			throw new AdempiereException("Unknown: " + attributeSourceDocument);
-		}
+	@Override
+	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnShipment)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
 
-		if (mandatory != null)
+		if (mandatoryOnShipment != null)
 		{
-			return mandatory;
+			return mandatoryOnShipment;
 		}
 
 		return attributesRepo.getAttributeById(attributeId).isMandatory();
@@ -261,25 +249,11 @@ public class AttributesBL implements IAttributesBL
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOn(productId,
-												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
-												   AttributeSourceDocument.Picking))
+				.filter(attribute -> isMandatoryOnPicking(productId,
+														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnPicking;
-	}
-
-	@Override
-	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(final ProductId productId)
-	{
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOn(productId,
-												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
-												   AttributeSourceDocument.ManufacturingOrder))
-				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnManufacturing;
 	}
 
 	@Override
@@ -288,12 +262,29 @@ public class AttributesBL implements IAttributesBL
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOn(productId,
-												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
-												   AttributeSourceDocument.Shipment))
+				.filter(attribute -> isMandatoryOnShipment(productId,
+														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnShipment;
+	}
+
+	@Override
+	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+
+		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnPicking)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
+
+		if (mandatoryOnPicking != null)
+		{
+			return mandatoryOnPicking;
+		}
+
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
 	@Override
@@ -364,11 +355,5 @@ public class AttributesBL implements IAttributesBL
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final AttributeId attributeId, @Nullable final String value)
 	{
 		return attributesRepo.retrieveAttributeValueOrNull(attributeId, value);
-	}
-
-	@Override
-	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, @NonNull final String value)
-	{
-		return attributesRepo.retrieveAttributeValueOrNull(attribute, value);
 	}
 }

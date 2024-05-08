@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.OptionalInt;
 import java.util.Set;
 
 /*
@@ -118,6 +117,22 @@ public enum DocumentFieldWidgetType
 	public LayoutAlign getGridAlign()
 	{
 		return gridAlign;
+	}
+
+	public final Integer getStandardNumberPrecision()
+	{
+		// FIXME: hardcoded standard number precision
+
+		switch (this)
+		{
+			case Integer:
+				return 0;
+			case CostPrice:
+			case Amount:
+				return 2;
+			default:
+				return null;
+		}
 	}
 
 	public final boolean isDateOrTime()

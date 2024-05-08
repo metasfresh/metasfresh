@@ -22,13 +22,13 @@
 
 package de.metas.product.process;
 
-import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
@@ -36,7 +36,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
@@ -46,11 +45,13 @@ import java.util.Optional;
 
 public class M_ProductPrice_ActivationBasedOnProductDiscontinuedFlag_Process extends JavaProcess implements IProcessPrecondition
 {
-	private static final AdMessageKey ERROR_MISSING_DISCONTINUED_FROM = AdMessageKey.of("ActivationBasedOnProductDiscontinuedFlag_Process.MissingDiscontinuedFrom");
-
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private static final String PARAM_DATE_FROM = "ValidFrom";
+	@Param(parameterName = PARAM_DATE_FROM, mandatory = true)
+	private LocalDate p_dateFrom;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -85,18 +86,19 @@ public class M_ProductPrice_ActivationBasedOnProductDiscontinuedFlag_Process ext
 			final Optional<LocalDate> discontinuedFrom = Optional.ofNullable(product.getDiscontinuedFrom())
 					.map(discontinuedFromTimestamp -> TimeUtil.asLocalDate(discontinuedFromTimestamp, zoneId));
 
-			if (!discontinuedFrom.isPresent())
+			if (!discontinuedFrom.isPresent() || discontinuedFrom.get().compareTo(p_dateFrom) <= 0)
 			{
-				throw new AdempiereException(ERROR_MISSING_DISCONTINUED_FROM)
-						.appendParametersToMessage()
-						.setParameter("ProductId", product.getM_Product_ID());
+				priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, false);
 			}
-
-			priceListDAO.updateProductPricesIsActive(productFilter, discontinuedFrom.get(), false);
+			else
+			{
+				priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, true);
+				priceListDAO.updateProductPricesIsActive(productFilter, discontinuedFrom.get(), false);
+			}
 		}
 		else
 		{
-			priceListDAO.updateProductPricesIsActive(productFilter, null, true);
+			priceListDAO.updateProductPricesIsActive(productFilter, p_dateFrom, true);
 		}
 
 		return MSG_OK;

@@ -19,7 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -51,7 +51,7 @@ import java.util.Set;
  * #L%
  */
 
-@Schema(description = "field")
+@ApiModel("field")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutElementField
 {
@@ -74,7 +74,7 @@ public final class JSONDocumentLayoutElementField
 	 * <p>
 	 * Please keep in sync with {@link FieldType}
 	 */
-	@Schema(description = "field-type")
+	@ApiModel("field-type")
 	public enum JSONFieldType
 	{
 		/**
@@ -123,7 +123,7 @@ public final class JSONDocumentLayoutElementField
 	 * <p>
 	 * Please keep in sync with {@link LookupSource}.
 	 */
-	@Schema(description = "lookup-source")
+	@ApiModel("lookup-source")
 	public enum JSONLookupSource
 	{
 		lookup, list,
@@ -242,7 +242,7 @@ public final class JSONDocumentLayoutElementField
 		clearValueText = fieldDescriptor.getListNullItemCaption(jsonOpts.getAdLanguage());
 		devices = JSONDeviceDescriptor.ofList(fieldDescriptor.getDevices(), jsonOpts.getAdLanguage());
 
-		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor, jsonOpts);
+		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
 		if (newRecordEntityDescriptor != null)
 		{
 			newRecordWindowId = newRecordEntityDescriptor.getDocumentTypeId().toJson();
@@ -338,16 +338,9 @@ public final class JSONDocumentLayoutElementField
 
 	@Nullable
 	private static DocumentEntityDescriptor findNewRecordEntityDescriptor(
-			@NonNull final DocumentLayoutElementFieldDescriptor fieldDescriptor,
+			@Nullable final String lookupTableName,
 			final JSONDocumentLayoutOptions jsonOpts)
 	{
-		if (fieldDescriptor.isForbidNewRecordCreation())
-		{
-			return null;
-		}
-
-		final String lookupTableName = fieldDescriptor.getLookupTableName().orElse(null);
-
 		if (lookupTableName == null)
 		{
 			return null;

@@ -28,7 +28,5 @@ public enum StepDefDocAction
 	reactivated,
 	reversed,
 	voided,
-	closed,
-	canceled,
-	opened
+	closed
 }

@@ -143,7 +143,6 @@ public interface IInterfaceWrapperHelper
 		return value;
 	}
 
-
 	<T extends PO> T getPO(final Object model, final boolean strict);
 
 	Evaluatee getEvaluatee(Object model);

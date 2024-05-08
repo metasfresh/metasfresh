@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ProductPrice
  *  @author metasfresh (generated) 
@@ -52,11 +53,36 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_ProductPrice, Object> COLUMN_Created = new ModelColumn<>(I_M_ProductPrice.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_TaxCategory_ID (int C_TaxCategory_ID);
@@ -66,7 +92,7 @@ public interface I_M_ProductPrice
 	 * Tax Category
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_TaxCategory_ID();
@@ -94,31 +120,6 @@ public interface I_M_ProductPrice
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_M_ProductPrice, Object> COLUMN_Created = new ModelColumn<>(I_M_ProductPrice.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Invoicable Quantity per.
@@ -299,6 +300,27 @@ public interface I_M_ProductPrice
 	String COLUMNNAME_IsSeasonFixedPrice = "IsSeasonFixedPrice";
 
 	/**
+	 * Set Matching order.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMatchSeqNo (int MatchSeqNo);
+
+	/**
+	 * Get Matching order.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMatchSeqNo();
+
+	ModelColumn<I_M_ProductPrice, Object> COLUMN_MatchSeqNo = new ModelColumn<>(I_M_ProductPrice.class, "MatchSeqNo", null);
+	String COLUMNNAME_MatchSeqNo = "MatchSeqNo";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
@@ -351,32 +373,6 @@ public interface I_M_ProductPrice
 
 	ModelColumn<I_M_ProductPrice, org.compiere.model.I_M_DiscountSchemaLine> COLUMN_M_DiscountSchemaLine_ID = new ModelColumn<>(I_M_ProductPrice.class, "M_DiscountSchemaLine_ID", org.compiere.model.I_M_DiscountSchemaLine.class);
 	String COLUMNNAME_M_DiscountSchemaLine_ID = "M_DiscountSchemaLine_ID";
-
-	/**
-	 * Set Price List.
-	 * Unique identifier of a Price List
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setM_PriceList_ID (int M_PriceList_ID);
-
-	/**
-	 * Get Price List.
-	 * Unique identifier of a Price List
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getM_PriceList_ID();
-
-	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
 	 * Set Version Preisliste.
@@ -467,27 +463,6 @@ public interface I_M_ProductPrice
 
 	ModelColumn<I_M_ProductPrice, Object> COLUMN_M_ProductPrice_ID = new ModelColumn<>(I_M_ProductPrice.class, "M_ProductPrice_ID", null);
 	String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
-
-	/**
-	 * Set Matching order.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMatchSeqNo (int MatchSeqNo);
-
-	/**
-	 * Get Matching order.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMatchSeqNo();
-
-	ModelColumn<I_M_ProductPrice, Object> COLUMN_MatchSeqNo = new ModelColumn<>(I_M_ProductPrice.class, "MatchSeqNo", null);
-	String COLUMNNAME_MatchSeqNo = "MatchSeqNo";
 
 	/**
 	 * Set Mindestpreis.
@@ -628,29 +603,4 @@ public interface I_M_ProductPrice
 
 	ModelColumn<I_M_ProductPrice, Object> COLUMN_UseScalePrice = new ModelColumn<>(I_M_ProductPrice.class, "UseScalePrice", null);
 	String COLUMNNAME_UseScalePrice = "UseScalePrice";
-
-	/**
-	 * Set Valid From.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
-
-	/**
-	 * Get Valid From.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.sql.Timestamp getValidFrom();
-
-	ModelColumn<I_M_ProductPrice, Object> COLUMN_ValidFrom = new ModelColumn<>(I_M_ProductPrice.class, "ValidFrom", null);
-	String COLUMNNAME_ValidFrom = "ValidFrom";
 }

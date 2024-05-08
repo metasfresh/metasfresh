@@ -46,8 +46,6 @@ public class JsonBOMTest
 				+ "    	\"TEXT\": \"Name1\",\n"
 				+ "    	\"TEXT2\": \"Name2\",\n"
 				+ "    	\"INAKTIV\": 0,\n"
-				+ "    	\"BIO\": 1,\n"
-				+ "    	\"HALAL\": 0,\n"
 				+ " 	\"VERLUST\":15,\n"
 				+ "		\"GTIN\":\"gtin\",\n"
 				+ "     \"METASFRESHID\":\"12345\",\n"
@@ -87,8 +85,6 @@ public class JsonBOMTest
 				.gtin("gtin")
 				.bPartnerMetasfreshId("12345")
 				.bomLines(ImmutableList.of(expectedBOMLine))
-				.bio(1)
-				.halal(0)
 				.build();
 
 		assertThat(bom).isEqualTo(expectedBOM);

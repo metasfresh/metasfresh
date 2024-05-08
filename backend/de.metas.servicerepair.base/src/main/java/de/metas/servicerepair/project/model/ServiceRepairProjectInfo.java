@@ -45,7 +45,6 @@ public class ServiceRepairProjectInfo
 {
 	@NonNull ProjectId projectId;
 	@NonNull ClientAndOrgId clientAndOrgId;
-	boolean active;
 
 	@Nullable LocalDate dateContract;
 	@Nullable ZonedDateTime dateFinish;

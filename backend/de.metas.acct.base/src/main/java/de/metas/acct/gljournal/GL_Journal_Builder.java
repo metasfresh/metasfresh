@@ -1,8 +1,5 @@
 package de.metas.acct.gljournal;
 
-import de.metas.acct.GLCategoryId;
-import de.metas.acct.GLCategoryRepository;
-import de.metas.acct.GLCategoryType;
 import de.metas.acct.process.GLJournalRequest;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -10,13 +7,15 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
+import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.MGLCategory;
+import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -42,14 +41,14 @@ import java.util.Optional;
 
 public class GL_Journal_Builder
 {
-	public static GL_Journal_Builder newBuilder(final GLJournalRequest glJournalRequest)
+	public static final GL_Journal_Builder newBuilder(final GLJournalRequest glJournalRequest)
 	{
 		return new GL_Journal_Builder(glJournalRequest);
 	}
 
 	// services
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-	private final GLCategoryRepository glCategoryRepository = GLCategoryRepository.get();
+	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 
 	private final I_GL_Journal glJournal;
 
@@ -57,6 +56,7 @@ public class GL_Journal_Builder
 
 	private GL_Journal_Builder(final GLJournalRequest request)
 	{
+		super();
 		glJournal = InterfaceWrapperHelper.newInstance(I_GL_Journal.class);
 
 		glJournal.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
@@ -66,7 +66,6 @@ public class GL_Journal_Builder
 		glJournal.setPostingType(request.getPostingType());
 		glJournal.setDescription(request.getDescription());
 
-		final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 		final DocTypeId docTypeId = glJournalBL.getDocTypeGLJournal(request.getClientId(), request.getOrgId());
 		glJournal.setC_DocType_ID(docTypeId.getRepoId());
 
@@ -76,14 +75,15 @@ public class GL_Journal_Builder
 		glJournal.setC_ConversionType_ID(conversionTypeDefaultId.getRepoId());
 
 		final GLCategoryId glCategoryId = request.getGlCategoryId();
+
 		if (glCategoryId != null)
 		{
 			glJournal.setGL_Category_ID(glCategoryId.getRepoId());
 		}
 		else
 		{
-			final GLCategoryId defaultGLCategoryId = getDefaultGLCategoryId(request.getClientId()).orElse(null);
-			glJournal.setGL_Category_ID(GLCategoryId.toRepoId(defaultGLCategoryId));
+			final GLCategoryId glCategoryIdForCategoryType = getGLCategoryIdForCategoryType(X_GL_Category.CATEGORYTYPE_Manual);
+			glJournal.setGL_Category_ID(GLCategoryId.toRepoId(glCategoryIdForCategoryType));
 		}
 	}
 
@@ -113,14 +113,18 @@ public class GL_Journal_Builder
 
 	public CurrencyConversionTypeId getConversionTypeDefaultId(@NonNull GLJournalRequest request)
 	{
-		return currencyDAO.getDefaultConversionTypeId(
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getDefaultConversionTypeId(
 				request.getClientId(),
 				request.getOrgId(),
-				request.getDateAcct());
+				TimeUtil.asLocalDate(request.getDateAcct()));
+
+		return conversionTypeId;
 	}
 
-	private Optional<GLCategoryId> getDefaultGLCategoryId(@NonNull final ClientId clientId)
+	public GLCategoryId getGLCategoryIdForCategoryType(final String categoryType)
 	{
-		return glCategoryRepository.getDefaultId(clientId, GLCategoryType.Manual);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
+		final I_GL_Category glCategory = MGLCategory.getDefault(ctx, categoryType);
+		return GLCategoryId.ofRepoIdOrNull(glCategory.getGL_Category_ID());
 	}
 }

@@ -1,6 +1,9 @@
 package de.metas.shipper.gateway.spi.model;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -8,8 +11,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -129,16 +130,4 @@ public class DeliveryOrder
 
 	@Nullable
 	String trackingUrl;
-
-
-	public DeliveryOrder withCustomDeliveryData(@Nullable final CustomDeliveryData customDeliveryData)
-	{
-		if (customDeliveryData == null)
-		{
-			return this;
-		}
-		return this.toBuilder()
-				.customDeliveryData(customDeliveryData)
-				.build();
-	}
 }

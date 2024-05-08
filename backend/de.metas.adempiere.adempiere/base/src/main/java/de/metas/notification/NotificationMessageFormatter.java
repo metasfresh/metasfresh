@@ -1,7 +1,21 @@
 package de.metas.notification;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.ecs.StringElement;
+import org.apache.ecs.xhtml.a;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
@@ -11,20 +25,6 @@ import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.ecs.StringElement;
-import org.apache.ecs.xhtml.a;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -68,8 +68,6 @@ final class NotificationMessageFormatter
 	// Constants
 	private static final String URL_TITLE_SEPARATOR = "><";
 	private static final AdMessageKey MSG_BottomText = AdMessageKey.of("de.metas.notification.email.BottomText");
-	@VisibleForTesting
-	static final AdMessageKey MSG_EmailOrigin = AdMessageKey.of("de.metas.notification.email.origin");
 
 	//
 	// Params
@@ -143,12 +141,6 @@ final class NotificationMessageFormatter
 		if (!Check.isEmpty(bottomText, true))
 		{
 			result += "\n" + bottomText;
-		}
-
-		final String emailOrigin = getEmailOrigin().orElse(null);
-		if (emailOrigin != null)
-		{
-			result += "\n\n" + emailOrigin;
 		}
 
 		return result;
@@ -357,20 +349,6 @@ final class NotificationMessageFormatter
 				.translate(getLanguage());
 
 		return bottomText;
-	}
-
-	@NonNull
-	private Optional<String> getEmailOrigin()
-	{
-		final String frontendUrl = webuiURLs.getFrontendURL();
-		if (Check.isBlank(frontendUrl))
-		{
-			return Optional.empty();
-		}
-
-		return Optional.ofNullable(msgBL.getTranslatableMsgText(MSG_EmailOrigin, Collections.singletonList(frontendUrl))
-				.translate(getLanguage()))
-				.filter(Check::isNotBlank);
 	}
 
 	//

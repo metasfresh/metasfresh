@@ -5,7 +5,6 @@ import Loader from '../app/Loader';
 import BarChart from './BarChartComponent';
 import Indicator from './Indicator';
 import PieChart from './PieChartComponent';
-import { URLsChart } from './URLsChart';
 
 class RawChart extends Component {
   constructor(props) {
@@ -68,7 +67,7 @@ class RawChart extends Component {
       editmode,
       data,
       noData,
-      openChartOptions,
+      handleChartOptions,
       zoomToDetailsAvailable,
     } = this.props;
     const { forceChartReRender } = this.state;
@@ -140,13 +139,15 @@ class RawChart extends Component {
       case 'Indicator':
         return (
           <div>
-            {editmode && openChartOptions && (
+            {editmode ? (
               <span
                 className="chart-edit-mode"
-                onClick={() => openChartOptions(id)}
+                onClick={() => handleChartOptions(true, caption, id, true)}
               >
                 <i className="meta-icon-settings" />
               </span>
+            ) : (
+              ''
             )}
 
             <Indicator
@@ -162,8 +163,6 @@ class RawChart extends Component {
             />
           </div>
         );
-      case 'URLs':
-        return <URLsChart data={dataset0} />;
       default:
         return <div>{chartType}</div>;
     }
@@ -217,7 +216,7 @@ RawChart.propTypes = {
   chartTitle: PropTypes.string,
   zoomToDetailsAvailable: PropTypes.bool,
   //
-  openChartOptions: PropTypes.func,
+  handleChartOptions: PropTypes.func,
 };
 
 export default connect()(RawChart);

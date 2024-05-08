@@ -1,29 +1,27 @@
 package de.metas.acct.callout;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyRate;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_GL_Journal;
+import org.compiere.util.TimeUtil;
+
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Journal;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Optional;
 
 /*
  * #%L
@@ -50,14 +48,12 @@ import java.util.Optional;
 @Callout(I_GL_Journal.class)
 public class GL_Journal
 {
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-
 	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_C_DocType_ID)
 	public void onC_DocType_ID(final I_GL_Journal glJournal)
 	{
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(getDocType(glJournal).orElse(null))
+				.setNewDocType(glJournal.getC_DocType())
 				.setOldDocumentNo(glJournal.getDocumentNo())
 				.setDocumentModel(glJournal)
 				.buildOrNull();
@@ -65,12 +61,6 @@ public class GL_Journal
 		{
 			glJournal.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
-	}
-
-	private Optional<I_C_DocType> getDocType(final I_GL_Journal glJournal)
-	{
-		return DocTypeId.optionalOfRepoId(glJournal.getC_DocType_ID())
-				.map(docTypeBL::getById);
 	}
 
 	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_DateDoc)
@@ -101,7 +91,11 @@ public class GL_Journal
 		}
 
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournal.getC_ConversionType_ID());
-		final Instant dateAcct = glJournal.getDateAcct() != null ? glJournal.getDateAcct().toInstant() : SystemTime.asInstant();
+		LocalDate dateAcct = TimeUtil.asLocalDate(glJournal.getDateAcct());
+		if (dateAcct == null)
+		{
+			dateAcct = SystemTime.asLocalDate();
+		}
 		final ClientId adClientId = ClientId.ofRepoId(glJournal.getAD_Client_ID());
 		final OrgId adOrgId = OrgId.ofRepoId(glJournal.getAD_Org_ID());
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());

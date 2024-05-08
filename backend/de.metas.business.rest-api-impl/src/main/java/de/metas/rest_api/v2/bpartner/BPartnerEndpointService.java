@@ -107,6 +107,7 @@ public class BPartnerEndpointService
 				.stream()
 				.filter(jsonContact -> isJsonContactMatches(orgId, jsonContact, contactIdentifier))
 				.findAny());
+
 	}
 
 	@NonNull

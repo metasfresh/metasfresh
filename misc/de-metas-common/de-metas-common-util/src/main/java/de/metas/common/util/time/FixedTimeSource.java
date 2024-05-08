@@ -2,7 +2,6 @@ package de.metas.common.util.time;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -43,7 +42,7 @@ class FixedTimeSource implements TimeSource
 
 	private FixedTimeSource(@NonNull final ZonedDateTime date)
 	{
-		this.date = date.truncatedTo(ChronoUnit.MILLIS);
+		this.date = date;
 	}
 
 	@Override

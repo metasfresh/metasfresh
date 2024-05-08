@@ -36,10 +36,9 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
@@ -84,7 +84,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * This test doesn'T really work as it tests nothing.
@@ -106,27 +106,19 @@ public class HUInternalUseInventoryProducerTests
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private InventoryService inventoryService;
 
-
-	private HUUniqueAttributesService huUniqueAttributesService;
-
-	private M_HU huCallout;
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(12345);
 	private I_M_Locator locator;
 
 	@BeforeEach
 	public void init()
 	{
-
-		huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
-
-		huCallout = new M_HU(huUniqueAttributesService);
 		data = new LUTUProducerDestinationTestSupport();
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(999));
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
-		inventoryService = InventoryService.newInstanceForUnitTesting();
+		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
 		dt.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
@@ -186,15 +178,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-						HUInternalUseInventoryCreateRequest.builder()
-								.hus(husToDestroy)
-								.movementDate(movementDate)
-								.activityId(activityId)
-								.description(description)
-								.completeInventory(true)
-								.moveEmptiesToEmptiesWarehouse(false)
-								.sendNotifications(false)
-								.build())
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
@@ -265,15 +257,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-						HUInternalUseInventoryCreateRequest.builder()
-								.hus(husToDestroy)
-								.movementDate(movementDate)
-								.activityId(activityId)
-								.description(description)
-								.completeInventory(true)
-								.moveEmptiesToEmptiesWarehouse(false)
-								.sendNotifications(false)
-								.build())
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
@@ -317,15 +309,15 @@ public class HUInternalUseInventoryProducerTests
 		final String description = "Test Description";
 
 		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
-						HUInternalUseInventoryCreateRequest.builder()
-								.hus(husToDestroy)
-								.movementDate(movementDate)
-								.activityId(activityId)
-								.description(description)
-								.completeInventory(true)
-								.moveEmptiesToEmptiesWarehouse(false)
-								.sendNotifications(false)
-								.build())
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
 				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
@@ -469,7 +461,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
 		createdLU.setM_Locator_ID(locator.getM_Locator_ID());
 
-		huCallout.updateChildren(createdLU);
+		M_HU.INSTANCE.updateChildren(createdLU);
 		handlingUnitsDAO.saveHU(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
@@ -527,7 +519,7 @@ public class HUInternalUseInventoryProducerTests
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
 		createdTU.setM_Locator_ID(locator.getM_Locator_ID());
 
-		huCallout.updateChildren(createdTU);
+		M_HU.INSTANCE.updateChildren(createdTU);
 		handlingUnitsDAO.saveHU(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);

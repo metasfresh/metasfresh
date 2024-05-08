@@ -16,49 +16,146 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.cache.CCache;
-import org.adempiere.ad.trx.api.ITrx;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-@Deprecated
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+
+/**
+ *	Charge Model
+ *	
+ *  @author Jorg Janke
+ *  @version $Id: MCharge.java,v 1.3 2006/07/30 00:51:05 jjanke Exp $
+ *  
+ *  @author Teo Sarca, www.arhipac.ro
+ *  		<li>FR [ 2214883 ] Remove SQL code and Replace for Query
+ */
 public class MCharge extends X_C_Charge
 {
-	private static final CCache<Integer, MCharge> s_cache = CCache.<Integer, MCharge>builder()
-			.tableName(I_C_Charge.Table_Name)
-			.initialCapacity(10)
-			.build();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 630271473830196435L;
 
-	public static MCharge get(Properties ctx, int C_Charge_ID)
+
+	/**
+	 *  Get Charge Account
+	 *  @param C_Charge_ID charge
+	 *  @param as account schema
+	 *  @param amount amount for expense(+)/revenue(-)
+	 *  @return Charge Account or null
+	 */
+	public static MAccount getAccount (int C_Charge_ID, AcctSchemaId acctSchemaId, BigDecimal amount)
 	{
-		MCharge retValue = s_cache.get(C_Charge_ID);
+		if (C_Charge_ID == 0 || acctSchemaId == null)
+			return null;
+
+		String acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Expense_Acct;		//  Expense (positive amt)
+		if (amount != null && amount.signum() < 0)
+			acctName = X_C_Charge_Acct.COLUMNNAME_Ch_Revenue_Acct;			//  Revenue (negative amt)
+		String sql = "SELECT "+acctName+" FROM C_Charge_Acct WHERE C_Charge_ID=? AND C_AcctSchema_ID=?";
+		int Account_ID = DB.getSQLValueEx(null, sql, C_Charge_ID, acctSchemaId);
+		//	No account
+		if (Account_ID <= 0)
+		{
+			s_log.error("NO account for C_Charge_ID=" + C_Charge_ID);
+			return null;
+		}
+
+		//	Return Account
+		MAccount acct = Services.get(IAccountDAO.class).getById(Account_ID);
+		return acct;
+	}   //  getAccount
+
+	/**
+	 * 	Get MCharge from Cache
+	 *	@param ctx context
+	 *	@param C_Charge_ID id
+	 *	@return MCharge
+	 */
+	public static MCharge get (Properties ctx, int C_Charge_ID)
+	{
+		Integer key = new Integer (C_Charge_ID);
+		MCharge retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
-		retValue = new MCharge(ctx, C_Charge_ID, ITrx.TRXNAME_None);
-		if (retValue.get_ID() > 0 && retValue.get_ID() == C_Charge_ID)
-			s_cache.put(C_Charge_ID, retValue);
+		retValue = new MCharge (ctx, C_Charge_ID, null);
+		if (retValue.get_ID() != 0)
+			s_cache.put (key, retValue);
 		return retValue;
-	}
+	}	//	get
 
-	public MCharge(Properties ctx, int C_Charge_ID, String trxName)
+	/**	Cache						*/
+	private static CCache<Integer, MCharge> s_cache 
+		= new CCache<> ("C_Charge", 10);
+	
+	/**	Static Logger	*/
+	private static Logger	s_log	= LogManager.getLogger(MCharge.class);
+	
+	
+	/**************************************************************************
+	 * 	Standard Constructor
+	 *	@param ctx context
+	 *	@param C_Charge_ID id
+	 *	@param trxName transaction
+	 */
+	public MCharge (Properties ctx, int C_Charge_ID, String trxName)
 	{
-		super(ctx, C_Charge_ID, trxName);
-		if (is_new())
+		super (ctx, C_Charge_ID, trxName);
+		if (C_Charge_ID == 0)
 		{
-			setChargeAmt(BigDecimal.ZERO);
-			setIsSameCurrency(false);
-			setIsSameTax(false);
-			setIsTaxIncluded(false);    // N
-			//	setName (null);
-			//	setC_TaxCategory_ID (0);
+			setChargeAmt (Env.ZERO);
+			setIsSameCurrency (false);
+			setIsSameTax (false);
+			setIsTaxIncluded (false);	// N
+		//	setName (null);
+		//	setC_TaxCategory_ID (0);
 		}
-	}
+	}	//	MCharge
 
-	@SuppressWarnings("unused")
-	public MCharge(Properties ctx, ResultSet rs, String trxName)
+	/**
+	 * 	Load Constructor
+	 *	@param ctx ctx
+	 *	@param rs result set
+	 *	@param trxName transaction
+	 */
+	public MCharge (Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}
-}
+	}	//	MCharge
+
+	/**
+	 * 	After Save
+	 *	@param newRecord new
+	 *	@param success success
+	 *	@return success
+	 */
+	@Override
+	protected boolean afterSave (boolean newRecord, boolean success)
+	{
+		if (newRecord && success)
+			insert_Accounting("C_Charge_Acct", "C_AcctSchema_Default", null);
+
+		return success;
+	}	//	afterSave
+
+	/**
+	 * 	Before Delete
+	 *	@return true
+	 */
+	@Override
+	protected boolean beforeDelete ()
+	{
+		return delete_Accounting("C_Charge_Acct"); 
+	}	//	beforeDelete
+
+}	//	MCharge

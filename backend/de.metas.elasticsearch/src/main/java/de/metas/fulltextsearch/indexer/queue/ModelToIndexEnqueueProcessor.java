@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -42,21 +41,18 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
-import org.elasticsearch.xcontent.XContentType;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -71,10 +67,9 @@ import java.util.List;
 
 @Service
 @Profile(Profiles.PROFILE_App)
-@RequiredArgsConstructor
 public class ModelToIndexEnqueueProcessor
 {
-	private static final Logger logger = LogManager.getLogger(ModelToIndexEnqueueProcessor.class);
+	private final Logger logger = LogManager.getLogger(getClass());
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final FTSModelIndexerRegistry indexersRegistry;
@@ -86,6 +81,16 @@ public class ModelToIndexEnqueueProcessor
 
 	private static final String SYSCONFIG_RetrieveBatchSize = "de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueProcessor.retrieveBatchSize";
 	private static final int DEFAULT_RetrieveBatchSize = 1000;
+
+	public ModelToIndexEnqueueProcessor(
+			@NonNull final FTSModelIndexerRegistry indexersRegistry,
+			@NonNull final FTSConfigService configService,
+			@NonNull final ModelToIndexRepository queueRepository)
+	{
+		this.indexersRegistry = indexersRegistry;
+		this.configService = configService;
+		this.queueRepository = queueRepository;
+	}
 
 	@PostConstruct
 	public void postConstruct()
@@ -128,7 +133,6 @@ public class ModelToIndexEnqueueProcessor
 				logger.debug("Sleeping {}", pollInterval);
 				try
 				{
-					//noinspection BusyWait
 					Thread.sleep(getPollInterval().toMillis());
 				}
 				catch (final InterruptedException ex)
@@ -165,7 +169,6 @@ public class ModelToIndexEnqueueProcessor
 
 		final String processingTag = queueRepository.newProcessingTag();
 		final int batchSize = getRetrieveBatchSize();
-
 		final ImmutableList<ModelToIndex> events = queueRepository.tagAndRetrieve(processingTag, batchSize);
 		if (events.isEmpty())
 		{
@@ -255,24 +258,34 @@ public class ModelToIndexEnqueueProcessor
 
 	private void processNow_ConfigAndEvents(final ConfigAndEvents configAndEvents) throws IOException
 	{
+		final ImmutableList<ModelToIndex> events = configAndEvents.getEvents();
+		if (events.isEmpty())
+		{
+			return;
+		}
+
 		final FTSConfig config = configAndEvents.getConfig();
-		createESIndex(config, configAndEvents.isDeleteIndexFirst());
 
 		final List<FTSModelIndexer> indexers = getModelIndexers(configAndEvents);
 		if (indexers.isEmpty())
 		{
-			logger.warn("No indexers found found for {}. Discarding all events.", configAndEvents);
+			logger.warn("No indexers found found for {}. Discard {} events", config, events.size());
 			return;
 		}
 
-		final ImmutableList<ModelToIndex> events = configAndEvents.getEvents();
 		final ImmutableList<ESDocumentToIndexChunk> chunks = indexers.stream()
 				.flatMap(indexer -> indexer.createDocumentsToIndex(events, config).stream())
 				.collect(ImmutableList.toImmutableList());
+
 		if (chunks.isEmpty())
 		{
 			logger.debug("No documents to index for {}. Discard {} events.", config, events.size());
 			return;
+		}
+
+		if (!isESIndexExists(config))
+		{
+			createESIndex(config);
 		}
 
 		addDocumentsToIndex(config, chunks);
@@ -292,38 +305,11 @@ public class ModelToIndexEnqueueProcessor
 
 	private void createESIndex(final FTSConfig config) throws IOException
 	{
-		final String esIndexName = config.getEsIndexName();
 		configService.elasticsearchClient()
 				.indices()
-				.create(new CreateIndexRequest(esIndexName)
+				.create(new CreateIndexRequest(config.getEsIndexName())
 								.source(config.getCreateIndexCommand().getAsString(), XContentType.JSON),
 						RequestOptions.DEFAULT);
-		logger.debug("Index {} created", esIndexName);
-	}
-
-	private void createESIndex(final FTSConfig config, boolean recreateIfExists) throws IOException
-	{
-		if (isESIndexExists(config))
-		{
-			if (recreateIfExists)
-			{
-				deleteESIndex(config);
-				createESIndex(config);
-			}
-		}
-		else
-		{
-			createESIndex(config);
-		}
-	}
-
-	private void deleteESIndex(final FTSConfig config) throws IOException
-	{
-		final String esIndexName = config.getEsIndexName();
-		configService.elasticsearchClient()
-				.indices()
-				.delete(new DeleteIndexRequest(esIndexName), RequestOptions.DEFAULT);
-		logger.debug("Index {} deleted", esIndexName);
 	}
 
 	private void addDocumentsToIndex(
@@ -340,6 +326,7 @@ public class ModelToIndexEnqueueProcessor
 			@NonNull final FTSConfig config,
 			@NonNull final ESDocumentToIndexChunk chunk) throws IOException
 	{
+		final RestHighLevelClient elasticsearchClient = configService.elasticsearchClient();
 		final String esIndexName = config.getEsIndexName();
 
 		final BulkRequest bulkRequest = new BulkRequest();
@@ -357,30 +344,22 @@ public class ModelToIndexEnqueueProcessor
 					.source(documentToIndex.getJson(), XContentType.JSON));
 		}
 
-		if (bulkRequest.numberOfActions() <= 0)
+		if (bulkRequest.numberOfActions() > 0)
 		{
-			return;
-		}
-
-		final RestHighLevelClient elasticsearchClient = configService.elasticsearchClient();
-		final BulkResponse response = elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
-
-		if (logger.isDebugEnabled())
-		{
-			final BulkItemResponse[] items = response.getItems();
-			final int count = items != null ? items.length : 0;
-			logger.debug("Got {} bulk responses. Took {}ms (ingest: {})", count, response.getTook(), response.getIngestTook());
+			elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
 		}
 	}
 
+	@ToString
 	private static class ConfigAndEvents
 	{
-		@NonNull @Getter private final FTSConfig config;
+		@Getter
+		private final FTSConfig config;
 
-		@NonNull @Getter private final ImmutableSet<TableName> sourceTableNames;
-		@NonNull private final ArrayList<ModelToIndex> events = new ArrayList<>();
+		@Getter
+		private final ImmutableSet<TableName> sourceTableNames;
 
-		@Getter private boolean deleteIndexFirst = false;
+		private final ArrayList<ModelToIndex> events = new ArrayList<>();
 
 		private ConfigAndEvents(
 				@NonNull final FTSConfig config,
@@ -390,27 +369,11 @@ public class ModelToIndexEnqueueProcessor
 			this.sourceTableNames = sourceTableNames;
 		}
 
-		public String toString()
+		public void addEvent(final ModelToIndex event)
 		{
-			return MoreObjects.toStringHelper(this)
-					.add("esIndexName", config.getEsIndexName())
-					.add("events.count", events.size())
-					.add("deleteIndexFirst", deleteIndexFirst)
-					.toString();
-		}
-
-		public void addEvent(@NonNull final ModelToIndex event)
-		{
-			if (event.getEventType().isDeleteIndexRequest())
+			if (!events.contains(event))
 			{
-				this.deleteIndexFirst = true;
-			}
-			else
-			{
-				if (!events.contains(event))
-				{
-					events.add(event);
-				}
+				events.add(event);
 			}
 		}
 

@@ -11,7 +11,7 @@ registerHandler({
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.rawMaterialsIssueActivityId = fromActivity.componentProps.rawMaterialsIssueActivityId;
-    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
+    draftActivityDataStored.isAlwaysAvailableToUser = true;
     return draftActivityDataStored;
   },
 });

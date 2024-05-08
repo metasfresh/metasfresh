@@ -1,13 +1,11 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -199,10 +197,7 @@ final class PickingV2TestHelper
 				pickingCandidateRepository,
 				sourceHUsRepository,
 				huReservationService,
-				bpartnersService,
-				ADReferenceService.newMocked(),
-				InventoryService.newInstanceForUnitTesting()
-		);
+				bpartnersService);
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)

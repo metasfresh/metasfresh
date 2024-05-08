@@ -1,17 +1,15 @@
 package de.metas.ui.web.order.products_proposal.process;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.order.products_proposal.view.OrderProductsProposalViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.util.Services;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -37,8 +35,8 @@ import org.compiere.SpringContextHolder;
 
 public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposal_Launcher_Template implements IProcessPrecondition
 {
-	private final OrderProductsProposalViewFactory productsProposalViewFactory = SpringContextHolder.instance.getBean(OrderProductsProposalViewFactory.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@Autowired
+	private OrderProductsProposalViewFactory productsProposalViewFactory;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -48,8 +46,7 @@ public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposa
 			return ProcessPreconditionsResolution.rejectWithInternalReason("one and only one order shall be selected");
 		}
 
-		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
-		final I_C_Order salesOrder = orderDAO.getById(orderId, I_C_Order.class);
+		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
 		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
 		if (!docStatus.isDraftedOrInProgress())
 		{

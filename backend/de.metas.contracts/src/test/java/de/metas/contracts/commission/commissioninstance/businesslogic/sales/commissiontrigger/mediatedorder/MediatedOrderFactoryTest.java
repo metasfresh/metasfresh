@@ -22,8 +22,6 @@
 
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
@@ -32,8 +30,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
@@ -53,32 +49,28 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 import static org.mockito.ArgumentMatchers.eq;
 
-@ExtendWith(SnapshotExtension.class)
 public class MediatedOrderFactoryTest
 {
 	private MediatedOrderFactory mediatedOrderFactory;
 	private CommissionProductService commissionProductServiceMock;
 
-	private Expect expect;
-
 	@BeforeEach
 	public void beforeEach()
 	{
-		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
-
 		commissionProductServiceMock = Mockito.mock(CommissionProductService.class);
 		mediatedOrderFactory = new MediatedOrderFactory(commissionProductServiceMock);
 	}
@@ -86,6 +78,7 @@ public class MediatedOrderFactoryTest
 	@BeforeAll
 	static void init()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -117,7 +110,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -147,7 +140,7 @@ public class MediatedOrderFactoryTest
 		final MediatedOrder result = mediatedOrderFactory.forRecord(mediatedOrderRecord).get();
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -196,6 +189,7 @@ public class MediatedOrderFactoryTest
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		;
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);
@@ -221,7 +215,6 @@ public class MediatedOrderFactoryTest
 
 		//tax
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
-		taxRecord.setName("tax");
 		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		taxRecord.setRate(BigDecimal.TEN);

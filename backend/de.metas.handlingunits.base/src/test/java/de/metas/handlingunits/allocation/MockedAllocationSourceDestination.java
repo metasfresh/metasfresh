@@ -26,7 +26,7 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.common.util.pair.IPair;
+import org.adempiere.util.lang.IPair;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHUContext;

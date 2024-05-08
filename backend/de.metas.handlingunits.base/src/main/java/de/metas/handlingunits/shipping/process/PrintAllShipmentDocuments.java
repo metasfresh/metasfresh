@@ -27,14 +27,18 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.ReportStarter;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import lombok.NonNull;
+
+import java.util.List;
 
 public class PrintAllShipmentDocuments extends ReportStarter implements IProcessPrecondition
 {
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isSingleSelection())
+		final List<I_M_ShipperTransportation> selectedModels = context.getSelectedModels(I_M_ShipperTransportation.class);
+		if (selectedModels.size() == 1)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}

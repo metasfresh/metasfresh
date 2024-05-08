@@ -22,15 +22,12 @@ package de.metas.lock.api;
  * #L%
  */
 
-import com.google.common.collect.SetMultimap;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 
 import java.util.List;
@@ -85,8 +82,6 @@ public interface ILockManager extends ISingletonService
 	/** @return true if given model is locked by any lock */
 	boolean isLocked(Object model);
 
-	boolean isLocked(Object model, LockOwner lockOwner);
-
 	/**
 	 * Retrieves next model from query and locks it (using {@link LockOwner#NONE}.
 	 *
@@ -96,7 +91,7 @@ public interface ILockManager extends ISingletonService
 
 	/**
 	 * Builds a SQL where clause to be used in other queries to filter the results.
-	 * <p>
+	 *
 	 * For example, for table name 'MyTable' and join column 'MyTable.MyTable_ID', this method could return:
 	 *
 	 * <pre>
@@ -149,8 +144,6 @@ public interface ILockManager extends ISingletonService
 	 */
 	ILock getExistingLockForOwner(LockOwner lockOwner);
 
-	<T> IQueryFilter<T> getNotLockedFilter(@NonNull String modelTableName, @NonNull String joinColumnNameFQ);
-
 	/**
 	 * Create and return a query builder that allows to retrieve all records of the given <code>modelClass</code> which are currently locked.
 	 * <p>
@@ -165,6 +158,4 @@ public interface ILockManager extends ISingletonService
 	int removeAutoCleanupLocks();
 
 	ExistingLockInfo getLockInfo(TableRecordReference tableRecordReference, LockOwner lockOwner);
-
-	SetMultimap<TableRecordReference, ExistingLockInfo> getLockInfosByRecordIds(@NonNull TableRecordReferenceSet recordRefs);
 }

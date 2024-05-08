@@ -1,21 +1,15 @@
 @import './variables.scss';
 @import 'bulma/bulma.sass';
 @import './login.scss';
-@import './applications-list.scss';
 @import './application.scss';
 @import './fonts.scss';
 @import './view-header.scss';
 @import './buttons.scss';
 @import './launchers.scss';
-@import './launchers-filters.scss';
+@import './code-scanner.scss';
 @import './prompt-dialog.scss';
 @import './pick-products.scss';
 @import './get-qty-dialog.scss';
-@import './BarcodeScannerComponent.scss';
-@import './toast.scss';
-@import './hu-button.scss';
-@import './spinner.scss';
-@import './error-screen.scss';
 
 * {
   box-sizing: border-box;
@@ -37,12 +31,4 @@ code {
 
 #root {
   width: 100%;
-}
-
-.centered-text {
-  text-align: center;
-}
-
-.with-border-top {
-  border-top: 1px solid $grey-lighter
 }

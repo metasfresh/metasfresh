@@ -1,7 +1,6 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -9,20 +8,20 @@ import java.util.Properties;
 /** Generated Model for C_RemittanceAdvice
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_RemittanceAdvice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2027386473L;
+	private static final long serialVersionUID = -457144040L;
 
     /** Standard Constructor */
-    public X_C_RemittanceAdvice (final Properties ctx, final int C_RemittanceAdvice_ID, @Nullable final String trxName)
+    public X_C_RemittanceAdvice (final Properties ctx, final int C_RemittanceAdvice_ID, final String trxName)
     {
       super (ctx, C_RemittanceAdvice_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_RemittanceAdvice (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_RemittanceAdvice (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -36,7 +35,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setAdditionalNotes (final @Nullable java.lang.String AdditionalNotes)
+	public void setAdditionalNotes (final java.lang.String AdditionalNotes)
 	{
 		set_Value (COLUMNNAME_AdditionalNotes, AdditionalNotes);
 	}
@@ -48,7 +47,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setAnnouncedDateTrx (final @Nullable java.sql.Timestamp AnnouncedDateTrx)
+	public void setAnnouncedDateTrx (final java.sql.Timestamp AnnouncedDateTrx)
 	{
 		set_Value (COLUMNNAME_AnnouncedDateTrx, AnnouncedDateTrx);
 	}
@@ -274,7 +273,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setExternalDocumentNo (final @Nullable java.lang.String ExternalDocumentNo)
+	public void setExternalDocumentNo (final java.lang.String ExternalDocumentNo)
 	{
 		set_Value (COLUMNNAME_ExternalDocumentNo, ExternalDocumentNo);
 	}
@@ -322,19 +321,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setPaymentDate (final @Nullable java.sql.Timestamp PaymentDate)
-	{
-		set_Value (COLUMNNAME_PaymentDate, PaymentDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getPaymentDate() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_PaymentDate);
-	}
-
-	@Override
-	public void setPaymentDiscountAmountSum (final @Nullable BigDecimal PaymentDiscountAmountSum)
+	public void setPaymentDiscountAmountSum (final BigDecimal PaymentDiscountAmountSum)
 	{
 		set_Value (COLUMNNAME_PaymentDiscountAmountSum, PaymentDiscountAmountSum);
 	}
@@ -387,7 +374,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setSendAt (final @Nullable java.sql.Timestamp SendAt)
+	public void setSendAt (final java.sql.Timestamp SendAt)
 	{
 		set_Value (COLUMNNAME_SendAt, SendAt);
 	}
@@ -399,7 +386,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setServiceFeeAmount (final @Nullable BigDecimal ServiceFeeAmount)
+	public void setServiceFeeAmount (final BigDecimal ServiceFeeAmount)
 	{
 		set_Value (COLUMNNAME_ServiceFeeAmount, ServiceFeeAmount);
 	}
@@ -427,7 +414,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setServiceFeeExternalInvoiceDocumentNo (final @Nullable java.lang.String ServiceFeeExternalInvoiceDocumentNo)
+	public void setServiceFeeExternalInvoiceDocumentNo (final java.lang.String ServiceFeeExternalInvoiceDocumentNo)
 	{
 		set_Value (COLUMNNAME_ServiceFeeExternalInvoiceDocumentNo, ServiceFeeExternalInvoiceDocumentNo);
 	}
@@ -439,7 +426,7 @@ public class X_C_RemittanceAdvice extends org.compiere.model.PO implements I_C_R
 	}
 
 	@Override
-	public void setServiceFeeInvoicedDate (final @Nullable java.sql.Timestamp ServiceFeeInvoicedDate)
+	public void setServiceFeeInvoicedDate (final java.sql.Timestamp ServiceFeeInvoicedDate)
 	{
 		set_Value (COLUMNNAME_ServiceFeeInvoicedDate, ServiceFeeInvoicedDate);
 	}

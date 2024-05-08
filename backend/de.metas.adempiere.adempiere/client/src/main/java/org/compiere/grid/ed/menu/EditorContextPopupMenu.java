@@ -71,7 +71,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 	 * 
 	 * @param editor
 	 */
-	public static void onGridFieldSet(final VEditor editor)
+	public static final void onGridFieldSet(final VEditor editor)
 	{
 		final EditorContextPopupMenu popupMenu = getEditorContextPopupMenu(editor);
 		if (popupMenu == null)
@@ -82,7 +82,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		popupMenu.onGridFieldSet();
 	}
 
-	private static EditorContextPopupMenu getEditorContextPopupMenu(final VEditor editor)
+	private static final EditorContextPopupMenu getEditorContextPopupMenu(final VEditor editor)
 	{
 		if (editor instanceof JComponent)
 		{
@@ -109,14 +109,14 @@ public class EditorContextPopupMenu extends JPopupMenu
 	public EditorContextPopupMenu(final IContextMenuActionContext menuCtx)
 	{
 		super();
-		setInvoker(Env.getWindow(Env.WINDOW_MAIN));
+
 		Check.assumeNotNull(menuCtx, "menuCtx is not null");
 		this.menuCtx = menuCtx;
 
 		bindToVEditor();
 	}
 
-	private void bindToVEditor()
+	private final void bindToVEditor()
 	{
 		final VEditor editor = menuCtx.getEditor();
 
@@ -348,7 +348,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 		final Container parentComp = (Container)parent.getComponent();
 
 		//
-		// Add separator if we got more than one child
+		// Add separator if we got more then one child
 		final boolean moreThanOneChildren = children.length > 1;
 		if (moreThanOneChildren)
 		{
@@ -444,6 +444,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 	/**
 	 * Check and update all menu items if available
 	 * 
+	 * @param item
 	 * @return true if ANY item is available
 	 */
 	private boolean checkAvailableActions()
@@ -456,6 +457,7 @@ public class EditorContextPopupMenu extends JPopupMenu
 	/**
 	 * Check and update menu item if available
 	 * 
+	 * @param item
 	 * @return true if item is available
 	 */
 	private boolean checkAvailable(MenuElement item)

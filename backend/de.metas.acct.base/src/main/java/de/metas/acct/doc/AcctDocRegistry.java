@@ -1,10 +1,8 @@
 package de.metas.acct.doc;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.acct.api.AcctSchema;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.List;
+import java.util.Set;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.acct.Doc;
@@ -12,8 +10,13 @@ import org.compiere.acct.PostingExecutionException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+import lombok.ToString;
 
 @Service
 public class AcctDocRegistry
@@ -49,38 +52,22 @@ public class AcctDocRegistry
 		return docProviders.getDocTableNames();
 	}
 
-	public boolean isAccountingTable(final String docTableName)
-	{
-		return docProviders.isAccountingTable(docTableName);
-	}
-
 	@ToString
 	private static class AggregatedAcctDocProvider implements IAcctDocProvider
 	{
-		private final ImmutableMap<String, IAcctDocProvider> providersByDocTableName;
+		private final ImmutableList<IAcctDocProvider> providers;
 
 		private AggregatedAcctDocProvider(final List<IAcctDocProvider> providers)
 		{
-			final ImmutableMap.Builder<String, IAcctDocProvider> mapBuilder = ImmutableMap.builder();
-			for (final IAcctDocProvider provider : providers)
-			{
-				for (final String docTableName : provider.getDocTableNames())
-				{
-					mapBuilder.put(docTableName, provider);
-				}
-			}
-			this.providersByDocTableName = mapBuilder.build();
+			this.providers = ImmutableList.copyOf(providers);
 		}
 
 		@Override
 		public Set<String> getDocTableNames()
 		{
-			return providersByDocTableName.keySet();
-		}
-
-		public boolean isAccountingTable(final String docTableName)
-		{
-			return getDocTableNames().contains(docTableName);
+			return providers.stream()
+					.flatMap(provider -> provider.getDocTableNames().stream())
+					.collect(ImmutableSet.toImmutableSet());
 		}
 
 		@Override
@@ -91,14 +78,17 @@ public class AcctDocRegistry
 		{
 			try
 			{
-				final String docTableName = documentRef.getTableName();
-				final IAcctDocProvider provider = providersByDocTableName.get(docTableName);
-				if (provider == null)
+				for (final IAcctDocProvider provider : providers)
 				{
-					return null;
+					final Doc<?> acctDoc = provider.getOrNull(services, acctSchemas, documentRef);
+					if (acctDoc != null)
+					{
+						return acctDoc;
+					}
 				}
 
-				return provider.getOrNull(services, acctSchemas, documentRef);
+				// no accountable document found
+				return null;
 			}
 			catch (final AdempiereException ex)
 			{

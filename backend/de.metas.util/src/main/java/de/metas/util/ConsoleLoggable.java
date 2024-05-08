@@ -22,41 +22,22 @@ package de.metas.util;
  * #L%
  */
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
 import java.io.PrintStream;
-import java.util.Objects;
 
 final class ConsoleLoggable implements ILoggable
 {
-	private static final ConsoleLoggable defaultInstance = new ConsoleLoggable(null);
+	public static final transient ConsoleLoggable instance = new ConsoleLoggable();
 
-	@Nullable private final String prefix;
-	@NonNull private final PrintStream out;
+	private final PrintStream out;
 
-	private ConsoleLoggable(@Nullable final String prefix)
+	private ConsoleLoggable()
 	{
-		this.prefix = prefix;
-		this.out = System.out;
-	}
-
-	public static ConsoleLoggable withPrefix(@Nullable final String prefix)
-	{
-		if (Objects.equals(defaultInstance.prefix, prefix))
-		{
-			return defaultInstance;
-		}
-		return new ConsoleLoggable(prefix);
+		out = System.out;
 	}
 
 	@Override
 	public ILoggable addLog(final String msg, final Object... msgParameter)
 	{
-		if (prefix != null)
-		{
-			out.print(prefix);
-		}
 		out.println(StringUtils.formatMessage(msg, msgParameter));
 		return this;
 	}

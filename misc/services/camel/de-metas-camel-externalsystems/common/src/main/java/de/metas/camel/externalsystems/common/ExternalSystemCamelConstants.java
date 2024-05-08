@@ -41,18 +41,12 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
 	public static final String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
 	public static final String HEADER_HU_ID = "M_HU_ID";
-	public static final String HEADER_PP_ORDER_ID = "PP_ORDER_ID";
-	public static final String HEADER_PRODUCT_IDENTIFIER = "productIdentifier";
-	public static final String HEADER_PROJECT_ID = "projectId";
-	public static final String HEADER_AD_Process_Value = "adProcessValue";
 
 	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
 
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
-
-	public static final String MF_UPSERT_WAREHOUSE_V2_CAMEL_URI = "metasfresh.upsert-warehouse-v2.camel.uri";
 
 	public static final String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
@@ -106,10 +100,12 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI = "To-MF_Lookup-ExternalReference_V2";
 
+	public static final String REST_WOOCOMMERCE_PATH = "/woocommerce";
 
 	public static final String REST_API_AUTHENTICATE_TOKEN = "Core-registerToken";
 	public static final String REST_API_EXPIRE_TOKEN = "Core-expireToken";
 
+	public static final String WOOCOMMERCE_AUTHORITY = "WOO";
 
 	public static final String MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI= "metasfresh.create-service-status-v2.camel.uri";
 	public static final String MF_GET_SERVICE_STATUS_V2_CAMEL_URI = "metasfresh.service-status-v2.camel.uri";
@@ -121,50 +117,10 @@ public class ExternalSystemCamelConstants
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_ROUTE_ID = "To-MF_updateHUAttributes_V2-Route";
 	public static final String MF_UPDATE_HU_ATTRIBUTES_V2_CAMEL_URI = "metasfresh.update-hu-attributes-v2.api.uri";
 
+	public static final String MF_PROCESS_REMOTE_HTTP_ERROR_ROUTE_ID = "Extract_HTTP_Error-Route";
 
 	public static final String MF_GET_EXTERNAL_SYSTEM_INFO = "metasfresh.external-system-info-v2.camel.uri";
 
 	public static final String MF_CLEAR_HU_V2_CAMEL_ROUTE_ID = "To-MF_clearHU_V2-Route";
 	public static final String MF_CLEAR_HU_V2_URI = "metasfresh.clear-hu-v2.api.uri";
-
-	public static final String MF_RETRIEVE_PP_ORDER_V2_CAMEL_ROUTE_ID = "To-MF_retrieve_PPOrder_V2-Route";
-	public static final String MF_RETRIEVE_MATERIAL_PRODUCT_INFO_V2_CAMEL_ROUTE_ID = "To-MF_retrieve_Material_ProductInfo_V2-Route";
-	public static final String MF_SEARCH_PRODUCT_PRICES_V2_CAMEL_ROUTE_ID = "To-MF_Search_ProductPrices_V2-Route";
-
-	public static final String MF_VERIFY_BOM_V2_CAMEL_URI = "TO-MF_manufacturing_verify-bom";
-
-	public static final String MF_UPSERT_RPROJECT_V2_ROUTE_ID = "To-MF_Projects-Route";
-	public static final String MF_UPSERT_PROJECT_V2_CAMEL_URI = "metasfresh.project-v2-baseurl.camel.uri";
-
-	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_ROUTE_ID = "To-MF_UpsertWorkOrderProjects-Route";
-	public static final String MF_GET_WORK_ORDER_PROJECT_BY_QUERY_V2_ROUTE_ID = "To-MF_GetWorkOrderProjectsByQuery-Route";
-	public static final String MF_UPSERT_WORK_ORDER_PROJECT_V2_CAMEL_URI = "metasfresh.workorder-v2-baseurl.camel.uri";
-	public static final String MF_GET_WORK_ORDER_PROJECT_BY_QUERY_V2_CAMEL_URI = "metasfresh.get-workorder-project-by-query-v2.camel.uri";
-
-	public static final String MF_UPSERT_BUDGET_PROJECT_V2_ROUTE_ID = "To-MF_UpsertBudgetProjects-Route";
-	public static final String MF_UPSERT_BUDGET_PROJECT_V2_CAMEL_URI = "metasfresh.budget-project-v2-baseurl.camel.uri";
-
-	public static final String MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI = "metasfresh.delete-creditLimit-v2.camel.uri";
-
-	public static final String HEADER_TARGET_URI = "targetUri";
-
-	public static final String MF_UPSERT_BPARTNER_V2_BASE_URL = "metasfresh.upsert-bpartner-v2.api.uri";
-
-	public static final String MF_GET_WORK_ORDER_PROJECT_V2_ROUTE_ID = "To-MF_GetWorkOrderProject-Route";
-	public static final String MF_GET_WORK_ORDER_PROJECT_V2_CAMEL_URI = "metasfresh.workorder-v2-baseurl.camel.uri";
-
-	public static final String MF_GET_BUDGET_PROJECT_V2_ROUTE_ID = "To-MF_GetBudgetProjects-Route";
-
-	public static final String MF_CREATE_CONVERSION_RATE_CAMEL_URI = "metasfresh.create-conversion-rate-v2.camel.uri";
-	public static final String MF_CREATE_CONVERSION_RATE_V2_URI = "metasfresh.api.v2.currency.baseurl";
-
-	public static final String MF_GET_PRINTING_DATA_ROUTE_ID = "To-MF_getPrintingData_V2_Route";
-	public static final String MF_SET_PRINTING_RESULT_ROUTE_ID = "To-MF_setPrintingResult_V2_Route";
-	public static final String HEADER_PRINTING_QUEUE_ID = "printingQueueId";
-	public static final String MF_PRINT_V2_BASE = "metasfresh.print.v2.api.base.uri";
-
-
-	public static final String MF_INVOKE_AD_PROCESS = "To-MF_InvokeADProcess-Route";
-
-	public static final String MF_AD_PROCESS_V2_URI = "metasfresh.api.v2.process.baseurl";
 }

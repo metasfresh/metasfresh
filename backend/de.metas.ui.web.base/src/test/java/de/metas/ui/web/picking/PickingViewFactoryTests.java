@@ -2,7 +2,6 @@ package de.metas.ui.web.picking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -44,7 +43,7 @@ public class PickingViewFactoryTests
 	@Test
 	public void testCreateView()
 	{
-		final PackageableRowsRepository pickingViewRepo = new PackageableRowsRepository(LookupDataSourceFactory.sharedInstance());
+		final PackageableRowsRepository pickingViewRepo = new PackageableRowsRepository();
 		final PickingCandidateService pickingCandidateService = Mockito.mock(PickingCandidateService.class);
 
 		final PackageableViewFactory pickingViewFactory = new PackageableViewFactory(pickingViewRepo, pickingCandidateService);

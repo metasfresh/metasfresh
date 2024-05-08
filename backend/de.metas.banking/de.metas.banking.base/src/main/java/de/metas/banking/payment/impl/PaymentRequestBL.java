@@ -22,6 +22,15 @@ package de.metas.banking.payment.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelectionLine;
+
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_Payment_Request;
@@ -31,15 +40,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelectionLine;
-
-import java.math.BigDecimal;
 
 /**
  * @author al
@@ -72,10 +72,12 @@ public class PaymentRequestBL implements IPaymentRequestBL
 	}
 
 	@Override
-	public boolean updatePaySelectionLineFromPaymentRequestIfExists(@NonNull final I_C_PaySelectionLine paySelectionLine)
+	public boolean updatePaySelectionLineFromPaymentRequestIfExists(final I_C_PaySelectionLine paySelectionLine)
 	{
-		final I_C_Invoice invoice = Check.assumeNotNull(paySelectionLine.getC_Invoice(),
-														"C_Invoice not null for C_PaySelectionLine_ID={}", paySelectionLine.getC_PaySelectionLine_ID());
+		Check.assumeNotNull(paySelectionLine, "paySelectionLine not null");
+
+		final I_C_Invoice invoice = paySelectionLine.getC_Invoice();
+		Check.assumeNotNull(invoice, "invoice not null");
 
 		final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -107,10 +109,9 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		if (requestAmount.signum() != 0)
 		{
 			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
-			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
-
-			// make sure to also subtract the discount (that's coming from the payment-term)
-			final BigDecimal payAmt = requestAmount.min(openAmt.subtract(paySelectionLine.getDiscountAmt()));
+			final boolean creditMemoAdjusted = true;
+			final BigDecimal openAmt = allocationDAO.retrieveOpenAmt(invoice, creditMemoAdjusted);
+			final BigDecimal payAmt = requestAmount.min(openAmt);
 			paySelectionLine.setPayAmt(payAmt);
 
 			final BigDecimal differenceAmt = payAmt.subtract(openAmt);

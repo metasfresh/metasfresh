@@ -33,7 +33,7 @@ class MenuOverlayItem extends Component {
 
     if (type === 'newRecord') {
       handleNewRedirect(elementId);
-    } else if (type === 'window' || type === 'board' || type === 'calendar') {
+    } else if (type === 'window' || type === 'board') {
       if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
         history.go(0);
       } else {
@@ -43,8 +43,6 @@ class MenuOverlayItem extends Component {
       handleClickOnFolder && handleClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
       openModal(elementId + '', 'process', caption);
-    } else {
-      console.warn(`Do nothing because type "${type}" is not handled`);
     }
   };
 
@@ -168,8 +166,6 @@ class MenuOverlayItem extends Component {
       case 'group':
         return <i className="meta-icon-report m-icon-space" />;
       case 'board':
-        return <i className="meta-icon-calendar m-icon-space" />;
-      case 'calendar':
         return <i className="meta-icon-calendar m-icon-space" />;
       default:
         return '';

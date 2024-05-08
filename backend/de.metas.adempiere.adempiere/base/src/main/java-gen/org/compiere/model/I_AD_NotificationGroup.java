@@ -1,33 +1,43 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for AD_NotificationGroup
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_AD_NotificationGroup 
 {
 
-	String Table_Name = "AD_NotificationGroup";
+    /** TableName=AD_NotificationGroup */
+    public static final String Table_Name = "AD_NotificationGroup";
 
-//	/** AD_Table_ID=540959 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540959 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 4 - System
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
-	 * Client/Tenant for this installation.
+	 * Get Mandant.
+	 * Mandant für diese Installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_Client>(I_AD_NotificationGroup.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Notification group.
@@ -36,7 +46,7 @@ public interface I_AD_NotificationGroup
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_NotificationGroup_ID (int AD_NotificationGroup_ID);
+	public void setAD_NotificationGroup_ID (int AD_NotificationGroup_ID);
 
 	/**
 	 * Get Notification group.
@@ -45,230 +55,224 @@ public interface I_AD_NotificationGroup
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_NotificationGroup_ID();
+	public int getAD_NotificationGroup_ID();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_AD_NotificationGroup_ID = new ModelColumn<>(I_AD_NotificationGroup.class, "AD_NotificationGroup_ID", null);
-	String COLUMNNAME_AD_NotificationGroup_ID = "AD_NotificationGroup_ID";
+    /** Column definition for AD_NotificationGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_AD_NotificationGroup_ID = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "AD_NotificationGroup_ID", null);
+    /** Column name AD_NotificationGroup_ID */
+    public static final String COLUMNNAME_AD_NotificationGroup_ID = "AD_NotificationGroup_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_Org>(I_AD_NotificationGroup.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
+	 * Get Erstellt.
+	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Created = new ModelColumn<>(I_AD_NotificationGroup.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Erstellt durch.
+	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Deadletter User.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDeadletter_User_ID (int Deadletter_User_ID);
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_User>(I_AD_NotificationGroup.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Get Deadletter User.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getDeadletter_User_ID();
-
-	String COLUMNNAME_Deadletter_User_ID = "Deadletter_User_ID";
-
-	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Description = new ModelColumn<>(I_AD_NotificationGroup.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entity Type.
-	 * Entity Type
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setEntityType (java.lang.String EntityType);
+	public void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entity Type.
-	 * Entity Type
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getEntityType();
+	public java.lang.String getEntityType();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_NotificationGroup.class, "EntityType", null);
-	String COLUMNNAME_EntityType = "EntityType";
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "EntityType", null);
+    /** Column name EntityType */
+    public static final String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Internal Name.
+	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInternalName (java.lang.String InternalName);
+	public void setInternalName (java.lang.String InternalName);
 
 	/**
-	 * Get Internal Name.
+	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getInternalName();
+	public java.lang.String getInternalName();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_InternalName = new ModelColumn<>(I_AD_NotificationGroup.class, "InternalName", null);
-	String COLUMNNAME_InternalName = "InternalName";
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Active.
-	 * The record is active in the system
+	 * Set Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
-	 * The record is active in the system
+	 * Get Aktiv.
+	 * Der Eintrag ist im System aktiv
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_NotificationGroup.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Notify organization business partner users only.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsNotifyOrgBPUsersOnly (boolean IsNotifyOrgBPUsersOnly);
-
-	/**
-	 * Get Notify organization business partner users only.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isNotifyOrgBPUsersOnly();
-
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_IsNotifyOrgBPUsersOnly = new ModelColumn<>(I_AD_NotificationGroup.class, "IsNotifyOrgBPUsersOnly", null);
-	String COLUMNNAME_IsNotifyOrgBPUsersOnly = "IsNotifyOrgBPUsersOnly";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
+	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Name = new ModelColumn<>(I_AD_NotificationGroup.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Updated.
-	 * Date this record was updated
+	 * Get Aktualisiert.
+	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Updated = new ModelColumn<>(I_AD_NotificationGroup.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, Object>(I_AD_NotificationGroup.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Aktualisiert durch.
+	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_NotificationGroup, org.compiere.model.I_AD_User>(I_AD_NotificationGroup.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

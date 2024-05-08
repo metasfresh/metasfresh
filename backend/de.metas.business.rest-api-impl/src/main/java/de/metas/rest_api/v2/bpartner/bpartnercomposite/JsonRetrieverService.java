@@ -33,7 +33,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -49,14 +48,12 @@ import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilde
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
-import de.metas.common.bpartner.v2.response.JsonResponseGreeting;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
@@ -66,12 +63,12 @@ import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
-import de.metas.externalreference.bankaccount.BPBankAccountType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -79,23 +76,17 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
-import de.metas.job.JobService;
+import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.pricing.PricingSystemId;
+import de.metas.payment.PaymentRule;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.title.Title;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
@@ -156,26 +147,9 @@ public class JsonRetrieverService
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
-			.put(BPartner.PAYMENT_RULE_PO, JsonResponseBPartner.PAYMENT_RULE_PO)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
 			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
-			.put(BPartner.CUSTOMER_PRICING_SYSTEM_ID, JsonResponseBPartner.PRICING_SYSTEM_ID)
-			.put(BPartner.SECTION_CODE_ID, JsonResponseBPartner.SECTION_CODE_ID)
-			.put(BPartner.DESCRIPTION, JsonResponseBPartner.DESCRIPTION)
-			.put(BPartner.DELIVERY_RULE, JsonResponseBPartner.DELIVERY_RULE)
-			.put(BPartner.DELIVERY_VIA_RULE, JsonResponseBPartner.DELIVERY_VIA_RULE)
-			.put(BPartner.STORAGE_WAREHOUSE, JsonResponseBPartner.STORAGE_WAREHOUSE)
-			.put(BPartner.INCOTERMS_CUSTOMER_ID, JsonResponseBPartner.INCOTERMS_CUSTOMER_ID)
-			.put(BPartner.INCOTERMS_VENDOR_ID, JsonResponseBPartner.INCOTERMS_VENDOR_ID)
-			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM_ID)
-			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM_ID)
-			.put(BPartner.SECTION_GROUP_PARTNER_ID, JsonResponseBPartner.SECTION_GROUP_PARTNER_ID)
-			.put(BPartner.PROSPECT, JsonResponseBPartner.PROSPECT)
-			.put(BPartner.SAP_BPARTNER_CODE, JsonResponseBPartner.SAP_BPARTNER_CODE)
-			.put(BPartner.SECTION_GROUP_PARTNER, JsonResponseBPartner.SECTION_GROUP_PARTNER)
-			.put(BPartner.SECTION_PARTNER, JsonResponseBPartner.SECTION_PARTNER)
-			.put(BPartner.URPRODUZENT, JsonResponseBPartner.URPRODUZENT)
 			.build();
 
 	/**
@@ -241,34 +215,12 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
 			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
 			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
-			.put(BPartnerLocation.COUNTRY_NAME, JsonResponseLocation.COUNTRY_NAME)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
-			.put(BPartnerLocation.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
-			.put(BPartnerLocation.HANDOVER_LOCATION, JsonResponseLocation.HANDOVER_LOCATION)
-			.put(BPartnerLocation.REMIT_TO, JsonResponseLocation.REMIT_TO)
-			.put(BPartnerLocation.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
-			.put(BPartnerLocation.VAT_TAX_ID, JsonResponseLocation.VAT_ID)
-			.put(BPartnerLocation.SAP_PAYMENT_METHOD, JsonResponseLocation.SAP_PAYMENT_METHOD)
-			.put(BPartnerLocation.SAP_BPARTNER_CODE, JsonResponseLocation.SAP_BPARTNER_CODE)
-			.build();
-
-	/**
-	 * Mapping between {@link JsonResponseBPBankAccount} property names and REST-API properties names
-	 */
-	private static final ImmutableMap<String, String> BANK_ACCOUNT_FIELD_MAP = ImmutableMap
-			.<String, String>builder()
-			.put(BPartnerBankAccount.ID, JsonResponseBPBankAccount.ID)
-			.put(BPartnerBankAccount.IBAN, JsonResponseBPBankAccount.IBAN)
-			.put(BPartnerBankAccount.QR_IBAN, JsonResponseBPBankAccount.QR_IBAN)
-			.put(BPartnerBankAccount.ACTIVE, JsonResponseBPBankAccount.ACTIVE)
-			.put(BPartnerBankAccount.NAME, JsonResponseBPBankAccount.NAME)
-			.put(BPartnerBankAccount.BPARTNER_ID, JsonResponseBPBankAccount.BPARTNER_ID)
-			.put(BPartnerBankAccount.SWIFT_CODE, JsonResponseBPBankAccount.SWIFT_CODE)
-			.put(BPartnerBankAccount.IS_DEFAULT, JsonResponseBPBankAccount.IS_DEFAULT)
+			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -279,10 +231,9 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
-	private final JobService jobService;
+	private final JobRepository jobRepository;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final IPaymentTermRepository paymentTermRepository;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -295,9 +246,8 @@ public class JsonRetrieverService
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
-			@NonNull final JobService jobService,
+			@NonNull final JobRepository jobRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
-			@NonNull final IPaymentTermRepository paymentTermRepository,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -305,9 +255,8 @@ public class JsonRetrieverService
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
 		this.titleRepository = titleRepository;
-		this.jobService = jobService;
+		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
-		this.paymentTermRepository = paymentTermRepository;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
@@ -368,17 +317,10 @@ public class JsonRetrieverService
 			{
 				result.location(toJson(location));
 			}
-
-			// bank accounts
-			for (final BPartnerBankAccount bankAccount : bpartnerComposite.getBankAccounts())
-			{
-				result.bankAccount(toJson(bankAccount));
-			}
 			return result.build();
 		}
 	}
 
-	@NonNull
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
@@ -405,37 +347,17 @@ public class JsonRetrieverService
 				.customer(bpartner.isCustomer())
 				.company(bpartner.isCompany())
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
-				.pricingSystemId(JsonMetasfreshId.ofOrNull(PricingSystemId.toRepoId(bpartner.getCustomerPricingSystemId())))
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
-
-				.paymentRule(bpartner.mapPaymentRule(ValueMappingHelper::getJsonPaymentRule))
-				.paymentRulePO(bpartner.mapPaymentRulePO(ValueMappingHelper::getJsonPaymentRule))
-
+				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
+									 .map(PaymentRule::getCode)
+									 .map(JSONPaymentRule::ofCode)
+									 .orElse(null))
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
 				.debtorId(bpartner.getDebtorId())
-
-				.description(bpartner.getDescription())
-				.storageWarehouse(bpartner.isStorageWarehouse())
-				.deliveryRule(bpartner.mapDeliveryRule(ValueMappingHelper::getJsonDeliveryRule))
-				.deliveryViaRule(bpartner.mapDeliveryViaRule(ValueMappingHelper::getJsonDeliveryViaRule))
-
-				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(bpartner.getSectionCodeId())))
-
-				.incotermsCustomerId(JsonMetasfreshId.ofOrNull(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId())))
-				.incotermsVendorId(JsonMetasfreshId.ofOrNull(IncotermsId.toRepoId(bpartner.getIncotermsVendorId())))
-
-				.customerPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getCustomerPaymentTermId())))
-				.vendorPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getVendorPaymentTermId())))
-				.sectionGroupPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId())))
-				.prospect(bpartner.isProspect())
-				.sapBPartnerCode(bpartner.getSapBPartnerCode())
-				.sectionGroupPartner(bpartner.isSectionGroupPartner())
-				.sectionPartner(bpartner.isSectionPartner())
-				.urproduzent(bpartner.isUrproduzent())
 				.build();
 	}
 
@@ -500,32 +422,26 @@ public class JsonRetrieverService
 
 			final BPartnerContactType contactType = contact.getContactType();
 
-			JsonResponseGreeting greetingJson = null;
+			String greetingTrl = null;
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
-				final String greetingTrl = greeting.getGreeting(ad_language);
-
-				greetingJson = JsonResponseGreeting.builder()
-						.id(greeting.getId().map(JsonMetasfreshId::of))
-						.greeting(greetingTrl)
-						.name(greeting.getName())
-						.letterSalutation(greeting.getLetterSalutation())
-						.build();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
 
 			String titleTrl = null;
 			if (contact.getTitleId() != null)
 			{
-				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(), language);
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
 				titleTrl = title.getTitle();
 			}
+
 
 			Job job = null;
 			if (contact.getJobId() != null)
 			{
-				job = jobService.getById(contact.getJobId());
+				job = jobRepository.getById(contact.getJobId());
 			}
 
 			final List<JsonResponseContactRole> roles = contact.getRoles()
@@ -545,7 +461,7 @@ public class JsonRetrieverService
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
-					.greeting(greetingJson)
+					.greeting(greetingTrl)
 					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
@@ -586,14 +502,6 @@ public class JsonRetrieverService
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
 
 			final BPartnerLocationType locationType = location.getLocationType();
-
-			if (locationType == null)
-			{
-				throw new AdempiereException("locationType should not be missing! This is most probably a development error!")
-						.appendParametersToMessage()
-						.setParameter("BPartnerLocationId", location.getId());
-			}
-
 			return JsonResponseLocation.builder()
 					.active(location.isActive())
 					.name(location.getName())
@@ -623,10 +531,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
-					.vatId(location.getVatTaxId())
-					.sapPaymentMethod(location.getSapPaymentMethod())
-					.sapBPartnerCode(location.getSapBPartnerCode())
-					.countryName(location.getCountryName())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -662,17 +567,6 @@ public class JsonRetrieverService
 		else if (ExternalIdentifier.Type.METASFRESH_ID.equals(bpartnerIdentifier.getType()))
 		{
 			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofMetasfreshId(orgId, bpartnerIdentifier.asMetasfreshId());
-			final Optional<BPartnerComposite> bPartnerComposite = getBPartnerComposite(bpartnerIdLookupKey);
-
-			if (!bPartnerComposite.isPresent())
-			{
-				throw new InvalidIdentifierException("Given metasfreshId is not mapped to any BPartner!")
-						.appendParametersToMessage()
-						.setParameter("externalIdentifierType", bpartnerIdentifier.getType())
-						.setParameter("rawExternalIdentifier", bpartnerIdentifier.getRawValue());
-			}
-
-			return bPartnerComposite;
 		}
 		else
 		{
@@ -728,7 +622,6 @@ public class JsonRetrieverService
 				return bpartnersRepo.retrieveBPartnerIdBy(glnQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
-						.appendParametersToMessage()
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())
 						.setParameter("rawExternalIdentifier", bPartnerExternalIdentifier.getRawValue());
 		}
@@ -778,41 +671,6 @@ public class JsonRetrieverService
 	{
 		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
 		return extractResult(bpartnerComposites);
-	}
-
-	@NonNull
-	public Optional<MetasfreshId> resolveBankAccountId(
-			@NonNull final ExternalIdentifier bankAccountIdentifier,
-			@NonNull final BPartnerComposite bPartnerComposite)
-	{
-		return switch (bankAccountIdentifier.getType())
-				{
-					case METASFRESH_ID -> Optional.of(bankAccountIdentifier.asMetasfreshId());
-					case EXTERNAL_REFERENCE -> externalReferenceService.getJsonMetasfreshIdFromExternalReference(bPartnerComposite.getOrgIdNotNull(),
-																												 bankAccountIdentifier,
-																												 BPBankAccountType.BPBankAccount)
-							.map(MetasfreshId::of);
-					case IBAN -> bPartnerComposite.getBankAccountByIBAN(bankAccountIdentifier.asIban())
-							.map(BPartnerBankAccount::getId)
-							.map(MetasfreshId::of);
-					case QR_IBAN -> bPartnerComposite.getBankAccountByQrIban(bankAccountIdentifier.asQrIban())
-							.map(BPartnerBankAccount::getId)
-							.map(MetasfreshId::of);
-					default -> throw new InvalidIdentifierException("Given external identifier type is not supported!")
-							.appendParametersToMessage()
-							.setParameter("externalIdentifierType", bankAccountIdentifier.getType())
-							.setParameter("rawExternalIdentifier", bankAccountIdentifier.getRawValue());
-				};
-	}
-
-	@NonNull
-	public Optional<MetasfreshId> resolveBankAccountIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final ExternalIdentifier bpartnerIdentifier,
-			@NonNull final ExternalIdentifier bankAccountIdentifier)
-	{
-		return getBPartnerComposite(orgId, bpartnerIdentifier)
-				.flatMap(bPartnerComposite -> resolveBankAccountId(bankAccountIdentifier, bPartnerComposite));
 	}
 
 	private static Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> bpartnerComposites)
@@ -916,34 +774,6 @@ public class JsonRetrieverService
 		return bpartnerComposite
 				.extractContact(contactId)
 				.map(c -> toJson(c, bpartnerComposite.getBpartner().getLanguage()));
-	}
-
-	@NonNull
-	public PaymentTermId getPaymentTermId(@NonNull final ExternalIdentifier externalIdentifier, @NonNull final OrgId orgId)
-	{
-		switch (externalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return PaymentTermId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
-			case VALUE:
-				final PaymentTermQuery queryBuilder = PaymentTermQuery.builder()
-						.orgId(orgId)
-						.value(externalIdentifier.asValue())
-						.build();
-
-				final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermId(queryBuilder).orElse(null);
-
-				if (paymentTermId != null)
-				{
-					return paymentTermId;
-				}
-				break;
-
-			default:
-				throw new AdempiereException("Unsupported payment term external identifier: " + externalIdentifier);
-		}
-
-		throw new AdempiereException("PaymentTerm could not be found for identifier: " + externalIdentifier);
 	}
 
 	private Optional<BPartnerContactQuery> createContactQuery(@NonNull final ExternalIdentifier identifier)
@@ -1053,28 +883,6 @@ public class JsonRetrieverService
 				.excludedFromPurchase(record.isExcludedFromPurchase())
 				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
 				//
-				.build();
-	}
-
-	private static JsonResponseBPBankAccount toJson(@NonNull final BPartnerBankAccount bankAccount)
-	{
-		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId());
-		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getBpartnerId().getRepoId());
-		final JsonMetasfreshId currencyId = JsonMetasfreshId.of(CurrencyId.toRepoId(bankAccount.getCurrencyId()));
-
-		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bankAccount.getChangeLog(), BANK_ACCOUNT_FIELD_MAP);
-
-		return JsonResponseBPBankAccount.builder()
-				.metasfreshId(metasfreshId)
-				.metasfreshBPartnerId(metasfreshBPartnerId)
-				.currencyId(currencyId)
-				.iban(bankAccount.getIban())
-				.qrIban(bankAccount.getQrIban())
-				.name(bankAccount.getName())
-				.swiftCode(bankAccount.getSwiftCode())
-				.isDefault(bankAccount.isDefault())
-				.active(bankAccount.isActive())
-				.changeInfo(jsonChangeInfo)
 				.build();
 	}
 }

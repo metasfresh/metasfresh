@@ -6,7 +6,6 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -22,7 +21,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -55,9 +53,6 @@ import java.util.Set;
 
 public class OrderUserNotifications
 {
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	private AdMessageKey MSG_C_Order_NotifyUserAboutCreditLimitStatus = AdMessageKey.of("C_Order_NotifyUserAboutCreditLimitStatus");
-
 	public static OrderUserNotifications newInstance()
 	{
 		return new OrderUserNotifications();
@@ -65,7 +60,7 @@ public class OrderUserNotifications
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.order.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	private static final Logger logger = LogManager.getLogger(OrderUserNotifications.class);
@@ -174,19 +169,6 @@ public class OrderUserNotifications
 
 		@Nullable
 		ADMessageAndParams adMessageAndParams;
-	}
-
-
-	public OrderUserNotifications notifyAboutCreditLimit(@NonNull I_C_Order order, @NonNull String creditLimitMessage)
-	{
-		notificationBL.send(newUserNotificationRequest()
-									.recipientUserId(Env.getLoggedUserId())
-									.contentADMessage(MSG_C_Order_NotifyUserAboutCreditLimitStatus)
-									.contentADMessageParam(creditLimitMessage)
-									.targetAction(TargetRecordAction.of(TableRecordReference.of(order)))
-									.build());
-
-		return this;
 	}
 
 }

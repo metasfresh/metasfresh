@@ -111,15 +111,10 @@ public class StockCandidateService
 		final Candidate.CandidateBuilder candidateBuilder = Candidate.builder()
 				.type(CandidateType.STOCK)
 				.clientAndOrgId(candidate.getClientAndOrgId())
+				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
-				.simulated(candidate.isSimulated())
-				.lotForLot(candidate.getLotForLot());
-
-		if(candidate.getType() == CandidateType.DEMAND)
-		{
-			candidateBuilder.parentId(candidate.getId());
-		}
+				.simulated(candidate.isSimulated());
 
 		if (materialDescriptor.isReservedForCustomer())
 		{

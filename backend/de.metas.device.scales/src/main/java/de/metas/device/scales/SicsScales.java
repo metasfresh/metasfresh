@@ -22,7 +22,7 @@ package de.metas.device.scales;
  * #L%
  */
 
-import de.metas.device.scales.impl.ScalesGetWeightHandler;
+import de.metas.device.scales.impl.ScalesGetGrossWeightHandler;
 import de.metas.device.scales.impl.sics.ISiscCmd;
 import de.metas.device.scales.impl.sics.SicsResponseStringParser;
 import de.metas.device.scales.impl.sics.SicsWeighCmdS;
@@ -45,9 +45,9 @@ public class SicsScales extends AbstractTcpScales
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	private ScalesGetWeightHandler mkHandler(final ISiscCmd cmd)
+	private ScalesGetGrossWeightHandler mkHandler(final ISiscCmd cmd)
 	{
-		return new ScalesGetWeightHandler<ISiscCmd>()
+		return new ScalesGetGrossWeightHandler<ISiscCmd>()
 				.setCmd(cmd)
 				.setWeightFieldName("WeightValue")
 				.setUOMFieldName("Unit")

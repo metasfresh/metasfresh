@@ -1,27 +1,24 @@
 package de.metas.inoutcandidate.process;
 
-import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.cockpit.stock.StockDataQuery;
-import de.metas.process.JavaProcess;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
-import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageHolder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
-import java.util.Collections;
-import java.util.Optional;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.material.cockpit.stock.StockDataQuery;
+import de.metas.process.JavaProcess;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-			shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+	shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
 
 	@Override
 	protected void prepare()
@@ -40,9 +37,8 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 			throw new FillMandatoryException(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 		}
 
-		final OlAndSched olAndSched = OlAndSched.builder().shipmentSchedule(shipmentSchedule).build();
-		final ShipmentScheduleQtyOnHandStorageHolder storagesContainer = shipmentScheduleQtyOnHandStorageFactory.getHolderForOlAndSched(Collections.singletonList(olAndSched));
-		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(olAndSched);
+		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
+		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
 		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable());
 
@@ -57,10 +53,10 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final Optional<StockDataQuery> materialQuery = storagesContainer.toQuery(shipmentSchedule);
-				addLog("------------------------------------------------------------");
-				addLog("Storage Query:");
-				addLog(String.valueOf(materialQuery.orElse(null)));
+			final StockDataQuery materialQuery = storagesContainer.toQuery(shipmentSchedule);
+			addLog("------------------------------------------------------------");
+			addLog("Storage Query:");
+			addLog(String.valueOf(materialQuery));
 		}
 
 		return MSG_OK;

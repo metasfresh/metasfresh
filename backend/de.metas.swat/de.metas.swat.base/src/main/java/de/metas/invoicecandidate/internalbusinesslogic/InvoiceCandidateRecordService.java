@@ -10,6 +10,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -72,7 +73,7 @@ public class InvoiceCandidateRecordService
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceCandidate.InvoiceCandidateBuilder result = InvoiceCandidate.builder();
+		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -95,10 +96,6 @@ public class InvoiceCandidateRecordService
 				.product(new InvoiceCandidateProduct(productId, stocked))
 				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
-		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Override))
-		{
-			result.qtyToInvoiceOverrideInUom(icRecord.getQtyToInvoiceInUOM_Override());
-		}
 		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
 			final BigDecimal qtyToInvoiceOverrideInStockUom =                //
@@ -110,7 +107,7 @@ public class InvoiceCandidateRecordService
 
 		// purchase specialities
 		Optional<Percent> qualityDiscountOverride = Optional.empty();
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(icRecord.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
 		if (soTrx.isPurchase())
 		{
 			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
@@ -131,6 +128,7 @@ public class InvoiceCandidateRecordService
 				.loadOrderedQtys();
 
 		final DeliveredData deliveredData = DeliveredDataLoader.builder()
+				.invoiceCandDAO(invoiceCandDAO)
 				.invoiceCandidateId(invoiceCandidateId)
 				.soTrx(soTrx)
 				.productId(productId)

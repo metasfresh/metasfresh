@@ -4,16 +4,11 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.DocTypeId;
-import de.metas.report.PrintCopies;
-import de.metas.report.PrintFormatId;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.table.api.AdTableId;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,26 +38,39 @@ import javax.annotation.Nullable;
  */
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class BPPrintFormat
 {
-	@NonNull
-	BPartnerId bpartnerId;
+	@Getter
+	private final BPartnerId bpartnerId;
 
-	@Nullable
-	DocTypeId docTypeId;
+	@Getter
+	private final int docTypeId;
 
-	@Nullable
-	AdTableId adTableId;
+	@Getter
+	private final int adTableId;
 
-	@Nullable
-	PrintFormatId printFormatId;
+	@Getter
+	private final int printFormatId;
 
-	int bpPrintFormatId;
+	@Getter
+	private final int bpPrintFormatId;
 
-	@Nullable
-	BPartnerLocationId bPartnerLocationId;
+	@Builder(toBuilder = true)
+	private BPPrintFormat(@NonNull final BPartnerId bpartnerId,
+			final int docTypeId,
+			final int adTableId,
+			final int printFormatId,
+			final int bpPrintFormatId)
+	{
+		Check.assume(docTypeId > 0, "docTypeId shall be > 0");
+		Check.assume(adTableId > 0, "adTableId shall be > 0");
+		Check.assume(printFormatId > 0, "printFormatId shall be > 0");
 
-	@NonNull
-	PrintCopies printCopies;
+		this.bpartnerId = bpartnerId;
+		this.docTypeId = docTypeId;
+		this.adTableId = adTableId;
+		this.printFormatId = printFormatId;
+		this.bpPrintFormatId = bpPrintFormatId;
+	}
 }

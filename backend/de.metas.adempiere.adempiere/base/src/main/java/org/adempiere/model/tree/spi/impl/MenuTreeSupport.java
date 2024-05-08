@@ -25,13 +25,11 @@ package org.adempiere.model.tree.spi.impl;
  * #L%
  */
 
-import de.metas.i18n.Language;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.ElementPermission;
-import de.metas.security.permissions.ElementResource;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
@@ -45,10 +43,13 @@ import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import de.metas.i18n.Language;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.ElementResource;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -303,11 +304,6 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		else if (X_AD_Menu.ACTION_Board.equals(action))
 		{
 			final ElementResource resource = ElementResource.of("WEBUI_Board", WEBUI_Board_ID);
-			access = ElementPermission.ofReadWriteFlag(resource, true);
-		}
-		else if (X_AD_Menu.ACTION_Calendar.equals(action))
-		{
-			final ElementResource resource = ElementResource.of("WEBUI_Calendar", 1);
 			access = ElementPermission.ofReadWriteFlag(resource, true);
 		}
 		else

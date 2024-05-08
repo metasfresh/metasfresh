@@ -22,15 +22,11 @@
 
 package de.metas.rest_api.v2.shipping;
 
+import javax.annotation.Nullable;
+
 import ch.qos.logback.classic.Level;
-import de.metas.Profiles;
-import de.metas.common.shipping.v2.JsonRequestCandidateResults;
-import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Parameter;
-import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -43,7 +39,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
+import de.metas.Profiles;
+import de.metas.common.shipping.v2.JsonRequestCandidateResults;
+import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
 @RestController
@@ -61,7 +62,7 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@Parameter(description = "Max number orders per request for which shipmentSchedules shall be returned.\n"
+			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
 					+ "ShipmentSchedules without an order count as one.") //
 			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)

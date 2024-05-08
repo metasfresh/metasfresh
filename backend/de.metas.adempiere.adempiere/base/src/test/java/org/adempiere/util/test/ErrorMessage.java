@@ -22,9 +22,10 @@ package org.adempiere.util.test;
  * #L%
  */
 
-import de.metas.util.Check;
 
 import java.util.Collection;
+
+import de.metas.util.Check;
 
 /**
  * Immutable error message
@@ -41,7 +42,7 @@ public final class ErrorMessage
 		return new ErrorMessage();
 	}
 
-	public static ErrorMessage derive(final ErrorMessage errorMessage)
+	public static final ErrorMessage derive(final ErrorMessage errorMessage)
 	{
 		if (errorMessage == null)
 		{
@@ -50,12 +51,12 @@ public final class ErrorMessage
 		return errorMessage;
 	}
 	
-	public static ErrorMessage newErrorMessage(final String errorMessage)
+	public static final ErrorMessage newErrorMessage(final String errorMessage)
 	{
 		return new ErrorMessage(errorMessage);
 	}
 
-	public static String toString(final ErrorMessage message)
+	public static final String toString(final ErrorMessage message)
 	{
 		return message == null ? "" : message.toString();
 	}
@@ -66,12 +67,12 @@ public final class ErrorMessage
 
 	private ErrorMessage()
 	{
-		this(null, null);
+		this((String)null, (ErrorMessage)null);
 	}
 
 	private ErrorMessage(final String message)
 	{
-		this(message, null); // parent=null
+		this(message, (ErrorMessage)null); // parent=null
 	}
 
 	private ErrorMessage(final String message, final ErrorMessage parent)
@@ -119,7 +120,7 @@ public final class ErrorMessage
 			for (final Object item : collection)
 			{
 				valueStr.append("\n");
-				valueStr.append(item);
+				valueStr.append(String.valueOf(item));
 			}
 			valueToUse = valueStr;
 			

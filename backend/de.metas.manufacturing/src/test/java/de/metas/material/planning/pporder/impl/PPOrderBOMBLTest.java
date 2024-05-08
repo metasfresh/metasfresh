@@ -14,7 +14,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -52,7 +51,6 @@ public class PPOrderBOMBLTest
 		helper = new MRPTestHelper();
 
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
-		SpringContextHolder.registerJUnitBean(new ProductBOMVersionsDAO());
 
 		ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 		ppOrderBOMBL = (PPOrderBOMBL)Services.get(IPPOrderBOMBL.class);
@@ -201,7 +199,7 @@ public class PPOrderBOMBLTest
 	private void testExtractUpdateOrderBOMLineQuantities(final OrderBOMLineQuantities qtys)
 	{
 		final I_PP_Order_BOMLine record = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
-		PPOrderBOMBL.updateRecord(record, qtys);
+		PPOrderBOMBL.setQuantities(record, qtys);
 
 		final OrderBOMLineQuantities qtysActual = ppOrderBOMBL.getQuantities(record);
 		assertThat(qtysActual).usingRecursiveComparison().isEqualTo(qtys);

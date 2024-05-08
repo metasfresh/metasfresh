@@ -153,7 +153,7 @@ public class BundleUtil
 		boolean updated = false;
 		if (oldStatus == null || newStatus.compareTo(oldStatus) != 0)
 		{
-			int no = DB.executeUpdateAndThrowExceptionOnFail(
+			int no = DB.executeUpdateEx(
 					"UPDATE R_Group SET "+R_Group_CCM_Bundle_Status+"=? WHERE R_Group_ID=?",
 					new Object[]{newStatus, R_Group_ID},
 					trxName);

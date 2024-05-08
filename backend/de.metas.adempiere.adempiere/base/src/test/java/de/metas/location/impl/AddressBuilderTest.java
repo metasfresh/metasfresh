@@ -2,10 +2,10 @@ package de.metas.location.impl;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.CreateGreetingRequest;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
-import de.metas.greeting.UpsertGreetingRequest;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
@@ -134,7 +134,7 @@ public class AddressBuilderTest
 	}
 
 	@Builder(builderMethodName = "BPartnerBuilder")
-	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
+	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		bpartner.setName(name);
@@ -142,7 +142,6 @@ public class AddressBuilderTest
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setIsCompany(isCompany);
 		bpartner.setAD_Language(AD_Language);
-		bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
 		InterfaceWrapperHelper.save(bpartner);
 
 		return bpartner;
@@ -1058,10 +1057,25 @@ public class AddressBuilderTest
 			return location;
 		}
 
+		@Builder(builderMethodName = "BPartnerBuilder")
+		private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
+		{
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
+			bpartner.setName(name);
+			bpartner.setName2(name2);
+			bpartner.setAD_Org_ID(orgId.getRepoId());
+			bpartner.setIsCompany(isCompany);
+			bpartner.setAD_Language(AD_Language);
+			bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
+			InterfaceWrapperHelper.save(bpartner);
+
+			return bpartner;
+		}
+
 		private GreetingId prepareGreeting(@NonNull final String name)
 		{
-			final Greeting greeting = greetingRepository.upsertGreeting(
-					UpsertGreetingRequest.builder()
+			final Greeting greeting = greetingRepository.createGreeting(
+					CreateGreetingRequest.builder()
 							.name(name)
 							.greeting(name)
 							.orgId(orgId)

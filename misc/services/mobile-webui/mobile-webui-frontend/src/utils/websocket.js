@@ -5,7 +5,7 @@ import { stompUrl } from '../constants';
 
 const DEBUG = true;
 
-export const connectAndSubscribe = ({ topic, onWebsocketMessage, debug = DEBUG, headers = {} }) => {
+export const connectAndSubscribe = ({ topic, onWebsocketMessage, debug = DEBUG }) => {
   const config = {
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
@@ -23,7 +23,7 @@ export const connectAndSubscribe = ({ topic, onWebsocketMessage, debug = DEBUG, 
   client.onConnect = (frame) => {
     if (debug) console.log('websocket connected: ', frame);
 
-    client.subscribe(topic, onWebsocketMessage, headers);
+    client.subscribe(topic, onWebsocketMessage);
   };
 
   client.onStompError = function (frame) {

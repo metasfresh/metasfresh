@@ -1,8 +1,15 @@
+package de.metas.ui.web.window.exceptions;
+
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
 /*
  * #%L
- * de.metas.ui.web.base
+ * metasfresh-webui-api
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +27,13 @@
  * #L%
  */
 
-package de.metas.ui.web.window.exceptions;
-
-import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
-
 /**
  * Exception thrown by {@link DocumentDescriptorFactory} on any layout building issue.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
+@SuppressWarnings("serial")
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class DocumentLayoutBuildException extends AdempiereException
 {
@@ -58,8 +60,9 @@ public class DocumentLayoutBuildException extends AdempiereException
 
 	public static Throwable extractCause(final Throwable throwable)
 	{
-		if (throwable instanceof final DocumentLayoutBuildException documentLayoutBuildException)
+		if (throwable.getClass().equals(DocumentLayoutBuildException.class))
 		{
+			final DocumentLayoutBuildException documentLayoutBuildException = (DocumentLayoutBuildException) throwable;
 			final Throwable cause = documentLayoutBuildException.getCause();
 			return cause != null ? cause : documentLayoutBuildException;
 		}

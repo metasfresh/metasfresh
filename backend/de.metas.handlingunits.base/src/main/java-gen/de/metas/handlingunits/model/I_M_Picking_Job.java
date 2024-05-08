@@ -142,27 +142,6 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Shipmentdate.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDeliveryDate (java.sql.Timestamp DeliveryDate);
-
-	/**
-	 * Get Shipmentdate.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getDeliveryDate();
-
-	ModelColumn<I_M_Picking_Job, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_Picking_Job.class, "DeliveryDate", null);
-	String COLUMNNAME_DeliveryDate = "DeliveryDate";
-
-	/**
 	 * Set Diff. Shipment Address.
 	 *
 	 * <br>Type: String
@@ -228,92 +207,6 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow Picking any HU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
-
-	/**
-	 * Get Allow Picking any HU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowPickingAnyHU();
-
-	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_M_Picking_Job.class, "IsAllowPickingAnyHU", null);
-	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
-
-	/**
-	 * Set Approved.
-	 * Indicates if this document requires approval
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsApproved (boolean IsApproved);
-
-	/**
-	 * Get Approved.
-	 * Indicates if this document requires approval
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isApproved();
-
-	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsApproved = new ModelColumn<>(I_M_Picking_Job.class, "IsApproved", null);
-	String COLUMNNAME_IsApproved = "IsApproved";
-
-	/**
-	 * Set Picking Review Required.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPickingReviewRequired (boolean IsPickingReviewRequired);
-
-	/**
-	 * Get Picking Review Required.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPickingReviewRequired();
-
-	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsPickingReviewRequired = new ModelColumn<>(I_M_Picking_Job.class, "IsPickingReviewRequired", null);
-	String COLUMNNAME_IsPickingReviewRequired = "IsPickingReviewRequired";
-
-	/**
-	 * Set Ready To Review.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsReadyToReview (boolean IsReadyToReview);
-
-	/**
-	 * Get Ready To Review.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isReadyToReview();
-
-	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsReadyToReview = new ModelColumn<>(I_M_Picking_Job.class, "IsReadyToReview", null);
-	String COLUMNNAME_IsReadyToReview = "IsReadyToReview";
-
-	/**
 	 * Set Picking Job.
 	 *
 	 * <br>Type: ID
@@ -359,7 +252,7 @@ public interface I_M_Picking_Job
 	 * Set Picking User.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setPicking_User_ID (int Picking_User_ID);
@@ -368,7 +261,7 @@ public interface I_M_Picking_Job
 	 * Get Picking User.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getPicking_User_ID();
@@ -441,45 +334,4 @@ public interface I_M_Picking_Job
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-
-	/**
-	 * Set Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHandover_Location_ID (int Handover_Location_ID);
-
-	/**
-	 * Get Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getHandover_Location_ID();
-
-	String COLUMNNAME_Handover_Location_ID = "Handover_Location_ID";
-
-	/**
-	 * Set Handover Partner.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHandover_Partner_ID (int Handover_Partner_ID);
-
-	/**
-	 * Get Handover Partner.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getHandover_Partner_ID();
-
-	String COLUMNNAME_Handover_Partner_ID = "Handover_Partner_ID";
 }

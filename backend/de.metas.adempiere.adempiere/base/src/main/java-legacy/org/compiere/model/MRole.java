@@ -39,7 +39,6 @@ public final class MRole extends X_AD_Role
 	 */
 	private static final long serialVersionUID = -6722616714353225616L;
 
-	@SuppressWarnings("unused")
 	public MRole(final Properties ctx, final int AD_Role_ID, final String trxName)
 	{
 		super(ctx, AD_Role_ID, trxName);
@@ -63,7 +62,6 @@ public final class MRole extends X_AD_Role
 		}
 	}
 
-	@SuppressWarnings("unused")
 	public MRole(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);

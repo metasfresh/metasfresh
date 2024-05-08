@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -41,7 +41,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-@Schema(description = "Error information")
+@ApiModel(description = "Error information")
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonErrorItem.JsonErrorItemBuilder.class)

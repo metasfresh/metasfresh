@@ -51,8 +51,8 @@ public class RelatedDocumentsCandidateGroup
 {
 	private static final Logger logger = LogManager.getLogger(RelatedDocumentsCandidateGroup.class);
 
-	@NonNull ImmutableList<RelatedDocumentsCandidate> candidates;
-	@NonNull AdWindowId targetWindowId;
+	ImmutableList<RelatedDocumentsCandidate> candidates;
+	AdWindowId targetWindowId;
 
 	@Builder
 	private RelatedDocumentsCandidateGroup(
@@ -168,7 +168,7 @@ public class RelatedDocumentsCandidateGroup
 				.append(" (#").append(recordsCount).append(")")
 				.build();
 
-		final MQuery queryCopy = candidate.getQuerySupplier().getQuery().deepCopy();
+		final MQuery queryCopy = candidate.getQuery().deepCopy();
 		queryCopy.setRecordCount(recordsCount, recordsCountDuration);
 
 		return RelatedDocuments.builder()

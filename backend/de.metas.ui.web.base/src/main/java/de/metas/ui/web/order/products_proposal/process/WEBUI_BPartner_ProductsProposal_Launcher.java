@@ -1,9 +1,10 @@
 package de.metas.ui.web.order.products_proposal.process;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import de.metas.ui.web.order.products_proposal.view.BPartnerProductsProposalViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -29,7 +30,8 @@ import org.compiere.SpringContextHolder;
 
 public class WEBUI_BPartner_ProductsProposal_Launcher extends WEBUI_ProductsProposal_Launcher_Template
 {
-	private final BPartnerProductsProposalViewFactory productsProposalViewFactory = SpringContextHolder.instance.getBean(BPartnerProductsProposalViewFactory.class);
+	@Autowired
+	private BPartnerProductsProposalViewFactory productsProposalViewFactory;
 
 	@Override
 	protected CreateViewRequest createViewRequest(final TableRecordReference recordRef)

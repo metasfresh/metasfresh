@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2016-11-17T12:08:16 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/openitems_fibu/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -42,11 +43,14 @@ FROM
 		i.C_BPartner_ID,
 		i.IsSOTrx,
 		i.DateInvoiced,
-		EXISTS (SELECT 0 FROM C_PaySelectionLine psl JOIN C_PaySelection ps on ps.C_PaySelection_id=psl.C_PaySelection_ID  WHERE psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y' and ps.DocStatus IN('CO', 'CL')) AS PassForPayment,
+		EXISTS (SELECT 0 FROM C_PaySelectionLine psl WHERE psl.processed = 'Y' AND psl.C_Invoice_ID = i.C_Invoice_ID AND psl.isActive = 'Y') AS PassForPayment,
 		COALESCE ( p.NetDays, DaysBetween( ips.DueDate::timestamp with time zone, i.DateInvoiced::timestamp with time zone ) ) AS NetDays,
 		p.DiscountDays,
-       COALESCE( i.DueDate::timestamp with time zone, ips.DueDate ) AS DueDate,
-   	   DaysBetween($P{Reference_Date}, coalesce(ips.DueDate, i.DueDate)::timestamp with time zone)  AS DaysDue,
+		COALESCE( PaymentTermDueDate( p.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone ), ips.DueDate ) AS DueDate,
+		COALESCE(
+			PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp with time zone, $P{Reference_Date}),
+			DaysBetween($P{Reference_Date}, ips.DueDate::timestamp with time zone)
+		) AS DaysDue,
 		COALESCE( AddDays( i.DateInvoiced::timestamp with time zone, p.DiscountDays ), ips.DiscountDate ) AS DiscountDate,
 		COALESCE( Round( i.GrandTotal * p.Discount / 100::numeric, 2 ), ips.DiscountAmt ) AS DiscountAmt,
 		COALESCE( ips.DueAmt, i.GrandTotal ) AS GrandTotal,
@@ -98,60 +102,24 @@ ORDER BY
 	oi.DocumentNo
 ;]]>
 	</queryString>
-	<field name="iso_code" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="iso_code"/>
-	</field>
-	<field name="documentno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
-	</field>
-	<field name="dateinvoiced" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="dateinvoiced"/>
-	</field>
-	<field name="netdays" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="netdays"/>
-	</field>
-	<field name="discountdays" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="discountdays"/>
-	</field>
-	<field name="duedate" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="duedate"/>
-	</field>
-	<field name="daysdue" class="java.lang.Integer">
-		<property name="com.jaspersoft.studio.field.label" value="daysdue"/>
-	</field>
-	<field name="discountdate" class="java.sql.Date">
-		<property name="com.jaspersoft.studio.field.label" value="discountdate"/>
-	</field>
-	<field name="grandtotal" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
-	</field>
-	<field name="paidamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="paidamt"/>
-	</field>
-	<field name="openamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="openamt"/>
-	</field>
-	<field name="value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="value"/>
-	</field>
-	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name"/>
-	</field>
-	<field name="passforpayment" class="java.lang.Boolean">
-		<property name="com.jaspersoft.studio.field.label" value="passforpayment"/>
-	</field>
-	<field name="faname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="faname"/>
-	</field>
-	<field name="fa_amount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="fa_amount"/>
-	</field>
-	<field name="fa_source_amount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="fa_source_amount"/>
-	</field>
-	<field name="ad_org_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
-	</field>
+	<field name="iso_code" class="java.lang.String"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="dateinvoiced" class="java.sql.Date"/>
+	<field name="netdays" class="java.math.BigDecimal"/>
+	<field name="discountdays" class="java.math.BigDecimal"/>
+	<field name="duedate" class="java.sql.Date"/>
+	<field name="daysdue" class="java.lang.Integer"/>
+	<field name="discountdate" class="java.sql.Date"/>
+	<field name="grandtotal" class="java.math.BigDecimal"/>
+	<field name="paidamt" class="java.math.BigDecimal"/>
+	<field name="openamt" class="java.math.BigDecimal"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="passforpayment" class="java.lang.Boolean"/>
+	<field name="faname" class="java.lang.String"/>
+	<field name="fa_amount" class="java.math.BigDecimal"/>
+	<field name="fa_source_amount" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<variable name="total_currency" class="java.math.BigDecimal" resetType="Group" resetGroup="Currency" calculation="Sum">
 		<variableExpression><![CDATA[$F{fa_source_amount}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -199,14 +167,14 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{totalsum} + " CHF"]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
 					<reportElement x="252" y="0" width="67" height="12" uuid="4f15bb51-ed82-4f38-a7b8-1e554f4a86b7"/>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_fa_currency}]]></textFieldExpression>
 				</textField>
@@ -229,7 +197,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_currency}]]></textFieldExpression>
 				</textField>
@@ -242,7 +210,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{paid_currency}]]></textFieldExpression>
 				</textField>
@@ -255,7 +223,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_currency}]]></textFieldExpression>
 				</textField>
@@ -268,7 +236,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{totalsum} + " " + $F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -284,7 +252,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -307,7 +275,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_bpartner}]]></textFieldExpression>
 				</textField>
@@ -320,7 +288,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 				</textField>
@@ -333,7 +301,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
@@ -346,7 +314,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 				</textField>
@@ -359,7 +327,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{paid_bpartner}]]></textFieldExpression>
 				</textField>
@@ -372,7 +340,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{sum}]]></textFieldExpression>
 				</textField>
@@ -385,7 +353,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -398,7 +366,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_fa_bpartner}]]></textFieldExpression>
 				</textField>

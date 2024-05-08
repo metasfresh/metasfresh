@@ -3,7 +3,18 @@
  */
 package de.metas.document.sequence.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IClientOrgAware;
+import org.springframework.stereotype.Service;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
@@ -12,26 +23,14 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.ValueSequenceInfoProvider;
 import de.metas.document.sequence.ValueSequenceInfoProvider.ProviderResult;
-import de.metas.document.sequence.ICountryIdProvider;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.IClientOrgAware;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 @Service
 public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 {
 	private final List<ValueSequenceInfoProvider> additionalProviders;
-	private final List<ICountryIdProvider> countryIdProviders = new ArrayList<>();
 
 	public DocumentNoBuilderFactory(@NonNull final Optional<List<ValueSequenceInfoProvider>> providers)
 	{
@@ -53,25 +52,13 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 				return ProviderResult.EMPTY;
 			}
 			return ProviderResult.of(documentSequenceInfo);
-		}
+		};
 	};
-
-	@Override
-	public void registerCountryIdProvider(@NonNull final ICountryIdProvider countryIdProvider)
-	{
-		this.countryIdProviders.add(countryIdProvider);
-	}
-
-	@Override
-	public List<ICountryIdProvider> getCountryIdProviders()
-	{
-		return countryIdProviders;
-	}
 
 	@Override
 	public IPreliminaryDocumentNoBuilder createPreliminaryDocumentNoBuilder()
 	{
-		return new PreliminaryDocumentNoBuilder(countryIdProviders);
+		return new PreliminaryDocumentNoBuilder();
 	}
 
 	@Override
@@ -92,7 +79,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 		final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
 
 		final String sequenceName = IDocumentNoBuilder.PREFIX_DOCSEQ + tableName;
-		return documentSequenceDAO.getOrCreateDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
+		return documentSequenceDAO.retriveDocumentSequenceInfo(sequenceName, adClientId, adOrgId);
 	}
 
 	@Override
@@ -113,7 +100,7 @@ public class DocumentNoBuilderFactory implements IDocumentNoBuilderFactory
 	@Override
 	public DocumentNoBuilder createDocumentNoBuilder()
 	{
-		return new DocumentNoBuilder(countryIdProviders);
+		return new DocumentNoBuilder();
 	}
 
 	@Override

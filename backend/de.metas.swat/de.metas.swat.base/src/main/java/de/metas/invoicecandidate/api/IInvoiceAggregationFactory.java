@@ -22,6 +22,9 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+
+import java.util.Properties;
+
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -29,8 +32,6 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.ISingletonService;
-
-import java.util.Properties;
 
 /**
  * It's an extension of {@link IAggregationFactory} but addressing invoicing concerns.
@@ -73,9 +74,4 @@ public interface IInvoiceAggregationFactory extends ISingletonService
 	 * @return
 	 */
 	IAggregationKeyBuilder<I_C_Invoice_Candidate> getPrepayOrderAggregationKeyBuilder(Properties ctx);
-
-	/**
-	 * Gets the aggregation to be used when aggregating invoice candidates which have as source an issue
-	 */
-	IAggregationKeyBuilder<I_C_Invoice_Candidate> getIssueAggregationKeyBuilder(Properties ctx, String aggregationUsageLevel);
 }

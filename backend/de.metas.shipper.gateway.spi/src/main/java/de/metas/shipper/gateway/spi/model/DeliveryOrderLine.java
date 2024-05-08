@@ -29,7 +29,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 /**
  * 1 DeliveryOrderLine represents 1 Package
@@ -40,7 +39,7 @@ public class DeliveryOrderLine
 	@Nullable
 	String content;
 
-	@NonNull BigDecimal grossWeightKg;
+	private final int grossWeightKg;
 
 	@NonNull
 	PackageDimensions packageDimensions;
@@ -54,13 +53,12 @@ public class DeliveryOrderLine
 	@Builder(toBuilder = true)
 	private DeliveryOrderLine(
 			@Nullable final String content,
-			@NonNull final BigDecimal grossWeightKg,
+			final int grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
 			@NonNull final PackageId packageId)
 	{
-
-		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
+		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
 
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;

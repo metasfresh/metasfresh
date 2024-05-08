@@ -5,7 +5,7 @@ package de.metas.payment.esr;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.calendar.standard.IPeriodBL;
+import de.metas.calendar.IPeriodBL;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.IDocTypeDAO;
@@ -24,6 +24,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.esr.actionhandler.impl.DuplicatePaymentESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
@@ -49,7 +50,7 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -1561,11 +1562,7 @@ public class ESRImportTest extends ESRTestBase
 		save(inv);
 
 		// allocation for invoice
-		final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
-		allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
-		save(allocHdr);
 		final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
-		allocAmt.setC_AllocationHdr_ID(allocHdr.getC_AllocationHdr_ID());
 		allocAmt.setAmount(new BigDecimal(25));
 		allocAmt.setC_Invoice_ID(inv.getC_Invoice_ID());
 		save(allocAmt);

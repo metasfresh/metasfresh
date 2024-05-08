@@ -65,8 +65,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -95,7 +93,6 @@ public class RepairCustomerReturnsService
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
 	private final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository;
@@ -152,15 +149,12 @@ public class RepairCustomerReturnsService
 	{
 		final IHUProducerAllocationDestination destination;
 
-		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoId(customerReturnLine.getM_Locator_ID());
-
 		HULoader.builder()
 				.source(new GenericAllocationSourceDestination(
 						new PlainProductStorage(productId, qtyReturned),
 						customerReturnLine))
 				.destination(destination = HUProducerDestination.ofVirtualPI()
-						.setHUStatus(X_M_HU.HUSTATUS_Planning)
-						.setLocatorId(locatorId))
+						.setHUStatus(X_M_HU.HUSTATUS_Planning))
 				.load(AllocationUtils.builder()
 						.setHUContext(handlingUnitsBL.createMutableHUContextForProcessing())
 						.setProduct(productId)
@@ -198,9 +192,6 @@ public class RepairCustomerReturnsService
 						.warrantyCase(isWarrantyCase(productId, attributes, returnDate))
 						.qtyReturned(qtyReturned)
 						.build());
-
-		clonedPlaningHU.setM_Locator_ID(customerReturnLine.getM_Locator_ID());
-		handlingUnitsBL.saveHU(clonedPlaningHU);
 
 		returnsServiceFacade.assignHandlingUnitToHeaderAndLine(customerReturnLine, clonedPlaningHU);
 	}

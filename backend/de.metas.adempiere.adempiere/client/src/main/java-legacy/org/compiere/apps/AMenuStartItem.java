@@ -29,11 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.ui.api.IWindowBL;
-import org.compiere.model.I_AD_Menu;
-import org.compiere.model.I_AD_WF_Node;
-import org.compiere.model.MTask;
-import org.compiere.model.MTreeNode;
-import org.compiere.model.X_AD_Menu;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -44,7 +40,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutionException;
-import javax.annotation.Nullable;
 
 /**
  * Start application action ( process, workflow, window, form, task etc).
@@ -145,11 +140,9 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	private boolean loaded = false;
 	private String action;
 	private boolean IsSOTrx = true;
-	@Nullable
 	private AdWindowId adWindowId = null;
 	private int adWorkbenchId = -1;
 	private int adProcessId = -1;
-	@Nullable
 	private WorkflowId adWorkflowId = null;
 	private int adFormId = -1;
 	private int adTaskId = -1;
@@ -199,7 +192,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		}
 		else if (X_AD_Menu.ACTION_Workbench.equals(action))
 		{
-			startWindow(adWorkbenchId, null);
+			startWindow(adWorkbenchId, (AdWindowId)null);
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
 		{
@@ -271,6 +264,8 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		if (!loaded)
@@ -308,7 +303,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	 * @param AD_Workbench_ID workbench
 	 * @param adWindowId window
 	 */
-	private void startWindow(final int AD_Workbench_ID, @Nullable final AdWindowId adWindowId)
+	private void startWindow(final int AD_Workbench_ID, final AdWindowId adWindowId)
 	{
 		// metas-ts: task 05796: moved the code to WindowBL.openWindow() to allow it beeing called on other occasions too
 		Services.get(IWindowBL.class).openWindow(

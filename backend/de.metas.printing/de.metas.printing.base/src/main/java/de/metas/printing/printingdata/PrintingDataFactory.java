@@ -23,12 +23,11 @@
 package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.X_AD_PrinterRouting;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
 import de.metas.adempiere.service.PrinterRoutingsQuery;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.api.impl.DocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -49,13 +48,12 @@ import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
-import de.metas.process.PInstanceId;
+import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Env;
@@ -70,7 +68,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Service
 public class PrintingDataFactory
 {
-	private final static Logger logger = LogManager.getLogger(PrintingDataFactory.class);
+	private final static transient Logger logger = LogManager.getLogger(PrintingDataFactory.class);
 
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
@@ -93,11 +91,9 @@ public class PrintingDataFactory
 
 	public ImmutableList<PrintingData> createPrintingDataForQueueItem(@NonNull final I_C_Printing_Queue queueItem)
 	{
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
-
 		final ArchiveId archiveId = ArchiveId.ofRepoId(queueItem.getAD_Archive_ID());
-		final I_AD_Archive archiveRecord = archiveDAO.getArchiveRecordById(archiveId);
-		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archiveRecord));
+		final I_C_Doc_Outbound_Log outboundLogRecord = outboundDAO.retrieveLog(archiveId);
+		final I_AD_Archive archiveRecord = queueItem.getAD_Archive();
 
 		final String pdfFileName;
 		if (outboundLogRecord != null)
@@ -129,13 +125,10 @@ public class PrintingDataFactory
 	{
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
-				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(queueItem.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(queueItem.getAD_Org_ID()))
 				.documentFileName(pdfFileName)
 				.data(loadArchiveData(archiveRecord));
-		
-		final int copies = CoalesceUtil.firstGreaterThanZero(queueItem.getCopies(), 1);
 
 		if (queueItem.getAD_PrinterHW_ID() <= 0)
 		{
@@ -148,18 +141,17 @@ public class PrintingDataFactory
 			for (final I_AD_PrinterRouting printerRouting : printerRoutings)
 			{
 
-				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey, copies);
+				final PrintingSegment printingSegment = createPrintingSegment(printerRouting, printRecipient, hostKey);
 				if (printingSegment != null)
 				{
 					printingData.segment(printingSegment);
-					break; // there might be multiple matching printerRoutings, but the first one is the best match
 				}
 			}
 		}
 		else
 		{
 			final PrintingSegment printingSegment = createPrintingSegmentForQueueItem(queueItem);
-		printingData.segment(printingSegment);
+			printingData.segment(printingSegment);
 
 		}
 		return printingData.build();
@@ -171,11 +163,9 @@ public class PrintingDataFactory
 			@Nullable final String hostKey)
 	{
 		final I_AD_Archive archiveRecord = jobLine.getC_Printing_Queue().getAD_Archive();
-		final int copies = jobLine.getC_Printing_Queue().getCopies();
-		
+
 		final PrintingData.PrintingDataBuilder printingData = PrintingData
 				.builder()
-				.pInstanceId(PInstanceId.ofRepoIdOrNull(archiveRecord.getAD_PInstance_ID()))
 				.printingQueueItemId(PrintingQueueItemId.ofRepoId(jobLine.getC_Printing_Queue_ID()))
 				.orgId(OrgId.ofRepoId(archiveRecord.getAD_Org_ID()))
 				.documentFileName(archiveRecord.getName() + ".pdf");
@@ -185,7 +175,7 @@ public class PrintingDataFactory
 		for (final I_C_Print_Job_Detail detail : printJobDetails)
 		{
 			final I_AD_PrinterRouting routing = loadOutOfTrx(detail.getAD_PrinterRouting_ID(), I_AD_PrinterRouting.class);
-			final PrintingSegment printingSegment = createPrintingSegment(routing, userToPrintId, hostKey, copies);
+			final PrintingSegment printingSegment = createPrintingSegment(routing, userToPrintId, hostKey);
 			if (printingSegment != null)
 			{
 				printingData.segment(printingSegment);
@@ -200,7 +190,6 @@ public class PrintingDataFactory
 		return printingData.build();
 	}
 
-	@Nullable
 	private byte[] loadArchiveData(@NonNull final I_AD_Archive archiveRecord)
 	{
 
@@ -213,7 +202,6 @@ public class PrintingDataFactory
 		return data;
 	}
 
-	@NonNull
 	private PrintingSegment createPrintingSegmentForQueueItem(
 			@NonNull final I_C_Printing_Queue printingQueue)
 	{
@@ -229,18 +217,15 @@ public class PrintingDataFactory
 				.printer(hardwarePrinter)
 				.trayId(trayId)
 				.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
-				.copies(printingQueue.getCopies())
 				.build();
 	}
 
-	@Nullable
 	private PrintingSegment createPrintingSegment(
 			@NonNull final I_AD_PrinterRouting printerRouting,
 			@Nullable final UserId userToPrintId,
-			@Nullable final String hostKey,
-			final int copies)
+			@Nullable final String hostKey)
 	{
-		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey, userToPrintId, printerRouting.getAD_Printer());
+		final I_AD_Printer_Matching printerMatchingRecord = printingDAO.retrievePrinterMatchingOrNull(hostKey/*hostKey*/, userToPrintId, printerRouting.getAD_Printer());
 		if (printerMatchingRecord == null)
 		{
 			logger.debug("Found no AD_Printer_Matching record for AD_PrinterRouting_ID={}, AD_User_PrinterMatchingConfig_ID={} and hostKey={}; -> creating no PrintingSegment for routing",
@@ -264,7 +249,6 @@ public class PrintingDataFactory
 				.routingType(printerRouting.getRoutingType())
 				.printer(hardwarePrinter)
 				.trayId(trayId)
-				.copies(CoalesceUtil.firstGreaterThanZero(copies, 1))
 				.build();
 	}
 }

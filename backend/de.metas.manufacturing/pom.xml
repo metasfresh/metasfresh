@@ -11,7 +11,7 @@
 	</parent>
 
 	<properties>
-		<migration-sql-basedir/>
+		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<groupId>de.metas.manufacturing</groupId>
@@ -101,13 +101,8 @@
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>de.metas.device.adempiere</groupId>
-            <artifactId>de.metas.device.adempiere</artifactId>
-            <version>10.0.0</version>
-        </dependency>
 
-    </dependencies>
+	</dependencies>
 
 	<build>
 		<plugins>

@@ -22,10 +22,6 @@
 
 package de.metas.payment;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.BPartnerStatsService;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
 import de.metas.order.IOrderDAO;
@@ -39,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -50,6 +45,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+
 @Callout(I_C_Payment.class)
 @Interceptor(I_C_Payment.class)
 @Component
@@ -59,16 +56,11 @@ public class C_Payment
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
-	private final IBPartnerStatisticsUpdater bPartnerStatisticsUpdater = Services.get(IBPartnerStatisticsUpdater.class);
 	private final CurrencyRepository currencyRepository;
 
-	private final BPartnerStatsService bPartnerStatsService;
-
-	public C_Payment(@NonNull final CurrencyRepository currencyRepository,
-			@NonNull BPartnerStatsService bPartnerStatsService)
+	public C_Payment(@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.currencyRepository = currencyRepository;
-		this.bPartnerStatsService = bPartnerStatsService;
 	}
 
 	@Init
@@ -102,12 +94,7 @@ public class C_Payment
 		final BigDecimal priceActual = paymentTermDiscountPercent.subtractFromBase(order.getGrandTotal(), currency.getPrecision().toInt());
 		final BigDecimal discountAmount = paymentTermDiscountPercent.computePercentageOf(order.getGrandTotal(), currency.getPrecision().toInt());
 
-		final BPartnerLocationId orderBPartnerLocationId = CoalesceUtil.coalesceNotNull(
-				BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID()),
-				BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()));
-
-		record.setC_BPartner_ID(orderBPartnerLocationId.getBpartnerId().getRepoId());
-		record.setC_BPartner_Location_ID(orderBPartnerLocationId.getRepoId());
+		record.setC_BPartner_ID(firstGreaterThanZero(order.getBill_BPartner_ID(), order.getC_BPartner_ID()));
 		record.setC_Currency_ID(order.getC_Currency_ID());
 
 		record.setC_Invoice(null);
@@ -122,21 +109,5 @@ public class C_Payment
 		record.setPayAmt(priceActual);
 		record.setDiscountAmt(discountAmount);
 		paymentBL.validateDocTypeIsInSync(record);
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_PREPARE, ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void checkCreditLimit(@NonNull final I_C_Payment payment)
-	{
-		bPartnerStatsService.checkPaymentCreditLimit(PaymentId.ofRepoId(payment.getC_Payment_ID()));
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_VOID })
-	public void updateBPartnerStats(@NonNull final I_C_Payment payment)
-	{
-		bPartnerStatisticsUpdater
-				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
-												  .bpartnerId(payment.getC_BPartner_ID())
-												  .build());
-
 	}
 }

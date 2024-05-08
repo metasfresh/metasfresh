@@ -1,14 +1,16 @@
 package de.metas.cache.model;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /*
  * #%L
@@ -57,7 +59,7 @@ final class ParentChildModelCacheInvalidateRequestFactory implements ModelCacheI
 	@Override
 	public List<CacheInvalidateRequest> createRequestsFromModel(
 			final ICacheSourceModel model,
-			final ModelCacheInvalidationTiming timing_NOTUSED)
+			final ModelCacheInvalidationTiming timing)
 	{
 		final int rootRecordId = model.getValueAsInt(childLinkColumnName, -1);
 		if (rootRecordId < 0)

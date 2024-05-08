@@ -96,7 +96,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 
 	private void scheduleUpdate(@NonNull final LocationId locationId)
 	{
-		eventBus.enqueueObject(LocationGeocodeEventRequest.of(locationId));
+		eventBus.postObject(LocationGeocodeEventRequest.of(locationId));
 
 		countScheduled++;
 

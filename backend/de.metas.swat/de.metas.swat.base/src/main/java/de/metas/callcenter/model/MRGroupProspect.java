@@ -1,5 +1,5 @@
 /**
- *
+ * 
  */
 package de.metas.callcenter.model;
 
@@ -13,17 +13,22 @@ package de.metas.callcenter.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
@@ -34,89 +39,87 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 /**
  * @author Teo Sarca, teo.sarca@gmail.com
  */
 public class MRGroupProspect extends X_R_Group_Prospect
 {
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = -8146063466656352670L;
-	/**
-	 * Lock expire time (minutes)
-	 */
+	/** Lock expire time (minutes) */
 	public static final int LOCK_EXPIRE_MIN = 24 * 60;
-
+	
 	public static MRGroupProspect get(Properties ctx, I_RV_R_Group_Prospect contact, String trxName)
 	{
-		String whereClause = COLUMNNAME_R_Group_ID + "=?"
-				+ " AND " + COLUMNNAME_C_BPartner_ID + "=?"
-				+ " AND " + COLUMNNAME_AD_User_ID + "=?";
-		return new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(contact.getR_Group_ID(),
-						contact.getC_BPartner_ID(),
-						contact.getAD_User_ID())
-				.firstOnly(MRGroupProspect.class);
+		String whereClause = COLUMNNAME_R_Group_ID+"=?"
+		+" AND "+COLUMNNAME_C_BPartner_ID+"=?"
+		+" AND "+COLUMNNAME_AD_User_ID+"=?";
+		MRGroupProspect gp = new Query(ctx, Table_Name, whereClause, trxName)
+		.setParameters(new Object[]{
+				contact.getR_Group_ID(),
+				contact.getC_BPartner_ID(),
+				contact.getAD_User_ID()})
+				.firstOnly();
+		return gp;
 	}
-
+	
 	public static MRGroupProspect get(Properties ctx, I_R_Request request, String trxName)
 	{
-		final String whereClause = COLUMNNAME_R_Group_ID + "=?"
-				+ " AND " + COLUMNNAME_C_BPartner_ID + "=?"
-				+ " AND " + COLUMNNAME_AD_User_ID + "=?";
-		return new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(request.getR_Group_ID(),
-						request.getC_BPartner_ID(),
-						request.getAD_User_ID())
-				.firstOnly(MRGroupProspect.class);
+		final String whereClause = COLUMNNAME_R_Group_ID+"=?"
+		+" AND "+COLUMNNAME_C_BPartner_ID+"=?"
+		+" AND "+COLUMNNAME_AD_User_ID+"=?";
+		MRGroupProspect gp = new Query(ctx, Table_Name, whereClause, trxName)
+		.setParameters(new Object[]{
+				request.getR_Group_ID(),
+				request.getC_BPartner_ID(),
+				request.getAD_User_ID()})
+				.firstOnly();
+		return gp;
 	}
-
+	
 	/**
 	 * Check if contact already added
-	 *
-	 * @param R_Group_ID    bundle
+	 * @param ctx
+	 * @param R_Group_ID bundle
 	 * @param C_BPartner_ID partner
-	 * @param AD_User_ID    (ignored)
+	 * @param AD_User_ID (ignored)
+	 * @param trxName
+	 * @return
 	 */
 	public static boolean existContact(Properties ctx, int R_Group_ID, int C_BPartner_ID, int AD_User_ID, String trxName)
 	{
-		final String whereClause = COLUMNNAME_R_Group_ID + "=?"
-				+ " AND " + COLUMNNAME_C_BPartner_ID + "=?"
-				//		+" AND "+COLUMNNAME_AD_User_ID+"=?"
-				;
-		return new Query(ctx, Table_Name, whereClause, trxName)
-				.setParameters(R_Group_ID, C_BPartner_ID)
-				.anyMatch();
+		final String whereClause = COLUMNNAME_R_Group_ID+"=?"
+		+" AND "+COLUMNNAME_C_BPartner_ID+"=?"
+//		+" AND "+COLUMNNAME_AD_User_ID+"=?"
+		;
+		boolean match = new Query(ctx, Table_Name, whereClause, trxName)
+		.setParameters(new Object[]{R_Group_ID, C_BPartner_ID})
+		.anyMatch();
+		return match;
 	}
-
+	
 	public static void linkRequest(Properties ctx, I_R_Request request, String trxName)
 	{
 		MRGroupProspect gp = get(ctx, request, trxName);
 		if (gp == null)
 			return; // TODO: throw error?
-
+		
 		gp.setR_Request_ID(request.getR_Request_ID());
 		gp.unlockContact();
 		gp.saveEx();
 	}
-
-	@SuppressWarnings("unused")
+	
 	public MRGroupProspect(Properties ctx, int id, String trxName)
 	{
 		super(ctx, id, trxName);
 	}
-
-	@SuppressWarnings("unused")
 	public MRGroupProspect(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
 	}
-
+	
 	/**
 	 * Creates a new record.
 	 */
@@ -127,7 +130,9 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		setC_BPartner_ID(C_BPartner_ID);
 		setAD_User_ID(AD_User_ID);
 	}
-
+	
+	
+	
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
@@ -151,7 +156,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		}
 		return true;
 	}
-
+	
 	@Override
 	protected boolean afterDelete(boolean success)
 	{
@@ -169,14 +174,14 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		setLockedBy(AD_User_ID);
 		setLockedDate(ts);
 	}
-
+	
 	public void unlockContact()
 	{
 		setLocked(false);
 		set_Value(COLUMNNAME_LockedBy, null);
 		setLockedDate(null);
 	}
-
+	
 	public boolean isExpired()
 	{
 		if (!isLocked())
@@ -186,25 +191,25 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		return dateExpire.before(now);
 	}
-
+	
 	public void expireLock()
 	{
 		if (isLocked() && isExpired())
 			unlockContact();
 	}
-
+	
 	@Override
 	public String toString()
 	{
 		String bundleName = DB.getSQLValueString(get_TrxName(),
-				"SELECT " + I_R_Group.COLUMNNAME_Name + " FROM " + I_R_Group.Table_Name
-						+ " WHERE " + I_R_Group.COLUMNNAME_R_Group_ID + "=?",
+				"SELECT "+I_R_Group.COLUMNNAME_Name+" FROM "+I_R_Group.Table_Name
+				+" WHERE "+I_R_Group.COLUMNNAME_R_Group_ID+"=?",
 				getR_Group_ID());
 		String bpName = DB.getSQLValueString(get_TrxName(),
-				"SELECT " + I_C_BPartner.COLUMNNAME_Value + "||'_'||" + I_C_BPartner.COLUMNNAME_Name
-						+ " FROM " + I_C_BPartner.Table_Name
-						+ " WHERE " + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=?",
+				"SELECT "+I_C_BPartner.COLUMNNAME_Value+"||'_'||"+I_C_BPartner.COLUMNNAME_Name
+				+" FROM "+I_C_BPartner.Table_Name
+				+" WHERE "+I_C_BPartner.COLUMNNAME_C_BPartner_ID+"=?",
 				getC_BPartner_ID());
-		return bundleName + "/" + bpName;
+		return bundleName+"/"+bpName;
 	}
 }

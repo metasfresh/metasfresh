@@ -16,20 +16,16 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.payment.api.IPaymentBL;
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
+import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Optional;
 import java.util.Properties;
 
-import static java.math.BigDecimal.ZERO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.DB;
 
 
 /**
@@ -44,8 +40,6 @@ public class MAllocationLine extends X_C_AllocationLine
 	 *
 	 */
 	private static final long serialVersionUID = 5532305715886380749L;
-
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	/**
 	 * 	Standard Constructor
@@ -283,12 +277,10 @@ public class MAllocationLine extends X_C_AllocationLine
 		int C_Payment_ID = getC_Payment_ID();
 		int C_CashLine_ID = getC_CashLine_ID();
 
-		MPayment payment = null;
-		boolean savePayment = false;
 		//	Update Payment
 		if (C_Payment_ID != 0)
 		{
-			payment = new MPayment (getCtx(), C_Payment_ID, get_TrxName());
+			MPayment payment = new MPayment (getCtx(), C_Payment_ID, get_TrxName());
 
 			// NOTE: we shall allow having different invoice and payment bpartners! (task 09105)
 			// if (getC_BPartner_ID() != payment.getC_BPartner_ID())
@@ -299,14 +291,14 @@ public class MAllocationLine extends X_C_AllocationLine
 				if (!payment.isCashTrx())
 				{
 					payment.setIsAllocated(false);
-					savePayment = true;
+					payment.save();
 				}
 			}
 			else
 			{
 				if (payment.testAllocation())
 				{
-					savePayment = true;
+					payment.save();
 				}
 			}
 		}
@@ -334,19 +326,11 @@ public class MAllocationLine extends X_C_AllocationLine
 					+ (reverse ? "NULL " : "(SELECT C_Payment_ID FROM C_Invoice WHERE C_Invoice_ID=" + C_Invoice_ID + ") ")
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
-			if (DB.executeUpdateAndSaveErrorOnFail(update, get_TrxName()) > 0)
+			if (DB.executeUpdate(update, get_TrxName()) > 0)
 			{
 				log.debug("C_Payment_ID=" + C_Payment_ID
 					+ (reverse ? " UnLinked from" : " Linked to")
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
-			}
-
-			final Optional<SectionCodeId> sectionCodeIdOpt = paymentBL.determineSectionCodeId(payment);
-
-			if (sectionCodeIdOpt.isPresent())
-			{
-				payment.setM_SectionCode_ID(sectionCodeIdOpt.get().getRepoId());
-				savePayment = true;
 			}
 		}
 
@@ -373,7 +357,7 @@ public class MAllocationLine extends X_C_AllocationLine
 					+ (reverse ? "NULL " : "(SELECT C_CashLine_ID FROM C_Invoice WHERE C_Invoice_ID=" + C_Invoice_ID + ") ")
 				+ "WHERE EXISTS (SELECT * FROM C_Invoice i "
 					+ "WHERE o.C_Order_ID=i.C_Order_ID AND i.C_Invoice_ID=" + C_Invoice_ID + ")";
-			if (DB.executeUpdateAndSaveErrorOnFail(update, get_TrxName()) > 0)
+			if (DB.executeUpdate(update, get_TrxName()) > 0)
 			{
 				log.debug("C_CashLine_ID=" + C_CashLine_ID
 					+ (reverse ? " UnLinked from" : " Linked to")
@@ -382,14 +366,9 @@ public class MAllocationLine extends X_C_AllocationLine
 		}
 
 		//	Update Balance / Credit used - Counterpart of MInvoice.completeIt
-		if (invoice != null)
+		if (invoice != null && invoice.testAllocation())
 		{
-			invoice.testAllocation();
-		}
-
-		if (savePayment)
-		{
-			payment.save();
+			InterfaceWrapperHelper.save(invoice);
 		}
 
 		final int result = getC_BPartner_ID();

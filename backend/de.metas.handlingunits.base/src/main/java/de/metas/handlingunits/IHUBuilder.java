@@ -97,6 +97,4 @@ public interface IHUBuilder extends IHUIterator
 	boolean isHUPlanningReceiptOwnerPM();
 
 	IHUBuilder setHUClearanceStatusInfo(ClearanceStatusInfo huClearanceStatusInfo);
-
-	IHUBuilder setIsExternalProperty(boolean externalProperty);
 }

@@ -22,7 +22,7 @@
 
 package de.metas.workflow;
 
-import de.metas.ad_reference.ReferenceId;
+import de.metas.reflist.ReferenceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -22,12 +22,6 @@ import java.util.Properties;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.impl.InvoiceDAO;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
@@ -39,6 +33,11 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.DocStatus;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * InOut Line
@@ -58,7 +57,6 @@ public class MInOutLine extends X_M_InOutLine
 	 *
 	 */
 	private static final long serialVersionUID = 8630611882798722864L;
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	public MInOutLine(Properties ctx, int M_InOutLine_ID, String trxName)
 	{
@@ -134,7 +132,6 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
-		setC_Order_ID(oLine.getC_Order_ID());
 		setC_OrderLine_ID(oLine.getC_OrderLine_ID());
 		setLine(oLine.getLine());
 		setC_UOM_ID(oLine.getC_UOM_ID());
@@ -203,7 +200,6 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
-		setC_Order_ID(iLine.getC_Order_ID());
 		setC_OrderLine_ID(iLine.getC_OrderLine_ID());
 		setLine(iLine.getLine());
 		setC_UOM_ID(iLine.getC_UOM_ID());
@@ -237,7 +233,7 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
 
 		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
-		dimensionService.updateRecord(this, invoiceLineDimension);
+		dimensionService.updateRecord(this,invoiceLineDimension);
 
 	}	// setInvoiceLine
 
@@ -308,7 +304,7 @@ public class MInOutLine extends X_M_InOutLine
 		// Get default Location
 		if (M_Locator_ID <= 0)
 		{
-			M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
+			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
 		}
 		setM_Locator_ID(M_Locator_ID);
 	}	// setM_Locator_ID
@@ -713,7 +709,7 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		if (MLandedCost.LANDEDCOSTDISTRIBUTION_Costs.equals(CostDistribution))
 		{
-			I_C_InvoiceLine m_il = invoiceDAO.getOfInOutLine(this);
+			MInvoiceLine m_il = MInvoiceLine.getOfInOutLine(this);
 			if (m_il == null)
 			{
 				log.error("No Invoice Line for: " + this.toString());

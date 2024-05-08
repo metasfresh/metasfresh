@@ -1,10 +1,18 @@
 package de.metas.rest_api.bpartner_pricelist.command;
 
+import java.time.LocalDate;
+
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -12,21 +20,16 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.util.TimeUtil;
-
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -124,11 +127,17 @@ public class GetPriceListCommand
 	{
 		countryId = servicesFacade.getCountryIdByCountryCode(countryCode);
 
-		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier, null)
-				.orElseThrow(() -> new AdempiereException("No BPartner found for " + bpartnerIdentifier));
+		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier, null).orElse(null);
+		if (bpartnerId == null)
+		{
+			throw new AdempiereException("No BPartner found for " + bpartnerIdentifier);
+		}
 
-		pricingSystemId = servicesFacade.getPricingSystemId(bpartnerId, soTrx)
-				.orElseThrow(() -> new AdempiereException("No pricing system defined for " + bpartnerId));
+		pricingSystemId = servicesFacade.getPricingSystemId(bpartnerId, soTrx).orElse(null);
+		if (pricingSystemId == null)
+		{
+			throw new AdempiereException("No pricing system defined for " + bpartnerId);
+		}
 
 		final PriceListsCollection priceLists = servicesFacade.getPriceListsCollection(pricingSystemId);
 		final I_M_PriceList priceList = priceLists.getPriceList(countryId, soTrx).orElse(null);
@@ -143,10 +152,10 @@ public class GetPriceListCommand
 		priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
 		final PriceListVersionId priceListVersionId = servicesFacade.getPriceListVersionId(priceListId, TimeUtil.asZonedDateTime(date, SystemTime.zoneId()));
 
-		final ImmutableList<ProductPrice> productPriceRecords = servicesFacade.getProductPrices(priceListVersionId);
+		final ImmutableList<I_M_ProductPrice> productPriceRecords = servicesFacade.getProductPrices(priceListVersionId);
 
 		final ImmutableSet<ProductId> productIds = productPriceRecords.stream()
-				.map(ProductPrice::getProductId)
+				.map(productPrice -> ProductId.ofRepoId(productPrice.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableMap<ProductId, String> productValues = servicesFacade.getProductValues(productIds);
@@ -161,18 +170,20 @@ public class GetPriceListCommand
 	}
 
 	private JsonResponsePrice toJsonResponsePrice(
-			@NonNull final ProductPrice productPrice,
+			@NonNull final I_M_ProductPrice productPrice,
 			@NonNull final ImmutableMap<ProductId, String> productValues,
 			@NonNull final CurrencyCode currencyCode)
 	{
-		final ProductId productId = productPrice.getProductId();
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
 
 		return JsonResponsePrice.builder()
 				.productId(productId)
 				.productCode(productValues.get(productId))
 				.price(productPrice.getPriceStd())
 				.currencyCode(currencyCode)
-				.taxCategoryId(productPrice.getTaxCategoryId())
+				.taxCategoryId(taxCategoryId)
 				.build();
 	}
 

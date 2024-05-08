@@ -1,21 +1,19 @@
 package de.metas.acct;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
-import de.metas.acct.aggregation.FactAcctLogService;
+import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
-import de.metas.acct.api.ProductActivityProvider;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
-import de.metas.acct.open_items.FAOpenItemsService;
-import de.metas.acct.open_items.updater.FactAcctOpenItemsToUpdateDBTableWatcher;
 import de.metas.acct.posting.IDocumentRepostingSupplierService;
 import de.metas.acct.posting.server.accouting_docs_to_repost_db_table.AccoutingDocsToRepostDBTableWatcher;
 import de.metas.acct.spi.impl.AllocationHdrDocumentRepostingSupplier;
@@ -25,7 +23,6 @@ import de.metas.acct.spi.impl.PaymentDocumentRepostingSupplier;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.costing.ICostElementRepository;
-import de.metas.costing.ICurrentCostsRepository;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.elementvalue.MElementValueTreeSupport;
 import de.metas.impexp.processing.IImportProcessFactory;
@@ -38,6 +35,7 @@ import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
@@ -59,9 +57,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Accounting module activator
@@ -69,8 +66,10 @@ import java.util.Set;
 @Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
+	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
+	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
@@ -78,32 +77,19 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
-	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-	private final FactAcctLogService factAcctLogService;
+	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
 
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
-	private final ProductActivityProvider productActivityProvider;
-	private final FAOpenItemsService faOpenItemsService;
-
-	private final ICurrentCostsRepository currentCostsRepository;
 
 	private static final String CTXNAME_C_ConversionType_ID = "#" + I_C_ConversionType.COLUMNNAME_C_ConversionType_ID;
 
 	public AcctModuleInterceptor(
 			@NonNull final ICostElementRepository costElementRepo,
-			@NonNull final TreeNodeService treeNodeService,
-			@NonNull final ProductActivityProvider productActivityProvider,
-			@NonNull final ICurrentCostsRepository currentCostsRepository,
-			@NonNull final FAOpenItemsService faOpenItemsService,
-			@NonNull final FactAcctLogService factAcctLogService)
+			@NonNull final TreeNodeService treeNodeService)
 	{
 		this.costElementRepo = costElementRepo;
 		this.treeNodeService = treeNodeService;
-		this.productActivityProvider = productActivityProvider;
-		this.currentCostsRepository = currentCostsRepository;
-		this.faOpenItemsService = faOpenItemsService;
-		this.factAcctLogService = factAcctLogService;
 	}
 
 	@Override
@@ -120,7 +106,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			userRolePermissionsDAO.setAccountingModuleActive();
 		}
 
-		Services.registerService(IProductActivityProvider.class, productActivityProvider);
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		importProcessFactory.registerImportProcess(I_I_ElementValue.class, AccountImportProcess.class);
 
@@ -137,40 +123,37 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 		{
 			logger.info("Skip setting up accounting service because profile {} is not active", Profiles.PROFILE_AccountingService);
 		}
-	}
 
-	@Override
-	protected Set<String> getTableNamesToSkipOnMigrationScriptsLogging()
-	{
-		return ImmutableSet.of(
-				I_Fact_Acct.Table_Name,
-				I_Fact_Acct_Log.Table_Name,
-				I_Fact_Acct_Summary.Table_Name,
-				I_Fact_Acct_EndingBalance.Table_Name,
-				I_I_ElementValue.Table_Name
-		);
+		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Log.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_Summary.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_Fact_Acct_EndingBalance.Table_Name);
+		migrationLogger.addTableToIgnoreList(I_I_ElementValue.Table_Name);
 	}
 
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema(costElementRepo, currentCostsRepository));
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_GL());
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Default());
-		engine.addModelValidator(new de.metas.acct.interceptor.C_AcctSchema_Element());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
 
-		engine.addModelValidator(new de.metas.acct.interceptor.C_BP_BankAccount()); // 08354
-		engine.addModelValidator(new de.metas.acct.interceptor.C_ElementValue(acctSchemaDAO, accountDAO, treeNodeService));
-		engine.addModelValidator(new de.metas.acct.interceptor.C_ValidCombination(accountBL));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_BP_BankAccount()); // 08354
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ElementValue(acctSchemaDAO, treeNodeService));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_ValidCombination(accountBL));
 
-		engine.addModelValidator(new de.metas.acct.interceptor.GL_Journal(importProcessFactory));
-		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalLine());
-		engine.addModelValidator(new de.metas.acct.interceptor.GL_JournalBatch());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_Journal(importProcessFactory));
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalLine());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_JournalBatch());
 		//
-		engine.addModelValidator(new de.metas.acct.interceptor.C_TaxDeclaration());
+		engine.addModelValidator(new de.metas.acct.model.validator.C_TaxDeclaration());
 		//
-		engine.addModelValidator(new de.metas.acct.interceptor.GL_Distribution());
-		engine.addModelValidator(new de.metas.acct.interceptor.GL_DistributionLine());
+		engine.addModelValidator(new de.metas.acct.model.validator.M_MatchInv(postingService, factAcctDAO));
+		//
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_Distribution());
+		engine.addModelValidator(new de.metas.acct.model.validator.GL_DistributionLine());
 	}
 
 	@Override
@@ -213,11 +196,11 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 			try
 			{
 				final OrgId adOrgId = OrgId.ofRepoId(adOrgRepoId);
-				final Instant date = Env.getDate(ctx).toInstant();
+				final LocalDate date = Env.getLocalDate(ctx);
 				final CurrencyConversionTypeId conversionTypeId = currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
 				Env.setContext(ctx, CTXNAME_C_ConversionType_ID, conversionTypeId.getRepoId());
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
 				logger.warn("Failed finding the default conversion type. Skip", e);
 			}
@@ -233,12 +216,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		runInThread(FactAcctLogDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
-				.factAcctLogService(factAcctLogService)
-				.build());
-
-		runInThread(FactAcctOpenItemsToUpdateDBTableWatcher.builder()
-				.sysConfigBL(sysConfigBL)
-				.faOpenItemsService(faOpenItemsService)
+				.factAcctLogBL(factAcctLogBL)
 				.build());
 	}
 

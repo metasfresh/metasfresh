@@ -22,12 +22,10 @@
 
 package de.metas.util.web.filter;
 
-import ch.qos.logback.classic.Level;
 import de.metas.audit.apirequest.ApiAuditLoggable;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.logging.LogManager;
-import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiAuditService;
@@ -79,24 +77,12 @@ public class ApiAuditFilter implements Filter
 				return;
 			}
 
-			final ApiRequestAuditId requestAuditId = apiAuditService.extractApiRequestAuditId(httpServletRequest).orElse(null);
-			final Optional<UserId> loggedUserId = Env.getLoggedUserIdIfExists();
+			final Optional<ApiRequestAuditId> requestAuditIdOpt = apiAuditService.extractApiRequestAuditId(httpServletRequest);
 
 			// dev-note: this means the request was already filtered once
-			if (requestAuditId != null)
+			if (requestAuditIdOpt.isPresent())
 			{
-				final ApiAuditLoggable apiAuditLoggable;
-				if (loggedUserId.isPresent())
-				{
-					apiAuditLoggable = apiAuditService.createLogger(requestAuditId, loggedUserId.get());
-				}
-				else
-				{
-					apiAuditLoggable = apiAuditService.createLogger(requestAuditId, UserId.METASFRESH);
-					Loggables
-							.withLogger(apiAuditLoggable, logger, Level.WARN)
-							.addLog("Request contains ApiRequestAuditId={}, but there is no logged-in user - logging with AD_User_ID=", requestAuditId.getRepoId(), UserId.METASFRESH.getRepoId());
-				}
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
 
 				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
@@ -105,14 +91,15 @@ public class ApiAuditFilter implements Filter
 				}
 			}
 
-			final ApiAuditConfig matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest).orElse(null);
-			if (matchingAuditConfig == null || matchingAuditConfig.isBypassAudit())
+			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
+
+			if (!matchingAuditConfig.isPresent())
 			{
 				chain.doFilter(request, response);
 				return;
 			}
 
-			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig);
+			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig.get());
 		}
 		catch (final Throwable t)
 		{
@@ -130,7 +117,6 @@ public class ApiAuditFilter implements Filter
 
 	private boolean isBypassAll()
 	{
-		//if(true) return true;
 		return sysConfigBL.getBooleanValue(SYSCONFIG_BypassAll, false);
 	}
 }

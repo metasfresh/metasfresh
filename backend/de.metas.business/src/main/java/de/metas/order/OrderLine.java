@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import de.metas.handlingunits.HUPIItemProductId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -84,7 +83,4 @@ public class OrderLine
 
 	@NonNull
 	SOTrx soTrx;
-
-	@Nullable
-	HUPIItemProductId huPIItemProductId;
 }

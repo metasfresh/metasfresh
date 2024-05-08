@@ -1,6 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -9,16 +9,11 @@ import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.picking.api.PickingSlotId;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
 
-import java.util.List;
 import java.util.stream.Stream;
 
 public class PickingJobAbortCommand
@@ -28,8 +23,9 @@ public class PickingJobAbortCommand
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull private final PickingCandidateService pickingCandidateService;
 
-	@NonNull private final ImmutableList<PickingJob> initialPickingJobs;
+	@NonNull private final PickingJob initialPickingJob;
 
 	@Builder
 	private PickingJobAbortCommand(
@@ -37,61 +33,36 @@ public class PickingJobAbortCommand
 			final @NonNull PickingJobLockService pickingJobLockService,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
+			final @NonNull PickingCandidateService pickingCandidateService,
 			//
-			final @Singular @NonNull List<PickingJob> pickingJobs)
+			final @NonNull PickingJob pickingJob)
 	{
-		Check.assumeNotEmpty(pickingJobs, "no picking jobs provided");
-
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
+		this.pickingCandidateService = pickingCandidateService;
 
-		this.initialPickingJobs = ImmutableList.copyOf(pickingJobs);
+		this.initialPickingJob = pickingJob;
 	}
 
-	public PickingJob executeAndGetSingleResult()
+	public PickingJob execute()
 	{
-		if (initialPickingJobs.size() != 1)
-		{
-			throw new AdempiereException("Only one picking job expected");
-		}
-
-		final ImmutableList<PickingJob> result = execute();
-		return CollectionUtils.singleElement(result);
-	}
-
-	public ImmutableList<PickingJob> execute()
-	{
-		initialPickingJobs.forEach(PickingJob::assertNotProcessed);
+		initialPickingJob.assertNotProcessed();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private ImmutableList<PickingJob> executeInTrx()
-	{
-		final ImmutableList.Builder<PickingJob> result = ImmutableList.builder();
-		for (final PickingJob initialPickingJob : initialPickingJobs)
-		{
-			final PickingJob pickingJob = execute(initialPickingJob);
-			result.add(pickingJob);
-		}
-		return result.build();
-	}
-
-	private PickingJob execute(@NonNull final PickingJob initialPickingJob)
+	private PickingJob executeInTrx()
 	{
 		//noinspection OptionalGetWithoutIsPresent
 		return Stream.of(initialPickingJob)
 				.sequential()
 				.map(this::releasePickingSlotAndSave)
-				// NOTE: abort is not "reversing", so we don't have to reverse (unpick) what we picked.
-				// Even more, imagine that those picked things are already phisically splitted out.
-				//.map(this::unpickAllStepsAndSave)
+				.map(this::unpickAllStepsAndSave)
 				.peek(pickingJobHUReservationService::releaseAllReservations)
 				.peek(pickingJobLockService::unlockShipmentSchedules)
 				.map(this::markAsVoidedAndSave)
-				.findFirst()
-				.get();
+				.findFirst().get();
 	}
 
 	private PickingJob markAsVoidedAndSave(PickingJob pickingJob)
@@ -101,15 +72,15 @@ public class PickingJobAbortCommand
 		return pickingJob;
 	}
 
-	// private PickingJob unpickAllStepsAndSave(final PickingJob pickingJob)
-	// {
-	// 	return PickingJobUnPickCommand.builder()
-	// 			.pickingJobRepository(pickingJobRepository)
-	// 			.pickingCandidateService(pickingCandidateService)
-	// 			.pickingJob(pickingJob)
-	// 			.build()
-	// 			.execute();
-	// }
+	private PickingJob unpickAllStepsAndSave(PickingJob pickingJob)
+	{
+		return PickingJobUnPickCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
+				.pickingJobHUReservationService(pickingJobHUReservationService)
+				.pickingCandidateService(pickingCandidateService)
+				.pickingJob(pickingJob)
+				.build().execute();
+	}
 
 	private PickingJob releasePickingSlotAndSave(PickingJob pickingJob)
 	{

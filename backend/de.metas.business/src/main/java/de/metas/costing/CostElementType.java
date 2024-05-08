@@ -1,8 +1,9 @@
 package de.metas.costing;
 
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.NonNull;
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import org.compiere.model.X_M_CostElement;
 
 import com.google.common.collect.ImmutableMap;
@@ -31,7 +32,7 @@ import lombok.Getter;
  * #L%
  */
 
-public enum CostElementType implements ReferenceListAwareEnum
+public enum CostElementType
 {
 	Material(X_M_CostElement.COSTELEMENTTYPE_Material), //
 	Overhead(X_M_CostElement.COSTELEMENTTYPE_Overhead), //
@@ -52,15 +53,25 @@ public enum CostElementType implements ReferenceListAwareEnum
 
 	public static CostElementType ofNullableCode(final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		if (code == null)
+		{
+			return null;
+		}
+		return ofCode(code);
 	}
 
-	public static CostElementType ofCode(@NonNull final String code)
+	public static CostElementType ofCode(final String code)
 	{
-		return index.ofCode(code);
+		final CostElementType costingMethod = code2type.get(code);
+		if (costingMethod == null)
+		{
+			throw new NoSuchElementException("No " + CostElementType.class + " found for code: " + code);
+		}
+		return costingMethod;
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<CostElementType> index = ReferenceListAwareEnums.index(values());
+	private static final ImmutableMap<String, CostElementType> code2type = Stream.of(values())
+			.collect(ImmutableMap.toImmutableMap(CostElementType::getCode, Function.identity()));
 
 	public boolean isMaterial()
 	{

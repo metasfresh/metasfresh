@@ -17,7 +17,6 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -98,9 +97,9 @@ import java.util.function.Supplier;
 
 /**
  * Processes given {@link I_PP_Order_Qty}.
- * <p>
+ *
  * By default, {@link #process()} will process each candidate in it's own transaction/savepoint.
- * <p>
+ *
  * Processing one {@link I_PP_Order_Qty} means:
  * <ul>
  * <li>generate cost collector
@@ -110,6 +109,7 @@ import java.util.function.Supplier;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class HUPPOrderIssueReceiptCandidatesProcessor
 {
@@ -119,7 +119,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	}
 
 	// services
-	private static final Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
+	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -127,7 +127,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -146,7 +145,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	{
 		final List<I_PP_Cost_Collector> result = new ArrayList<>();
 
-		trxItemProcessorService.<I_PP_Order_Qty, Void>createExecutor()
+		trxItemProcessorService.<I_PP_Order_Qty, Void> createExecutor()
 				.setProcessor(candidate -> {
 					final I_PP_Cost_Collector costCollector = processCandidate(candidate);
 					if (costCollector != null)
@@ -212,10 +211,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("candidate", candidate);
 		}
 
-		final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
-
-		huAttributesBL.validateMandatoryManufacturingAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
-
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
 
 		//
@@ -226,7 +221,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
 				.movementDate(TimeUtil.asZonedDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
-				.productId(productId)
+				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
 				.locatorId(locatorId)
 				.pickingCandidateId(candidate.getM_Picking_Candidate_ID())
 				.build();
@@ -281,10 +276,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Allocation Destination: our BOM Lines
-			final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
 			final IAllocationDestination orderBOMLinesDestination;
 			{
-				final PPOrderBOMLineProductStorage productStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine, productId);
+				final PPOrderBOMLineProductStorage productStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine);
 				orderBOMLinesDestination = new GenericAllocationSourceDestination(productStorage, ppOrderBOMLine);
 			}
 
@@ -296,7 +290,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			//
 			// Allocation request
 			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
-					, productId // product
+					, ProductId.ofRepoId(candidate.getM_Product_ID()) // product
 					, qtyToIssue // the quantity to issue
 					, SystemTime.asZonedDateTime() // transaction date
 					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
@@ -359,6 +353,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	 * Aggregates {@link IHUTransactionCandidate}s and creates {@link I_PP_Cost_Collector}s for issuing materials to manufacturing order
 	 *
 	 * @author tsa
+	 *
 	 */
 	private static final class IssueCandidatesBuilder
 	{
@@ -415,12 +410,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Get/Create Issue Candidate
-			final ProductId productId = huTransaction.getProductId();
 			final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine.getPP_Order_BOMLine_ID());
-			final IssueCandidate issueCandidate = candidatesByOrderBOMLineId.computeIfAbsent(ppOrderBOMLineId, k -> new IssueCandidate(ppOrderBOMLine, productId));
+			final IssueCandidate issueCandidate = candidatesByOrderBOMLineId.computeIfAbsent(ppOrderBOMLineId, k -> new IssueCandidate(ppOrderBOMLine));
 
 			//
 			// Add Qty To Issue
+			final ProductId productId = huTransaction.getProductId();
 			final Quantity qtyToIssue = huTransaction.getQuantity();
 
 			// Get HU from counterpart transaction
@@ -534,7 +529,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final I_PP_Cost_Collector cc = InterfaceWrapperHelper.create(
 					ppCostCollectorBL.createIssue(ComponentIssueCreateRequest.builder()
 							.orderBOMLine(ppOrderBOMLine)
-							.productId(candidate.getProductId())
 							.locatorId(locatorId)
 							.attributeSetInstanceId(AttributeSetInstanceId.NONE) // N/A
 							.movementDate(movementDate)
@@ -595,23 +589,20 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		//
-		@NonNull private final I_PP_Order_BOMLine orderBOMLine;
-		@NonNull private final ProductId productId;
+		private final I_PP_Order_BOMLine orderBOMLine;
 
 		//
-		@NonNull @Setter(AccessLevel.NONE) private Quantity qtyToIssue;
+		@Setter(AccessLevel.NONE)
+		private Quantity qtyToIssue;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
 
 		@Setter(AccessLevel.NONE)
 		@Getter(AccessLevel.NONE)
-		private final Map<Integer, MaterialTrackingWithQuantity> id2materialTracking = new HashMap<>();
+		private Map<Integer, MaterialTrackingWithQuantity> id2materialTracking = new HashMap<>();
 
-		private IssueCandidate(
-				@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
-				@NonNull final ProductId productId)
+		private IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 		{
 			this.orderBOMLine = ppOrderBOMLine;
-			this.productId = productId;
 
 			final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 			final I_C_UOM uom = orderBOMBL.getBOMLineUOM(ppOrderBOMLine);
@@ -629,10 +620,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		public void addQtyToIssue(@NonNull final ProductId productId, @NonNull final Quantity qtyToIssueToAdd, @NonNull final I_M_HU huToAssign)
 		{
 			// Validate
-			if (!ProductId.equals(productId, this.productId))
+			if (productId.getRepoId() != orderBOMLine.getM_Product_ID())
 			{
 				throw new HUException("Invalid product to issue."
-						+ "\nExpected: " + this.productId
+						+ "\nExpected: " + orderBOMLine.getM_Product_ID()
 						+ "\nGot: " + productId
 						+ "\n@PP_Order_BOMLine_ID@: " + orderBOMLine);
 			}

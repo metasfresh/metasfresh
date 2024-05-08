@@ -22,25 +22,29 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.Assertions.*;
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(SnapshotExtension.class)
 public class JsonRequestBPartnerUpsertItemTest
 {
-	private final ObjectMapper mapper = new ObjectMapper();
-	private Expect expect;
 
+	private ObjectMapper mapper = new ObjectMapper();
+
+	@BeforeClass	
+	public static void beforeAll()
+	{
+		start();
+	}
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -63,6 +67,6 @@ public class JsonRequestBPartnerUpsertItemTest
 		final JsonRequestBPartnerUpsertItem result = mapper.readValue(string, JsonRequestBPartnerUpsertItem.class);
 
 		assertThat(result).isEqualTo(item);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 }

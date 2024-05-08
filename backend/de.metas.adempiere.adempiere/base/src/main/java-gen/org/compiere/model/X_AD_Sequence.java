@@ -1,258 +1,418 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for AD_Sequence
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_AD_Sequence extends org.compiere.model.PO implements I_AD_Sequence, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1692385967L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1937766211L;
 
     /** Standard Constructor */
-    public X_AD_Sequence (final Properties ctx, final int AD_Sequence_ID, @Nullable final String trxName)
+    public X_AD_Sequence (Properties ctx, int AD_Sequence_ID, String trxName)
     {
       super (ctx, AD_Sequence_ID, trxName);
+      /** if (AD_Sequence_ID == 0)
+        {
+			setAD_Sequence_ID (0);
+			setCurrentNext (0); // 1000000
+			setCurrentNextSys (0); // 100
+			setIncrementNo (0); // 1
+			setIsAutoSequence (false);
+			setName (null);
+			setStartNo (0); // 1000000
+        } */
     }
 
     /** Load Constructor */
-    public X_AD_Sequence (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_AD_Sequence (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
+	/** Set Reihenfolge.
+		@param AD_Sequence_ID 
+		Document Sequence
+	  */
 	@Override
-	public void setAD_Sequence_ID (final int AD_Sequence_ID)
+	public void setAD_Sequence_ID (int AD_Sequence_ID)
 	{
 		if (AD_Sequence_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Sequence_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
+			set_ValueNoCheck (COLUMNNAME_AD_Sequence_ID, Integer.valueOf(AD_Sequence_ID));
 	}
 
+	/** Get Reihenfolge.
+		@return Document Sequence
+	  */
 	@Override
-	public int getAD_Sequence_ID() 
+	public int getAD_Sequence_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Sequence_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Aktuell nächster Wert.
+		@param CurrentNext 
+		The next number to be used
+	  */
 	@Override
-	public void setCurrentNext (final int CurrentNext)
+	public void setCurrentNext (int CurrentNext)
 	{
-		set_Value (COLUMNNAME_CurrentNext, CurrentNext);
+		set_Value (COLUMNNAME_CurrentNext, Integer.valueOf(CurrentNext));
 	}
 
+	/** Get Aktuell nächster Wert.
+		@return The next number to be used
+	  */
 	@Override
-	public int getCurrentNext() 
+	public int getCurrentNext () 
 	{
-		return get_ValueAsInt(COLUMNNAME_CurrentNext);
+		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentNext);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Current Next (System).
+		@param CurrentNextSys 
+		Next sequence for system use
+	  */
 	@Override
-	public void setCurrentNextSys (final int CurrentNextSys)
+	public void setCurrentNextSys (int CurrentNextSys)
 	{
-		set_Value (COLUMNNAME_CurrentNextSys, CurrentNextSys);
+		set_Value (COLUMNNAME_CurrentNextSys, Integer.valueOf(CurrentNextSys));
 	}
 
+	/** Get Current Next (System).
+		@return Next sequence for system use
+	  */
 	@Override
-	public int getCurrentNextSys() 
+	public int getCurrentNextSys () 
 	{
-		return get_ValueAsInt(COLUMNNAME_CurrentNextSys);
+		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentNextSys);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Abw. Sequenznummer-Implementierung.
+		@param CustomSequenceNoProvider_JavaClass_ID Abw. Sequenznummer-Implementierung	  */
 	@Override
-	public void setCustomSequenceNoProvider_JavaClass_ID (final int CustomSequenceNoProvider_JavaClass_ID)
+	public void setCustomSequenceNoProvider_JavaClass_ID (int CustomSequenceNoProvider_JavaClass_ID)
 	{
 		if (CustomSequenceNoProvider_JavaClass_ID < 1) 
 			set_Value (COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID, null);
 		else 
-			set_Value (COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID, CustomSequenceNoProvider_JavaClass_ID);
+			set_Value (COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID, Integer.valueOf(CustomSequenceNoProvider_JavaClass_ID));
 	}
 
+	/** Get Abw. Sequenznummer-Implementierung.
+		@return Abw. Sequenznummer-Implementierung	  */
 	@Override
-	public int getCustomSequenceNoProvider_JavaClass_ID() 
+	public int getCustomSequenceNoProvider_JavaClass_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Date Column.
+		@param DateColumn 
+		Fully qualified date column
+	  */
 	@Override
-	public void setDateColumn (final @Nullable java.lang.String DateColumn)
+	public void setDateColumn (java.lang.String DateColumn)
 	{
 		set_Value (COLUMNNAME_DateColumn, DateColumn);
 	}
 
+	/** Get Date Column.
+		@return Fully qualified date column
+	  */
 	@Override
-	public java.lang.String getDateColumn() 
+	public java.lang.String getDateColumn () 
 	{
-		return get_ValueAsString(COLUMNNAME_DateColumn);
+		return (java.lang.String)get_Value(COLUMNNAME_DateColumn);
 	}
 
+	/** Set Decimal Pattern.
+		@param DecimalPattern 
+		Java Decimal Pattern
+	  */
 	@Override
-	public void setDecimalPattern (final @Nullable java.lang.String DecimalPattern)
+	public void setDecimalPattern (java.lang.String DecimalPattern)
 	{
 		set_Value (COLUMNNAME_DecimalPattern, DecimalPattern);
 	}
 
+	/** Get Decimal Pattern.
+		@return Java Decimal Pattern
+	  */
 	@Override
-	public java.lang.String getDecimalPattern() 
+	public java.lang.String getDecimalPattern () 
 	{
-		return get_ValueAsString(COLUMNNAME_DecimalPattern);
+		return (java.lang.String)get_Value(COLUMNNAME_DecimalPattern);
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Increment.
+		@param IncrementNo 
+		The number to increment the last document number by
+	  */
 	@Override
-	public void setIncrementNo (final int IncrementNo)
+	public void setIncrementNo (int IncrementNo)
 	{
-		set_Value (COLUMNNAME_IncrementNo, IncrementNo);
+		set_Value (COLUMNNAME_IncrementNo, Integer.valueOf(IncrementNo));
 	}
 
+	/** Get Increment.
+		@return The number to increment the last document number by
+	  */
 	@Override
-	public int getIncrementNo() 
+	public int getIncrementNo () 
 	{
-		return get_ValueAsInt(COLUMNNAME_IncrementNo);
+		Integer ii = (Integer)get_Value(COLUMNNAME_IncrementNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Activate Audit.
+		@param IsAudited 
+		Activate Audit Trail of what numbers are generated
+	  */
 	@Override
-	public void setIsAudited (final boolean IsAudited)
+	public void setIsAudited (boolean IsAudited)
 	{
-		set_Value (COLUMNNAME_IsAudited, IsAudited);
+		set_Value (COLUMNNAME_IsAudited, Boolean.valueOf(IsAudited));
 	}
 
+	/** Get Activate Audit.
+		@return Activate Audit Trail of what numbers are generated
+	  */
 	@Override
-	public boolean isAudited() 
+	public boolean isAudited () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAudited);
+		Object oo = get_Value(COLUMNNAME_IsAudited);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Automatische Nummerierung.
+		@param IsAutoSequence 
+		Automatically assign the next number
+	  */
 	@Override
-	public void setIsAutoSequence (final boolean IsAutoSequence)
+	public void setIsAutoSequence (boolean IsAutoSequence)
 	{
-		set_Value (COLUMNNAME_IsAutoSequence, IsAutoSequence);
+		set_Value (COLUMNNAME_IsAutoSequence, Boolean.valueOf(IsAutoSequence));
 	}
 
+	/** Get Automatische Nummerierung.
+		@return Automatically assign the next number
+	  */
 	@Override
-	public boolean isAutoSequence() 
+	public boolean isAutoSequence () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAutoSequence);
+		Object oo = get_Value(COLUMNNAME_IsAutoSequence);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Used for Record ID.
+		@param IsTableID 
+		The document number  will be used as the record key
+	  */
 	@Override
-	public void setIsTableID (final boolean IsTableID)
+	public void setIsTableID (boolean IsTableID)
 	{
-		set_Value (COLUMNNAME_IsTableID, IsTableID);
+		set_Value (COLUMNNAME_IsTableID, Boolean.valueOf(IsTableID));
 	}
 
+	/** Get Used for Record ID.
+		@return The document number  will be used as the record key
+	  */
 	@Override
-	public boolean isTableID() 
+	public boolean isTableID () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsTableID);
+		Object oo = get_Value(COLUMNNAME_IsTableID);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Name.
+		@param Name 
+		Alphanumeric identifier of the entity
+	  */
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+	/** Get Name.
+		@return Alphanumeric identifier of the entity
+	  */
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
+	/** Set Prefix.
+		@param Prefix 
+		Prefix before the sequence number
+	  */
 	@Override
-	public void setPrefix (final @Nullable java.lang.String Prefix)
+	public void setPrefix (java.lang.String Prefix)
 	{
 		set_Value (COLUMNNAME_Prefix, Prefix);
 	}
 
+	/** Get Prefix.
+		@return Prefix before the sequence number
+	  */
 	@Override
-	public java.lang.String getPrefix() 
+	public java.lang.String getPrefix () 
 	{
-		return get_ValueAsString(COLUMNNAME_Prefix);
+		return (java.lang.String)get_Value(COLUMNNAME_Prefix);
 	}
 
+	/** Set Nummernfolge jedes Jahr neu beginnen.
+		@param StartNewYear 
+		Restart the sequence with Start on every 1/1
+	  */
 	@Override
-	public void setStartNewMonth (final boolean StartNewMonth)
+	public void setStartNewYear (boolean StartNewYear)
 	{
-		set_Value (COLUMNNAME_StartNewMonth, StartNewMonth);
+		set_Value (COLUMNNAME_StartNewYear, Boolean.valueOf(StartNewYear));
 	}
 
+	/** Get Nummernfolge jedes Jahr neu beginnen.
+		@return Restart the sequence with Start on every 1/1
+	  */
 	@Override
-	public boolean isStartNewMonth() 
+	public boolean isStartNewYear () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_StartNewMonth);
+		Object oo = get_Value(COLUMNNAME_StartNewYear);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Start No.
+		@param StartNo 
+		Starting number/position
+	  */
 	@Override
-	public void setStartNewYear (final boolean StartNewYear)
+	public void setStartNo (int StartNo)
 	{
-		set_Value (COLUMNNAME_StartNewYear, StartNewYear);
+		set_Value (COLUMNNAME_StartNo, Integer.valueOf(StartNo));
 	}
 
+	/** Get Start No.
+		@return Starting number/position
+	  */
 	@Override
-	public boolean isStartNewYear() 
+	public int getStartNo () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_StartNewYear);
+		Integer ii = (Integer)get_Value(COLUMNNAME_StartNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Suffix.
+		@param Suffix 
+		Suffix after the number
+	  */
 	@Override
-	public void setStartNo (final int StartNo)
-	{
-		set_Value (COLUMNNAME_StartNo, StartNo);
-	}
-
-	@Override
-	public int getStartNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_StartNo);
-	}
-
-	@Override
-	public void setSuffix (final @Nullable java.lang.String Suffix)
+	public void setSuffix (java.lang.String Suffix)
 	{
 		set_Value (COLUMNNAME_Suffix, Suffix);
 	}
 
+	/** Get Suffix.
+		@return Suffix after the number
+	  */
 	@Override
-	public java.lang.String getSuffix() 
+	public java.lang.String getSuffix () 
 	{
-		return get_ValueAsString(COLUMNNAME_Suffix);
+		return (java.lang.String)get_Value(COLUMNNAME_Suffix);
 	}
 
+	/** Set Value Format.
+		@param VFormat 
+		Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public void setVFormat (final @Nullable java.lang.String VFormat)
+	public void setVFormat (java.lang.String VFormat)
 	{
 		set_Value (COLUMNNAME_VFormat, VFormat);
 	}
 
+	/** Get Value Format.
+		@return Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public java.lang.String getVFormat() 
+	public java.lang.String getVFormat () 
 	{
-		return get_ValueAsString(COLUMNNAME_VFormat);
+		return (java.lang.String)get_Value(COLUMNNAME_VFormat);
 	}
 }

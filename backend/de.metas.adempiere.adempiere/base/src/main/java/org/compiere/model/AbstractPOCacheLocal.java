@@ -226,7 +226,7 @@ public abstract class AbstractPOCacheLocal
 			// FIXME: this is a special case because the system will consider we want a new record. Fix this workaround
 			return new Query(ctx, tableName, loadWhereClause, trxName)
 					.setParameters(id)
-					.firstOnly(PO.class);
+					.firstOnly();
 		}
 		else
 		{

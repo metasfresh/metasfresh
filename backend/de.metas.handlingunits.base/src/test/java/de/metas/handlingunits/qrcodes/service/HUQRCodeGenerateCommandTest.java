@@ -1,39 +1,37 @@
 package de.metas.handlingunits.qrcodes.service;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
+import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-@ExtendWith(SnapshotExtension.class)
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+
 class HUQRCodeGenerateCommandTest
 {
-	@SuppressWarnings("unused") private Expect expect;
+	@BeforeAll
+	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
 
 	@BeforeEach
 	void beforeEach()
@@ -91,14 +89,6 @@ class HUQRCodeGenerateCommandTest
 		return HuPackingInstructionsId.ofRepoId(pi.getM_HU_PI_ID());
 	}
 
-	private static HUQRCodeGenerateCommand.HUQRCodeGenerateCommandBuilder newCommand()
-	{
-		return HUQRCodeGenerateCommand.builder()
-				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
-				.productBL(Services.get(IProductBL.class))
-				.attributeDAO(Services.get(IAttributeDAO.class));
-	}
-
 	@Test
 	void standardTest()
 	{
@@ -110,7 +100,7 @@ class HUQRCodeGenerateCommandTest
 		final AttributeId attributeId4 = attribute("A4", "Attribute 4", AttributeValueType.LIST);
 		final AttributeValueId attributeId4_itemId1 = attributeListItem(60002, attributeId4, "A4_Item1");
 
-		final List<HUQRCode> qrCodes = newCommand()
+		final List<HUQRCode> qrCodes = HUQRCodeGenerateCommand.builder()
 				.randomUUIDGenerator(new MockedUniqueUUIDGenerator(
 						UUID.fromString("53c5f490-f46d-4aae-a357-fefc2c0d76b2"),
 						UUID.fromString("64ad6577-fd95-4e47-8e65-f4648d747319")
@@ -141,6 +131,6 @@ class HUQRCodeGenerateCommandTest
 				.build()
 				.execute();
 
-		expect.toMatchSnapshot(qrCodes);
+		expect(qrCodes).toMatchSnapshot();
 	}
 }

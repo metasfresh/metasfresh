@@ -8,12 +8,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import de.metas.currency.CurrencyRepository;
-import de.metas.money.MoneyService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
@@ -96,8 +93,6 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		final PurchaseOrderToShipperTransportationRepository repo = new PurchaseOrderToShipperTransportationRepository();
 		service = new PurchaseOrderToShipperTransportationService(repo);
-
-		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 	}
 
 	@Test

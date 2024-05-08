@@ -1,7 +1,6 @@
 package de.metas.handlingunits.reservation;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -18,7 +17,7 @@ import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -69,7 +68,7 @@ public class HUReservationRepositoryTests
 		// invoke the method under test
 		//noinspection OptionalGetWithoutIsPresent
 		final HUReservation huReservation = huReservationRepository
-				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId), ImmutableSet.of())
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
 				.get();
 
 		assertThat(huReservation.getDocumentRef().getSalesOrderLineId()).isEqualTo(orderLineId);
@@ -94,7 +93,7 @@ public class HUReservationRepositoryTests
 
 		// invoke the method under test
 		final Optional<HUReservation> huReservation = huReservationRepository
-				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId), ImmutableSet.of());
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 		assertThat(huReservation).isNotPresent();
 	}
 
@@ -133,7 +132,7 @@ public class HUReservationRepositoryTests
 					entryBuilder.vhuId(HuId.ofRepoId(11)).qtyReserved(Quantity.of("20", uomRecord)).build()
 			));
 
-			assertThat(huReservationRepository.getByDocumentRef(documentRef, ImmutableSet.of()).orElse(null))
+			assertThat(huReservationRepository.getByDocumentRef(documentRef).orElse(null))
 					.usingRecursiveComparison()
 					.isEqualTo(HUReservation.ofEntries(ImmutableList.of(
 							expectedEntryBuilder.vhuId(HuId.ofRepoId(10)).qtyReserved(Quantity.of("10", uomRecord)).build(),
@@ -147,7 +146,7 @@ public class HUReservationRepositoryTests
 					entryBuilder.vhuId(HuId.ofRepoId(10)).qtyReserved(Quantity.of("11", uomRecord)).build(),
 					entryBuilder.vhuId(HuId.ofRepoId(12)).qtyReserved(Quantity.of("31", uomRecord)).build()));
 
-			assertThat(huReservationRepository.getByDocumentRef(documentRef, ImmutableSet.of()).orElse(null))
+			assertThat(huReservationRepository.getByDocumentRef(documentRef).orElse(null))
 					.usingRecursiveComparison()
 					.isEqualTo(HUReservation.ofEntries(ImmutableList.of(
 							expectedEntryBuilder.vhuId(HuId.ofRepoId(10)).qtyReserved(Quantity.of("11", uomRecord)).build(),

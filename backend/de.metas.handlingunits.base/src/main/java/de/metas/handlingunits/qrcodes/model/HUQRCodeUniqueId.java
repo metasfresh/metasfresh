@@ -26,11 +26,6 @@ public final class HUQRCodeUniqueId
 		this.displayableSuffix = displayableSuffix;
 	}
 
-	public static HUQRCodeUniqueId random()
-	{
-		return ofUUID(UUID.randomUUID());
-	}
-
 	public static HUQRCodeUniqueId ofUUID(@NonNull final UUID uuid)
 	{
 

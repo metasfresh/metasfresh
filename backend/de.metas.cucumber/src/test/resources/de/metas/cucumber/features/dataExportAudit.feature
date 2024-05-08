@@ -1,4 +1,3 @@
-@ghActions:run_on_executor5
 Feature: data export audit using bpartner metasfresh api
   `When` a retrieve bpartner API call is made
   export audit data should be created
@@ -107,8 +106,8 @@ Feature: data export audit using bpartner metasfresh api
       | location_data_export            | Exported-AlongWithParent | config_2                            | p_2                        |
     And RabbitMQ MF_TO_ExternalSystem queue is purged
     And the following c_bpartner is changed
-      | C_BPartner_ID.Identifier | OPT.Name2 |
-      | bpartner_2               | name2     |
+      | C_BPartner_ID.Identifier | Name2 |
+      | bpartner_2               | name2 |
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | bpartner_2               | config_2                            |
@@ -168,10 +167,10 @@ Feature: data export audit using bpartner metasfresh api
       | created_bpartner         | ext-Shopware6-BPartner_ER_Audit_25032022 | shopware6codeAudit | shopware6nameAudit | shopware6cmpAudit | de           |
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference            | OPT.ExternalReferenceURL |
-      | Shopware6      | BPartner         | BPartner_ER_Audit_25032022   | www.Shopware6.ro         |
-      | Shopware6      | BPartnerLocation | BPLocation_ER_Audit_25032022 | null                     |
-      | Shopware6      | UserID           | BPContact_ER_Audit_25032022  | null                     |
+      | ExternalSystem | Type             | ExternalReference            | ExternalReferenceURL |
+      | Shopware6      | BPartner         | BPartner_ER_Audit_25032022   | www.Shopware6.ro     |
+      | Shopware6      | BPartnerLocation | BPLocation_ER_Audit_25032022 | null                 |
+      | Shopware6      | UserID           | BPContact_ER_Audit_25032022  | null                 |
 
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue    | OPT.IsSyncExternalReferencesToRabbitMQ |
@@ -186,15 +185,15 @@ Feature: data export audit using bpartner metasfresh api
     "systemName": "Shopware6",
     "items": [
         {
-            "externalReference": "BPartner_ER_Audit_25032022",
+            "id": "BPartner_ER_Audit_25032022",
             "type": "BPartner"
         },
         {
-            "externalReference": "BPLocation_ER_Audit_25032022",
+            "id": "BPLocation_ER_Audit_25032022",
             "type": "BPartnerLocation"
         },
         {
-            "externalReference": "BPContact_ER_Audit_25032022",
+            "id": "BPContact_ER_Audit_25032022",
             "type": "UserID"
         }
     ]

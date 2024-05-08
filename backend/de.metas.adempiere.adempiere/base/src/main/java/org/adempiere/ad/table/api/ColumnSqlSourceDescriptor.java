@@ -1,12 +1,13 @@
 package org.adempiere.ad.table.api;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -33,16 +34,21 @@ import javax.annotation.Nullable;
 @Value
 public class ColumnSqlSourceDescriptor
 {
-	@NonNull String targetTableName;
-	@NonNull String sourceTableName;
+	@NonNull
+	String targetTableName;
+
+	@NonNull
+	String sourceTableName;
 
 	public enum FetchTargetRecordsMethod
-	{LINK_COLUMN, SQL}
+	{
+		LINK_COLUMN, SQL
+	}
 
-	@NonNull FetchTargetRecordsMethod fetchTargetRecordsMethod;
+	FetchTargetRecordsMethod fetchTargetRecordsMethod;
 
-	@Nullable String sqlToGetTargetRecordIdBySourceRecordId;
-	@Nullable String sourceLinkColumnName;
+	String sqlToGetTargetRecordIdBySourceRecordId;
+	String linkColumnName;
 
 	@Builder
 	private ColumnSqlSourceDescriptor(
@@ -50,28 +56,27 @@ public class ColumnSqlSourceDescriptor
 			@NonNull final String sourceTableName,
 			@NonNull final FetchTargetRecordsMethod fetchTargetRecordsMethod,
 			@Nullable final String sqlToGetTargetRecordIdBySourceRecordId,
-			@Nullable final String sourceLinkColumnName)
+			@Nullable final String linkColumnName)
 	{
 		this.targetTableName = targetTableName;
 		this.sourceTableName = sourceTableName;
 		this.fetchTargetRecordsMethod = fetchTargetRecordsMethod;
 		if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.LINK_COLUMN)
 		{
-			this.sourceLinkColumnName = Check.assumeNotEmpty(sourceLinkColumnName, "sourceLinkColumnName is not empty");
+			Check.assumeNotEmpty(linkColumnName, "linkColumnName is not empty");
+			this.linkColumnName = linkColumnName;
 			this.sqlToGetTargetRecordIdBySourceRecordId = null;
 		}
 		else if (fetchTargetRecordsMethod == FetchTargetRecordsMethod.SQL)
 		{
-			this.sourceLinkColumnName = null;
-			this.sqlToGetTargetRecordIdBySourceRecordId = Check.assumeNotEmpty(sqlToGetTargetRecordIdBySourceRecordId, "sqlToGetTargetRecordIdBySourceRecordId is not empty");
+			Check.assumeNotEmpty(sqlToGetTargetRecordIdBySourceRecordId, "sqlToGetTargetRecordIdBySourceRecordId is not empty");
+			this.linkColumnName = null;
+			this.sqlToGetTargetRecordIdBySourceRecordId = sqlToGetTargetRecordIdBySourceRecordId;
 		}
 		else
 		{
 			throw new AdempiereException("Unknown fetch method: " + fetchTargetRecordsMethod);
 		}
 	}
-
-	@NonNull
-	public String getSourceLinkColumnNameNotNull() {return Check.assumeNotNull(sourceLinkColumnName, "sourceLinkColumnName is not empty");}
 
 }

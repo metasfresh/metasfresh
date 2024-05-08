@@ -1,23 +1,20 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.acct.Account;
-import de.metas.acct.accounts.BPartnerCustomerAccountType;
-import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
-import de.metas.banking.accounting.BankAccountAcctType;
-import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
-import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.MAccount;
+import org.compiere.model.MCharge;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -32,12 +29,15 @@ import java.util.List;
  * </pre>
  *
  * @author Jorg Janke
+ * @version $Id: Doc_Payment.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 {
 	// services
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
+	private TenderType _tenderType;
 	private boolean m_Prepayment = false;
 	@Nullable private CurrencyConversionContext _currencyConversionContext; // lazy
 
@@ -52,6 +52,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		final I_C_Payment payment = getModel(I_C_Payment.class);
 		setDateDoc(payment.getDateTrx());
 		setBPBankAccountId(BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID()));
+		_tenderType = TenderType.ofCode(payment.getTenderType());
 		m_Prepayment = payment.isPrepayment();
 
 		// Amount
@@ -59,9 +60,9 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	}
 
 	@Override
-	public CurrencyConversionContext getCurrencyConversionContext(final AcctSchema acctSchema)
+	public CurrencyConversionContext getCurrencyConversionContext()
 	{
-		if (_currencyConversionContext == null)
+		if(_currencyConversionContext == null)
 		{
 			final I_C_Payment payment = getModel(I_C_Payment.class);
 			_currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
@@ -83,11 +84,11 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 * ARP, APP.
 	 *
 	 * <pre>
-	 *  ARR - Account Receivables Receipt
+	 *  ARP
 	 *      BankInTransit   DR
 	 *      UnallocatedCash         CR
 	 *      or Charge/C_Prepayment
-	 *  APP - Account Payable Payment
+	 *  APP
 	 *      PaymentSelect   DR
 	 *      or Charge/V_Prepayment
 	 *      BankInTransit           CR
@@ -103,84 +104,88 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		// create Fact Header
 		final Fact fact = new Fact(this, as, PostingType.Actual);
-		final OrgId bankOrgId = getBankOrgId();        // Bank Account Org
+		final OrgId AD_Org_ID = getBankOrgId();        // Bank Account Org
 
-		final DocBaseType docBaseType = getDocBaseType();
-		if (DocBaseType.ARReceipt.equals(docBaseType))
+		// Cash Transfer
+		if (getTenderType().isCash() && !isCashAsPayment())
+		{
+			return ImmutableList.of(fact);
+		}
+
+		final String documentType = getDocumentType();
+		if (DOCTYPE_ARReceipt.equals(documentType))
 		{
 			// Asset (DR)
 			final FactLine fl_DR = fact.createLine()
-					.setAccount(getBankInTransitAcct(as))
+					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), getAmount(), null)
-					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
-			if (fl_DR != null && bankOrgId.isRegular())
+			if (fl_DR != null && AD_Org_ID.isRegular())
 			{
-				fl_DR.setAD_Org_ID(bankOrgId);
+				fl_DR.setAD_Org_ID(AD_Org_ID);
 			}
 
 			// Prepayment/UnallocatedCash (CR)
-			final Account acct;
-			final ChargeId chargeId = getC_Charge_ID().orElse(null);
-			if (chargeId != null)
+			final MAccount acct;
+			if (getC_Charge_ID() > 0)
 			{
-				acct = getAccountProvider().getChargeAccount(chargeId, as.getId(), getAmount());
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
 			}
 			else if (isPrepayment())
 			{
-				acct = getCustomerAccount(BPartnerCustomerAccountType.C_Prepayment, as);
+				acct = getAccount(AccountType.C_Prepayment, as);
 			}
 			else
 			{
-				acct = getBankAccountAccount(BankAccountAcctType.B_UnallocatedCash_Acct, as);
+				acct = getAccount(AccountType.UnallocatedCash, as);
 			}
 			final FactLine fl_CR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), null, getAmount())
-					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
-			if (fl_CR != null && bankOrgId.isRegular() && chargeId == null)
+			if (fl_CR != null && AD_Org_ID.isRegular() && getC_Charge_ID() <= 0)
 			{
-				fl_CR.setAD_Org_ID(bankOrgId);
+				fl_CR.setAD_Org_ID(AD_Org_ID);
 			}
 		}
 		// APP
-		else if (DocBaseType.APPayment.equals(docBaseType))
+		else if (DOCTYPE_APPayment.equals(documentType))
 		{
 			// Prepayment/PaymentSelect (DR)
-			final Account acct;
-			final ChargeId chargeId = getC_Charge_ID().orElse(null);
-			if (chargeId != null)
+			final MAccount acct;
+			if (getC_Charge_ID() > 0)
 			{
-				acct = getAccountProvider().getChargeAccount(chargeId, as.getId(), getAmount());
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
 			}
 			else if (isPrepayment())
 			{
-				acct = getVendorAccount(BPartnerVendorAccountType.V_Prepayment, as);
+				acct = getAccount(AccountType.V_Prepayment, as);
 			}
 			else
 			{
-				acct = getBankAccountAccount(BankAccountAcctType.B_PaymentSelect_Acct, as);
+				acct = getAccount(AccountType.PaymentSelect, as);
 			}
 			final FactLine fl_DR = fact.createLine()
 					.setAccount(acct)
 					.setAmtSource(getCurrencyId(), getAmount(), null)
-					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
-			if (fl_DR != null && bankOrgId.isRegular() && chargeId == null)
+			if (fl_DR != null && AD_Org_ID.isRegular() && getC_Charge_ID() <= 0)
 			{
-				fl_DR.setAD_Org_ID(bankOrgId);
+				fl_DR.setAD_Org_ID(AD_Org_ID);
 			}
 
 			// Asset (CR)
 			final FactLine fl_CR = fact.createLine()
-					.setAccount(getBankInTransitAcct(as))
+					.setAccount(getBankAccount(as))
 					.setAmtSource(getCurrencyId(), null, getAmount())
-					.setCurrencyConversionCtx(getCurrencyConversionContext(as))
+					.setCurrencyConversionCtx(getCurrencyConversionContext())
 					.buildAndAdd();
-			if (fl_CR != null && bankOrgId.isRegular())
+			if (fl_CR != null && AD_Org_ID.isRegular())
 			{
-				fl_CR.setAD_Org_ID(bankOrgId);
+				fl_CR.setAD_Org_ID(AD_Org_ID);
 			}
 		}
 		else
@@ -189,7 +194,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 					.setAcctSchema(as)
 					.setFact(fact)
 					.setPostingStatus(PostingStatus.Error)
-					.setDetailMessage("DocBaseType unknown: " + docBaseType);
+					.setDetailMessage("DocumentType unknown: " + documentType);
 
 		}
 
@@ -205,8 +210,30 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
 	}
 
-	private boolean isPrepayment() {return m_Prepayment;}
+	private boolean isCashAsPayment()
+	{
+		final boolean defaultValue = true;
+		return sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", defaultValue);
+	}
 
-	@NonNull
-	private Account getBankInTransitAcct(final AcctSchema as) {return getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);}
+	private TenderType getTenderType()
+	{
+		return _tenderType;
+	}
+
+	private boolean isPrepayment()
+	{
+		return m_Prepayment;
+	}
+
+	/**
+	 * Gets the Bank Account to be used.
+	 *
+	 * @param as accounting schema
+	 * @return bank in transit account ({@link AccountType#BankInTransit})
+	 */
+	private MAccount getBankAccount(final AcctSchema as)
+	{
+		return getAccount(AccountType.BankInTransit, as);
+	}
 }   // Doc_Payment

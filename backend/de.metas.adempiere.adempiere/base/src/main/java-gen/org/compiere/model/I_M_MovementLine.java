@@ -16,9 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 
 /** Generated Interface for M_MovementLine
  *  @author Adempiere (generated) 
@@ -736,30 +733,4 @@ public interface I_M_MovementLine
     public static final org.adempiere.model.ModelColumn<I_M_MovementLine, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_MovementLine, Object>(I_M_MovementLine.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
-
-
-	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable
-	org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 }

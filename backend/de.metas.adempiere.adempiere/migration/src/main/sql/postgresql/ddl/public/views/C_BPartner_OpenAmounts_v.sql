@@ -16,14 +16,7 @@ FROM
 	FROM  C_Invoice_Candidate ic 
 	LEFT JOIN C_Tax t ON (ic.C_Tax_ID = t.C_Tax_ID)
 	LEFT JOIN C_Currency c ON (c.C_Currency_ID = ic.C_Currency_ID)
-
-	LEFT JOIN C_Invoice_Line_Alloc ila on ic.c_invoice_candidate_id = ila.c_invoice_candidate_id
-	LEFT Join C_InvoiceLine il on ila.c_invoiceline_id = il.c_invoiceline_id
-	LEFT JOIN C_Invoice i on il.c_invoice_id = i.c_invoice_id
-	WHERE (ic.Processed='N'
-	           OR (ic.Processed='Y' AND i.docstatus IN ('IP', 'DR')) -- the invoice candidate was already processed but the invoice was not yet completed
-	    )
-	  AND ic.IsSOTrx='Y'
+	WHERE ic.Processed='N' AND ic.IsSOTrx='Y'
 	GROUP BY ic.Bill_BPartner_ID
 
 	UNION ALL

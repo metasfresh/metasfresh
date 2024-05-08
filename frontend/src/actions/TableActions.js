@@ -140,7 +140,6 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
- * @param {boolean} active
  */
 export function setTableNavigation(id, active) {
   return {
@@ -271,7 +270,6 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
-      ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -302,7 +300,6 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
-        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -330,7 +327,6 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
-        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -361,25 +357,6 @@ export function updateGridTable(tableId, tableResponse) {
     return Promise.resolve(true);
   };
 }
-
-const extractEmptyResultTextAndHint = ({ tableResponse, tableLayout }) => {
-  if (tableResponse?.emptyResultText) {
-    return {
-      emptyResultText: tableResponse.emptyResultText,
-      emptyResultHint: tableResponse?.emptyResultHint || '',
-    };
-  } else if (tableLayout?.emptyResultText) {
-    return {
-      emptyResultText: tableLayout.emptyResultText,
-      emptyResultHint: tableLayout?.emptyResultHint || '',
-    };
-  } else {
-    return {
-      emptyResultText: '',
-      emptyResultHint: '',
-    };
-  }
-};
 
 /*
  * @method updateGridTableData
@@ -422,13 +399,6 @@ export function updateGridTableData({
     }
 
     return Promise.resolve(false);
-  };
-}
-
-export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
-  return {
-    type: types.PARTIAL_UPDATE_TABLE_DATA,
-    payload: { tableId, rowsToUpdate },
   };
 }
 

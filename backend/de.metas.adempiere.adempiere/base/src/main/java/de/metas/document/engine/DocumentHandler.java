@@ -1,9 +1,8 @@
 package de.metas.document.engine;
 
-import de.metas.organization.InstantAndOrgId;
-
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -38,7 +37,7 @@ public interface DocumentHandler
 	String getSummary(DocumentTableFields docFields);
 	String getDocumentInfo(DocumentTableFields docFields);
 	int getDoc_User_ID(DocumentTableFields docFields);
-	InstantAndOrgId getDocumentDate(DocumentTableFields docFields);
+	LocalDate getDocumentDate(DocumentTableFields docFields);
 	//@formatter:on
 
 	default int getC_Currency_ID(DocumentTableFields docFields)
@@ -53,20 +52,17 @@ public interface DocumentHandler
 
 	//
 	// Reporting
-	default File createPDF(DocumentTableFields ignoredDocFields)
+	default File createPDF(DocumentTableFields docFields)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	//
 	// Document processing
-
-	/**
-	 * @return the resulting document status
-	 */
-	default DocStatus prepareIt(DocumentTableFields docFields)
+	/** @return the resulting document status */
+	default String prepareIt(DocumentTableFields docFields)
 	{
-		return DocStatus.InProgress;
+		return IDocument.STATUS_InProgress;
 	}
 
 	default void approveIt(DocumentTableFields docFields)
@@ -74,10 +70,8 @@ public interface DocumentHandler
 		// nothing
 	}
 
-	/**
-	 * @return the resulting document status
-	 */
-	DocStatus completeIt(DocumentTableFields docFields);
+	/** @return the resulting document status */
+	String completeIt(DocumentTableFields docFields);
 
 	default void rejectIt(DocumentTableFields docFields)
 	{
@@ -100,7 +94,7 @@ public interface DocumentHandler
 		throw new UnsupportedOperationException("The action ReverseCorrectIt is not implemented by default");
 	}
 
-	default void reverseAccrualIt(DocumentTableFields ignoredDocFields)
+	default void reverseAccrualIt(DocumentTableFields docFields)
 	{
 		throw new UnsupportedOperationException("The action ReverseAccrual It is not implemented by default");
 	}
@@ -111,8 +105,8 @@ public interface DocumentHandler
 		docFields.setDocAction(IDocument.ACTION_None);
 	}
 
-	default void reactivateIt(DocumentTableFields docFields)
-	{
-		throw new UnsupportedOperationException("Reactivate action is not supported");
-	}
+	//@formatter:off
+	void reactivateIt(DocumentTableFields docFields);
+	//@formatter:on
+
 }

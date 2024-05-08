@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-09-27T18:13:11 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="842" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/article_statistics/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000116"/>
 	<property name="ireport.x" value="474"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.report.description" value=""/>
-	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -79,697 +78,630 @@
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="iso_code" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
-	<field name="ad_org_name" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<group name="Product" isStartNewPage="true" isReprintHeaderOnEachPage="true" footerPosition="ForceAtBottom">
+	<group name="Product" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{p_name}]]></groupExpression>
 		<groupHeader>
-			<band height="26">
+			<band height="115">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1)]]></printWhenExpression>
-				<rectangle>
-					<reportElement key="rectange-1" positionType="Float" x="34" y="10" width="775" height="16" backcolor="#808080" uuid="87656474-eb5e-4cac-8242-427651da2bda"/>
-					<graphicElement>
-						<pen lineWidth="0.0"/>
-					</graphicElement>
-				</rectangle>
 				<textField>
-					<reportElement x="37" y="13" width="46" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="37" y="20" width="198" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="10" fontName="Arial" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{Nr}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="199" y="13" width="35" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="37" y="66" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
-				</textField>
-				<textField>
-					<reportElement x="90" y="13" width="106" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="7" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="694" y="13" width="60" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="37" y="48" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Type}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="57" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{TimePeriod}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="57" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="48" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="66" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="364" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="284" y="57" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="364" y="66" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="284" y="66" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Attribute}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="95" width="45" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Nr}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="95" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="81" y="95" width="90" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="684" y="95" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TotalQty}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="743" y="13" width="60" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<reportElement x="743" y="95" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Total} + " " + ($F{iso_code} != null ? $F{iso_code} : "-")]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="504" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col5} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col5}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="464" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col6} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col6}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="384" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col8} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col8}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="264" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col11} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col11}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="224" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col12} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col12}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="304" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col10} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col10}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="624" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col2} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col2}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="544" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col4} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col4}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="424" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col7} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col7}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="664" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col1} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col1}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="344" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col9} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col9}]]></textFieldExpression>
-				</textField>
-				<textField pattern="MM.yyyy">
-					<reportElement x="584" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375">
-						<printWhenExpression><![CDATA[$F{col3} != null]]></printWhenExpression>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col3}]]></textFieldExpression>
-				</textField>
-				<line>
-					<reportElement positionType="Float" x="34" y="6" width="775" height="1" uuid="a1738261-2090-4a96-9842-175739509141"/>
-				</line>
-			</band>
-			<band height="26" splitType="Prevent">
-				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
-				<rectangle>
-					<reportElement key="rectange-1" positionType="Float" x="34" y="10" width="775" height="16" backcolor="#808080" uuid="c87f65f1-9444-481f-ad4e-b48d02998d0a"/>
-					<graphicElement>
-						<pen lineWidth="0.0"/>
-					</graphicElement>
-				</rectangle>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="624" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col2}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="544" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col4}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="424" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col7}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="584" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col3}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="504" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col5}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="464" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col6}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ElementGroupHeight" x="37" y="13" width="51" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Nr}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ElementGroupHeight" x="90" y="13" width="106" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ElementGroupHeight" x="199" y="13" width="35" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement>
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="224" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col12}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="344" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col9}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="304" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col10}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="264" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col11}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="384" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{col8}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ElementGroupHeight" x="743" y="13" width="60" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Total} + " " + $F{iso_code}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true">
-					<reportElement stretchType="ElementGroupHeight" x="694" y="13" width="60" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textField pattern="MM.yyyy">
+					<reportElement x="484" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="7" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$R{TotalQty}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{col5}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="MM.yyyy">
-					<reportElement stretchType="ElementGroupHeight" x="664" y="13" width="41" height="10" forecolor="#FFFFFF" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textField pattern="MM.yyyy">
+					<reportElement x="444" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 					<textElement textAlignment="Right">
-						<font fontName="Arial" size="8" isBold="false"/>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col6}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="364" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col8}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="244" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col11}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="204" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="284" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="604" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col2}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="524" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col4}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="404" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col7}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="644" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col1}]]></textFieldExpression>
 				</textField>
-				<line>
-					<reportElement positionType="Float" x="34" y="6" width="775" height="1" uuid="ea3b725a-de5c-4265-af04-eef38c4c6eaa"/>
-				</line>
+				<textField pattern="MM.yyyy">
+					<reportElement x="324" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col9}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="564" y="95" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col3}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd.MM.yyyy">
+					<reportElement x="684" y="48" width="60" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="644" y="48" width="41" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement textAlignment="Right">
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="364" y="48" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="284" y="48" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<textElement>
+						<font size="7" fontName="Arial" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{ArticleNr}]]></textFieldExpression>
+				</textField>
+			</band>
+			<band height="30">
+				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
+				<textField pattern="MM.yyyy">
+					<reportElement x="644" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col1}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="604" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col2}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="324" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col9}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="524" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col4}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="284" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col10}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="404" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col7}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="564" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col3}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="170" y="20" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="364" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col8}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="743" y="20" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Total} + " " + $F{iso_code}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="204" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col12}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="484" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col5}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="444" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col6}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM.yyyy">
+					<reportElement x="244" y="20" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{col11}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="684" y="20" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement textAlignment="Right">
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{TotalQty}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="37" y="20" width="45" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{Nr}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="81" y="20" width="90" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+					<textElement>
+						<font size="7" isBold="false"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
 	<pageHeader>
-		<band height="78">
-			<textField>
-				<reportElement x="220" y="68" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{BP_Name}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="220" y="50" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Type}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="220" y="59" width="134" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement markup="html">
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{TimePeriod}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="59" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{startdate} != null || $F{enddate} != null ? $F{startdate} + " - " + $F{enddate} : ""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="50" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
-					<printWhenExpression><![CDATA[$P{IsSOTrx} != null]]></printWhenExpression>
-				</reportElement>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : "" )]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="330" y="68" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : ""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : ""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="68" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : ""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="68" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Attribute}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="530" y="50" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : ""]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="450" y="50" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{ArticleNr}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="322" y="10" width="198" height="23" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="14" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Title}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="364" y="33" width="115" height="15" uuid="cfe15d06-b880-4aee-a079-2533062606ac"/>
-				<textElement textAlignment="Center">
-					<font fontName="Arial" size="8"/>
-					<paragraph lineSpacing="Double"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{org}+": "+ ($F{ad_org_name} !=null ? $F{ad_org_name}: "")]]></textFieldExpression>
-			</textField>
-		</band>
+		<band splitType="Stretch"/>
 	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
 	<detail>
-		<band height="14" splitType="Stretch">
+		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 1 )]]></printWhenExpression>
-			<rectangle>
-				<reportElement positionType="Float" stretchType="ElementGroupHeight" x="34" y="0" width="775" height="14" forecolor="#FFFFFF" backcolor="#FFFFCC" uuid="db60cc2b-122e-431d-bbe6-140146d3631f">
-					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{REPORT_COUNT}.intValue()%2)==1)]]></printWhenExpression>
-				</reportElement>
-			</rectangle>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="664" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="644" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period1sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="624" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="604" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period2sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="743" y="2" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="324" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="true" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="694" y="2" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{totalsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="544" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period4sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="424" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period7sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="384" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period8sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="504" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period5sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="464" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period6sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="584" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false" isUnderline="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period3sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="344" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period9sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="304" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="524" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period4sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="284" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period10sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ElementGroupHeight" x="199" y="2" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="404" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period7sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="564" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period3sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="0" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="224" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="364" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period8sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="204" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period12sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="264" y="2" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="484" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period5sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="444" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period6sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="244" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period11sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ElementGroupHeight" x="37" y="2" width="51" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="684" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="45" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ElementGroupHeight" x="90" y="2" width="106" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField>
+				<reportElement x="81" y="0" width="90" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="false" isItalic="false"/>
+					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 2)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ElementGroupHeight" x="37" y="0" width="159" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField>
+				<reportElement x="37" y="0" width="134" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="344" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="644" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period9sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="304" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period10sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ElementGroupHeight" x="199" y="0" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="224" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period12sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="264" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period11sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="504" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period5sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="464" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period6sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="424" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period7sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="384" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{period8sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="664" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period1sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="604" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="694" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{totalsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="624" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period2sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="544" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="324" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period9sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="524" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period4sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="584" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="284" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period10sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="404" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period7sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="564" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{period3sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="170" y="0" width="35" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement>
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="364" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period8sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="204" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period12sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="484" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period5sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="444" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period6sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="244" y="0" width="41" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{period11sum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0">
+				<reportElement x="684" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<textElement textAlignment="Right">
+					<font size="7" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalsum}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ( $F{unionorder}.intValue() == 3)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="#,##0">
-				<reportElement stretchType="ElementGroupHeight" x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+			<textField pattern="#,##0">
+				<reportElement x="743" y="0" width="60" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalamt}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
 	<pageFooter>
-		<band height="15" splitType="Stretch">
-			<textField evaluationTime="Page">
-				<reportElement positionType="FixRelativeToBottom" x="640" y="5" width="146" height="10" uuid="64e4c15a-e706-4eb0-913a-4f84f2a89c66"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Page}  + "  " + $V{PAGE_NUMBER}  + "  "+ $R{of}]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="dd/MM/yyyy HH:mm">
-				<reportElement positionType="FixRelativeToBottom" x="64" y="5" width="100" height="10" uuid="8e0018f6-f773-49eb-86cd-40caa2c25880"/>
-				<textElement>
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report">
-				<reportElement positionType="FixRelativeToBottom" x="34" y="5" width="41" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Date} + " : "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report">
-				<reportElement positionType="FixRelativeToBottom" x="750" y="5" width="53" height="10" uuid="353d25d2-0d52-46ab-9d88-4fe66b887cf4"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement key="" positionType="FixRelativeToBottom" x="34" y="1" width="775" height="1" uuid="b21e25c4-6598-4325-91d6-bd47b0e72fd2"/>
-				<graphicElement>
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</graphicElement>
-			</line>
-		</band>
+		<band height="34" splitType="Stretch"/>
 	</pageFooter>
+	<lastPageFooter>
+		<band height="1"/>
+	</lastPageFooter>
 	<summary>
 		<band splitType="Stretch"/>
 	</summary>

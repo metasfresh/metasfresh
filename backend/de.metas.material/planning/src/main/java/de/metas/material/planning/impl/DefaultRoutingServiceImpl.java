@@ -23,6 +23,7 @@ package de.metas.material.planning.impl;
  */
 
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
@@ -109,9 +110,17 @@ public class DefaultRoutingServiceImpl implements RoutingService
 
 		//
 		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		return resourceProductService.getResourceTypeByResourceId(plantId)
-				.getAvailability()
-				.computeDurationInDays(durationTotal);
+		final ResourceType resourceType = resourceProductService.getResourceTypeByResourceId(plantId);
+		final BigDecimal availableDayTimeInHours = BigDecimal.valueOf(resourceType.getTimeSlotInHours());
+		final int availableDays = resourceType.getAvailableDaysPerWeek();
+
+		// Weekly Factor
+		final BigDecimal weeklyFactor = BigDecimal.valueOf(7).divide(BigDecimal.valueOf(availableDays), 8, RoundingMode.UP);
+
+		return BigDecimal.valueOf(durationTotal.toHours())
+				.multiply(weeklyFactor)
+				.divide(availableDayTimeInHours, 0, RoundingMode.UP)
+				.intValueExact();
 	}
 
 	@Override

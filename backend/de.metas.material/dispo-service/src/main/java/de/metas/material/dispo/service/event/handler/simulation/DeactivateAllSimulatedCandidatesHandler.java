@@ -24,7 +24,7 @@ package de.metas.material.dispo.service.event.handler.simulation;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.material.dispo.commons.SimulatedCandidateService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import lombok.NonNull;
@@ -37,12 +37,11 @@ import java.util.Collection;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class DeactivateAllSimulatedCandidatesHandler implements MaterialEventHandler<DeactivateAllSimulatedCandidatesEvent>
 {
-	@NonNull
-	private final SimulatedCandidateService simulatedCandidateService;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	public DeactivateAllSimulatedCandidatesHandler(final @NonNull SimulatedCandidateService simulatedCandidateService)
+	public DeactivateAllSimulatedCandidatesHandler(@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService)
 	{
-		this.simulatedCandidateService = simulatedCandidateService;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 	}
 
 	@Override
@@ -54,6 +53,6 @@ public class DeactivateAllSimulatedCandidatesHandler implements MaterialEventHan
 	@Override
 	public void handleEvent(@NonNull final DeactivateAllSimulatedCandidatesEvent event)
 	{
-		simulatedCandidateService.deactivateAllSimulatedCandidates();
+		candidateRepositoryWriteService.deactivateSimulatedCandidates();
 	}
 }

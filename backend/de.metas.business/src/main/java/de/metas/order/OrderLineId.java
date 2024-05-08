@@ -10,7 +10,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -84,6 +83,4 @@ public class OrderLineId implements RepoIdAware
 	{
 		return repoId;
 	}
-
-	public static boolean equals(@Nullable OrderLineId id1, @Nullable OrderLineId id2) {return Objects.equals(id1, id2);}
 }

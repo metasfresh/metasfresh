@@ -27,7 +27,6 @@ import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.report.DocumentReportFlavor;
-import de.metas.report.PrintCopies;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -83,11 +82,4 @@ public class ArchiveRequest
 
 	@Nullable
 	Language language;
-
-	//
-	// Printing:
-	boolean isDirectEnqueue;
-	// create the print job or store PDF; not only enqueue to printing queue:
-	boolean isDirectProcessQueueItem;
-	@NonNull @Builder.Default PrintCopies copies = PrintCopies.ONE;
 }

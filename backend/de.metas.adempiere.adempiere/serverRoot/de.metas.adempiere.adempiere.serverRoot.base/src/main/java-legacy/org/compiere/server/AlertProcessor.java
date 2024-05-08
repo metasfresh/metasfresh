@@ -16,18 +16,17 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.event.Topic;
-import de.metas.i18n.Msg;
-import de.metas.impexp.spreadsheet.excel.ExcelFormats;
-import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
-import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.io.File;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -42,17 +41,20 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
 import org.springframework.core.io.FileSystemResource;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.event.Topic;
+import de.metas.i18n.Msg;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
+import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Alert Processor
@@ -67,7 +69,7 @@ import java.util.Set;
  */
 public class AlertProcessor extends AdempiereServer
 {
-	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.distributed("de.metas.alerts.UserNotifications");
+	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.alerts.UserNotifications");
 
 	public AlertProcessor(MAlertProcessor model)
 	{
@@ -156,7 +158,7 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPreProcessing = rule.getPreProcessing();
 			if (!Check.isEmpty(sqlPreProcessing, true))
 			{
-				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
+				int no = DB.executeUpdate(sqlPreProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();
@@ -202,7 +204,7 @@ public class AlertProcessor extends AdempiereServer
 			final String sqlPostProcessing = rule.getPostProcessing();
 			if (!Check.isEmpty(sqlPostProcessing, true))
 			{
-				int no = DB.executeUpdateAndIgnoreErrorOnFail(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
+				int no = DB.executeUpdate(sqlPostProcessing, false, ITrx.TRXNAME_ThreadInherited);
 				if (no == -1)
 				{
 					ValueNamePair error = MetasfreshLastError.retrieveError();

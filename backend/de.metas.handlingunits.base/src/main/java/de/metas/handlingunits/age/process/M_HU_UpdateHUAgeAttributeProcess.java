@@ -22,7 +22,6 @@ package de.metas.handlingunits.age.process;
  * #L%
  */
 
-import de.metas.handlingunits.age.Age;
 import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.age.HUWithAgeRepository;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -66,19 +65,8 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 		storage.setSaveOnChange(true);
 
 		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
-		final Age age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
-		updateAgeAttribute(storage, age);
+		final int age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
+		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
 	}
 
-	public static void updateAgeAttribute(IAttributeStorage storage, Age age)
-	{
-		Age ageOffset = Age.ZERO;
-		if (storage.hasAttribute(HUAttributeConstants.ATTR_AgeOffset))
-		{
-			ageOffset = Age.ofAgeInMonths(storage.getValueAsInt(HUAttributeConstants.ATTR_AgeOffset));
-		}
-
-		final Age ageWithOffset = age.add(ageOffset);
-		storage.setValue(HUAttributeConstants.ATTR_Age, ageWithOffset.toStringValue());
-	}
 }

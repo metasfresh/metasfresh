@@ -1,16 +1,18 @@
 package de.metas.impexp;
 
+import java.net.URI;
+import java.time.Duration;
+
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
+
 import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
-
-import javax.annotation.Nullable;
-import java.net.URI;
-import java.time.Duration;
 
 /*
  * #%L
@@ -79,7 +81,7 @@ public final class InsertIntoImportTableResult
 
 		int lineNo;
 
-		@Nullable
+		@NonNull
 		String lineContent;
 	}
 }

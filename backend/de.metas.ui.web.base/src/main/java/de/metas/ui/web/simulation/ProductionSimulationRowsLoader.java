@@ -50,7 +50,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.model.dao.IPPOrderCandidateDAO;
+import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -81,7 +81,7 @@ public class ProductionSimulationRowsLoader
 	CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@NonNull
-	IPPOrderCandidateDAO ppOrderCandidateDAO;
+	PPOrderCandidateDAO ppOrderCandidateDAO;
 
 	@NonNull
 	OrderLineDescriptor orderLineDescriptor;
@@ -95,7 +95,7 @@ public class ProductionSimulationRowsLoader
 			@NonNull final LookupDataSource attributeSetInstanceLookup,
 			@NonNull final LookupDataSource warehouseLookup,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final IPPOrderCandidateDAO ppOrderCandidateDAO,
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
 			@NonNull final OrderLineDescriptor orderLineDescriptor,
 			@NonNull final IOrgDAO orgDAO)
 	{

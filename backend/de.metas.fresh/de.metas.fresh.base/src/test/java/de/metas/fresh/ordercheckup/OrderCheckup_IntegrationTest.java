@@ -22,11 +22,13 @@ package de.metas.fresh.ordercheckup;
  * #L%
  */
 
-import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
+
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+
+import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 
 /**
  * Test case:
@@ -46,8 +48,8 @@ public class OrderCheckup_IntegrationTest
 	private OrderCheckupTestHelper helper;
 	private Masterdata masterdata;
 
-	@BeforeEach
-	public void beforeEach()
+	@Before
+	public void init()
 	{
 		helper = new OrderCheckupTestHelper();
 		helper.init();

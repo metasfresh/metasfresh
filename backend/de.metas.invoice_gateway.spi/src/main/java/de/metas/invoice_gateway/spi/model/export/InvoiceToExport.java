@@ -1,6 +1,5 @@
 package de.metas.invoice_gateway.spi.model.export;
 
-import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.CustomInvoicePayload;
 import de.metas.invoice_gateway.spi.model.BPartner;
@@ -50,8 +49,9 @@ public class InvoiceToExport
 	@NonNull
 	InvoiceId id;
 
-	@NonNull
-	DocBaseAndSubType docBaseAndSubType;
+	/** invoices can have an empty docSubType, so this needs to be nullable. */
+	@Nullable
+	String docSubType;
 
 	@NonNull
 	MetasfreshVersion metasfreshVersion;

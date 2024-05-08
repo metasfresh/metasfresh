@@ -1,13 +1,5 @@
 package de.metas.inventory.callout;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.inventory.InventoryDocSubType;
-import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -16,6 +8,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Component;
+
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.inventory.InventoryDocSubType;
+import de.metas.util.Services;
 
 @Callout(I_M_Inventory.class)
 @Component
@@ -60,7 +61,7 @@ public class M_Inventory
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(inventoryRecord.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getRecordById(docTypeId)
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: null;
 	}
 }

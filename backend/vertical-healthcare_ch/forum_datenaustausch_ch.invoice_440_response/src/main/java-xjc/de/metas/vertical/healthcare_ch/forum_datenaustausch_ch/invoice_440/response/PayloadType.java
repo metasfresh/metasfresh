@@ -8,8 +8,6 @@
 
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
-import lombok.NonNull;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -322,11 +320,13 @@ public class PayloadType {
 
     /**
      * Gets the value of the responseTimestamp property.
-     *
-     * @return possible object is
-     * {@link BigInteger }
+     * 
+     * @return
+     *     possible object is
+     *     {@link BigInteger }
+     *     
      */
-    public @NonNull BigInteger getResponseTimestamp() {
+    public BigInteger getResponseTimestamp() {
         return responseTimestamp;
     }
 
@@ -335,7 +335,7 @@ public class PayloadType {
      * 
      * @param value
      *     allowed object is
-     *     {@link int }
+     *     {@link BigInteger }
      *     
      */
     public void setResponseTimestamp(BigInteger value) {

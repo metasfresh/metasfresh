@@ -1,5 +1,8 @@
 package de.metas.contracts.event;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.event.Topic;
@@ -12,8 +15,6 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -48,7 +49,7 @@ public class FlatrateUserNotificationsProducer
 
 	public static final Topic EVENTBUS_TOPIC = Topic.builder()
 			.name("de.metas.contracts.UserNotifications")
-			.type(Type.DISTRIBUTED)
+			.type(Type.REMOTE)
 			.build();
 
 	public FlatrateUserNotificationsProducer notifyUser(

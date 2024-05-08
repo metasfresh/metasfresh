@@ -2,11 +2,10 @@ package de.metas.shipper.gateway.spi;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -49,16 +48,6 @@ public class DeliveryOrderId implements RepoIdAware
 	private DeliveryOrderId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
-	public static int toRepoId(@Nullable final DeliveryOrderId deliveryOrderId)
-	{
-		return toRepoIdOr(deliveryOrderId, -1);
-	}
-
-	public static int toRepoIdOr(@Nullable final DeliveryOrderId deliveryOrderId, final int defaultValue)
-	{
-		return deliveryOrderId != null ? deliveryOrderId.getRepoId() : defaultValue;
 	}
 
 	@Override

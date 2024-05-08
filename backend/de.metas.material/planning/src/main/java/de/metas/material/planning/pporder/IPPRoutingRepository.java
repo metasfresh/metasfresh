@@ -2,7 +2,6 @@ package de.metas.material.planning.pporder;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
-import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -44,6 +43,4 @@ public interface IPPRoutingRepository extends ISingletonService
 	Optional<PPRoutingId> getDefaultRoutingIdByType(@NonNull PPRoutingType type);
 
 	void setFirstNodeToWorkflow(@NonNull PPRoutingActivityId ppRoutingActivityId);
-
-	SeqNo getActivityProductNextSeqNo(@NonNull PPRoutingActivityId activityId);
 }

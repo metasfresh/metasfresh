@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor5
 Feature: Locked HUs can not be picked
 
   Background:

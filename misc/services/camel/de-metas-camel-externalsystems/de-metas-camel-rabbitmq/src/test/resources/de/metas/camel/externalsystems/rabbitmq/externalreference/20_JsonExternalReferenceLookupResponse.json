@@ -2,7 +2,7 @@
   "items": [
     {
       "lookupItem": {
-        "externalReference": "externalRef_bpartner",
+        "id": "externalRef_bpartner",
         "type": "BPartner"
       },
       "externalReference": "externalRef_bpartner",
@@ -12,7 +12,7 @@
     },
     {
       "lookupItem": {
-        "externalReference": "externalRef_bpLocation",
+        "id": "externalRef_bpLocation",
         "type": "BPartnerLocation"
       },
       "externalReference": "externalRef_bpLocation",
@@ -22,7 +22,7 @@
     },
     {
       "lookupItem": {
-        "externalReference": "externalRef_user",
+        "id": "externalRef_user",
         "type": "UserID"
       },
       "externalReference": "externalRef_user",

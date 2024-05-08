@@ -42,6 +42,4 @@ public class SpreadsheetExportOptions
 	@Nullable
 	@Builder.Default
 	String csvFieldDelimiter = null;
-
-	boolean doNotQuoteRows;
 }

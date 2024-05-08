@@ -24,14 +24,11 @@ package de.metas.error.related_documents;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
-import de.metas.document.references.related_documents.RelatedDocumentsQuerySupplier;
-import de.metas.document.references.related_documents.RelatedDocumentsQuerySuppliers;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.error.IErrorManager;
@@ -42,6 +39,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
@@ -56,12 +54,10 @@ import java.util.function.Supplier;
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final ADReferenceService adReferenceService;
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 	private final boolean onlyNotAcknowledged = true;
-
-	public AdIssueRelatedDocumentsProvider(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	@Override
 	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
@@ -90,7 +86,7 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
 			final RelatedDocumentsId id = RelatedDocumentsId.ofString("issues-" + issueCategory.getCode());
-			final ITranslatableString issueCategoryDisplayName = adReferenceService.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
+			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
 
 			groupBuilder.candidate(
 					RelatedDocumentsCandidate.builder()
@@ -98,7 +94,7 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 							.internalName(id.toJson())
 							.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory))
 							.priority(relatedDocumentsPriority)
-							.querySupplier(createQuerySupplier(recordRef, issueCategory))
+							.query(createMQuery(recordRef, issueCategory))
 							.windowCaption(issueCategoryDisplayName)
 							.filterByFieldCaption(issueCategoryDisplayName)
 							.documentsCountSupplier(new AdIssueRelatedDocumentsCountSupplier(issueCountersSupplier, issueCategory))
@@ -113,7 +109,7 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		return Suppliers.memoize(() -> errorManager.getIssueCountersByCategory(recordRef, onlyNotAcknowledged));
 	}
 
-	private RelatedDocumentsQuerySupplier createQuerySupplier(@NonNull final TableRecordReference recordRef, @NonNull final IssueCategory issueCategory)
+	private MQuery createMQuery(@NonNull final TableRecordReference recordRef, @NonNull final IssueCategory issueCategory)
 	{
 		final MQuery query = new MQuery(I_AD_Issue.Table_Name);
 		query.addRestriction(I_AD_Issue.COLUMNNAME_AD_Table_ID, Operator.EQUAL, recordRef.getAD_Table_ID());
@@ -124,6 +120,6 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 			query.addRestriction(I_AD_Issue.COLUMNNAME_Processed, Operator.EQUAL, false);
 		}
 
-		return RelatedDocumentsQuerySuppliers.ofQuery(query);
+		return query;
 	}
 }

@@ -22,10 +22,11 @@ package org.adempiere.ui.spi.impl;
  * #L%
  */
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+
+import java.text.DateFormat;
+import java.text.NumberFormat;
+import java.util.Properties;
+
 import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.adempiere.ui.api.StringGridTabSummaryInfo;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
@@ -33,12 +34,14 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridTable;
+import org.compiere.model.I_AD_Message;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.util.Properties;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * Default provider of {@link IGridTabSummaryInfo}.
@@ -71,10 +74,11 @@ public class DefaultGridTabSummaryInfoProvider implements IGridTabSummaryInfoPro
 		}
 
 		// Get message
-		final AdMessageKey adMessageKey = Services.get(IMsgBL.class).getAdMessageKeyById(gridTabVO.AD_Message_ID).get();
+		I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveById(ctx, gridTabVO.AD_Message_ID).get();
+		final String messageName = msg.getValue();
 
 		// Fill message
-		String inStr = Services.get(IMsgBL.class).getMsg(ctx, adMessageKey);
+		String inStr = Services.get(IMsgBL.class).getMsg(ctx, messageName);
 		String token;
 		StringBuffer outStr = new StringBuffer(); // new, empty outStr
 

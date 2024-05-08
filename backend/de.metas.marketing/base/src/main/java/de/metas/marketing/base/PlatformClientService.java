@@ -1,15 +1,14 @@
 package de.metas.marketing.base;
 
+import org.springframework.stereotype.Service;
+
 import de.metas.marketing.base.model.Platform;
-import de.metas.marketing.base.model.PlatformGatewayId;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.marketing.base.spi.PlatformClient;
+import de.metas.marketing.base.spi.PlatformClientFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /*
  * #%L
@@ -48,11 +47,10 @@ public class PlatformClientService
 		this.platformClientFactoryRegistry = platformClientFactoryRegistry;
 	}
 
-	@NonNull
 	public PlatformClient createPlatformClient(@NonNull final PlatformId platformId)
 	{
 		final Platform platform = platformRepository.getById(platformId);
-		final PlatformGatewayId platformGatewayId = platform.getPlatformGatewayId();
+		final String platformGatewayId = platform.getPlatformGatewayId();
 
 		Check.errorUnless(platformClientFactoryRegistry.hasGatewaySupport(platformGatewayId),
 				"There is no support for the platformGatewayId={} of this platform; platform={}",

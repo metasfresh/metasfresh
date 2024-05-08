@@ -2,8 +2,6 @@ package org.adempiere.ad.ui.spi;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +28,8 @@ public interface IStatefulTabCallout extends ITabCallout
 {
 	/**
 	 * Called after {@link ICalloutRecord} was initialized.
+	 * 
+	 * @param calloutRecord
 	 */
-	void onInit(@Nullable ICalloutRecord calloutRecord);
+	void onInit(ICalloutRecord calloutRecord);
 }

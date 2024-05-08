@@ -6,7 +6,6 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 public interface IMsgBL extends ISingletonService
@@ -157,11 +156,4 @@ public interface IMsgBL extends ISingletonService
 				.msgBL(this);
 	}
 
-	String getBaseLanguageMsg(@NonNull AdMessageKey adMessage, @Nullable Object... msgParameters);
-
-	Optional<AdMessageId> getIdByAdMessage(@NonNull AdMessageKey value);
-
-	boolean isMessageExists(AdMessageKey adMessage);
-
-	Optional<AdMessageKey> getAdMessageKeyById(AdMessageId adMessageId);
 }

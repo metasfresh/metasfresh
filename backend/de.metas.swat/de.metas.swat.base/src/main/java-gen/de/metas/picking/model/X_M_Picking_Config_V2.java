@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.picking.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Config_V2
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Picking_Config_V2 extends org.compiere.model.PO implements I_M_Picking_Config_V2, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1374338252L;
+	private static final long serialVersionUID = 502645024L;
 
     /** Standard Constructor */
     public X_M_Picking_Config_V2 (final Properties ctx, final int M_Picking_Config_V2_ID, @Nullable final String trxName)
@@ -56,18 +56,6 @@ public class X_M_Picking_Config_V2 extends org.compiere.model.PO implements I_M_
 	public boolean isPickingReviewRequired() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingReviewRequired);
-	}
-
-	@Override
-	public void setIsReserveHUsOnPickingJobStart (final boolean IsReserveHUsOnPickingJobStart)
-	{
-		set_Value (COLUMNNAME_IsReserveHUsOnPickingJobStart, IsReserveHUsOnPickingJobStart);
-	}
-
-	@Override
-	public boolean isReserveHUsOnPickingJobStart() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReserveHUsOnPickingJobStart);
 	}
 
 	@Override

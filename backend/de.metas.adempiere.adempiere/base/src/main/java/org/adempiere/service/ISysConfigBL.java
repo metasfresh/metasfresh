@@ -1,6 +1,5 @@
 package org.adempiere.service;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -9,25 +8,16 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
 	@Nullable
-	String getValue(String name, @Nullable String defaultValue);
+	String getValue(String name, String defaultValue);
 
 	@Nullable
 	String getValue(String name);
 
-	@NonNull
-	default Optional<String> getValueOptional(final String name)
-	{
-		return Optional.ofNullable(getValue(name));
-	}
-
 	int getIntValue(String name, int defaultValue);
-
-	int getPositiveIntValue(String name, int defaultValue);
 
 	/**
 	 * Get system configuration property of type boolean
@@ -67,8 +57,6 @@ public interface ISysConfigBL extends ISingletonService
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
-	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
-
 	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 
 	void setValue(String name, boolean value, ClientId clientId, OrgId orgId);
@@ -90,5 +78,4 @@ public interface ISysConfigBL extends ISingletonService
 	 */
 	Map<String, String> getValuesForPrefix(String prefix, boolean removePrefix, ClientAndOrgId clientAndOrgId);
 
-	<T extends Enum<T>> ImmutableSet<T> getCommaSeparatedEnums(@NonNull String sysconfigName, @NonNull Class<T> enumType);
 }

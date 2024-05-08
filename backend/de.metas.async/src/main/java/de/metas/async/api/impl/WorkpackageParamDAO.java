@@ -89,12 +89,13 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 
 	private List<I_C_Queue_WorkPackage_Param> retrieveWorkpackageParametersList0(@NonNull final QueueWorkPackageId workpackageId)
 	{
-		return Services.get(IQueryBL.class)
+		final List<I_C_Queue_WorkPackage_Param> result = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Queue_WorkPackage_Param.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMN_C_Queue_WorkPackage_ID, workpackageId)
 				.create()
 				.list();
+		return result;
 	}
 
 	private ProcessInfoParameter createProcessInfoParameter(final I_C_Queue_WorkPackage_Param workpackageParam)
@@ -230,7 +231,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		}
 	}
 
-	private void resetParameterValue(final I_C_Queue_WorkPackage_Param workpackageParam)
+	private final void resetParameterValue(final I_C_Queue_WorkPackage_Param workpackageParam)
 	{
 		workpackageParam.setP_String(null);
 		workpackageParam.setP_Number(null);

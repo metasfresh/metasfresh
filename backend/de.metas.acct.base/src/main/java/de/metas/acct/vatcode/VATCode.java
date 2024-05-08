@@ -1,10 +1,9 @@
 package de.metas.acct.vatcode;
 
-import de.metas.tax.api.VatCodeId;
+import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -33,21 +32,25 @@ import lombok.ToString;
 @ToString
 public final class VATCode
 {
-	public static VATCode of(final String code, final int vatCodeId)
+	public static final VATCode NULL = new VATCode();
+
+	public static VATCode of(final String code)
 	{
-		return new VATCode(code, VatCodeId.ofRepoId(vatCodeId));
+		return new VATCode(code);
 	}
 
 	@Getter
 	private final String code;
 
-	@Getter
-	private final VatCodeId vatCodeId;
+	/** null constructor */
+	private VATCode()
+	{
+		code = null;
+	}
 
-	private VATCode(final String code, @NonNull final VatCodeId vatCodeId)
+	private VATCode(final String code)
 	{
 		Check.assumeNotEmpty(code, "code not empty");
 		this.code = code;
-		this.vatCodeId = vatCodeId;
 	}
 }

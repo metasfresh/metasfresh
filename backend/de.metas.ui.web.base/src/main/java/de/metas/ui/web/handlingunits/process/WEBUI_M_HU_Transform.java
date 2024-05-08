@@ -3,7 +3,6 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,7 +29,6 @@ import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
@@ -82,9 +80,8 @@ public class WEBUI_M_HU_Transform
 		IProcessDefaultParametersProvider
 {
 	// Services
-	@Autowired private DocumentCollection documentsCollection;
-	@Autowired private ADReferenceService adReferenceService;
-	@Autowired private LookupDataSourceFactory lookupDataSourceFactory;
+	@Autowired
+	private DocumentCollection documentsCollection;
 
 	private final HUTransformService huTransformService = HUTransformService.newInstance();
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -122,9 +119,9 @@ public class WEBUI_M_HU_Transform
 	private I_M_HU p_M_LU_HU;
 
 	//
-	protected static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
-	@Param(parameterName = PARAM_QtyCUsPerTU)
-	private BigDecimal p_QtyCUsPerTU;
+	protected static final String PARAM_QtyCU = "QtyCU";
+	@Param(parameterName = PARAM_QtyCU)
+	private BigDecimal p_QtyCU;
 
 	//
 	protected static final String PARAM_QtyTU = "QtyTU";
@@ -155,8 +152,6 @@ public class WEBUI_M_HU_Transform
 		final HUEditorRow selectedRow = getSingleSelectedRow();
 
 		return WebuiHUTransformParametersFiller.builder()
-				.adReferenceService(adReferenceService)
-				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.view(view)
 				.selectedRow(selectedRow)
 				.actionType(p_Action == null ? null : ActionType.valueOf(p_Action))
@@ -216,7 +211,7 @@ public class WEBUI_M_HU_Transform
 	}
 
 	/**
-	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCUsPerTU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
+	 * @return For the two parameters {@link #PARAM_QtyTU} and {@value #PARAM_QtyCU}, this method returns the "maximum" (i.e. what's inside the currently selected source TU resp. CU).<br>
 	 * For any other parameter, it returns {@link IProcessDefaultParametersProvider#DEFAULT_VALUE_NOTAVAILABLE}.
 	 */
 	@Override
@@ -255,7 +250,7 @@ public class WEBUI_M_HU_Transform
 				.huPIItem(p_M_HU_PI_Item)
 				.tuHU(p_M_TU_HU)
 				.luHU(p_M_LU_HU)
-				.qtyCU(p_QtyCUsPerTU)
+				.qtyCU(p_QtyCU)
 				.qtyTU(p_QtyTU)
 				.huPlanningReceiptOwnerPM_TU(ActionType.valueOf(p_Action).equals(ActionType.TU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_TU)
 				.huPlanningReceiptOwnerPM_LU(ActionType.valueOf(p_Action).equals(ActionType.LU_Set_Ownership) != p_HUPlanningReceiptOwnerPM_LU)
@@ -411,7 +406,7 @@ public class WEBUI_M_HU_Transform
 			final BigDecimal realCUQty = getSingleSelectedRow().getQtyCU();
 
 			p_M_HU_PI_Item_Product = packingItemOptional.get();
-			p_QtyCUsPerTU = realCUQty.min(packingItemOptional.get().getQty());
+			p_QtyCU = realCUQty.min(packingItemOptional.get().getQty());
 		}
 	}
 

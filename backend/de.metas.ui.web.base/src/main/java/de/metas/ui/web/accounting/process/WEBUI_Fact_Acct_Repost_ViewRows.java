@@ -1,23 +1,23 @@
 package de.metas.ui.web.accounting.process;
 
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
+import java.util.Set;
+
 import de.metas.ui.web.accounting.filters.FactAcctFilterDescriptorsProviderFactory;
-import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.view.IViewRow;
-import de.metas.util.Services;
-import de.metas.util.StreamUtils;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
 
-import java.util.Collection;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
+import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -63,27 +63,29 @@ public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate im
 
 	@Override
 	@RunOutOfTrx
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		StreamUtils.dice(streamDocumentsToRepost(), 1000)
-				.forEach(this::enqueueChunk);
+		final Set<DocumentToRepost> documentsToRepost = getDocumentsToRepost();
+		if (documentsToRepost.isEmpty())
+		{
+			return MSG_OK;
+		}
 
-		return MSG_OK;
-	}
-
-	private void enqueueChunk(final Collection<DocumentToRepost> documentsToRepost)
-	{
 		FactAcctRepostCommand.builder()
 				.forcePosting(forcePosting)
 				.documentsToRepost(documentsToRepost)
 				.build()
 				.execute();
+
+		return MSG_OK;
 	}
 
-	private Stream<DocumentToRepost> streamDocumentsToRepost()
+	private Set<DocumentToRepost> getDocumentsToRepost()
 	{
-		return getView().streamByIds(getSelectedRowIds(), QueryLimit.NO_LIMIT)
-				.map(this::extractDocumentToRepost);
+		return getView().streamByIds(getSelectedRowIds())
+				.map(this::extractDocumentToRepost)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private DocumentToRepost extractDocumentToRepost(@NonNull final IViewRow row)

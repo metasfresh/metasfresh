@@ -3,9 +3,7 @@ package de.metas.ui.web.pporder;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
@@ -16,8 +14,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
@@ -49,9 +45,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -76,7 +70,7 @@ import java.util.stream.Stream;
  */
 
 @ToString
-public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
+public class PPOrderLineRow implements IViewRow
 {
 	@Getter
 	private final DocumentPath documentPath;
@@ -107,8 +101,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 
 	@Getter
 	private final HuId huId;
-	@Nullable private final HuUnitType huUnitType;
-	@Nullable private final BPartnerId huBPartnerId;
 	@Getter
 	private final boolean sourceHU;
 	@Getter
@@ -122,7 +114,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	private final JSONLookupValue product;
 
 	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
-	@Getter
 	private final String code;
 
 	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
@@ -148,10 +139,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
 	private final JSONLookupValue huStatus;
 
-	@ViewColumn(captionKey = "HUClearanceStatus", widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
-	private final JSONLookupValue clearanceStatus;
-
-	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100))
+	@ViewColumn(captionKey = "Status", widgetType = DocumentFieldWidgetType.Color, widgetSize = WidgetSize.Small, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90))
 	private ColorValue lineStatusColor;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
@@ -164,28 +152,24 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 	@lombok.Builder(builderMethodName = "builderForIssuedOrReceivedHU", builderClassName = "BuilderForIssuedOrReceivedHU")
 	private PPOrderLineRow(
 			@NonNull final PPOrderLineRowId rowId,
-			@NonNull final HUEditorRowType type,
+			@NonNull final PPOrderLineType type,
 			@NonNull final I_PP_Order_Qty ppOrderQty,
 			final boolean parentRowReadonly,
 			@Nullable final Supplier<? extends IViewRowAttributes> attributesSupplier,
 			@Nullable final String code, // can be null if type=HU_Storage
-			@Nullable final BPartnerId huBPartnerId,
 			@Nullable final JSONLookupValue product,
 			@Nullable final String packingInfo,  // can be null if type=HU_Storage
 			@NonNull final Quantity quantity,
 			@NonNull final List<PPOrderLineRow> includedRows,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus,
-			@Nullable final JSONLookupValue clearanceStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
-		this.type = PPOrderLineType.ofHUEditorRowType(type);
+		this.type = type;
 
 		this.orderId = PPOrderId.ofRepoId(ppOrderQty.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ppOrderQty.getPP_Order_BOMLine_ID());
 		this.huId = HuId.ofRepoId(ppOrderQty.getM_HU_ID());
-		this.huUnitType = type.toHUUnitTypeOrNull();
-		this.huBPartnerId = huBPartnerId;
 		this.ppOrderQtyId = PPOrderQtyId.ofRepoId(ppOrderQty.getPP_Order_Qty_ID());
 
 		this.issueOrReceiveCandidateStatus = PPOrderQtyStatus.ofProcessedFlag(ppOrderQty.isProcessed());
@@ -196,7 +180,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.uom = JSONLookupValueTool.createUOMLookupValue(quantity.getUOM());
 		this.packingInfo = packingInfo;
 		this.code = code;
-		this.clearanceStatus = clearanceStatus;
 
 		this.sourceHU = false;
 		this.topLevelHU = topLevelHU;
@@ -231,8 +214,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		this.orderBOMLineId = null;
 		this.huId = null;
-		this.huUnitType = null;
-		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -254,8 +235,8 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId.toDocumentId(),
-				ppOrder.getM_AttributeSetInstance_ID());
+															  rowId.toDocumentId(),
+															  ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
@@ -269,11 +250,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 
 		this.issueMethod = null;
 
-		this.clearanceStatus = includedRows.stream()
-				.map(PPOrderLineRow::getClearanceStatus)
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
 	}
 
 	@lombok.Builder(builderMethodName = "builderForPPOrderBomLine", builderClassName = "BuilderForPPOrderBomLine")
@@ -294,8 +270,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.orderId = PPOrderId.ofRepoId(ppOrderBomLine.getPP_Order_ID());
 		this.orderBOMLineId = PPOrderBOMLineId.ofRepoId(ppOrderBomLine.getPP_Order_BOMLine_ID());
 		this.huId = null;
-		this.huUnitType = null;
-		this.huBPartnerId = null;
 		this.ppOrderQtyId = null;
 
 		this.processed = processed;
@@ -335,7 +309,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.issueMethod = BOMComponentIssueMethod.ofNullableCode(ppOrderBomLine.getIssueMethod());
 
 		this.lineStatusColor = computeLineStatusColor(this.qtyPlan, this.qty);
-		this.clearanceStatus = null;
 	}
 
 	@lombok.Builder(builderMethodName = "builderForSourceHU", builderClassName = "BuilderForSourceHU")
@@ -350,8 +323,7 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 			@NonNull final JSONLookupValue uom,
 			@NonNull final Quantity qty,
 			@NonNull final Boolean topLevelHU,
-			@NonNull final JSONLookupValue huStatus,
-			@Nullable final JSONLookupValue clearanceStatus)
+			@NonNull final JSONLookupValue huStatus)
 	{
 		this.rowId = rowId;
 		this.type = type;
@@ -359,8 +331,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.orderId = null;
 		this.orderBOMLineId = null;
 		this.huId = huId;
-		this.huUnitType = null; // N/A
-		this.huBPartnerId = null; // N/A
 		this.ppOrderQtyId = null;
 
 		this.processed = true;
@@ -387,14 +357,13 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		this.documentPath = computeDocumentPath();
 
 		this.issueMethod = null;
-		this.clearanceStatus = clearanceStatus;
 	}
 
 	@VisibleForTesting
 	static ColorValue computeLineStatusColor(@NonNull final Quantity qtyPlan, @NonNull final Quantity qtyIssued)
 	{
 		final boolean issued;
-		if (qtyPlan.signum() >= 0)
+		if(qtyPlan.signum() >= 0)
 		{
 			issued = qtyPlan.compareTo(qtyIssued) <= 0;
 		}
@@ -477,11 +446,6 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		return uom == null ? null : UomId.ofRepoIdOrNull(uom.getKeyAsInt());
 	}
 
-	private JSONLookupValue getClearanceStatus()
-	{
-		return clearanceStatus;
-	}
-
 	@Nullable
 	public I_C_UOM getUom()
 	{
@@ -538,17 +502,4 @@ public class PPOrderLineRow implements IViewRow, HUReportAwareViewRow
 		return attributes;
 	}
 
-	@Override
-	public HuUnitType getHUUnitTypeOrNull() {return huUnitType;}
-
-	@Override
-	public BPartnerId getBpartnerId() {return huBPartnerId;}
-
-	@Override
-	public boolean isTopLevel() {return topLevelHU;}
-
-	@Override
-	public Stream<HUReportAwareViewRow> streamIncludedHUReportAwareRows() {return getIncludedRows().stream().map(PPOrderLineRow::toHUReportAwareViewRow);}
-
-	private HUReportAwareViewRow toHUReportAwareViewRow() {return this;}
 }

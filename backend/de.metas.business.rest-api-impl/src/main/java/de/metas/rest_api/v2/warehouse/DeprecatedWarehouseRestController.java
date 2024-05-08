@@ -35,10 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class DeprecatedWarehouseRestController extends WarehouseRestController
 {
-	public DeprecatedWarehouseRestController(
-			@NonNull final WarehouseService warehouseService,
-			@NonNull final WarehouseRestService warehouseRestService)
+	public DeprecatedWarehouseRestController(final @NonNull WarehouseService warehouseService)
 	{
-		super(warehouseService, warehouseRestService);
+		super(warehouseService);
 	}
 }

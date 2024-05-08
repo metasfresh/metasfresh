@@ -1,19 +1,18 @@
 package de.metas.printing.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_PrinterHW
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_AD_PrinterHW 
 {
 
-	String Table_Name = "AD_PrinterHW";
+    /** TableName=AD_PrinterHW */
+    public static final String Table_Name = "AD_PrinterHW";
 
-//	/** AD_Table_ID=540438 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=540438 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -24,9 +23,10 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +36,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,9 +46,10 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Hardware-Drucker.
@@ -57,7 +58,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_PrinterHW_ID (int AD_PrinterHW_ID);
+	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID);
 
 	/**
 	 * Get Hardware-Drucker.
@@ -66,10 +67,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_PrinterHW_ID();
+	public int getAD_PrinterHW_ID();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_AD_PrinterHW_ID = new ModelColumn<>(I_AD_PrinterHW.class, "AD_PrinterHW_ID", null);
-	String COLUMNNAME_AD_PrinterHW_ID = "AD_PrinterHW_ID";
+    /** Column definition for AD_PrinterHW_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_AD_PrinterHW_ID = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "AD_PrinterHW_ID", null);
+    /** Column name AD_PrinterHW_ID */
+    public static final String COLUMNNAME_AD_PrinterHW_ID = "AD_PrinterHW_ID";
 
 	/**
 	 * Get Created.
@@ -79,10 +82,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_Created = new ModelColumn<>(I_AD_PrinterHW.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -92,9 +97,10 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -103,7 +109,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -112,31 +118,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_Description = new ModelColumn<>(I_AD_PrinterHW.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set External System Config.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
-
-	/**
-	 * Get External System Config.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getExternalSystem_Config_ID();
-
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_AD_PrinterHW.class, "ExternalSystem_Config_ID", null);
-	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Host key.
@@ -146,7 +133,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHostKey (@Nullable java.lang.String HostKey);
+	public void setHostKey (java.lang.String HostKey);
 
 	/**
 	 * Get Host key.
@@ -156,10 +143,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getHostKey();
+	public java.lang.String getHostKey();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_HostKey = new ModelColumn<>(I_AD_PrinterHW.class, "HostKey", null);
-	String COLUMNNAME_HostKey = "HostKey";
+    /** Column definition for HostKey */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_HostKey = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "HostKey", null);
+    /** Column name HostKey */
+    public static final String COLUMNNAME_HostKey = "HostKey";
 
 	/**
 	 * Set Active.
@@ -169,7 +158,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -179,10 +168,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_PrinterHW.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Name.
@@ -191,7 +182,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -200,10 +191,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_Name = new ModelColumn<>(I_AD_PrinterHW.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Output Type.
@@ -212,7 +205,7 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setOutputType (java.lang.String OutputType);
+	public void setOutputType (java.lang.String OutputType);
 
 	/**
 	 * Get Output Type.
@@ -221,10 +214,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getOutputType();
+	public java.lang.String getOutputType();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_OutputType = new ModelColumn<>(I_AD_PrinterHW.class, "OutputType", null);
-	String COLUMNNAME_OutputType = "OutputType";
+    /** Column definition for OutputType */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_OutputType = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "OutputType", null);
+    /** Column name OutputType */
+    public static final String COLUMNNAME_OutputType = "OutputType";
 
 	/**
 	 * Get Updated.
@@ -234,10 +229,12 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_PrinterHW, Object> COLUMN_Updated = new ModelColumn<>(I_AD_PrinterHW.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_PrinterHW, Object>(I_AD_PrinterHW.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -247,7 +244,8 @@ public interface I_AD_PrinterHW
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

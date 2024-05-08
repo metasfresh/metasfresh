@@ -16,25 +16,27 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.scheduler.AdSchedulerId;
-import de.metas.security.IRoleDAO;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import it.sauronsoftware.cron4j.SchedulingPattern;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
+import de.metas.scheduler.AdSchedulerId;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import it.sauronsoftware.cron4j.SchedulingPattern;
 
 
 /**
@@ -166,7 +168,7 @@ public class MScheduler extends X_AD_Scheduler
 		final String sql = "DELETE FROM AD_SchedulerLog "
 			+ "WHERE AD_Scheduler_ID=" + getAD_Scheduler_ID()
 			+ " AND Created > (now() - INTERVAL '" + getKeepLogDays() + " days')";
-		return DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
+		return DB.executeUpdateEx(sql, trxName);
 	}	//	deleteLog
 
 	/**

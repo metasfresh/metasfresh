@@ -22,9 +22,19 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_InOutLine;
+
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
-import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -40,44 +50,32 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_InOutLine;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Default aggregator implementation. It is used if a given {@link I_C_Invoice_Candidate} record has no {@link I_C_Invoice_Candidate#COLUMNNAME_C_Invoice_Candidate_Agg_ID} or if it has one without an
  * explicit classname value.
- * <p>
+ *
  * This implementation sums up QtyToInvoice, PriceActual, PriceEntered and Discount of the candidates that it aggregates.
  *
  * @author ts
  */
-@ToString
 public class DefaultAggregator implements IAggregator
 {
 	// Services
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-	private transient MatchInvoiceService matchInvoiceService;
 
 	/**
 	 * Map: Invoice Line Aggregation Key to List of candidates, that needs to be aggregated. Using a {@link LinkedHashMap} so that the order in which the {@link InvoiceCandidateWithInOutLine}'s are
 	 * aggregated (see {@link #aggregate()}) is the same order in which they were added (see {@link #addInvoiceCandidate(IInvoiceLineAggregationRequest)}.
-	 * <p>
+	 *
 	 * After aggregation this map will be cleared.
 	 */
 	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<>();
 
 	@Override
-	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
+	public String toString()
 	{
-		this.matchInvoiceService = matchInvoiceService;
+		return ObjectUtils.toString(this);
 	}
 
 	@Override
@@ -103,7 +101,7 @@ public class DefaultAggregator implements IAggregator
 
 		//
 		// Create InvoiceCandidate with InOutLine and add it to the pool
-		final InvoiceCandidateWithInOutLine ics = new InvoiceCandidateWithInOutLine(matchInvoiceService, request);
+		final InvoiceCandidateWithInOutLine ics = new InvoiceCandidateWithInOutLine(request);
 		icsPool.add(ics);
 	}
 
@@ -220,9 +218,7 @@ public class DefaultAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	/**
-	 * @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced
-	 */
+	/** @return a map of {@link I_C_Invoice_Candidate} to stockQty that could be invoiced */
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> createInvoiceableQtysMap()
 	{
 		// ic2QtyInvoiceable keeps track of the stockQty that we have left to invoice, to make sure that we don't invoice more that the invoice candidate allows us to

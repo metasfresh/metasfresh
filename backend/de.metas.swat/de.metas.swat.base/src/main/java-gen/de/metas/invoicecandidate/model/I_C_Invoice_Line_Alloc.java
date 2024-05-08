@@ -1,9 +1,8 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Line_Alloc
  *  @author metasfresh (generated) 
@@ -105,7 +104,7 @@ public interface I_C_Invoice_Line_Alloc
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
-	 * Set Invoiceline Allocation.
+	 * Set Rechnungskandidat - Rechungszeile.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -114,7 +113,7 @@ public interface I_C_Invoice_Line_Alloc
 	void setC_Invoice_Line_Alloc_ID (int C_Invoice_Line_Alloc_ID);
 
 	/**
-	 * Get Invoiceline Allocation.
+	 * Get Rechnungskandidat - Rechungszeile.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -355,7 +354,8 @@ public interface I_C_Invoice_Line_Alloc
 	String COLUMNNAME_QtyInvoicedInUOM = "QtyInvoicedInUOM";
 
 	/**
-	 * Set Qty to invoice override.
+	 * Set Zu berechn. Menge abw..
+	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -364,7 +364,8 @@ public interface I_C_Invoice_Line_Alloc
 	void setQtyToInvoice_Override (@Nullable BigDecimal QtyToInvoice_Override);
 
 	/**
-	 * Get Qty to invoice override.
+	 * Get Zu berechn. Menge abw..
+	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

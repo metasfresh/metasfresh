@@ -1,5 +1,8 @@
 package de.metas.bpartner.product.stats;
 
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -7,8 +10,6 @@ import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
 
 /*
  * #%L
@@ -34,8 +35,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 
 public class BPartnerProductStatsEventSender
 {
-	public static final Topic TOPIC_InOut = Topic.distributed("de.metas.bpartner.product.stats.updates.inout");
-	public static final Topic TOPIC_Invoice = Topic.distributed("de.metas.bpartner.product.stats.updates.invoice");
+	public static final Topic TOPIC_InOut = Topic.remote("de.metas.bpartner.product.stats.updates.inout");
+	public static final Topic TOPIC_Invoice = Topic.remote("de.metas.bpartner.product.stats.updates.invoice");
 
 	private static final String EVENT_PROPERTY_Content = "content";
 
@@ -63,7 +64,7 @@ public class BPartnerProductStatsEventSender
 	private void sendEventNow(final Topic topic, final Event event)
 	{
 		final IEventBus eventBus = Services.get(IEventBusFactory.class).getEventBus(topic);
-		eventBus.enqueueEvent(event);
+		eventBus.postEvent(event);
 	}
 
 	private static Event toEvent(final Object event)

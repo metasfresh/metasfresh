@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor5
 Feature: check invoice candidates status
 
   Background:

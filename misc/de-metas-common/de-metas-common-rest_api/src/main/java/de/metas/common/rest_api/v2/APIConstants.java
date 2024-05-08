@@ -25,9 +25,4 @@ package de.metas.common.rest_api.v2;
 public interface APIConstants
 {
 	String ENDPOINT_MATERIAL = "/material";
-
-	String GITHUB_ISSUE_CONTROLLER = "/issue/github";
-	String GITHUB_ISSUE_CONTROLLER_SYNC_ENDPOINT = "/sync";
-
-	String CACHE_CONTROL_NO_CACHE = "no-cache";
 }

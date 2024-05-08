@@ -1,7 +1,13 @@
 package de.metas.purchasecandidate;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
 import de.metas.bpartner.BPartnerId;
-import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.ICalendarDAO;
 import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.calendar.NullBusinessDayMatcher;
@@ -10,11 +16,6 @@ import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.IDateShifter;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
 
 /*
  * #%L

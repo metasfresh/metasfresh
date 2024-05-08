@@ -24,9 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.Properties;
 
-import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Query;
 
@@ -45,8 +43,6 @@ import de.metas.util.Services;
 
 public class AggregationDAO implements IAggregationDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	@Override
 	public I_C_Invoice_Candidate_Agg retrieveAggregate(final I_C_Invoice_Candidate ic)
 	{
@@ -115,7 +111,11 @@ public class AggregationDAO implements IAggregationDAO
 
 		//
 		// Find existing header aggregation key ID
-		final int headerAggregationKeyId = lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc);
+		final int headerAggregationKeyId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
+				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
+				.create()
+				.firstIdOnly();
 		if (headerAggregationKeyId > 0)
 		{
 			return headerAggregationKeyId;
@@ -129,39 +129,7 @@ public class AggregationDAO implements IAggregationDAO
 		headerAggregationKeyRecord.setC_BPartner_ID(bpartnerId);
 		headerAggregationKeyRecord.setIsSOTrx(ic.isSOTrx());
 		headerAggregationKeyRecord.setIsActive(true);
-		return saveHeaderAggregationKeyWithLookupOnFail(headerAggregationKeyRecord, ic, headerAggregationKeyCalc);
-	}
-
-	private int saveHeaderAggregationKeyWithLookupOnFail(
-			@NonNull final I_C_Invoice_Candidate_HeaderAggregation headerAggregationKeyRecord,
-			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final String headerAggregationKeyCalc)
-	{
-		try
-		{
-			InterfaceWrapperHelper.save(headerAggregationKeyRecord);
-			return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
-		}
-		catch (final DBUniqueConstraintException e)
-		{
-			final int lookupHeaderAggregationKeyId = lookupHeaderAggregationKeyId(ic, headerAggregationKeyCalc);
-
-			if (lookupHeaderAggregationKeyId <= 0)
-			{
-				throw e;
-			}
-			return lookupHeaderAggregationKeyId;
-		}
-	}
-
-	private int lookupHeaderAggregationKeyId(
-			@NonNull final I_C_Invoice_Candidate ic,
-			@NonNull final String headerAggregationKeyCalc)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate_HeaderAggregation.class, ic)
-				.addEqualsFilter(I_C_Invoice_Candidate_HeaderAggregation.COLUMN_HeaderAggregationKey, headerAggregationKeyCalc)
-				.create()
-				.firstIdOnly();
+		InterfaceWrapperHelper.save(headerAggregationKeyRecord);
+		return headerAggregationKeyRecord.getC_Invoice_Candidate_HeaderAggregation_ID();
 	}
 }

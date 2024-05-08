@@ -3,19 +3,18 @@ import configureStore from 'redux-mock-store';
 
 import {
   clearAllFilters,
-  clearStaticFilters,
   createFilter,
   deleteFilter,
-  updateActiveFilters,
-  updateFilterWidgetShown,
   updateNotValidFields,
+  updateActiveFilters,
+  updateInlineFilter,
+  updateFilterWidgetShown,
+  clearStaticFilters,
 } from '../../actions/FiltersActions';
 
 import * as ACTION_TYPES from '../../constants/ActionTypes';
-import filtersData
-  from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
-import filtersDataClearAll
-  from '../../../test_setup/fixtures/filters/filtersDataClearAllMock.json';
+import filtersData from '../../../test_setup/fixtures/filters/filtersActionsMock.json';
+import filtersDataClearAll from '../../../test_setup/fixtures/filters/filtersDataClearAllMock.json';
 
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
@@ -160,6 +159,24 @@ describe('FiltersActions general', () => {
       expect(store.getActions()[1].payload).toEqual({
         filterId: '500221_500221-G',
         data: true,
+      });
+    });
+  });
+
+  it(`dispatches 'UPDATE_INLINE_FILTER' action `, () => {
+    const store = mockStore();
+    store.dispatch(
+      createFilter({ filterId: '500221_500221-F', data: filtersData })
+    );
+
+    Promise.all([
+      store.dispatch(
+        updateInlineFilter({ filterId: '500221_500221-F', data: {} })
+      ),
+    ]).then(() => {
+      expect(store.getActions()[1].payload).toEqual({
+        filterId: '500221_500221-F',
+        data: {},
       });
     });
   });

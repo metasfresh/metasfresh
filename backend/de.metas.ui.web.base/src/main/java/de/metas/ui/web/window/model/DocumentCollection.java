@@ -28,16 +28,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.copy_with_details.CopyRecordRequest;
-import de.metas.copy_with_details.CopyRecordService;
-import de.metas.copy_with_details.CopyRecordRequest;
-import de.metas.copy_with_details.CopyRecordService;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -57,16 +54,24 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.invalidation.DocumentToInvalidate;
 import de.metas.ui.web.window.invalidation.IncludedDocumentToInvalidate;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.model.copy.CopyRecordRequest;
+import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -136,8 +141,7 @@ public class DocumentCollection
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
 	 */
-	public boolean isWindowIdSupported(
-			@Nullable final WindowId windowId)
+	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
 	{
 		return documentDescriptorFactory.isWindowIdSupported(windowId);
 	}
@@ -171,15 +175,12 @@ public class DocumentCollection
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
 
-	public Document getDocumentReadonly(
-			@NonNull final DocumentPath documentPath)
+	public Document getDocumentReadonly(@NonNull final DocumentPath documentPath)
 	{
 		return forDocumentReadonly(documentPath, Function.identity());
 	}
 
-	public <R> R forDocumentReadonly(
-			@NonNull final DocumentPath documentPath,
-			@NonNull final Function<Document, R> documentProcessor)
+	public <R> R forDocumentReadonly(@NonNull final DocumentPath documentPath, @NonNull final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
@@ -203,8 +204,7 @@ public class DocumentCollection
 		});
 	}
 
-	private Document getOrLoadDocument(
-			@NonNull final DocumentKey documentKey)
+	private Document getOrLoadDocument(@NonNull final DocumentKey documentKey)
 	{
 		try
 		{
@@ -223,8 +223,7 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forRootDocumentReadonly(
-			@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentReadonly(@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
@@ -346,7 +345,8 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable")
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -365,8 +365,7 @@ public class DocumentCollection
 	/**
 	 * Retrieves document from repository
 	 */
-	private Document retrieveRootDocumentFromRepository(
-			@NonNull final DocumentKey documentKey)
+	private Document retrieveRootDocumentFromRepository(final DocumentKey documentKey)
 	{
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getWindowId());
 
@@ -427,8 +426,7 @@ public class DocumentCollection
 		return result;
 	}
 
-	private void commitRootDocument(
-			@NonNull final Document rootDocument)
+	private void commitRootDocument(@NonNull final Document rootDocument)
 	{
 		Preconditions.checkState(rootDocument.isRootDocument(), "{} is not a root document", rootDocument);
 
@@ -451,12 +449,17 @@ public class DocumentCollection
 
 		//
 		// Make sure all events were collected for the case when we just created the new document
-		//
-		// IMPORTANT: This case happens when the document is not yet saved, but it's not the first time we are patching it.
-		// e.g. we have a document with multiple mandatory fields, user is filling them one by one, after each change a PATCH is sent
+		// FIXME: this is a workaround and in case we find out all events were collected, we just need to remove this.
 		if (wasNew)
 		{
-			rootDocument.getChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
+			logger.debug("Checking if we collected all events for the new document");
+			final Set<String> collectedFieldNames = rootDocument.getChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
+			if (!collectedFieldNames.isEmpty())
+			{
+				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
+						+ "\n Missed (but collected now) field names were: {}" //
+						+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
+			}
 		}
 
 	}
@@ -476,16 +479,8 @@ public class DocumentCollection
 		}
 
 		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
-
 			if (documentPath.isRootDocument())
 			{
-				final BooleanWithReason isDeleteForbidden = rootDocument.isDeleteForbidden();
-				if (isDeleteForbidden.isTrue())
-				{
-					throw new AdempiereException(isDeleteForbidden.getReason())
-							.markAsUserValidationError();
-				}
-
 				if (!rootDocument.isNew())
 				{
 					rootDocument.deleteFromRepository();
@@ -506,8 +501,7 @@ public class DocumentCollection
 		});
 	}
 
-	private void assertDeleteDocumentAllowed(
-			@NonNull final DocumentEntityDescriptor entityDescriptor)
+	private void assertDeleteDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(WindowConstants.FIELDNAME_Processed, false)
@@ -536,11 +530,98 @@ public class DocumentCollection
 		return documentDescriptorFactory.getTableRecordReference(documentPath);
 	}
 
+	public WindowId getWindowId(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
+	{
+		if (zoomIntoInfo.getWindowId() != null)
+		{
+			return zoomIntoInfo.getWindowId();
+		}
+
+		final AdWindowId zoomInto_adWindowId;
+		if (zoomIntoInfo.isRecordIdPresent())
+		{
+			zoomInto_adWindowId = RecordWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
+					.checkRecordPresentInWindow()
+					.checkParentRecord()
+					.findAdWindowId()
+					.orElse(null);
+		}
+		else
+		{
+			zoomInto_adWindowId = RecordWindowFinder.findAdWindowId(zoomIntoInfo.getTableName()).orElse(null);
+		}
+
+		if (zoomInto_adWindowId == null)
+		{
+			throw new EntityNotFoundException("No windowId found")
+					.setParameter("zoomIntoInfo", zoomIntoInfo);
+		}
+
+		return WindowId.of(zoomInto_adWindowId);
+	}
+
 	public boolean isValidDocumentPath(final DocumentPath documentPath)
 	{
 		return documentPath != null
 				&& documentPath.getWindowId().isInt()
 				&& documentPath.getDocumentId().isInt();
+	}
+
+	/**
+	 * Retrieves document path for given ZoomInto info.
+	 */
+	public DocumentPath getDocumentPath(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
+	{
+		if (!zoomIntoInfo.isRecordIdPresent())
+		{
+			throw new IllegalArgumentException("recordId must be set in " + zoomIntoInfo);
+		}
+
+		//
+		// Find the root window ID
+		final WindowId zoomIntoWindowIdEffective = getWindowId(zoomIntoInfo);
+
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(zoomIntoWindowIdEffective);
+		final String zoomIntoTableName = zoomIntoInfo.getTableName();
+
+		//
+		// We are dealing with a root document
+		// (i.e. root descriptor's table is matching record's table)
+		if (Objects.equals(rootEntityDescriptor.getTableName(), zoomIntoTableName))
+		{
+			final DocumentId rootDocumentId = DocumentId.of(zoomIntoInfo.getRecordId());
+			return DocumentPath.rootDocumentPath(zoomIntoWindowIdEffective, rootDocumentId);
+		}
+		//
+		// We are dealing with an included document
+		else
+		{
+			// Search the root descriptor for any child entity descriptor which would match record's TableName
+			final List<DocumentEntityDescriptor> childEntityDescriptors = rootEntityDescriptor.getIncludedEntities().stream()
+					.filter(includedEntityDescriptor -> Objects.equals(includedEntityDescriptor.getTableName(), zoomIntoTableName))
+					.collect(ImmutableList.toImmutableList());
+			if (childEntityDescriptors.isEmpty())
+			{
+				throw new EntityNotFoundException("Cannot find the detail tab to zoom into")
+						.setParameter("zoomIntoInfo", zoomIntoInfo)
+						.setParameter("zoomIntoWindowId", zoomIntoWindowIdEffective)
+						.setParameter("rootEntityDescriptor", rootEntityDescriptor);
+			}
+			else if (childEntityDescriptors.size() > 1)
+			{
+				logger.warn("More then one child descriptors matched our root descriptor. Picking the fist one. \nRoot descriptor: {} \nChild descriptors: {}", rootEntityDescriptor, childEntityDescriptors);
+			}
+			//
+			final DocumentEntityDescriptor childEntityDescriptor = childEntityDescriptors.get(0);
+
+			// Find the root DocumentId
+			final DocumentId rowId = DocumentId.of(zoomIntoInfo.getRecordId());
+			final DocumentId rootDocumentId = DocumentQuery.ofRecordId(childEntityDescriptor, rowId)
+					.retrieveParentDocumentId(rootEntityDescriptor);
+
+			//
+			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, Check.assumeNotNull(childEntityDescriptor.getDetailId(), "Expected childEntityDescriptor.getDetailId not null"), rowId);
+		}
 	}
 
 	public DocumentWebsocketPublisher getWebsocketPublisher()
@@ -574,11 +655,10 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId(), true));
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
-	public void invalidateDocumentsByWindowId(
-			@NonNull final WindowId windowId)
+	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)
 
 	{
 		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
@@ -594,13 +674,10 @@ public class DocumentCollection
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		for (final DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
-		{
-			invalidate(documentToInvalidate);
-		}
+		documentToInvalidateList.forEach(this::invalidate);
 	}
 
-	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
+	private void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
 				.stream()
@@ -620,40 +697,31 @@ public class DocumentCollection
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 			if (rootDocument != null)
 			{
-				//
-				// Invalidate included documents
-				// NOTE: we do this even if we will have to invalidate the whole document because we want to collect the events for frontend.
-				// Ideally would be to just invalidate the root document if that was required and frontend had to deal with it.
-				final Collection<IncludedDocumentToInvalidate> includedDocumentsToInvalidate = documentToInvalidate.getIncludedDocuments();
-				if (!includedDocumentsToInvalidate.isEmpty())
+				try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 				{
-					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
+					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
-						for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : includedDocumentsToInvalidate)
+						final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+						if (includedRowIds.isEmpty())
 						{
-							final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
-							if (includedRowIds.isEmpty())
-							{
-								continue;
-							}
+							continue;
+						}
 
-							for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
-							{
-								final DetailId detailId = Check.assumeNotNull(includedEntityDescriptor.getDetailId(), "Expected detailId not null");
-								rootDocument.getIncludedDocumentsCollection(detailId).markStale(includedRowIds);
-							}
+						for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+						{
+							final DetailId detailId = includedEntityDescriptor.getDetailId();
+
+							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
 						}
 					}
 				}
+			}
 
-				//
-				// Invalidate the root document
-				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
-				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
-				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
-				{
-					rootDocuments.invalidate(rootDocumentKey);
-				}
+			//
+			// Invalidate the root document
+			if (documentToInvalidate.isInvalidateDocument())
+			{
+				rootDocuments.invalidate(rootDocumentKey);
 			}
 
 			//
@@ -690,8 +758,7 @@ public class DocumentCollection
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
 	 */
-	public void invalidateRootDocument(
-			@NonNull final DocumentPath documentPath)
+	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
 	{
 		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(documentPath);
 
@@ -733,6 +800,28 @@ public class DocumentCollection
 		final PO toPO = copyRecordService.copyRecord(copyRecordRequest);
 
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+	}
+
+	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	{
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+
+		final Object parentModel = parentRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final PO parentPO = InterfaceWrapperHelper.getPO(parentModel);
+
+		if (!CopyRecordFactory.isEnabledForTableName(tableName))
+		{
+			throw new AdempiereException(MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW);
+		}
+
+		final CopyRecordSupport copyRecordSupport = CopyRecordFactory.getCopyRecordSupport(tableName);
+		copyRecordSupport.setAdWindowId(windowId);
+		copyRecordSupport.setParentPO(parentPO);
+		copyRecordSupport.setParentKeyColumn(parentPO.getPOInfo().getKeyColumnName());
+		copyRecordSupport.setBase(true);
+		copyRecordSupport.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
@@ -783,13 +872,13 @@ public class DocumentCollection
 	@Immutable
 	private static final class DocumentKey
 	{
-		public static DocumentKey of(@NonNull final Document document)
+		public static DocumentKey of(final Document document)
 		{
 			final DocumentPath documentPath = document.getDocumentPath();
 			return ofRootDocumentPath(documentPath);
 		}
 
-		public static DocumentKey ofRootDocumentPath(@NonNull final DocumentPath documentPath)
+		public static DocumentKey ofRootDocumentPath(final DocumentPath documentPath)
 		{
 			if (!documentPath.isRootDocument())
 			{
@@ -799,16 +888,10 @@ public class DocumentCollection
 			{
 				throw new InvalidDocumentPathException(documentPath, "document path for creating new documents is not allowed");
 			}
-
-			return new DocumentKey(
-					documentPath.getDocumentType(),
-					documentPath.getDocumentTypeId(),
-					documentPath.getDocumentId());
+			return new DocumentKey(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentPath.getDocumentId());
 		}
 
-		public static DocumentKey of(
-				@NonNull final WindowId windowId,
-				@NonNull final DocumentId documentId)
+		public static DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 		{
 			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId);
 		}
@@ -819,14 +902,11 @@ public class DocumentCollection
 
 		private Integer _hashcode = null;
 
-		private DocumentKey(
-				@NonNull final DocumentType documentType,
-				@NonNull final DocumentId documentTypeId,
-				@NonNull final DocumentId documentId)
+		private DocumentKey(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 		{
-			this.documentType = documentType;
-			this.documentTypeId = documentTypeId;
-			this.documentId = documentId;
+			this.documentType = Preconditions.checkNotNull(documentType, "documentType");
+			this.documentTypeId = Preconditions.checkNotNull(documentTypeId, "documentTypeId");
+			this.documentId = Preconditions.checkNotNull(documentId, "documentId");
 		}
 
 		@Override

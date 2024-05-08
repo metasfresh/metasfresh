@@ -1,10 +1,11 @@
 package de.metas.banking.service;
 
-import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.util.ISingletonService;
+
 /**
- * Handles cash journals (as bank statements).
+ * Handles cash journals (as bank statements) when CASH_AS_PAYMENT functionality is activated (default).
  * 
  * @author tsa
  *

@@ -1,13 +1,11 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.auction.AuctionId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.ordercandidates.v2.request.JsonApplySalesRepFrom;
-import de.metas.common.ordercandidates.v2.request.JsonGroupCompensationOrderBy;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
@@ -17,14 +15,12 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocBaseType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
-import de.metas.order.compensationGroup.GroupCompensationOrderBy;
 import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
@@ -36,10 +32,8 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -151,7 +145,6 @@ public class JsonConverters
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
-		final AuctionId auctionId = masterdataProvider.getAuctionId(request);
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -170,7 +163,6 @@ public class JsonConverters
 				.groupKey(jsonOrderLineGroup.getGroupKey())
 				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
 				.discount(Percent.ofNullable(jsonOrderLineGroup.getDiscount()))
-				.groupCompensationOrderBy(toGroupCompensationOrderBy(jsonOrderLineGroup.getOrdering()))
 				.build();
 
 		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
@@ -178,9 +170,8 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
-				.map(DocBaseType::ofCode)
 				.orElse(null);
 
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())
@@ -192,8 +183,6 @@ public class JsonConverters
 		final AssignSalesRepRule assignSalesRepRule = getAssignSalesRepRule(request.getApplySalesRepFrom());
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
-
-		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(orgId, request.getSectionCode());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -215,7 +204,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docBaseType != null ? docTypeService.getDocTypeId(docBaseType, subType, orgId) : null)
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -256,15 +245,12 @@ public class JsonConverters
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 				.qtyItemCapacity(request.getQtyItemCapacity())
-				.projectId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectId())))
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
-				.sectionCodeId(sectionCodeId)
-				.auctionId(auctionId)
 				;
 	}
 
@@ -355,7 +341,6 @@ public class JsonConverters
 				: JsonOrderLineGroup.builder()
 				.groupKey(orderLineGroup.getGroupKey())
 				.isGroupMainItem(orderLineGroup.isGroupMainItem())
-				.ordering(toJsonGroupCompensationOrderBy(orderLineGroup.getGroupCompensationOrderBy()))
 				.build();
 
 		return JsonOLCand.builder()
@@ -393,8 +378,6 @@ public class JsonConverters
 
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
-				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(olCand.getSectionCodeId())))
-				.auctionId(JsonMetasfreshId.ofOrNull(AuctionId.toRepoId(olCand.getAuctionId())))
 				.build();
 	}
 
@@ -411,44 +394,6 @@ public class JsonConverters
 				return AssignSalesRepRule.CandidateFirst;
 			default:
 				throw new AdempiereException("Unsupported JsonApplySalesRepFrom " + jsonApplySalesRepFrom);
-		}
-	}
-
-	@Nullable
-	private static GroupCompensationOrderBy toGroupCompensationOrderBy(@Nullable final JsonGroupCompensationOrderBy ordering)
-	{
-		if (ordering == null)
-		{
-			return null;
-		}
-
-		switch (ordering)
-		{
-			case GroupFirst:
-				return GroupCompensationOrderBy.CompensationGroupFirst;
-			case GroupLast:
-				return GroupCompensationOrderBy.CompensationGroupLast;
-			default:
-				throw new AdempiereException("Unsupported JsonGroupCompensationOrderBy " + ordering);
-		}
-	}
-
-	@Nullable
-	private static JsonGroupCompensationOrderBy toJsonGroupCompensationOrderBy(@Nullable final GroupCompensationOrderBy groupCompensationOrderBy)
-	{
-		if (groupCompensationOrderBy == null)
-		{
-			return null;
-		}
-
-		switch (groupCompensationOrderBy)
-		{
-			case CompensationGroupFirst:
-				return JsonGroupCompensationOrderBy.GroupFirst;
-			case CompensationGroupLast:
-				return JsonGroupCompensationOrderBy.GroupLast;
-			default:
-				throw new AdempiereException("Unsupported GroupCompensationOrderBy " + groupCompensationOrderBy);
 		}
 	}
 }

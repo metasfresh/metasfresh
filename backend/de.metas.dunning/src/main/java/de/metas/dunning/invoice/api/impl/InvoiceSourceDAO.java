@@ -22,46 +22,46 @@ package de.metas.dunning.invoice.api.impl;
  * #L%
  */
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.common.util.time.SystemTime;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
 import de.metas.dunning.api.IDunningContext;
-import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.invoice.api.IInvoiceSourceDAO;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
-import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_C_InvoicePaySchedule;
-import org.compiere.util.TimeUtil;
-
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Properties;
 
 public class InvoiceSourceDAO implements IInvoiceSourceDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	@Override
+	public Timestamp retrieveDueDate(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		return DB.getSQLValueTSEx(trxName, "SELECT paymentTermDueDate(?,?)", invoice.getC_PaymentTerm_ID(), invoice.getDateInvoiced());
+	}
 
 	@Override
-	public int computeDueDays(@NonNull final Date dueDate, @Nullable final Date date)
+	public int retrieveDueDays(
+			@NonNull final PaymentTermId paymentTermId,
+			final Date dateInvoiced,
+			final Date date)
 	{
-
-		final Date payDate =  date != null ? date : SystemTime.asDate();
-		return TimeUtil.getDaysBetween(dueDate, payDate);
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT paymentTermDueDays(?,?,?)", paymentTermId.getRepoId(), dateInvoiced, date);
 	}
 
 	@Override
@@ -69,12 +69,13 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 	{
 		final Properties ctx = context.getCtx();
 		final String trxName = context.getTrxName();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final I_C_DunningLevel dunningLevel = context.getC_DunningLevel();
 		Check.assumeNotNull(dunningLevel, "Context shall have DuningLevel set: {}", context);
 
 		Check.assumeNotNull(context.getDunningDate(), "Context shall have DunningDate set: {}", context);
-		final Date dunningDate = TimeUtil.asDate(context.getDunningDate());
+		final Date dunningDate = TimeUtil.getDay(context.getDunningDate());
 
 		final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> dunningGraceFilter = queryBL
 				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
@@ -82,7 +83,7 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, null)
 				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DunningGrace, Operator.LESS, dunningDate);
 
-		final IQueryBuilder<I_C_Dunning_Candidate_Invoice_v1> queryBuilder = queryBL.createQueryBuilder(I_C_Dunning.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Dunning.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
 				.addEqualsFilter(I_C_Dunning.COLUMNNAME_C_Dunning_ID, dunningLevel.getC_Dunning_ID()) // Dunning Level is for current assigned Dunning
@@ -90,76 +91,13 @@ public class InvoiceSourceDAO implements IInvoiceSourceDAO
 				.andCollectChildren(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_Dunning_ID)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient(ctx)
-				.addCompareFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMN_DueDate, Operator.LESS, dunningDate)
-				.filter(dunningGraceFilter); // Validate Dunning Grace (if any)
+				.filter(dunningGraceFilter) // Validate Dunning Grace (if any)
 
-		getDunningCandidateQueryFilter(context).ifPresent(queryBuilder::filter);
-
-		return queryBuilder
 				.orderBy()
 				.addColumn(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_Invoice_ID).endOrderBy()
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000 /* iterator shall load 1000 records at a time */)
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false /* the result is not changing while the iterator is iterated */)
 				.create()
 				.iterate(I_C_Dunning_Candidate_Invoice_v1.class);
-	}
-
-	@NonNull
-	private Optional<ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1>> getDunningCandidateQueryFilter(@NonNull final IDunningContext context)
-	{
-		final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery = context.getRecomputeDunningCandidatesQuery();
-		if (recomputeDunningCandidatesQuery == null)
-		{
-			return Optional.empty();
-		}
-
-		final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> dunningCandidateQueryFilter = queryBL
-				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class);
-
-		final OrgId orgId = recomputeDunningCandidatesQuery.getOrgId();
-		if (orgId != null && !orgId.isAny())
-		{
-			dunningCandidateQueryFilter.addInArrayFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
-		}
-
-		final IQueryFilter<I_C_Dunning_Candidate> onlyTargetRecordsFilter = recomputeDunningCandidatesQuery.getOnlyTargetRecordsFilter();
-		if (onlyTargetRecordsFilter != null)
-		{
-			final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> targetRecordsFilter = getTargetRecordsFilter(onlyTargetRecordsFilter);
-
-			dunningCandidateQueryFilter.addFilter(targetRecordsFilter);
-		}
-
-		return Optional.of(dunningCandidateQueryFilter);
-	}
-
-	@NonNull
-	private ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> getTargetRecordsFilter(@NonNull final IQueryFilter<I_C_Dunning_Candidate> onlyTargetRecordsFilter)
-	{
-		final IQuery<I_C_Dunning_Candidate> invoiceBasedDunningCandidatesQuery = queryBL.createQueryBuilder(I_C_Dunning_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, tableDAO.retrieveTableId(I_C_Invoice.Table_Name))
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_Processed, false)
-				.filter(onlyTargetRecordsFilter)
-				.create();
-
-		final IQuery<I_C_Dunning_Candidate> payScheduleBasedDunningCandidatesQuery = queryBL.createQueryBuilder(I_C_Dunning_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, tableDAO.retrieveTableId(I_C_InvoicePaySchedule.Table_Name))
-				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_Processed, false)
-				.filter(onlyTargetRecordsFilter)
-				.create();
-
-		final ICompositeQueryFilter<I_C_Dunning_Candidate_Invoice_v1> invoiceBasedDunningCandidatesFilter = queryBL
-				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
-				.setJoinAnd()
-				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_InvoicePaySchedule_ID, null)
-				.addInSubQueryFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_Invoice_ID, I_C_Dunning_Candidate.COLUMNNAME_Record_ID, invoiceBasedDunningCandidatesQuery);
-
-		return queryBL
-				.createCompositeQueryFilter(I_C_Dunning_Candidate_Invoice_v1.class)
-				.setJoinOr()
-				.addFilter(invoiceBasedDunningCandidatesFilter)
-				.addInSubQueryFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_InvoicePaySchedule_ID, I_C_Dunning_Candidate.COLUMNNAME_Record_ID, payScheduleBasedDunningCandidatesQuery);
 	}
 }

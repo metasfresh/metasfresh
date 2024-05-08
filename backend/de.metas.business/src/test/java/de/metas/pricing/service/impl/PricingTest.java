@@ -3,12 +3,9 @@ package de.metas.pricing.service.impl;
 import de.metas.common.util.time.SystemTime;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
-import de.metas.pricing.tax.ProductTaxCategoryRepository;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.lang.Percent;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,7 +14,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -53,8 +50,6 @@ public class PricingTest
 	{
 		AdempiereTestHelper.get().init();
 		helper = new PricingTestHelper();
-
-		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

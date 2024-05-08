@@ -22,15 +22,15 @@
 
 package de.metas.rest_api.v1.bpartner.bpartnercomposite.jsonpersister;
 
+import java.util.Collection;
+import java.util.HashMap;
+
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.money.CurrencyId;
 import lombok.NonNull;
 import lombok.ToString;
-
-import java.util.Collection;
-import java.util.HashMap;
 
 @ToString
 public class ShortTermBankAccountIndex

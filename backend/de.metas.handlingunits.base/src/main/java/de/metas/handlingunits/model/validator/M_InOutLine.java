@@ -7,11 +7,11 @@ import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.inout.IInOutBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.material.MovementType;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -43,7 +43,7 @@ public class M_InOutLine
 
 		final I_M_InOut inOut = inoutLine.getM_InOut();
 
-		final boolean isReturnType = MovementType.isMaterialReturn(inOut.getMovementType());
+		final boolean isReturnType = Services.get(IInOutBL.class).isReturnMovementType(inOut.getMovementType());
 
 		if (isReturnType)
 		{

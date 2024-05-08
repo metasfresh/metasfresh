@@ -36,11 +36,8 @@ import javax.swing.plaf.basic.BasicEditorPaneUI;
  */
 public class AdempiereEditorPaneUI extends BasicEditorPaneUI
 {
-	/**
-	 * The UI Class ID to bind this UI to
-	 * See {@link JEditorPane#getUIClassID()}.
-	 */
-	public static final String uiClassID ="EditorPaneUI";
+	/** the UI Class ID to bind this UI to */
+	public static final String uiClassID = AdempierePLAF.getUIClassID(JEditorPane.class, "EditorPaneUI");
 	
 	// NOTE: factory method used by UIDefaults. Without this method, this class won't be used!
 	public static ComponentUI createUI(final JComponent c)

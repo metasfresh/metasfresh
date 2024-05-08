@@ -1,7 +1,9 @@
 package de.metas.adempiere.service.impl;
 
-import de.metas.adempiere.service.IColumnBL;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
 import org.adempiere.ad.table.exception.NoSingleKeyColumnException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -11,8 +13,9 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
-import java.util.List;
-import java.util.Properties;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,6 +41,37 @@ import java.util.Properties;
 
 public class ColumnBL implements IColumnBL
 {
+
+	@Override
+	public boolean isRecordIdColumnName(final String columnName)
+	{
+		if (columnName == null)
+		{
+			// should not happen
+			return false;
+		}
+
+		// name must end with "Record_ID"
+		if (!columnName.endsWith(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return false;
+		}
+
+		// classical case
+		if (columnName.equals(ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return true;
+		}
+
+		// Column name must end with "_Record_ID"
+		if (!columnName.endsWith("_" + ITableRecordReference.COLUMNNAME_Record_ID))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	@Override
 	public int getContextADTableID(final Properties m_ctx, final int m_curWindowNo, final String columnName)
 	{
@@ -47,18 +81,12 @@ public class ColumnBL implements IColumnBL
 			return 0;
 		}
 
-		if (!IColumnBL.isRecordIdColumnName(columnName))
+		if (!isRecordIdColumnName(columnName))
 		{
 			return 0;
 		}
 
-		final int recordIdIdx = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
-		if (recordIdIdx < 0)
-		{
-			return 0;
-		}
-
-		final String prefix = columnName.substring(0, recordIdIdx);
+		final String prefix = extractPrefixFromRecordColumn(columnName);
 
 		String tableColumnName;
 		int contextADTableID;
@@ -83,6 +111,46 @@ public class ColumnBL implements IColumnBL
 	}
 
 	@Override
+	public Optional<String> getTableIdColumnName(final String tableName, final String recordIdColumnName)
+	{
+		Check.assumeNotEmpty(tableName, "Paramter 'tableName' is empty; recordColumnName={}", tableName, recordIdColumnName);
+		Check.assumeNotEmpty(recordIdColumnName, "Paramter 'recordColumnName' is empty; tableName={}", recordIdColumnName, tableName);
+
+		final String prefix = extractPrefixFromRecordColumn(recordIdColumnName);
+
+		if (Adempiere.isUnitTestMode())
+		{
+			return Optional.of(prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID);
+		}
+
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+
+		// Try with Prefix_AD_Table_ID
+		String tableColumnName = prefix + ITableRecordReference.COLUMNNAME_AD_Table_ID;
+		if (poInfo.hasColumnName(tableColumnName))
+		{
+			return Optional.of(tableColumnName);
+		}
+
+		// try with Prefix_Table_ID
+		tableColumnName = prefix + "Table_ID";
+		if (poInfo.hasColumnName(tableColumnName))
+		{
+			return Optional.of(tableColumnName);
+		}
+		return Optional.empty();
+	}
+
+	private String extractPrefixFromRecordColumn(final String columnName)
+	{
+		final int recordStringIndex = columnName.indexOf(ITableRecordReference.COLUMNNAME_Record_ID);
+
+		final String prefix = columnName.substring(0, recordStringIndex);
+
+		return prefix;
+	}
+
+	@Override
 	public String getSingleKeyColumn(final String tableName)
 	{
 		if (Adempiere.isUnitTestMode())
@@ -90,7 +158,7 @@ public class ColumnBL implements IColumnBL
 			return InterfaceWrapperHelper.getKeyColumnName(tableName);
 		}
 
-		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		final List<String> keyColumnNames = poInfo.getKeyColumnNames();
 
 		if (keyColumnNames.size() != 1)

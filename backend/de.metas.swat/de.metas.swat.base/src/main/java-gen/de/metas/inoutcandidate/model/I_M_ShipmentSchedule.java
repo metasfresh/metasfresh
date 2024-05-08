@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -117,7 +118,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set User/ Contact override.
+	 * Set Ansprechpartner abw..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -126,7 +127,7 @@ public interface I_M_ShipmentSchedule
 	void setAD_User_Override_ID (int AD_User_Override_ID);
 
 	/**
-	 * Get User/ Contact override.
+	 * Get Ansprechpartner abw..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -243,29 +244,6 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
-	 * Set Blocked Business Partner.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setBlockedBPartner (boolean BlockedBPartner);
-
-	/**
-	 * Get Blocked Business Partner.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	boolean isBlockedBPartner();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BlockedBPartner = new ModelColumn<>(I_M_ShipmentSchedule.class, "BlockedBPartner", null);
-	String COLUMNNAME_BlockedBPartner = "BlockedBPartner";
-
-	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -287,8 +265,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
-	 * Set User address note.
-	 * Bezeichnet die letztendlich verwendete Lieferanschrift
+	 * Set Anschrift-Text abw..
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -297,8 +274,7 @@ public interface I_M_ShipmentSchedule
 	void setBPartnerAddress_Override (@Nullable java.lang.String BPartnerAddress_Override);
 
 	/**
-	 * Get User address note.
-	 * Bezeichnet die letztendlich verwendete Lieferanschrift
+	 * Get Anschrift-Text abw..
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -376,26 +352,6 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
-	 * Set Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BPartner2_ID (int C_BPartner2_ID);
-
-	/**
-	 * Get Business Partner (2).
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BPartner2_ID();
-
-	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
-
-	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -461,7 +417,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Alt. Business Partner.
+	 * Set Geschäftspartner abw..
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Table
@@ -471,7 +427,7 @@ public interface I_M_ShipmentSchedule
 	void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
 
 	/**
-	 * Get Alt. Business Partner.
+	 * Get Geschäftspartner abw..
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Table
@@ -503,7 +459,8 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
 	/**
-	 * Set Location override.
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -512,7 +469,8 @@ public interface I_M_ShipmentSchedule
 	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
 
 	/**
-	 * Get Location override.
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -669,28 +627,6 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_ID (int C_Project_ID);
-
-	/**
-	 * Get Project.
-	 * Financial Project
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_ID();
-
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -786,7 +722,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DeliveryDate = "DeliveryDate";
 
 	/**
-	 * Set Shipment Date act..
+	 * Set Lieferdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -797,7 +733,7 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryDate_Effective (@Nullable java.sql.Timestamp DeliveryDate_Effective);
 
 	/**
-	 * Get Shipment Date act..
+	 * Get Lieferdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -809,7 +745,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DeliveryDate_Effective = "DeliveryDate_Effective";
 
 	/**
-	 * Set Alt. Deliverydate.
+	 * Set Lieferdatum abw.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -818,7 +754,7 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryDate_Override (@Nullable java.sql.Timestamp DeliveryDate_Override);
 
 	/**
-	 * Get Alt. Deliverydate.
+	 * Get Lieferdatum abw.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -830,8 +766,8 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DeliveryDate_Override = "DeliveryDate_Override";
 
 	/**
-	 * Set Delivery Rule.
-	 * Defines the timing of Delivery
+	 * Set Lieferart.
+	 * Definiert die zeitliche Steuerung von Lieferungen
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -840,8 +776,8 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Delivery Rule.
-	 * Defines the timing of Delivery
+	 * Get Lieferart.
+	 * Definiert die zeitliche Steuerung von Lieferungen
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -853,7 +789,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
-	 * Set Alt. Deliverymethod.
+	 * Set Lieferart abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -862,7 +798,7 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryRule_Override (@Nullable java.lang.String DeliveryRule_Override);
 
 	/**
-	 * Get Alt. Deliverymethod.
+	 * Get Lieferart abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -897,7 +833,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
-	 * Set Delivery via Rule override.
+	 * Set Lieferung durch abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -906,7 +842,7 @@ public interface I_M_ShipmentSchedule
 	void setDeliveryViaRule_Override (@Nullable java.lang.String DeliveryViaRule_Override);
 
 	/**
-	 * Get Delivery via Rule override.
+	 * Get Lieferung durch abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -962,7 +898,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
-	 * Set Header  merge characteristic.
+	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -971,7 +907,7 @@ public interface I_M_ShipmentSchedule
 	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
 
 	/**
-	 * Get Header  merge characteristic.
+	 * Get Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1006,7 +942,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Address override.
+	 * Set abw. Anschrift.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1015,7 +951,7 @@ public interface I_M_ShipmentSchedule
 	void setIsBPartnerAddress_Override (boolean IsBPartnerAddress_Override);
 
 	/**
-	 * Get Address override.
+	 * Get abw. Anschrift.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1025,27 +961,6 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsBPartnerAddress_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsBPartnerAddress_Override", null);
 	String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
-
-	/**
-	 * Set Catch Weight.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsCatchWeight (boolean IsCatchWeight);
-
-	/**
-	 * Get Catch Weight.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isCatchWeight();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsCatchWeight = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsCatchWeight", null);
-	String COLUMNNAME_IsCatchWeight = "IsCatchWeight";
 
 	/**
 	 * Set Closed.
@@ -1069,7 +984,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
-	 * Set Delivery Stop.
+	 * Set Delivery stop.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1078,7 +993,7 @@ public interface I_M_ShipmentSchedule
 	void setIsDeliveryStop (boolean IsDeliveryStop);
 
 	/**
-	 * Get Delivery Stop.
+	 * Get Delivery stop.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1236,6 +1151,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_Calculated_ID (int M_HU_PI_Item_Product_Calculated_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_Calculated_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Item_Product_Calculated_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Item_Product_Calculated_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID = "M_HU_PI_Item_Product_Calculated_ID";
+
+	/**
 	 * Set Packing Instruction.
 	 *
 	 * <br>Type: Search
@@ -1257,7 +1193,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Packing Instruction Override.
+	 * Set Packvorschrift-Produkt Zuordnung abw..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1266,7 +1202,7 @@ public interface I_M_ShipmentSchedule
 	void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
 
 	/**
-	 * Get Packing Instruction Override.
+	 * Get Packvorschrift-Produkt Zuordnung abw..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1278,7 +1214,28 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
 
 	/**
-	 * Set Inoutline Handler.
+	 * Set Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
+
+	/**
+	 * Get Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Version_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Version_ID", null);
+	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
+
+	/**
+	 * Set M_IolCandHandler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1287,7 +1244,7 @@ public interface I_M_ShipmentSchedule
 	void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
 
 	/**
-	 * Get Inoutline Handler.
+	 * Get M_IolCandHandler.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1325,32 +1282,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_SectionCode_ID (int M_SectionCode_ID);
-
-	/**
-	 * Get Section Code.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_SectionCode_ID();
-
-	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
-
-	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
-
-	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
-	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Shipment Constraint.
+	 * Set Shipment constraint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1359,7 +1291,7 @@ public interface I_M_ShipmentSchedule
 	void setM_Shipment_Constraint_ID (int M_Shipment_Constraint_ID);
 
 	/**
-	 * Get Shipment Constraint.
+	 * Get Shipment constraint.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1490,7 +1422,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Alt. Warehouse.
+	 * Set Lager abw..
 	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Table
@@ -1500,7 +1432,7 @@ public interface I_M_ShipmentSchedule
 	void setM_Warehouse_Override_ID (int M_Warehouse_Override_ID);
 
 	/**
-	 * Get Alt. Warehouse.
+	 * Get Lager abw..
 	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: Table
@@ -1533,25 +1465,25 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
 
 	/**
-	 * Set Physical Clearance Date.
+	 * Set Packbeschreibung.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPhysicalClearanceDate (@Nullable java.sql.Timestamp PhysicalClearanceDate);
+	void setPackDescription (@Nullable java.lang.String PackDescription);
 
 	/**
-	 * Get Physical Clearance Date.
+	 * Get Packbeschreibung.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getPhysicalClearanceDate();
+	@Nullable java.lang.String getPackDescription();
 
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PhysicalClearanceDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PhysicalClearanceDate", null);
-	String COLUMNNAME_PhysicalClearanceDate = "PhysicalClearanceDate";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
+	String COLUMNNAME_PackDescription = "PackDescription";
 
 	/**
 	 * Set Pick From Order.
@@ -1623,7 +1555,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
-	 * Set Date ready act..
+	 * Set Bereitstellungsdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1634,7 +1566,7 @@ public interface I_M_ShipmentSchedule
 	void setPreparationDate_Effective (@Nullable java.sql.Timestamp PreparationDate_Effective);
 
 	/**
-	 * Get Date ready act..
+	 * Get Bereitstellungsdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1648,7 +1580,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_PreparationDate_Effective = "PreparationDate_Effective";
 
 	/**
-	 * Set Alt Date ready.
+	 * Set Bereitstellungsdatum abw..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1657,7 +1589,7 @@ public interface I_M_ShipmentSchedule
 	void setPreparationDate_Override (@Nullable java.sql.Timestamp PreparationDate_Override);
 
 	/**
-	 * Get Alt Date ready.
+	 * Get Bereitstellungsdatum abw..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1669,7 +1601,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_PreparationDate_Override = "PreparationDate_Override";
 
 	/**
-	 * Set Priority.
+	 * Set Priorität.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1679,7 +1611,7 @@ public interface I_M_ShipmentSchedule
 	void setPriorityRule (@Nullable java.lang.String PriorityRule);
 
 	/**
-	 * Get Priority.
+	 * Get Priorität.
 	 * Priority of a document
 	 *
 	 * <br>Type: List
@@ -1692,7 +1624,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
-	 * Set Priority override.
+	 * Set Priorität Abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1701,7 +1633,7 @@ public interface I_M_ShipmentSchedule
 	void setPriorityRule_Override (@Nullable java.lang.String PriorityRule_Override);
 
 	/**
-	 * Get Priority override.
+	 * Get Priorität Abw..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1759,8 +1691,8 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Product Description.
-	 * Product Description
+	 * Set Produktbeschreibung.
+	 * Produktbeschreibung
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1769,8 +1701,8 @@ public interface I_M_ShipmentSchedule
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Product Description.
-	 * Product Description
+	 * Get Produktbeschreibung.
+	 * Produktbeschreibung
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1803,7 +1735,32 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Stock.
+	 * Set Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQtyItemCapacity (@Nullable BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getQtyItemCapacity();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyItemCapacity = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyItemCapacity", null);
+	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+
+	/**
+	 * Set Bestand.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity
@@ -1813,7 +1770,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyOnHand (@Nullable BigDecimal QtyOnHand);
 
 	/**
-	 * Get Stock.
+	 * Get Bestand.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity
@@ -1849,8 +1806,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Quantity Ordered.
-	 * Bestellte Menge
+	 * Set QtyOrdered_Calculated.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1859,8 +1815,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyOrdered_Calculated (@Nullable BigDecimal QtyOrdered_Calculated);
 
 	/**
-	 * Get Quantity Ordered.
-	 * Bestellte Menge
+	 * Get QtyOrdered_Calculated.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1872,7 +1827,30 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered_Calculated = "QtyOrdered_Calculated";
 
 	/**
-	 * Set Quantity Ordered override.
+	 * Set Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_LU (BigDecimal QtyOrdered_LU);
+
+	/**
+	 * Get Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_LU();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_LU = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_LU", null);
+	String COLUMNNAME_QtyOrdered_LU = "QtyOrdered_LU";
+
+	/**
+	 * Set Bestellt abw..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1881,7 +1859,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyOrdered_Override (@Nullable BigDecimal QtyOrdered_Override);
 
 	/**
-	 * Get Quantity Ordered override.
+	 * Get Bestellt abw..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1893,7 +1871,8 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
 
 	/**
-	 * Set Qty Ordered (TU).
+	 * Set Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1902,7 +1881,8 @@ public interface I_M_ShipmentSchedule
 	void setQtyOrdered_TU (BigDecimal QtyOrdered_TU);
 
 	/**
-	 * Get Qty Ordered (TU).
+	 * Get Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1958,7 +1938,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
-	 * Set Quantity to Deliver.
+	 * Set Ausliefermenge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1967,7 +1947,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyToDeliver (@Nullable BigDecimal QtyToDeliver);
 
 	/**
-	 * Get Quantity to Deliver.
+	 * Get Ausliefermenge.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2000,7 +1980,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
 
 	/**
-	 * Set Deliver Qty Override.
+	 * Set Liefermenge abw..
 	 * Menge, die abweichend von der ursprünglichen Vorgabe ausgeliefert wird
 	 *
 	 * <br>Type: Quantity
@@ -2010,7 +1990,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyToDeliver_Override (@Nullable BigDecimal QtyToDeliver_Override);
 
 	/**
-	 * Get Deliver Qty Override.
+	 * Get Liefermenge abw..
 	 * Menge, die abweichend von der ursprünglichen Vorgabe ausgeliefert wird
 	 *
 	 * <br>Type: Quantity
@@ -2023,7 +2003,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyToDeliver_Override = "QtyToDeliver_Override";
 
 	/**
-	 * Set Alt deliveryquantity ready.
+	 * Set Erl. Liefermenge abw..
 	 * Teilmenge von "Abw. Liefermenge", die bereits Ausgeliefert wurde
 	 *
 	 * <br>Type: Quantity
@@ -2033,7 +2013,7 @@ public interface I_M_ShipmentSchedule
 	void setQtyToDeliver_OverrideFulfilled (@Nullable BigDecimal QtyToDeliver_OverrideFulfilled);
 
 	/**
-	 * Get Alt deliveryquantity ready.
+	 * Get Erl. Liefermenge abw..
 	 * Teilmenge von "Abw. Liefermenge", die bereits Ausgeliefert wurde
 	 *
 	 * <br>Type: Quantity
@@ -2044,6 +2024,48 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_OverrideFulfilled = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver_OverrideFulfilled", null);
 	String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
+
+	/**
+	 * Set Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
+
+	/**
+	 * Get Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Calculated();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
+	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
+
+	/**
+	 * Set Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Override (@Nullable BigDecimal QtyTU_Override);
+
+	/**
+	 * Get Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Override();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Override", null);
+	String COLUMNNAME_QtyTU_Override = "QtyTU_Override";
 
 	/**
 	 * Set Record ID.
@@ -2090,7 +2112,7 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 
 	/**
-	 * Set PS.
+	 * Set Positionssumme.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2099,7 +2121,7 @@ public interface I_M_ShipmentSchedule
 	void setSinglePriceTag_ID (@Nullable java.lang.String SinglePriceTag_ID);
 
 	/**
-	 * Get PS.
+	 * Get Positionssumme.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

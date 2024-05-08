@@ -1,22 +1,22 @@
 de.metas.common.bprelation.response.JsonResponseBPRelationTest.serializeDeserializeTest=[
   {
-    "responseItems": [
+    "responseItems" : [
       {
-        "active": true,
-        "billTo": true,
-        "bpartnerId": 123456,
-        "description": "relDesc",
-        "externalId": "ext123",
-        "fetchedFrom": true,
-        "handoverLocation": true,
-        "locationId": 234567,
-        "name": "relName",
-        "payFrom": true,
-        "remitTo": true,
-        "role": "MainProducer",
-        "shipTo": true,
-        "targetBPLocationId": 456789,
-        "targetBPartnerId": 345678
+        "bpartnerId" : 123456,
+        "locationId" : 234567,
+        "targetBPartnerId" : 345678,
+        "targetBPLocationId" : 456789,
+        "name" : "relName",
+        "description" : "relDesc",
+        "externalId" : "ext123",
+        "role" : "MainProducer",
+        "shipTo" : true,
+        "payFrom" : true,
+        "billTo" : true,
+        "handoverLocation" : true,
+        "fetchedFrom" : true,
+        "remitTo" : true,
+        "active" : true
       }
     ]
   }

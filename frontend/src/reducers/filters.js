@@ -1,7 +1,8 @@
-import { original, produce } from 'immer';
+import { produce, original } from 'immer';
 import { createCachedSelector } from 're-reselect';
 
 import * as types from '../constants/ActionTypes';
+import { deepUnfreeze } from '../utils';
 
 const EMPTY_OBJECT = {};
 
@@ -107,6 +108,26 @@ const reducer = produce((draftState, action) => {
     case types.CLEAR_STATIC_FILTERS: {
       const { filterId, data } = action.payload;
       draftState[filterId].staticFilterCleared = data;
+      return;
+    }
+    case types.UPDATE_INLINE_FILTER: {
+      const { filterId, parentFilterId, data } = action.payload;
+      const currentActiveFilters = original(draftState[filterId].filtersActive);
+
+      if (currentActiveFilters.length) {
+        draftState[filterId].filtersActive = currentActiveFilters.map(
+          (filter) => {
+            if (filter.filterId === parentFilterId) {
+              filter = deepUnfreeze(filter);
+              filter.parameters[0].value = data;
+
+              return filter;
+            }
+
+            return filter;
+          }
+        );
+      }
       return;
     }
   }

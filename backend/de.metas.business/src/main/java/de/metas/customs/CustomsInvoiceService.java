@@ -1,28 +1,49 @@
 package de.metas.customs;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.NoUOMConversionException;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import de.metas.bpartner.BPartnerContactId;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.IDocumentLocationBL;
-import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -33,6 +54,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
@@ -47,27 +69,8 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.NoUOMConversionException;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
 
 /*
  * #%L
@@ -98,7 +101,6 @@ public class CustomsInvoiceService
 
 	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo;
@@ -261,7 +263,7 @@ public class CustomsInvoiceService
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inOutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inOutLineId);
 
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inoutLineRecord.getC_OrderLine_ID());
 
@@ -281,7 +283,7 @@ public class CustomsInvoiceService
 	{
 		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 
-		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutAndLineId.getInOutLineId());
+		final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutAndLineId.getInOutLineId());
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
 
@@ -292,11 +294,12 @@ public class CustomsInvoiceService
 		}
 		else if (inoutLineRecord.getC_UOM_ID() > 0)
 		{
-			lineQty = inoutBL.getQtyEntered(inoutLineRecord);
+			lineQty = Quantitys.create(inoutLineRecord.getQtyEntered(), UomId.ofRepoId(inoutLineRecord.getC_UOM_ID()));
 		}
 		else
 		{
-			lineQty = inoutBL.getMovementQty(inoutLineRecord);
+			final IProductBL productBL = Services.get(IProductBL.class);
+			lineQty = Quantitys.create(inoutLineRecord.getMovementQty(), productBL.getStockUOMId(productId));
 		}
 
 		return convertToKillogram(lineQty, productId)
@@ -375,10 +378,10 @@ public class CustomsInvoiceService
 		final String documentNo = reserveDocumentNo(docTypeId);
 
 		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.computeRenderedAddress(DocumentLocation.builder()
-				.bpartnerId(bpartnerLocationId.getBpartnerId())
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(contactId)
-				.build());
+												 .bpartnerId(bpartnerLocationId.getBpartnerId())
+												 .bpartnerLocationId(bpartnerLocationId)
+												 .contactId(contactId)
+												 .build());
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
@@ -406,7 +409,7 @@ public class CustomsInvoiceService
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 		final InOutLineId shipmentLineId = inoutAndLineId.getInOutLineId();
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineByIdOutOfTrx(shipmentLineId, I_M_InOutLine.class);
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(shipmentLineId, I_M_InOutLine.class);
 
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}

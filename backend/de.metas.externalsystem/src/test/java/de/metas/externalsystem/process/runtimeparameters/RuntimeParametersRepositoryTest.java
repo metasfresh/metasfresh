@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.process.runtimeparameters;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_RuntimeParameter;
@@ -31,26 +29,32 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class RuntimeParametersRepositoryTest
 {
 	private RuntimeParametersRepository runtimeParametersRepository;
-	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		runtimeParametersRepository = new RuntimeParametersRepository();
+	}
+
+	@BeforeAll
+	static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
 	@Test
@@ -69,7 +73,7 @@ public class RuntimeParametersRepositoryTest
 		final RuntimeParameter result = runtimeParametersRepository.upsertRuntimeParameter(runtimeParameterUpsertRequest);
 
 		assertThat(result).isNotNull();
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -105,7 +109,7 @@ public class RuntimeParametersRepositoryTest
 		assertThat(allParams).isNotNull();
 		assertThat(allParams.size()).isEqualTo(1);
 		assertThat(allParams.get(0).getExternalSystem_RuntimeParameter_ID()).isEqualTo(runtimeParameter.getRuntimeParameterId().getRepoId());
-		expect.serializer("orderedJson").toMatchSnapshot(runtimeParameter);
+		expect(runtimeParameter).toMatchSnapshot();
 	}
 
 	@Test
@@ -125,7 +129,7 @@ public class RuntimeParametersRepositoryTest
 		//then
 		assertThat(runtimeParameters).isNotNull();
 		assertThat(runtimeParameters.size()).isEqualTo(2);
-		expect.serializer("orderedJson").toMatchSnapshot(runtimeParameters);
+		expect(runtimeParameters).toMatchSnapshot();
 	}
 
 	private void createRuntimeParamRecord(final ExternalSystemParentConfigId configId,

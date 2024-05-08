@@ -1,7 +1,6 @@
 package de.metas.global_qrcodes.service;
 
 import com.google.common.base.MoreObjects;
-import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,20 +13,16 @@ public final class QRCodePDFResource extends ByteArrayResource
 	private final String filename;
 	@Getter
 	private final PInstanceId pinstanceId;
-	@Getter
-	private final AdProcessId processId;
 
 	@Builder
 	private QRCodePDFResource(
 			final byte[] data,
 			@NonNull final String filename,
-			@NonNull final PInstanceId pinstanceId,
-			@NonNull final AdProcessId processId)
+			@NonNull final PInstanceId pinstanceId)
 	{
 		super(data);
 		this.filename = filename;
 		this.pinstanceId = pinstanceId;
-		this.processId = processId;
 	}
 
 	@Override

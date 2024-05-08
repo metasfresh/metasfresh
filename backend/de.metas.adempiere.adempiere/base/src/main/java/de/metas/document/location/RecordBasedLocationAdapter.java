@@ -41,9 +41,4 @@ public interface RecordBasedLocationAdapter<SELF extends RecordBasedLocationAdap
 		RecordBasedLocationUtils.updateCapturedLocationAndRenderedAddressIfNeeded(this, documentLocationBL);
 	}
 
-	default void updateCapturedLocationAndRenderedAddress(@NonNull final IDocumentLocationBL documentLocationBL)
-	{
-		RecordBasedLocationUtils.updateCapturedLocationAndRenderedAddress(this, documentLocationBL);
-	}
-
 }

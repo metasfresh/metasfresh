@@ -93,7 +93,7 @@ public class CostPrice
 	@VisibleForTesting
 	public BigDecimal toBigDecimal()
 	{
-		return toCostAmount().toBigDecimal();
+		return toCostAmount().getValue();
 	}
 
 	public CostPrice addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1611038437L;
+	private static final long serialVersionUID = 1074331283L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
@@ -104,39 +104,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setC_HierarchyCommissionSettings_ID(final int C_HierarchyCommissionSettings_ID)
+	public void setC_HierarchyCommissionSettings_ID (final int C_HierarchyCommissionSettings_ID)
 	{
-		if (C_HierarchyCommissionSettings_ID < 1)
-			set_Value(COLUMNNAME_C_HierarchyCommissionSettings_ID, null);
-		else
-			set_Value(COLUMNNAME_C_HierarchyCommissionSettings_ID, C_HierarchyCommissionSettings_ID);
+		if (C_HierarchyCommissionSettings_ID < 1) 
+			set_Value (COLUMNNAME_C_HierarchyCommissionSettings_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_HierarchyCommissionSettings_ID, C_HierarchyCommissionSettings_ID);
 	}
 
 	@Override
-	public int getC_HierarchyCommissionSettings_ID()
+	public int getC_HierarchyCommissionSettings_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_HierarchyCommissionSettings_ID);
-	}
-
-	/** 
-	 * ClearingAmtBaseOn AD_Reference_ID=540278
-	 * Reference name: ClearingAmtBaseOn
-	 */
-	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
-	/** ProductPrice = ProductPrice */
-	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
-	/** FlatrateAmount = FlatrateAmount */
-	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
-	@Override
-	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
-	{
-		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
-	}
-
-	@Override
-	public java.lang.String getClearingAmtBaseOn() 
-	{
-		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	@Override
@@ -153,6 +132,31 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	{
 		return get_ValueAsInt(COLUMNNAME_C_LicenseFeeSettings_ID);
 	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	/** 
+	 * ClearingAmtBaseOn AD_Reference_ID=540278
+	 * Reference name: ClearingAmtBaseOn
+	 */
+	public static final int CLEARINGAMTBASEON_AD_Reference_ID=540278;
+	/** ProductPrice = ProductPrice */
+	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
+	/** FlatrateAmount = FlatrateAmount */
+	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
 
 	@Override
 	public void setC_MediatedCommissionSettings_ID (final int C_MediatedCommissionSettings_ID)
@@ -195,86 +199,59 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	{
 		return get_ValueAsInt(COLUMNNAME_C_SubscrDiscount_ID);
 	}
-
+	
 	@Override
-	public void setC_UOM_ID (final int C_UOM_ID)
+	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
 	{
-		if (C_UOM_ID < 1)
-			set_Value(COLUMNNAME_C_UOM_ID, null);
-		else
-			set_Value(COLUMNNAME_C_UOM_ID, C_UOM_ID);
+		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
 	}
 
 	@Override
-	public int getC_UOM_ID()
+	public java.lang.String getClearingAmtBaseOn() 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	@Override
-	public void setDescription(final @Nullable java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
-		set_Value(COLUMNNAME_Description, Description);
+		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/**
+	/** 
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
-	public static final int DOCACTION_AD_Reference_ID = 135;
-	/**
-	 * Complete = CO
-	 */
+	public static final int DOCACTION_AD_Reference_ID=135;
+	/** Complete = CO */
 	public static final String DOCACTION_Complete = "CO";
-	/**
-	 * Approve = AP
-	 */
+	/** Approve = AP */
 	public static final String DOCACTION_Approve = "AP";
-	/**
-	 * Reject = RJ
-	 */
+	/** Reject = RJ */
 	public static final String DOCACTION_Reject = "RJ";
-	/**
-	 * Post = PO
-	 */
+	/** Post = PO */
 	public static final String DOCACTION_Post = "PO";
-	/**
-	 * Void = VO
-	 */
+	/** Void = VO */
 	public static final String DOCACTION_Void = "VO";
-	/**
-	 * Close = CL
-	 */
+	/** Close = CL */
 	public static final String DOCACTION_Close = "CL";
-	/**
-	 * Reverse_Correct = RC
-	 */
+	/** Reverse_Correct = RC */
 	public static final String DOCACTION_Reverse_Correct = "RC";
-	/**
-	 * Reverse_Accrual = RA
-	 */
+	/** Reverse_Accrual = RA */
 	public static final String DOCACTION_Reverse_Accrual = "RA";
-	/**
-	 * Invalidate = IN
-	 */
+	/** Invalidate = IN */
 	public static final String DOCACTION_Invalidate = "IN";
-	/**
-	 * Re_Activate = RE
-	 */
+	/** Re_Activate = RE */
 	public static final String DOCACTION_Re_Activate = "RE";
-	/**
-	 * None = --
-	 */
+	/** None = -- */
 	public static final String DOCACTION_None = "--";
-	/**
-	 * Prepare = PR
-	 */
+	/** Prepare = PR */
 	public static final String DOCACTION_Prepare = "PR";
 	/** Unlock = XL */
 	public static final String DOCACTION_Unlock = "XL";
@@ -449,59 +426,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setMargin_Max (final BigDecimal Margin_Max)
-	{
-		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
-	}
-
-	@Override
-	public BigDecimal getMargin_Max() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Max);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setMargin_Min (final BigDecimal Margin_Min)
-	{
-		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
-	}
-
-	@Override
-	public BigDecimal getMargin_Min() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Min);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public de.metas.contracts.model.I_ModCntr_Settings getModCntr_Settings()
-	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class);
-	}
-
-	@Override
-	public void setModCntr_Settings(final de.metas.contracts.model.I_ModCntr_Settings ModCntr_Settings)
-	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Settings_ID, de.metas.contracts.model.I_ModCntr_Settings.class, ModCntr_Settings);
-	}
-
-	@Override
-	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
-	{
-		if (ModCntr_Settings_ID < 1) 
-			set_Value (COLUMNNAME_ModCntr_Settings_ID, null);
-		else 
-			set_Value (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
-	}
-
-	@Override
-	public int getModCntr_Settings_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
-	}
-
-	@Override
 	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
@@ -541,45 +465,71 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public int getM_Product_Correction_ID()
+	public int getM_Product_Correction_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Correction_ID);
 	}
 
 	@Override
-	public void setM_Product_Flatrate_ID(final int M_Product_Flatrate_ID)
+	public void setM_Product_Flatrate_ID (final int M_Product_Flatrate_ID)
 	{
-		if (M_Product_Flatrate_ID < 1)
-			set_Value(COLUMNNAME_M_Product_Flatrate_ID, null);
-		else
-			set_Value(COLUMNNAME_M_Product_Flatrate_ID, M_Product_Flatrate_ID);
+		if (M_Product_Flatrate_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Flatrate_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Flatrate_ID, M_Product_Flatrate_ID);
 	}
 
 	@Override
-	public int getM_Product_Flatrate_ID()
+	public int getM_Product_Flatrate_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Flatrate_ID);
 	}
 
 	@Override
-	public void setM_QualityInsp_LagerKonf_ID(final int M_QualityInsp_LagerKonf_ID)
+	public void setM_QualityInsp_LagerKonf_ID (final int M_QualityInsp_LagerKonf_ID)
 	{
-		if (M_QualityInsp_LagerKonf_ID < 1)
-			set_Value(COLUMNNAME_M_QualityInsp_LagerKonf_ID, null);
-		else
-			set_Value(COLUMNNAME_M_QualityInsp_LagerKonf_ID, M_QualityInsp_LagerKonf_ID);
+		if (M_QualityInsp_LagerKonf_ID < 1) 
+			set_Value (COLUMNNAME_M_QualityInsp_LagerKonf_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_QualityInsp_LagerKonf_ID, M_QualityInsp_LagerKonf_ID);
 	}
 
 	@Override
-	public int getM_QualityInsp_LagerKonf_ID()
+	public int getM_QualityInsp_LagerKonf_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_QualityInsp_LagerKonf_ID);
 	}
 
 	@Override
-	public void setName(final java.lang.String Name)
+	public void setMargin_Max (final BigDecimal Margin_Max)
 	{
-		set_Value(COLUMNNAME_Name, Name);
+		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
+	}
+
+	@Override
+	public BigDecimal getMargin_Max() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Max);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setMargin_Min (final BigDecimal Margin_Min)
+	{
+		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
+	}
+
+	@Override
+	public BigDecimal getMargin_Min() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Min);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
@@ -597,8 +547,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
 	/** CalculatePrice = Ca */
 	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
-	/** Extension Not Allowed = Ex */
-	public static final String ONFLATRATETERMEXTEND_ExtensionNotAllowed = "Ex";
 	@Override
 	public void setOnFlatrateTermExtend (final java.lang.String OnFlatrateTermExtend)
 	{
@@ -697,10 +645,6 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_LicenseFee = "LicenseFee";
 	/** CallOrder = CallOrder */
 	public static final String TYPE_CONDITIONS_CallOrder = "CallOrder";
-	/** InterimInvoice = InterimInvoice */
-	public static final String TYPE_CONDITIONS_InterimInvoice = "InterimInvoice";
-	/** ModularContract = ModularContract */
-	public static final String TYPE_CONDITIONS_ModularContract = "ModularContract";
 	@Override
 	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{

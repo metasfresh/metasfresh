@@ -245,7 +245,7 @@ public class MRMALine extends X_M_RMALine
 				if (!taxIncluded)
 				{
 					final ITaxBL taxBL = Services.get(ITaxBL.class);
-					taxAmt = taxBL.calculateTaxAmt(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
+					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
 				}
 			}
 		}
@@ -470,23 +470,6 @@ public class MRMALine extends X_M_RMALine
 			return 0;
 		}
 		return m_ioLine.getC_Activity_ID();
-	}
-
-	public int getC_Order_ID()
-	{
-		if (m_ioLine == null)
-		{
-			return 0;
-		}
-		return m_ioLine.getC_Order_ID();
-	}
-	public int getM_SectionCode_ID()
-	{
-		if (m_ioLine == null)
-		{
-			return 0;
-		}
-		return m_ioLine.getM_SectionCode_ID();
 	}
 
 	/**

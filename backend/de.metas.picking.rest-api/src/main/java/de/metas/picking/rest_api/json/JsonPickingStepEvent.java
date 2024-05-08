@@ -23,7 +23,6 @@
 package de.metas.picking.rest_api.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,7 +30,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Value
 @Builder
@@ -40,11 +38,10 @@ import java.time.LocalDate;
 public class JsonPickingStepEvent
 {
 	//
-	// Picking Line/Step Identifier
+	// Picking Step Identifier
 	@NonNull String wfProcessId;
 	@NonNull String wfActivityId;
-	@NonNull String pickingLineId;
-	@Nullable String pickingStepId;
+	@NonNull String pickingStepId;
 
 	//
 	// Event Type
@@ -62,16 +59,4 @@ public class JsonPickingStepEvent
 	@Nullable BigDecimal qtyPicked;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
-	@Nullable BigDecimal catchWeight;
-	boolean pickWholeTU;
-	@Nullable Boolean checkIfAlreadyPacked;
-
-	boolean setBestBeforeDate;
-	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
-
-	boolean setLotNo;
-	@Nullable String lotNo;
-
-	// Event Type: UNPICK
-	@Nullable String unpickToTargetQRCode;
 }

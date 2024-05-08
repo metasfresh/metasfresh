@@ -22,8 +22,6 @@
 
 package de.metas.contracts.commission.mediated;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
@@ -46,20 +44,19 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@ExtendWith(SnapshotExtension.class)
 public class MediatedCommissionConfigFactoryTest
 {
 	private MediatedCommissionConfigFactory mediatedCommissionConfigFactorySpy;
-	private Expect expect;
 
 	@BeforeEach
 	public void beforeEach()
@@ -71,6 +68,7 @@ public class MediatedCommissionConfigFactoryTest
 	@BeforeAll
 	static void init()
 	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 		AdempiereTestHelper.get().init();
 	}
 
@@ -110,7 +108,7 @@ public class MediatedCommissionConfigFactoryTest
 		final List<CommissionConfig> configs = mediatedCommissionConfigFactorySpy.createForNewCommissionInstances(requestForNewInstance);
 
 		//then
-		expect.serializer("orderedJson").toMatchSnapshot(configs);
+		expect(configs).toMatchSnapshot();
 	}
 
 	@Builder(builderMethodName = "contractAndComplementaryRecordsBuilder")

@@ -50,8 +50,6 @@ public class JdbcCSVExporter implements DataConsumer<ResultSet>
 	private final boolean translateHeaders;
 	private final String fieldDelimiter;
 
-	private final boolean doNotQuoteRows;
-
 	private ImmutableList<String> _columnHeaders;
 
 	@Nullable
@@ -61,13 +59,11 @@ public class JdbcCSVExporter implements DataConsumer<ResultSet>
 	private JdbcCSVExporter(
 			@NonNull final String adLanguage,
 			@Nullable final Boolean translateHeaders,
-			@Nullable final String fieldDelimiter, 
-			final boolean doNotQuoteRows)
+			@Nullable final String fieldDelimiter)
 	{
 		this.adLanguage = adLanguage;
 		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 		this.fieldDelimiter = fieldDelimiter != null ? fieldDelimiter : CSVWriter.DEFAULT_FieldDelimiter;
-		this.doNotQuoteRows = doNotQuoteRows;
 	}
 
 	@Override
@@ -176,7 +172,6 @@ public class JdbcCSVExporter implements DataConsumer<ResultSet>
 				.header(getColumnHeadersTranslatedIfNeeded())
 				.adLanguage(adLanguage)
 				.fieldDelimiter(fieldDelimiter)
-				.doNotQuoteRows(doNotQuoteRows)
 				.build();
 	}
 

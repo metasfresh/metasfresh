@@ -26,7 +26,6 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.workflow.PickingJobRestService;
-import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
@@ -69,13 +68,10 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 				.map(SetPickingSlotWFActivityHandler::toJsonQRCode)
 				.orElse(null);
 
-		return SetScannedBarcodeSupportHelper.uiComponent()
-				.currentValue(currentPickingSlot)
-				.alwaysAvailableToUser(wfActivity.getAlwaysAvailableToUser())
-				.build();
+		return SetScannedBarcodeSupportHelper.createUIComponent(currentPickingSlot);
 	}
 
-	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
 	{
 		return JsonQRCode.builder()
 				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
@@ -99,10 +95,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
 		final PickingSlotQRCode pickingSlotQRCode = PickingSlotQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode());
-
-		return PickingMobileApplication.mapPickingJob(
-				request.getWfProcess(),
-				pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode)
-		);
+		final WFProcess wfProcess = request.getWfProcess();
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode));
 	}
 }

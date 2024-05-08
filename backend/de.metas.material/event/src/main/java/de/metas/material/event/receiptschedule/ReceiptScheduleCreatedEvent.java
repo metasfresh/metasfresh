@@ -1,9 +1,12 @@
 package de.metas.material.event.receiptschedule;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
@@ -12,8 +15,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -70,7 +71,6 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	{
 		super(eventDescriptor,
 				materialDescriptor,
-				null, // no old record
 				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				receiptScheduleId);

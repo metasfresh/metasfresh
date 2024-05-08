@@ -16,18 +16,22 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductPA;
-import de.metas.product.ProductId;
-import de.metas.product.impl.ProductPA;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Collection;
+
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
+import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.model.I_M_InOut;
@@ -37,16 +41,18 @@ import org.compiere.model.MDocType;
 import org.compiere.model.X_M_MovementLine;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
+import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
+import de.metas.product.impl.ProductPA;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor. Called from
@@ -70,6 +76,7 @@ public class VPAttributeSerNoDialog extends CDialog
 	 *	@param M_AttributeSetInstance_ID Product Attribute Set Instance id
 	 * 	@param M_Product_ID Product id
 	 * 	@param C_BPartner_ID b partner
+	 * 	@param productWindow this is the product window (define Product Instance)
 	 * 	@param AD_Column_ID column
 	 * 	@param WindowNo window
 	 */
@@ -126,6 +133,10 @@ public class VPAttributeSerNoDialog extends CDialog
 
 	private CButton bSelect = new CButton(Images.getImageIcon2("PAttribute16"));
 
+	//	Ser No
+	private VString fieldSerNo = new VString ("SerNo", false, false, true, 20, 20, null, null);
+		
+	//
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel centerPanel = new CPanel();
 	private ALayout centerLayout = new ALayout(5,5, true);
@@ -193,6 +204,10 @@ public class VPAttributeSerNoDialog extends CDialog
 			return false;
 		}
 
+		if(!as.isSerNo()){
+			//TODO
+			throw new IllegalArgumentException();
+		}
 		final String movementType = Env.getContext(Env.getCtx(),m_WindowNoParent,I_M_InOut.COLUMNNAME_MovementType);
 		final boolean enterNewSerialNo = movementType.endsWith("+");
 		
@@ -205,7 +220,17 @@ public class VPAttributeSerNoDialog extends CDialog
 			bSelect.addActionListener(this);
 			centerPanel.add(bSelect, null);
 			
+		} else {
+		
+			CLabel label = new CLabel (Msg.translate(Env.getCtx(), "SerNo"));
+			label.setLabelFor(fieldSerNo);
+			centerPanel.add(label, new ALayoutConstraint(m_row++,0));
 		}
+	
+		fieldSerNo.setText(m_masi.getSerNo());
+		fieldSerNo.setEditable(enterNewSerialNo);
+				
+		centerPanel.add(fieldSerNo, null);
 
 		//	Window usually to wide (??)
 		Dimension dd = centerPanel.getPreferredSize();
@@ -345,6 +370,39 @@ public class VPAttributeSerNoDialog extends CDialog
 		//
 		String mandatory = "";
 
+		log.debug("SerNo=" + fieldSerNo.getText());
+		String enteredSerNo  = fieldSerNo.getText();
+		String oldSerNo= m_masi.getSerNo(); 
+		
+		if(enteredSerNo == null){
+			enteredSerNo = "";
+		}
+		if(oldSerNo == null){
+			oldSerNo = "";
+		}	
+		
+		m_changed = !enteredSerNo.equals(oldSerNo);
+		
+		if (!m_changed) {
+			return true;
+		}
+		
+		// metas: search for an existing serial number and issue an error if
+		// one is found
+		
+		final Collection<MAttributeSetInstance> existingSerNos = productService
+				.retrieveSerno(m_M_Product_ID, enteredSerNo, null);
+		if (!existingSerNos.isEmpty()) {
+			ADialog.error(m_WindowNo, this, MSG_DUPLICAT_SERIAL_NO);
+			return false;
+		}
+		// metas end
+
+		m_masi.setSerNo(enteredSerNo);
+		if (as.isSerNoMandatory() && (enteredSerNo == null || enteredSerNo.length() == 0))
+			mandatory += " - " + Msg.translate(Env.getCtx(), "SerNo");
+		m_changed = true;
+		
 		//	***	Save Attributes ***
 		//	New Instance
 		if (m_changed || m_masi.getM_AttributeSetInstance_ID() == 0)

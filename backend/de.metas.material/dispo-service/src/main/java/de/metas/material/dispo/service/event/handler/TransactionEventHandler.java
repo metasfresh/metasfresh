@@ -196,7 +196,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.topLevelHuIdsToPick(huIdsToPick)
 				.build();
 
-		postMaterialEventService.enqueueEventAfterNextCommit(pickingRequestedEvent);
+		postMaterialEventService.postEventAfterNextCommit(pickingRequestedEvent);
 	}
 
 	@NonNull
@@ -458,7 +458,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
 				.builder()
 				.storageAttributesKey(transactionEvent.getMaterialDescriptor().getStorageAttributesKey())
-				.warehouseId(transactionEvent.getMaterialDescriptor().getWarehouseId())
 				.build();
 
 		final CandidatesQuery queryWithAttributesKey = queryWithoutAttributesKey

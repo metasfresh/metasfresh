@@ -4,8 +4,6 @@ import java.util.Set;
 
 import org.compiere.util.NamePair;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +28,7 @@ import javax.annotation.Nullable;
 
 /**
  * Predicate used to filter {@link NamePair} items based on given {@link IValidationContext}.
+ *
  * For more helping tools, please check {@link NamePairPredicates}.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -45,6 +44,5 @@ public interface INamePairPredicate
 	/**
 	 * @return a set of parameters on which this predicate depends. On evaluation time those parameters has to be in the {@link IValidationContext}
 	 */
-	Set<String> getParameters(@Nullable final String contextTableName);
-
+	Set<String> getParameters();
 }

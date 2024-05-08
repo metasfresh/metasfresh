@@ -142,7 +142,6 @@ public class KPIDataValue
 						return value;
 					}
 				}
-				case URL:
 				case String:
 				{
 					return value.toString();

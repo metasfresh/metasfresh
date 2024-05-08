@@ -3,19 +3,18 @@ import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { pushHeaderEntry } from '../../actions/HeaderActions';
-import { getActivitiesInOrder, getWfProcess } from '../../reducers/wfProcesses';
+import { getActivitiesInOrder, getWfProcess, isWorkflowNotStarted } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
 
-import ScanActivity, { COMPONENTTYPE_ScanBarcode } from '../activities/scan/ScanActivity';
-import PickProductsActivity, { COMPONENTTYPE_PickProducts } from '../activities/picking/PickProductsActivity';
+import ScanActivity from '../activities/scan/ScanActivity';
+import PickProductsActivity from '../activities/picking/PickProductsActivity';
 import ConfirmActivity from '../activities/confirmButton/ConfirmActivity';
 import GenerateHUQRCodesActivity from '../activities/manufacturing/generateHUQRCodes/GenerateHUQRCodesActivity';
 import RawMaterialIssueActivity from '../activities/manufacturing/issue/RawMaterialIssueActivity';
 import IssueAdjustmentActivity from '../activities/manufacturing/issue_adjustment/IssueAdjustmentActivity';
 import MaterialReceiptActivity from '../activities/manufacturing/receipt/MaterialReceiptActivity';
 import DistributionMoveActivity from '../activities/distribution/DistributionMoveActivity';
-import { useApplicationInfo } from '../../reducers/applications';
 
 const WFProcessScreen = () => {
   const {
@@ -23,9 +22,7 @@ const WFProcessScreen = () => {
     params: { applicationId, workflowId: wfProcessId },
   } = useRouteMatch();
 
-  const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
-
-  const { activities, isAllowAbort, headerProperties } = useSelector(
+  const { activities, isWorkflowNotStarted, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
     shallowEqual
   );
@@ -36,11 +33,9 @@ const WFProcessScreen = () => {
       pushHeaderEntry({
         location: url,
         values: headerProperties,
-        isHomeStop: true,
-        homeIconClassName: appIconClassName,
       })
     );
-  }, [url, headerProperties, applicationId, wfProcessId]);
+  }, [url, headerProperties]);
 
   return (
     <div className="section pt-2">
@@ -54,7 +49,7 @@ const WFProcessScreen = () => {
               isLastActivity: index === activities.length - 1,
             });
           })}
-        {isAllowAbort ? <AbortButton applicationId={applicationId} wfProcessId={wfProcessId} /> : null}
+        {isWorkflowNotStarted ? <AbortButton applicationId={applicationId} wfProcessId={wfProcessId} /> : null}
       </div>
     </div>
   );
@@ -62,7 +57,7 @@ const WFProcessScreen = () => {
 
 const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isLastActivity }) => {
   switch (activityItem.componentType) {
-    case COMPONENTTYPE_ScanBarcode:
+    case 'common/scanBarcode':
       return (
         <ScanActivity
           key={activityItem.activityId}
@@ -71,14 +66,14 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           activityState={activityItem}
         />
       );
-    case COMPONENTTYPE_PickProducts:
+    case 'picking/pickProducts':
       return (
         <PickProductsActivity
           key={activityItem.activityId}
           applicationId={applicationId}
           wfProcessId={wfProcessId}
           activityId={activityItem.activityId}
-          activity={activityItem}
+          activityState={activityItem}
         />
       );
     case 'common/confirmButton':
@@ -89,10 +84,8 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           wfProcessId={wfProcessId}
           activityId={activityItem.activityId}
           caption={activityItem.caption}
-          promptQuestion={activityItem.componentProps.question}
-          userInstructions={activityItem.userInstructions}
+          promptQuestion={activityItem.componentProps.promptQuestion}
           isUserEditable={activityItem.dataStored.isUserEditable}
-          isProcessing={activityItem.dataStored.processing}
           completeStatus={activityItem.dataStored.completeStatus}
           isLastActivity={isLastActivity}
         />
@@ -154,9 +147,9 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
-    headerProperties: wfProcess?.headerProperties?.entries ?? [],
+    headerProperties: wfProcess?.headerProperties?.entries || [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
-    isAllowAbort: !!wfProcess?.isAllowAbort,
+    isWorkflowNotStarted: wfProcess ? isWorkflowNotStarted(wfProcess) : false,
   };
 };
 

@@ -22,29 +22,31 @@
 
 package de.metas.acct.impexp;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaElement;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.acct.api.AcctSchemaId;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.ChartOfAccountsId;
-import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.elementvalue.ChartOfAccounts;
 import de.metas.elementvalue.ChartOfAccountsCreateRequest;
 import de.metas.elementvalue.ChartOfAccountsService;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_C_Element;
 import org.compiere.model.I_I_ElementValue;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 class ChartOfAccountsImportHelper
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ChartOfAccountsService chartOfAccountsService;
-
-	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
 	ChartOfAccountsImportHelper(
 			@NonNull final ChartOfAccountsService chartOfAccountsService)
@@ -52,13 +54,13 @@ class ChartOfAccountsImportHelper
 		this.chartOfAccountsService = chartOfAccountsService;
 	}
 
-
-	public ChartOfAccountsId importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
+	public void importChartOfAccounts(@NonNull final I_I_ElementValue importRecord)
 	{
 		ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoIdOrNull(importRecord.getC_Element_ID());
-		if (chartOfAccountsId != null)
+		if(chartOfAccountsId != null)
 		{
-			return chartOfAccountsId;
+			// NOTE: if chart of accounts ID is set, accept it as it is, don't change it (i.e. don't update the name)
+			return;
 		}
 
 		// Try searching by ID
@@ -80,11 +82,6 @@ class ChartOfAccountsImportHelper
 		// Update the import record
 		importRecord.setC_Element_ID(chartOfAccountsId.getRepoId());
 		InterfaceWrapperHelper.save(importRecord);
-
-		setChartOfAccountsToDefaultSchemaElement(chartOfAccountsId);
-
-		return chartOfAccountsId;
-
 	}
 
 	@NonNull
@@ -96,14 +93,5 @@ class ChartOfAccountsImportHelper
 			throw new FillMandatoryException(I_I_ElementValue.COLUMNNAME_ElementName);
 		}
 		return chartOfAccountsName;
-	}
-
-	public void setChartOfAccountsToDefaultSchemaElement(@NonNull final ChartOfAccountsId chartOfAccountsId)
-	{
-		final AcctSchemaId primaryAcctSchemaId = acctSchemasRepo.getPrimaryAcctSchemaId(ClientId.METASFRESH);
-		final AcctSchema acctSchema = acctSchemasRepo.getById(primaryAcctSchemaId);
-		final AcctSchemaElement accountElement = acctSchema.getSchemaElementByType(AcctSchemaElementType.Account);
-		accountElement.setChartOfAccountsId(chartOfAccountsId);
-		acctSchemasRepo.saveAcctSchemaElement(accountElement);
 	}
 }

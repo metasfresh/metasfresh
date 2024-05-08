@@ -1,9 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Available_For_Sales_QueryResult
  *  @author metasfresh (generated) 
@@ -17,28 +16,6 @@ public interface I_MD_Available_For_Sales_QueryResult
 //	/** AD_Table_ID=541340 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-
-	/**
-	 * Set Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set UOM.
@@ -156,7 +133,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setStorageAttributesKey (@Nullable String StorageAttributesKey);
+	void setStorageAttributesKey (@Nullable java.lang.String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -165,7 +142,7 @@ public interface I_MD_Available_For_Sales_QueryResult
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getStorageAttributesKey();
+	@Nullable java.lang.String getStorageAttributesKey();
 
 	ModelColumn<I_MD_Available_For_Sales_QueryResult, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_MD_Available_For_Sales_QueryResult.class, "StorageAttributesKey", null);
 	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";

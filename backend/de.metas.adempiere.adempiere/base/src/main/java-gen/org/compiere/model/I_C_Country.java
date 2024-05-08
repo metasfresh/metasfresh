@@ -1,20 +1,26 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Country
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_C_Country 
 {
 
-	String Table_Name = "C_Country";
+    /** TableName=C_Country */
+    public static final String Table_Name = "C_Country";
 
-//	/** AD_Table_ID=170 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=170 */
+    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 6 - System - Client
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
+
+    /** Load Meta Data */
 
 	/**
 	 * Set Account Type Length.
@@ -23,7 +29,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAccountTypeLength (@Nullable java.lang.String AccountTypeLength);
+	public void setAccountTypeLength (java.lang.String AccountTypeLength);
 
 	/**
 	 * Get Account Type Length.
@@ -32,67 +38,83 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAccountTypeLength();
+	public java.lang.String getAccountTypeLength();
 
-	ModelColumn<I_C_Country, Object> COLUMN_AccountTypeLength = new ModelColumn<>(I_C_Country.class, "AccountTypeLength", null);
-	String COLUMNNAME_AccountTypeLength = "AccountTypeLength";
+    /** Column definition for AccountTypeLength */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_AccountTypeLength = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "AccountTypeLength", null);
+    /** Column name AccountTypeLength */
+    public static final String COLUMNNAME_AccountTypeLength = "AccountTypeLength";
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_Client>(I_C_Country.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Language.
+	 * Set Sprache.
 	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Language (@Nullable java.lang.String AD_Language);
+	public void setAD_Language (java.lang.String AD_Language);
 
 	/**
-	 * Get Language.
+	 * Get Sprache.
 	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAD_Language();
+	public java.lang.String getAD_Language();
 
-	ModelColumn<I_C_Country, Object> COLUMN_AD_Language = new ModelColumn<>(I_C_Country.class, "AD_Language", null);
-	String COLUMNNAME_AD_Language = "AD_Language";
+    /** Column definition for AD_Language */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "AD_Language", null);
+    /** Column name AD_Language */
+    public static final String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_Org>(I_C_Country.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Allow Cities out of List.
@@ -102,7 +124,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAllowCitiesOutOfList (boolean AllowCitiesOutOfList);
+	public void setAllowCitiesOutOfList (boolean AllowCitiesOutOfList);
 
 	/**
 	 * Get Allow Cities out of List.
@@ -112,10 +134,66 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isAllowCitiesOutOfList();
+	public boolean isAllowCitiesOutOfList();
 
-	ModelColumn<I_C_Country, Object> COLUMN_AllowCitiesOutOfList = new ModelColumn<>(I_C_Country.class, "AllowCitiesOutOfList", null);
-	String COLUMNNAME_AllowCitiesOutOfList = "AllowCitiesOutOfList";
+    /** Column definition for AllowCitiesOutOfList */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_AllowCitiesOutOfList = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "AllowCitiesOutOfList", null);
+    /** Column name AllowCitiesOutOfList */
+    public static final String COLUMNNAME_AllowCitiesOutOfList = "AllowCitiesOutOfList";
+
+	/**
+	 * Set Land.
+	 * Country
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Country_ID (int C_Country_ID);
+
+	/**
+	 * Get Land.
+	 * Country
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Country_ID();
+
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_C_Country>(I_C_Country.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
+
+	/**
+	 * Set Währung.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_C_Currency>(I_C_Country.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Capture Sequence.
@@ -124,7 +202,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCaptureSequence (@Nullable java.lang.String CaptureSequence);
+	public void setCaptureSequence (java.lang.String CaptureSequence);
 
 	/**
 	 * Get Capture Sequence.
@@ -133,147 +211,115 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getCaptureSequence();
+	public java.lang.String getCaptureSequence();
 
-	ModelColumn<I_C_Country, Object> COLUMN_CaptureSequence = new ModelColumn<>(I_C_Country.class, "CaptureSequence", null);
-	String COLUMNNAME_CaptureSequence = "CaptureSequence";
-
-	/**
-	 * Set Country.
-	 * Country
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Country_ID (int C_Country_ID);
+    /** Column definition for CaptureSequence */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_CaptureSequence = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "CaptureSequence", null);
+    /** Column name CaptureSequence */
+    public static final String COLUMNNAME_CaptureSequence = "CaptureSequence";
 
 	/**
-	 * Get Country.
-	 * Country
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Country_ID();
-
-	ModelColumn<I_C_Country, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new ModelColumn<>(I_C_Country.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
-	String COLUMNNAME_C_Country_ID = "C_Country_ID";
-
-	/**
-	 * Set Currency.
-	 * The Currency for this record
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Currency_ID (int C_Currency_ID);
-
-	/**
-	 * Get Currency.
-	 * The Currency for this record
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Currency_ID();
-
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set ISO Country Code.
+	 * Set ISO Ländercode.
 	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCountryCode (java.lang.String CountryCode);
+	public void setCountryCode (java.lang.String CountryCode);
 
 	/**
-	 * Get ISO Country Code.
+	 * Get ISO Ländercode.
 	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCountryCode();
+	public java.lang.String getCountryCode();
 
-	ModelColumn<I_C_Country, Object> COLUMN_CountryCode = new ModelColumn<>(I_C_Country.class, "CountryCode", null);
-	String COLUMNNAME_CountryCode = "CountryCode";
+    /** Column definition for CountryCode */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_CountryCode = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "CountryCode", null);
+    /** Column name CountryCode */
+    public static final String COLUMNNAME_CountryCode = "CountryCode";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_C_Country, Object> COLUMN_Created = new ModelColumn<>(I_C_Country.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_User>(I_C_Country.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_C_Country, Object> COLUMN_Description = new ModelColumn<>(I_C_Country.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Address Print Format.
+	 * Set Adress-Druckformat.
 	 * Format for printing this Address
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDisplaySequence (java.lang.String DisplaySequence);
+	public void setDisplaySequence (java.lang.String DisplaySequence);
 
 	/**
-	 * Get Address Print Format.
+	 * Get Adress-Druckformat.
 	 * Format for printing this Address
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getDisplaySequence();
+	public java.lang.String getDisplaySequence();
 
-	ModelColumn<I_C_Country, Object> COLUMN_DisplaySequence = new ModelColumn<>(I_C_Country.class, "DisplaySequence", null);
-	String COLUMNNAME_DisplaySequence = "DisplaySequence";
+    /** Column definition for DisplaySequence */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_DisplaySequence = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "DisplaySequence", null);
+    /** Column name DisplaySequence */
+    public static final String COLUMNNAME_DisplaySequence = "DisplaySequence";
 
 	/**
 	 * Set Local Address Format.
@@ -283,7 +329,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDisplaySequenceLocal (@Nullable java.lang.String DisplaySequenceLocal);
+	public void setDisplaySequenceLocal (java.lang.String DisplaySequenceLocal);
 
 	/**
 	 * Get Local Address Format.
@@ -293,10 +339,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDisplaySequenceLocal();
+	public java.lang.String getDisplaySequenceLocal();
 
-	ModelColumn<I_C_Country, Object> COLUMN_DisplaySequenceLocal = new ModelColumn<>(I_C_Country.class, "DisplaySequenceLocal", null);
-	String COLUMNNAME_DisplaySequenceLocal = "DisplaySequenceLocal";
+    /** Column definition for DisplaySequenceLocal */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_DisplaySequenceLocal = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "DisplaySequenceLocal", null);
+    /** Column name DisplaySequenceLocal */
+    public static final String COLUMNNAME_DisplaySequenceLocal = "DisplaySequenceLocal";
 
 	/**
 	 * Set Bank Account No Format.
@@ -306,7 +354,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpressionBankAccountNo (@Nullable java.lang.String ExpressionBankAccountNo);
+	public void setExpressionBankAccountNo (java.lang.String ExpressionBankAccountNo);
 
 	/**
 	 * Get Bank Account No Format.
@@ -316,10 +364,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExpressionBankAccountNo();
+	public java.lang.String getExpressionBankAccountNo();
 
-	ModelColumn<I_C_Country, Object> COLUMN_ExpressionBankAccountNo = new ModelColumn<>(I_C_Country.class, "ExpressionBankAccountNo", null);
-	String COLUMNNAME_ExpressionBankAccountNo = "ExpressionBankAccountNo";
+    /** Column definition for ExpressionBankAccountNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_ExpressionBankAccountNo = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "ExpressionBankAccountNo", null);
+    /** Column name ExpressionBankAccountNo */
+    public static final String COLUMNNAME_ExpressionBankAccountNo = "ExpressionBankAccountNo";
 
 	/**
 	 * Set Bank Routing No Format.
@@ -329,7 +379,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpressionBankRoutingNo (@Nullable java.lang.String ExpressionBankRoutingNo);
+	public void setExpressionBankRoutingNo (java.lang.String ExpressionBankRoutingNo);
 
 	/**
 	 * Get Bank Routing No Format.
@@ -339,10 +389,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExpressionBankRoutingNo();
+	public java.lang.String getExpressionBankRoutingNo();
 
-	ModelColumn<I_C_Country, Object> COLUMN_ExpressionBankRoutingNo = new ModelColumn<>(I_C_Country.class, "ExpressionBankRoutingNo", null);
-	String COLUMNNAME_ExpressionBankRoutingNo = "ExpressionBankRoutingNo";
+    /** Column definition for ExpressionBankRoutingNo */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_ExpressionBankRoutingNo = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "ExpressionBankRoutingNo", null);
+    /** Column name ExpressionBankRoutingNo */
+    public static final String COLUMNNAME_ExpressionBankRoutingNo = "ExpressionBankRoutingNo";
 
 	/**
 	 * Set Phone Format.
@@ -353,7 +405,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpressionPhone (@Nullable java.lang.String ExpressionPhone);
+	public void setExpressionPhone (java.lang.String ExpressionPhone);
 
 	/**
 	 * Get Phone Format.
@@ -364,10 +416,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExpressionPhone();
+	public java.lang.String getExpressionPhone();
 
-	ModelColumn<I_C_Country, Object> COLUMN_ExpressionPhone = new ModelColumn<>(I_C_Country.class, "ExpressionPhone", null);
-	String COLUMNNAME_ExpressionPhone = "ExpressionPhone";
+    /** Column definition for ExpressionPhone */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_ExpressionPhone = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "ExpressionPhone", null);
+    /** Column name ExpressionPhone */
+    public static final String COLUMNNAME_ExpressionPhone = "ExpressionPhone";
 
 	/**
 	 * Set Postal Code Format.
@@ -378,7 +432,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpressionPostal (@Nullable java.lang.String ExpressionPostal);
+	public void setExpressionPostal (java.lang.String ExpressionPostal);
 
 	/**
 	 * Get Postal Code Format.
@@ -389,10 +443,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExpressionPostal();
+	public java.lang.String getExpressionPostal();
 
-	ModelColumn<I_C_Country, Object> COLUMN_ExpressionPostal = new ModelColumn<>(I_C_Country.class, "ExpressionPostal", null);
-	String COLUMNNAME_ExpressionPostal = "ExpressionPostal";
+    /** Column definition for ExpressionPostal */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_ExpressionPostal = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "ExpressionPostal", null);
+    /** Column name ExpressionPostal */
+    public static final String COLUMNNAME_ExpressionPostal = "ExpressionPostal";
 
 	/**
 	 * Set Additional Postal Format.
@@ -403,7 +459,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpressionPostal_Add (@Nullable java.lang.String ExpressionPostal_Add);
+	public void setExpressionPostal_Add (java.lang.String ExpressionPostal_Add);
 
 	/**
 	 * Get Additional Postal Format.
@@ -414,10 +470,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExpressionPostal_Add();
+	public java.lang.String getExpressionPostal_Add();
 
-	ModelColumn<I_C_Country, Object> COLUMN_ExpressionPostal_Add = new ModelColumn<>(I_C_Country.class, "ExpressionPostal_Add", null);
-	String COLUMNNAME_ExpressionPostal_Add = "ExpressionPostal_Add";
+    /** Column definition for ExpressionPostal_Add */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_ExpressionPostal_Add = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "ExpressionPostal_Add", null);
+    /** Column name ExpressionPostal_Add */
+    public static final String COLUMNNAME_ExpressionPostal_Add = "ExpressionPostal_Add";
 
 	/**
 	 * Set Additional Postal code.
@@ -427,7 +485,7 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setHasPostal_Add (boolean HasPostal_Add);
+	public void setHasPostal_Add (boolean HasPostal_Add);
 
 	/**
 	 * Get Additional Postal code.
@@ -437,56 +495,62 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isHasPostal_Add();
+	public boolean isHasPostal_Add();
 
-	ModelColumn<I_C_Country, Object> COLUMN_HasPostal_Add = new ModelColumn<>(I_C_Country.class, "HasPostal_Add", null);
-	String COLUMNNAME_HasPostal_Add = "HasPostal_Add";
+    /** Column definition for HasPostal_Add */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_HasPostal_Add = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "HasPostal_Add", null);
+    /** Column name HasPostal_Add */
+    public static final String COLUMNNAME_HasPostal_Add = "HasPostal_Add";
 
 	/**
-	 * Set Country has Region.
+	 * Set Land hat Regionen.
 	 * Country contains Regions
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setHasRegion (boolean HasRegion);
+	public void setHasRegion (boolean HasRegion);
 
 	/**
-	 * Get Country has Region.
+	 * Get Land hat Regionen.
 	 * Country contains Regions
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isHasRegion();
+	public boolean isHasRegion();
 
-	ModelColumn<I_C_Country, Object> COLUMN_HasRegion = new ModelColumn<>(I_C_Country.class, "HasRegion", null);
-	String COLUMNNAME_HasRegion = "HasRegion";
+    /** Column definition for HasRegion */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_HasRegion = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "HasRegion", null);
+    /** Column name HasRegion */
+    public static final String COLUMNNAME_HasRegion = "HasRegion";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_C_Country, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Country.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Reverse Local Address Lines.
@@ -496,7 +560,7 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAddressLinesLocalReverse (boolean IsAddressLinesLocalReverse);
+	public void setIsAddressLinesLocalReverse (boolean IsAddressLinesLocalReverse);
 
 	/**
 	 * Get Reverse Local Address Lines.
@@ -506,10 +570,12 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAddressLinesLocalReverse();
+	public boolean isAddressLinesLocalReverse();
 
-	ModelColumn<I_C_Country, Object> COLUMN_IsAddressLinesLocalReverse = new ModelColumn<>(I_C_Country.class, "IsAddressLinesLocalReverse", null);
-	String COLUMNNAME_IsAddressLinesLocalReverse = "IsAddressLinesLocalReverse";
+    /** Column definition for IsAddressLinesLocalReverse */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_IsAddressLinesLocalReverse = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "IsAddressLinesLocalReverse", null);
+    /** Column name IsAddressLinesLocalReverse */
+    public static final String COLUMNNAME_IsAddressLinesLocalReverse = "IsAddressLinesLocalReverse";
 
 	/**
 	 * Set Reverse Address Lines.
@@ -519,7 +585,7 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAddressLinesReverse (boolean IsAddressLinesReverse);
+	public void setIsAddressLinesReverse (boolean IsAddressLinesReverse);
 
 	/**
 	 * Get Reverse Address Lines.
@@ -529,33 +595,12 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAddressLinesReverse();
+	public boolean isAddressLinesReverse();
 
-	ModelColumn<I_C_Country, Object> COLUMN_IsAddressLinesReverse = new ModelColumn<>(I_C_Country.class, "IsAddressLinesReverse", null);
-	String COLUMNNAME_IsAddressLinesReverse = "IsAddressLinesReverse";
-
-	/**
-	 * Set Enforce Correction Invoice.
-	 * If active invoices that have this country as billto-location can't be voided. Instead the process Generate Correction Invoice is available.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEnforceCorrectionInvoice (boolean IsEnforceCorrectionInvoice);
-
-	/**
-	 * Get Enforce Correction Invoice.
-	 * If active invoices that have this country as billto-location can't be voided. Instead the process Generate Correction Invoice is available.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEnforceCorrectionInvoice();
-
-	ModelColumn<I_C_Country, Object> COLUMN_IsEnforceCorrectionInvoice = new ModelColumn<>(I_C_Country.class, "IsEnforceCorrectionInvoice", null);
-	String COLUMNNAME_IsEnforceCorrectionInvoice = "IsEnforceCorrectionInvoice";
+    /** Column definition for IsAddressLinesReverse */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_IsAddressLinesReverse = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "IsAddressLinesReverse", null);
+    /** Column name IsAddressLinesReverse */
+    public static final String COLUMNNAME_IsAddressLinesReverse = "IsAddressLinesReverse";
 
 	/**
 	 * Set Media Size.
@@ -565,7 +610,7 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMediaSize (@Nullable java.lang.String MediaSize);
+	public void setMediaSize (java.lang.String MediaSize);
 
 	/**
 	 * Get Media Size.
@@ -575,10 +620,12 @@ public interface I_C_Country
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMediaSize();
+	public java.lang.String getMediaSize();
 
-	ModelColumn<I_C_Country, Object> COLUMN_MediaSize = new ModelColumn<>(I_C_Country.class, "MediaSize", null);
-	String COLUMNNAME_MediaSize = "MediaSize";
+    /** Column definition for MediaSize */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_MediaSize = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "MediaSize", null);
+    /** Column name MediaSize */
+    public static final String COLUMNNAME_MediaSize = "MediaSize";
 
 	/**
 	 * Set Name.
@@ -587,7 +634,7 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -596,56 +643,65 @@ public interface I_C_Country
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_C_Country, Object> COLUMN_Name = new ModelColumn<>(I_C_Country.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Region Name.
+	 * Set Region.
 	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRegionName (@Nullable java.lang.String RegionName);
+	public void setRegionName (java.lang.String RegionName);
 
 	/**
-	 * Get Region Name.
+	 * Get Region.
 	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getRegionName();
+	public java.lang.String getRegionName();
 
-	ModelColumn<I_C_Country, Object> COLUMN_RegionName = new ModelColumn<>(I_C_Country.class, "RegionName", null);
-	String COLUMNNAME_RegionName = "RegionName";
+    /** Column definition for RegionName */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_RegionName = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "RegionName", null);
+    /** Column name RegionName */
+    public static final String COLUMNNAME_RegionName = "RegionName";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_C_Country, Object> COLUMN_Updated = new ModelColumn<>(I_C_Country.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Country, Object>(I_C_Country.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Country, org.compiere.model.I_AD_User>(I_C_Country.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -23,11 +23,7 @@
 package de.metas.report;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPPrintFormat;
-import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
-import de.metas.bpartner.service.BPartnerPrintFormatRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -45,8 +41,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
-
 @Component
 public class DocumentReportAdvisorUtil
 {
@@ -54,18 +48,15 @@ public class DocumentReportAdvisorUtil
 	private final IBPartnerBL bpartnerBL;
 	private final PrintFormatRepository printFormatRepository;
 	private final DefaultPrintFormatsRepository defaultPrintFormatsRepository;
-	private final BPartnerPrintFormatRepository bPartnerPrintFormatRepository;
 
 	public DocumentReportAdvisorUtil(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final PrintFormatRepository printFormatRepository,
-			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository,
-			@NonNull final BPartnerPrintFormatRepository bPartnerPrintFormatRepository)
+			@NonNull final DefaultPrintFormatsRepository defaultPrintFormatsRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.printFormatRepository = printFormatRepository;
 		this.defaultPrintFormatsRepository = defaultPrintFormatsRepository;
-		this.bPartnerPrintFormatRepository = bPartnerPrintFormatRepository;
 	}
 
 	public Optional<BPartnerId> getBPartnerIdForModel(@NonNull final Object model)
@@ -76,13 +67,6 @@ public class DocumentReportAdvisorUtil
 	public I_C_BPartner getBPartnerById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerBL.getById(bpartnerId);
-	}
-
-	@Nullable
-	public BPartnerLocationId getBPartnerLocationId(@Nullable final BPartnerId bPartnerId, @NonNull final Object model)
-	{
-		final Integer locationId = InterfaceWrapperHelper.getValueOrNull(model, COLUMNNAME_C_BPartner_Location_ID);
-		return BPartnerLocationId.ofRepoIdOrNull(bPartnerId, locationId);
 	}
 
 	public Optional<Language> getBPartnerLanguage(@NonNull final I_C_BPartner bpartner)
@@ -117,29 +101,35 @@ public class DocumentReportAdvisorUtil
 				: ExplainedOptional.emptyBecause("No report process defined by " + printFormat);
 	}
 
-	@NonNull
 	public I_C_DocType getDocTypeById(@NonNull final DocTypeId docTypeId)
 	{
-		return docTypeDAO.getRecordById(docTypeId);
+		return docTypeDAO.getById(docTypeId);
 	}
 
 	public PrintCopies getDocumentCopies(
-			@Nullable final I_C_DocType docType,
-			@Nullable final BPPrintFormatQuery bpPrintFormatQuery)
+			@Nullable final I_C_BPartner bpartner,
+			@Nullable final I_C_DocType docType)
 	{
-
-		final BPPrintFormat bpPrintFormat = bpPrintFormatQuery == null ? null : bPartnerPrintFormatRepository.getByQuery(bpPrintFormatQuery);
-		if(bpPrintFormat == null)
-		{
-			return getDocumentCopies(docType);
-		}
-		return bpPrintFormat.getPrintCopies();
+		// for now, preserving the legacy logic
+		return getDocumentCopies(docType, PrintCopies.ZERO)
+				.plus(getDocumentCopies(bpartner, PrintCopies.ONE));
 	}
 
-	private static PrintCopies getDocumentCopies(@Nullable final I_C_DocType docType)
+	private static PrintCopies getDocumentCopies(
+			@Nullable final I_C_BPartner bpartner,
+			@NonNull final PrintCopies defaultValue)
 	{
-		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_DocType.COLUMNNAME_DocumentCopies)
+		return bpartner != null && !InterfaceWrapperHelper.isNull(bpartner, I_C_BPartner.COLUMNNAME_DocumentCopies)
+				? PrintCopies.ofInt(bpartner.getDocumentCopies())
+				: defaultValue;
+	}
+
+	private static PrintCopies getDocumentCopies(
+			@Nullable final I_C_DocType docType,
+			@NonNull final PrintCopies defaultValue)
+	{
+		return docType != null && !InterfaceWrapperHelper.isNull(docType, I_C_BPartner.COLUMNNAME_DocumentCopies)
 				? PrintCopies.ofInt(docType.getDocumentCopies())
-				: PrintCopies.ONE;
+				: defaultValue;
 	}
 }

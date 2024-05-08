@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -28,8 +6,8 @@ import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -88,6 +66,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
 	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
+
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
 	 * <p>
@@ -103,20 +82,36 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			// so that's why QtyToDeliver_Override is much more important than PreparationDate, DeliveryDate etc
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override + ", 0) DESC,"
 			//
-			// manufacture-to-order - look at scheds for whose order lines actual HUs were created
-			+ "\n CASE WHEN EXISTS(SELECT 1" + "\n                  FROM PP_Order ppo" + "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID" + "\n                            JOIN M_HU hu ON hu.M_HU_ID=ppoq.M_HU_ID" + "\n                  WHERE ppo.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID" + "\n                        AND ppoq.IsActive = 'Y'"
-			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))" + "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such a PP_Order
+			// manufacture-to-order - look at scheds for whose order lines actual HUs were created 
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM PP_Order ppo"
+			+ "\n                       JOIN PP_Order_Qty ppoq ON ppoq.PP_Order_ID=ppo.PP_Order_ID"
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=ppoq.M_HU_ID"
+			+ "\n                  WHERE ppo.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND ppoq.IsActive = 'Y'"
+			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such a PP_Order
 			//
 			// Reservation 1 - look at scheds for which there is a reservation
-			+ "\n CASE WHEN EXISTS(SELECT 1" + "\n                  FROM M_HU_Reservation res" + "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID" + "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID" + "\n                        AND res.IsActive = 'Y'"
-			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))" + "\n THEN FALSE ELSE TRUE END,"
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_HU_Reservation res"
+			+ "\n                            JOIN M_HU hu ON hu.M_HU_ID=res.VHU_ID"			
+			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND res.IsActive = 'Y'"
+			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END,"
 			//
 			// Reservation 2 - look at scheds for whose bpartners there are *dedicated* HUs.
-			+ "\n CASE WHEN EXISTS(SELECT 1" + "\n                  FROM M_HU hu" + "\n                  WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)" + "\n                        AND hu.IsActive = 'Y'" + "\n                        AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/)) "
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_HU hu"
+			+ "\n                  WHERE hu.C_BPartner_ID = COALESCE(M_ShipmentSchedule.C_BPartner_Override_ID, M_ShipmentSchedule.C_BPartner_ID)"
+			+ "\n                        AND hu.IsActive = 'Y'"
+			+ "\n                        AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/)) "
 			+ "\n THEN FALSE ELSE TRUE END," // false comes before true, so we evaluate to false if there is such an HU
 			//
 			// Preparation Date
-			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + "),"
+			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override + ", " +
+			I_M_ShipmentSchedule.COLUMNNAME_PreparationDate + "),"
 			//
 			// Delivery Date
 			// NOTE: stuff that shall be delivered first shall have a higher prio
@@ -169,36 +164,64 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public I_M_ShipmentSchedule getByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return getByOrderLineIdQuery(orderLineId).create().firstOnly(I_M_ShipmentSchedule.class);
+		return getByOrderLineIdQuery(orderLineId)
+				.create()
+				.firstOnly(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
 	public ShipmentScheduleId getShipmentScheduleIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return getByOrderLineIdQuery(orderLineId).create().firstIdOnly(ShipmentScheduleId::ofRepoIdOrNull);
+		return getByOrderLineIdQuery(orderLineId)
+				.create()
+				.firstIdOnly(ShipmentScheduleId::ofRepoIdOrNull);
 	}
 
 	@Override
 	public boolean existsExportedShipmentScheduleForOrder(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false).addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES).create().anyMatch();
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
+				.create()
+				.anyMatch();
 	}
 
 	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdQuery(@NonNull final OrderLineId orderLineId)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class)).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineId).orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Record_ID, orderLineId)
+				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override
 	public Set<ShipmentScheduleId> retrieveUnprocessedIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false).addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId).create().listIds(ShipmentScheduleId::ofRepoId);
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override
 	public List<I_M_ShipmentSchedule> retrieveUnprocessedForRecord(@NonNull final TableRecordReference recordRef)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID()).addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID()).orderBy(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID).create()
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID())
+				.orderBy(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID)
+				.create()
 				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
@@ -220,7 +243,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
-		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().filter(invalidSchedulesRepo.createInvalidShipmentSchedulesQueryFilter(pinstanceId)).create().setOrderBy(queryBL.createSqlQueryOrderBy(ORDER_CLAUSE)).list();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(invalidSchedulesRepo.createInvalidShipmentSchedulesQueryFilter(pinstanceId))
+				.create()
+				.setOrderBy(queryBL.createSqlQueryOrderBy(ORDER_CLAUSE))
+				.list();
 		if (shipmentSchedules.isEmpty())
 		{
 			return ImmutableList.of();
@@ -238,7 +267,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream().map(ShipmentSchedulePA::extractOrderAndLineId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
+		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
+				.map(ShipmentSchedulePA::extractOrderAndLineId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<OrderAndLineId, I_C_OrderLine> orderLines = orderDAO.getOrderLinesByIds(orderLineIds);
 
@@ -264,7 +296,11 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				order = orderId2record.get(orderLineId.getOrderId());
 			}
 
-			final OlAndSched olAndSched = OlAndSched.builder().shipmentSchedule(schedule).orderLineOrNull(orderLine).orderOrNull(order).build();
+			final OlAndSched olAndSched = OlAndSched.builder()
+					.shipmentSchedule(schedule)
+					.orderLineOrNull(orderLine)
+					.orderOrNull(order)
+					.build();
 			result.add(olAndSched);
 		}
 		return result;
@@ -273,17 +309,32 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public void setIsDiplayedForProduct(@NonNull final ProductId productId, final boolean displayed)
 	{
-		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId).create().updateDirectly().addSetColumnValue(I_M_ShipmentSchedule.COLUMNNAME_IsDisplayed, displayed).execute();
+		queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_M_ShipmentSchedule.COLUMNNAME_IsDisplayed, displayed)
+				.execute();
 	}
 
 	@Override
-	public Stream<I_M_ShipmentSchedule> streamUnprocessedByPartnerIdAndAllowConsolidateInOut(@NonNull final BPartnerId bpartnerId, final boolean allowConsolidateInOut)
+	public Stream<I_M_ShipmentSchedule> streamUnprocessedByPartnerIdAndAllowConsolidateInOut(
+			@NonNull final BPartnerId bpartnerId,
+			final boolean allowConsolidateInOut)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false).addCoalesceEqualsFilter(bpartnerId, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID).addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AllowConsolidateInOut, allowConsolidateInOut)
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addCoalesceEqualsFilter(bpartnerId, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AllowConsolidateInOut, allowConsolidateInOut)
 				.orderBy(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
 				//
-				.create().setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // because the Processed flag might change while we iterate
-				.setOption(IQuery.OPTION_IteratorBufferSize, 500).iterateAndStream();
+				.create()
+				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true) // because the Processed flag might change while we iterate
+				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
+				.iterateAndStream();
 	}
 
 	/**
@@ -296,11 +347,19 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
 	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
 	 */
-	private <ValueType> void updateColumnForSelection(final String inoutCandidateColumnName, final ValueType value, final boolean updateOnlyIfNull, final PInstanceId selectionId, final boolean invalidate)
+	private <ValueType> void updateColumnForSelection(
+			final String inoutCandidateColumnName,
+			final ValueType value,
+			final boolean updateOnlyIfNull,
+			final PInstanceId selectionId,
+			final boolean invalidate)
 	{
 		//
 		// Create the selection which we will need to update
-		final IQueryBuilder<I_M_ShipmentSchedule> selectionQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).setOnlySelection(selectionId).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
+		final IQueryBuilder<I_M_ShipmentSchedule> selectionQueryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setOnlySelection(selectionId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
 				;
 
 		if (updateOnlyIfNull)
@@ -316,7 +375,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		//
 		// Update our new selection
-		final int countUpdated = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).setOnlySelection(selectionToUpdateId).create().updateDirectly().addSetColumnValue(inoutCandidateColumnName, value).execute();
+		final int countUpdated = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setOnlySelection(selectionToUpdateId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(inoutCandidateColumnName, value)
+				.execute();
 
 		//
 		// Cache invalidate
@@ -332,7 +396,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 	}
 
-	private void cacheInvalidateBySelectionId(@NonNull final PInstanceId selectionId, final long estimatedSize)
+	private void cacheInvalidateBySelectionId(
+			@NonNull final PInstanceId selectionId,
+			final long estimatedSize)
 	{
 		final CacheInvalidateMultiRequest request;
 		if (estimatedSize < 0)
@@ -350,7 +416,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			// relatively small amount of records
 			// => fetch and reset individually
-			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).setOnlySelection(selectionId).create().listIds(ShipmentScheduleId::ofRepoId);
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.setOnlySelection(selectionId)
+					.create()
+					.listIds(ShipmentScheduleId::ofRepoId);
 			if (!shipmentScheduleIds.isEmpty())
 			{
 				request = CacheInvalidateMultiRequest.rootRecords(I_M_ShipmentSchedule.Table_Name, shipmentScheduleIds);
@@ -385,7 +454,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 		final boolean invalidate = false;
 
-		updateColumnForSelection(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,               // inoutCandidateColumnName
+		updateColumnForSelection(
+				I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,               // inoutCandidateColumnName
 				deliveryDate,               // value
 				false,               // updateOnlyIfNull
 				pinstanceId,               // selectionId
@@ -400,7 +470,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// in case it is not given (null) an invalidation is needed because it will be calculated based on the delivery date
 		final boolean invalidate = preparationDate == null;
 
-		updateColumnForSelection(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,               // inoutCandidateColumnName
+		updateColumnForSelection(
+				I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,               // inoutCandidateColumnName
 				preparationDate,               // value
 				false,               // updateOnlyIfNull
 				pinstanceId,               // selectionId
@@ -411,7 +482,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public IQueryBuilder<I_M_ShipmentSchedule> createQueryForShipmentScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, ITrx.TRXNAME_None).filter(userSelectionFilter).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false).addOnlyActiveRecordsFilter().addOnlyContextClient();
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class, ctx, ITrx.TRXNAME_None)
+				.filter(userSelectionFilter)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient();
 	}
 
 	@Override
@@ -433,7 +509,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// invoice candidate references an inoutline
 		else if (tableID == InterfaceWrapperHelper.getTableId(I_M_InOutLine.class))
 		{
-			final I_M_InOutLine inoutLine = TableRecordReference.ofReferenced(candidate).getModel(PlainContextAware.newWithThreadInheritedTrx(), I_M_InOutLine.class);
+			final I_M_InOutLine inoutLine = TableRecordReference
+					.ofReferenced(candidate)
+					.getModel(PlainContextAware.newWithThreadInheritedTrx(), I_M_InOutLine.class);
 
 			schedules = ImmutableSet.copyOf(retrieveForInOutLine(inoutLine));
 		}
@@ -451,7 +529,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		final Map<Integer, I_M_ShipmentSchedule> schedules = new LinkedHashMap<>();
 
 		// add all the shipment schedules from the QtyPicked entries
-		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = Services.get(IShipmentScheduleAllocDAO.class).retrieveSchedulesForInOutLineQuery(inoutLine).create().mapById(I_M_ShipmentSchedule.class);
+		final Map<Integer, I_M_ShipmentSchedule> schedulesForInOutLine = Services.get(IShipmentScheduleAllocDAO.class).retrieveSchedulesForInOutLineQuery(inoutLine)
+				.create()
+				.mapById(I_M_ShipmentSchedule.class);
 		schedules.putAll(schedulesForInOutLine);
 
 		// fallback to the case when the inoutline has an orderline set but has no Qty Picked entries
@@ -477,7 +557,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			logger.debug("given parameter referencedRecord is null; nothing to delete");
 			return;
 		}
-		final int deletedCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID()).addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID()).create().delete(); // don't "deleteDirectly". we need model interceptors to fire
+		final int deletedCount = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
+				.create()
+				.delete(); // don't "deleteDirectly". we need model interceptors to fire
 
 		logger.debug("Deleted {} M_ShipmentSchedule records for referencedRecord={}", deletedCount, referencedRecord);
 	}
@@ -490,7 +575,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			return ImmutableSet.of();
 		}
 
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds).create().listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class).stream().map(ProductId::ofRepoId).collect(ImmutableSet.toImmutableSet());
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.listDistinct(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, Integer.class)
+				.stream()
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -502,70 +594,42 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	@Override
 	public ImmutableList<I_M_ShipmentSchedule> getByReferences(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
-		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).setJoinOr().setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
+		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setJoinOr()
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
 
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final ICompositeQueryFilter<I_M_ShipmentSchedule> filter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID()).addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID());
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> filter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID());
 			queryBuilder.filter(filter);
 		}
 
-		return queryBuilder.create().listImmutable(I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public Collection<I_M_ShipmentSchedule> getByOrderId(@NonNull final OrderId orderId)
-	{
-		return queryByOrderIds(ImmutableSet.of(orderId)).list();
-	}
-
-	@Override
-	public Collection<I_M_ShipmentSchedule> getByOrderIds(@NonNull final Collection<OrderId> orderIds)
-	{
-		if (orderIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return queryByOrderIds(orderIds).list();
+		return queryBuilder
+				.create()
+				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
 	@Override
 	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
 	{
-		return queryByOrderIds(ImmutableSet.of(orderId)).create().listIds(ShipmentScheduleId::ofRepoId);
-	}
-
-	@Override
-	public boolean anyMatchByOrderId(@NonNull final OrderId orderId)
-	{
-		return queryByOrderIds(ImmutableSet.of(orderId)).anyMatch();
-	}
-
-	@Override
-	public boolean anyMatchByOrderIds(@NonNull final Collection<OrderId> orderIds)
-	{
-		return !orderIds.isEmpty() && queryByOrderIds(orderIds).anyMatch();
-	}
-
-	private IQueryBuilder<I_M_ShipmentSchedule> queryByOrderIds(final @NonNull Collection<OrderId> orderIds)
-	{
-		Check.assumeNotEmpty(orderIds, "orderIds not empty");
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addOnlyActiveRecordsFilter().addInArrayFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderIds);
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
 	@Override
 	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIds(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final Class<T> clazz)
 	{
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids).create().mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
+		return queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids)
+				.create()
+				.mapByRepoIdAware(ShipmentScheduleId::ofRepoId, clazz);
 	}
-
-	@Override
-	public ImmutableSet<OrderId> getOrderIds(@NonNull final IQueryFilter<? extends I_M_ShipmentSchedule> filter)
-	{
-		//noinspection unchecked
-		final ImmutableList<OrderId> orderIds = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class).filter((IQueryFilter<I_M_ShipmentSchedule>)filter).addOnlyActiveRecordsFilter().addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID).create().listDistinct(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, OrderId.class);
-		return ImmutableSet.copyOf(orderIds);
-	}
-
 }

@@ -4,6 +4,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
 import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -28,9 +29,6 @@ import de.metas.printing.model.X_AD_PrinterHW;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.workplace.Workplace;
-import de.metas.workplace.WorkplaceId;
-import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -38,7 +36,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 import org.slf4j.Logger;
@@ -76,7 +74,7 @@ import java.util.Properties;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
-	private final static Logger logger = LogManager.getLogger(AbstractPrintingDAO.class);
+	private final static transient Logger logger = LogManager.getLogger(AbstractPrintingDAO.class);
 
 	/**
 	 * Flag used to indicate if a change on {@link I_C_Printing_Queue_Recipient} shall NOT automatically trigger an update to {@link I_C_Printing_Queue#setPrintingQueueAggregationKey(String)}
@@ -139,6 +137,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	}
 
 	@Override
+	public final int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
+	{
+		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
+		return query.count();
+	}
+
+	@Override
 	public final List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{
 		final List<I_C_Print_Job_Detail> details = retrievePrintJobDetailsIfAny(jobLine);
@@ -196,20 +201,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 	@Override
 	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId)
 	{
-		final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
-		final WorkplaceId workplaceId = (userToPrintId == null) ? null : workplaceService.getWorkplaceByUserId(userToPrintId)
-				.map(Workplace::getId)
-				.orElse(null);
-		
-		return retrievePrinterConfig(hostKey, userToPrintId, workplaceId);
-	}
-
-	@Nullable
-	@Override
-	public final I_AD_Printer_Config retrievePrinterConfig(@Nullable final String hostKey, @Nullable final UserId userToPrintId, @Nullable final WorkplaceId workplaceId)
-	{
-		try (final MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
-				final MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId))))
+		try (MDC.MDCCloseable ignore = MDC.putCloseable("hostKey", hostKey);
+				MDC.MDCCloseable ignore2 = MDC.putCloseable("userToPrintId", Integer.toString(UserId.toRepoId(userToPrintId))))
 		{
 			final IQueryBuilder<I_AD_Printer_Config> queryBuilder = queryBL
 					.createQueryBuilderOutOfTrx(I_AD_Printer_Config.class)
@@ -219,31 +212,23 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				logger.debug("retrievePrinterConfig - will filter by ConfigHostKey IN ({}, NULL)", hostKey);
 				queryBuilder.addInArrayFilter(I_AD_Printer_Config.COLUMN_ConfigHostKey, hostKey, null); // allow "less specific" configs without hostkey
 			}
-			else if (workplaceId == null)
+			else
 			{
 				Check.errorIf(userToPrintId == null, "If the 'hostKey' param is empty, then the 'userToPrintId has to be > 0");
 			}
 			queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey); // prefer records with hostkey set
 
-			if (workplaceId != null)
+			if (userToPrintId != null)
 			{
-				queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_C_Workplace_ID, workplaceId);
+				logger.debug("retrievePrinterConfig - will filter by AD_User_PrinterMatchingConfig_ID={}", UserId.toRepoId(userToPrintId));
+				queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
 			}
 			else
 			{
-				if (userToPrintId != null)
-				{
-					logger.debug("retrievePrinterConfig - will filter by AD_User_PrinterMatchingConfig_ID={}", UserId.toRepoId(userToPrintId));
-					queryBuilder.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID, userToPrintId);
-				}
-				else
-				{
-				logger.debug("retrievePrinterConfig - hostKey={} - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set", hostKey);
-					Check.errorIf(Check.isBlank(hostKey), "If the 'userToPrintId' param is empty, then the 'hostKey has to be not-blank");
-					queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID); // prefer records with userId set
-				}
+				logger.debug("retrievePrinterConfig - userToPrintId is null -> order by AD_User_PrinterMatchingConfig_ID to prefer records with user set", hostKey);
+				Check.errorIf(Check.isBlank(hostKey), "If the 'userToPrintId' param is empty, then the 'hostKey has to be not-blank");
+				queryBuilder.orderBy(I_AD_Printer_Config.COLUMNNAME_AD_User_PrinterMatchingConfig_ID); // prefer records with userId set
 			}
-
 			return queryBuilder
 					.orderBy(I_AD_Printer_Config.COLUMNNAME_ConfigHostKey)
 					.create()
@@ -273,6 +258,7 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 			@Nullable final UserId userToPrintId,
 			@NonNull final de.metas.adempiere.model.I_AD_Printer printer)
 	{
+
 		final I_AD_Printer_Config printerConfigRecord = retrievePrinterConfig(hostKey, userToPrintId);
 		if (printerConfigRecord == null)
 		{
@@ -317,8 +303,6 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return trayMatching;
 	}
 
-
-	@Nullable
 	@Override
 	public final I_AD_PrinterTray_Matching retrievePrinterTrayMatchingOrNull(
 			@NonNull final I_AD_Printer_Matching matching,
@@ -434,8 +418,8 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		}
 
 		Check.errorUnless(result != null, "Missing AD_PrinterHW_MediaSize with name {} for printer {}",
-						  mediaSizeName,
-						  hwPrinter.getName());
+				mediaSizeName,
+				hwPrinter.getName());
 		return result;
 	}
 

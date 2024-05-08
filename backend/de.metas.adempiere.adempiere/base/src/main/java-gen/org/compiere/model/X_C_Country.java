@@ -1,49 +1,67 @@
-// Generated Model - DO NOT CHANGE
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Country
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public class X_C_Country extends org.compiere.model.PO implements I_C_Country, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1162965645L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1336882306L;
 
     /** Standard Constructor */
-    public X_C_Country (final Properties ctx, final int C_Country_ID, @Nullable final String trxName)
+    public X_C_Country (Properties ctx, int C_Country_ID, String trxName)
     {
       super (ctx, C_Country_ID, trxName);
+      /** if (C_Country_ID == 0)
+        {
+			setC_Country_ID (0);
+			setCountryCode (null);
+			setDisplaySequence (null); // @C@, @R@ @P@
+			setHasPostal_Add (false);
+			setHasRegion (false);
+			setIsAddressLinesLocalReverse (false);
+			setIsAddressLinesReverse (false);
+			setName (null);
+        } */
     }
 
     /** Load Constructor */
-    public X_C_Country (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_Country (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-	/** Load Meta Data */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
 
+	/** Set Account Type Length.
+		@param AccountTypeLength Account Type Length	  */
 	@Override
-	public void setAccountTypeLength (final @Nullable java.lang.String AccountTypeLength)
+	public void setAccountTypeLength (java.lang.String AccountTypeLength)
 	{
 		set_Value (COLUMNNAME_AccountTypeLength, AccountTypeLength);
 	}
 
+	/** Get Account Type Length.
+		@return Account Type Length	  */
 	@Override
-	public java.lang.String getAccountTypeLength() 
+	public java.lang.String getAccountTypeLength () 
 	{
-		return get_ValueAsString(COLUMNNAME_AccountTypeLength);
+		return (java.lang.String)get_Value(COLUMNNAME_AccountTypeLength);
 	}
 
 	/** 
@@ -51,273 +69,453 @@ public class X_C_Country extends org.compiere.model.PO implements I_C_Country, o
 	 * Reference name: AD_Language
 	 */
 	public static final int AD_LANGUAGE_AD_Reference_ID=106;
+	/** Set Sprache.
+		@param AD_Language 
+		Language for this entity
+	  */
 	@Override
-	public void setAD_Language (final @Nullable java.lang.String AD_Language)
+	public void setAD_Language (java.lang.String AD_Language)
 	{
+
 		set_Value (COLUMNNAME_AD_Language, AD_Language);
 	}
 
+	/** Get Sprache.
+		@return Language for this entity
+	  */
 	@Override
-	public java.lang.String getAD_Language() 
+	public java.lang.String getAD_Language () 
 	{
-		return get_ValueAsString(COLUMNNAME_AD_Language);
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
 	}
 
+	/** Set Allow Cities out of List.
+		@param AllowCitiesOutOfList 
+		A flag to allow cities, currently not in the list, to be entered
+	  */
 	@Override
-	public void setAllowCitiesOutOfList (final boolean AllowCitiesOutOfList)
+	public void setAllowCitiesOutOfList (boolean AllowCitiesOutOfList)
 	{
-		set_Value (COLUMNNAME_AllowCitiesOutOfList, AllowCitiesOutOfList);
+		set_Value (COLUMNNAME_AllowCitiesOutOfList, Boolean.valueOf(AllowCitiesOutOfList));
 	}
 
+	/** Get Allow Cities out of List.
+		@return A flag to allow cities, currently not in the list, to be entered
+	  */
 	@Override
-	public boolean isAllowCitiesOutOfList() 
+	public boolean isAllowCitiesOutOfList () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_AllowCitiesOutOfList);
+		Object oo = get_Value(COLUMNNAME_AllowCitiesOutOfList);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Land.
+		@param C_Country_ID 
+		Country 
+	  */
 	@Override
-	public void setCaptureSequence (final @Nullable java.lang.String CaptureSequence)
-	{
-		set_Value (COLUMNNAME_CaptureSequence, CaptureSequence);
-	}
-
-	@Override
-	public java.lang.String getCaptureSequence() 
-	{
-		return get_ValueAsString(COLUMNNAME_CaptureSequence);
-	}
-
-	@Override
-	public void setC_Country_ID (final int C_Country_ID)
+	public void setC_Country_ID (int C_Country_ID)
 	{
 		if (C_Country_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Country_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Country_ID, C_Country_ID);
+			set_ValueNoCheck (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
 	}
 
+	/** Get Land.
+		@return Country 
+	  */
 	@Override
-	public int getC_Country_ID() 
+	public int getC_Country_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
-	public void setC_Currency_ID (final int C_Currency_ID)
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
 	}
 
+	/** Get Währung.
+		@return The Currency for this record
+	  */
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID () 
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Capture Sequence.
+		@param CaptureSequence Capture Sequence	  */
 	@Override
-	public void setCountryCode (final java.lang.String CountryCode)
+	public void setCaptureSequence (java.lang.String CaptureSequence)
+	{
+		set_Value (COLUMNNAME_CaptureSequence, CaptureSequence);
+	}
+
+	/** Get Capture Sequence.
+		@return Capture Sequence	  */
+	@Override
+	public java.lang.String getCaptureSequence () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CaptureSequence);
+	}
+
+	/** Set ISO Ländercode.
+		@param CountryCode 
+		Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	  */
+	@Override
+	public void setCountryCode (java.lang.String CountryCode)
 	{
 		set_Value (COLUMNNAME_CountryCode, CountryCode);
 	}
 
+	/** Get ISO Ländercode.
+		@return Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	  */
 	@Override
-	public java.lang.String getCountryCode() 
+	public java.lang.String getCountryCode () 
 	{
-		return get_ValueAsString(COLUMNNAME_CountryCode);
+		return (java.lang.String)get_Value(COLUMNNAME_CountryCode);
 	}
 
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription () 
 	{
-		return get_ValueAsString(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Adress-Druckformat.
+		@param DisplaySequence 
+		Format for printing this Address
+	  */
 	@Override
-	public void setDisplaySequence (final java.lang.String DisplaySequence)
+	public void setDisplaySequence (java.lang.String DisplaySequence)
 	{
 		set_Value (COLUMNNAME_DisplaySequence, DisplaySequence);
 	}
 
+	/** Get Adress-Druckformat.
+		@return Format for printing this Address
+	  */
 	@Override
-	public java.lang.String getDisplaySequence() 
+	public java.lang.String getDisplaySequence () 
 	{
-		return get_ValueAsString(COLUMNNAME_DisplaySequence);
+		return (java.lang.String)get_Value(COLUMNNAME_DisplaySequence);
 	}
 
+	/** Set Local Address Format.
+		@param DisplaySequenceLocal 
+		Format for printing this Address locally
+	  */
 	@Override
-	public void setDisplaySequenceLocal (final @Nullable java.lang.String DisplaySequenceLocal)
+	public void setDisplaySequenceLocal (java.lang.String DisplaySequenceLocal)
 	{
 		set_Value (COLUMNNAME_DisplaySequenceLocal, DisplaySequenceLocal);
 	}
 
+	/** Get Local Address Format.
+		@return Format for printing this Address locally
+	  */
 	@Override
-	public java.lang.String getDisplaySequenceLocal() 
+	public java.lang.String getDisplaySequenceLocal () 
 	{
-		return get_ValueAsString(COLUMNNAME_DisplaySequenceLocal);
+		return (java.lang.String)get_Value(COLUMNNAME_DisplaySequenceLocal);
 	}
 
+	/** Set Bank Account No Format.
+		@param ExpressionBankAccountNo 
+		Format of the Bank Account
+	  */
 	@Override
-	public void setExpressionBankAccountNo (final @Nullable java.lang.String ExpressionBankAccountNo)
+	public void setExpressionBankAccountNo (java.lang.String ExpressionBankAccountNo)
 	{
 		set_Value (COLUMNNAME_ExpressionBankAccountNo, ExpressionBankAccountNo);
 	}
 
+	/** Get Bank Account No Format.
+		@return Format of the Bank Account
+	  */
 	@Override
-	public java.lang.String getExpressionBankAccountNo() 
+	public java.lang.String getExpressionBankAccountNo () 
 	{
-		return get_ValueAsString(COLUMNNAME_ExpressionBankAccountNo);
+		return (java.lang.String)get_Value(COLUMNNAME_ExpressionBankAccountNo);
 	}
 
+	/** Set Bank Routing No Format.
+		@param ExpressionBankRoutingNo 
+		Format of the Bank Routing Number
+	  */
 	@Override
-	public void setExpressionBankRoutingNo (final @Nullable java.lang.String ExpressionBankRoutingNo)
+	public void setExpressionBankRoutingNo (java.lang.String ExpressionBankRoutingNo)
 	{
 		set_Value (COLUMNNAME_ExpressionBankRoutingNo, ExpressionBankRoutingNo);
 	}
 
+	/** Get Bank Routing No Format.
+		@return Format of the Bank Routing Number
+	  */
 	@Override
-	public java.lang.String getExpressionBankRoutingNo() 
+	public java.lang.String getExpressionBankRoutingNo () 
 	{
-		return get_ValueAsString(COLUMNNAME_ExpressionBankRoutingNo);
+		return (java.lang.String)get_Value(COLUMNNAME_ExpressionBankRoutingNo);
 	}
 
+	/** Set Phone Format.
+		@param ExpressionPhone 
+		Format of the phone; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public void setExpressionPhone (final @Nullable java.lang.String ExpressionPhone)
+	public void setExpressionPhone (java.lang.String ExpressionPhone)
 	{
 		set_Value (COLUMNNAME_ExpressionPhone, ExpressionPhone);
 	}
 
+	/** Get Phone Format.
+		@return Format of the phone; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public java.lang.String getExpressionPhone() 
+	public java.lang.String getExpressionPhone () 
 	{
-		return get_ValueAsString(COLUMNNAME_ExpressionPhone);
+		return (java.lang.String)get_Value(COLUMNNAME_ExpressionPhone);
 	}
 
+	/** Set Postal Code Format.
+		@param ExpressionPostal 
+		Format of the postal code; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public void setExpressionPostal (final @Nullable java.lang.String ExpressionPostal)
+	public void setExpressionPostal (java.lang.String ExpressionPostal)
 	{
 		set_Value (COLUMNNAME_ExpressionPostal, ExpressionPostal);
 	}
 
+	/** Get Postal Code Format.
+		@return Format of the postal code; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public java.lang.String getExpressionPostal() 
+	public java.lang.String getExpressionPostal () 
 	{
-		return get_ValueAsString(COLUMNNAME_ExpressionPostal);
+		return (java.lang.String)get_Value(COLUMNNAME_ExpressionPostal);
 	}
 
+	/** Set Additional Postal Format.
+		@param ExpressionPostal_Add 
+		Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public void setExpressionPostal_Add (final @Nullable java.lang.String ExpressionPostal_Add)
+	public void setExpressionPostal_Add (java.lang.String ExpressionPostal_Add)
 	{
 		set_Value (COLUMNNAME_ExpressionPostal_Add, ExpressionPostal_Add);
 	}
 
+	/** Get Additional Postal Format.
+		@return Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
+	  */
 	@Override
-	public java.lang.String getExpressionPostal_Add() 
+	public java.lang.String getExpressionPostal_Add () 
 	{
-		return get_ValueAsString(COLUMNNAME_ExpressionPostal_Add);
+		return (java.lang.String)get_Value(COLUMNNAME_ExpressionPostal_Add);
 	}
 
+	/** Set Additional Postal code.
+		@param HasPostal_Add 
+		Has Additional Postal Code
+	  */
 	@Override
-	public void setHasPostal_Add (final boolean HasPostal_Add)
+	public void setHasPostal_Add (boolean HasPostal_Add)
 	{
-		set_Value (COLUMNNAME_HasPostal_Add, HasPostal_Add);
+		set_Value (COLUMNNAME_HasPostal_Add, Boolean.valueOf(HasPostal_Add));
 	}
 
+	/** Get Additional Postal code.
+		@return Has Additional Postal Code
+	  */
 	@Override
-	public boolean isHasPostal_Add() 
+	public boolean isHasPostal_Add () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_HasPostal_Add);
+		Object oo = get_Value(COLUMNNAME_HasPostal_Add);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Land hat Regionen.
+		@param HasRegion 
+		Country contains Regions
+	  */
 	@Override
-	public void setHasRegion (final boolean HasRegion)
+	public void setHasRegion (boolean HasRegion)
 	{
-		set_Value (COLUMNNAME_HasRegion, HasRegion);
+		set_Value (COLUMNNAME_HasRegion, Boolean.valueOf(HasRegion));
 	}
 
+	/** Get Land hat Regionen.
+		@return Country contains Regions
+	  */
 	@Override
-	public boolean isHasRegion() 
+	public boolean isHasRegion () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_HasRegion);
+		Object oo = get_Value(COLUMNNAME_HasRegion);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Reverse Local Address Lines.
+		@param IsAddressLinesLocalReverse 
+		Print Local Address in reverse Order
+	  */
 	@Override
-	public void setIsAddressLinesLocalReverse (final boolean IsAddressLinesLocalReverse)
+	public void setIsAddressLinesLocalReverse (boolean IsAddressLinesLocalReverse)
 	{
-		set_Value (COLUMNNAME_IsAddressLinesLocalReverse, IsAddressLinesLocalReverse);
+		set_Value (COLUMNNAME_IsAddressLinesLocalReverse, Boolean.valueOf(IsAddressLinesLocalReverse));
 	}
 
+	/** Get Reverse Local Address Lines.
+		@return Print Local Address in reverse Order
+	  */
 	@Override
-	public boolean isAddressLinesLocalReverse() 
+	public boolean isAddressLinesLocalReverse () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAddressLinesLocalReverse);
+		Object oo = get_Value(COLUMNNAME_IsAddressLinesLocalReverse);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Reverse Address Lines.
+		@param IsAddressLinesReverse 
+		Print Address in reverse Order
+	  */
 	@Override
-	public void setIsAddressLinesReverse (final boolean IsAddressLinesReverse)
+	public void setIsAddressLinesReverse (boolean IsAddressLinesReverse)
 	{
-		set_Value (COLUMNNAME_IsAddressLinesReverse, IsAddressLinesReverse);
+		set_Value (COLUMNNAME_IsAddressLinesReverse, Boolean.valueOf(IsAddressLinesReverse));
 	}
 
+	/** Get Reverse Address Lines.
+		@return Print Address in reverse Order
+	  */
 	@Override
-	public boolean isAddressLinesReverse() 
+	public boolean isAddressLinesReverse () 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAddressLinesReverse);
+		Object oo = get_Value(COLUMNNAME_IsAddressLinesReverse);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
+	/** Set Media Size.
+		@param MediaSize 
+		Java Media Size
+	  */
 	@Override
-	public void setIsEnforceCorrectionInvoice (final boolean IsEnforceCorrectionInvoice)
-	{
-		set_Value (COLUMNNAME_IsEnforceCorrectionInvoice, IsEnforceCorrectionInvoice);
-	}
-
-	@Override
-	public boolean isEnforceCorrectionInvoice() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEnforceCorrectionInvoice);
-	}
-
-	@Override
-	public void setMediaSize (final @Nullable java.lang.String MediaSize)
+	public void setMediaSize (java.lang.String MediaSize)
 	{
 		set_Value (COLUMNNAME_MediaSize, MediaSize);
 	}
 
+	/** Get Media Size.
+		@return Java Media Size
+	  */
 	@Override
-	public java.lang.String getMediaSize() 
+	public java.lang.String getMediaSize () 
 	{
-		return get_ValueAsString(COLUMNNAME_MediaSize);
+		return (java.lang.String)get_Value(COLUMNNAME_MediaSize);
 	}
 
+	/** Set Name.
+		@param Name Name	  */
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
+	/** Get Name.
+		@return Name	  */
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName () 
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
+	/** Set Region.
+		@param RegionName 
+		Name of the Region
+	  */
 	@Override
-	public void setRegionName (final @Nullable java.lang.String RegionName)
+	public void setRegionName (java.lang.String RegionName)
 	{
 		set_Value (COLUMNNAME_RegionName, RegionName);
 	}
 
+	/** Get Region.
+		@return Name of the Region
+	  */
 	@Override
-	public java.lang.String getRegionName() 
+	public java.lang.String getRegionName () 
 	{
-		return get_ValueAsString(COLUMNNAME_RegionName);
+		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
 	}
 }

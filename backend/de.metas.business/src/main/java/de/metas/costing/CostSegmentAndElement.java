@@ -1,5 +1,8 @@
 package de.metas.costing;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -8,8 +11,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ import org.adempiere.service.ClientId;
 @Value
 public class CostSegmentAndElement
 {
-	public static CostSegmentAndElement of(
+	public static final CostSegmentAndElement of(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostElementId costElementId)
 	{
@@ -99,13 +100,6 @@ public class CostSegmentAndElement
 	public CostTypeId getCostTypeId()
 	{
 		return getCostSegment().getCostTypeId();
-	}
-
-	public CostingLevel getCostingLevel() {return getCostSegment().getCostingLevel();}
-
-	public ClientId getClientId()
-	{
-		return getCostSegment().getClientId();
 	}
 
 	public OrgId getOrgId()

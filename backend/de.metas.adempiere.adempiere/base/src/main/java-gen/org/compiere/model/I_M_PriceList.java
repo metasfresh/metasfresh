@@ -1,306 +1,346 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
-import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_PriceList
- *  @author metasfresh (generated) 
+ *  @author Adempiere (generated) 
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("javadoc")
 public interface I_M_PriceList 
 {
 
-	String Table_Name = "M_PriceList";
+    /** TableName=M_PriceList */
+    public static final String Table_Name = "M_PriceList";
 
-//	/** AD_Table_ID=255 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+    /** AD_Table_ID=255 */
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+
+    /** AccessLevel = 3 - Client - Org
+     */
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+
+    /** Load Meta Data */
 
 	/**
-	 * Get Client.
+	 * Get Mandant.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_Client>(I_M_PriceList.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Organisation.
-	 * Organisational entity within client
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID (int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Org_ID();
+	public int getAD_Org_ID();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_Org>(I_M_PriceList.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base Pricelist.
+	 * Set Basis Preisliste.
 	 * Pricelist to be used, if product not found on this pricelist
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBasePriceList_ID (int BasePriceList_ID);
+	public void setBasePriceList_ID (int BasePriceList_ID);
 
 	/**
-	 * Get Base Pricelist.
+	 * Get Basis Preisliste.
 	 * Pricelist to be used, if product not found on this pricelist
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getBasePriceList_ID();
+	public int getBasePriceList_ID();
 
-	String COLUMNNAME_BasePriceList_ID = "BasePriceList_ID";
+    /** Column definition for BasePriceList_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_M_PriceList> COLUMN_BasePriceList_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_M_PriceList>(I_M_PriceList.class, "BasePriceList_ID", org.compiere.model.I_M_PriceList.class);
+    /** Column name BasePriceList_ID */
+    public static final String COLUMNNAME_BasePriceList_ID = "BasePriceList_ID";
 
 	/**
-	 * Set Country.
-	 * Country
+	 * Set Land.
+	 * Land
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_Country_ID (int C_Country_ID);
+	public void setC_Country_ID (int C_Country_ID);
 
 	/**
-	 * Get Country.
-	 * Country
+	 * Get Land.
+	 * Land
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_Country_ID();
+	public int getC_Country_ID();
 
-	@Nullable org.compiere.model.I_C_Country getC_Country();
+	public org.compiere.model.I_C_Country getC_Country();
 
-	void setC_Country(@Nullable org.compiere.model.I_C_Country C_Country);
+	public void setC_Country(org.compiere.model.I_C_Country C_Country);
 
-	ModelColumn<I_M_PriceList, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new ModelColumn<>(I_M_PriceList.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
-	String COLUMNNAME_C_Country_ID = "C_Country_ID";
+    /** Column definition for C_Country_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_Country>(I_M_PriceList.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
+    /** Column name C_Country_ID */
+    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
 
 	/**
-	 * Set Currency.
+	 * Set Währung.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setC_Currency_ID (int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Currency.
+	 * Get Währung.
 	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getC_Currency_ID();
+	public int getC_Currency_ID();
 
-	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_Currency>(I_M_PriceList.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Get Created.
+	 * Get Erstellt.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_Created = new ModelColumn<>(I_M_PriceList.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
+	 * Get Erstellt durch.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
 
-	String COLUMNNAME_CreatedBy = "CreatedBy";
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_User>(I_M_PriceList.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Default Tax Category.
+	 * Set Standard Steuerkategorie.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDefault_TaxCategory_ID (int Default_TaxCategory_ID);
+	public void setDefault_TaxCategory_ID (int Default_TaxCategory_ID);
 
 	/**
-	 * Get Default Tax Category.
+	 * Get Standard Steuerkategorie.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getDefault_TaxCategory_ID();
+	public int getDefault_TaxCategory_ID();
 
-	String COLUMNNAME_Default_TaxCategory_ID = "Default_TaxCategory_ID";
+    /** Column definition for Default_TaxCategory_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_TaxCategory> COLUMN_Default_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_C_TaxCategory>(I_M_PriceList.class, "Default_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
+    /** Column name Default_TaxCategory_ID */
+    public static final String COLUMNNAME_Default_TaxCategory_ID = "Default_TaxCategory_ID";
 
 	/**
-	 * Set Description.
+	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Description.
+	 * Get Beschreibung.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	public java.lang.String getDescription();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_Description = new ModelColumn<>(I_M_PriceList.class, "Description", null);
-	String COLUMNNAME_Description = "Description";
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Enforce price limit.
+	 * Set Preislimit erzwingen.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setEnforcePriceLimit (boolean EnforcePriceLimit);
+	public void setEnforcePriceLimit (boolean EnforcePriceLimit);
 
 	/**
-	 * Get Enforce price limit.
+	 * Get Preislimit erzwingen.
 	 * Do not allow prices below the limit price
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isEnforcePriceLimit();
+	public boolean isEnforcePriceLimit();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_EnforcePriceLimit = new ModelColumn<>(I_M_PriceList.class, "EnforcePriceLimit", null);
-	String COLUMNNAME_EnforcePriceLimit = "EnforcePriceLimit";
+    /** Column definition for EnforcePriceLimit */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_EnforcePriceLimit = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "EnforcePriceLimit", null);
+    /** Column name EnforcePriceLimit */
+    public static final String COLUMNNAME_EnforcePriceLimit = "EnforcePriceLimit";
 
 	/**
-	 * Set Internal Name.
+	 * Set Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInternalName (@Nullable java.lang.String InternalName);
+	public void setInternalName (java.lang.String InternalName);
 
 	/**
-	 * Get Internal Name.
+	 * Get Interner Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getInternalName();
+	public java.lang.String getInternalName();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_InternalName = new ModelColumn<>(I_M_PriceList.class, "InternalName", null);
-	String COLUMNNAME_InternalName = "InternalName";
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Active.
+	 * Set Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive (boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Active.
+	 * Get Aktiv.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsActive = new ModelColumn<>(I_M_PriceList.class, "IsActive", null);
-	String COLUMNNAME_IsActive = "IsActive";
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Default.
+	 * Set Standard.
 	 * Default value
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefault (boolean IsDefault);
+	public void setIsDefault (boolean IsDefault);
 
 	/**
-	 * Get Default.
+	 * Get Standard.
 	 * Default value
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isDefault();
+	public boolean isDefault();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsDefault = new ModelColumn<>(I_M_PriceList.class, "IsDefault", null);
-	String COLUMNNAME_IsDefault = "IsDefault";
+    /** Column definition for IsDefault */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsDefault", null);
+    /** Column name IsDefault */
+    public static final String COLUMNNAME_IsDefault = "IsDefault";
 
 	/**
-	 * Set mandatory.
+	 * Set Pflichtangabe.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsMandatory (boolean IsMandatory);
+	public void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get mandatory.
+	 * Get Pflichtangabe.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isMandatory();
+	public boolean isMandatory();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsMandatory = new ModelColumn<>(I_M_PriceList.class, "IsMandatory", null);
-	String COLUMNNAME_IsMandatory = "IsMandatory";
+    /** Column definition for IsMandatory */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsMandatory = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsMandatory", null);
+    /** Column name IsMandatory */
+    public static final String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
 	 * Set isPresentForProduct.
@@ -309,7 +349,7 @@ public interface I_M_PriceList
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsPresentForProduct (boolean IsPresentForProduct);
+	public void setIsPresentForProduct (boolean IsPresentForProduct);
 
 	/**
 	 * Get isPresentForProduct.
@@ -318,118 +358,135 @@ public interface I_M_PriceList
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isPresentForProduct();
+	public boolean isPresentForProduct();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsPresentForProduct = new ModelColumn<>(I_M_PriceList.class, "IsPresentForProduct", null);
-	String COLUMNNAME_IsPresentForProduct = "IsPresentForProduct";
+    /** Column definition for IsPresentForProduct */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsPresentForProduct = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsPresentForProduct", null);
+    /** Column name IsPresentForProduct */
+    public static final String COLUMNNAME_IsPresentForProduct = "IsPresentForProduct";
 
 	/**
-	 * Set Round Net Amount To Currency Precision.
+	 * Set Netto-Beträge auf Währungspräzision runden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsRoundNetAmountToCurrencyPrecision (boolean IsRoundNetAmountToCurrencyPrecision);
+	public void setIsRoundNetAmountToCurrencyPrecision (boolean IsRoundNetAmountToCurrencyPrecision);
 
 	/**
-	 * Get Round Net Amount To Currency Precision.
+	 * Get Netto-Beträge auf Währungspräzision runden.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isRoundNetAmountToCurrencyPrecision();
+	public boolean isRoundNetAmountToCurrencyPrecision();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsRoundNetAmountToCurrencyPrecision = new ModelColumn<>(I_M_PriceList.class, "IsRoundNetAmountToCurrencyPrecision", null);
-	String COLUMNNAME_IsRoundNetAmountToCurrencyPrecision = "IsRoundNetAmountToCurrencyPrecision";
+    /** Column definition for IsRoundNetAmountToCurrencyPrecision */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsRoundNetAmountToCurrencyPrecision = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsRoundNetAmountToCurrencyPrecision", null);
+    /** Column name IsRoundNetAmountToCurrencyPrecision */
+    public static final String COLUMNNAME_IsRoundNetAmountToCurrencyPrecision = "IsRoundNetAmountToCurrencyPrecision";
 
 	/**
-	 * Set Sales Pricelist.
+	 * Set Verkaufspreisliste.
+	 * This is a Sales Price List
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsSOPriceList (boolean IsSOPriceList);
+	public void setIsSOPriceList (boolean IsSOPriceList);
 
 	/**
-	 * Get Sales Pricelist.
+	 * Get Verkaufspreisliste.
+	 * This is a Sales Price List
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isSOPriceList();
+	public boolean isSOPriceList();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsSOPriceList = new ModelColumn<>(I_M_PriceList.class, "IsSOPriceList", null);
-	String COLUMNNAME_IsSOPriceList = "IsSOPriceList";
+    /** Column definition for IsSOPriceList */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsSOPriceList = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsSOPriceList", null);
+    /** Column name IsSOPriceList */
+    public static final String COLUMNNAME_IsSOPriceList = "IsSOPriceList";
 
 	/**
-	 * Set Tax Included.
-	 * Tax Included
+	 * Set Preis inklusive Steuern.
+	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsTaxIncluded (boolean IsTaxIncluded);
+	public void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Tax Included.
-	 * Tax Included
+	 * Get Preis inklusive Steuern.
+	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isTaxIncluded();
+	public boolean isTaxIncluded();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_M_PriceList.class, "IsTaxIncluded", null);
-	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+    /** Column definition for IsTaxIncluded */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsTaxIncluded = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsTaxIncluded", null);
+    /** Column name IsTaxIncluded */
+    public static final String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Price List.
+	 * Set Preisliste.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_PriceList_ID (int M_PriceList_ID);
+	public void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Price List.
+	 * Get Preisliste.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_PriceList_ID();
+	public int getM_PriceList_ID();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_M_PriceList_ID = new ModelColumn<>(I_M_PriceList.class, "M_PriceList_ID", null);
-	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+    /** Column definition for M_PriceList_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_M_PriceList_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "M_PriceList_ID", null);
+    /** Column name M_PriceList_ID */
+    public static final String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
 
 	/**
-	 * Set Pricing System.
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_PricingSystem_ID (int M_PricingSystem_ID);
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
 	/**
-	 * Get Pricing System.
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_PricingSystem_ID();
+	public int getM_PricingSystem_ID();
 
-	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+    /** Column definition for M_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_M_PricingSystem>(I_M_PriceList.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name M_PricingSystem_ID */
+    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
 	 * Set Name.
@@ -438,7 +495,7 @@ public interface I_M_PriceList
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	public void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -447,56 +504,65 @@ public interface I_M_PriceList
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	public java.lang.String getName();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_Name = new ModelColumn<>(I_M_PriceList.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Price Precision.
+	 * Set Preis Präzision.
 	 * Precision (number of decimals) for the Price
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPricePrecision (int PricePrecision);
+	public void setPricePrecision (int PricePrecision);
 
 	/**
-	 * Get Price Precision.
+	 * Get Preis Präzision.
 	 * Precision (number of decimals) for the Price
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getPricePrecision();
+	public int getPricePrecision();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_PricePrecision = new ModelColumn<>(I_M_PriceList.class, "PricePrecision", null);
-	String COLUMNNAME_PricePrecision = "PricePrecision";
+    /** Column definition for PricePrecision */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_PricePrecision = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "PricePrecision", null);
+    /** Column name PricePrecision */
+    public static final String COLUMNNAME_PricePrecision = "PricePrecision";
 
 	/**
-	 * Get Updated.
+	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_PriceList, Object> COLUMN_Updated = new ModelColumn<>(I_M_PriceList.class, "Updated", null);
-	String COLUMNNAME_Updated = "Updated";
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
+	 * Get Aktualisiert durch.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
 
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_PriceList, org.compiere.model.I_AD_User>(I_M_PriceList.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

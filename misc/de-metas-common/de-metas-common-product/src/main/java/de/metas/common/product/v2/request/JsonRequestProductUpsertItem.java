@@ -25,7 +25,8 @@ package de.metas.common.product.v2.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,33 +35,31 @@ import javax.annotation.Nullable;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
-import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Value
 @Builder(toBuilder = true)
-@Schema(description = "Contains an external id and the actual product to insert or update. The response will contain the given external id.")
+@ApiModel(description = "Contains an external id and the actual product to insert or update. The response will contain the given external id.")
 public class JsonRequestProductUpsertItem
 {
-	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode = REQUIRED)
+	@ApiModelProperty(position = 10, value = PRODUCT_IDENTIFIER_DOC)
 	@NonNull
 	String productIdentifier;
 
-	@Schema(description = "The version of the product." + EXTERNAL_VERSION_DOC)
+	@ApiModelProperty(position = 20, //
+			value = "The version of the product." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
-	@Schema(description = "URL of the resource in the target external system.")
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
 	@Nullable
 	String externalReferenceUrl;
 
-	@Schema(description = "ID of the external system config.")
+	@ApiModelProperty(position = 30, //
+			value = "ID of the external system config.")
 	@Nullable
 	JsonMetasfreshId externalSystemConfigId;
-
-	@Schema
-	@Nullable
-	Boolean isReadOnlyInMetasfresh;
-
-	@Schema(description = PRODUCT_IDENTIFIER_DOC, requiredMode = REQUIRED)
+	
+	@ApiModelProperty(position = 50)
 	@NonNull
 	JsonRequestProduct requestProduct;
 
@@ -70,7 +69,6 @@ public class JsonRequestProductUpsertItem
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
-			@Nullable @JsonProperty("isReadOnlyInMetasfresh") final Boolean isReadOnlyInMetasfresh,
 			@NonNull @JsonProperty("requestProduct") final JsonRequestProduct requestProduct)
 	{
 		this.productIdentifier = productIdentifier;
@@ -78,6 +76,5 @@ public class JsonRequestProductUpsertItem
 		this.requestProduct = requestProduct;
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.externalSystemConfigId = externalSystemConfigId;
-		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 	}
 }

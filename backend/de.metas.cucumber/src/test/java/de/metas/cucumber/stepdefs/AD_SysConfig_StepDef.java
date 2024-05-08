@@ -70,6 +70,7 @@ public class AD_SysConfig_StepDef
 						.appendParametersToMessage()
 						.setParameter("type:", sysconfigType);
 		}
+
 		CacheMgt.get().reset(I_AD_SysConfig.Table_Name); // also without this, we fire a CacheInvalidation event, but that event may not be processed in time
 	}
 
@@ -86,6 +87,12 @@ public class AD_SysConfig_StepDef
 
 			setSysConfigIntValue(name, user.getAD_User_ID());
 		}
+	}
+
+	@And("reset all cache")
+	public void reset_cache()
+	{
+		CacheMgt.get().reset();
 	}
 
 	private void setSysConfigIntValue(@NonNull final String name, final int value)

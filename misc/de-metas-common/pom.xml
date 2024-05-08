@@ -59,11 +59,17 @@
     </modules>
 
     <dependencies>
-        <!-- Swagger -->
+
         <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc-swagger.version}</version>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-boot-starter</artifactId>
+            <version>3.0.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-annotations</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -72,6 +78,13 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <!-- https://github.com/hoereth/springfox-enum-plugin -->
+        <dependency>
+            <groupId>de.pentabyte</groupId>
+            <artifactId>springfox-enum-plugin</artifactId>
+            <version>${springfox-enum-plugin.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>

@@ -49,11 +49,6 @@ public class ExternalSystemParentConfigId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new ExternalSystemParentConfigId(repoId) : null;
 	}
 
-	public static int toRepoId(@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId)
-	{
-		return externalSystemParentConfigId != null ? externalSystemParentConfigId.getRepoId() : -1;
-	}
-
 	@JsonValue
 	public int toJson()
 	{

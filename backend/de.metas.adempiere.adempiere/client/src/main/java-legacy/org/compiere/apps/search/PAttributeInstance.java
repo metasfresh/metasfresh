@@ -16,11 +16,18 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.awt.BorderLayout;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+
+import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.WarehouseId;
@@ -39,14 +46,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 
 /**
@@ -147,10 +151,17 @@ public class PAttributeInstance extends CDialog
 	{
 		new ColumnInfo(" ", "s.M_AttributeSetInstance_ID", IDColumn.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "Description"), "asi.Description", String.class),
+		new ColumnInfo(Msg.translate(Env.getCtx(), "Lot"), "asi.Lot", String.class),
+		new ColumnInfo(Msg.translate(Env.getCtx(), "SerNo"), "asi.SerNo", String.class), 
+		new ColumnInfo(Msg.translate(Env.getCtx(), "GuaranteeDate"), "asi.GuaranteeDate", Timestamp.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "M_Locator_ID"), "l.Value", KeyNamePair.class, "s.M_Locator_ID"),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOnHand"), "s.QtyOnHand", Double.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyReserved"), "s.QtyReserved", Double.class),
-		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOrdered"), "s.QtyOrdered", Double.class)
+		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOrdered"), "s.QtyOrdered", Double.class),
+		//	See RV_Storage
+		new ColumnInfo(Msg.translate(Env.getCtx(), "GoodForDays"), "(TRUNC(asi.GuaranteeDate)-TRUNC(now()))-p.GuaranteeDaysMin", Integer.class, true, true, null),
+		new ColumnInfo(Msg.translate(Env.getCtx(), "ShelfLifeDays"), "TRUNC(asi.GuaranteeDate)-TRUNC(now())", Integer.class),
+		new ColumnInfo(Msg.translate(Env.getCtx(), "ShelfLifeRemainingPct"), "CASE WHEN p.GuaranteeDays > 0 THEN TRUNC(((TRUNC(asi.GuaranteeDate)-TRUNC(now()))/p.GuaranteeDays)*100) ELSE 0 END", Integer.class),
 	};
 	/**	From Clause							*/
 	private static String s_sqlFrom = "M_Storage s"
@@ -205,11 +216,21 @@ public class PAttributeInstance extends CDialog
 				DB.close(rs, pstmt);
 				rs = null; pstmt = null;
 			}
+			if (ShelfLifeMinPct > 0)
+			{
+				m_sqlMinLife = " AND COALESCE(TRUNC(((TRUNC(asi.GuaranteeDate)-TRUNC(now()))/p.GuaranteeDays)*100),0)>=" + ShelfLifeMinPct;
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinPct=" + ShelfLifeMinPct);
+			}
+			if (ShelfLifeMinDays > 0)
+			{
+				m_sqlMinLife += " AND COALESCE((TRUNC(asi.GuaranteeDate)-TRUNC(now())),0)>=" + ShelfLifeMinDays;
+				log.info( "PAttributeInstance.dynInit - ShelfLifeMinDays=" + ShelfLifeMinDays);
+			}
 		}	//	BPartner != 0
 
 		m_sql = m_table.prepareTable (s_layout, s_sqlFrom, 
 					m_M_Warehouse_ID == 0 ? s_sqlWhereWithoutWarehouse : s_sqlWhere, false, "s")
-				+ " ORDER BY s.QtyOnHand";	//	oldest, smallest first
+				+ " ORDER BY asi.GuaranteeDate, s.QtyOnHand";	//	oldest, smallest first
 		//
 		m_table.setRowSelectionAllowed(true);
 		m_table.setMultiSelection(false);

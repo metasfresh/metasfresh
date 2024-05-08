@@ -11,9 +11,6 @@ import { setupServiceWorker } from './services/serviceWorker/serviceWorkerRegist
 
 import './assets/index.scss';
 import '@fortawesome/fontawesome-free/js/all.min';
-import { ErrorBoundary } from 'react-error-boundary';
-import { logErrorToBackend } from './api/applications';
-import ErrorScreen from './components/ErrorScreen';
 
 setupCounterpart();
 
@@ -22,11 +19,9 @@ export const globalStore = store(load());
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={globalStore}>
-      <ErrorBoundary FallbackComponent={ErrorScreen} onError={logErrorToBackend}>
-        <ProvideAuth>
-          <ApplicationRoot />
-        </ProvideAuth>
-      </ErrorBoundary>
+      <ProvideAuth>
+        <ApplicationRoot />
+      </ProvideAuth>
     </Provider>
   </React.StrictMode>,
   document.getElementById('root')

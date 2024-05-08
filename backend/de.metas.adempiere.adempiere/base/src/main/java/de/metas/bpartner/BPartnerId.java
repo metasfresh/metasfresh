@@ -28,8 +28,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -42,6 +40,7 @@ public class BPartnerId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static BPartnerId ofRepoId(final int repoId)
 	{
 		return new BPartnerId(repoId);
@@ -62,12 +61,6 @@ public class BPartnerId implements RepoIdAware
 	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
-	}
-
-	@JsonCreator
-	public static BPartnerId ofObject(@NonNull final Object object)
-	{
-		return RepoIdAwares.ofObject(object, BPartnerId.class, BPartnerId::ofRepoId);
 	}
 
 	public static int toRepoId(@Nullable final BPartnerId bpartnerId)

@@ -1,21 +1,24 @@
 package de.metas.ui.web.window.datatypes;
 
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.ad.element.api.AdWindowId;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /*
  * #%L
@@ -44,11 +47,6 @@ public final class DocumentPath
 	public static Builder builder()
 	{
 		return new Builder();
-	}
-
-	public static DocumentPath newWindowRecord(@NonNull final WindowId windowId)
-	{
-		return new DocumentPath(DocumentType.Window, windowId.toDocumentId(), DocumentId.NEW);
 	}
 
 	public static DocumentPath rootDocumentPath(@NonNull final AdWindowId adWindowId, final int documentIdInt)
@@ -141,7 +139,7 @@ public final class DocumentPath
 				.setRowId(rowId)
 				.build();
 	}
-
+	
 	public static DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId, @NonNull final DocumentIdsSelection rowIds)
 	{
 		return builder()
@@ -151,6 +149,7 @@ public final class DocumentPath
 				.setRowIds(rowIds)
 				.build();
 	}
+
 
 	public static DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId)
 	{
@@ -184,9 +183,7 @@ public final class DocumentPath
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
 
-	/**
-	 * Root document constructor
-	 */
+	/** Root document constructor */
 	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 	{
 		super();
@@ -202,9 +199,7 @@ public final class DocumentPath
 		rowIds = DocumentIdsSelection.EMPTY;
 	}
 
-	/**
-	 * Multiple rowIds constructor
-	 */
+	/** Multiple rowIds constructor */
 	private DocumentPath(@NonNull final DocumentType documentType, @NonNull final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, @NonNull final DocumentIdsSelection rowIds)
 	{
 		this.documentType = documentType;
@@ -216,9 +211,7 @@ public final class DocumentPath
 		this.rowIds = rowIds;
 	}
 
-	/**
-	 * Single rowId constructor
-	 */
+	/** Single rowId constructor */
 	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, final DocumentId singleRowId)
 	{
 		super();
@@ -631,7 +624,7 @@ public final class DocumentPath
 		{
 			return setRowIds(DocumentIdsSelection.ofCommaSeparatedString(rowIdsListStr));
 		}
-
+		
 		public Builder setRowIds(final DocumentIdsSelection rowIds)
 		{
 			this.rowIds.clear();
@@ -639,6 +632,7 @@ public final class DocumentPath
 
 			return this;
 		}
+
 
 		public Builder allowNullRowId()
 		{

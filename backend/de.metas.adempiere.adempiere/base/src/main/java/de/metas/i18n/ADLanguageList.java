@@ -1,26 +1,28 @@
 package de.metas.i18n;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.compiere.util.ValueNamePair;
-import org.slf4j.Logger;
-
-import javax.annotation.Nullable;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Locale.LanguageRange;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+
+import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -48,9 +50,10 @@ import java.util.Set;
  * Immutable object which contains languages {@link ValueNamePair}s and also the base AD_Language.
  *
  * @author metas-dev <dev@metasfresh.com>
+ *
  */
-@EqualsAndHashCode(exclude = "_languageTagsByADLanguage")
-@ToString(exclude = "_languageTagsByADLanguage")
+@Immutable
+@ToString
 public final class ADLanguageList
 {
 	public static Builder builder()
@@ -58,17 +61,29 @@ public final class ADLanguageList
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(ADLanguageList.class);
+	private static final transient Logger logger = LogManager.getLogger(ADLanguageList.class);
 
 	private final ImmutableMap<String, ValueNamePair> languagesByADLanguage;
-	@Getter private final String baseADLanguage;
-
-	private transient ImmutableMap<String, String> _languageTagsByADLanguage = null; // lazy
+	private final String baseADLanguage;
 
 	private ADLanguageList(final Builder builder)
 	{
 		languagesByADLanguage = ImmutableMap.copyOf(builder.languagesByADLanguage);
 		baseADLanguage = builder.baseADLanguage;
+	}
+
+	/**
+	 * @return languages ordered by base language first, then alphabetically by their name
+	 */
+	public List<ValueNamePair> toValueNamePairsBaseLanguageFirst()
+	{
+		final Comparator<? super ValueNamePair> comparator = Comparator.<ValueNamePair, Integer> comparing(lang -> isBaseLanguage(lang) ? 0 : 1)
+				.thenComparing(ValueNamePair::getName);
+
+		return languagesByADLanguage.values()
+				.stream()
+				.sorted(comparator)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -87,66 +102,22 @@ public final class ADLanguageList
 		return languagesByADLanguage.keySet();
 	}
 
-	public boolean containsADLanguage(final String adLanguage)
-	{
-		return languagesByADLanguage.containsKey(adLanguage);
-	}
-
-	public Optional<String> findSimilarADLanguage(@NonNull final String adLanguage)
-	{
-		if (languagesByADLanguage.containsKey(adLanguage))
-		{
-			return Optional.of(adLanguage);
-		}
-
-		final String langPart = adLanguage.substring(0, 2);
-		if (isADLanguageMatchingLangPart(baseADLanguage, langPart))
-		{
-			return Optional.of(baseADLanguage);
-		}
-
-		for (final String otherADLanguage : languagesByADLanguage.keySet())
-		{
-			if (isADLanguageMatchingLangPart(otherADLanguage, langPart))
-			{
-				return Optional.of(otherADLanguage);
-			}
-		}
-
-		return Optional.empty();
-	}
-
-	private static boolean isADLanguageMatchingLangPart(@NonNull final String adLanguage, @NonNull final String expectedLangPart)
-	{
-		final String langPart = adLanguage.substring(0, 2);
-		return langPart.equals(expectedLangPart);
-	}
-
 	/**
 	 * Extract preferred language from HTTP "Accept-Language" header.
-	 *
+	 * 
 	 * @return preferred language or <code>defaultValue</code>
-	 * See <a href="https://tools.ietf.org/html/rfc5646#section-2.1">RFC 5646</a>
+	 * See https://tools.ietf.org/html/rfc5646#section-2.1
 	 */
 	@Nullable
 	public String getAD_LanguageFromHttpAcceptLanguage(
 			@Nullable final String acceptLanguageHeader,
 			@Nullable final String defaultValue)
 	{
-		if (acceptLanguageHeader == null || Check.isBlank(acceptLanguageHeader))
+		if (Check.isEmpty(acceptLanguageHeader, true))
 		{
 			return defaultValue;
 		}
 
-		//
-		// Corner-case: Accept-Language is not a valid language tag but an actual AD_Language.
-		// (i.e. check if has xx_XX format)
-		if (acceptLanguageHeader.length() == 5 && acceptLanguageHeader.charAt(2) == '_')
-		{
-			return findSimilarADLanguage(acceptLanguageHeader).orElse(defaultValue);
-		}
-
-		final Map<String, String> tagsByADLanguage = getLanguageTagsByADLanguageMap();
 		try
 		{
 			final List<LanguageRange> languageRanges = LanguageRange.parse(acceptLanguageHeader);
@@ -155,13 +126,15 @@ public final class ADLanguageList
 				return defaultValue;
 			}
 
-			final String languageTag = Locale.lookupTag(languageRanges, tagsByADLanguage.keySet());
+			final BiMap<String, String> adLanguage2tag = toHttpLanguageTags();
+
+			final String languageTag = Locale.lookupTag(languageRanges, adLanguage2tag.values());
 			if (languageTag == null)
 			{
 				return defaultValue;
 			}
 
-			final String adLanguage = tagsByADLanguage.get(languageTag.toLowerCase());
+			final String adLanguage = adLanguage2tag.inverse().get(languageTag.toLowerCase());
 			if (adLanguage == null)
 			{
 				return defaultValue;
@@ -171,44 +144,17 @@ public final class ADLanguageList
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching AD_Language from {} (tagsByADLanguage={}). Returning {}", acceptLanguageHeader, tagsByADLanguage, defaultValue, ex);
+			logger.warn("Failed fetching AD_Language from {}. Returning {}", acceptLanguageHeader, defaultValue, ex);
 			return defaultValue;
 		}
 	}
 
-	private Map<String, String> getLanguageTagsByADLanguageMap()
+	/** @return "adLanguage" to "language tag" bi-map. */
+	private BiMap<String, String> toHttpLanguageTags()
 	{
-		ImmutableMap<String, String> languageTagsByADLanguage = this._languageTagsByADLanguage;
-		if (languageTagsByADLanguage == null)
-		{
-			languageTagsByADLanguage = this._languageTagsByADLanguage = computeLanguageTagsByADLanguageMap();
-		}
-		return languageTagsByADLanguage;
-	}
-
-	private ImmutableMap<String, String> computeLanguageTagsByADLanguageMap()
-	{
-		final HashMap<String, String> tag2adLanguage = new HashMap<>();
-		for (final String adLanguage : languagesByADLanguage.keySet())
-		{
-			final String tag = toHttpLanguageTag(adLanguage);
-			tag2adLanguage.put(tag, adLanguage);
-
-			final String languagePart = extractLanguagePartFromTag(tag);
-			if (languagePart != null && (isBaseLanguage(adLanguage) || !tag2adLanguage.containsKey(languagePart)))
-			{
-				tag2adLanguage.put(languagePart, adLanguage);
-			}
-		}
-
-		return ImmutableMap.copyOf(tag2adLanguage);
-	}
-
-	@Nullable
-	private static String extractLanguagePartFromTag(final String tag)
-	{
-		final int idx = tag.indexOf("-");
-		return idx > 0 ? tag.substring(0, idx) : null;
+		return languagesByADLanguage.keySet()
+				.stream()
+				.collect(ImmutableBiMap.toImmutableBiMap(adLanguage -> adLanguage, adLanguage -> toHttpLanguageTag(adLanguage)));
 	}
 
 	public static String toHttpLanguageTag(final String adLanguage)
@@ -235,8 +181,8 @@ public final class ADLanguageList
 	//
 	//
 	//
-	//
 
+	//
 	public static class Builder
 	{
 		private final Map<String, ValueNamePair> languagesByADLanguage = new LinkedHashMap<>();

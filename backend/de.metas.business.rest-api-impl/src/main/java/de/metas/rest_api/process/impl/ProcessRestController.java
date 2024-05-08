@@ -24,15 +24,7 @@ package de.metas.rest_api.process.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
-import de.metas.common.rest_api.v2.process.request.RunProcessRequest;
-import de.metas.common.rest_api.v2.process.response.GetAvailableProcessesResponse;
-import de.metas.common.rest_api.v2.process.response.JSONProcessBasicInfo;
-import de.metas.common.rest_api.v2.process.response.JSONProcessParamBasicInfo;
-import de.metas.common.rest_api.v2.process.response.Message;
-import de.metas.common.rest_api.v2.process.response.RunProcessResponse;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
@@ -40,14 +32,20 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessType;
 import de.metas.process.impl.ADProcessDAO;
+import de.metas.rest_api.process.request.RunProcessRequest;
+import de.metas.rest_api.process.response.GetAvailableProcessesResponse;
+import de.metas.rest_api.process.response.JSONProcessBasicInfo;
+import de.metas.rest_api.process.response.JSONProcessParamBasicInfo;
+import de.metas.rest_api.process.response.Message;
+import de.metas.rest_api.process.response.RunProcessResponse;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -93,11 +91,10 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
-	@Operation(summary = "Invoke a process from the list returned by the `available` endpoint")
+	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") @Parameter(description = "Translates to `AD_Process.Value`") final String processValue,
+			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
@@ -132,7 +129,6 @@ public class ProcessRestController
 		return getResponse(processExecutionResult);
 	}
 
-	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/available")
 	public ResponseEntity<GetAvailableProcessesResponse> getAllProcesses()
 	{

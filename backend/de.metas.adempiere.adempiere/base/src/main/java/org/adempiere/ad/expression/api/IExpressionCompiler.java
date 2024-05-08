@@ -1,7 +1,8 @@
 package org.adempiere.ad.expression.api;
 
-import de.metas.logging.LogManager;
 import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /*
  * #%L

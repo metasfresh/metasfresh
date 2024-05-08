@@ -5,11 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -17,8 +15,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.util.OptionalBoolean;
-import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -229,11 +225,6 @@ public class CreateViewRequest
 		return getFilters().unwrap(descriptors);
 	}
 
-	public DocumentFilterList getFiltersUnwrapped(@NonNull final DocumentFilterDescriptor descriptor)
-	{
-		return getFiltersUnwrapped(ImmutableDocumentFilterDescriptorsProvider.of(descriptor));
-	}
-
 	public void assertNoParentViewOrRow()
 	{
 		if (parentViewId != null)
@@ -250,7 +241,8 @@ public class CreateViewRequest
 	@SuppressWarnings("unused")
 	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
-		@SuppressWarnings("unchecked") final T value = (T)getParameters().get(parameterName);
+		@SuppressWarnings("unchecked")
+		final T value = (T)getParameters().get(parameterName);
 		return value;
 	}
 
@@ -258,15 +250,9 @@ public class CreateViewRequest
 	@SuppressWarnings("unused")
 	public <T> Set<T> getParameterAsSet(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
-		@SuppressWarnings("unchecked") final Set<T> value = (Set<T>)getParameters().get(parameterName);
+		@SuppressWarnings("unchecked")
+		final Set<T> value = (Set<T>)getParameters().get(parameterName);
 		return value;
-	}
-
-	public OptionalBoolean getParameterAsBoolean(@NonNull final String parameterName)
-	{
-		final Object valueObj = getParameters().get(parameterName);
-		final Boolean valueBoolean = StringUtils.toBoolean(valueObj, null);
-		return OptionalBoolean.ofNullableBoolean(valueBoolean);
 	}
 
 	//

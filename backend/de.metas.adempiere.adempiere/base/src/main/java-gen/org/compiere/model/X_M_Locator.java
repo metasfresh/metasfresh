@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 568317121L;
+	private static final long serialVersionUID = -1308122567L;
 
     /** Standard Constructor */
     public X_M_Locator (Properties ctx, int M_Locator_ID, String trxName)
@@ -157,18 +156,6 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 		return ii.intValue();
 	}
 
-	@Override
-	public void setOnlyClearedHUs (final boolean OnlyClearedHUs)
-	{
-		set_Value (COLUMNNAME_OnlyClearedHUs, OnlyClearedHUs);
-	}
-
-	@Override
-	public boolean isOnlyClearedHUs()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_OnlyClearedHUs);
-	}
-
 	/** Set Relative Priorität.
 		@param PriorityNo 
 		Where inventory should be picked from first
@@ -281,32 +268,5 @@ public class X_M_Locator extends org.compiere.model.PO implements I_M_Locator, o
 	public java.lang.String getZ () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Z);
-	}
-
-	@Override
-	public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
-	{
-		if (C_BPartner_Location_ID < 1)
-			set_Value(COLUMNNAME_C_BPartner_Location_ID, null);
-		else
-			set_Value(COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
-	}
-
-	@Override
-	public int getC_BPartner_Location_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
-	}
-
-	@Override
-	public void setName(final @Nullable java.lang.String Name)
-	{
-		set_Value(COLUMNNAME_Name, Name);
-	}
-
-	@Override
-	public java.lang.String getName()
-	{
-		return get_ValueAsString(COLUMNNAME_Name);
 	}
 }

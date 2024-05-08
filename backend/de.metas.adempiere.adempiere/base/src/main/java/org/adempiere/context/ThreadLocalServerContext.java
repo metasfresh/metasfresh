@@ -25,7 +25,6 @@ package org.adempiere.context;
 
 import java.util.Properties;
 
-import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 
@@ -49,7 +48,7 @@ import de.metas.util.Check;
 			return ctx;
 		}
 
-		/** @return a new properties instance, using the given <code>parentValue</code> for defaults */
+		/** @Return a new properties instance, using the given <code>parentValue</code> for defaults */
 		@Override
 		protected Properties childValue(final Properties ctx)
 		{
@@ -88,6 +87,9 @@ import de.metas.util.Check;
 
 	/**
 	 * Temporarily switches the context in the current thread.
+	 * 
+	 * @param ctx
+	 * @return
 	 */
 	public IAutoCloseable switchContext(final Properties ctx)
 	{
@@ -140,8 +142,9 @@ import de.metas.util.Check;
 		threadLocalContext.remove();
 	}
 
-	public void setListener(@NonNull final IContextProviderListener listener)
+	public void setListener(final IContextProviderListener listener)
 	{
+		Check.assumeNotNull(listener, "listener not null");
 		this.listener = listener;
 	}
 }

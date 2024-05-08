@@ -47,7 +47,6 @@ public class ProductionDetail implements BusinessCaseDetail
 	}
 
 	ResourceId plantId;
-	@Nullable ResourceId workstationId;
 
 	int productPlanningId;
 
@@ -74,7 +73,6 @@ public class ProductionDetail implements BusinessCaseDetail
 	@Builder(toBuilder = true)
 	private ProductionDetail(
 			final ResourceId plantId,
-			@Nullable final ResourceId workstationId,
 			final int productPlanningId,
 			final int productBomLineId,
 			final String description,
@@ -98,7 +96,6 @@ public class ProductionDetail implements BusinessCaseDetail
 		}
 
 		this.plantId = plantId;
-		this.workstationId = workstationId;
 
 		this.productPlanningId = productPlanningId;
 		this.productBomLineId = productBomLineId;

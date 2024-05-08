@@ -24,10 +24,8 @@ package de.metas.marketing.base.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,13 +60,7 @@ class CampaignRepositoryTest
 	@Test
 	void addContactPersonsToCampaign()
 	{
-		final I_MKTG_Campaign campaignRecord = InterfaceWrapperHelper.newInstance(I_MKTG_Campaign.class);
-		campaignRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
-		campaignRecord.setName("name");
-		campaignRecord.setMKTG_Platform_ID(123);
-		InterfaceWrapperHelper.save(campaignRecord);
-
-		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID());
+		final CampaignId campaignId = CampaignId.ofRepoId(12345);
 
 		campaignRepository.addContactPersonsToCampaign(
 				ImmutableSet.of(

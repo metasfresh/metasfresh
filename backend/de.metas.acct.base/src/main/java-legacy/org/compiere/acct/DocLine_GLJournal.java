@@ -1,18 +1,16 @@
 package org.compiere.acct;
 
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.sectionCode.SectionCodeId;
-import lombok.Getter;
-import lombok.Setter;
+import java.math.BigDecimal;
+
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.acct.Account;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
+import org.compiere.model.MAccount;
 
-import java.math.BigDecimal;
+import de.metas.acct.api.AcctSchemaId;
+import lombok.Getter;
+import lombok.Setter;
 
 /*
  * #%L
@@ -39,45 +37,30 @@ import java.math.BigDecimal;
 class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 {
 	@Getter
-	private final int groupNo;
-
-	@Getter
 	@Setter
 	private AcctSchemaId acctSchemaId;
-
+	
 	@Getter
 	@Setter
 	private BigDecimal fixedCurrencyRate;
 
-	private Account account = null;
+	private MAccount m_account = null;
 
-	@Getter
-	@Setter
-	private ProductId productId;
-
-	@Getter
-	@Setter
-	private OrderId orderId;
-
-	@Getter
-	@Setter
-	private SectionCodeId sectionCodeId;
 
 	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
 	{
 		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
-		groupNo = glJournalLine.getGL_JournalLine_Group();
+		
 		fixedCurrencyRate = glJournalLine.getCurrencyRate();
 	}
-
+	
 	public final void setAccount(final I_C_ValidCombination acct)
 	{
-		account = Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID()));
+		m_account = LegacyAdapters.convertToPO(acct);
 	}
 
-	public final Account getAccount()
+	public final MAccount getAccount()
 	{
-		return account;
+		return m_account;
 	}   // getAccount
-
 }

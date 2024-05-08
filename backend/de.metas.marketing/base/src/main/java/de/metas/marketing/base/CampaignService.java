@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -147,7 +146,7 @@ public class CampaignService
 			return;
 		}
 
-		final ContactPerson savedContactPerson = contactPersonRepository.save(ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), campaign.getOrgId(), addressToUse));
+		final ContactPerson savedContactPerson = contactPersonRepository.save(ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), addressToUse));
 		final ContactPersonId contactPersonId = Check.assumeNotNull(savedContactPerson.getContactPersonId(), "contact shall be saved: {}", savedContactPerson);
 
 		campaignRepository.addContactPersonToCampaign(contactPersonId, campaign.getCampaignId());
@@ -182,7 +181,7 @@ public class CampaignService
 		{
 			billToDefaultLocationId = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
 		}
-		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), campaign.getOrgId(), billToDefaultLocationId);
+		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		contactPersonRepository.revokeConsent(savedContactPerson);
@@ -200,25 +199,5 @@ public class CampaignService
 	public Campaign saveSyncResult(@NonNull final SyncResult syncResult)
 	{
 		return campaignRepository.saveCampaignSyncResult(syncResult);
-	}
-
-	@NonNull
-	public Stream<Campaign> streamActivelySyncedWithRemoteId(@NonNull final PlatformId platformId)
-	{
-		final boolean onlyWithRemoteIds = true;
-		return campaignRepository.streamActiveCampaigns(platformId, onlyWithRemoteIds);
-	}
-
-	@NonNull
-	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
-	{
-		final boolean onlyWithRemoteIds = false;
-		return campaignRepository.streamActiveCampaigns(platformId, onlyWithRemoteIds);
-	}
-
-	@NonNull
-	public List<Campaign> retrieveByPlatformAndRemoteIds(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
-	{
-		return campaignRepository.retrieveByPlatformAndRemoteIds(platformId, remoteIds);
 	}
 }

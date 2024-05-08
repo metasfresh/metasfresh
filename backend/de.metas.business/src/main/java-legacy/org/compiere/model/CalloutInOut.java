@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.adempiere.form.IClientUI;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -121,6 +122,7 @@ public class CalloutInOut extends CalloutEngine
 		{
 			inout.setEMail(order.getEMail());
 		}
+
 		inout.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 		// Warehouse (05251 begin: we need to use the advisor)
@@ -306,7 +308,7 @@ public class CalloutInOut extends CalloutEngine
 		if (isSOTrx)
 		{
 			final BPartnerStats bpartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartner);
-			final BigDecimal soCreditUsed = bpartnerStats.getSoCreditUsed();
+			final BigDecimal soCreditUsed = bpartnerStats.getSOCreditUsed();
 			if (soCreditUsed.signum() < 0)
 			{
 				calloutField.fireDataStatusEEvent("CreditLimitOver", DisplayType.getNumberFormat(DisplayType.Amount).format(soCreditUsed), false);
@@ -362,7 +364,7 @@ public class CalloutInOut extends CalloutEngine
 
 		inout.setAD_Org_ID(warehouse.getAD_Org_ID());
 
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(warehouse);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
 		calloutField.putContext(CTXNAME_M_Locator_ID, locator == null ? -1 : locator.getM_Locator_ID());
 
 		return NO_ERROR;
@@ -465,8 +467,6 @@ public class CalloutInOut extends CalloutEngine
 			//
 			// Dimensions
 			inoutLine.setC_Activity_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Activity_ID());
-			inoutLine.setC_Order_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Order_ID());
-			inoutLine.setM_SectionCode_ID(originalInOutLine == null? -1: originalInOutLine.getM_SectionCode_ID());
 			inoutLine.setC_Campaign_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Campaign_ID());
 			inoutLine.setC_Project_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_ProjectPhase_ID());
@@ -597,7 +597,7 @@ public class CalloutInOut extends CalloutEngine
 		final WarehouseId allowedWarehouseId = WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
 		if (allowedWarehouseId != null)  // shall never be null
 		{
-			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(allowedWarehouseId);
+			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(allowedWarehouseId);
 			inoutLine.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 
@@ -660,6 +660,21 @@ public class CalloutInOut extends CalloutEngine
 		{
 			final int C_UOM_To_ID = inoutLine.getC_UOM_ID();
 			BigDecimal QtyEntered = inoutLine.getQtyEntered();
+
+			// metas: make sure that MovementQty must be 1 for a product with a serial number.
+			final I_M_AttributeSetInstance attributeSetInstance = inoutLine.getM_AttributeSetInstance();
+			if (attributeSetInstance != null && attributeSetInstance.getM_AttributeSetInstance_ID() > 0)
+			{
+				final String serNo = attributeSetInstance.getSerNo();
+				if (!Check.isEmpty(serNo, true)
+						&& QtyEntered.compareTo(BigDecimal.ONE) > 0)
+				{
+					Services.get(IClientUI.class).info(calloutField.getWindowNo(), MSG_SERIALNO_QTY_ONE);
+					QtyEntered = BigDecimal.ONE;
+					inoutLine.setQtyEntered(QtyEntered);
+				}
+			}
+			// metas end
 
 			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
@@ -759,6 +774,23 @@ public class CalloutInOut extends CalloutEngine
 				inoutLine.setM_Locator_ID(selectedM_Locator_ID);
 			}
 		}
+
+		//
+		// metas: make sure that MovementQty must be 1 for a product with a serial number.
+		final I_M_AttributeSetInstance attributeSetInstance = inoutLine.getM_AttributeSetInstance();
+		if (attributeSetInstance != null)
+		{
+			final BigDecimal qtyEntered = inoutLine.getQtyEntered();
+			final String serNo = attributeSetInstance.getSerNo();
+			if (!Check.isEmpty(serNo, true)
+					&& (qtyEntered == null || qtyEntered.compareTo(BigDecimal.ONE) != 0))
+			{
+				final int windowNo = calloutField.getWindowNo();
+				Services.get(IClientUI.class).info(windowNo, MSG_SERIALNO_QTY_ONE);
+				inoutLine.setQtyEntered(BigDecimal.ONE);
+			}
+		}
+		// metas end
 
 		return NO_ERROR;
 	} // asi

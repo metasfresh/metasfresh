@@ -25,9 +25,29 @@ package de.metas.dunning.test.integration;
  * #L%
  */
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+
+import de.metas.common.util.time.SystemTime;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
-import de.metas.common.util.time.SystemTime;
 import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunnableDoc;
@@ -44,25 +64,6 @@ import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author tsa
@@ -351,7 +352,6 @@ public class TestDunning extends DunningTestBase
 				.setGraceDate(graceDate)
 				.setDaysDue(daysDue) // daysDue,
 				.setInDispute(false) // isInDispute
-				.setPoReference(invoice.getPOReference())
 				.create();
 		return dunnableDoc;
 	}

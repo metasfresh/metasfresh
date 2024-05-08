@@ -10,37 +10,18 @@ package de.metas.cache.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CCache;
-import de.metas.cache.CacheLabel;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheIgnore;
-import de.metas.cache.annotation.CacheModel;
-import de.metas.cache.annotation.CacheModelId;
-import de.metas.cache.annotation.CacheReloadIfTrue;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.Util.ArrayKey;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -49,49 +30,58 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-@EqualsAndHashCode(of = "method")
-@ToString
-final class CachedMethodDescriptor
+import org.adempiere.util.lang.EqualsBuilder;
+import org.adempiere.util.lang.HashcodeBuilder;
+import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheIgnore;
+import de.metas.cache.annotation.CacheModel;
+import de.metas.cache.annotation.CacheModelId;
+import de.metas.cache.annotation.CacheReloadIfTrue;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.util.Check;
+
+/* package */final class CachedMethodDescriptor
 {
-	private static final String DEFAULT_CacheName = CachedMethodDescriptor.class.getSimpleName() + "#defaultCache";
-	private static final ImmutableSet<CacheLabel> ADDITIONAL_CACHE_LABELS = ImmutableSet.of(CacheLabel.ofString(CachedMethodDescriptor.class.getSimpleName()));
+	private static final String DEFAULT_CacheName = CachedMethodDescriptor.class.getName() + "#defaultCache";
 	private static final int DEFAULT_CacheInitialCapacity = 20;
 	private static final int DEFAULT_CacheExpireMinutes = 10;
 
-	@NonNull @Getter private final Method method;
-
+	private final Method method;
+	private final Cached cachedAnnotation;
 	private final boolean staticMethod;
-	@NonNull @Getter private final String cacheName;
-	private final int expireMinutes;
+	private final String cacheName;
 	private final List<ICachedMethodPartDescriptor> descriptors;
-
-	CachedMethodDescriptor(@NonNull final Method method)
+	
+	private final Callable<CCache<ArrayKey, Object>> createCCacheCallable = new Callable<CCache<ArrayKey,Object>>()
 	{
+		@Override
+		public CCache<ArrayKey, Object> call() throws Exception
+		{
+			return createCCache();
+		}
+	};
+
+	CachedMethodDescriptor(final Method method)
+	{
+		Check.assumeNotNull(method, "method not null"); // shall not happen if we reach this point
 		this.method = method;
-		this.staticMethod = Modifier.isStatic(method.getModifiers());
-		final Cached cachedAnnotation = extractCachedAnnotation(method);
-		this.cacheName = mkCacheName(cachedAnnotation);
-		this.expireMinutes = extractExpireMinutes(cachedAnnotation);
-		this.descriptors = extractMethodPartDescriptors(method);
-	}
 
-	@NonNull
-	private static String mkCacheName(final Cached annotation)
-	{
-		final String cacheName = StringUtils.trimBlankToNull(annotation.cacheName());
-		return cacheName != null ? cacheName : DEFAULT_CacheName;
-	}
+		cachedAnnotation = method.getAnnotation(Cached.class);
+		Check.assumeNotNull(cachedAnnotation, "cachedAnnotation not null"); // shall not happen if we reach this point
 
-	private static Cached extractCachedAnnotation(final Method method)
-	{
-		return Check.assumeNotNull(method.getAnnotation(Cached.class), "cachedAnnotation not null");
-	}
+		staticMethod = Modifier.isStatic(method.getModifiers());
 
-	private static ImmutableList<ICachedMethodPartDescriptor> extractMethodPartDescriptors(final Method method)
-	{
-		final Cached cachedAnnotation = extractCachedAnnotation(method);
+		cacheName = mkCacheName(cachedAnnotation);
 
-		final Builder<ICachedMethodPartDescriptor> descriptorsBuilder = ImmutableList.builder();
+		final Builder<ICachedMethodPartDescriptor> descriptorsBuilder = ImmutableList.<ICachedMethodPartDescriptor> builder();
 
 		//
 		// Caching part: Target PO
@@ -103,6 +93,8 @@ final class CachedMethodDescriptor
 			}
 		}
 
+		//
+		// Parse cached method parameters
 		final Class<?>[] parameterTypes = method.getParameterTypes();
 		final Annotation[][] parametersAnnotations = method.getParameterAnnotations();
 		for (int parameterIndex = 0; parameterIndex < parameterTypes.length; parameterIndex++)
@@ -172,10 +164,20 @@ final class CachedMethodDescriptor
 			}
 		}
 
-		return descriptorsBuilder.build();
+		descriptors = descriptorsBuilder.build();
 	}
 
-	static boolean containsAnnotationType(final List<Annotation> annotations, final Class<? extends Annotation> annotationType)
+	private static final String mkCacheName(final Cached annotation)
+	{
+		final String cacheName = annotation.cacheName();
+		if (Check.isEmpty(cacheName, true))
+		{
+			return DEFAULT_CacheName;
+		}
+		return cacheName;
+	}
+
+	static final boolean containsAnnotationType(final List<Annotation> annotations, final Class<? extends Annotation> annotationType)
 	{
 		if (annotations == null || annotations.isEmpty())
 		{
@@ -193,21 +195,59 @@ final class CachedMethodDescriptor
 		return false;
 	}
 
-	private static int extractExpireMinutes(Cached cachedAnnotation)
+	@Override
+	public String toString()
 	{
-		int expireMinutes = cachedAnnotation.expireMinutes();
-		if (expireMinutes == Cached.EXPIREMINUTES_Never)
+		return ObjectUtils.toString(this);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		// NOTE: only "method" counts, everything else is deducted
+
+		return new HashcodeBuilder()
+				.append(method)
+				.toHashcode();
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		// NOTE: only "method" counts, everything else is deducted
+
+		if (this == obj)
 		{
-			return Cached.EXPIREMINUTES_Never;
+			return true;
 		}
-		else if (expireMinutes <= 0)
+
+		final CachedMethodDescriptor other = EqualsBuilder.getOther(this, obj);
+		if (other == null)
 		{
-			return DEFAULT_CacheExpireMinutes;
+			return false;
 		}
-		else
-		{
-			return expireMinutes;
-		}
+
+		return new EqualsBuilder()
+				.append(this.method, other.method)
+				.isEqual();
+	}
+
+	/**
+	 * @return cache name to use; never returns null/empty
+	 */
+	public String getCacheName()
+	{
+		return cacheName;
+	}
+
+	public int getCacheInitExpireMinutes()
+	{
+		return cachedAnnotation.expireMinutes();
+	}
+
+	public Method getMethod()
+	{
+		return method;
 	}
 
 	public CacheKeyBuilder createKeyBuilder(final Object targetObject, final Object[] methodArgs)
@@ -235,20 +275,42 @@ final class CachedMethodDescriptor
 
 		return keyBuilder;
 	}
-
-	@NonNull
-	private CCache<ArrayKey, Object> createCCache()
+	
+	/**
+	 * Creates a new {@link CCache} based on given {@link CachedMethodDescriptor}.
+	 * 
+	 * @param methodDescriptor
+	 * @return {@link CCache}; never returns null
+	 */
+	private final CCache<ArrayKey, Object> createCCache()
 	{
-		return CCache.<ArrayKey, Object>builder()
-				.cacheName(cacheName)
-				.initialCapacity(DEFAULT_CacheInitialCapacity)
-				.expireMinutes(expireMinutes)
-				.additionalLabels(ADDITIONAL_CACHE_LABELS)
-				.build();
+		final String cacheName = getCacheName();
+
+		//
+		// Create a new cache
+		//
+		final int initialCapacity = DEFAULT_CacheInitialCapacity;
+
+		// Expire Minutes
+		int expireMinutes = getCacheInitExpireMinutes();
+		if (expireMinutes == Cached.EXPIREMINUTES_Never)
+		{
+			expireMinutes = 0; // never expire
+		}
+		else if (expireMinutes <= 0)
+		{
+			expireMinutes = DEFAULT_CacheExpireMinutes;
+		}
+
+		final CCache<ArrayKey, Object> cache = new CCache<>(cacheName, initialCapacity, expireMinutes);
+		return cache;
 	}
 
 	/**
 	 * Callable used to create method level cache container.
 	 */
-	public Callable<CCache<ArrayKey, Object>> createCCacheCallable() {return this::createCCache;}
+	public Callable<CCache<ArrayKey, Object>> createCCacheCallable()
+	{
+		return createCCacheCallable;
+	}
 }

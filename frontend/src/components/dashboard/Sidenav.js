@@ -63,7 +63,6 @@ class Sidenav extends Component {
         entity={isKPI ? EntityType.KPI : EntityType.TARGET_INDICATOR}
         isNew={true}
         transparent={false}
-        className="draggable-widget"
       >
         {isKPI ? this.renderKPI(item, index) : this.renderTargetIndicator(item)}
       </DndWidget>

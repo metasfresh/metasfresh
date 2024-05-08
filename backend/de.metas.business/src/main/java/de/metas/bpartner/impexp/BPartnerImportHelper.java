@@ -119,8 +119,6 @@ import lombok.NonNull;
 		{
 			bpartnerRecord.setURL3(url3);
 		}
-
-		bpartnerRecord.setIsManuallyCreated(importRecord.isManuallyCreated());
 	}
 
 	private I_C_BPartner createNewBPartnerNoSave(final I_I_BPartner from)

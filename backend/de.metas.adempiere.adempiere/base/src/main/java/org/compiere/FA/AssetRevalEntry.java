@@ -136,7 +136,7 @@ public class AssetRevalEntry extends JavaProcess
 				  + "WHERE Processed='Y'"
 				  + " AND A_Entry_Type = 'RVL'" + clientCheck;
 
-			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
+			no = DB.executeUpdate (sql,null);
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		try {

@@ -1,11 +1,10 @@
-import { original, produce } from 'immer';
-import { difference, forEach, get } from 'lodash';
+import { produce, original } from 'immer';
+import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
-import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
   windowId: null,
@@ -63,11 +62,6 @@ export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
-
-export const useSelectedRowIds = ({ windowId, tabId, docId }) => {
-  const tableId = getTableId({ windowId, docId, tabId });
-  return useSelector((state) => getSelectionData(state, tableId), shallowEqual);
-};
 
 /**
  * @method getSelection
@@ -158,7 +152,9 @@ const reducer = produce((draftState, action) => {
       const { id } = action.payload;
 
       if (draftState[id]) {
-        draftState.length = draftState.length - 1;
+        const newLength = draftState.length - 1;
+
+        draftState.length = newLength;
         delete draftState[id];
       }
 
@@ -191,41 +187,19 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case types.PARTIAL_UPDATE_TABLE_DATA: {
-      const { tableId, rowsToUpdate } = action.payload;
-      const keyProperty = draftState[tableId].keyProperty;
-
-      const rowsToUpdateById = rowsToUpdate.reduce((acc, row) => {
-        acc[row[keyProperty]] = row;
-        return acc;
-      }, {});
-
-      draftState[tableId].rows = original(draftState[tableId].rows).map(
-        (row) => {
-          const rowId = row[keyProperty];
-          const rowToUpdate = rowsToUpdateById[rowId];
-          if (rowToUpdate != null) {
-            return merge(row, rowToUpdate);
-          } else {
-            return row;
-          }
-        }
-      );
-
-      return;
-    }
-
     case types.UPDATE_TABLE_ROW_PROPERTY: {
       const { id, rowId, change } = action.payload;
       const keyProperty = draftState[id].keyProperty;
       let rows = original(draftState[id].rows);
 
-      draftState[id].rows = rows.map((row) => {
+      const newRows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
           return merge(row, change);
         }
         return row;
       });
+
+      draftState[id].rows = newRows;
 
       return;
     }

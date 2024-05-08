@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.externalservice.externalserviceinstance;
 
-import au.com.origin.snapshots.Expect;
-import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
@@ -33,27 +31,41 @@ import de.metas.externalsystem.externalservice.model.ExternalSystemServiceReposi
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Status;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(SnapshotExtension.class)
 public class ExternalSystemServiceInstanceRepositoryTest
 {
 	private ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepo;
-	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		externalSystemServiceInstanceRepo = new ExternalSystemServiceInstanceRepository(new ExternalSystemServiceRepository());
+	}
+
+	@BeforeAll
+	static void initStatic()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
+	@AfterAll
+	static void afterAll()
+	{
+		validateSnapshots();
 	}
 
 	@Test
@@ -82,7 +94,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotEmpty();
-		expect.serializer("orderedJson").toMatchSnapshot(result.get());
+		expect(result.get()).toMatchSnapshot();
 	}
 
 	@Test
@@ -140,7 +152,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotNull();
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 
 	@Test
@@ -172,7 +184,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(updated).isNotNull();
-		expect.serializer("orderedJson").toMatchSnapshot(updated);
+		expect(updated).toMatchSnapshot();
 	}
 
 	@Test
@@ -215,6 +227,6 @@ public class ExternalSystemServiceInstanceRepositoryTest
 		//then
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
-		expect.serializer("orderedJson").toMatchSnapshot(result);
+		expect(result).toMatchSnapshot();
 	}
 }

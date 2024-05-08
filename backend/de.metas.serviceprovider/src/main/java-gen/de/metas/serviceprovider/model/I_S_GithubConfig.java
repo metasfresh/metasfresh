@@ -121,7 +121,7 @@ public interface I_S_GithubConfig
 	/**
 	 * Set Name.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -130,7 +130,7 @@ public interface I_S_GithubConfig
 	/**
 	 * Get Name.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

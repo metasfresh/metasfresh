@@ -6,7 +6,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -71,7 +70,7 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 		phonecallSchedueRepo.markAsOrdered(phonecallSchedule);
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(DocBaseType.SalesOrder)
+				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
 				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
 				.adClientId(Env.getAD_Client_ID())
 				.build();

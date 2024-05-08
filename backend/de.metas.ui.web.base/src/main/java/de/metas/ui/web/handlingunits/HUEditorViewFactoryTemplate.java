@@ -26,9 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
-import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -38,7 +36,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -54,8 +51,6 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
-import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -91,7 +86,6 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -108,21 +102,13 @@ import java.util.Set;
 
 public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 {
-	private static final Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
+	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactoryTemplate.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
 	@Autowired
 	private HUReservationService huReservationService;
-	@Autowired
-	private WebuiDocumentReferencesService webuiDocumentReferencesService;
-	@Autowired
-	private ADReferenceService adReferenceService;
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -282,10 +268,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Nullable
-	protected String getAdditionalSqlWhereClause()
-	{
-		return null;
-	}
+	protected String getAdditionalSqlWhereClause() { return null; }
 
 	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
@@ -325,8 +308,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		final ViewLayout.Builder viewLayoutBuilder = ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("HU Editor")
-				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
-				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
+				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
+				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
 				.setIdFieldName(HUEditorRow.FIELDNAME_M_HU_ID)
 				.setFilters(all)
 				//
@@ -343,10 +326,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
-	protected AttributeSourceDocument getAttributeSourceDocument()
-	{
-		return null;
-	}
+	protected boolean isMaterialReceipt() { return false; }
 
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
@@ -355,7 +335,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 
 		//
 		// Referencing documentPaths and tableName (i.e. from where are we coming, e.g. receipt schedule)
-		final String referencingTableName = extractReferencingTablename(request.getReferencingDocumentPaths());
+		final Set<DocumentPath> referencingDocumentPaths = request.getReferencingDocumentPaths();
+		final String referencingTableName = extractReferencingTablename(referencingDocumentPaths);
 
 		final SqlViewBinding sqlViewBinding = getSqlViewBinding();
 
@@ -369,13 +350,11 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.windowId(windowId)
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
-												.readonly(attributesAlwaysReadonly)
-												.serialNoFromSequence(false)
-												.attributeSourceDocument(getAttributeSourceDocument())
-												.build())
+							.readonly(attributesAlwaysReadonly)
+							.isMaterialReceipt(isMaterialReceipt())
+							.build())
 					.sqlViewBinding(sqlViewBinding)
-					.huReservationService(huReservationService)
-					.adReferenceService(adReferenceService);
+					.huReservationService(huReservationService);
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
@@ -387,13 +366,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// Filters
 			@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
-			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds())
-					.mergeWithNullable(
-							extractReferencedDocumentFilter(
-									request.getViewId().getWindowId(),
-									request.getSingleReferencingDocumentPathOrNull(),
-									request.getDocumentReferenceId())
-					);
+			final DocumentFilterList stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
 			final DocumentFilterDescriptorsProvider filterDescriptors = getViewFilterDescriptors();
 			final DocumentFilterList userFilters = request.getFiltersUnwrapped(filterDescriptors);
 
@@ -406,7 +379,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setStickyFilters(stickyFilters)
 					.setFilters(userFilters)
 					.setFilterDescriptors(filterDescriptors)
-					.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
+					.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 					.orderBys(sqlViewBinding.getDefaultOrderBys())
 					.setActions(request.getActions())
 					.addAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
@@ -458,33 +431,6 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return referencingTableName;
 	}
 
-	@Nullable
-	private DocumentFilter extractReferencedDocumentFilter(
-			@NonNull final WindowId targetWindowId,
-			@Nullable final DocumentPath referencedDocumentPath,
-			@Nullable final WebuiDocumentReferenceId documentReferenceId)
-	{
-		if (referencedDocumentPath == null
-				|| referencedDocumentPath.isComposedKey())
-		{
-			return null;
-		}
-
-		// Skip if we are zooming into a non-standard HU window.
-		// If we don't do this, it will fail below where we try finding out the related document reference info
-		if (targetWindowId.toAdWindowIdOrNull() == null)
-		{
-			return null;
-		}
-
-		return webuiDocumentReferencesService.getDocumentReferenceFilter(
-						referencedDocumentPath,
-						targetWindowId,
-						documentReferenceId,
-						RelatedDocumentsPermissionsFactory.allowAll())
-				.orElse(null);
-	}
-
 	/**
 	 * @param filterOnlyIds {@code null} means "no restriction". Empty means "select none"
 	 */
@@ -516,7 +462,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	{
 		private static final String FILTER_ID = "barcode";
 
-		public static final HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
+		public static final transient HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
 
 		public static DocumentFilterDescriptor createDocumentFilterDescriptor()
 		{
@@ -527,9 +473,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
-							.fieldName(PARAM_Barcode)
-							.displayName(barcodeCaption)
-							.widgetType(DocumentFieldWidgetType.Text)
+							.setFieldName(PARAM_Barcode)
+							.setDisplayName(barcodeCaption)
+							.setWidgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}
@@ -563,7 +509,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			// Get M_HU_IDs by barcode
 			final ImmutableSet<HuId> huIds;
 			final GlobalQRCode globalQRCode = GlobalQRCode.parse(barcodeString).orNullIfError();
-			if (globalQRCode != null)
+			if(globalQRCode != null)
 			{
 				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
 				final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);

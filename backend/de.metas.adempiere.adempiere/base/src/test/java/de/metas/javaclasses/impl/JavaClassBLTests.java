@@ -49,32 +49,34 @@ public class JavaClassBLTests extends JavaClassTestBase
 	public static class TestClass2 implements TestInterface2
 	{
 	}
-
+	
 	public static class TestSuperClass3
 	{
-
+		
 	}
 
 	public static class TestClass3 extends TestSuperClass3
 	{
 
 	}
-
+	
 	private static class TestClass5 extends TestSuperClass3
 	{
 
 	}
-
+	
+	
 	public static class TestClass4 extends TestSuperClass3
 	{
 		TestClass4()
 		{
 		}
 	}
-
+	
 	public static interface TestInterface3 extends TestInterface2
 	{
 	}
+
 
 	private JavaClassBL javaClassBL;
 

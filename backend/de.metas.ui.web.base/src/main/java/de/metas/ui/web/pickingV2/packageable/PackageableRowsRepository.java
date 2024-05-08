@@ -12,7 +12,6 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
-import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.shipping.ShipperId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -76,17 +75,15 @@ final class PackageableRowsRepository
 	private final Supplier<LookupDataSource> shipperLookup;
 	private final Supplier<LookupDataSource> userLookup;
 
-	public PackageableRowsRepository(
-			@NonNull final MoneyService moneyService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
+	public PackageableRowsRepository(@NonNull final MoneyService moneyService)
 	{
 		this.moneyService = moneyService;
 
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
-		bpartnerLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name));
-		shipperLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_M_Shipper.Table_Name));
-		userLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name));
+		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
+		shipperLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Shipper.Table_Name));
+		userLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name));
 	}
 
 	public PackageableRowsDataBuilder newPackageableRowsData()
@@ -113,24 +110,16 @@ final class PackageableRowsRepository
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
-		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
+		return PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderId(filterVO.getSalesOrderId())
+				.customerId(filterVO.getCustomerId())
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
+				.deliveryDate(filterVO.getDeliveryDate())
 				.preparationDate(filterVO.getPreparationDate())
-				.shipperId(filterVO.getShipperId());
-
-		if (filterVO.getCustomerId() != null)
-		{
-			builder.customerId(filterVO.getCustomerId());
-		}
-		if (filterVO.getDeliveryDate() != null)
-		{
-			builder.deliveryDay(filterVO.getDeliveryDate());
-		}
-
-		return builder.build();
+				.shipperId(filterVO.getShipperId())
+				.build();
 	}
 
 	private static ArrayKey extractGroupingKey(final Packageable packageable)
@@ -147,7 +136,7 @@ final class PackageableRowsRepository
 	{
 		try
 		{
-			return createPackageableRow(PackageableList.ofCollection(packageables));
+			return createPackageableRow(packageables);
 		}
 		catch (final Exception ex)
 		{
@@ -156,15 +145,14 @@ final class PackageableRowsRepository
 		}
 	}
 
-	@SuppressWarnings("OptionalGetWithoutIsPresent")
-	private PackageableRow createPackageableRow(final PackageableList packageables)
+	private PackageableRow createPackageableRow(final Collection<Packageable> packageables)
 	{
-		Check.assume(!packageables.isEmpty(), "packageables is not empty");
+		Check.assumeNotEmpty(packageables, "packageables is not empty");
 
-		final BPartnerId customerId = packageables.getSingleCustomerId().get();
+		final BPartnerId customerId = Packageable.extractSingleValue(packageables, Packageable::getCustomerId).get();
 		final LookupValue customer = Objects.requireNonNull(bpartnerLookup.get().findById(customerId));
 
-		final WarehouseTypeId warehouseTypeId = packageables.getSingleValue(Packageable::getWarehouseTypeId).orElse(null);
+		final WarehouseTypeId warehouseTypeId = Packageable.extractSingleValue(packageables, Packageable::getWarehouseTypeId).orElse(null);
 		final ITranslatableString warehouseTypeName;
 		if (warehouseTypeId != null)
 		{
@@ -175,17 +163,19 @@ final class PackageableRowsRepository
 			warehouseTypeName = null;
 		}
 
-		final ShipperId shipperId = packageables.getSingleValue(Packageable::getShipperId).orElse(null);
+		final ShipperId shipperId = Packageable.extractSingleValue(packageables, Packageable::getShipperId).orElse(null);
 		final LookupValue shipper = shipperLookup.get().findById(shipperId);
 
-		final OrderId salesOrderId = packageables.getSingleValue(Packageable::getSalesOrderId).get();
-		final String salesOrderDocumentNo = packageables.getSingleValue(Packageable::getSalesOrderDocumentNo).get();
-		final String poReference = packageables.getSingleValue(Packageable::getPoReference).orElse(null);
+		final OrderId salesOrderId = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderId).get();
+		final String salesOrderDocumentNo = Packageable.extractSingleValue(packageables, Packageable::getSalesOrderDocumentNo).get();
+		final String poReference = Packageable.extractSingleValue(packageables, Packageable::getPoReference).orElse(null);
 
-		final UserId lockedByUserId = packageables.getSingleValue(Packageable::getLockedBy).orElse(null);
+		final UserId lockedByUserId = Packageable.extractSingleValue(packageables, Packageable::getLockedBy).orElse(null);
 		final LookupValue lockedByUser = userLookup.get().findById(lockedByUserId);
 
-		final ZoneId timeZone = packageables.getSingleValue(Packageable::getOrgId).map(orgDAO::getTimeZone).get();
+		final ZoneId timeZone = Packageable.extractSingleValue(packageables, Packageable::getOrgId)
+				.map(orgDAO::getTimeZone)
+				.get();
 
 		return PackageableRow.builder()
 				.orderId(salesOrderId)
@@ -203,7 +193,7 @@ final class PackageableRowsRepository
 				.build();
 	}
 
-	private ITranslatableString buildNetAmtTranslatableString(final PackageableList packageables)
+	private ITranslatableString buildNetAmtTranslatableString(final Collection<Packageable> packageables)
 	{
 		return packageables.stream()
 				.map(Packageable::getSalesOrderLineNetAmt)

@@ -12,11 +12,9 @@ import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProvi
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProviders;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
-import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -27,10 +25,8 @@ import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -39,10 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -99,11 +93,8 @@ public final class DocumentFieldDescriptor
 	private final String parentLinkFieldName;
 
 	private final DocumentFieldWidgetType widgetType;
-	@Getter
-	private final OptionalInt minPrecision;
 	private final int fieldMaxLength;
 	private final boolean allowShowPassword; // in case widgetType is Password
-	private final boolean forbidNewRecordCreation;
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 	private final BarcodeScannerType barcodeScannerType;
 
@@ -172,12 +163,10 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
-		minPrecision = builder.getMinPrecision();
 		fieldMaxLength = builder.getFieldMaxLength();
 
 		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
-		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		barcodeScannerType = builder.getBarcodeScannerType();
 		valueClass = builder.getValueClass();
@@ -287,11 +276,6 @@ public final class DocumentFieldDescriptor
 		return allowShowPassword;
 	}
 
-	public boolean isForbidNewRecordCreation()
-	{
-		return forbidNewRecordCreation;
-	}
-	
 	public BarcodeScannerType getBarcodeScannerType()
 	{
 		return barcodeScannerType;
@@ -325,7 +309,7 @@ public final class DocumentFieldDescriptor
 	public Optional<LookupDataSource> createLookupDataSource()
 	{
 		return getLookupDescriptor()
-				.map(lookupDescriptor -> LookupDataSourceFactory.sharedInstance().getLookupDataSource(lookupDescriptor));
+				.map(LookupDataSourceFactory.instance::getLookupDataSource);
 	}
 
 	public Optional<IExpression<?>> getDefaultValueExpression()
@@ -434,7 +418,6 @@ public final class DocumentFieldDescriptor
 		private boolean virtualField;
 		private Optional<IDocumentFieldValueProvider> virtualFieldValueProvider = Optional.empty();
 		private boolean calculated;
-		private boolean forbidNewRecordCreation;
 
 		private DocumentFieldWidgetType _widgetType;
 		private WidgetSize _widgetSize;
@@ -671,27 +654,6 @@ public final class DocumentFieldDescriptor
 			return _widgetType;
 		}
 
-		private OptionalInt getMinPrecision()
-		{
-			final SqlDocumentFieldDataBindingDescriptor sqlFieldBinding = getDataBinding()
-					.map(SqlDocumentFieldDataBindingDescriptor::castOrNull)
-					.orElse(null);
-			if (sqlFieldBinding != null)
-			{
-				return sqlFieldBinding.getMinPrecision();
-			}
-			else
-			{
-				return WidgetTypeStandardNumberPrecision.DEFAULT.getMinPrecision(getWidgetType());
-			}
-		}
-
-		public Builder setWidgetSize(final WidgetSize widgetSize)
-		{
-			this._widgetSize = widgetSize;
-			return this;
-		}
-
 		public WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -717,18 +679,6 @@ public final class DocumentFieldDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
-		}
-
-		public Builder setForbidNewRecordCreation(final boolean forbidNewRecordCreation)
-		{
-			assertNotBuilt();
-			this.forbidNewRecordCreation = forbidNewRecordCreation;
-			return this;
-		}
-
-		public boolean isForbidNewRecordCreation()
-		{
-			return forbidNewRecordCreation;
 		}
 
 		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
@@ -862,7 +812,7 @@ public final class DocumentFieldDescriptor
 			return _entityReadonlyLogic;
 		}
 
-		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
+		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
 			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
@@ -1120,38 +1070,6 @@ public final class DocumentFieldDescriptor
 		{
 			final LambdaDocumentFieldCallout callout = new LambdaDocumentFieldCallout(getFieldName(), lambdaCallout);
 			addCallout(callout);
-			return this;
-		}
-
-		@NonNull
-		public Builder usePreviousValueAsDefaultValue(@NonNull final Class<?> fieldValueType, @Nullable final String ctxNamePrefix)
-		{
-			final String actualPrefix = Optional.ofNullable(ctxNamePrefix)
-					.map(prefix -> prefix + "_")
-					.orElse("");
-
-			final String lastValueCtxName = "#" + actualPrefix + fieldName;
-
-			final Consumer<Object> addOldValueToContextConsumer;
-			if (fieldValueType == LookupValue.IntegerLookupValue.class)
-			{
-				addOldValueToContextConsumer = value -> {
-					final int repoId = ((LookupValue.IntegerLookupValue)value).getIdAsInt();
-					Env.setContext(Env.getCtx(), lastValueCtxName, repoId);
-				};
-			}
-			else
-			{
-				throw new IllegalArgumentException(fieldValueType.getName() + " is not supported!");
-			}
-
-			final ILambdaDocumentFieldCallout saveValueToContext = calloutField -> Optional.ofNullable(calloutField.getValue())
-					.filter(value -> fieldValueType.isAssignableFrom(value.getClass()))
-					.ifPresent(addOldValueToContextConsumer);
-
-			addCallout(new LambdaDocumentFieldCallout(getFieldName(), saveValueToContext));
-
-			setDefaultValueExpression(IStringExpression.compile("@" + lastValueCtxName + "/@"));
 			return this;
 		}
 

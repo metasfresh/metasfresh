@@ -1,5 +1,3 @@
-import queryString from 'query-string';
-
 export const unboxAxiosResponse = (axiosResponse) => {
   //
   // Case: server is using API Audit feature
@@ -12,18 +10,3 @@ export const unboxAxiosResponse = (axiosResponse) => {
     return axiosResponse.data;
   }
 };
-
-export const toQueryString = (queryParams) => {
-  return queryString.stringify(queryParams, { arrayFormat: 'comma', skipNull: true });
-};
-
-export const toUrlQueryParams = (queryParams) => {
-  const queryParamsStr = toQueryString(queryParams);
-  return queryParamsStr ? `?${queryParamsStr}` : '';
-};
-
-export const toUrl = (path, queryParams) => {
-  return `${path}${toUrlQueryParams(queryParams)}`;
-};
-
-export const isNullOrUndefined = (arg) => arg === null || arg === undefined;

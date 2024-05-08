@@ -22,15 +22,13 @@
 
 package de.metas.project.callout;
 
-import de.metas.copy_with_details.CopyRecordFactory;
-import de.metas.project.ProjectTypeId;
 import de.metas.project.service.ProjectService;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Project;
 import org.springframework.stereotype.Component;
 
@@ -38,10 +36,10 @@ import org.springframework.stereotype.Component;
 @Callout(I_C_Project.class)
 public class C_Project
 {
-	@NonNull
 	private final ProjectService projectService;
 
-	public C_Project(@NonNull final ProjectService projectService)
+	public C_Project(
+			@NonNull final ProjectService projectService)
 	{
 		this.projectService = projectService;
 
@@ -54,26 +52,6 @@ public class C_Project
 	@CalloutMethod(columnNames = I_C_Project.COLUMNNAME_C_ProjectType_ID)
 	public void onC_ProjectType_ID(@NonNull final I_C_Project projectRecord)
 	{
-		updateFromProjectType(projectRecord);
-	}
-
-	private void updateFromProjectType(@NonNull final I_C_Project projectRecord)
-	{
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
-		if (projectTypeId == null)
-		{
-			return;
-		}
-
-		final String projectValue = projectService.getNextProjectValue(projectTypeId);
-		if (projectValue != null)
-		{
-			projectRecord.setValue(projectValue);
-		}
-
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
-		}
+		projectService.updateFromProjectType(projectRecord);
 	}
 }

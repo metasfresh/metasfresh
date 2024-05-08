@@ -22,7 +22,16 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.apps.search.IInfoSimple;
+import org.compiere.model.I_C_UOM;
+
 import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -38,11 +47,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.apps.search.IInfoSimple;
-import org.compiere.model.I_C_UOM;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
@@ -64,23 +68,16 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void setQtyCUFromQtyTU(@NonNull final IHUPackingAware record, final int qtyTUs)
+	public void setQtyCUFromQtyTU(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
-		final Capacity capacity = calculateCapacity(record);
-		if (capacity == null)
-		{
-			return;
-		}
-		if (capacity.isInfiniteCapacity())
+		final Quantity qty = calculateQty(record, qtyPacks);
+		if (qty == null)
 		{
 			return;
 		}
 
-		record.setQtyCUsPerTU(capacity.toBigDecimal());
-
-		final Quantity qtyCUs = capacity.computeQtyCUs(qtyTUs);
-		record.setQty(qtyCUs.toBigDecimal());
-		record.setC_UOM_ID(qtyCUs.getUomId().getRepoId());
+		record.setQty(qty.toBigDecimal());
+		record.setC_UOM_ID(qty.getUomId().getRepoId());
 	}
 
 	@Override
@@ -109,9 +106,15 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 	}
 
-	@Nullable
-	private Quantity calculateQty(@NonNull final IHUPackingAware record, final int qtyTUs)
+	private Quantity calculateQty(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
+		if (qtyPacks < 0)
+		{
+			throw new AdempiereException("@QtyPacks@ < 0")
+					.appendParametersToMessage()
+					.setParameter("huPackingAware", record);
+		}
+
 		final Capacity capacity = calculateCapacity(record);
 		if (capacity == null)
 		{
@@ -121,7 +124,9 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		{
 			return null;
 		}
-		return capacity.computeQtyCUs(qtyTUs);
+
+		final Capacity capacityMult = capacity.multiply(qtyPacks);
+		return capacityMult.toQuantity();
 	}
 
 	@Override
@@ -192,7 +197,8 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		return capacityBL.getCapacity(huPiItemProduct, productId, uom);
+		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, productId, uom);
+		return capacityDef;
 	}
 
 	@Override

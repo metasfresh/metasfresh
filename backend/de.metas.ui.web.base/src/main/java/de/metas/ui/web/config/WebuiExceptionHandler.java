@@ -1,16 +1,21 @@
 package de.metas.ui.web.config;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.ZonedDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import de.metas.common.util.EmptyUtil;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.login.exceptions.NotLoggedInException;
-import de.metas.ui.web.window.datatypes.Values;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.util.GuavaCollectors;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Trace;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -19,20 +24,22 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Nullable;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.time.ZonedDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.logging.LogManager;
+import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -67,7 +74,7 @@ import java.util.Map;
 public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionResolver
 {
 
-	private static final Logger logger = LogManager.getLogger(WebuiExceptionHandler.class);
+	private static final transient Logger logger = LogManager.getLogger(WebuiExceptionHandler.class);
 
 	private static final String REQUEST_ATTR_EXCEPTION = WebuiExceptionHandler.class.getName() + ".ERROR";
 
@@ -79,14 +86,13 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private static final String ATTR_Message = "message";
 	private static final String ATTR_Stacktrace = "trace";
 	private static final String ATTR_Path = "path";
-	private static final String ATTR_UserFriendlyError = "userFriendlyError";
 
 	@Value("${de.metas.ui.web.config.WebuiExceptionHandler.logExceptions:true}")
 	private boolean logExceptions;
 
-	private static final ImmutableSet<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
+	private final Set<Class<?>> EXCEPTIONS_ExcludeFromLogging = ImmutableSet.of(NotLoggedInException.class);
 
-	private static final ImmutableMap<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus>builder()
+	private final Map<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus> builder()
 			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
 			.build();
 
@@ -95,21 +101,22 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return JSONOptions.newInstance();
 	}
 
+
 	@java.lang.Override
-	public ModelAndView resolveException(final HttpServletRequest request,
-										 final HttpServletResponse response,
-										 final java.lang.Object handler,
-										 @NonNull final Exception ex)
+	public ModelAndView resolveException(final HttpServletRequest request, 
+										 final HttpServletResponse response, 
+										 final java.lang.Object handler, 
+										 final java.lang.Exception ex)
 	{
 		logExceptionIfNeeded(ex, handler);
 
-		final Throwable cause = AdempiereException.extractCause(ex);
+		final Throwable cause = ex == null ? null : AdempiereException.extractCause(ex);
 		request.setAttribute(REQUEST_ATTR_EXCEPTION, cause);
 		response.setHeader("Cache-Control", "no-cache");
 
-		return null; // don't forward, go with default
+		return null; // don't forward, go with}
 	}
-
+	
 	private void logExceptionIfNeeded(final Exception ex, final Object handler)
 	{
 		if (!logExceptions)
@@ -127,7 +134,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		}
 	}
 
-	private static boolean isExcludeFromLogging(final Throwable ex)
+	private final boolean isExcludeFromLogging(final Throwable ex)
 	{
 		for (final Class<?> exceptionClass : EXCEPTIONS_ExcludeFromLogging)
 		{
@@ -140,37 +147,23 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return false;
 	}
 
-	@Override
-	public Map<String, Object> getErrorAttributes(final WebRequest requestAttributes, final ErrorAttributeOptions errorAttributeOptions)
-	{
-		final Map<String, Object> errorAttributes = new LinkedHashMap<>();
-		errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
-		addStatus(errorAttributes, requestAttributes);
-		addErrorDetails(errorAttributes, requestAttributes, errorAttributeOptions);
-		addPath(errorAttributes, requestAttributes);
-		return errorAttributes;
-	}
+	 @Override
+	 public Map<String, Object> getErrorAttributes(final WebRequest requestAttributes, final ErrorAttributeOptions errorAttributeOptions)
+	 {
+	 	final Map<String, Object> errorAttributes = new LinkedHashMap<>();
+	 	errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
+	 	addStatus(errorAttributes, requestAttributes);
+	 	addErrorDetails(errorAttributes, requestAttributes, errorAttributeOptions);
+	 	addPath(errorAttributes, requestAttributes);
+	 	return errorAttributes;
+	 }
 
 	private void addStatus(final Map<String, Object> errorAttributes, final WebRequest requestAttributes)
 	{
-		final Integer status = getHttpStatus(requestAttributes);
-		if (status == null)
-		{
-			errorAttributes.put(ATTR_Status, 999);
-			errorAttributes.put(ATTR_Error, "None");
-		}
-		else
-		{
-			errorAttributes.put(ATTR_Status, status);
-			errorAttributes.put(ATTR_Error, getHttpStatusReasonPhase(status));
-		}
-	}
-
-	@Nullable
-	private Integer getHttpStatus(final WebRequest requestAttributes)
-	{
 		Integer status = null;
 
+		//
+		// Extract HTTP status from EXCEPTION_HTTPSTATUS map
 		final Throwable error = getError(requestAttributes);
 		if (error != null)
 		{
@@ -190,23 +183,25 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			status = getAttribute(requestAttributes, RequestDispatcher.ERROR_STATUS_CODE);
 		}
 
-		return status;
-	}
-
-	private static String getHttpStatusReasonPhase(final int statusCode)
-	{
+		if (status == null)
+		{
+			errorAttributes.put(ATTR_Status, 999);
+			errorAttributes.put(ATTR_Error, "None");
+			return;
+		}
+		errorAttributes.put(ATTR_Status, status);
 		try
 		{
-			return HttpStatus.valueOf(statusCode).getReasonPhrase();
+			errorAttributes.put(ATTR_Error, HttpStatus.valueOf(status).getReasonPhrase());
 		}
 		catch (final Exception ex)
 		{
 			// Unable to obtain a reason
-			return "Http Status " + statusCode;
+			errorAttributes.put(ATTR_Error, "Http Status " + status);
 		}
 	}
 
-	private static boolean isErrorMatching(final Class<?> baseClass, final Class<?> clazz)
+	private final boolean isErrorMatching(final Class<?> baseClass, final Class<?> clazz)
 	{
 		return baseClass.isAssignableFrom(clazz);
 	}
@@ -214,39 +209,38 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private void addErrorDetails(final Map<String, Object> errorAttributes, final WebRequest requestAttributes, final ErrorAttributeOptions errorAttributeOptions)
 	{
 		//
-		// Get root exception and
-		// Set exception related attributes.
-		final Throwable rootError = getRootError(requestAttributes);
-		if (rootError != null)
+		// Get exception and
+		// Set "exception" attribute.
+		Throwable error = getError(requestAttributes);
+		if (error != null)
 		{
-			errorAttributes.put(ATTR_Exception, rootError.getClass().getName());
-
-			errorAttributes.put(ATTR_Message, AdempiereException.extractMessage(rootError));
-			errorAttributes.put(ATTR_UserFriendlyError, AdempiereException.isUserValidationError(rootError));
-
-			if (errorAttributeOptions.isIncluded(ErrorAttributeOptions.Include.STACK_TRACE) && !isExcludeFromLogging(rootError))
+			while (error instanceof ServletException && error.getCause() != null)
 			{
-				addStackTrace(errorAttributes, rootError);
+				error = ((ServletException)error).getCause();
+			}
+			errorAttributes.put(ATTR_Exception, error.getClass().getName());
+			addErrorMessage(errorAttributes, error);
+			
+			if (errorAttributeOptions.isIncluded(ErrorAttributeOptions.Include.STACK_TRACE) && !isExcludeFromLogging(error))
+			{
+				addStackTrace(errorAttributes, error);
 			}
 		}
-
+	
 		//
 		// Set "message" attribute
-		if (errorAttributes.get(ATTR_Message) == null && !(rootError instanceof BindingResult))
+		final Object message = getAttribute(requestAttributes, RequestDispatcher.ERROR_MESSAGE);
+		if ((!EmptyUtil.isEmpty(message) || errorAttributes.get(ATTR_Message) == null)
+				&& !(error instanceof BindingResult))
 		{
-			final Object message = getAttribute(requestAttributes, RequestDispatcher.ERROR_MESSAGE);
-			if (message != null && !EmptyUtil.isEmpty(message))
-			{
-				errorAttributes.put(ATTR_Message, message);
-				errorAttributes.put(ATTR_UserFriendlyError, false);
-			}
+			errorAttributes.put(ATTR_Message, StringUtils.isEmpty(message) ? "No message available" : message);
 		}
 
 		//
 		// Set "exceptionAttributes" attribute
-		if (rootError instanceof AdempiereException)
+		if (error instanceof AdempiereException)
 		{
-			final Map<String, Object> exceptionAttributes = ((AdempiereException)rootError).getParameters();
+			final Map<String, Object> exceptionAttributes = ((AdempiereException)error).getParameters();
 			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
 			{
 				final JSONOptions jsonOpts = newJSONOptions();
@@ -254,18 +248,27 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 						.stream()
 						.map(entry -> GuavaCollectors.entry(entry.getKey(), Values.valueToJsonObject(entry.getValue(), jsonOpts, String::valueOf)))
 						.collect(GuavaCollectors.toImmutableMap());
-
 				errorAttributes.put(ATTR_ExceptionAttributes, jsonExceptionAttributes);
 			}
 		}
 	}
 
-	private static void addStackTrace(final Map<String, Object> errorAttributes, final Throwable error)
+	private void addErrorMessage(final Map<String, Object> errorAttributes, final Throwable error)
 	{
-		errorAttributes.put(ATTR_Stacktrace, Trace.toOneLineStackTraceString(error));
+		errorAttributes.put(ATTR_Message, error.getLocalizedMessage());
 	}
 
-	private static void addPath(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)
+	private void addStackTrace(final Map<String, Object> errorAttributes, final Throwable error)
+	{
+		final StringWriter stackTrace = new StringWriter();
+		error.printStackTrace(new PrintWriter(stackTrace));
+		stackTrace.flush();
+		final String stackTraceStr = stackTrace.toString();
+		final Iterable<String> stackTraceList = Splitter.on("\n").split(stackTraceStr);
+		errorAttributes.put(ATTR_Stacktrace, stackTraceList);
+	}
+
+	private void addPath(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)
 	{
 		final String path = getAttribute(requestAttributes, RequestDispatcher.ERROR_REQUEST_URI);
 		if (path != null)
@@ -274,7 +277,8 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		}
 	}
 
-	@Override
+
+	@java.lang.Override
 	public java.lang.Throwable getError(final WebRequest webRequest)
 	{
 		Throwable exception = (Throwable)webRequest.getAttribute(REQUEST_ATTR_EXCEPTION, RequestAttributes.SCOPE_REQUEST);
@@ -289,31 +293,6 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		}
 
 		return exception;
-	}
-
-	@Nullable
-	private Throwable getRootError(final WebRequest webRequest)
-	{
-		final Throwable error = getError(webRequest);
-		return error != null ? unboxRootError(error) : null;
-	}
-
-	public Throwable unboxRootError(@NonNull final java.lang.Throwable error)
-	{
-		Throwable rootError = error;
-		while (rootError instanceof ServletException)
-		{
-			final Throwable cause = AdempiereException.extractCause(rootError);
-			if (cause == rootError)
-			{
-				return rootError;
-			}
-			else
-			{
-				rootError = cause;
-			}
-		}
-		return rootError;
 	}
 
 	@SuppressWarnings("unchecked")

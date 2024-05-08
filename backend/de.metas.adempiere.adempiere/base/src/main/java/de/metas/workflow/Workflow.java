@@ -52,15 +52,40 @@ public class Workflow
 	@NonNull ITranslatableString help;
 
 	int priority;
-	@Nullable Instant validFrom;
-	@Nullable Instant validTo;
+	@Nullable
+	Instant validFrom;
+	@Nullable
+	Instant validTo;
 
-	@NonNull WFResponsibleId responsibleId;
+	@Nullable
+	WFResponsibleId responsibleId;
 
 	@NonNull WFNodeId firstNodeId;
 	@NonNull ImmutableList<WFNode> nodes;
 
-	@Nullable String docValueWorkflowTriggerLogic;
+	@Nullable
+	String docValueWorkflowTriggerLogic;
+
+	public List<WFNode> getNodes(@NonNull final ClientId clientId)
+	{
+		final ArrayList<WFNode> list = new ArrayList<>();
+		for (final WFNode node : getNodes())
+		{
+			if (!node.isActive())
+			{
+				continue;
+			}
+
+			final ClientId nodeClientId = node.getClientId();
+			if (nodeClientId.isSystem()
+					|| ClientId.equals(nodeClientId, clientId))
+			{
+				list.add(node);
+			}
+		}
+
+		return list;
+	}
 
 	@NonNull
 	public WFNode getNodeById(@NonNull final WFNodeId nodeId)
@@ -142,6 +167,10 @@ public class Workflow
 			for (final WFNodeTransition transition : node.getTransitions(clientId))
 			{
 				final WFNode child = getNodeById(transition.getNextNodeId());
+				if (child == null)
+				{
+					continue;
+				}
 				if (!child.isActive())
 				{
 					continue;

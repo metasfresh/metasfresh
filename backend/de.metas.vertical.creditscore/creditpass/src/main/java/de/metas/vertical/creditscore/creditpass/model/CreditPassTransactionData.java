@@ -55,8 +55,6 @@ public class CreditPassTransactionData implements TransactionData
 
 	private String iban;
 
-	private String swiftCode;
-
 	private String creditCardNr;
 
 	private String creditCardType;

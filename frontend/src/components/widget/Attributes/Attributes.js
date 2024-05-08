@@ -12,8 +12,6 @@ import {
 import { getTableId } from '../../../reducers/tables';
 
 import AttributesDropdown from './AttributesDropdown';
-import { useSelector } from 'react-redux';
-import { getSettingFromStateAsPositiveInt } from '../../../utils/settings';
 
 /**
  * @component
@@ -210,14 +208,6 @@ const Attributes = ({
 
   const buttonCaption = value?.caption || 'Edit';
 
-  const maxHeight = useSelector((state) =>
-    getSettingFromStateAsPositiveInt(
-      state,
-      'widget.AttributesDropdown.maxHeight',
-      300
-    )
-  );
-
   return (
     <div className={classnames('attributes', { 'attributes-in-table': rowId })}>
       <button
@@ -242,7 +232,6 @@ const Attributes = ({
           rowIndex={rowIndex}
           tabIndex={tabIndex}
           isModal={isModal}
-          maxHeight={maxHeight}
           //
           onFieldChange={handleFieldChange}
           onFieldPatch={handleFieldPatch}

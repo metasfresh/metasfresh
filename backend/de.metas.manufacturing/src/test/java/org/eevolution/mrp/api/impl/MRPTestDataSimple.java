@@ -1,6 +1,7 @@
 package org.eevolution.mrp.api.impl;
 
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -14,11 +15,13 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
+import org.eevolution.model.X_PP_Product_Planning;
 
 /**
  * Simple MRP master data definition.
  *
  * @author tsa
+ *
  */
 public class MRPTestDataSimple
 {
@@ -91,7 +94,7 @@ public class MRPTestDataSimple
 		// createStandardProductPlannings();
 	}
 
-	private void createPlantsWarehouses()
+	private final void createPlantsWarehouses()
 	{
 		this.adOrg01 = helper.adOrg01;
 
@@ -110,7 +113,7 @@ public class MRPTestDataSimple
 		this.warehouse_rawMaterials01_locatorId = helper.warehouse_rawMaterials01_locatorId;
 	}
 
-	private void createProductsAndBOMs()
+	private final void createProductsAndBOMs()
 	{
 		this.pTomato = helper.createProduct("Tomato", uomKg);
 		this.pTomatoId = ProductId.ofRepoId(pTomato.getM_Product_ID());
@@ -147,7 +150,7 @@ public class MRPTestDataSimple
 	/**
 	 * Creates default distribution network.
 	 */
-	private void createDistributionNetworks()
+	private final void createDistributionNetworks()
 	{
 		this.ddNetwork = helper.newDDNetwork()
 				.name("Network01")
@@ -161,4 +164,49 @@ public class MRPTestDataSimple
 				//
 				.build();
 	}
+
+	/**
+	 * Creates the standard product plannings.
+	 *
+	 * NOTE: this method is not called by default!
+	 */
+	public void createStandardProductPlannings()
+	{
+		Check.assume(!_createStandardProductPlannings_Called, "createStandardProductPlannings() not called before");
+
+		// Product Planning: Salad_2xTomato_1xOnion, Picking
+		// => grab it from plant01
+		helper.newProductPlanning()
+				.product(pSalad_2xTomato_1xOnion).warehouse(warehouse_picking01).plant(helper.plant_any)
+				.setDD_NetworkDistribution(ddNetwork)
+				.setDeliveryTime_Promised(1)
+				.build();
+		// Product Planning: Salad_2xTomato_1xOnion, Plant01
+		// => produce it
+		helper.newProductPlanning()
+				.product(pSalad_2xTomato_1xOnion).warehouse(warehouse_plant01).plant(plant01)
+				.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes)
+				.setPP_Product_BOMVersions(pSalad_2xTomato_1xOnion_BOM_Versions)
+				.setAD_Workflow(workflow_Standard)
+				.setDeliveryTime_Promised(1)
+				.build();
+		// Product Planning: Tomato, Plant01
+		// => grab it from RawMaterials01
+		helper.newProductPlanning()
+				.product(pTomato).warehouse(warehouse_plant01).plant(plant01)
+				.setDD_NetworkDistribution(ddNetwork)
+				.setDeliveryTime_Promised(1)
+				.build();
+		// Product Planning: Onion, Plant01
+		// => grab it from RawMaterials01
+		helper.newProductPlanning()
+				.product(pOnion).warehouse(warehouse_plant01).plant(plant01)
+				.setDD_NetworkDistribution(ddNetwork)
+				.setDeliveryTime_Promised(1)
+				.build();
+
+		// mark it as called
+		_createStandardProductPlannings_Called = true;
+	}
+	private boolean _createStandardProductPlannings_Called = false;
 }

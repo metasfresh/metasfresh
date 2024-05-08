@@ -37,12 +37,10 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 
 @Interceptor(I_M_ReceiptSchedule.class)
-@Component
 public class M_ReceiptSchedule
 {
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);

@@ -1,6 +1,5 @@
 package de.metas.process;
 
-import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +13,6 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
 import com.google.common.base.Stopwatch;
-import org.compiere.util.SQLUpdateResult;
-import org.compiere.util.SQLValueStringResult;
 
 @Process(requiresCurrentRecordWhenCalledFromGear = false)
 public class ExecuteUpdateSQL extends JavaProcess
@@ -30,35 +27,24 @@ public class ExecuteUpdateSQL extends JavaProcess
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final String msg;
-		final List<String> warningMessages;
 		addLog("Executing: " + sqlParsed);
 		if (!sqlParsed.trim().toUpperCase().startsWith("SELECT"))
 		{
-			final SQLUpdateResult sqlUpdateResult = DB.executeUpdateWithWarningEx(sqlParsed, ITrx.TRXNAME_ThreadInherited);
+			final int no = DB.executeUpdateEx(sqlParsed, ITrx.TRXNAME_ThreadInherited);
 			stopwatch.stop();
 
-			msg = "Result: " + sqlUpdateResult.getReturnedValue() + "; Runtime: " + stopwatch;
-			warningMessages = sqlUpdateResult.getWarningMessages();
+			msg = "Result: " + no + "; Runtime: " + stopwatch;
 		}
 		else
 		{
 			// assuming that it is a select
-			final SQLValueStringResult sqlValueStringResult = DB.getSQLValueStringWithWarningEx(get_TrxName(), sqlParsed);
+			DB.getSQLValueStringEx(get_TrxName(), sqlParsed);
 			stopwatch.stop();
 
 			msg = "Runtime: " + stopwatch;
-			warningMessages = sqlValueStringResult.getWarningMessages();
 		}
 
-		final boolean isLogWarning = getProcessInfo().isLogWarning();
-		if (isLogWarning)
-		{
-			addLog(warningMessages, msg);
-		}
-		else
-		{
-			addLog(msg);
-		}
+		addLog(msg);
 		return "@Success@: " + msg;
 	}
 

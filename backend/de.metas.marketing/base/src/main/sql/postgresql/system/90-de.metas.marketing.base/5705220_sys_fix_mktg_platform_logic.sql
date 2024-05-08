@@ -1,4 +1,0 @@
--- 2023-10-05T06:50:19.105Z
-UPDATE AD_Ref_Table SET WhereClause='MKTG_Platform.AD_Org_ID in (@AD_Org_ID@, 0)',Updated=TO_TIMESTAMP('2023-10-05 09:50:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541702
-;
-

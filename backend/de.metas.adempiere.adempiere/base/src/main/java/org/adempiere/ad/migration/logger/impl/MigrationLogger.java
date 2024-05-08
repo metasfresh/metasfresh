@@ -22,14 +22,16 @@ package org.adempiere.ad.migration.logger.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
-import org.adempiere.ad.migration.logger.TableNamesSkipList;
 import org.adempiere.ad.migration.model.I_AD_Migration;
 import org.adempiere.ad.migration.model.I_AD_MigrationData;
 import org.adempiere.ad.migration.model.I_AD_MigrationStep;
@@ -40,15 +42,32 @@ import org.adempiere.ad.migration.util.IDataConverter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_Attachment_Log;
+import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Column_Access;
+import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_Preference;
+import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
+import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_Table_Access;
+import org.compiere.model.I_AD_Task_Access;
+import org.compiere.model.I_AD_Window_Access;
+import org.compiere.model.I_AD_Workflow_Access;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -57,35 +76,163 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
+import de.metas.logging.LogManager;
+import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class MigrationLogger implements IMigrationLogger
 {
-	private static final Logger logger = LogManager.getLogger(MigrationLogger.class);
+	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	private final IDataConverter converter = new DefaultDataConverter();
 
-	private final TableNamesSkipList tableNamesSkipList = new TableNamesSkipList();
+	/**
+	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in system mode
+	 */
+	private final Set<String> _tablesIgnoreSystem = new CopyOnWriteArraySet<>();
+	private final Set<String> _tablesIgnoreSystemRO = Collections.unmodifiableSet(_tablesIgnoreSystem);
 
-	@Override
-	public boolean isLogTableName(final String tableName, final ClientId clientId)
+	/**
+	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in client mode
+	 */
+	private final Set<String> _tablesIgnoreClient = new CopyOnWriteArraySet<>();
+	private final Set<String> _tablesIgnoreClientRO = Collections.unmodifiableSet(_tablesIgnoreClient);
+
+	public MigrationLogger()
 	{
-		return tableNamesSkipList.isLogTableName(tableName, clientId);
+		initTablesIgnoreList();
+	}
+
+	/**
+	 * Initializes {@link #tablesIgnoreSystem} with default tables that shall be ignored
+	 */
+	private void initTablesIgnoreList()
+	{
+		final List<String> tablesIgnoreListDefault = Arrays.asList(
+				"AD_ACCESSLOG",
+				"AD_ALERTPROCESSORLOG",
+				I_AD_Attachment.Table_Name.toUpperCase(),
+				I_AD_Attachment_Log.Table_Name.toUpperCase(),
+				I_AD_Attachment_MultiRef.Table_Name.toUpperCase(),
+				I_AD_AttachmentEntry.Table_Name.toUpperCase(),
+				"AD_CHANGELOG",
+				"AD_ISSUE",
+				I_AD_Note.Table_Name.toUpperCase(),
+				"AD_PACKAGE_IMP",
+				"AD_PACKAGE_IMP_BACKUP",
+				"AD_PACKAGE_IMP_DETAIL",
+				"AD_PACKAGE_IMP_INST",
+				"AD_PACKAGE_IMP_PROC",
+				I_AD_Process_Stats.Table_Name.toUpperCase(),
+				"AD_PINSTANCE",
+				"AD_PINSTANCE_LOG",
+				"AD_PINSTANCE_PARA",
+				I_AD_Preference.Table_Name.toUpperCase(),
+				"AD_REPLICATION_LOG",
+				"AD_SCHEDULERLOG",
+				"AD_SESSION",
+				"AD_WORKFLOWPROCESSORLOG",
+				I_API_Request_Audit.Table_Name.toUpperCase(),
+				I_API_Request_Audit_Log.Table_Name.toUpperCase(),
+				I_API_Response_Audit.Table_Name.toUpperCase(),
+				"CM_WEBACCESSLOG",
+				"K_INDEXLOG",
+				"R_REQUESTPROCESSORLOG",
+				"T_AGING",
+				// "T_ALTER_COLUMN", // this one NEEDs to be logged
+				"T_DISTRIBUTIONRUNDETAIL",
+				"T_INVENTORYVALUE",
+				"T_INVOICEGL",
+				"T_REPLENISH",
+				"T_REPORT",
+				"T_REPORTSTATEMENT",
+				"T_SELECTION",
+				"T_SELECTION2",
+				I_T_Query_Selection.Table_Name.toUpperCase(),
+				I_T_Query_Selection_ToDelete.Table_Name.toUpperCase(),
+				"T_SPOOL",
+				"T_TRANSACTION",
+				"T_TRIALBALANCE",
+				//
+				"AD_VISIBLEFIELDS", // metas: tsa: US762
+				"AD_ROLE_PERMREQUEST", // metas: ts: Ma01_US1057
+				//
+				// Don't log migration scripts tables - 02662
+				"AD_MIGRATION",
+				"AD_MIGRATIONSTEP",
+				"AD_MIGRATIONDATA",
+
+				// Don't log AD_Sequence because these will be created automatically (at least for Table_ID)
+				// NOTE: while this is applying for XML migrations, we need this to be logged in SQL migrations
+				// and currently we use SQL migrations
+				// FIXME: find a way to fine tune this
+				// "AD_SEQUENCE"
+
+				I_AD_PInstance_SelectedIncludedRecords.Table_Name.toUpperCase() // https://github.com/metasfresh/metasfresh-webui-api/issues/645
+		);
+
+		//
+		// Add our standard list of tables to ignore to both lists: client and system
+		_tablesIgnoreSystem.addAll(tablesIgnoreListDefault);
+		_tablesIgnoreClient.addAll(tablesIgnoreListDefault);
+
+		//
+		// Do not log *Access records - teo_Sarca BF [ 2782095 ]
+		// NOTE: Only if we are running as system. If user is logged in regular Tenant, we want to log them (07122)
+		_tablesIgnoreSystem.addAll(Arrays.asList(
+				I_AD_Window_Access.Table_Name.toUpperCase(),
+				I_AD_Process_Access.Table_Name.toUpperCase(),
+				I_AD_Workflow_Access.Table_Name.toUpperCase(),
+				I_AD_Form_Access.Table_Name.toUpperCase(),
+				I_AD_Task_Access.Table_Name.toUpperCase(),
+				I_AD_Document_Action_Access.Table_Name.toUpperCase(),
+				I_AD_Table_Access.Table_Name.toUpperCase(),
+				I_AD_Column_Access.Table_Name.toUpperCase()));
 	}
 
 	@Override
-	public void addTablesToIgnoreList(final String... tableNames) {tableNamesSkipList.addTablesToIgnoreList(tableNames);}
-
-	@Override
-	public void addTablesToIgnoreList(final Collection<String> tableNames) {tableNamesSkipList.addTablesToIgnoreList(tableNames);}
-
-	@Override
-	public ImmutableSet<String> getTablesToIgnoreUC(@NonNull final ClientId clientId)
+	public boolean isLogTableName(final String tableName)
 	{
-		return tableNamesSkipList.getTablesToIgnoreUC(clientId);
+		final Set<String> tablesToIgnore = getTablesToIgnoreUC();
+		if (tablesToIgnore.contains(tableName.toUpperCase()))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	@Override
+	public void addTableToIgnoreList(final String tableName)
+	{
+		final String tableNameUC = tableName.toUpperCase();
+		_tablesIgnoreSystem.add(tableNameUC);
+		_tablesIgnoreClient.add(tableNameUC);
+	}
+
+	@Override
+	public void removeTableFromIgnoreList(final String tableName)
+	{
+		final String tableNameUC = tableName.toUpperCase();
+		_tablesIgnoreSystem.remove(tableNameUC);
+		_tablesIgnoreClient.remove(tableNameUC);
+	}
+
+	@Override
+	public Set<String> getTablesToIgnoreUC()
+	{
+		final Properties ctx = Env.getCtx();
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		if (adClientId == Env.CTXVALUE_AD_Client_ID_System)
+		{
+			return _tablesIgnoreSystemRO;
+		}
+		else
+		{
+			return _tablesIgnoreClientRO;
+		}
 	}
 
 	@Override
@@ -102,7 +249,7 @@ public class MigrationLogger implements IMigrationLogger
 		{
 			return;
 		}
-		if (!isLogTableName(po.get_TableName(), ClientId.ofRepoId(po.getAD_Client_ID())))
+		if (!isLogTableName(po.get_TableName()))
 		{
 			return;
 		}
@@ -174,7 +321,7 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
-		data.setAD_Column_ID(infoColumn.getAD_Column_ID().getRepoId());
+		data.setAD_Column_ID(infoColumn.getAD_Column_ID());
 		boolean create = false;
 
 		//
@@ -222,6 +369,10 @@ public class MigrationLogger implements IMigrationLogger
 
 	/**
 	 * Create and set a short description about what was changed in this step
+	 *
+	 * @param po
+	 * @param migrationStep
+	 * @param stepDataList
 	 */
 	protected void setComments(final PO po, final I_AD_MigrationStep migrationStep, final List<I_AD_MigrationData> stepDataList)
 	{

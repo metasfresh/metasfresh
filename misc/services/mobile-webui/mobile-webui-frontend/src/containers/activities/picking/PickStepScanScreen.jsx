@@ -6,12 +6,12 @@ import { trl } from '../../../utils/translations';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getActivityById, getQtyRejectedReasonsFromActivity, getStepById } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
-import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
+import { getPickFrom, getQtyToPick } from '../../../utils/picking';
 import { postStepPicked } from '../../../api/picking';
 import { updatePickingStepQty } from '../../../actions/PickingActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { toQRCodeString } from '../../../utils/huQRCodes';
 
 const PickStepScanScreen = () => {
   const {
@@ -42,7 +42,6 @@ const PickStepScanScreen = () => {
     postStepPicked({
       wfProcessId,
       activityId,
-      lineId,
       stepId,
       huQRCode: scannedBarcode,
       qtyPicked: qty,
@@ -71,8 +70,8 @@ const PickStepScanScreen = () => {
     <ScanHUAndGetQtyComponent
       eligibleBarcode={eligibleQRCode}
       qtyCaption={trl('general.QtyToPick')}
-      qtyMax={qtyToPick}
       qtyTarget={qtyToPick}
+      qtyInitial={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       //
@@ -86,8 +85,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, alt
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
 
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
-  const eligibleQRCode = toQRCodeString(getPickFromForStep({ stepProps, altStepId }).huQRCode);
-  const qtyToPick = getQtyToPickForStep({ stepProps, altStepId });
+  const eligibleQRCode = toQRCodeString(getPickFrom({ stepProps, altStepId }).huQRCode);
+  const qtyToPick = getQtyToPick({ stepProps, altStepId });
 
   return {
     eligibleQRCode,

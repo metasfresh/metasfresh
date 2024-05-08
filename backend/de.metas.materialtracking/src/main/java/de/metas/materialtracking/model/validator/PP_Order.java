@@ -24,7 +24,6 @@ package de.metas.materialtracking.model.validator;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
@@ -52,6 +51,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
@@ -73,6 +73,7 @@ public class PP_Order
 		materialTrackingBL.addModelTrackingListener(I_PP_Order.Table_Name, PPOrderMaterialTrackingListener.instance);
 
 		CopyRecordFactory.enableForTableName(I_PP_Order.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_PP_Order.Table_Name, PP_OrderPOCopyRecordSupport.class);
 	}
 
 	@DocValidate(timings = {
@@ -145,7 +146,7 @@ public class PP_Order
 		for (final I_C_Invoice invoice : invoices)
 		{
 			sb
-					.append(docTypeDAO.getRecordById(invoice.getC_DocType_ID()).getName())
+					.append(docTypeDAO.getById(invoice.getC_DocType_ID()).getName())
 					.append(" ")
 					.append(invoice.getDocumentNo());
 		}
