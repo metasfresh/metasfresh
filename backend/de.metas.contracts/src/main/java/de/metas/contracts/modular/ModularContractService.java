@@ -103,6 +103,11 @@ public class ModularContractService
 			return false;
 		}
 
+		if(handler.getComputingMethodType().equals(ComputingMethodType.Contract))
+		{
+			return true;
+		}
+
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(contractId);
 		if (settings == null || !settings.isMatching(handler.getComputingMethodType()))
 		{

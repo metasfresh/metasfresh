@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.contract;
+package de.metas.contracts.modular.computing.purchasecontract.informative;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
@@ -63,7 +63,7 @@ import java.util.stream.Stream;
 import static de.metas.contracts.modular.ComputingMethodType.Contract;
 @Component
 @RequiredArgsConstructor
-public class ContractComputingMethod
+public class InformativeLogComputingMethod
  implements IComputingMethodHandler
 {
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
