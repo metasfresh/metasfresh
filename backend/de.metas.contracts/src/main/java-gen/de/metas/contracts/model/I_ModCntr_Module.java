@@ -1,5 +1,6 @@
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ModCntr_Module
@@ -75,13 +76,38 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_ModCntr_Module, Object> COLUMN_Description = new ModelColumn<>(I_ModCntr_Module.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Invoice Line Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicingGroup (String InvoicingGroup);
+	void setInvoicingGroup (java.lang.String InvoicingGroup);
 
 	/**
 	 * Get Invoice Line Group.
@@ -90,7 +116,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getInvoicingGroup();
+	java.lang.String getInvoicingGroup();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_InvoicingGroup = new ModelColumn<>(I_ModCntr_Module.class, "InvoicingGroup", null);
 	String COLUMNNAME_InvoicingGroup = "InvoicingGroup";
@@ -218,7 +244,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -227,7 +253,7 @@ public interface I_ModCntr_Module
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ModCntr_Module, Object> COLUMN_Name = new ModelColumn<>(I_ModCntr_Module.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
