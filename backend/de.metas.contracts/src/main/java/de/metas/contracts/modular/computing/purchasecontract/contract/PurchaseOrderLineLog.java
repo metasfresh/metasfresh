@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.receipt;
+package de.metas.contracts.modular.computing.purchasecontract.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
@@ -73,7 +73,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull
-	private final ReceiptComputingMethod computingMethod;
+	private final ContractComputingMethod computingMethod;
 	@NonNull
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 

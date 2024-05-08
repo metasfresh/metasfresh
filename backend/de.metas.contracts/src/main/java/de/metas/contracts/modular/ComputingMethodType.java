@@ -57,6 +57,7 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 
 	INTERIM_CONTRACT(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Interim_Contract),
 	Receipt(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Receipt),
+	Contract("Contract_Informative_Log"),
 	ProForma(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ProForma),
 	DefinitiveInvoice(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoice),
 	SalesOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct),
