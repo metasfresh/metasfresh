@@ -2,7 +2,7 @@
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +22,17 @@
 
 package de.metas.contracts.modular.settings;
 
-import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
-@Value
 @Builder
-public class ModuleConfig
+@Value
+public class ModuleConfigCreateRequest
 {
-	@NonNull ModuleConfigAndSettingsId id;
+	@NonNull ModularContractSettingsId modularContractSettingsId;
 
 	@NonNull SeqNo seqNo;
 
@@ -42,33 +40,7 @@ public class ModuleConfig
 
 	@NonNull InvoicingGroupType invoicingGroup;
 
-	@With
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
-
-	public ModularContractSettingsId getModularContractSettingsId() {return id.getModularContractSettingsId();}
-
-	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
-	{
-		return modularContractType.isMatching(computingMethodType);
-	}
-
-	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
-	{
-		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
-	}
-
-	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
-
-	@NonNull
-	public ComputingMethodType getComputingMethodType()
-	{
-		return modularContractType.getComputingMethodType();
-	}
-
-	public boolean isCostsType()
-	{
-		return getInvoicingGroup().isCostsType();
-	}
 }

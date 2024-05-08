@@ -39,6 +39,7 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -67,6 +68,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ModularContractSettingsDAO
@@ -93,6 +96,36 @@ public class ModularContractSettingsDAO
 			.additionalTableNameToResetFor(I_ModCntr_Type.Table_Name)
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
+
+	@NotNull
+	private static ModularContractSettingsId extractId(final I_ModCntr_Settings settings)
+	{
+		return ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
+	}
+
+	public static ModuleConfig fromRecord(@NonNull final I_ModCntr_Module record)
+	{
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+
+		return ModuleConfig.builder()
+				.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_Module_ID()))
+				.name(record.getName())
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.seqNo(SeqNo.ofInt(record.getSeqNo()))
+				.invoicingGroup(InvoicingGroupType.ofCode(record.getInvoicingGroup()))
+				.modularContractType(fromRecord(record.getModCntr_Type()))
+				.build();
+	}
+
+	private static ModularContractType fromRecord(@NonNull final I_ModCntr_Type record)
+	{
+		return ModularContractType.builder()
+				.id(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()))
+				.value(record.getValue())
+				.name(record.getName())
+				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
+				.build();
+	}
 
 	@NonNull
 	public ModularContractSettings getByFlatrateTermId(@NonNull final FlatrateTermId contractId)
@@ -141,12 +174,6 @@ public class ModularContractSettingsDAO
 				.collect(ImmutableMap.toImmutableMap(ModularContractSettings::getId, Function.identity()));
 	}
 
-	@NotNull
-	private static ModularContractSettingsId extractId(final I_ModCntr_Settings settings)
-	{
-		return ModularContractSettingsId.ofRepoId(settings.getModCntr_Settings_ID());
-	}
-
 	@NonNull
 	private ModularContractSettings fromRecord(
 			@NonNull final I_ModCntr_Settings settingsRecord,
@@ -163,36 +190,17 @@ public class ModularContractSettingsDAO
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
-						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
-						orgDAO::getTimeZone))
+																	OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
+																	orgDAO::getTimeZone))
 				.moduleConfigs(moduleRecords.stream()
-						.map(ModularContractSettingsDAO::fromRecord)
-						.collect(ImmutableList.toImmutableList()))
+									   .map(ModularContractSettingsDAO::fromRecord)
+									   .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
-	public static ModuleConfig fromRecord(@NonNull final I_ModCntr_Module record)
+	public ModularContractType getModularContractTypeById(@NonNull final ModularContractTypeId modularContractTypeId)
 	{
-		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
-
-		return ModuleConfig.builder()
-				.id(ModuleConfigAndSettingsId.ofRepoId(modularContractSettingsId, record.getModCntr_Module_ID()))
-				.name(record.getName())
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.seqNo(SeqNo.ofInt(record.getSeqNo()))
-				.invoicingGroup(InvoicingGroupType.ofCode(record.getInvoicingGroup()))
-				.modularContractType(fromRecord(record.getModCntr_Type()))
-				.build();
-	}
-
-	private static ModularContractType fromRecord(@NonNull final I_ModCntr_Type record)
-	{
-		return ModularContractType.builder()
-				.id(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()))
-				.value(record.getValue())
-				.name(record.getName())
-				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
-				.build();
+		return fromRecord(load(ModularContractTypeId.toRepoId(modularContractTypeId), I_ModCntr_Type.class));
 	}
 
 	public boolean isSettingsUsedInCompletedFlatrateConditions(final @NonNull ModularContractSettingsId modCntrSettingsId)
@@ -362,13 +370,33 @@ public class ModularContractSettingsDAO
 				.ofRepoIdOrNull(conditions.getModCntr_Settings_ID());
 
 		cacheKey2SettingsId.put(SettingsLookupKey.of(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID())),
-				CachedSettingsId.ofNullable(modularContractSettingsId));
+								CachedSettingsId.ofNullable(modularContractSettingsId));
 
 		Optional.ofNullable(termId)
 				.map(SettingsLookupKey::of)
 				.ifPresent(termCacheKey -> cacheKey2SettingsId.put(termCacheKey, CachedSettingsId.ofNullable(modularContractSettingsId)));
 
 		return modularContractSettingsId;
+	}
+
+	public void createModule(final ModuleConfigCreateRequest request)
+	{
+		final I_ModCntr_Module module = newInstance(I_ModCntr_Module.class);
+		module.setModCntr_Settings_ID(request.getModularContractSettingsId().getRepoId());
+		module.setM_Product_ID(request.getProductId().getRepoId());
+		module.setInvoicingGroup(request.getInvoicingGroup().getCode());
+		module.setModCntr_Type_ID(request.getModularContractType().getId().getRepoId());
+		module.setSeqNo(request.getSeqNo().toInt());
+		saveRecord(module);
+
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		final I_ModCntr_Module module = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		return fromRecord(module);
+
 	}
 
 	private static class SettingsInfoCachingKeysMapper implements CachingKeysMapper<ModularContractSettingsId>
@@ -395,6 +423,7 @@ public class ModularContractSettingsDAO
 
 			throw new AdempiereException("Unexpected table name=" + recordRef.getTableName());
 		}
+
 		@Override
 		public boolean isResetAll(@NonNull final TableRecordReference recordRef)
 		{
@@ -409,6 +438,54 @@ public class ModularContractSettingsDAO
 		}
 	}
 
+	@Value
+	private static class SettingsLookupKey
+	{
+		@Nullable FlatrateTermId contractId;
+		@Nullable ConditionsId conditionsId;
+
+		private SettingsLookupKey(
+				@Nullable final FlatrateTermId contractId,
+				@Nullable final ConditionsId conditionsId)
+		{
+			if (conditionsId == null && contractId == null)
+			{
+				throw new AdempiereException("conditionsId && contractId cannot be both null!");
+			}
+
+			if (conditionsId != null && contractId != null)
+			{
+				throw new AdempiereException("conditionsId && contractId cannot be both set!");
+			}
+
+			this.contractId = contractId;
+			this.conditionsId = conditionsId;
+		}
+
+		@NonNull
+		public static SettingsLookupKey of(@NonNull final ConditionsId conditionsId)
+		{
+			return new SettingsLookupKey(null, conditionsId);
+		}
+
+		@NonNull
+		public static SettingsLookupKey of(@NonNull final FlatrateTermId contractId)
+		{
+			return new SettingsLookupKey(contractId, null);
+		}
+	}
+
+	@Value
+	private static class CachedSettingsId
+	{
+		@Nullable ModularContractSettingsId settingsId;
+
+		private static CachedSettingsId ofNullable(@Nullable final ModularContractSettingsId settingsId)
+		{
+			return new CachedSettingsId(settingsId);
+		}
+	}
+
 	private class SettingsIdCachingKeysMapper implements CachingKeysMapper<SettingsLookupKey>
 	{
 		@Override
@@ -417,8 +494,8 @@ public class ModularContractSettingsDAO
 			if (I_C_Flatrate_Conditions.Table_Name.equals(recordRef.getTableName()))
 			{
 				logger.debug("ComputeCachingKeys called for a ({},{}) that wasn't cached so far!",
-						recordRef.getRecord_ID(),
-						recordRef.getTableName());
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
 
 				return ImmutableSet.of();
 			}
@@ -427,8 +504,8 @@ public class ModularContractSettingsDAO
 				final FlatrateTermId contractId = recordRef.getIdAssumingTableName(I_C_Flatrate_Term.Table_Name, FlatrateTermId::ofRepoId);
 
 				logger.debug("ComputeCachingKeys called for ({},{})!",
-						recordRef.getRecord_ID(),
-						recordRef.getTableName());
+							 recordRef.getRecord_ID(),
+							 recordRef.getTableName());
 
 				return ImmutableSet.of(SettingsLookupKey.of(contractId));
 			}
@@ -460,59 +537,12 @@ public class ModularContractSettingsDAO
 		}
 	}
 
-	@Value
-	private static class SettingsLookupKey
+	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull ModularContractSettingsId modularContractSettingsId)
 	{
-		@Nullable FlatrateTermId contractId;
-		@Nullable ConditionsId conditionsId;
-
-		@NonNull
-		public static SettingsLookupKey of(@NonNull final ConditionsId conditionsId)
-		{
-			return new SettingsLookupKey(null, conditionsId);
-		}
-
-		@NonNull
-		public static SettingsLookupKey of(@NonNull final FlatrateTermId contractId)
-		{
-			return new SettingsLookupKey(contractId, null);
-		}
-
-		private SettingsLookupKey(
-				@Nullable final FlatrateTermId contractId,
-				@Nullable final ConditionsId conditionsId)
-		{
-			if (conditionsId == null && contractId == null)
-			{
-				throw new AdempiereException("conditionsId && contractId cannot be both null!");
-			}
-
-			if (conditionsId != null && contractId != null)
-			{
-				throw new AdempiereException("conditionsId && contractId cannot be both set!");
-			}
-
-			this.contractId = contractId;
-			this.conditionsId = conditionsId;
-		}
-	}
-
-	@Value
-	private static class CachedSettingsId
-	{
-		@Nullable ModularContractSettingsId settingsId;
-		
-		private static CachedSettingsId ofNullable(@Nullable final ModularContractSettingsId settingsId)
-		{
-			return new CachedSettingsId(settingsId);
-		}
-	}
-
-	@NonNull
-	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
-	{
-		final I_ModCntr_Module module = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
-		return fromRecord(module);
-
+		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID)
+				.create()
+				.firstOnly();
 	}
 }

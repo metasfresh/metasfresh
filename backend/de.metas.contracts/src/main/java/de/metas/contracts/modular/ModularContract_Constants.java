@@ -31,4 +31,6 @@ public class ModularContract_Constants
 
 	public static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.ReactivateNotAllowed");
 	public static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
+
+	public static final int CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID = 540008;
 }

@@ -27,11 +27,15 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -112,5 +116,29 @@ public class ModularContractSettingsBL
 	public boolean hasComputingMethodType(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
+	}
+
+	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull ModularContractSettingsId modularContractSettingsId)
+	{
+		return modularContractSettingsDAO.retrieveInformativeLogModule(modularContractSettingsId);
+	}
+
+
+
+	public void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		final ModularContractSettings modularContractSettings = getById(modularContractSettingsId);
+
+		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContractTypeId.ofRepoId(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID));
+
+		ModuleConfigCreateRequest request = ModuleConfigCreateRequest.builder()
+				.seqNo(SeqNo.ofInt(0))
+				.modularContractType(informativeLogContractType)
+				.invoicingGroup(InvoicingGroupType.SERVICES)
+				.productId(modularContractSettings.getRawProductId())
+				.name("Informative Logs")
+				.build();
+
+		modularContractSettingsDAO.createModule(request);
 	}
 }
