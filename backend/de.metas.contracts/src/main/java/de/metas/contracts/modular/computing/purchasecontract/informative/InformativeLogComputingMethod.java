@@ -60,7 +60,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static de.metas.contracts.modular.ComputingMethodType.Contract;
+import static de.metas.contracts.modular.ComputingMethodType.InformativeLogs;
 @Component
 @RequiredArgsConstructor
 public class InformativeLogComputingMethod
@@ -77,7 +77,7 @@ public class InformativeLogComputingMethod
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return Contract;
+		return InformativeLogs;
 	}
 
 	@Override

@@ -103,7 +103,7 @@ public class ModularContractService
 			return false;
 		}
 
-		if(handler.getComputingMethodType().equals(ComputingMethodType.Contract))
+		if(handler.getComputingMethodType().equals(ComputingMethodType.InformativeLogs))
 		{
 			return true;
 		}
