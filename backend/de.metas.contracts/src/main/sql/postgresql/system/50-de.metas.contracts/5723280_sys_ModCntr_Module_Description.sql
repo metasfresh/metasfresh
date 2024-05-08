@@ -35,14 +35,6 @@ UPDATE AD_Column SET AD_Reference_ID=14, FieldLength=2000,Updated=TO_TIMESTAMP('
 
 
 
--- Column: ModCntr_Module.Description
--- Source Table: ModCntr_Type
--- 2024-05-08T16:34:17.969Z
-INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,588229,0,540158,542340,TO_TIMESTAMP('2024-05-08 19:34:17.776','YYYY-MM-DD HH24:MI:SS.US'),100,'L','Y',588229,588229,542337,TO_TIMESTAMP('2024-05-08 19:34:17.776','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
-
-
 
 -- Column: ModCntr_Module.Description
 -- Source Table: ModCntr_Type
@@ -91,4 +83,13 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP(
 ;
 
 
+
+
+
+
+
+-- Column: ModCntr_Module.Description
+-- 2024-05-08T20:36:48.917Z
+UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2024-05-08 23:36:48.917','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588229
+;
 
