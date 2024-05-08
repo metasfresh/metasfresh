@@ -25,7 +25,6 @@ package de.metas.contracts.modular.computing.tbd.inventory;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -46,6 +45,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -68,28 +68,16 @@ import java.util.Optional;
 class InventoryLineLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final InventoryLineModularContractHandler computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InventoryLine.Table_Name;
-	}
+	@Getter @NonNull private final InventoryLineModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_M_InventoryLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INVENTORY;
 
 	@Override
 	@NonNull
@@ -137,7 +125,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 											.invoicingBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID()))
 											.collectionPointBPartnerId(collectionPointBPartnerId)
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.INVENTORY)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(quantity)

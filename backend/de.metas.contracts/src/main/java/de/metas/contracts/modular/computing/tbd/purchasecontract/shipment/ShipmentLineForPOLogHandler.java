@@ -25,7 +25,6 @@ package de.metas.contracts.modular.computing.tbd.purchasecontract.shipment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -47,6 +46,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -71,17 +71,11 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final ShipmentLineForPOModularContractHandler computingMethod;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_M_InOutLine.Table_Name;
-	}
+	@Getter @NonNull private final ShipmentLineForPOModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -116,7 +110,7 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 											.producerBPartnerId(bPartnerId)
 											.invoicingBPartnerId(bPartnerId)
 											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-											.documentType(LogEntryDocumentType.SHIPMENT)
+											.documentType(getLogEntryDocumentType())
 											.contractType(getLogEntryContractType())
 											.soTrx(SOTrx.PURCHASE)
 											.processed(false)
@@ -152,11 +146,4 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 											.contractModuleId(createLogRequest.getModularContractModuleId())
 											.build());
 	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
-	}
-
 }

@@ -72,7 +72,7 @@ public class ProductPrices
 
 	private static final Logger logger = LogManager.getLogger(ProductPrices.class);
 
-	public static final ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
+	public static ProductPriceQuery newQuery(@NonNull final I_M_PriceList_Version plv)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());
 		return new ProductPriceQuery()
@@ -156,7 +156,7 @@ public class ProductPrices
 
 		final UOMConversionsMap conversionsMap = uomConversionRepo.getProductConversions(productId);
 
-		if (!conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isPresent())
+		if (conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isEmpty())
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION_AVAILABLE);
@@ -235,7 +235,6 @@ public class ProductPrices
 				.setParameter(I_M_Product.Table_Name, productName);
 	}
 
-	@SuppressWarnings("serial")
 	public static final class DuplicateMainProductPriceException extends AdempiereException
 	{
 		private static final AdMessageKey MSG_M_ProductPrice_DublicateMainPrice = AdMessageKey.of("M_ProductPrice_DublicateMainPrice");
@@ -255,7 +254,7 @@ public class ProductPrices
 
 			return msgBL.getMsg(ctx,
 					MSG_M_ProductPrice_DublicateMainPrice,
-					new Object[] { productRecord.getValue(), plvRecord.getName() });
+					new Object[] { productRecord.getName(), plvRecord.getName() });
 		}
 	}
 
@@ -323,7 +322,7 @@ public class ProductPrices
 	 * @deprecated Please use {@link IPriceListDAO#addProductPrice(AddProductPriceRequest)}. If doesn't fit, extend it ;)
 	 */
 	@Deprecated
-	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
+	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 

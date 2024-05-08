@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.orderline;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -50,6 +49,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -71,23 +71,18 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SOLineForSOLogHandler.OnComplete.Description");
 
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@NonNull
-	private final SalesOrderLineModularContractHandler contractHandler;
-	@NonNull
-	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_OrderLine.Table_Name;
-	}
+	@Getter @NonNull private final SalesOrderLineModularContractHandler computingMethod;
+	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_ORDER;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -123,7 +118,7 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
 											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
 											.warehouseId(warehouseId)
-											.documentType(LogEntryDocumentType.SALES_ORDER)
+											.documentType(getLogEntryDocumentType())
 											.contractType(LogEntryContractType.MODULAR_CONTRACT)
 											.soTrx(SOTrx.SALES)
 											.processed(false)
@@ -143,11 +138,5 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return contractHandler;
 	}
 }

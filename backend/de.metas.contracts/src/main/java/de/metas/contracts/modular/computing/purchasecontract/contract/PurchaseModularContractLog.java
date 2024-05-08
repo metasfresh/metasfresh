@@ -20,31 +20,27 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.contract;
+package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
+import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
+@Getter
 class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 {
-	@NonNull
-	private final ContractComputingMethod computingMethod;
+	@NonNull private final ReceiptComputingMethod computingMethod;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
 
 	public PurchaseModularContractLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ContractComputingMethod computingMethod)
+			@NonNull final ReceiptComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
-	}
-
-	@Override
-	public @NonNull IComputingMethodHandler getComputingMethod()
-	{
-		return computingMethod;
 	}
 }

@@ -2,6 +2,7 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -167,13 +168,15 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 			Check.assume(list.stream().noneMatch(ModularContractLogEntry::isProcessed), "Some of the log entries are already processed {}", this);
 	}
 
-	public ModularContractLogEntriesList withPriceActualAndCalculateAmount(@NonNull final ProductPrice price, @NonNull final QuantityUOMConverter quantityUOMConverter)
+	public ModularContractLogEntriesList withPriceActualAndCalculateAmount(
+			@NonNull final ProductPrice price,
+			@NonNull final QuantityUOMConverter quantityUOMConverter,
+			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		assertAllUnprocessed();
 		assertUniqueProductPriceOrError();
 		return list.stream()
-				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter))
+				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter, logHandlerRegistry))
 				.collect(collect());
-
 	}
 }

@@ -217,7 +217,7 @@ public class ComputingMethodService
 	}
 
 	@NonNull
-	public ComputingResponse toZeroResponseWithQtyOne(final @NotNull ComputingRequest request)
+	public ComputingResponse toZeroResponseWithQtyZero(final @NotNull ComputingRequest request)
 	{
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		return ComputingResponse.builder()
@@ -227,7 +227,7 @@ public class ComputingMethodService
 							   .money(Money.zero(request.getCurrencyId()))
 							   .uomId(stockUOMId)
 							   .build())
-				.qty(Quantitys.one(stockUOMId))
+				.qty(Quantitys.zero(stockUOMId))
 				.build();
 	}
 

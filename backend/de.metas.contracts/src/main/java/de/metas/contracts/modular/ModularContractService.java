@@ -37,7 +37,6 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
@@ -51,7 +50,6 @@ import org.springframework.stereotype.Service;
 public class ModularContractService
 {
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	@NonNull private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
