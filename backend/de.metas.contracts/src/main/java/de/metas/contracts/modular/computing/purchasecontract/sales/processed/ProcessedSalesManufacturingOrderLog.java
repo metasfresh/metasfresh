@@ -62,6 +62,7 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -92,6 +93,12 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 		{
 			final PPCostCollectorId costCollectorId = recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
 			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
+
+			if (!ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt))
+			{
+				return false;
+			}
+			
 			return request.getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 		}
 

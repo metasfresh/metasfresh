@@ -63,8 +63,7 @@ public class PP_Order
 			ModelValidator.TIMING_BEFORE_VOID,
 			ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
-			ModelValidator.TIMING_BEFORE_CLOSE })
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
 	public void onBeforeReverse(@NonNull final I_PP_Order order)
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());

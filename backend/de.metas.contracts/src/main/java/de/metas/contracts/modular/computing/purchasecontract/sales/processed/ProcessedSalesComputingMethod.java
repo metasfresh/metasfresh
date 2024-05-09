@@ -45,6 +45,7 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -69,6 +70,14 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 	{
 		if (!logEntryContractType.isModularContractType()
 				|| !recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
+		{
+			return false;
+		}
+
+		final PPCostCollectorId costCollectorId = recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
+
+		if (!ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt))
 		{
 			return false;
 		}
