@@ -24,6 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
@@ -35,6 +36,8 @@ import org.springframework.stereotype.Component;
 @Getter
 public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
+	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
+
 	private final AVInterimComputingMethod computingMethod;
 
 	public InterimInvoiceLineLog(

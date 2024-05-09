@@ -26,7 +26,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
@@ -39,7 +38,6 @@ import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -60,8 +58,6 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
 	@Getter @NonNull private final InterimComputingMethod computingMethod;
-	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
-	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
 	@Getter @NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
 
 	public InterimInvoiceLineLog(

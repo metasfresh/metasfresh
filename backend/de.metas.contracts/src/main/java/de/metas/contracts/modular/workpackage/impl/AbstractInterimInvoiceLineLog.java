@@ -23,13 +23,13 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
@@ -81,7 +81,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 
 	@NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
-	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
+
 
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -99,12 +99,6 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	public @NonNull String getSupportedTableName()
 	{
 		return supportedTableName;
-	}
-
-	@Override
-	public @NonNull LogEntryContractType getLogEntryContractType()
-	{
-		return logEntryContractType;
 	}
 
 	@NonNull
@@ -163,7 +157,9 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
 				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, createLogRequest.getModularContractSettings().getYearAndCalendarId())
+		final ProductId rawProductId = createLogRequest.getModularContractSettings().getRawProductId();
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(rawProductId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(
@@ -175,7 +171,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.invoicingBPartnerId(invoiceBpartnerId)
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
-						.initialProductId(createLogRequest.getModularContractSettings().getRawProductId())
+						.initialProductId(rawProductId)
 						.productName(createLogRequest.getProductName())
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
@@ -184,7 +180,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.quantity(qtyEntered)
 						.amount(amount)
 						.transactionDate(transactionDate)
-						.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
+						.year(yearAndCalendarId.yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
 						.configId(createLogRequest.getConfigId())
