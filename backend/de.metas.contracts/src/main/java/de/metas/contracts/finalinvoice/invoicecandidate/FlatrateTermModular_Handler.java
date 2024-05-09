@@ -132,7 +132,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 				.pricingSystemId(modularContractSettings.getPricingSystemId())
 				.lockOwner(lockOwner);
 
-		return modularContractSettings.getModuleConfigs()
+		return modularContractSettings.getModuleConfigsWithout(ComputingMethodType.InformativeLogs)
 				.stream()
 				.map(module -> createCandidateFor(requestTemplate.moduleConfig(module).build()))
 				.collect(ImmutableList.toImmutableList());
