@@ -31,7 +31,6 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.BooleanWithReason;
@@ -95,8 +94,6 @@ class ModularContractLogHandler
 
 	@NonNull
 	private final ModularContractLogHandlerRegistry handlerRegistry;
-	@NonNull
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull
 	private final ModularContractLogDAO contractLogDAO;
 	@NonNull
