@@ -113,7 +113,7 @@ public class ModularContractSettingsDAO
 		return fromRecord(record, getContractTypes());
 	}
 
-	private static ModuleConfig fromRecord(@NonNull final I_ModCntr_Module record, @NonNull ModularContractTypeMap contractTypes)
+	private static ModuleConfig fromRecord(@NonNull final I_ModCntr_Module record, @NonNull final ModularContractTypeMap contractTypes)
 	{
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
@@ -412,6 +412,7 @@ public class ModularContractSettingsDAO
 		module.setInvoicingGroup(request.getInvoicingGroup().getCode());
 		module.setModCntr_Type_ID(request.getModularContractType().getId().getRepoId());
 		module.setSeqNo(request.getSeqNo().toInt());
+		module.setName(request.getName());
 		saveRecord(module);
 	}
 
