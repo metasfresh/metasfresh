@@ -175,6 +175,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.invoicingBPartnerId(invoiceBpartnerId)
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
+						.initialProductId(createLogRequest.getModularContractSettings().getRawProductId())
 						.productName(createLogRequest.getProductName())
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
