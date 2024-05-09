@@ -60,12 +60,12 @@ public class ModularContractSettingsBL
 			@NonNull final TypeConditions typeConditions)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-																			  .addOnlyActiveRecordsFilter()
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettings.getId().getRepoId())
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, typeConditions.getCode())
-																			  .create()
-																			  .firstIdOnly());
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettings.getId().getRepoId())
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.create()
+				.firstIdOnly());
 
 		if (conditionsId == null)
 		{
@@ -118,40 +118,30 @@ public class ModularContractSettingsBL
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
 	}
 
-	public I_ModCntr_Module retrieveInformativeLogModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
-	{
-		return modularContractSettingsDAO.retrieveInformativeLogModule(modularContractSettingsId);
-	}
-
-
-
-	public void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		final ModularContractSettings modularContractSettings = getById(modularContractSettingsId);
-
 		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID);
 
-		final ModuleConfigCreateRequest request = ModuleConfigCreateRequest.builder()
-				.seqNo(SeqNo.ofInt(0))
-				.modularContractType(informativeLogContractType)
-				.invoicingGroup(InvoicingGroupType.SERVICES)
-				.productId(modularContractSettings.getRawProductId())
-				.name("Informative Logs")
-				.build();
-
-		modularContractSettingsDAO.createModule(request);
+		modularContractSettingsDAO.createModule(
+				ModuleConfigCreateRequest.builder()
+						.seqNo(SeqNo.ofInt(0))
+						.modularContractType(informativeLogContractType)
+						.invoicingGroup(InvoicingGroupType.SERVICES)
+						.productId(modularContractSettings.getRawProductId())
+						.name("Informative Logs") // NOTE en/de trl is the same
+						.build()
+		);
 	}
 
 	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
 	{
-		final I_ModCntr_Module existingModuleConfig = retrieveInformativeLogModule(modularContractSettingsId);
-
-		if(existingModuleConfig== null)
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsDAO.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
+		if (existingModuleConfig == null)
 		{
 			createInformativeLogsModule(modularContractSettingsId);
 		}
-
-		if(!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
+		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
 			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
 		}
