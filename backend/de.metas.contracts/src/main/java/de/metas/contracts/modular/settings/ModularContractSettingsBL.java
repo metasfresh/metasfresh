@@ -120,16 +120,13 @@ public class ModularContractSettingsBL
 
 	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
-		final ModularContractSettings modularContractSettings = getById(modularContractSettingsId);
-		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID);
-
 		modularContractSettingsDAO.createModule(
 				ModuleConfigCreateRequest.builder()
 						.seqNo(SeqNo.ofInt(0))
-						.modularContractType(informativeLogContractType)
-						.invoicingGroup(InvoicingGroupType.SERVICES)
-						.productId(modularContractSettings.getRawProductId())
 						.name("Informative Logs") // NOTE en/de trl is the same
+						.modularContractType(modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
+						.invoicingGroup(InvoicingGroupType.SERVICES)
+						.productId(getById(modularContractSettingsId).getRawProductId())
 						.build()
 		);
 	}
