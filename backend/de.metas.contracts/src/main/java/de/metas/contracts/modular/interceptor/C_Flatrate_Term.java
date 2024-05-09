@@ -51,8 +51,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
 @Interceptor(I_C_Flatrate_Term.class)
@@ -91,22 +89,15 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		final AtomicBoolean containsInterimComputingMethod = new AtomicBoolean(false);
-		settings.getModuleConfigs().forEach(moduleConfig -> {
-			if(moduleConfig.getModularContractType().isMatching(ComputingMethodType.INTERIM_CONTRACT))
-			{
-				containsInterimComputingMethod.set(true);
-			}
-		});
-		if(!containsInterimComputingMethod.get())
+		if (!settings.isMatching(ComputingMethodType.INTERIM_CONTRACT))
 		{
 			return;
 		}
 
 		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
 		interimInvoiceFlatrateTermBL.create(flatrateTermRecord,
-											flatrateTermRecord.getStartDate(),
-											flatrateTermRecord.getEndDate()
+				flatrateTermRecord.getStartDate(),
+				flatrateTermRecord.getEndDate()
 		);
 	}
 
@@ -119,11 +110,11 @@ public class C_Flatrate_Term
 		}
 
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-														   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
-														   .modelAction(COMPLETED)
-														   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
-														   .userInChargeId(Env.getLoggedUserId())
-														   .build());
+				.tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+				.modelAction(COMPLETED)
+				.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+				.userInChargeId(Env.getLoggedUserId())
+				.build());
 
 		createMissingInterimReceiptLogs(flatrateTermRecord);
 	}
@@ -133,18 +124,18 @@ public class C_Flatrate_Term
 		inoutBL.streamLines(
 						InOutLineQuery.builder()
 								.headerQuery(InOutQuery.builder()
-													 .docStatus(DocStatus.Completed)
-													 .movementDateFrom(interimContract.getStartDate().toInstant())
-													 .movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
-													 .build())
+										.docStatus(DocStatus.Completed)
+										.movementDateFrom(interimContract.getStartDate().toInstant())
+										.movementDateTo(Check.assumeNotNull(interimContract.getEndDate(), "End Date shouldn't be null").toInstant())
+										.build())
 								.flatrateTermId(interimContract.getModular_Flatrate_Term_ID())
 								.build())
 				.forEach(inoutLine -> modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-																						 .tableRecordReference(TableRecordReference.of(inoutLine))
-																						 .modelAction(COMPLETED)
-																						 .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
-																						 .userInChargeId(Env.getLoggedUserId())
-																						 .build())
+						.tableRecordReference(TableRecordReference.of(inoutLine))
+						.modelAction(COMPLETED)
+						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
+						.userInChargeId(Env.getLoggedUserId())
+						.build())
 				);
 	}
 
@@ -157,11 +148,11 @@ public class C_Flatrate_Term
 		}
 
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
-														   .tableRecordReference(TableRecordReference.of(flatrateTermRecord))
-														   .modelAction(COMPLETED)
-														   .logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
-														   .userInChargeId(Env.getLoggedUserId())
-														   .build()
+				.tableRecordReference(TableRecordReference.of(flatrateTermRecord))
+				.modelAction(COMPLETED)
+				.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+				.userInChargeId(Env.getLoggedUserId())
+				.build()
 		);
 
 	}

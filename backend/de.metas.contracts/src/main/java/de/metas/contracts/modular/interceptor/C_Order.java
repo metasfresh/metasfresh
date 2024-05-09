@@ -167,7 +167,7 @@ public class C_Order
 			return;
 		}
 
-		validateContractSettingEligible(settings, conditionsId);
+		settings.assertHasModules();
 
 		final I_C_Flatrate_Term modularContract = flatrateBL.createContractForOrderLine(orderLine);
 		flatrateBL.complete(modularContract);
@@ -178,18 +178,6 @@ public class C_Order
 		return Optional.ofNullable(ConditionsId.ofRepoIdOrNull(orderLine.getC_Flatrate_Conditions_ID()))
 				.map(flatrateBL::isModularContract)
 				.orElse(false);
-	}
-
-	private void validateContractSettingEligible(@NonNull final ModularContractSettings settings, @NonNull final ConditionsId conditionsId)
-	{
-		if (settings.getModuleConfigs().isEmpty())
-		{
-			throw new AdempiereException("Could not create contract! Missing module configs for modular contract term")
-					.appendParametersToMessage()
-					.setParameter("ConditionsId", conditionsId)
-					.setParameter("SettingsId", settings.getId())
-					.markAsUserValidationError();
-		}
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_Harvesting_Calendar_ID, I_C_Order.COLUMNNAME_Harvesting_Year_ID })

@@ -22,9 +22,12 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.common.util.Check;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -38,45 +41,60 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Value
 @Builder
 public class ModularContractSettings
 {
-	@NonNull
-	ModularContractSettingsId id;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	String name;
-
-	@NonNull
-	YearAndCalendarId yearAndCalendarId;
-
-	@NonNull
-	PricingSystemId pricingSystemId;
+	@NonNull ModularContractSettingsId id;
+	@NonNull OrgId orgId;
+	@NonNull String name;
+	@NonNull YearAndCalendarId yearAndCalendarId;
+	@NonNull PricingSystemId pricingSystemId;
 
 	/**
 	 * Basically, purchase order line with this product may start the contract-frenzy.
 	 */
-	@NonNull
-	ProductId rawProductId;
-	@Nullable
-	ProductId processedProductId;
-	@Nullable
-	ProductId coProductId;
+	@NonNull ProductId rawProductId;
+	@Nullable ProductId processedProductId;
+	@Nullable ProductId coProductId;
+	@NonNull @Singular ImmutableList<ModuleConfig> moduleConfigs;
+
+	@NonNull SOTrx soTrx;
+
+	@NonNull LocalDateAndOrgId storageCostStartDate;
+
+	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
+
+	public CalendarId getCalendarId() {return getYearAndCalendarId().calendarId();}
+
+	public void assertHasModules()
+	{
+		if (moduleConfigs.isEmpty())
+		{
+			throw new AdempiereException(MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS)
+					.markAsUserValidationError();
+		}
+	}
 
 	@NonNull
-	@Singular
-	List<ModuleConfig> moduleConfigs;
-
-	@NonNull
-	SOTrx soTrx;
-
-	@NonNull
-	LocalDateAndOrgId storageCostStartDate;
+	public Optional<ModuleConfig> getSingleModuleConfig(@NonNull final ComputingMethodType computingMethodType)
+	{
+		final List<ModuleConfig> configs = getModuleConfigs(computingMethodType);
+		if (configs.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (configs.size() == 1)
+		{
+			return Optional.of(configs.get(0));
+		}
+		else
+		{
+			throw new AdempiereException("More than one module config found for computing method type " + computingMethodType + ": " + configs);
+		}
+	}
 
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
@@ -135,6 +153,5 @@ public class ModularContractSettings
 				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
 				.count();
 	}
-
 
 }

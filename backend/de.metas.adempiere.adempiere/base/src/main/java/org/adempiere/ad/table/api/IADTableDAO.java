@@ -144,6 +144,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	void onTableNameRename(final I_AD_Table table);
 
+	boolean hasPhysicalColumn(@NonNull TableName tableName, @NonNull String columnName);
+	
 	/**
 	 * REtrieves a query builder for the given parameters (case insensitive!) that can be refined further.
 	 *
