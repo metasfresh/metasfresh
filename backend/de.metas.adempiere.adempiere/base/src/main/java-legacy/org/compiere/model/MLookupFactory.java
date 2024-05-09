@@ -524,7 +524,8 @@ public class MLookupFactory
 
 		//
 		// Description column SQL
-		final boolean tableHasDescriptionColumn = Services.get(IADTableDAO.class).hasColumnName(tableName, COLUMNNAME_Description);
+		// NOTE: atm we don't support virtual columns for lookup Description
+		final boolean tableHasDescriptionColumn = Services.get(IADTableDAO.class).hasPhysicalColumn(tableName, COLUMNNAME_Description);
 		if (tableHasDescriptionColumn)
 		{
 			descriptionColumnSQL_BaseLang = tableName + "." + COLUMNNAME_Description;

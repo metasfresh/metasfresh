@@ -87,13 +87,9 @@ public class C_Flatrate_Conditions
 	private void validateModularContractSettings(@NonNull final ConditionsId conditionsId)
 	{
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateConditionsId(conditionsId);
-		if (settings.getModuleConfigs().isEmpty())
-		{
-			throw new AdempiereException(MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS)
-					.markAsUserValidationError();
-		}
+		settings.assertHasModules();
 
-		calendarBL.checkCorrectCalendar(settings.getYearAndCalendarId().calendarId());
+		calendarBL.checkCorrectCalendar(settings.getCalendarId());
 	}
 
 	private void validateOnFlatrateTermExtend(@NonNull final String onFlatrateTermExtend)

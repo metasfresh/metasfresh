@@ -51,7 +51,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -106,22 +105,17 @@ public class ModularContractPriceService
 		}
 
 		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
-
-		final Optional<ModuleConfig> interimContractModule = settings.getModuleConfigs()
-				.stream()
-				.filter(config -> config.isMatching(ComputingMethodType.INTERIM_CONTRACT))
-				.findFirst();
-
-		if (interimContractModule.isEmpty())
+		final ModuleConfig interimContractModule = settings.getSingleModuleConfig(ComputingMethodType.INTERIM_CONTRACT).orElse(null);
+		if (interimContractModule == null)
 		{
 			// there is no module for interim prices
 			return;
 		}
-		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
+		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 		final ProductId productId = settings.getRawProductId();
 		setProductDataOnPricingContext(productId, pricingContextTemplate);
-		createModCntrSpecificPrices(flatrateTermRecord, productId, interimContractModule.get(), pricingContextTemplate);
+		createModCntrSpecificPrices(flatrateTermRecord, productId, interimContractModule, pricingContextTemplate);
 
 	}
 

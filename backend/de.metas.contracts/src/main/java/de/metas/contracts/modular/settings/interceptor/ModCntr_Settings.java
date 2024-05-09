@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -45,4 +46,24 @@ public class ModCntr_Settings
 	{
 		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID },
+			ifUIAction = true)
+	public void upsertInformativeLogsModule(@NonNull final I_ModCntr_Settings record)
+	{
+		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
+
+		if (rawProductId == null)
+		{
+			// nothing to do
+			return;
+		}
+
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+
+		modularContractSettingsBL.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
+
+	}
+
 }

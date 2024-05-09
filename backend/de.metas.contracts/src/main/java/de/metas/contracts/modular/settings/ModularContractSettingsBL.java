@@ -27,11 +27,15 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,12 +60,12 @@ public class ModularContractSettingsBL
 			@NonNull final TypeConditions typeConditions)
 	{
 		final ConditionsId conditionsId = ConditionsId.ofRepoIdOrNull(queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-																			  .addOnlyActiveRecordsFilter()
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettings.getId().getRepoId())
-																			  .addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, typeConditions.getCode())
-																			  .create()
-																			  .firstIdOnly());
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, modularContractSettings.getId().getRepoId())
+				.addEqualsFilter(X_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, typeConditions.getCode())
+				.create()
+				.firstIdOnly());
 
 		if (conditionsId == null)
 		{
@@ -105,12 +109,39 @@ public class ModularContractSettingsBL
 	public ModularContractType getModuleContractType(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		final ModuleConfig moduleConfig = modularContractSettingsDAO.getByModuleId(modularContractModuleId);
-
 		return moduleConfig.getModularContractType();
 	}
 
 	public boolean hasComputingMethodType(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleContractType(modularContractModuleId).isMatching(computingMethodType);
+	}
+
+	private void createInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		modularContractSettingsDAO.createModule(
+				ModuleConfigCreateRequest.builder()
+						.modularContractSettingsId(modularContractSettingsId)
+						.seqNo(SeqNo.ofInt(0))
+						.name("Informative Logs") // NOTE en/de trl is the same
+						.modularContractType(modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
+						.invoicingGroup(InvoicingGroupType.SERVICES)
+						.productId(getById(modularContractSettingsId).getRawProductId())
+						.processed(true)
+						.build()
+		);
+	}
+
+	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
+	{
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsDAO.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
+		if (existingModuleConfig == null)
+		{
+			createInformativeLogsModule(modularContractSettingsId);
+		}
+		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
+		{
+			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
+		}
 	}
 }
