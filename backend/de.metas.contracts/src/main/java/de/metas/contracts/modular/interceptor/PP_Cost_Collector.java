@@ -33,6 +33,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import static de.metas.contracts.modular.ModelAction.COMPLETED;
@@ -52,6 +53,11 @@ public class PP_Cost_Collector
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Cost_Collector.COLUMNNAME_Processed)
 	public void afterProcessed(@NonNull final I_PP_Cost_Collector orderCostCollector)
 	{
+		if (!orderCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt))
+		{
+			return;
+		}
+		
 		contractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 													.tableRecordReference(TableRecordReference.of(orderCostCollector))
 													.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
