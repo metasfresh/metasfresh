@@ -129,7 +129,7 @@ public class ModularContractSettingsBL
 	{
 		final ModularContractSettings modularContractSettings = getById(modularContractSettingsId);
 
-		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContractTypeId.ofRepoId(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID));
+		final ModularContractType informativeLogContractType = modularContractSettingsDAO.getModularContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID);
 
 		final ModuleConfigCreateRequest request = ModuleConfigCreateRequest.builder()
 				.seqNo(SeqNo.ofInt(0))
