@@ -121,6 +121,7 @@ public class ModularContractSettingsBL
 	{
 		modularContractSettingsDAO.createModule(
 				ModuleConfigCreateRequest.builder()
+						.modularContractSettingsId(modularContractSettingsId)
 						.seqNo(SeqNo.ofInt(0))
 						.name("Informative Logs") // NOTE en/de trl is the same
 						.modularContractType(modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
