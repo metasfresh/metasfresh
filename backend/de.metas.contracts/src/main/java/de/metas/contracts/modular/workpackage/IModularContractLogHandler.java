@@ -143,6 +143,7 @@ public interface IModularContractLogHandler
 			return moduleConfig.isCostsType();
 		}
 
+		@NonNull
 		public ProductId getProductId()
 		{
 			return moduleConfig.getProductId();

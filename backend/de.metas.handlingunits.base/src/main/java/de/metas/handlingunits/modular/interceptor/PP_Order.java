@@ -22,6 +22,10 @@
 
 package de.metas.handlingunits.modular.interceptor;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
+import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -29,17 +33,23 @@ import de.metas.handlingunits.modular.ModularPPOrderService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import static de.metas.contracts.modular.ModelAction.COMPLETED;
+
 @Interceptor(I_PP_Order.class)
 @Component
+@RequiredArgsConstructor
 public class PP_Order
 {
 	private static final AdMessageKey MSG_CannotReactivateVoid = AdMessageKey.of("de.metas.handlingunits.modular.interceptor.PP_Order.CannotReactivateVoid");
@@ -47,12 +57,8 @@ public class PP_Order
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPPOrderBL orderBL = Services.get(IPPOrderBL.class);
 
-	private final ModularPPOrderService modularPPOrderService;
-
-	public PP_Order(@NonNull final ModularPPOrderService modularPPOrderService)
-	{
-		this.modularPPOrderService = modularPPOrderService;
-	}
+	@NonNull private final ModularPPOrderService modularPPOrderService;
+	@NonNull private final ModularContractService contractService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_VOID,
@@ -63,7 +69,7 @@ public class PP_Order
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 
-		if (orderBL.isModularOrder(ppOrderId) && orderBL.isSomethingProcessed(order))
+		if (orderBL.isModularOrder(ppOrderId))
 		{
 			throw new AdempiereException(MSG_CannotReactivateVoid)
 					.appendParametersToMessage()
@@ -96,5 +102,17 @@ public class PP_Order
 		{
 			modularPPOrderService.validateModularOrder(ppOrderId);
 		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void afterComplete(@NonNull final I_PP_Order order)
+	{
+		contractService.scheduleLogCreation(
+				DocStatusChangedEvent.builder()
+						.tableRecordReference(TableRecordReference.of(order))
+						.modelAction(COMPLETED)
+						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
+						.userInChargeId(Env.getLoggedUserId())
+						.build());
 	}
 }

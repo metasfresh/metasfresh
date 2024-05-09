@@ -67,8 +67,11 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -88,6 +91,7 @@ class ModularContractLogHandler
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
 	@NonNull
 	private final ModularContractLogHandlerRegistry handlerRegistry;
@@ -306,6 +310,19 @@ class ModularContractLogHandler
 				if (!docStatus.isCompleted())
 				{
 					return BooleanWithReason.falseBecause("The PP_Cost_Collector.DocStatus is " + docStatus);
+				}
+
+				return BooleanWithReason.TRUE;
+			}
+			case (I_PP_Order.Table_Name) ->
+			{
+				final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
+				final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
+
+				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(orderRecord.getDocStatus());
+				if (!docStatus.isCompleted())
+				{
+					return BooleanWithReason.falseBecause("The PP_Order.DocStatus is " + docStatus);
 				}
 
 				return BooleanWithReason.TRUE;

@@ -64,6 +64,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
 	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -154,6 +155,11 @@ public class ModCntr_Module
 
 			case SalesOnProcessedProduct ->
 			{
+				if (!module.getInvoicingGroup().isServicesType())
+				{
+					throw new AdempiereException(ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP, InvoicingGroupType.SERVICES.getDisplayName());
+				}
+				
 				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresProcessedProduct);
