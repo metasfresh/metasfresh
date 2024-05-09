@@ -35,6 +35,7 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
+import org.jetbrains.annotations.NotNull;
 
 public class DocTypeBL implements IDocTypeBL
 {
@@ -211,8 +212,14 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final DocBaseType docBaseType = getDocBaseType(docTypeId);
+		return DocBaseType.equals(docBaseType, DocBaseType.ModularOrder);
+	}
 
-		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
+	@NotNull
+	private DocBaseType getDocBaseType(final @NotNull DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return DocBaseType.ofCode(dt.getDocBaseType());
 	}
 }

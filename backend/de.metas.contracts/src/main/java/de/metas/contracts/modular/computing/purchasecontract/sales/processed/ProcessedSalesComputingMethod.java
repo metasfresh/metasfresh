@@ -35,17 +35,9 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
@@ -54,8 +46,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 {
-	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
 
@@ -68,35 +59,18 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (!logEntryContractType.isModularContractType()
-				|| !recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
+		if (!logEntryContractType.isModularContractType())
 		{
 			return false;
 		}
 
-		final PPCostCollectorId costCollectorId = recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
-		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
-
-		if (!ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt))
+		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(recordRef).orElse(null);
+		if (manufacturingReceipt == null)
 		{
 			return false;
 		}
 
-		final PPOrderId ppOrderId = getPPOrderId(recordRef);
-		return ppOrderBL.isModularOrder(ppOrderId);
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		if (recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
-		{
-			return contractProvider.streamModularPurchaseContractsForPPOrder(PPCostCollectorId.ofRepoId(recordRef.getRecord_ID()));
-		}
-		else
-		{
-			return Stream.empty();
-		}
+		return manufacturingFacadeService.isModularOrder(manufacturingReceipt.getManufacturingOrderId());
 	}
 
 	@Override
@@ -107,10 +81,15 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 			return false;
 		}
 
-		final PPOrderId ppOrderId = getPPOrderId(recordRef);
-		final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
-		final ProductId processedProductId = ProductId.ofRepoId(orderRecord.getM_Product_ID());
-		return ProductId.equals(processedProductId, settings.getProcessedProductId());
+		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(recordRef);
+		ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingReceipt.getManufacturingOrderId());
+		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
+	}
+
+	@Override
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
+	{
+		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptId(recordRef));
 	}
 
 	@Override
@@ -130,12 +109,5 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
 				.build();
-	}
-
-	@NonNull
-	private PPOrderId getPPOrderId(final @NonNull TableRecordReference recordRef)
-	{
-		final PPCostCollectorId ppCostCollectorId = recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
-		return PPOrderId.ofRepoId(ppCostCollectorBL.getById(ppCostCollectorId).getPP_Order_ID());
 	}
 }

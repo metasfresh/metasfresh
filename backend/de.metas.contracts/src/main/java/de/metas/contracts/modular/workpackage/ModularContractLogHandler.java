@@ -66,11 +66,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -82,24 +79,18 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_PRO
 @RequiredArgsConstructor
 class ModularContractLogHandler
 {
-	public static final Logger logger = LogManager.getLogger(ModularContractLogHandler.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
-	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
-	@NonNull
-	private final ModularContractLogHandlerRegistry handlerRegistry;
-	@NonNull
-	private final ModularContractLogDAO contractLogDAO;
-	@NonNull
-	private final ModularContractLogService modularLogService;
-	@NonNull
-	private final ShippingNotificationService notificationService;
+	@NonNull private static final Logger logger = LogManager.getLogger(ModularContractLogHandler.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final ModularContractLogHandlerRegistry handlerRegistry;
+	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractLogService modularLogService;
+	@NonNull private final ShippingNotificationService notificationService;
 
 	public void handleLogs(@NonNull final List<IModularContractLogHandler.HandleLogsRequest> requestList)
 	{
@@ -153,11 +144,11 @@ class ModularContractLogHandler
 	private LogAction getLogAction(@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
 		return switch (request.getModelAction())
-				{
-					case COMPLETED -> LogAction.CREATE;
-					case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
-					case RECREATE_LOGS -> LogAction.RECOMPUTE;
-				};
+		{
+			case COMPLETED -> LogAction.CREATE;
+			case REVERSED, REACTIVATED, VOIDED -> LogAction.REVERSE;
+			case RECREATE_LOGS -> LogAction.RECOMPUTE;
+		};
 	}
 
 	enum LogAction
