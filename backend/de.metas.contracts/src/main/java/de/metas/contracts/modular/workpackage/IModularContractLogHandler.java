@@ -42,7 +42,9 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -98,12 +100,18 @@ public interface IModularContractLogHandler
 		@NonNull ModelAction modelAction;
 		@NonNull QueueWorkPackageId workPackageId;
 		@NonNull ComputingMethodType computingMethodType;
-		@NonNull FlatrateTermInfo contractInfo;
+		@NonNull @Getter(AccessLevel.NONE) FlatrateTermInfo contractInfo;
 
 		@NonNull
 		public FlatrateTermId getContractId()
 		{
 			return contractInfo.getFlatrateTermId();
+		}
+
+		@NonNull
+		public ModularContractSettings getModularContractSettings()
+		{
+			return contractInfo.getModularContractSettings();
 		}
 	}
 

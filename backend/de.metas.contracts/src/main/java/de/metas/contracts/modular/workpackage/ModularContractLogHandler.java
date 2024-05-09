@@ -116,7 +116,7 @@ class ModularContractLogHandler
 			@NonNull final IModularContractLogHandler handler,
 			@NonNull final IModularContractLogHandler.HandleLogsRequest request)
 	{
-		final ModularContractSettings settings = request.getContractInfo().getModularContractSettings();
+		final ModularContractSettings settings = request.getModularContractSettings();
 
 		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigs(handler.getComputingMethod().getComputingMethodType());
 		if (moduleConfigs.isEmpty())

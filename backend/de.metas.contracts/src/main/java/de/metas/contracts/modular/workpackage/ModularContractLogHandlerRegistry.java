@@ -66,7 +66,7 @@ public class ModularContractLogHandlerRegistry
 
 		final boolean isComputingMethodMatchingContract = computingMethod.isContractIdEligible(request.getTableRecordReference(),
 																							   request.getContractId(),
-																							   request.getContractInfo().getModularContractSettings());
+																							   request.getModularContractSettings());
 		if (!isComputingMethodMatchingContract)
 		{
 			Loggables.addLog("Handler: {} is matching request, but not the contractId! see request: {}!", this.getClass().getName(), request);
