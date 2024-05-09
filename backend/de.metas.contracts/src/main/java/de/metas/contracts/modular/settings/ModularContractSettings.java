@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.settings;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.common.util.Check;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.lang.SOTrx;
@@ -77,6 +78,8 @@ public class ModularContractSettings
 
 	@NonNull
 	LocalDateAndOrgId storageCostStartDate;
+
+	public YearId getYearId() {return yearAndCalendarId.yearId();}
 
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
@@ -135,6 +138,5 @@ public class ModularContractSettings
 				.filter(config -> config.isMatchingAnyOf(computingMethodType1, computingMethodType2))
 				.count();
 	}
-
 
 }

@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.workpackage;
 
 import de.metas.async.QueueWorkPackageId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
@@ -124,6 +125,8 @@ public interface IModularContractLogHandler
 		@NonNull String productName;
 		@NonNull ModuleConfig moduleConfig;
 		@NonNull ModularContractTypeId typeId;
+
+		public YearId getYearId() {return getModularContractSettings().getYearId();}
 
 		public @NonNull FlatrateTermId getContractId()
 		{
