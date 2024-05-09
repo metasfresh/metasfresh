@@ -273,3 +273,15 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728700,0,547013,551809,624731,'F',TO_TIMESTAMP('2024-05-09 08:56:11.426','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Zinssatz',30,0,0,TO_TIMESTAMP('2024-05-09 08:56:11.426','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- Column: ModCntr_Settings.AddInterestDays
+-- 2024-05-09T06:02:39.533Z
+UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0',Updated=TO_TIMESTAMP('2024-05-09 09:02:39.533','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588194
+;
+
+-- 2024-05-09T06:02:42.093Z
+INSERT INTO t_alter_column values('modcntr_settings','AddInterestDays','NUMERIC(10)',null,'0')
+;
+
+-- 2024-05-09T06:02:42.109Z
+UPDATE ModCntr_Settings SET AddInterestDays=0 WHERE AddInterestDays IS NULL
+;

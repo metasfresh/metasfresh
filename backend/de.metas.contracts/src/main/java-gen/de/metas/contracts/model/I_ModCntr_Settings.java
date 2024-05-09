@@ -32,20 +32,20 @@ public interface I_ModCntr_Settings
 	/**
 	 * Set Additional interest days.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAddInterestDays (BigDecimal AddInterestDays);
+	void setAddInterestDays (int AddInterestDays);
 
 	/**
 	 * Get Additional interest days.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getAddInterestDays();
+	int getAddInterestDays();
 
 	ModelColumn<I_ModCntr_Settings, Object> COLUMN_AddInterestDays = new ModelColumn<>(I_ModCntr_Settings.class, "AddInterestDays", null);
 	String COLUMNNAME_AddInterestDays = "AddInterestDays";

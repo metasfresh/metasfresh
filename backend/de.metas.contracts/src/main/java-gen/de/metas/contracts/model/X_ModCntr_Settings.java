@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 592388530L;
+	private static final long serialVersionUID = -569725144L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -36,16 +36,15 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setAddInterestDays (final BigDecimal AddInterestDays)
+	public void setAddInterestDays (final int AddInterestDays)
 	{
 		set_Value (COLUMNNAME_AddInterestDays, AddInterestDays);
 	}
 
 	@Override
-	public BigDecimal getAddInterestDays()
+	public int getAddInterestDays() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AddInterestDays);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_AddInterestDays);
 	}
 
 	@Override
@@ -109,7 +108,7 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public BigDecimal getInterestRate()
+	public BigDecimal getInterestRate() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestRate);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -221,7 +220,7 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public java.sql.Timestamp getStorageCostStartDate()
+	public java.sql.Timestamp getStorageCostStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
 	}

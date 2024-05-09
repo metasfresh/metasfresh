@@ -37,6 +37,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Value
@@ -77,6 +78,10 @@ public class ModularContractSettings
 
 	@NonNull
 	LocalDateAndOrgId storageCostStartDate;
+
+	int additionalInterestDays;
+	@NonNull BigDecimal interestRate;
+
 
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
