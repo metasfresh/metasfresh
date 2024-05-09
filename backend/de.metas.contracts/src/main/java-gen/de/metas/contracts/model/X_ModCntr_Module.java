@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -372661367L;
+	private static final long serialVersionUID = -791716617L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -160,6 +160,18 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

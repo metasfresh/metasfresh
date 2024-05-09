@@ -259,6 +259,27 @@ public interface I_ModCntr_Module
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_ModCntr_Module, Object> COLUMN_Processed = new ModelColumn<>(I_ModCntr_Module.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
  lowest number comes first

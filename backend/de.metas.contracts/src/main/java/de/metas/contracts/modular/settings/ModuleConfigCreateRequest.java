@@ -43,4 +43,6 @@ public class ModuleConfigCreateRequest
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
+
+	boolean processed ;
 }

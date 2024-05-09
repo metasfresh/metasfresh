@@ -127,6 +127,7 @@ public class ModularContractSettingsBL
 						.modularContractType(modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID))
 						.invoicingGroup(InvoicingGroupType.SERVICES)
 						.productId(getById(modularContractSettingsId).getRawProductId())
+						.processed(true)
 						.build()
 		);
 	}

@@ -413,6 +413,7 @@ public class ModularContractSettingsDAO
 		module.setModCntr_Type_ID(request.getModularContractType().getId().getRepoId());
 		module.setSeqNo(request.getSeqNo().toInt());
 		module.setName(request.getName());
+		module.setProcessed(request.isProcessed());
 		saveRecord(module);
 	}
 
