@@ -84,10 +84,7 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 	}
 
 	@Override
-	public boolean isContractIdEligible(
-			final @NonNull TableRecordReference recordRef,
-			final @NonNull FlatrateTermId contractId,
-			final @NonNull ModularContractSettings settings)
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
 		if (settings.getProcessedProductId() == null)
 		{
@@ -97,7 +94,7 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 		final PPOrderId ppOrderId = getPPOrderId(recordRef);
 		final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
 		final ProductId processedProductId = ProductId.ofRepoId(orderRecord.getM_Product_ID());
-		return ProductId.equals(settings.getProcessedProductId(), processedProductId);
+		return ProductId.equals(processedProductId, settings.getProcessedProductId());
 	}
 
 	private static PPOrderId getPPOrderId(final @NonNull TableRecordReference recordRef)
