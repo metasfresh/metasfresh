@@ -28,7 +28,6 @@ import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
 @Value
 @Builder
@@ -42,7 +41,6 @@ public class ModuleConfig
 
 	@NonNull InvoicingGroupType invoicingGroup;
 
-	@With
 	@NonNull ProductId productId;
 
 	@NonNull ModularContractType modularContractType;
