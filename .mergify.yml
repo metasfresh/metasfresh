@@ -27,11 +27,11 @@ pull_request_rules:
               - base=iron_plant_uat
               - base=koala_yawn_uat
               - base=mad_orange_uat
-              - base=magic_oak_uat
               - base=majestic_kangaroo_uat
               - base=massive_entropy_uat
               - base=middle_ages_uat
               - base=modified_carbon_uat
+              - base=modus_operandi_uat
               - base=neon_underwear_uat
               - base=pink_rooster_uat
               - base=release
