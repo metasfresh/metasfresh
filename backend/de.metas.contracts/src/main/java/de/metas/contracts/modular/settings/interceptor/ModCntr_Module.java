@@ -70,6 +70,7 @@ public class ModCntr_Module
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
@@ -107,9 +108,9 @@ public class ModCntr_Module
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record2)
+	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
 	{
-		final ModuleConfig module = ModularContractSettingsDAO.fromRecord(record2);
+		final ModuleConfig module = modularContractSettingsDAO.fromRecord(record);
 		final ModularContractSettingsId modularContractSettingsId = module.getModularContractSettingsId();
 		final ModularContractType type = module.getModularContractType();
 		final ComputingMethodType computingMethodType = type.getComputingMethodType();

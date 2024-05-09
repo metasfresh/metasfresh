@@ -134,7 +134,7 @@ class ModularContractLogHandler
 					.modularContractSettings(settings)
 					.productName(moduleConfig.getName())
 					.moduleConfig(moduleConfig)
-					.typeId(moduleConfig.getModularContractType().getId())
+					.typeId(moduleConfig.getModularContractTypeId())
 					.build();
 
 			if (handler.applies(createLogRequest))

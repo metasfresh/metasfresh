@@ -26,9 +26,26 @@ Feature: Extend Modular Contract Period
       | Identifier               | Name                                | Value                               |
       | modularCntrPricingSystem | modularCntrPricingSystem_23072023_1 | modularCntrPricingSystem_23072023_1 |
 
+
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | modularCntrPricingSystem      | DE                        | EUR                 | pl_280822 | false | false         | 2              | true         |
+
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | ValidFrom  | Name                 |
+      | plv_1      | pl_1                      | 2022-08-01 | PriceListVersionTest |
+
+
+
     And metasfresh contains M_Products:
       | Identifier         | Name                               |
       | module_log_product | module_log_product_test_07042023_1 |
+
+
+
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | module_log_product      | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier           | Name                            | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
@@ -40,7 +57,7 @@ Feature: Extend Modular Contract Period
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | settings_23072023_1 | module_log_product      | harvesting_calendar      | y2022                | modularCntrPricingSystem          |
+      | modCntr_settings_1             | settings_23072023_1 | module_log_product          | harvesting_calendar      | y2022                | modularCntrPricingSystem          |
 
     And metasfresh contains C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
