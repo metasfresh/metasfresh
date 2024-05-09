@@ -44,43 +44,43 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 {
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
+
+	@Override
+	public @NonNull ComputingMethodType getComputingMethodType() {return ComputingMethodType.SalesOnProcessedProduct;}
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
 		if (!logEntryContractType.isModularContractType()
-				|| !recordRef.getTableName().equals(I_PP_Order.Table_Name))
+				|| !recordRef.tableNameEqualsTo(I_PP_Order.Table_Name))
 		{
 			return false;
 		}
 
-		final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
-
+		final PPOrderId ppOrderId = getPPOrderId(recordRef);
 		return ppOrderBL.isModularOrder(ppOrderId);
 	}
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		if (recordRef.getTableName().equals(I_PP_Order.Table_Name))
+		if (recordRef.tableNameEqualsTo(I_PP_Order.Table_Name))
 		{
-			final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
-
-			return contractProvider.streamModularContractsForPPOrder(ppOrderId);
+			return contractProvider.streamModularContractsForPPOrder(getPPOrderId(recordRef));
 		}
-
-		return Stream.empty();
+		else
+		{
+			return Stream.empty();
+		}
 	}
 
 	@Override
@@ -89,19 +89,20 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 			final @NonNull FlatrateTermId contractId,
 			final @NonNull ModularContractSettings settings)
 	{
-		final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
-		final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
+		if (settings.getProcessedProductId() == null)
+		{
+			return false;
+		}
 
-		return Optional.ofNullable(settings.getProcessedProductId())
-				.map(ProductId::getRepoId)
-				.map(productId -> productId == orderRecord.getM_Product_ID())
-				.orElse(false);
+		final PPOrderId ppOrderId = getPPOrderId(recordRef);
+		final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
+		final ProductId processedProductId = ProductId.ofRepoId(orderRecord.getM_Product_ID());
+		return ProductId.equals(settings.getProcessedProductId(), processedProductId);
 	}
 
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
+	private static PPOrderId getPPOrderId(final @NonNull TableRecordReference recordRef)
 	{
-		return ComputingMethodType.SalesOnProcessedProduct;
+		return recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
 	}
 
 	@Override
