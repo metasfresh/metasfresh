@@ -47,8 +47,10 @@ public class ModCntr_Settings
 		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID})
-	public void upsertInformativeLogsModule(@NonNull final  I_ModCntr_Settings record)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID },
+			skipIfCopying = true)
+	public void upsertInformativeLogsModule(@NonNull final I_ModCntr_Settings record)
 	{
 		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
 
