@@ -1,7 +1,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -11,11 +10,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 
-import java.time.Instant;
-
+/**
+ * Manufacturing Order Receipt (in modular contracts ubiquitous language)
+ */
 @Value
 @Builder
-public class ManufacturingReceipt
+class ManufacturingReceipt
 {
 	@NonNull PPCostCollectorId id;
 	@NonNull PPOrderId manufacturingOrderId;

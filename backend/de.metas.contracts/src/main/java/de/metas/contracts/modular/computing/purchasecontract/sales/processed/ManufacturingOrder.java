@@ -6,9 +6,12 @@ import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderId;
 
+/**
+ * Manufacturing Order (in modular contracts ubiquitous language)
+ */
 @Value
 @Builder
-public class ManufacturingOrder
+class ManufacturingOrder
 {
 	@NonNull PPOrderId id;
 	@NonNull ProductId processedProductId;
