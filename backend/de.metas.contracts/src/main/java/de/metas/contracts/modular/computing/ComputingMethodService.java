@@ -217,21 +217,6 @@ public class ComputingMethodService
 	}
 
 	@NonNull
-	public ComputingResponse toZeroResponseWithQtyZero(final @NotNull ComputingRequest request)
-	{
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.zero(request.getCurrencyId()))
-							   .uomId(stockUOMId)
-							   .build())
-				.qty(Quantitys.zero(stockUOMId))
-				.build();
-	}
-
-	@NonNull
 	public ComputingResponse toZeroResponse(final @NotNull ComputingRequest request)
 	{
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());

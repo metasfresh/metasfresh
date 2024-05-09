@@ -1,4 +1,4 @@
-/*
+package de.metas.contracts.modular.computing.purchasecontract.informative;/*
  * #%L
  * de.metas.contracts
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.receipt;
+
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -73,7 +73,7 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@Getter @NonNull private final ReceiptComputingMethod computingMethod;
+	@Getter @NonNull private final InformativeLogComputingMethod computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
 

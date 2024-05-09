@@ -1,4 +1,4 @@
-/*
+package de.metas.contracts.modular.computing.purchasecontract.informative;/*
  * #%L
  * de.metas.contracts
  * %%
@@ -20,7 +20,6 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.receipt;
 
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
@@ -33,12 +32,12 @@ import org.springframework.stereotype.Component;
 @Getter
 class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 {
-	@NonNull private final ReceiptComputingMethod computingMethod;
+	@NonNull private final InformativeLogComputingMethod computingMethod;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
 
 	public PurchaseModularContractLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ReceiptComputingMethod computingMethod)
+			@NonNull final InformativeLogComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
