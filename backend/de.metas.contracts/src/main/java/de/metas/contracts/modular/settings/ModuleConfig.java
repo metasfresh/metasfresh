@@ -59,7 +59,7 @@ public class ModuleConfig
 		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
 	}
 
-	public @NonNull ModularContractTypeId getModularContractTypeId() {return modularContractType.getId();}
+	public @NonNull ModularContractTypeId getModularContractTypeId() {return getModularContractType().getId();}
 
 	@NonNull
 	public ComputingMethodType getComputingMethodType()

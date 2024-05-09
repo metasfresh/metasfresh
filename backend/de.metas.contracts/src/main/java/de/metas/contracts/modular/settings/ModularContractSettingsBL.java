@@ -109,7 +109,6 @@ public class ModularContractSettingsBL
 	public ModularContractType getModuleContractType(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		final ModuleConfig moduleConfig = modularContractSettingsDAO.getByModuleId(modularContractModuleId);
-
 		return moduleConfig.getModularContractType();
 	}
 
