@@ -163,7 +163,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
 				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, createLogRequest.getModularContractSettings().getYearAndCalendarId())
 				.orElse(null);
 
 		return ExplainedOptional.of(

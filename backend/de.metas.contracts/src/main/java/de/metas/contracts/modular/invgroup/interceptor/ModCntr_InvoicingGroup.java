@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.invgroup.interceptor;
 
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
@@ -40,14 +41,15 @@ public class ModCntr_InvoicingGroup
 {
 	private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_ModCntr_InvoicingGroup.COLUMNNAME_C_Harvesting_Calendar_ID, I_ModCntr_InvoicingGroup.COLUMNNAME_Harvesting_Year_ID })
 	public void validateProductNotAlreadyUsed(@NonNull final I_ModCntr_InvoicingGroup invoicingGroup)
 	{
 		modCntrInvoicingGroupRepository.streamInvoicingGroupProductsFor(InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID()))
 				.forEach(invGroupProduct -> {
 					final ProductId productId = ProductId.ofRepoId(invGroupProduct.getM_Product_ID());
 					final InvoicingGroupProductId invoicingGroupProductId = InvoicingGroupProductId.ofRepoId(invGroupProduct.getModCntr_InvoicingGroup_Product_ID());
-					modCntrInvoicingGroupRepository.validateInvoicingGroupProductNoOverlap(productId, invoicingGroupProductId, invoicingGroup.getValidFrom(), invoicingGroup.getValidTo());
+					final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(invoicingGroup.getHarvesting_Year_ID(), invoicingGroup.getC_Harvesting_Calendar_ID());
+					modCntrInvoicingGroupRepository.validateInvoicingGroupProductNoOverlap(productId, invoicingGroupProductId, yearAndCalendarId);
 				});
 	}
 

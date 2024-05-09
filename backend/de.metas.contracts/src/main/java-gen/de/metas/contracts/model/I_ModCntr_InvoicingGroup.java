@@ -256,48 +256,4 @@ public interface I_ModCntr_InvoicingGroup
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Valid From.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValidFrom (java.sql.Timestamp ValidFrom);
-
-	/**
-	 * Get Valid From.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getValidFrom();
-
-	ModelColumn<I_ModCntr_InvoicingGroup, Object> COLUMN_ValidFrom = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "ValidFrom", null);
-	String COLUMNNAME_ValidFrom = "ValidFrom";
-
-	/**
-	 * Set Valid to.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValidTo (java.sql.Timestamp ValidTo);
-
-	/**
-	 * Get Valid to.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getValidTo();
-
-	ModelColumn<I_ModCntr_InvoicingGroup, Object> COLUMN_ValidTo = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "ValidTo", null);
-	String COLUMNNAME_ValidTo = "ValidTo";
 }

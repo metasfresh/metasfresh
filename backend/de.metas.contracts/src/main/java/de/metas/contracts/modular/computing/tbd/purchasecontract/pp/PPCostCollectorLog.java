@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -137,7 +138,8 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 																				OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -153,7 +155,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(modCntrLogQty)
 											.transactionDate(transactionDate)
-											.year(modularContractSettings.getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())

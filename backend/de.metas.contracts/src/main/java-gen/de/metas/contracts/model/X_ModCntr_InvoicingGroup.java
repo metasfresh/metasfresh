@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I_ModCntr_InvoicingGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2041503001L;
+	private static final long serialVersionUID = -6208745L;
 
     /** Standard Constructor */
     public X_ModCntr_InvoicingGroup (final Properties ctx, final int ModCntr_InvoicingGroup_ID, @Nullable final String trxName)
@@ -142,29 +142,5 @@ public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalInterest);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setValidFrom (final java.sql.Timestamp ValidFrom)
-	{
-		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getValidFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
-	}
-
-	@Override
-	public void setValidTo (final java.sql.Timestamp ValidTo)
-	{
-		set_Value (COLUMNNAME_ValidTo, ValidTo);
-	}
-
-	@Override
-	public java.sql.Timestamp getValidTo() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
 	}
 }
