@@ -58,18 +58,18 @@ public class PP_Order
 	private final IPPOrderBL orderBL = Services.get(IPPOrderBL.class);
 
 	@NonNull private final ModularPPOrderService modularPPOrderService;
-	@NonNull private final ModularContractService contractService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_VOID,
 			ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_CLOSE })
 	public void onBeforeReverse(@NonNull final I_PP_Order order)
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
 
-		if (orderBL.isModularOrder(ppOrderId))
+		if (orderBL.isModularOrder(ppOrderId) && orderBL.isSomethingProcessed(order))
 		{
 			throw new AdempiereException(MSG_CannotReactivateVoid)
 					.appendParametersToMessage()
@@ -102,17 +102,5 @@ public class PP_Order
 		{
 			modularPPOrderService.validateModularOrder(ppOrderId);
 		}
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void afterComplete(@NonNull final I_PP_Order order)
-	{
-		contractService.scheduleLogCreation(
-				DocStatusChangedEvent.builder()
-						.tableRecordReference(TableRecordReference.of(order))
-						.modelAction(COMPLETED)
-						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
-						.userInChargeId(Env.getLoggedUserId())
-						.build());
 	}
 }

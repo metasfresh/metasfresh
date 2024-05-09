@@ -30,8 +30,10 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
+import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -54,8 +56,11 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +68,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProcessedSalesManufacturingOrderLog implements IModularContractLogHandler
 {
-	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.manufacturingOrderCompleteLogDescription");
+	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
 
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -72,11 +77,12 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractService modularContractService;
 
 	@Getter @NonNull private final ProcessedSalesComputingMethod computingMethod;
-	@Getter @NonNull private final String supportedTableName = I_PP_Order.Table_Name;
+	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRODUCTION;
 
 	public boolean applies(@NonNull final CreateLogRequest request)
@@ -84,10 +90,9 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 		final TableRecordReference recordRef = request.getRecordRef();
 		if (recordRef.tableNameEqualsTo(supportedTableName))
 		{
-			final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
-			final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
-
-			return request.getProductId().equals(ProductId.ofRepoId(orderRecord.getM_Product_ID()));
+			final PPCostCollectorId costCollectorId = recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
+			final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
+			return request.getProductId().equals(ProductId.ofRepoId(ppCostCollector.getM_Product_ID()));
 		}
 
 		return false;
@@ -96,60 +101,82 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		final PPOrderId ppOrderId = createLogRequest.getRecordRef().getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
+		final PPCostCollectorId ppCostCollectorId = createLogRequest.getRecordRef().getIdAssumingTableName(getSupportedTableName(), PPCostCollectorId::ofRepoId);
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(ppCostCollectorId);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
 		final I_PP_Order ppOrderRecord = ppOrderBL.getById(ppOrderId);
-		final ProductId processedProductId = ProductId.ofRepoId(ppOrderRecord.getM_Product_ID());
-		final LocalDateAndOrgId transactionDate = extractDateOrdered(ppOrderRecord);
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(processedProductId, transactionDate.toInstant(orgDAO::getTimeZone)).orElse(null);
-		final Quantity quantity = extractQtyEntered(ppOrderRecord);
-		final String productName = productBL.getProductValueAndName(processedProductId);
+		final ProductId productId = ProductId.ofRepoId(ppCostCollector.getM_Product_ID());
+
+		final LocalDateAndOrgId transactionDate = extractDateOrdered(ppCostCollector);
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone)).orElse(null);
+		final String productName = productBL.getProductValueAndName(productId);
+
+		final Quantity modCntrLogQty = extractModCntrLogQty(ppCostCollector);
+		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, modCntrLogQty.abs().toString(), productName);
 
 		final FlatrateTermId contractId = createLogRequest.getContractId();
-		final ProductPrice price = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(), contractId);
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
 		final BPartnerId invoicingBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID());
 		final BPartnerId collectionPointBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID());
+		final ProductPrice price = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(), contractId);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-				.contractId(contractId)
-				.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderRecord.getPP_Order_ID()))
-				.productId(processedProductId)
-				.productName(createLogRequest.getProductName())
-				.invoicingBPartnerId(invoicingBPartnerId)
-				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-				.documentType(getLogEntryDocumentType())
-				.contractType(getLogEntryContractType())
-				.soTrx(SOTrx.PURCHASE)
-				.quantity(quantity)
-				.transactionDate(transactionDate)
-				.year(createLogRequest.getYearId())
-				.description(msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, quantity))
-				.modularContractTypeId(createLogRequest.getTypeId())
-				.configId(createLogRequest.getConfigId())
-				.collectionPointBPartnerId(collectionPointBPartnerId)
-				.invoicingGroupId(invoicingGroupId)
-				.isBillable(true)
-				.priceActual(price)
-				.amount(price.computeAmount(quantity, uomConversionBL))
-				.build());
+											.contractId(contractId)
+											.referencedRecord(TableRecordReference.of(I_PP_Order.Table_Name, ppOrderRecord.getPP_Order_ID()))
+											.subEntryId(LogSubEntryId.ofCostCollectorId(ppCostCollectorId))
+											.productId(productId)
+											.productName(createLogRequest.getProductName())
+											.invoicingBPartnerId(invoicingBPartnerId)
+											.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
+											.documentType(getLogEntryDocumentType())
+											.contractType(getLogEntryContractType())
+											.soTrx(SOTrx.PURCHASE)
+											.quantity(modCntrLogQty)
+											.transactionDate(transactionDate)
+											.year(createLogRequest.getYearId())
+											.description(description)
+											.modularContractTypeId(createLogRequest.getTypeId())
+											.configId(createLogRequest.getConfigId())
+											.collectionPointBPartnerId(collectionPointBPartnerId)
+											.invoicingGroupId(invoicingGroupId)
+											.isBillable(true)
+											.priceActual(price)
+											.amount(price.computeAmount(modCntrLogQty, uomConversionBL))
+											.build());
 	}
 
-	private @NonNull LocalDateAndOrgId extractDateOrdered(final I_PP_Order ppOrderRecord)
+	private @NonNull LocalDateAndOrgId extractDateOrdered(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		return LocalDateAndOrgId.ofTimestamp(ppOrderRecord.getDateOrdered(),
-				OrgId.ofRepoId(ppOrderRecord.getAD_Org_ID()),
-				orgDAO::getTimeZone);
+		return LocalDateAndOrgId.ofTimestamp(ppCostCollector.getMovementDate(),
+											 OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
+											 orgDAO::getTimeZone);
 	}
 
-	private @NonNull Quantity extractQtyEntered(final I_PP_Order ppOrderRecord)
+	private @NonNull Quantity extractModCntrLogQty(@NonNull final I_PP_Cost_Collector ppCostCollector)
 	{
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(ppOrderRecord.getC_UOM_ID()));
-		return Quantity.of(ppOrderRecord.getQtyEntered(), uom);
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(ppCostCollector.getC_UOM_ID()));
+
+		return Quantity.of(ppCostCollector.getMovementQty(), uom);
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	@NonNull
+	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	{
+		final PPCostCollectorId ppCostCollectorId = handleLogsRequest.getTableRecordReference().getIdAssumingTableName(getSupportedTableName(), PPCostCollectorId::ofRepoId);
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(ppCostCollectorId);
+
+		return LogEntryDeleteRequest.builder()
+				.referencedModel(TableRecordReference.of(I_PP_Order.Table_Name, ppCostCollector.getPP_Order_ID()))
+				.subEntryId(LogSubEntryId.ofCostCollectorId(ppCostCollectorId))
+				.flatrateTermId(handleLogsRequest.getContractId())
+				.logEntryContractType(getLogEntryContractType())
+				.build();
 	}
 }

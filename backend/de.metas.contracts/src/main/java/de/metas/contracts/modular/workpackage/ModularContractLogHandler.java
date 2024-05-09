@@ -311,19 +311,6 @@ class ModularContractLogHandler
 
 				return BooleanWithReason.TRUE;
 			}
-			case (I_PP_Order.Table_Name) ->
-			{
-				final PPOrderId ppOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
-				final I_PP_Order orderRecord = ppOrderBL.getById(ppOrderId);
-
-				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(orderRecord.getDocStatus());
-				if (!docStatus.isCompleted())
-				{
-					return BooleanWithReason.falseBecause("The PP_Order.DocStatus is " + docStatus);
-				}
-
-				return BooleanWithReason.TRUE;
-			}
 			case (I_M_Shipping_NotificationLine.Table_Name) ->
 			{
 				final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));

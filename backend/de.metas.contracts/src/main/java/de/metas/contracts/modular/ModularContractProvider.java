@@ -167,15 +167,6 @@ public class ModularContractProvider
 	}
 
 	@NonNull
-	public Stream<FlatrateTermId> streamModularContractsForPPOrder(@NonNull final PPOrderId ppOrderId)
-	{
-		return Optional.ofNullable(ppOrderBL.getById(ppOrderId))
-				.map(I_PP_Order::getModular_Flatrate_Term_ID)
-				.map(FlatrateTermId::ofRepoIdOrNull)
-				.stream();
-	}
-	
-	@NonNull
 	public Stream<FlatrateTermId> streamModularPurchaseContractsForInvoiceLine(@NonNull final InvoiceLineId invoiceLineId)
 	{
 		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(invoiceLineId);
