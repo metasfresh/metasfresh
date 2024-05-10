@@ -22,10 +22,6 @@
 
 package de.metas.handlingunits.modular.interceptor;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.DocStatusChangedEvent;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -38,14 +34,10 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
-import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
-
-import static de.metas.contracts.modular.ModelAction.COMPLETED;
 
 @Interceptor(I_PP_Order.class)
 @Component
