@@ -235,3 +235,9 @@ UPDATE AD_Column SET Filter_Val_Rule_ID=540675,Updated=TO_TIMESTAMP('2024-05-10 
 UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2024-05-10 11:46:01.079','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=3781
 ;
 
+-- Field: Kreditoren Rechnung(541531,D) -> Eingangsrechnung(546366,D) -> Zielbelegart
+-- Column: C_Invoice.C_DocTypeTarget_ID
+-- 2024-05-10T08:53:05.940Z
+UPDATE AD_Field SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2024-05-10 11:53:05.94','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=700215
+;
+
