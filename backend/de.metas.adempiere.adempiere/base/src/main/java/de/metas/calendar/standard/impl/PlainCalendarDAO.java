@@ -43,7 +43,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-public class PlainCalendarDAO extends AbstractCalendarDAO
+public class PlainCalendarDAO extends CalendarDAO
 {
 	private final POJOLookupMap db = POJOLookupMap.get();
 
@@ -207,65 +207,5 @@ public class PlainCalendarDAO extends AbstractCalendarDAO
 				}));
 
 		return years;
-	}
-
-	@Override
-	public I_C_Period retrieveFirstPeriodOfTheYear(I_C_Year year)
-	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
-		return periods.get(0);
-
-	}
-
-	@Override
-	public I_C_Period retrieveLastPeriodOfTheYear(I_C_Year year)
-	{
-		final List<I_C_Period> periods = getPeriodsOfYear(year);
-		return periods.get(periods.size() - 1);
-	}
-
-	private List<I_C_Period> getPeriodsOfYear(final I_C_Year year)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(year);
-
-		List<I_C_Period> periods = db.getRecords(I_C_Period.class, new IQueryFilter<I_C_Period>()
-		{
-
-			@Override
-			public boolean accept(I_C_Period pojo)
-			{
-				if (!pojo.getC_Year().equals(year))
-				{
-					return false;
-				}
-
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-
-				if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-				{
-					return false;
-				}
-
-				return true;
-			}
-
-		});
-
-		Collections.sort(periods, new AccessorComparator<I_C_Period, Timestamp>(
-				new ComparableComparator<Timestamp>(),
-				new TypedAccessor<Timestamp>()
-				{
-
-					@Override
-					public Timestamp getValue(Object o)
-					{
-						return ((I_C_Period)o).getStartDate();
-					}
-				}));
-
-		return periods;
 	}
 }
