@@ -2,9 +2,7 @@
 
 -- Name: ModCntr_Type
 -- 2024-05-08T08:51:14.402Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540674,'(CASE WHEN @M_Product_ID/-1@ != @M_Processed_Product_ID/-1@ AND modcntr_type.modularcontracthandlertype IN (''SalesOnProcessedProduct'', ''AddValueOnProcessedProduct'') THEN false
-    ELSE true
-    END)',TO_TIMESTAMP('2024-05-08 11:51:14.156','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','ModCntr_Type','S',TO_TIMESTAMP('2024-05-08 11:51:14.156','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540674,'@M_Product_ID/-1@ = @M_Processed_Product_ID/-1@ OR modcntr_type.modularcontracthandlertype NOT IN (''SalesOnProcessedProduct'',''AddValueOnProcessedProduct'')',TO_TIMESTAMP('2024-05-08 11:51:14.156','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','ModCntr_Type for Processed Product','S',TO_TIMESTAMP('2024-05-08 11:51:14.156','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- Column: ModCntr_Module.ModCntr_Type_ID
