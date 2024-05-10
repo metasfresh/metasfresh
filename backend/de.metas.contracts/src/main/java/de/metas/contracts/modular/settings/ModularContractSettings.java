@@ -25,7 +25,7 @@ package de.metas.contracts.modular.settings;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
-import de.metas.common.util.Check;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -96,6 +96,8 @@ public class ModularContractSettings
 		}
 	}
 
+	public YearId getYearId() {return yearAndCalendarId.yearId();}
+
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
 	{
@@ -112,27 +114,6 @@ public class ModularContractSettings
 				.stream()
 				.filter(config -> !config.isMatching(computingMethodType))
 				.toList();
-	}
-
-	@NonNull
-	public ModuleConfig getModuleConfigOrError(
-			@NonNull final ComputingMethodType computingMethodType,
-			@NonNull final ProductId productId)
-	{
-		final List<ModuleConfig> configs = getModuleConfigs()
-				.stream()
-				.filter(config -> ProductId.equals(productId, config.getProductId()) && config.isMatching(computingMethodType))
-				.toList();
-
-		if (configs.isEmpty())
-		{
-			throw new AdempiereException("No ModuleConfig found for computingMethodType & productId!")
-					.appendParametersToMessage()
-					.setParameter("computingMethodType", computingMethodType)
-					.setParameter("productId", productId);
-		}
-
-		return Check.singleElement(configs);
 	}
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)

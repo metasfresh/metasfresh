@@ -37,6 +37,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -69,9 +70,7 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 			return false;
 		}
 
-		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
-
-		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptLineId);
+		final I_M_InOutLine inOutLineRecord = getReceiptLine(recordRef);
 		final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		//noinspection RedundantIfStatement
@@ -83,6 +82,12 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 		return true;
 	}
 
+	private I_M_InOutLine getReceiptLine(final @NonNull TableRecordReference recordRef)
+	{
+		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
+		return inoutDao.getLineByIdInTrx(receiptLineId);
+	}
+
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
@@ -90,15 +95,11 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 	}
 
 	@Override
-	public boolean isContractIdEligible(
-			final @NonNull TableRecordReference recordRef,
-			final @NonNull FlatrateTermId contractId,
-			final @NonNull ModularContractSettings settings)
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
-		final InOutLineId receiptLineId = recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
-		final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(receiptLineId);
-
-		return settings.getRawProductId().getRepoId() == inOutLineRecord.getM_Product_ID();
+		final I_M_InOutLine receiptLine = getReceiptLine(recordRef);
+		final ProductId receivedProductId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
+		return ProductId.equals(receivedProductId, settings.getRawProductId());
 	}
 
 	@Override
@@ -125,6 +126,5 @@ public class RawSalesComputingMethod implements IComputingMethodHandler
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
 				.build();
 	}
-
 
 }
