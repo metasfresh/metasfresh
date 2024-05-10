@@ -109,7 +109,7 @@ public class ModularContractService
 			return false;
 		}
 
-		return handler.isContractIdEligible(tableRecordReference, contractId, settings);
+		return handler.isApplicableForSettings(tableRecordReference, settings);
 	}
 
 	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)

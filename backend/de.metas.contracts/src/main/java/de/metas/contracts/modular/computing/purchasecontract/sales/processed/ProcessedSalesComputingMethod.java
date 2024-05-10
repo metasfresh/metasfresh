@@ -24,8 +24,17 @@ package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -37,17 +46,9 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 {
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
-	{
-		return false;
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		return Stream.empty();
-	}
+	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
+	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final ComputingMethodService computingMethodService;
 
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
@@ -55,4 +56,58 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 		return ComputingMethodType.SalesOnProcessedProduct;
 	}
 
+	@Override
+	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	{
+		if (!logEntryContractType.isModularContractType())
+		{
+			return false;
+		}
+
+		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(recordRef).orElse(null);
+		if (manufacturingReceipt == null)
+		{
+			return false;
+		}
+
+		return manufacturingFacadeService.isModularOrder(manufacturingReceipt.getManufacturingOrderId());
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		if (settings.getProcessedProductId() == null)
+		{
+			return false;
+		}
+
+		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(recordRef);
+		ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingReceipt.getManufacturingOrderId());
+		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
+	}
+
+	@Override
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
+	{
+		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptId(recordRef));
+	}
+
+	@Override
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
+	{
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		if (logs.isEmpty())
+		{
+			return computingMethodService.toZeroResponse(request);
+		}
+
+		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+
+		return ComputingResponse.builder()
+				.ids(logs.getIds())
+				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
+				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.build();
+	}
 }

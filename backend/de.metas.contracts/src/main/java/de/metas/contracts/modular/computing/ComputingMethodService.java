@@ -126,15 +126,7 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				switch (action)
-				{
-					case COMPLETED, RECREATE_LOGS -> {}
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				}
-			}
-			case I_PP_Cost_Collector.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name, I_PP_Cost_Collector.Table_Name ->
 			{
 				switch (action)
 				{
@@ -159,15 +151,7 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_M_Shipping_NotificationLine.Table_Name ->
-			{
-				switch (action)
-				{
-					case COMPLETED, REVERSED, RECREATE_LOGS -> {}
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				}
-			}
-			case I_C_InvoiceLine.Table_Name ->
+			case I_M_Shipping_NotificationLine.Table_Name, I_C_InvoiceLine.Table_Name ->
 			{
 				switch (action)
 				{

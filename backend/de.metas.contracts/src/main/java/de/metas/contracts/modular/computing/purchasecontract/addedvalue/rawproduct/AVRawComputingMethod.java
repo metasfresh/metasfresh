@@ -35,6 +35,7 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -66,14 +67,19 @@ public class AVRawComputingMethod implements IComputingMethodHandler
 			return false;
 		}
 
-		final InOutLineId receiptLineId = getInOutLineId(recordRef);
-		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
+		final I_M_InOutLine inOutLineRecord = getReceiptLine(recordRef);
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
 		return !inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
 	}
 
-	private static InOutLineId getInOutLineId(final @NotNull TableRecordReference recordRef)
+	private I_M_InOutLine getReceiptLine(final @NotNull TableRecordReference recordRef)
+	{
+		final InOutLineId receiptLineId = getReceiptLineId(recordRef);
+		return inOutBL.getLineByIdInTrx(receiptLineId);
+	}
+
+	private static InOutLineId getReceiptLineId(final @NotNull TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
 	}
@@ -81,19 +87,15 @@ public class AVRawComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return contractProvider.streamModularPurchaseContractsForReceiptLine(getInOutLineId(recordRef));
+		return contractProvider.streamModularPurchaseContractsForReceiptLine(getReceiptLineId(recordRef));
 	}
 
 	@Override
-	public boolean isContractIdEligible(
-			final @NonNull TableRecordReference recordRef,
-			final @NonNull FlatrateTermId contractId,
-			final @NonNull ModularContractSettings settings)
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
 	{
-		final InOutLineId receiptLineId = getInOutLineId(recordRef);
-		final I_M_InOutLine inOutLineRecord = inOutBL.getLineByIdInTrx(receiptLineId);
-
-		return settings.getRawProductId().getRepoId() == inOutLineRecord.getM_Product_ID();
+		final I_M_InOutLine receiptLine = getReceiptLine(recordRef);
+		final ProductId receivedProductId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
+		return ProductId.equals(receivedProductId, settings.getRawProductId());
 	}
 
 	@Override
