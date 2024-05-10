@@ -32,11 +32,6 @@ public class ModCntr_Module_POCopyRecordSupport extends GeneralCopyRecordSupport
 	@Override
 	public void updateSpecialColumnsName(final PO to)
 	{
-		final POInfo poInfo = to.getPOInfo();
-
-		if (!poInfo.hasColumnName(COLUMNNAME_Name) && DisplayType.isText(poInfo.getColumnDisplayType(COLUMNNAME_Name)))
-		{
-			super.updateSpecialColumnsName(to);
-		}
+		// DO NOTHING here
 	}
 }
