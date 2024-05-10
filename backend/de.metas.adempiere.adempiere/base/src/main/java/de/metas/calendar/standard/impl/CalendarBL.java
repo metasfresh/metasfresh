@@ -25,6 +25,7 @@ package de.metas.calendar.standard.impl;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.ICalendarDAO;
+import de.metas.calendar.standard.YearId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -158,9 +159,9 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getLastDayOfYear(final I_C_Year year)
+	public Timestamp getLastDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveLastPeriodOfTheYear(year);
+		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveLastPeriodOfTheYear(yearId);
 
 		final Timestamp lastDay = period.getEndDate();
 
@@ -168,9 +169,9 @@ public class CalendarBL implements ICalendarBL
 	}
 
 	@Override
-	public Timestamp getFirstDayOfYear(final I_C_Year year)
+	public Timestamp getFirstDayOfYear(@NonNull final YearId yearId)
 	{
-		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveFirstPeriodOfTheYear(year);
+		final I_C_Period period = Services.get(ICalendarDAO.class).retrieveFirstPeriodOfTheYear(yearId);
 
 		final Timestamp firstDay = period.getStartDate();
 
