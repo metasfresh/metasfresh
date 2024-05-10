@@ -211,8 +211,14 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isModularManufacturingOrder(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final DocBaseType docBaseType = getDocBaseType(docTypeId);
+		return DocBaseType.equals(docBaseType, DocBaseType.ModularOrder);
+	}
 
-		return X_C_DocType.DOCBASETYPE_ModularOrder.equals(dt.getDocBaseType());
+	@NonNull
+	private DocBaseType getDocBaseType(final @NonNull DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return DocBaseType.ofCode(dt.getDocBaseType());
 	}
 }

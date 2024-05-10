@@ -22,18 +22,18 @@
 
 package org.eevolution.api;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -72,4 +72,6 @@ public class PPOrderId implements RepoIdAware
 	{
 		return getRepoId();
 	}
+
+	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_PP_Order.Table_Name, this);}
 }
