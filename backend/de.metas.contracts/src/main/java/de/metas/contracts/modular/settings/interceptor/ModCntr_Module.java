@@ -25,7 +25,6 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
-import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -41,12 +40,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -75,12 +71,6 @@ public class ModCntr_Module
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
-
-	@Init
-	public void init(final IModelValidationEngine engine)
-	{
-		CopyRecordFactory.registerCopyRecordSupport(I_ModCntr_Module.Table_Name, ModCntr_Module_POCopyRecordSupport.class);
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)

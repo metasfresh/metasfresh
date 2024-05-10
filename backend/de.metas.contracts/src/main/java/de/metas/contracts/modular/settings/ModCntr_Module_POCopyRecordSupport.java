@@ -1,9 +1,10 @@
 package de.metas.contracts.modular.settings;
 
-import org.adempiere.model.GeneralCopyRecordSupport;
-import org.compiere.model.PO;
+import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.copy_with_details.template.CopyTemplateCustomizer;
 import org.compiere.model.POInfo;
-import org.compiere.util.DisplayType;
+import org.compiere.model.copy.ValueToCopy;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -27,11 +28,19 @@ import org.compiere.util.DisplayType;
  * #L%
  */
 
-public class ModCntr_Module_POCopyRecordSupport extends GeneralCopyRecordSupport
+@Component
+public class ModCntr_Module_POCopyRecordSupport implements CopyTemplateCustomizer
 {
 	@Override
-	public void updateSpecialColumnsName(final PO to)
+	public String getTableName()
 	{
-		// DO NOTHING here
+		return I_ModCntr_Module.Table_Name;
 	}
+
+	@Override
+	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
+	{
+		return ValueToCopy.NOT_SPECIFIED;
+	}
+
 }
