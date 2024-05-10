@@ -15,7 +15,6 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,13 +33,15 @@ class ManufacturingFacadeService
 		return ppOrderBL.isModularOrder(id);
 	}
 
+	@NonNull
 	public ManufacturingOrder getManufacturingOrder(@NonNull final PPOrderId id)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(id);
 		return toManufacturingOrder(ppOrder);
 	}
 
-	private ManufacturingOrder toManufacturingOrder(final I_PP_Order record)
+	@NonNull
+	private ManufacturingOrder toManufacturingOrder(@NonNull final I_PP_Order record)
 	{
 		return ManufacturingOrder.builder()
 				.id(PPOrderId.ofRepoId(record.getPP_Order_ID()))
@@ -54,6 +55,7 @@ class ManufacturingFacadeService
 				.orElseThrow(() -> new AdempiereException("Cannot extract manufacturing receipt from " + recordRef));
 	}
 
+	@NonNull
 	public Optional<ManufacturingReceipt> getManufacturingReceiptIfApplies(@NonNull final TableRecordReference recordRef)
 	{
 		if (!recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
@@ -72,7 +74,8 @@ class ManufacturingFacadeService
 		return Optional.of(toManufacturingReceipt(ppCostCollector));
 	}
 
-	private ManufacturingReceipt toManufacturingReceipt(final I_PP_Cost_Collector record)
+	@NonNull
+	private ManufacturingReceipt toManufacturingReceipt(@NonNull final I_PP_Cost_Collector record)
 	{
 		return ManufacturingReceipt.builder()
 				.id(PPCostCollectorId.ofRepoId(record.getPP_Cost_Collector_ID()))
@@ -84,7 +87,8 @@ class ManufacturingFacadeService
 				.build();
 	}
 
-	public static PPCostCollectorId getManufacturingReceiptId(final @NotNull TableRecordReference recordRef)
+	@NonNull
+	public static PPCostCollectorId getManufacturingReceiptId(final @NonNull TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
 	}
