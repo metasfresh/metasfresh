@@ -4,9 +4,11 @@
 # Please keep in sync with the branch list in .mergify.yml
 release:
   - arctic_north_uat
+  - blue_horizon_uat
   - big_coconut_uat
   - clone_wars_uat
   - epic_party_uat
+  - gray_knight_uat
   - hard_encoded_uat
   - hard_encoded_hotfix
   - inner_silence_uat
