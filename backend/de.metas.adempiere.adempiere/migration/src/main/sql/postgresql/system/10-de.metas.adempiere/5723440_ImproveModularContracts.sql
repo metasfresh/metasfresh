@@ -220,3 +220,13 @@ UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2024-05-10 10:17:47.
 UPDATE AD_Field SET SortNo=1.000000000000,Updated=TO_TIMESTAMP('2024-05-10 10:21:17.654','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716350
 ;
 
+-- Name: Filter Invoices
+-- 2024-05-10T08:29:00.660Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540675,'( C_DocType.DocBaseType IN (''API'',''APC'') OR (C_DocType.DocBaseType IN (''ARC'',''ARI'') AND C_DocType.DocSubType IS NULL) /*only the default types*/ OR (C_DocType.DocBaseType=''ARC'' AND C_DocType.DocSubType = ''CS'') /*only the RMA-credit-memo*/ ) ',TO_TIMESTAMP('2024-05-10 11:29:00.486','YYYY-MM-DD HH24:MI:SS.US'),100,'','U','Y','Filter Invoices','S',TO_TIMESTAMP('2024-05-10 11:29:00.486','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Column: C_Invoice.C_DocTypeTarget_ID
+-- 2024-05-10T08:29:15.764Z
+UPDATE AD_Column SET Filter_Val_Rule_ID=540675,Updated=TO_TIMESTAMP('2024-05-10 11:29:15.763','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=3781
+;
+
