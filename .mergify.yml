@@ -17,9 +17,11 @@ pull_request_rules:
           - or: &PROJECT_BRANCHES_UAT # look 'ma, i'm doing https://docs.mergify.com/configuration/#yaml-anchors-and-aliases !
               # Please keep in sync with the branches at .testspace.yml
               - base=arctic_north_uat
+              - base=blue_horizon_uat
               - base=big_coconut_uat
               - base=clone_wars_uat
               - base=epic_party_uat
+              - base=gray_knight_uat
               - base=hard_encoded_uat
               - base=hostile_tractor_uat
               - base=inner_silence_uat
