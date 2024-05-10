@@ -241,3 +241,83 @@ UPDATE AD_Column SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2024-05-10 11:46:0
 UPDATE AD_Field SET AD_Reference_ID=18,Updated=TO_TIMESTAMP('2024-05-10 11:53:05.94','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=700215
 ;
 
+-- Element: MasterStartDate
+-- 2024-05-10T10:16:37.823Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vertragsbeginn', PrintName='Vertragsbeginn',Updated=TO_TIMESTAMP('2024-05-10 13:16:37.823','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543413 AND AD_Language='de_CH'
+;
+
+-- 2024-05-10T10:16:37.869Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543413,'de_CH')
+;
+
+-- Element: MasterStartDate
+-- 2024-05-10T10:16:43.530Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vertragsbeginn', PrintName='Vertragsbeginn',Updated=TO_TIMESTAMP('2024-05-10 13:16:43.53','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543413 AND AD_Language='de_DE'
+;
+
+-- 2024-05-10T10:16:43.534Z
+UPDATE AD_Element SET Name='Vertragsbeginn', PrintName='Vertragsbeginn' WHERE AD_Element_ID=543413
+;
+
+-- 2024-05-10T10:16:43.846Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(543413,'de_DE')
+;
+
+-- 2024-05-10T10:16:43.848Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543413,'de_DE')
+;
+
+-- Element: MasterEndDate
+-- 2024-05-10T10:17:11.791Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vertragsende', PrintName='Vertragsende',Updated=TO_TIMESTAMP('2024-05-10 13:17:11.791','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543414 AND AD_Language='de_CH'
+;
+
+-- 2024-05-10T10:17:11.794Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543414,'de_CH')
+;
+
+-- Element: MasterEndDate
+-- 2024-05-10T10:17:17.256Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vertragsende', PrintName='Vertragsende',Updated=TO_TIMESTAMP('2024-05-10 13:17:17.256','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=543414 AND AD_Language='de_DE'
+;
+
+-- 2024-05-10T10:17:17.257Z
+UPDATE AD_Element SET Name='Vertragsende', PrintName='Vertragsende' WHERE AD_Element_ID=543414
+;
+
+-- 2024-05-10T10:17:17.482Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(543414,'de_DE')
+;
+
+-- 2024-05-10T10:17:17.484Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543414,'de_DE')
+;
+
+-- Process: C_Flatrate_Term_ChangePrice(de.metas.contracts.flatrate.process.C_Flatrate_Term_ChangePriceQty)
+-- 2024-05-10T10:19:12.411Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Preis ändern',Updated=TO_TIMESTAMP('2024-05-10 13:19:12.41','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540890
+;
+
+-- Process: C_Flatrate_Term_ChangePrice(de.metas.contracts.flatrate.process.C_Flatrate_Term_ChangePriceQty)
+-- 2024-05-10T10:19:15.516Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Preis ändern',Updated=TO_TIMESTAMP('2024-05-10 13:19:15.516','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540890
+;
+
+-- 2024-05-10T10:19:15.517Z
+UPDATE AD_Process SET Name='Preis ändern' WHERE AD_Process_ID=540890
+;
+
+-- Process: C_Flatrate_Term_ChangeQty(de.metas.contracts.flatrate.process.C_Flatrate_Term_ChangePriceQty)
+-- 2024-05-10T10:19:48.343Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Menge ändern',Updated=TO_TIMESTAMP('2024-05-10 13:19:48.343','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540891
+;
+
+-- Process: C_Flatrate_Term_ChangeQty(de.metas.contracts.flatrate.process.C_Flatrate_Term_ChangePriceQty)
+-- 2024-05-10T10:19:50.662Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Menge ändern',Updated=TO_TIMESTAMP('2024-05-10 13:19:50.662','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540891
+;
+
+-- 2024-05-10T10:19:50.664Z
+UPDATE AD_Process SET Name='Menge ändern' WHERE AD_Process_ID=540891
+;
+
