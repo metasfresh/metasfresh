@@ -204,3 +204,19 @@ UPDATE AD_Column SET AD_Reference_Value_ID=541868,Updated=TO_TIMESTAMP('2024-05-
 UPDATE AD_Column SET AD_Reference_Value_ID=541868,Updated=TO_TIMESTAMP('2024-05-10 10:10:33.005','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586792
 ;
 
+-- Column: ModCntr_Module.M_Product_ID
+-- 2024-05-10T07:17:13.871Z
+UPDATE AD_Column SET SeqNo=3,Updated=TO_TIMESTAMP('2024-05-10 10:17:13.871','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586806
+;
+
+-- Column: ModCntr_Module.SeqNo
+-- 2024-05-10T07:17:47.597Z
+UPDATE AD_Column SET IsIdentifier='Y',Updated=TO_TIMESTAMP('2024-05-10 10:17:47.597','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=586803
+;
+
+-- Field: Einstellungen für modulare Verträge(541712,de.metas.contracts) -> Bausteine(547014,de.metas.contracts) -> Sequenz
+-- Column: ModCntr_Module.SeqNo
+-- 2024-05-10T07:21:17.654Z
+UPDATE AD_Field SET SortNo=1.000000000000,Updated=TO_TIMESTAMP('2024-05-10 10:21:17.654','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716350
+;
+
