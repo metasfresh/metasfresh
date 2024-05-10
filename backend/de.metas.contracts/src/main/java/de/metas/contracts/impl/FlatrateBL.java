@@ -226,6 +226,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
 	@Override
 	public I_C_Flatrate_Conditions getConditionsById(final ConditionsId flatrateConditionsId)
@@ -2331,8 +2332,18 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setPlannedQtyPerUnit(orderLine.getQtyEntered());
 		newTerm.setC_UOM_ID(orderLine.getPrice_UOM_ID());
 
-		newTerm.setStartDate(order.getDatePromised());
-		newTerm.setMasterStartDate(order.getDatePromised());
+		if (order.getHarvesting_Year_ID() > 0)
+		{
+			final Timestamp firstDayOfYear = calendarBL.getFirstDayOfYear(order.getHarvesting_Year());
+			newTerm.setStartDate(firstDayOfYear);
+			newTerm.setMasterStartDate(firstDayOfYear);
+
+		}
+		else
+		{
+			newTerm.setStartDate(order.getDatePromised());
+			newTerm.setMasterStartDate(order.getDatePromised());
+		}
 
 		newTerm.setDeliveryRule(order.getDeliveryRule());
 		newTerm.setDeliveryViaRule(order.getDeliveryViaRule());
