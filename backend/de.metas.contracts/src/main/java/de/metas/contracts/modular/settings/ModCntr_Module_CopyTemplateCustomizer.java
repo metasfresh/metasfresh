@@ -6,6 +6,9 @@ import org.compiere.model.POInfo;
 import org.compiere.model.copy.ValueToCopy;
 import org.springframework.stereotype.Component;
 
+import static de.metas.contracts.model.I_ModCntr_Module.COLUMNNAME_Name;
+import static de.metas.contracts.model.I_ModCntr_Module.COLUMNNAME_Processed;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,7 +32,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class ModCntr_Module_POCopyRecordSupport implements CopyTemplateCustomizer
+public class ModCntr_Module_CopyTemplateCustomizer implements CopyTemplateCustomizer
 {
 	@Override
 	public String getTableName()
@@ -40,7 +43,14 @@ public class ModCntr_Module_POCopyRecordSupport implements CopyTemplateCustomize
 	@Override
 	public ValueToCopy extractValueToCopy(final POInfo poInfo, final String columnName)
 	{
-		return ValueToCopy.NOT_SPECIFIED;
+		if(COLUMNNAME_Processed.equals(columnName) || COLUMNNAME_Name.equals(columnName))
+		{
+			return ValueToCopy.DIRECT_COPY;
+		}
+		else
+		{
+			return ValueToCopy.NOT_SPECIFIED;
+		}
 	}
 
 }
