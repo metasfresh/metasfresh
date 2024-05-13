@@ -123,10 +123,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	}
 
 	@Override
-	public boolean isContractIdEligible(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final FlatrateTermId contractId,
-			@NonNull final ModularContractSettings settings)
+	public boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings)
 	{
 		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId())
 				.isPresent();
