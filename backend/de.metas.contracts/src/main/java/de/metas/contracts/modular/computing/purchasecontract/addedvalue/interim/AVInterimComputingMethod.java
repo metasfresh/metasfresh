@@ -31,8 +31,8 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -42,11 +42,14 @@ import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -58,7 +61,6 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository;
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
@@ -74,9 +76,16 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 			return yearAndCalendarId != null;
 		}
 
-		if (logEntryContractType.isInterimContractType() && recordRef.getTableName().equals(I_C_Invoice.Table_Name))
+		if (logEntryContractType.isInterimContractType() && recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name))
 		{
-			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(recordRef.getRecord_ID()));
+			final I_C_Invoice invoice = Optional.of(recordRef)
+					.map(lineRef -> lineRef.getIdAssumingTableName(I_C_InvoiceLine.Table_Name, InvoiceLineId::ofRepoId))
+					.map(invoiceBL::getLineById)
+					.map(I_C_InvoiceLine::getC_Invoice_ID)
+					.map(InvoiceId::ofRepoId)
+					.map(invoiceBL::getById)
+					.orElseThrow(() -> new AdempiereException("No C_Invoice found for line=" + recordRef));
+
 			return !invoice.isSOTrx() && invoiceBL.isDownPayment(invoice);
 		}
 
@@ -91,6 +100,10 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
 			return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
+		}
+		if (recordRef.getTableName().equals(I_C_Invoice.Table_Name))
+		{
+			return contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 		}
 
 		return Stream.empty();

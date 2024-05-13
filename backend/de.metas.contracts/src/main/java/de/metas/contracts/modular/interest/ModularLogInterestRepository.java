@@ -1,0 +1,91 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.contracts.modular.interest;
+
+import de.metas.contracts.model.I_ModCntr_Interest;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class ModularLogInterestRepository
+{
+	public ModularLogInterest create(@NonNull final CreateModularLogInterestRequest request)
+	{
+		final I_ModCntr_Interest record = InterfaceWrapperHelper.newInstance(I_ModCntr_Interest.class);
+
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getAllocatedToInterimInvoiceId()));
+		record.setModCntr_Log_ID(request.getLogId().getRepoId());
+		record.setMatchedAmt(request.getAllocatedAmt().toBigDecimal());
+		//todo set currency
+
+		InterfaceWrapperHelper.save(record);
+
+		return ofRecord(record);
+	}
+
+	public ModularLogInterest save(@NonNull final ModularLogInterest request)
+	{
+		final I_ModCntr_Interest record = InterfaceWrapperHelper.load(request.getInterestLogId(), I_ModCntr_Interest.class);
+
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getAllocatedToInterimInvoiceId()));
+		record.setModCntr_Log_ID(request.getLogId().getRepoId());
+		record.setMatchedAmt(request.getAllocatedAmt().toBigDecimal());
+		record.setInterest(request.getInterestScore());
+		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
+		//todo set currency
+
+		return ofRecord(record);
+	}
+
+	public void deleteByQuery(@NonNull final LogInterestQuery query)
+	{
+		//todo
+	}
+
+	private static ModularLogInterest ofRecord(@NonNull final I_ModCntr_Interest interest)
+	{
+		return ModularLogInterest.builder()
+				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
+				.logId(ModularContractLogEntryId.ofRepoId(interest.getModCntr_Log_ID()))
+				.allocatedAmt(Money.of(interest.getMatchedAmt(), CurrencyId.ofRepoId(100))) // todo add currency
+				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), CurrencyId.ofRepoId(100))) // todo add currency
+				.interestScore(interest.getInterest())
+				.allocatedToInterimInvoiceId(InvoiceId.ofRepoIdOrNull(interest.getC_Invoice_ID()))
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class LogInterestQuery
+	{
+		@NonNull PInstanceId logSelection;
+	}
+}

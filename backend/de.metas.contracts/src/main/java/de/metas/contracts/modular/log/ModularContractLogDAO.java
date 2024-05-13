@@ -47,6 +47,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -74,6 +75,7 @@ import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static de.metas.contracts.modular.log.LogEntryContractType.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.copyValues;
@@ -361,6 +363,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addFilter(lockManager.getLockedByFilter(I_ModCntr_Log.class, query.getLockOwner()));
 		}
 
+		if (query.getInvoicingGroupId() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID, query.getInvoicingGroupId());
+		}
+
 		return sqlQueryBuilder;
 	}
 
@@ -407,6 +414,20 @@ public class ModularContractLogDAO
 				.stream()
 				.map(this::fromRecord)
 				.collect(ModularContractLogEntriesList.collect());
+	}
+
+	@Nullable
+	public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query).create().createSelection();
+	}
+
+	@NonNull
+	public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.iterateAndStream()
+				.map(this::fromRecord);
 	}
 
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)

@@ -22,22 +22,41 @@
 
 package de.metas.contracts.modular.interim.invoice.process;
 
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
+import de.metas.contracts.modular.interest.InterestComputationEnqueuer;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition
+public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
 {
 	@Param(parameterName = "InterimDate")
-	private Date p_InterimDate;
+	private LocalDate p_InterimDate;
 
 	@Param(parameterName = "BillingDate")
-	Date p_BillingDate;
+	LocalDate p_BillingDate;
+
+	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID)
+	int p_InvoicingGroupId;
+
+	@Param(parameterName = "InterestToDistribute")
+	BigDecimal p_InterestToDistribute;
+
+	@Param(parameterName = "InterestToDistribute_Currency_ID")
+	int p_InterestToDistributeCurrencyId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -52,8 +71,22 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
+		final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
+				.interestToDistribute(Money.of(p_InterestToDistribute, CurrencyId.ofRepoId(p_InterestToDistributeCurrencyId)))
+				.billingDate(p_BillingDate)
+				.interimDate(p_InterimDate)
+				.invoicingGroupId(InvoicingGroupId.ofRepoId(p_InvoicingGroupId))
+				.build();
+
+		SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class)
+				.enqueueNow(request, Env.getLoggedUserId());
+
 		return MSG_OK;
 	}
 
-
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		// todo set `p_InterestToDistributeCurrencyId` + `p_InterestToDistribute` based on inv group
+	}
 }

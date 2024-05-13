@@ -188,7 +188,7 @@ public class ComputingMethodService
 						.contractModuleId(request.getModularContractModuleId())
 						.processed(false)
 						.billable(true)
-						.lockOwner(request.getLockOwner())
+						.lockOwner(request.getLockOwner()) //todo cp
 						.build());
 
 		if (!logs.isEmpty())

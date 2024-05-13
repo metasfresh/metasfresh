@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.interim;
 
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -64,10 +63,9 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 			@NonNull final InterimComputingMethod computingMethod,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
-			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractProvider modularContractProvider)
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
 	{
-		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository, modularContractProvider);
+		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 		this.contractLogDAO = contractLogDAO;
 		this.modularContractLogService = modularContractLogService;

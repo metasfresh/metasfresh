@@ -27,6 +27,7 @@ import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -45,6 +46,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -112,6 +114,18 @@ public class ModularContractLogService
 	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return modularContractLogDAO.getModularContractLogEntries(query);
+	}
+
+	@Nullable
+	public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractLogEntrySelection(query);
+	}
+
+	@NonNull
+	public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.streamModularContractLogEntries(query);
 	}
 
 	public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)

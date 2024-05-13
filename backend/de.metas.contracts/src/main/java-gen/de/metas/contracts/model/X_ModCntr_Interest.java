@@ -41,6 +41,7 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		set_Value (COLUMNNAME_Balance, Balance);
 	}
 
+	//todo cp: delete
 	@Override
 	public BigDecimal getBalance() 
 	{
@@ -60,6 +61,7 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
+	//todo cp: rename to Allocated_To_Interim_Invoice_ID
 	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
@@ -93,7 +95,7 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	{
 		set_Value (COLUMNNAME_Interest, Interest);
 	}
-
+  // todo cp: rename to score
 	@Override
 	public BigDecimal getInterest() 
 	{
@@ -114,6 +116,7 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	// interim invoice -> could be dropped
 	@Override
 	public void setInterimAmt (final BigDecimal InterimAmt)
 	{
@@ -127,6 +130,7 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	// todo cp: allocated amount
 	@Override
 	public void setMatchedAmt (final BigDecimal MatchedAmt)
 	{

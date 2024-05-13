@@ -27,7 +27,6 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -79,9 +78,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
-	@NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
-
 
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -93,12 +90,11 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractProvider modularContractProvider;
 
 	@Override
 	public @NonNull String getSupportedTableName()
 	{
-		return supportedTableName;
+		return I_C_InvoiceLine.Table_Name;
 	}
 
 	@NonNull

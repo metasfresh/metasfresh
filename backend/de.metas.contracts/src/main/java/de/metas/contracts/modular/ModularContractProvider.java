@@ -193,7 +193,7 @@ public class ModularContractProvider
 			return Stream.of(flatrateTermId);
 		}
 		else if (flatrateBL.isInterimContract(flatrateTermId))
-		{
+		{//todo cp
 			final I_C_Flatrate_Term interimContractRecord = flatrateBL.getById(flatrateTermId);
 			return Stream.of(FlatrateTermId.ofRepoId(interimContractRecord.getModular_Flatrate_Term_ID()));
 		}
