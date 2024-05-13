@@ -63,6 +63,11 @@ public interface IComputingMethodHandler
 
 	boolean applies(@NonNull final TableRecordReference recordRef, @NonNull final LogEntryContractType contractType);
 
+	default boolean isApplicableForSettings(@NonNull final TableRecordReference recordRef, @NonNull final ModularContractSettings settings)
+	{
+		return true;
+	}
+
 	/**
 	 * The handler's implementation will need to somehow extract the corresponding contract(s):
 	 * <ul>
@@ -72,14 +77,6 @@ public interface IComputingMethodHandler
 	 */
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef);
-
-	default boolean isContractIdEligible(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final FlatrateTermId contractId,
-			@NonNull final ModularContractSettings settings)
-	{
-		return true;
-	}
 
 	default @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{

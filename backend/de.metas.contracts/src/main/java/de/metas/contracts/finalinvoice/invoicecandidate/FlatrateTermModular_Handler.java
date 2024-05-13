@@ -127,12 +127,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final var modularContractSettings = modularContractSettingsBL.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 		final var requestTemplate = CreateInvoiceCandidateRequest.builder()
 				.modularContract(term)
-				//.moduleConfig(module)
 				.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
 				.pricingSystemId(modularContractSettings.getPricingSystemId())
 				.lockOwner(lockOwner);
 
-		return modularContractSettings.getModuleConfigs()
+		return modularContractSettings.getModuleConfigsWithout(ComputingMethodType.InformativeLogs)
 				.stream()
 				.map(module -> createCandidateFor(requestTemplate.moduleConfig(module).build()))
 				.collect(ImmutableList.toImmutableList());

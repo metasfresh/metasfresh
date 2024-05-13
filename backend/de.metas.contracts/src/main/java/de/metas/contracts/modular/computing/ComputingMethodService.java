@@ -126,15 +126,7 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				switch (action)
-				{
-					case COMPLETED, RECREATE_LOGS -> {}
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				}
-			}
-			case I_PP_Cost_Collector.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name, I_PP_Cost_Collector.Table_Name ->
 			{
 				switch (action)
 				{
@@ -159,15 +151,7 @@ public class ComputingMethodService
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}
-			case I_M_Shipping_NotificationLine.Table_Name ->
-			{
-				switch (action)
-				{
-					case COMPLETED, REVERSED, RECREATE_LOGS -> {}
-					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
-				}
-			}
-			case I_C_InvoiceLine.Table_Name ->
+			case I_M_Shipping_NotificationLine.Table_Name, I_C_InvoiceLine.Table_Name ->
 			{
 				switch (action)
 				{
@@ -214,21 +198,6 @@ public class ComputingMethodService
 	public Quantity getQtySum(@NonNull final ModularContractLogEntriesList logs, @NonNull final UomId targetUomId)
 	{
 		return logs.getQtySum(targetUomId, uomConversionBL);
-	}
-
-	@NonNull
-	public ComputingResponse toZeroResponseWithQtyZero(final @NotNull ComputingRequest request)
-	{
-		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-							   .productId(request.getProductId())
-							   .money(Money.zero(request.getCurrencyId()))
-							   .uomId(stockUOMId)
-							   .build())
-				.qty(Quantitys.zero(stockUOMId))
-				.build();
 	}
 
 	@NonNull

@@ -25,6 +25,7 @@ package de.metas.contracts.modular.settings.interceptor;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
+import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -40,9 +41,12 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -64,11 +68,19 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_ComputingMethodRequiresCoProduct = AdMessageKey.of("ComputingMethodTypeRequiresCoProduct");
 	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+
+	@Init
+	public void init(final IModelValidationEngine engine)
+	{
+		CopyRecordFactory.registerCopyRecordSupport(I_ModCntr_Module.Table_Name, ModCntr_Module_POCopyRecordSupport.class);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
@@ -106,9 +118,9 @@ public class ModCntr_Module
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record2)
+	public void validateModuleComputingMethods(@NonNull final I_ModCntr_Module record)
 	{
-		final ModuleConfig module = ModularContractSettingsDAO.fromRecord(record2);
+		final ModuleConfig module = modularContractSettingsDAO.fromRecord(record);
 		final ModularContractSettingsId modularContractSettingsId = module.getModularContractSettingsId();
 		final ModularContractType type = module.getModularContractType();
 		final ComputingMethodType computingMethodType = type.getComputingMethodType();
@@ -154,6 +166,11 @@ public class ModCntr_Module
 
 			case SalesOnProcessedProduct ->
 			{
+				if (!module.getInvoicingGroup().isServicesType())
+				{
+					throw new AdempiereException(ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP, InvoicingGroupType.SERVICES.getDisplayName());
+				}
+				
 				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresProcessedProduct);
