@@ -74,7 +74,7 @@ public class PrintingData
 		this.orgId = orgId;
 		this.documentFileName = documentFileName;
 		this.additionalCopies = additionalCopies != null ? additionalCopies : PrintCopies.ZERO;
-		this.adjustSegmentPageRanges = adjustSegmentPageRanges != null && adjustSegmentPageRanges;
+		this.adjustSegmentPageRanges = adjustSegmentPageRanges == null || adjustSegmentPageRanges;
 		this.segments = this.adjustSegmentPageRanges
 				? adjustSegmentPageRanges(this, segments)
 				: ImmutableList.copyOf(segments);
