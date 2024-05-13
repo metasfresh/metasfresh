@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCntr_Interest, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1759178551L;
+	private static final long serialVersionUID = 1327321966L;
 
     /** Standard Constructor */
     public X_ModCntr_Interest (final Properties ctx, final int ModCntr_Interest_ID, @Nullable final String trxName)
@@ -36,17 +36,18 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setBalance (final BigDecimal Balance)
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
-		set_Value (COLUMNNAME_Balance, Balance);
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
-	//todo cp: delete
 	@Override
-	public BigDecimal getBalance() 
+	public int getC_Currency_ID() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Balance);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -61,7 +62,6 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
-	//todo cp: rename to Allocated_To_Interim_Invoice_ID
 	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
@@ -91,19 +91,6 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setInterest (final @Nullable BigDecimal Interest)
-	{
-		set_Value (COLUMNNAME_Interest, Interest);
-	}
-  // todo cp: rename to score
-	@Override
-	public BigDecimal getInterest() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Interest);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setInterestDays (final @Nullable BigDecimal InterestDays)
 	{
 		set_Value (COLUMNNAME_InterestDays, InterestDays);
@@ -116,7 +103,19 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	// interim invoice -> could be dropped
+	@Override
+	public void setInterestScore (final @Nullable BigDecimal InterestScore)
+	{
+		set_Value (COLUMNNAME_InterestScore, InterestScore);
+	}
+
+	@Override
+	public BigDecimal getInterestScore() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestScore);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	@Override
 	public void setInterimAmt (final BigDecimal InterimAmt)
 	{
@@ -130,7 +129,6 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	// todo cp: allocated amount
 	@Override
 	public void setMatchedAmt (final BigDecimal MatchedAmt)
 	{

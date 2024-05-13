@@ -53,25 +53,26 @@ public interface I_ModCntr_Interest
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Balance.
+	 * Set Currency.
+	 * The Currency for this record
 	 *
-	 * <br>Type: Number
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setBalance (BigDecimal Balance);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Balance.
+	 * Get Currency.
+	 * The Currency for this record
 	 *
-	 * <br>Type: Number
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getBalance();
+	int getC_Currency_ID();
 
-	ModelColumn<I_ModCntr_Interest, Object> COLUMN_Balance = new ModelColumn<>(I_ModCntr_Interest.class, "Balance", null);
-	String COLUMNNAME_Balance = "Balance";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Invoice.
@@ -147,27 +148,6 @@ public interface I_ModCntr_Interest
 	String COLUMNNAME_FinalInterest = "FinalInterest";
 
 	/**
-	 * Set Interest.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInterest (@Nullable BigDecimal Interest);
-
-	/**
-	 * Get Interest.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getInterest();
-
-	ModelColumn<I_ModCntr_Interest, Object> COLUMN_Interest = new ModelColumn<>(I_ModCntr_Interest.class, "Interest", null);
-	String COLUMNNAME_Interest = "Interest";
-
-	/**
 	 * Set Interest days.
 	 *
 	 * <br>Type: Number
@@ -187,6 +167,27 @@ public interface I_ModCntr_Interest
 
 	ModelColumn<I_ModCntr_Interest, Object> COLUMN_InterestDays = new ModelColumn<>(I_ModCntr_Interest.class, "InterestDays", null);
 	String COLUMNNAME_InterestDays = "InterestDays";
+
+	/**
+	 * Set Interest Score.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInterestScore (@Nullable BigDecimal InterestScore);
+
+	/**
+	 * Get Interest Score.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInterestScore();
+
+	ModelColumn<I_ModCntr_Interest, Object> COLUMN_InterestScore = new ModelColumn<>(I_ModCntr_Interest.class, "InterestScore", null);
+	String COLUMNNAME_InterestScore = "InterestScore";
 
 	/**
 	 * Set Interim amount.

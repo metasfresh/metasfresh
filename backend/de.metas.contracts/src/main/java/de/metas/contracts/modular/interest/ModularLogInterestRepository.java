@@ -54,8 +54,9 @@ public class ModularLogInterestRepository
 
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getAllocatedToInterimInvoiceId()));
 		record.setModCntr_Log_ID(request.getLogId().getRepoId());
-		record.setMatchedAmt(request.getAllocatedAmt().toBigDecimal());
-		//todo set currency
+		final Money allocatedAmt = request.getAllocatedAmt();
+		record.setMatchedAmt(allocatedAmt.toBigDecimal());
+		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
 		InterfaceWrapperHelper.save(record);
 
@@ -64,14 +65,17 @@ public class ModularLogInterestRepository
 
 	public ModularLogInterest save(@NonNull final ModularLogInterest request)
 	{
+		final Money allocatedAmt = request.getAllocatedAmt();
+		final Money finalInterest = request.getFinalInterest();
+		Money.assertSameCurrency(allocatedAmt, finalInterest);
 		final I_ModCntr_Interest record = InterfaceWrapperHelper.load(request.getInterestLogId(), I_ModCntr_Interest.class);
 
 		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getAllocatedToInterimInvoiceId()));
 		record.setModCntr_Log_ID(request.getLogId().getRepoId());
-		record.setMatchedAmt(request.getAllocatedAmt().toBigDecimal());
-		record.setInterest(request.getInterestScore());
-		record.setFinalInterest(Money.toBigDecimalOrZero(request.getFinalInterest()));
-		//todo set currency
+		record.setMatchedAmt(allocatedAmt.toBigDecimal());
+		record.setInterestScore(request.getInterestScore());
+		record.setFinalInterest(Money.toBigDecimalOrZero(finalInterest));
+		record.setC_Currency_ID(allocatedAmt.getCurrencyId().getRepoId());
 
 		return ofRecord(record);
 	}
@@ -83,18 +87,35 @@ public class ModularLogInterestRepository
 
 	private static ModularLogInterest ofRecord(@NonNull final I_ModCntr_Interest interest)
 	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(interest.getC_Currency_ID());
 		return ModularLogInterest.builder()
 				.interestLogId(ModularInterestLogId.ofRepoId(interest.getModCntr_Interest_ID()))
 				.logId(ModularContractLogEntryId.ofRepoId(interest.getModCntr_Log_ID()))
-				.allocatedAmt(Money.of(interest.getMatchedAmt(), CurrencyId.ofRepoId(100))) // todo add currency
-				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), CurrencyId.ofRepoId(100))) // todo add currency
-				.interestScore(interest.getInterest())
+				.allocatedAmt(Money.of(interest.getMatchedAmt(), currencyId))
+				.finalInterest(Money.ofOrNull(interest.getFinalInterest(), currencyId))
+				.interestScore(interest.getInterestScore())
 				.allocatedToInterimInvoiceId(InvoiceId.ofRepoIdOrNull(interest.getC_Invoice_ID()))
 				.build();
 	}
 
 	@NonNull
 	public Optional<Money> getTotalInterest(@NonNull final LogInterestQuery query)
+	{
+		final IQueryBuilder<I_ModCntr_Log> builder = getQueryBuilder(query);
+		final ImmutableMap<CurrencyId, Money> currenciesMap = builder
+				.create()
+				.sumMoney(I_ModCntr_Interest.COLUMNNAME_FinalInterest, I_ModCntr_Interest.COLUMNNAME_C_Currency_ID)
+				.stream()
+				.collect(Money.sumByCurrency());
+		if (currenciesMap.isEmpty())
+		{
+			return Optional.empty();
+		}
+		Check.assumeEquals(currenciesMap.size(), 1);
+		return currenciesMap.values().stream().findFirst();
+	}
+
+	private IQueryBuilder<I_ModCntr_Log> getQueryBuilder(final @NonNull LogInterestQuery query)
 	{
 		final IQueryBuilder<I_ModCntr_Log> builder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
 				.setOnlySelection(query.getLogSelection())
@@ -110,17 +131,7 @@ public class ModularLogInterestRepository
 				builder.addIsNull(I_ModCntr_Interest.COLUMNNAME_C_Invoice_ID);
 			}
 		}
-		final ImmutableMap<CurrencyId, Money> currenciesMap = builder
-				.create()
-				.sumMoney(I_ModCntr_Interest.COLUMNNAME_FinalInterest,/*I_ModCntr_Interest.COLUMNNAME_Currency*/"Currency")//TODO add currency
-				.stream()
-				.collect(Money.sumByCurrency());
-		if (currenciesMap.isEmpty())
-		{
-			return Optional.empty();
-		}
-		Check.assumeEquals(currenciesMap.size(), 1);
-		return currenciesMap.values().stream().findFirst();
+		return builder;
 	}
 
 	@Value
