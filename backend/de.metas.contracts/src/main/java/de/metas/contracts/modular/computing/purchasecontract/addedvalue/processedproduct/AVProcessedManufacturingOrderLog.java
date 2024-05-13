@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
+package de.metas.contracts.modular.computing.purchasecontract.addedvalue.processedproduct;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.purchasecontract.sales.processed.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.purchasecontract.sales.processed.ManufacturingReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
 import de.metas.product.ProductId;
 import lombok.Getter;
@@ -31,15 +34,15 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
+public class AVProcessedManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
 {
-	@Getter @NonNull private final ProcessedSalesComputingMethod computingMethod;
+	@Getter @NonNull private final AVProcessedComputingMethod computingMethod;
 
-	public ProcessedSalesManufacturingOrderLog(
+	public AVProcessedManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
-			@NonNull final ProcessedSalesComputingMethod computingMethod)
+			@NonNull final AVProcessedComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService);
 		this.computingMethod = computingMethod;
@@ -48,8 +51,15 @@ public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOr
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(request.getRecordRef()).orElse(null);
-		return manufacturingReceipt != null
-				&& ProductId.equals(manufacturingReceipt.getProductId(), request.getProductId());
+		return manufacturingFacadeService.getManufacturingReceiptIfApplies(request.getRecordRef()).isPresent();
+	}
+
+	@NonNull
+	@Override
+	protected ProductId getProductId(
+			@NonNull final IModularContractLogHandler.CreateLogRequest request,
+			@NonNull final ManufacturingReceipt manufacturingReceipt)
+	{
+		return request.getProductId();
 	}
 }
