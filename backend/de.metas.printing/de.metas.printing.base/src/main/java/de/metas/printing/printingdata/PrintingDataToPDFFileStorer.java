@@ -133,7 +133,7 @@ public class PrintingDataToPDFFileStorer
 			return sysconfigDirectory;
 		}
 
-		final String tempDir = System.getProperty("java.io.tmpdir");
+		final String tempDir = FileUtil.getTempDir();
 		logger.debug("AD_SysConfig {} is not set; -> use temp-dir {} as base directory", SYSCONFIG_STORE_PDF_BASE_DIRECTORY, tempDir);
 		return tempDir;
 	}
