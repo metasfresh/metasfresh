@@ -65,10 +65,15 @@ public final class FileUtil
 		}
 		out.flush();
 	}
+	
+	public static String getTempDir()
+	{
+		return System.getProperty("java.io.tmpdir");
+	}
 
 	public static File createTempFile(final String fileExtension, final String title)
 	{
-		final String path = System.getProperty("java.io.tmpdir");
+		final String path = getTempDir();
 		final String prefix = makeFilePrefix(title);
 
 		File file;

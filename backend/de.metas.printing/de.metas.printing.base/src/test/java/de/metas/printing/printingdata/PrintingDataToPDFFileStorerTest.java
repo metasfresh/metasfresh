@@ -36,12 +36,12 @@ import de.metas.printing.api.util.PdfCollator;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
 import de.metas.printing.model.I_AD_PrinterRouting;
+import de.metas.report.PrintCopies;
 import de.metas.util.FileUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.model.X_AD_SysConfig;
+import org.adempiere.service.ISysConfigBL;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -50,8 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PrintingDataToPDFFileStorerTest
@@ -70,6 +68,16 @@ class PrintingDataToPDFFileStorerTest
 		hardwarePrinterRepository = new HardwarePrinterRepository();
 	}
 
+	private void setStorePDFBaseDirectory(@NonNull final File directory)
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		sysConfigBL.setValue(
+				PrintingDataToPDFFileStorer.SYSCONFIG_STORE_PDF_BASE_DIRECTORY,
+				directory.getAbsolutePath(),
+				ClientId.METASFRESH,
+				OrgId.ANY);
+	}
+
 	/**
 	 * Call {@link PrintingDataToPDFFileStorer#storeInFileSystem(PrintingData)} twice with two different timstamps and verify the result.
 	 */
@@ -81,19 +89,14 @@ class PrintingDataToPDFFileStorerTest
 		final byte[] binaryPdfData = new PdfCollator()
 				.addPages(helper.getPdf("01"), 1, 3) // First 3 pages
 				.toByteArray();
-		final File baseDir = FileUtil.createTempDirectory("PrintingDataToPDFFileStorerTest");
 
-		final I_AD_SysConfig sysConfigRecord = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);
-		setValue(sysConfigRecord, I_AD_SysConfig.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
-		sysConfigRecord.setName(PrintingDataToPDFFileStorer.SYSCONFIG_STORE_PDF_BASE_DIRECTORY);
-		sysConfigRecord.setValue(baseDir.getAbsolutePath());
-		sysConfigRecord.setConfigurationLevel(X_AD_SysConfig.CONFIGURATIONLEVEL_Organization);
-		saveRecord(sysConfigRecord);
+		final File baseDir = FileUtil.createTempDirectory("PrintingDataToPDFFileStorerTest");
+		setStorePDFBaseDirectory(baseDir);
 
 		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
 		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(hwPrinterRecord.getAD_PrinterHW_ID());
-		final I_AD_PrinterHW_MediaTray hwTray1Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray1",10);
-		final I_AD_PrinterHW_MediaTray hwTray2Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray2",20);
+		final I_AD_PrinterHW_MediaTray hwTray1Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray1", 10);
+		final I_AD_PrinterHW_MediaTray hwTray2Record = helper.getCreatePrinterTrayHW("hwPrinter", "hwTray2", 20);
 		final HardwareTrayId tray1Id = HardwareTrayId.ofRepoId(printerId, hwTray1Record.getAD_PrinterHW_MediaTray_ID());
 		final HardwareTrayId tray2Id = HardwareTrayId.ofRepoId(printerId, hwTray2Record.getAD_PrinterHW_MediaTray_ID());
 
@@ -159,4 +162,51 @@ class PrintingDataToPDFFileStorerTest
 		final byte[] tray2File2Content = Files.readAllBytes(tray2File2.toPath());
 		helper.assertEqualsPDF(dataExpectedTray2, tray2File2Content);
 	}
+
+	@Test
+	void writeAdditionalCopies() throws IOException
+	{
+		//
+		// Given
+		final byte[] pdfData = new PdfCollator()
+				.addPages(helper.getPdf("01"), 1, 3) // First 3 pages
+				.toByteArray();
+
+		final File baseDir = FileUtil.createTempDirectory("PrintingDataToPDFFileStorerTest");
+		setStorePDFBaseDirectory(baseDir);
+
+		final I_AD_PrinterHW hwPrinterRecord = helper.getCreatePrinterHW("hwPrinter", OutputType.Store);
+		final HardwarePrinterId printerId = HardwarePrinterId.ofRepoId(hwPrinterRecord.getAD_PrinterHW_ID());
+		final HardwarePrinter printer = hardwarePrinterRepository.getById(printerId);
+
+		//
+		// When
+		SystemTime.setTimeSource(() -> 100);
+		printingDataToPDFFileStorer.storeInFileSystem(
+				PrintingData.builder()
+						.documentFileName("test.pdf")
+						.additionalCopies(PrintCopies.ofInt(2))
+						.orgId(OrgId.ofRepoId(10))
+						.printingQueueItemId(PrintingQueueItemId.ofRepoId(20))
+						.data(pdfData)
+						.segment(PrintingSegment.builder()
+								.printerRoutingId(PrinterRoutingId.ofRepoId(401))
+								.routingType(I_AD_PrinterRouting.ROUTINGTYPE_PageRange)
+								.initialPageFrom(1)
+								.initialPageTo(3)
+								.printer(printer)
+								.build())
+						.build()
+		);
+
+		//
+		// Then
+		helper.assertEqualsPDF(pdfData, new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test.pdf"));
+		assertThat(new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test_1.pdf")).doesNotExist();
+		helper.assertEqualsPDF(pdfData, new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test_2.pdf"));
+		helper.assertEqualsPDF(pdfData, new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test_3.pdf"));
+		assertThat(new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test_4.pdf")).doesNotExist();
+		assertThat(new File(baseDir.getAbsolutePath() + "/hwPrinter/100_test_5.pdf")).doesNotExist();
+	}
+
 }
