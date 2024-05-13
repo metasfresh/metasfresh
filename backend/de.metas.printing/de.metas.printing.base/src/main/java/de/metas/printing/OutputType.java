@@ -30,7 +30,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Objects;
 
 public enum OutputType implements ReferenceListAwareEnum
 {
@@ -73,5 +75,6 @@ public enum OutputType implements ReferenceListAwareEnum
 
 	private static final ImmutableMap<String, OutputType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), OutputType::getCode);
 
+	public static boolean equals(@Nullable final OutputType type1, @Nullable final OutputType type2) {return Objects.equals(type1, type2);}
 
 }
