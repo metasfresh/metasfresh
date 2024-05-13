@@ -22,21 +22,32 @@
 
 package de.metas.contracts.modular.interest;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.model.I_ModCntr_Interest;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.PInstanceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Repository
 public class ModularLogInterestRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public ModularLogInterest create(@NonNull final CreateModularLogInterestRequest request)
 	{
 		final I_ModCntr_Interest record = InterfaceWrapperHelper.newInstance(I_ModCntr_Interest.class);
@@ -82,10 +93,41 @@ public class ModularLogInterestRepository
 				.build();
 	}
 
+	@NonNull
+	public Optional<Money> getTotalInterest(@NonNull final LogInterestQuery query)
+	{
+		final IQueryBuilder<I_ModCntr_Log> builder = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.setOnlySelection(query.getLogSelection())
+				.andCollect(I_ModCntr_Interest.COLUMN_ModCntr_Log_ID);
+		if (query.getInterestBasedOnInterim() != null)
+		{
+			if (query.getInterestBasedOnInterim())
+			{
+				builder.addNotNull(I_ModCntr_Interest.COLUMNNAME_C_Invoice_ID);
+			}
+			else
+			{
+				builder.addIsNull(I_ModCntr_Interest.COLUMNNAME_C_Invoice_ID);
+			}
+		}
+		final ImmutableMap<CurrencyId, Money> currenciesMap = builder
+				.create()
+				.sumMoney(I_ModCntr_Interest.COLUMNNAME_FinalInterest,/*I_ModCntr_Interest.COLUMNNAME_Currency*/"Currency")//TODO add currency
+				.stream()
+				.collect(Money.sumByCurrency());
+		if (currenciesMap.isEmpty())
+		{
+			return Optional.empty();
+		}
+		Check.assumeEquals(currenciesMap.size(), 1);
+		return currenciesMap.values().stream().findFirst();
+	}
+
 	@Value
 	@Builder
 	public static class LogInterestQuery
 	{
 		@NonNull PInstanceId logSelection;
+		@Nullable Boolean interestBasedOnInterim;
 	}
 }

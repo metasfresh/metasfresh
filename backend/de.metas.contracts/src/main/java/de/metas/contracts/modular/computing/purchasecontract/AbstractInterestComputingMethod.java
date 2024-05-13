@@ -22,22 +22,34 @@
 
 package de.metas.contracts.modular.computing.purchasecontract;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.interest.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +58,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -56,6 +70,8 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository;
+	@NonNull private final ModularContractLogService modularContractLogService;
+	@NonNull private final ModularLogInterestRepository modularLogInterestRepository;
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -115,4 +131,49 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 		return invoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId())
 				.isPresent();
 	}
+
+	@NonNull
+	@Override
+	public ComputingResponse compute(final @NonNull ComputingRequest request)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.processed(false)
+				.billable(true)
+				.flatrateTermId(request.getFlatrateTermId())
+				.contractModuleId(request.getModularContractModuleId())
+				.build();
+		final PInstanceId pInstanceId = modularContractLogService.getModularContractLogEntrySelection(query);
+		if (pInstanceId == null)
+		{
+			return IComputingMethodHandler.super.compute(request);
+		}
+
+		final Optional<Money> totalInterest = modularLogInterestRepository.getTotalInterest(ModularLogInterestRepository.LogInterestQuery.builder()
+				.logSelection(pInstanceId)
+				.interestBasedOnInterim(isInterestBasedOnInterim())
+				.build());
+
+		return totalInterest.map(interest -> computeResponse(request, interest))
+				.orElseGet(() -> IComputingMethodHandler.super.compute(request));
+
+	}
+
+	private ComputingResponse computeResponse(final ComputingRequest request, final Money interest)
+	{
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		Check.assumeEquals(request.getCurrencyId(), interest.getCurrencyId());
+
+		return ComputingResponse.builder()
+				.ids(ImmutableSet.of())
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(interest)
+						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+						.build())
+				.qty(qty)
+				.build();
+	}
+
+	protected abstract boolean isInterestBasedOnInterim();
 }
