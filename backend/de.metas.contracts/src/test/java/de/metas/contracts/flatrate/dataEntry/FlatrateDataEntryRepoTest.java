@@ -1,0 +1,92 @@
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.contracts.flatrate.dataEntry;
+
+import de.metas.business.BusinessTestHelper;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+
+public class FlatrateDataEntryRepoTest
+{
+
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		
+	}
+
+	@Test
+	public void getByIdTest()
+	{
+		// Given
+		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
+		final FlatrateDataEntryRepo flatrateDataEntryRepo = new FlatrateDataEntryRepo();
+		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(100);
+
+		final I_C_Flatrate_Term flatrateTerm = newInstance(I_C_Flatrate_Term.class);
+		flatrateTerm.setBill_BPartner_ID(101);
+		saveRecord(flatrateTerm);
+
+		final I_C_Flatrate_DataEntry dataEntry1 = newInstance(I_C_Flatrate_DataEntry.class);
+		dataEntry1.setC_Flatrate_DataEntry_ID(testId.getRepoId());
+		dataEntry1.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
+
+		saveRecord(dataEntry1);
+
+		final I_C_Flatrate_DataEntry_Detail dataEntryDetail1 = newInstance(I_C_Flatrate_DataEntry_Detail.class);
+		dataEntryDetail1.setC_Flatrate_DataEntry_ID(dataEntry1.getC_Flatrate_DataEntry_ID());
+		dataEntryDetail1.setC_Flatrate_DataEntry_Detail_ID(11);
+		dataEntryDetail1.setSeqNo(20);
+		dataEntryDetail1.setC_UOM_ID(uomEach.getC_UOM_ID());
+		saveRecord(dataEntryDetail1);
+		
+		final I_C_Flatrate_DataEntry_Detail dataEntryDetail2 = newInstance(I_C_Flatrate_DataEntry_Detail.class);
+		dataEntryDetail2.setC_Flatrate_DataEntry_ID(dataEntry1.getC_Flatrate_DataEntry_ID());
+		dataEntryDetail2.setC_Flatrate_DataEntry_Detail_ID(12);
+		dataEntryDetail2.setSeqNo(10);
+		dataEntryDetail2.setC_UOM_ID(uomEach.getC_UOM_ID());
+		saveRecord(dataEntryDetail2);
+
+		// When
+		final FlatrateDataEntry result = flatrateDataEntryRepo.getById(testId);
+
+		// Then
+		assertThat(result).isNotNull();
+		assertThat(result.getId()).isEqualTo(testId);
+		assertThat(result.getDetails()).hasSize(2);
+				
+		assertThat(result.getDetails().get(0).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 12)); // verify that it's ordered by seqno
+		assertThat(result.getDetails().get(1).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 11));
+
+	}
+}

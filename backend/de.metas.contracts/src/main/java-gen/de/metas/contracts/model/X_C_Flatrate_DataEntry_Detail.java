@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Flatrate_DataEntry_Detail extends org.compiere.model.PO implements I_C_Flatrate_DataEntry_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2117830027L;
+	private static final long serialVersionUID = 750374448L;
 
     /** Standard Constructor */
     public X_C_Flatrate_DataEntry_Detail (final Properties ctx, final int C_Flatrate_DataEntry_Detail_ID, @Nullable final String trxName)
@@ -157,5 +157,17 @@ public class X_C_Flatrate_DataEntry_Detail extends org.compiere.model.PO impleme
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty_Reported);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

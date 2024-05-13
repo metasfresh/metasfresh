@@ -242,6 +242,31 @@ public interface I_C_Flatrate_DataEntry_Detail
 	String COLUMNNAME_Qty_Reported = "Qty_Reported";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_Flatrate_DataEntry_Detail, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Flatrate_DataEntry_Detail.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
