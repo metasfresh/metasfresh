@@ -87,21 +87,15 @@ public class CopyTemplateService
 			@NonNull final ValueToCopy defaultValueToCopy)
 	{
 		final ColumnCloningStrategy cloningStrategy = poInfo.getColumnNotNull(columnName).getCloningStrategy();
-		switch (cloningStrategy)
-		{
-			case Auto:
-				return extractValueToCopy_Autodetect(poInfo, columnName, defaultValueToCopy);
-			case DirectCopy:
-				return ValueToCopy.DIRECT_COPY;
-			case UseDefaultValue:
-				return ValueToCopy.COMPUTE_DEFAULT;
-			case MakeUnique:
-				return ValueToCopy.APPEND_UNIQUE_SUFFIX;
-			case Skip:
-				return ValueToCopy.SKIP;
-			default:
-				throw new AdempiereException("Unknown column cloning policy: " + cloningStrategy);
-		}
+        return switch (cloningStrategy)
+        {
+            case Auto -> extractValueToCopy_Autodetect(poInfo, columnName, defaultValueToCopy);
+            case DirectCopy -> ValueToCopy.DIRECT_COPY;
+            case UseDefaultValue -> ValueToCopy.COMPUTE_DEFAULT;
+            case MakeUnique -> ValueToCopy.APPEND_UNIQUE_SUFFIX;
+            case Skip -> ValueToCopy.SKIP;
+            default -> throw new AdempiereException("Unknown column cloning policy: " + cloningStrategy);
+        };
 	}
 
 	private ValueToCopy extractValueToCopy_Autodetect(
@@ -176,8 +170,8 @@ public class CopyTemplateService
 
 	private List<POInfo> getChildPOInfos(
 			@NonNull final String tableName,
-			@NonNull String keyColumnName,
-			@NonNull TableDownlineCloningStrategy downlineCloningStrategy)
+			@NonNull final String keyColumnName,
+			@NonNull final TableDownlineCloningStrategy downlineCloningStrategy)
 	{
 		if (downlineCloningStrategy.isSkip())
 		{
@@ -219,24 +213,23 @@ public class CopyTemplateService
 		}
 
 		final TableWhenChildCloningStrategy childCloningStrategy = childPOInfo.getWhenChildCloningStrategy();
-		switch (parentDownlineStrategy)
-		{
-			case Auto:
-				return !childCloningStrategy.isSkip();
-			case OnlyIncluded:
-				return childCloningStrategy.isIncluded();
-			case Skip:
-				return false;
-			default:
-				logger.warn("Parent downline strategy `{}` not handled. Considering child `{}` not included", parentDownlineStrategy, childPOInfo);
-				return false;
-		}
+        return switch (parentDownlineStrategy)
+        {
+            case Auto -> !childCloningStrategy.isSkip();
+            case OnlyIncluded -> childCloningStrategy.isIncluded();
+            case Skip -> false;
+            default ->
+            {
+                logger.warn("Parent downline strategy `{}` not handled. Considering child `{}` not included", parentDownlineStrategy, childPOInfo);
+                yield false;
+            }
+        };
 	}
 
 	private static boolean isEligibleChildWhenAutoDiscovering(
-			@NonNull String parentTableName,
-			@NonNull POInfo childPOInfo,
-			@NonNull String linkColumnName)
+			@NonNull final String parentTableName,
+			@NonNull final POInfo childPOInfo,
+			@NonNull final String linkColumnName)
 	{
 		if (childPOInfo.isView())
 		{
