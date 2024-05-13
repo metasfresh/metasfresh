@@ -23,17 +23,22 @@
 package de.metas.contracts.modular.invgroup.interceptor;
 
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
+import de.metas.contracts.modular.invgroup.InvoicingGroup;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -107,5 +112,31 @@ public class ModCntrInvoicingGroupRepository
 				.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_Harvesting_Year_ID, yearAndCalendarId.yearId())
 				.create()
 				.firstOnlyOptional();
+	}
+
+	public Stream<InvoicingGroup> streamAll()
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup.class)
+				//currently there's no tighter filter criteria to minimise the number of invoicing groups that are considered
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::fromDB);
+	}
+
+	public InvoicingGroup getById(@NonNull final InvoicingGroupId invoicingGroupId)
+	{
+		final I_ModCntr_InvoicingGroup invoicingGroup = InterfaceWrapperHelper.load(invoicingGroupId, I_ModCntr_InvoicingGroup.class);
+		return fromDB(invoicingGroup);
+	}
+
+	private InvoicingGroup fromDB(@NonNull final I_ModCntr_InvoicingGroup invoicingGroup)
+	{
+		return InvoicingGroup.builder()
+				.id(InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID()))
+				.productId(ProductId.ofRepoIdOrNull(invoicingGroup.getGroup_Product_ID()))
+				.yearId(YearId.ofRepoId(invoicingGroup.getHarvesting_Year_ID()))
+				.amtToDistribute(Money.ofOrNull(invoicingGroup.getTotalInterest(), CurrencyId.ofRepoId(invoicingGroup.getC_Currency_ID())))
+				.build();
 	}
 }

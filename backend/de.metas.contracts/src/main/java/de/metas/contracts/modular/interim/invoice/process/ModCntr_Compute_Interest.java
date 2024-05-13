@@ -25,7 +25,9 @@ package de.metas.contracts.modular.interim.invoice.process;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
 import de.metas.contracts.modular.interest.InterestComputationEnqueuer;
+import de.metas.contracts.modular.invgroup.InvoicingGroup;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.IProcessParametersCallout;
@@ -34,28 +36,34 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
+@AllArgsConstructor
 public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
 {
-	@Param(parameterName = "InterimDate")
+	@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+
+	@Param(parameterName = "InterimDate", mandatory = true)
 	private LocalDate p_InterimDate;
 
-	@Param(parameterName = "BillingDate")
+	@Param(parameterName = "BillingDate", mandatory = true)
 	LocalDate p_BillingDate;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID)
-	int p_InvoicingGroupId;
+	Integer p_InvoicingGroupId;
 
-	@Param(parameterName = "InterestToDistribute")
+	@Nullable @Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_TotalInterest)
 	BigDecimal p_InterestToDistribute;
 
-	@Param(parameterName = "InterestToDistribute_Currency_ID")
+	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_C_Currency_ID)
 	int p_InterestToDistributeCurrencyId;
 
 	@Override
@@ -71,22 +79,81 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
+		final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoIdOrNull(p_InvoicingGroupId);
+		if (invoicingGroupId != null)
+		{
+			final Money interestToDistribute = Money.ofOrNull(p_InterestToDistribute, CurrencyId.ofRepoIdOrNull(p_InterestToDistributeCurrencyId));
+			if (getAndLogInterestToDistribute(interestToDistribute, invoicingGroupId))
+			{
+				return MSG_Error;
+			}
+			final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
+					.interestToDistribute(Objects.requireNonNull(interestToDistribute))
+					.billingDate(p_BillingDate)
+					.interimDate(p_InterimDate)
+					.invoicingGroupId(invoicingGroupId)
+					.build();
+
+			SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class)
+					.enqueueNow(request, Env.getLoggedUserId());
+		}
+
+		else
+		{
+			modCntrInvoicingGroupRepository.streamAll()
+					.forEach(this::enqueue);
+		}
+
+		return MSG_OK;
+	}
+
+	private void enqueue(@NonNull final InvoicingGroup invoicingGroup)
+	{
+		if (getAndLogInterestToDistribute(invoicingGroup.amtToDistribute(), invoicingGroup.id()))
+		{
+			return;
+		}
 		final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
-				.interestToDistribute(Money.of(p_InterestToDistribute, CurrencyId.ofRepoId(p_InterestToDistributeCurrencyId)))
+				.interestToDistribute(Objects.requireNonNull(invoicingGroup.amtToDistribute()))
 				.billingDate(p_BillingDate)
 				.interimDate(p_InterimDate)
-				.invoicingGroupId(InvoicingGroupId.ofRepoId(p_InvoicingGroupId))
+				.invoicingGroupId(invoicingGroup.id())
 				.build();
 
 		SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class)
 				.enqueueNow(request, Env.getLoggedUserId());
+	}
 
-		return MSG_OK;
+	private boolean getAndLogInterestToDistribute(final @Nullable Money interestToDistribute, final @NonNull InvoicingGroupId id)
+	{
+		final BigDecimal amtToDistribute = Money.toBigDecimalOrZero(interestToDistribute);
+		if (amtToDistribute.compareTo(BigDecimal.ZERO) == 0)
+		{
+			log.info("Interest to distribute is 0 for invoicing group: {}. Skipping.", id);
+			return true;
+		}
+		log.info("Enqueuing interest to distribute: {} for invoicing group: {}", amtToDistribute, id);
+		return false;
 	}
 
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		// todo set `p_InterestToDistributeCurrencyId` + `p_InterestToDistribute` based on inv group
+		if (I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID.equals(parameterName))
+		{
+			final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoIdOrNull(p_InvoicingGroupId);
+			if (invoicingGroupId == null)
+			{
+				p_InterestToDistribute = null;
+				p_InterestToDistributeCurrencyId = -1;
+			}
+			else
+			{
+				final Money amtToDistribute = modCntrInvoicingGroupRepository.getById(invoicingGroupId)
+						.amtToDistribute();
+				p_InterestToDistribute = Money.toBigDecimalOrZero(amtToDistribute);
+				p_InterestToDistributeCurrencyId = amtToDistribute == null ? -1 : amtToDistribute.getCurrencyId().getRepoId();
+			}
+		}
 	}
 }

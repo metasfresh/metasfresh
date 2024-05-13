@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I_ModCntr_InvoicingGroup, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -6208745L;
+	private static final long serialVersionUID = 924660019L;
 
     /** Standard Constructor */
     public X_ModCntr_InvoicingGroup (final Properties ctx, final int ModCntr_InvoicingGroup_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_ModCntr_InvoicingGroup extends org.compiere.model.PO implements I
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
