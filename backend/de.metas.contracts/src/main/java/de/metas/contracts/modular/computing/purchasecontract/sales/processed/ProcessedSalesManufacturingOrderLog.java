@@ -85,7 +85,7 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(createLogRequest.getRecordRef());
 		final ProductId productId = manufacturingReceipt.getProductId();
 		final InstantAndOrgId transactionDate = manufacturingReceipt.getTransactionDate();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant()).orElse(null);
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, createLogRequest.getModularContractSettings().getYearAndCalendarId()).orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
 		final Quantity qty = manufacturingReceipt.getQtyReceived();
 		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, qty.abs().toString(), productName);
