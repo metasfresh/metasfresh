@@ -69,7 +69,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Service
 public class PrintingDataFactory
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingDataFactory.class);
+	private final static Logger logger = LogManager.getLogger(PrintingDataFactory.class);
 
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
