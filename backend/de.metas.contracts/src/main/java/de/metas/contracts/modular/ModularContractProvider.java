@@ -22,12 +22,17 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -45,6 +50,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_InvoiceLine;
@@ -69,16 +75,18 @@ import static de.metas.contracts.flatrate.TypeConditions.MODULAR_CONTRACT;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 @Service
+@RequiredArgsConstructor
 public class ModularContractProvider
 {
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull ModularContractSettingsBL modularContractSettingsBL;
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
@@ -242,9 +250,28 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
+		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
+		final Optional<ModularContractSettings> settings = modularContractSettingsBL.getFirstOptionalByQuery(ModularContractSettingsQuery.builder()
+																													 .processedProductId(inOutProductId)
+																													 .yearAndCalendarId(yearAndCalendarId)
+																													 .soTrx(SOTrx.PURCHASE)
+																													 .checkHasCompletedModularCondition(true)
+																													 .build());
+
+		final ImmutableList<ProductId> productIds;
+		if(settings.isPresent())
+		{
+			productIds = ImmutableList.of(inOutProductId, settings.get().getRawProductId());
+		}
+		else
+		{
+			productIds = ImmutableList.of(inOutProductId);
+		}
+
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productId(ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()))
+				.productIds(productIds)
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(MODULAR_CONTRACT)

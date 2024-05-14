@@ -22,6 +22,7 @@
 
 package de.metas.contracts.FlatrateTermRequest;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearId;
@@ -30,6 +31,7 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -40,11 +42,9 @@ import java.time.Instant;
 public class ModularFlatrateTermQuery
 {
 	@Nullable BPartnerId bPartnerId;
-	@Nullable
-	ProductId productId;
+	@Nullable @Singular ImmutableList<ProductId> productIds;
 	@NonNull SOTrx soTrx;
-	@Nullable
-	YearId yearId;
+	@Nullable YearId yearId;
 	@NonNull TypeConditions typeConditions;
 	@Nullable
 	CalendarId calendarId;
