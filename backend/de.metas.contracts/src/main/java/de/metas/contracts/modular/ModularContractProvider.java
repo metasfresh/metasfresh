@@ -22,7 +22,7 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
@@ -259,14 +259,14 @@ public class ModularContractProvider
 																													 .checkHasCompletedModularCondition(true)
 																													 .build());
 
-		final ImmutableList<ProductId> productIds;
+		final ImmutableSet<ProductId> productIds;
 		if(settings.isPresent())
 		{
-			productIds = ImmutableList.of(inOutProductId, settings.get().getRawProductId());
+			productIds = ImmutableSet.of(inOutProductId, settings.get().getRawProductId());
 		}
 		else
 		{
-			productIds = ImmutableList.of(inOutProductId);
+			productIds = ImmutableSet.of(inOutProductId);
 		}
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()

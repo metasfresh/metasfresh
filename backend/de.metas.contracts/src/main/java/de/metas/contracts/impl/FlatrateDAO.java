@@ -1207,7 +1207,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId());
 
 		}
-		if (modularFlatrateTermQuery.getProductIds() != null)
+		if (!modularFlatrateTermQuery.getProductIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductIds());
 		}
