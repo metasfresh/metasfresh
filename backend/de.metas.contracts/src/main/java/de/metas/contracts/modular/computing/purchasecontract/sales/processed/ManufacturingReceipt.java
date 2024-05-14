@@ -15,7 +15,7 @@ import org.eevolution.api.PPOrderId;
  */
 @Value
 @Builder
-class ManufacturingReceipt
+public class ManufacturingReceipt
 {
 	@NonNull PPCostCollectorId id;
 	@NonNull PPOrderId manufacturingOrderId;
