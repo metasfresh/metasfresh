@@ -155,12 +155,6 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, final org.compiere.model.@NonNull I_C_OrderLine orderLine)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		throw new IllegalStateException("Not supported");

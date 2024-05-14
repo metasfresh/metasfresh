@@ -293,8 +293,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setOrderedData(ic, orderLine);
 	}
 
-	@Override
-	public void setOrderedData(
+	private void setOrderedData(
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
@@ -317,8 +316,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setPresetDateInvoiced(orderLine.getPresetDateInvoiced());
 
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
-
-		ic.setM_Product_ID(orderLine.getM_Product_ID());
 
 		setC_PaymentTerm(ic, orderLine);
 

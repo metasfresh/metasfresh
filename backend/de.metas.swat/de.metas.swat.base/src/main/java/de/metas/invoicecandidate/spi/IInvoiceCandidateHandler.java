@@ -241,8 +241,6 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setOrderedData(I_C_Invoice_Candidate ic);
 
-	void setOrderedData(@NonNull I_C_Invoice_Candidate ic, @NonNull org.compiere.model.I_C_OrderLine orderLine);
-
 	/**
 	 * Method responsible for setting
 	 * <ul>

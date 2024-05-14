@@ -24,7 +24,6 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
-import org.compiere.model.I_C_OrderLine;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -176,12 +175,6 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
 	{
 		throw new IllegalStateException("Not supported");
 	}

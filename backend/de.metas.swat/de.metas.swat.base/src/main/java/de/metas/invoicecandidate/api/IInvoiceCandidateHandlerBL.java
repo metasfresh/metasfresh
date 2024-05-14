@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
 import java.util.List;
 import java.util.Properties;
 
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -83,8 +82,6 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate) setOrderedData()} method.
 	 */
 	void setOrderedData(I_C_Invoice_Candidate ic);
-
-	void setOrderedData(@NonNull I_C_Invoice_Candidate ic,@NonNull org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate) setDeliveredData()} method.

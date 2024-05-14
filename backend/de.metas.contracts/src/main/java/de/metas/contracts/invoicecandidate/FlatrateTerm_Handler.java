@@ -30,7 +30,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_OrderLine;
 
 import javax.annotation.Nullable;
 
@@ -196,12 +195,6 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
 		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
-	{
-		setOrderedData(ic);
 	}
 
 	/**
