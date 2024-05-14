@@ -27,10 +27,18 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Builder
-public record ModularContractSettingsQuery(@NonNull YearAndCalendarId yearAndCalendarId,
-										   @NonNull ProductId productId,
-										   @NonNull SOTrx soTrx)
+@Value
+public class ModularContractSettingsQuery
 {
+	@NonNull YearAndCalendarId yearAndCalendarId;
+	@Nullable ProductId rawProductId;
+	@Nullable ProductId coProductId;
+	@Nullable ProductId processedProductId;
+	@NonNull SOTrx soTrx;
+	boolean checkHasCompletedModularCondition;
 }

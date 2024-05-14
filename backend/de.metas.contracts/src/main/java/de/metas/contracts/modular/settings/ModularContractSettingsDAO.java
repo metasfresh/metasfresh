@@ -52,6 +52,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -241,14 +242,48 @@ public class ModularContractSettingsDAO
 
 	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
 	{
-		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
+		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.productId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.soTrx().toBoolean())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.getRawProductId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean())
 				.anyMatch();
+	}
+
+	public Optional<ModularContractSettings> getFirstOptionalByQuery(final @NonNull ModularContractSettingsQuery query)
+	{
+		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
+		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+
+		if(query.getRawProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.getRawProductId());
+		}
+
+		if(query.getCoProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, query.getRawProductId());
+		}
+
+		if(query.getRawProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, query.getRawProductId());
+		}
+
+		if(query.isCheckHasCompletedModularCondition())
+		{
+			queryBuilder.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID);
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract);
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed);
+		}
+		final Optional<I_ModCntr_Settings> settingRecord = queryBuilder.create().firstOptional();
+		return settingRecord.map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID())));
 	}
 
 	@Nullable
