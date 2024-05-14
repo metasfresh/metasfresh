@@ -38,7 +38,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -256,12 +255,6 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		setOrderedData(ic, olc);
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
-	{
-		setOrderedData(ic);
 	}
 
 	private void setOrderedData(

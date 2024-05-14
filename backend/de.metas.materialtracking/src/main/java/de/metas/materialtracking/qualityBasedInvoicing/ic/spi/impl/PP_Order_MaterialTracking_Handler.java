@@ -28,8 +28,9 @@ import java.util.List;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
 
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -136,12 +137,6 @@ public class PP_Order_MaterialTracking_Handler extends AbstractInvoiceCandidateH
 	 */
 	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do; the value won't change
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
 	{
 		// nothing to do; the value won't change
 	}

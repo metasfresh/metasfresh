@@ -8,7 +8,6 @@ import java.util.Properties;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -142,12 +141,6 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
 	{
 		throw new IllegalStateException("Not supported");
 	}

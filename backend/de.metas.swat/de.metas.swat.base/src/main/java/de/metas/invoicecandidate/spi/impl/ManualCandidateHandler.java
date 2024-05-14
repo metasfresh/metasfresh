@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -197,12 +196,6 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 */
 	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
-	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
 	{
 		// nothing to do
 	}
