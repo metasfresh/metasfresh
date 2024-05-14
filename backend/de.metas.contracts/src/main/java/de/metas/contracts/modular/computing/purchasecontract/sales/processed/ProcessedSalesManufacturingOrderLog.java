@@ -24,25 +24,22 @@ package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
 import de.metas.product.ProductId;
-import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
 {
-	@Getter @NonNull private final ProcessedSalesComputingMethod computingMethod;
-
 	public ProcessedSalesManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final ProcessedSalesComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService);
-		this.computingMethod = computingMethod;
+		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
 	}
 
 	@Override
@@ -52,4 +49,13 @@ public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOr
 		return manufacturingReceipt != null
 				&& ProductId.equals(manufacturingReceipt.getProductId(), request.getProductId());
 	}
+
+	@NonNull
+	protected ProductId extractProductIdToLog(
+			@NonNull final IModularContractLogHandler.CreateLogRequest request,
+			@NonNull final ManufacturingReceipt manufacturingReceipt)
+	{
+		return manufacturingReceipt.getProductId();
+	}
+
 }

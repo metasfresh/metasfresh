@@ -29,23 +29,19 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
 import de.metas.product.ProductId;
-import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AVProcessedManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
 {
-	@Getter @NonNull private final AVProcessedComputingMethod computingMethod;
-
 	public AVProcessedManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final AVProcessedComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService);
-		this.computingMethod = computingMethod;
+		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
 	}
 
 	@Override
@@ -56,7 +52,7 @@ public class AVProcessedManufacturingOrderLog extends AbstractManufacturingOrder
 
 	@NonNull
 	@Override
-	protected ProductId getProductId(
+	protected ProductId extractProductIdToLog(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
 			@NonNull final ManufacturingReceipt manufacturingReceipt)
 	{
