@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_WF_Node
  *  @author metasfresh (generated) 
@@ -1137,6 +1136,27 @@ public interface I_AD_WF_Node
 
 	ModelColumn<I_AD_WF_Node, Object> COLUMN_SubflowExecution = new ModelColumn<>(I_AD_WF_Node.class, "SubflowExecution", null);
 	String COLUMNNAME_SubflowExecution = "SubflowExecution";
+
+	/**
+	 * Set Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTargetPlanningStatus (@Nullable java.lang.String TargetPlanningStatus);
+
+	/**
+	 * Get Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTargetPlanningStatus();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_TargetPlanningStatus = new ModelColumn<>(I_AD_WF_Node.class, "TargetPlanningStatus", null);
+	String COLUMNNAME_TargetPlanningStatus = "TargetPlanningStatus";
 
 	/**
 	 * Set Units by Cycles.

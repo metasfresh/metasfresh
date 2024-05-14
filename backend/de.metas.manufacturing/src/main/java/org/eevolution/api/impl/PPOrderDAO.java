@@ -2,6 +2,7 @@ package org.eevolution.api.impl;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.DocStatus;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
@@ -69,9 +70,9 @@ public class PPOrderDAO implements IPPOrderDAO
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
 		final IQueryBuilder<I_PP_Order> queryBuilder = toSqlQueryBuilder(ManufacturingOrderQuery.builder()
-																				 .warehouseId(warehouseId)
-																				 .onlyCompleted(true)
-																				 .build());
+				.warehouseId(warehouseId)
+				.onlyCompleted(true)
+				.build());
 
 		return queryBuilder
 				.orderBy(I_PP_Order.COLUMN_DocumentNo)
@@ -89,6 +90,18 @@ public class PPOrderDAO implements IPPOrderDAO
 	public Stream<I_PP_Order> streamManufacturingOrders(@NonNull final ManufacturingOrderQuery query)
 	{
 		return toSqlQueryBuilder(query).create().iterateAndStream();
+	}
+
+	@Override
+	public ImmutableSet<PPOrderId> getManufacturingOrderIds(@NonNull final ManufacturingOrderQuery query)
+	{
+		return toSqlQueryBuilder(query).create().listIds(PPOrderId::ofRepoId);
+	}
+
+	@Override
+	public boolean anyMatch(@NonNull final ManufacturingOrderQuery query)
+	{
+		return toSqlQueryBuilder(query).create().anyMatch();
 	}
 
 	@Override
@@ -184,7 +197,12 @@ public class PPOrderDAO implements IPPOrderDAO
 			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
-		if (query.getOnlyPlanningStatuses() != null)
+		if (!query.getOnlyIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, query.getOnlyIds());
+		}
+
+		if (query.getOnlyPlanningStatuses() != null && !query.getOnlyPlanningStatuses().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_PP_Order.COLUMNNAME_PlanningStatus, query.getOnlyPlanningStatuses());
 		}

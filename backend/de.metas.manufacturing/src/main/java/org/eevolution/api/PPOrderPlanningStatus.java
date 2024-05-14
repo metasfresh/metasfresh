@@ -1,12 +1,15 @@
 package org.eevolution.api;
 
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -55,7 +58,27 @@ public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 		return index.ofNullableCode(code);
 	}
 
-	public static PPOrderPlanningStatus ofCode(@NonNull final String code) { return index.ofCode(code); }
+	public static PPOrderPlanningStatus ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	public boolean isComplete() { return COMPLETE.equals(this); }
+	public static PPOrderPlanningStatus of(@NonNull PPOrderTargetPlanningStatus targetPlanningStatus)
+	{
+		switch (targetPlanningStatus)
+		{
+			case REVIEW:
+				return REVIEW;
+			case COMPLETE:
+				return COMPLETE;
+			default:
+				throw new AdempiereException("Unknown target: " + targetPlanningStatus);
+		}
+	}
+
+	public boolean isReview() {return REVIEW.equals(this);}
+
+	public boolean isComplete() {return COMPLETE.equals(this);}
+
+	public static boolean equals(@Nullable PPOrderPlanningStatus status1, @Nullable PPOrderPlanningStatus status2)
+	{
+		return Objects.equals(status1, status2);
+	}
 }

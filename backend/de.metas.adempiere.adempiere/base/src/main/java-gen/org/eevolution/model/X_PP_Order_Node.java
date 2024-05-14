@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 47666157L;
+	private static final long serialVersionUID = -1173892971L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -341,10 +341,10 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
-	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
-	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	/** CallExternalSystem = CallExternalSystem */
 	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{
@@ -524,40 +524,13 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
 	public void setScannedQRCode (final @Nullable java.lang.String ScannedQRCode)
 	{
 		set_Value (COLUMNNAME_ScannedQRCode, ScannedQRCode);
 	}
 
 	@Override
-	public java.lang.String getScannedQRCode()
+	public java.lang.String getScannedQRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}
@@ -596,6 +569,54 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getSetupTimeRequiered() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SetupTimeRequiered);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	/** 
+	 * TargetPlanningStatus AD_Reference_ID=541869
+	 * Reference name: PP_Order_TargetPlanningStatus
+	 */
+	public static final int TARGETPLANNINGSTATUS_AD_Reference_ID=541869;
+	/** Complete = C */
+	public static final String TARGETPLANNINGSTATUS_Complete = "C";
+	/** Review = R */
+	public static final String TARGETPLANNINGSTATUS_Review = "R";
+	@Override
+	public void setTargetPlanningStatus (final @Nullable java.lang.String TargetPlanningStatus)
+	{
+		set_Value (COLUMNNAME_TargetPlanningStatus, TargetPlanningStatus);
+	}
+
+	@Override
+	public java.lang.String getTargetPlanningStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_TargetPlanningStatus);
 	}
 
 	@Override
