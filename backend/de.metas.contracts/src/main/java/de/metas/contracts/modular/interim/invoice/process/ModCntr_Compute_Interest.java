@@ -36,7 +36,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
@@ -46,10 +45,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
-@AllArgsConstructor
 public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
 {
-	@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
 
 	@Param(parameterName = "InterimDate", mandatory = true)
 	private LocalDate p_InterimDate;
