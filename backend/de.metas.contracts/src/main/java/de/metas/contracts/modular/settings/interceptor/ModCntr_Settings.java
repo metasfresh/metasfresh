@@ -84,7 +84,7 @@ public class ModCntr_Settings
 
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID })
 	public void updateModulesRawProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
@@ -92,7 +92,7 @@ public class ModCntr_Settings
 		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), rawComputingMethods, ProductId.ofRepoId(record.getM_Raw_Product_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID })
 	public void updateModulesCoProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
@@ -100,7 +100,7 @@ public class ModCntr_Settings
 		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), coComputingMethods, ProductId.ofRepoId(record.getM_Co_Product_ID()));
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID })
 	public void updateModulesProcessedProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
