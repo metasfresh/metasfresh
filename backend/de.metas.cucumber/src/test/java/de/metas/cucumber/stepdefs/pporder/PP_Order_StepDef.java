@@ -239,7 +239,7 @@ public class PP_Order_StepDef
 
 			try
 			{
-				trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())));
+				trxManager.runInThreadInheritedTrx(() -> huPPOrderBL.processPlanning(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()), PPOrderPlanningStatus.COMPLETE));
 
 				assertThat(errorMessage).as("ErrorMessage should be null if huPPOrderBL.processPlanning() finished with no error!").isNull();
 			}
