@@ -29,6 +29,9 @@ import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -82,7 +85,7 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 		}
 
 		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(recordRef);
-		ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingReceipt.getManufacturingOrderId());
+		final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingReceipt.getManufacturingOrderId());
 		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
 	}
 

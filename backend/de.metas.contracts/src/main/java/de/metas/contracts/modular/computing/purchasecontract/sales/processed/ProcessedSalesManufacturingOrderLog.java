@@ -23,6 +23,8 @@
 package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
