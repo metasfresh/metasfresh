@@ -424,6 +424,12 @@ public class ModularContractSettingsDAO
 		return fromRecord(record, getContractTypes());
 	}
 
+	public void updateModuleProduct(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ProductId rawProductId)
+	{
+		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		updateModuleProduct(record, rawProductId);
+	}
+
 	public void updateModuleProduct(@NonNull final I_ModCntr_Module existingModuleConfig, @NonNull final ProductId rawProductId)
 	{
 		existingModuleConfig.setM_Product_ID(rawProductId.getRepoId());

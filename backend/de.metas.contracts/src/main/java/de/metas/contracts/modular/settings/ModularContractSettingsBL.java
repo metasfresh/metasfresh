@@ -144,4 +144,14 @@ public class ModularContractSettingsBL
 			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
 		}
 	}
+
+	public void updateModuleProduct(@NonNull final ModuleConfig moduleConfig, @NonNull final ProductId rawProductId)
+	{
+		modularContractSettingsDAO.updateModuleProduct(moduleConfig.getId().getModularContractModuleId(), rawProductId);
+	}
+
+	public Optional<ModularContractSettings> getFirstOptionalByQuery(final @NonNull ModularContractSettingsQuery query)
+	{
+		return modularContractSettingsDAO.getFirstOptionalByQuery(query);
+	}
 }

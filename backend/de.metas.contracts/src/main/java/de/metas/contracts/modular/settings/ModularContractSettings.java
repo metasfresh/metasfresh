@@ -108,6 +108,15 @@ public class ModularContractSettings
 	}
 
 	@NonNull
+	public List<ModuleConfig> getModuleConfigs(@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes)
+	{
+		return getModuleConfigs()
+				.stream()
+				.filter(config -> config.isMatchingAnyOf(computingMethodTypes))
+				.toList();
+	}
+
+	@NonNull
 	public List<ModuleConfig> getModuleConfigsWithout(@NonNull final ComputingMethodType computingMethodType)
 	{
 		return getModuleConfigs()

@@ -396,6 +396,12 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 	}
 
+	@Override
+	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
+	{
+		return bomDAO.retrieveValidProductBOM(request);
+	}
+
 	private void updateProductLLCAndMarkAsVerified(@NonNull final I_M_Product product)
 	{
 		// NOTE: when LLC is calculated, the BOM cycles are also checked

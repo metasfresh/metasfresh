@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
@@ -36,8 +37,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -53,8 +55,11 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static de.metas.contracts.modular.ComputingMethodType.AddValueOnProcessedProduct;
+import static de.metas.contracts.modular.ComputingMethodType.AddValueOnRawProduct;
 import static de.metas.contracts.modular.ComputingMethodType.SalesOnProcessedProduct;
 import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+import static de.metas.contracts.modular.ComputingMethodType.SubtractValueOnRawProduct;
 
 @Component
 @Interceptor(I_ModCntr_Module.class)
@@ -71,7 +76,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
@@ -111,7 +116,7 @@ public class ModCntr_Module
 	{
 		if (productId != null && !priceListDAO.isProductPriceExistsInSystem(pricingSystemId, soTrx, productId))
 		{
-			final String productName = productDAO.getByIdInTrx(productId).getName();
+			final String productName = productBL.getByIdInTrx(productId).getName();
 			final String pricingSystemName = Objects.requireNonNull(priceListDAO.getPricingSystemById(pricingSystemId)).getName();
 			throw new AdempiereException(productNotInPS, productName, pricingSystemName);
 		}
@@ -189,4 +194,29 @@ public class ModCntr_Module
 		}
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void validateProductsUOM(@NonNull final I_ModCntr_Module record)
+	{
+		final ModuleConfig module = modularContractSettingsDAO.fromRecord(record);
+		final UomId moduleUOMId = productBL.getStockUOMId(module.getProductId());
+		final ModularContractSettings settings = modularContractSettingsBL.getById(module.getModularContractSettingsId());
+
+		final ImmutableList<ComputingMethodType> rawComputingMethods = ImmutableList.of(AddValueOnRawProduct, SubtractValueOnRawProduct);
+		final UomId rawUOMId = productBL.getStockUOMId(settings.getRawProductId());
+		if (module.isMatchingAnyOf(rawComputingMethods) && !UomId.equals(moduleUOMId, rawUOMId))
+		{
+			throw new AdempiereException("Product needs to be the same UOM as raw product");//TODO ADMsg
+		}
+
+		if(settings.getProcessedProductId() == null)
+		{
+			return;
+		}
+		final ImmutableList<ComputingMethodType> processedComputingMethods = ImmutableList.of(AddValueOnProcessedProduct);
+		final UomId processedUOMId = productBL.getStockUOMId(settings.getProcessedProductId());
+		if (module.isMatchingAnyOf(processedComputingMethods) && !UomId.equals(moduleUOMId, processedUOMId))
+		{
+			throw new AdempiereException("Product needs to be the same UOM as processed product");//TODO ADMsg
+		}
+	}
 }
