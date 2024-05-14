@@ -5,6 +5,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.X_PP_Order;
 
@@ -33,6 +34,8 @@ import java.util.Objects;
  * #L%
  */
 
+@RequiredArgsConstructor
+@Getter
 public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 {
 	PLANNING(X_PP_Order.PLANNINGSTATUS_Planning), //
@@ -44,13 +47,7 @@ public enum PPOrderPlanningStatus implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PPOrderPlanningStatus> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	private final String code;
-
-	PPOrderPlanningStatus(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	@Nullable
 	public static PPOrderPlanningStatus ofNullableCode(@Nullable final String code)

@@ -10,7 +10,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pporder.PPOrderConstants;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Order;
 
 import java.util.Objects;
 

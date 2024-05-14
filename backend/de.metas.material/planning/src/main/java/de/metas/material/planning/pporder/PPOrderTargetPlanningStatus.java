@@ -9,7 +9,6 @@ import org.compiere.model.X_AD_WF_Node;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Getter
@@ -29,7 +28,4 @@ public enum PPOrderTargetPlanningStatus implements ReferenceListAwareEnum
 
 	@Nullable
 	public static PPOrderTargetPlanningStatus ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
-
-	public static Optional<PPOrderTargetPlanningStatus> optionalOfNullableCode(@Nullable final String code) {return index.optionalOfNullableCode(code);}
-
 }
