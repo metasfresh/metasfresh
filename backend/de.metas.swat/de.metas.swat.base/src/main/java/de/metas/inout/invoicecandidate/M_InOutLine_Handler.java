@@ -600,6 +600,12 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		setOrderedData(ic, null/* forceQtyOrdered */, callerCanCreateAdditionalICs);
 	}
 
+	@Override
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
+	{
+		setOrderedData(ic);
+	}
+
 	private void setOrderedData(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@Nullable final BigDecimal forcedQtyOrdered,

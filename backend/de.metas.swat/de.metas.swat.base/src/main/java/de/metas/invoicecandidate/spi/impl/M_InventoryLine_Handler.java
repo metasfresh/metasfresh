@@ -48,6 +48,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
@@ -418,6 +419,12 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final UomId stockingUOMId = productBL.getStockUOMId(inventoryLine.getM_Product_ID());
 
 		ic.setC_UOM_ID(UomId.toRepoId(stockingUOMId));
+	}
+
+	@Override
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
+	{
+		setOrderedData(ic);
 	}
 
 	@Override

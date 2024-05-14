@@ -505,6 +505,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
+	public void setOrderedData(@NonNull  final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setOrderedData(ic,orderLine);
+	}
+
+	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);

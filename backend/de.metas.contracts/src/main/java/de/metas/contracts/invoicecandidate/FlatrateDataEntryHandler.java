@@ -38,7 +38,9 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.I_C_OrderLine;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
@@ -133,6 +135,12 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 */
 	@Override
 	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	{
+		// nothing to do
+	}
+
+	@Override
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final I_C_OrderLine orderLine)
 	{
 		// nothing to do
 	}

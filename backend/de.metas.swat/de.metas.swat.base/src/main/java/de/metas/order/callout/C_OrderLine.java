@@ -23,8 +23,10 @@ package de.metas.order.callout;
  */
 
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
@@ -41,6 +43,8 @@ public class C_OrderLine
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 	private static final String MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED = "C_OrderLine.onProductChanged.Msg_Error_Invoice_Candidate_Is_Processed";
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
@@ -52,11 +56,11 @@ public class C_OrderLine
 		{
 			if (icRecord.isProcessed())
 			{
-				throw new AdempiereException("@" + MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED+ "@");
+				throw new AdempiereException(AdMessageKey.of(MSG_ERROR_INVOICE_CANDIDATE_IS_PROCESSED));
 			}
 			else
 			{
-				icRecord.setM_Product_ID(orderLine.getM_Product_ID());
+				invoiceCandidateHandlerBL.setOrderedData(icRecord, orderLine);
 				invoiceCandDAO.save(icRecord);
 			}
 		}
