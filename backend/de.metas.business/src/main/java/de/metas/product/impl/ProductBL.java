@@ -7,6 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -528,7 +529,7 @@ public final class ProductBL implements IProductBL
 	{
 		final I_M_Product product = productsRepo.getById(productId);
 
-		if(!product.isRequiresSupplierApproval())
+		if (!product.isRequiresSupplierApproval())
 		{
 			return ImmutableList.of();
 		}
@@ -567,8 +568,15 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@NonNull
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return productsRepo.getByIds(productIds);
+	}
+
+	@Override
+	public Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull final ProductId productId)
+	{
+		return ClearanceStatus.optionalOfNullableCode(productsRepo.getById(productId).getHUClearanceStatus());
 	}
 }
