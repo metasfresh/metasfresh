@@ -33,6 +33,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -110,6 +111,7 @@ public class ModularContractSettings
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes)
 	{
+		Check.assumeNotEmpty(computingMethodTypes, "ComputingMethodTypes shouldn't be empty");
 		return getModuleConfigs()
 				.stream()
 				.filter(config -> config.isMatchingAnyOf(computingMethodTypes))
