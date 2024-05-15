@@ -31,7 +31,7 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -86,7 +86,7 @@ public class ModularContractProvider
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	@NonNull ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull ModularContractSettingsDAO modularContractSettingsDAO;
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
@@ -252,7 +252,7 @@ public class ModularContractProvider
 
 		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
-		final Optional<ModularContractSettings> settings = modularContractSettingsBL.getFirstOptionalByQuery(ModularContractSettingsQuery.builder()
+		final Optional<ModularContractSettings> settings = modularContractSettingsDAO.getFirstOptionalByQuery(ModularContractSettingsQuery.builder()
 																													 .processedProductId(inOutProductId)
 																													 .yearAndCalendarId(yearAndCalendarId)
 																													 .soTrx(SOTrx.PURCHASE)
