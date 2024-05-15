@@ -132,11 +132,6 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		Check.assumeEquals(getSingleProductId(), expectedProductId, "All logs entry shall have product {}: {}", expectedProductId, this);
 	}
 
-	public void assertUniqueProductPriceOrError()
-	{
-		getUniqueProductPriceOrError(); // ignore return
-	}
-
 	@NonNull
 	public ProductPrice getUniqueProductPriceOrErrorNotNull()
 	{
@@ -174,7 +169,6 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		assertAllUnprocessed();
-		assertUniqueProductPriceOrError();
 		return list.stream()
 				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter, logHandlerRegistry))
 				.collect(collect());

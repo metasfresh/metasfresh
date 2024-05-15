@@ -148,8 +148,6 @@ public class ReceiptComputingMethod implements IComputingMethodHandler
 	public @NonNull ComputingResponse compute(@NonNull final ComputingRequest request)
 	{
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		logs.assertUniqueProductPriceOrError();
-
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
 		return ComputingResponse.builder()
