@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
@@ -47,17 +47,17 @@ public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingPr
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(request.getRecordRef()).orElse(null);
-		return manufacturingReceipt != null
-				&& ProductId.equals(manufacturingReceipt.getProductId(), request.getProductId());
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(request.getRecordRef()).orElse(null);
+		return manufacturingProcessedReceipt != null
+				&& ProductId.equals(manufacturingProcessedReceipt.getProcessedProductId(), request.getProductId());
 	}
 
 	@NonNull
 	protected ProductId extractProductIdToLog(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
-			@NonNull final ManufacturingReceipt manufacturingReceipt)
+			@NonNull final ManufacturingProcessedReceipt manufacturingProcessedReceipt)
 	{
-		return manufacturingReceipt.getProductId();
+		return manufacturingProcessedReceipt.getProcessedProductId();
 	}
 
 }

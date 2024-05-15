@@ -29,7 +29,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -77,18 +77,18 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 	public abstract boolean applies(final @NonNull CreateLogRequest ignoredRequest);
 
 	@NonNull
-	protected abstract ProductId extractProductIdToLog(@NonNull final IModularContractLogHandler.CreateLogRequest request, @NonNull final ManufacturingReceipt manufacturingReceipt);
+	protected abstract ProductId extractProductIdToLog(@NonNull final IModularContractLogHandler.CreateLogRequest request, @NonNull final ManufacturingProcessedReceipt manufacturingProcessedReceipt);
 
 	@Override
 	@NonNull
 	public final ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(request.getRecordRef());
-		final ProductId productId = extractProductIdToLog(request, manufacturingReceipt);
-		final InstantAndOrgId transactionDate = manufacturingReceipt.getTransactionDate();
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceipt(request.getRecordRef());
+		final ProductId productId = extractProductIdToLog(request, manufacturingProcessedReceipt);
+		final InstantAndOrgId transactionDate = manufacturingProcessedReceipt.getTransactionDate();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant()).orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
-		final Quantity qty = manufacturingReceipt.getQtyReceived();
+		final Quantity qty = manufacturingProcessedReceipt.getQtyReceived();
 		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, qty.abs().toString(), productName);
 
 		final FlatrateTermId contractId = request.getContractId();
@@ -99,12 +99,12 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(contractId)
-				.referencedRecord(manufacturingReceipt.getManufacturingOrderId().toRecordRef())
-				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
+				.referencedRecord(manufacturingProcessedReceipt.getManufacturingOrderId().toRecordRef())
+				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingProcessedReceipt.getId()))
 				.productId(productId)
 				.productName(request.getProductName())
 				.invoicingBPartnerId(invoicingBPartnerId)
-				.warehouseId(manufacturingReceipt.getWarehouseId())
+				.warehouseId(manufacturingProcessedReceipt.getWarehouseId())
 				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
 				.soTrx(SOTrx.PURCHASE)
@@ -140,11 +140,11 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 	@NonNull
 	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(handleLogsRequest.getTableRecordReference());
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceipt(handleLogsRequest.getTableRecordReference());
 
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(manufacturingReceipt.getManufacturingOrderId().toRecordRef())
-				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
+				.referencedModel(manufacturingProcessedReceipt.getManufacturingOrderId().toRecordRef())
+				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingProcessedReceipt.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
 				.build();

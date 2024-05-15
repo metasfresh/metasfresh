@@ -24,7 +24,7 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.process
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
@@ -47,14 +47,14 @@ public class AVProcessedManufacturingOrderLog extends AbstractManufacturingProce
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
-		return manufacturingFacadeService.getManufacturingReceiptIfApplies(request.getRecordRef()).isPresent();
+		return manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(request.getRecordRef()).isPresent();
 	}
 
 	@NonNull
 	@Override
 	protected ProductId extractProductIdToLog(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
-			@NonNull final ManufacturingReceipt manufacturingReceipt)
+			@NonNull final ManufacturingProcessedReceipt manufacturingProcessedReceipt)
 	{
 		return request.getProductId();
 	}

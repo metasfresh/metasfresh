@@ -37,12 +37,12 @@ import org.eevolution.api.PPOrderId;
  */
 @Value
 @Builder
-public class ManufacturingReceipt
+public class ManufacturingProcessedReceipt
 {
 	@NonNull PPCostCollectorId id;
 	@NonNull PPOrderId manufacturingOrderId;
 	@NonNull InstantAndOrgId transactionDate;
 	@NonNull WarehouseId warehouseId;
-	@NonNull ProductId productId;
+	@NonNull ProductId processedProductId;
 	@NonNull Quantity qtyReceived;
 }

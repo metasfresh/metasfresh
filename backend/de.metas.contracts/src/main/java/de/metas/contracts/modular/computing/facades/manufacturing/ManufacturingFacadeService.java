@@ -71,21 +71,21 @@ public class ManufacturingFacadeService
 				.build();
 	}
 
-	public ManufacturingReceipt getManufacturingReceipt(@NonNull final TableRecordReference recordRef)
+	public ManufacturingProcessedReceipt getManufacturingProcessedReceipt(@NonNull final TableRecordReference recordRef)
 	{
-		return getManufacturingReceiptIfApplies(recordRef)
-				.orElseThrow(() -> new AdempiereException("Cannot extract manufacturing receipt from " + recordRef));
+		return getManufacturingProcessedReceiptIfApplies(recordRef)
+				.orElseThrow(() -> new AdempiereException("Cannot extract manufacturing processed product receipt from " + recordRef));
 	}
 
 	@NonNull
-	public Optional<ManufacturingReceipt> getManufacturingReceiptIfApplies(@NonNull final TableRecordReference recordRef)
+	public Optional<ManufacturingProcessedReceipt> getManufacturingProcessedReceiptIfApplies(@NonNull final TableRecordReference recordRef)
 	{
 		if (!recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
 		{
 			return Optional.empty();
 		}
 
-		final PPCostCollectorId costCollectorId = getManufacturingReceiptId(recordRef);
+		final PPCostCollectorId costCollectorId = getManufacturingReceiptOrIssuedId(recordRef);
 		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
 
 		if (!CostCollectorType.ofCode(ppCostCollector.getCostCollectorType()).isMaterialReceipt())
@@ -93,24 +93,100 @@ public class ManufacturingFacadeService
 			return Optional.empty();
 		}
 
-		return Optional.of(toManufacturingReceipt(ppCostCollector));
+		return Optional.of(toManufacturingProcessedReceipt(ppCostCollector));
 	}
 
 	@NonNull
-	private ManufacturingReceipt toManufacturingReceipt(@NonNull final I_PP_Cost_Collector record)
+	private ManufacturingProcessedReceipt toManufacturingProcessedReceipt(@NonNull final I_PP_Cost_Collector record)
 	{
-		return ManufacturingReceipt.builder()
+		return ManufacturingProcessedReceipt.builder()
 				.id(PPCostCollectorId.ofRepoId(record.getPP_Cost_Collector_ID()))
 				.manufacturingOrderId(PPOrderId.ofRepoId(record.getPP_Order_ID()))
 				.transactionDate(InstantAndOrgId.ofInstant(record.getMovementDate().toInstant(), OrgId.ofRepoId(record.getAD_Org_ID())))
 				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.processedProductId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyReceived(ppCostCollectorBL.getMovementQty(record))
 				.build();
 	}
 
+	public ManufacturingCoReceipt getManufacturingCoReceipt(@NonNull final TableRecordReference recordRef)
+	{
+		return getManufacturingCoReceiptIfApplies(recordRef)
+				.orElseThrow(() -> new AdempiereException("Cannot extract manufacturing co-product receipt from " + recordRef));
+	}
+
 	@NonNull
-	public static PPCostCollectorId getManufacturingReceiptId(final @NonNull TableRecordReference recordRef)
+	public Optional<ManufacturingCoReceipt> getManufacturingCoReceiptIfApplies(@NonNull final TableRecordReference recordRef)
+	{
+		if (!recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
+		{
+			return Optional.empty();
+		}
+
+		final PPCostCollectorId costCollectorId = getManufacturingReceiptOrIssuedId(recordRef);
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
+
+		if (!CostCollectorType.ofCode(ppCostCollector.getCostCollectorType()).isCoOrByProductReceipt())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toManufacturingCoReceipt(ppCostCollector));
+	}
+
+	@NonNull
+	private ManufacturingCoReceipt toManufacturingCoReceipt(@NonNull final I_PP_Cost_Collector record)
+	{
+		return ManufacturingCoReceipt.builder()
+				.id(PPCostCollectorId.ofRepoId(record.getPP_Cost_Collector_ID()))
+				.manufacturingOrderId(PPOrderId.ofRepoId(record.getPP_Order_ID()))
+				.transactionDate(InstantAndOrgId.ofInstant(record.getMovementDate().toInstant(), OrgId.ofRepoId(record.getAD_Org_ID())))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.coProductId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.qtyReceived(ppCostCollectorBL.getMovementQty(record))
+				.build();
+	}
+
+	public ManufacturingRawIssued getManufacturingRawIssued(@NonNull final TableRecordReference recordRef)
+	{
+		return getManufacturingRawIssuedIfApplies(recordRef)
+				.orElseThrow(() -> new AdempiereException("Cannot extract manufacturing raw product issued from " + recordRef));
+	}
+
+	@NonNull
+	public Optional<ManufacturingRawIssued> getManufacturingRawIssuedIfApplies(@NonNull final TableRecordReference recordRef)
+	{
+		if (!recordRef.tableNameEqualsTo(I_PP_Cost_Collector.Table_Name))
+		{
+			return Optional.empty();
+		}
+
+		final PPCostCollectorId costCollectorId = getManufacturingReceiptOrIssuedId(recordRef);
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectorBL.getById(costCollectorId);
+
+		if (!CostCollectorType.ofCode(ppCostCollector.getCostCollectorType()).isComponentIssue())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toManufacturingRawIssued(ppCostCollector));
+	}
+
+	@NonNull
+	private ManufacturingRawIssued toManufacturingRawIssued(@NonNull final I_PP_Cost_Collector record)
+	{
+		return ManufacturingRawIssued.builder()
+				.id(PPCostCollectorId.ofRepoId(record.getPP_Cost_Collector_ID()))
+				.manufacturingOrderId(PPOrderId.ofRepoId(record.getPP_Order_ID()))
+				.transactionDate(InstantAndOrgId.ofInstant(record.getMovementDate().toInstant(), OrgId.ofRepoId(record.getAD_Org_ID())))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.rawProductId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.qtyIssued(ppCostCollectorBL.getMovementQty(record))
+				.build();
+	}
+
+	@NonNull
+	public static PPCostCollectorId getManufacturingReceiptOrIssuedId(final @NonNull TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_PP_Cost_Collector.Table_Name, PPCostCollectorId::ofRepoId);
 	}
