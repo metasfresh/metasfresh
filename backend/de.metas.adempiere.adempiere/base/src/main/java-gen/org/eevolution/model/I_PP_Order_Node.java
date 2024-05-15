@@ -886,11 +886,6 @@ public interface I_PP_Order_Node
 	 */
 	int getS_Resource_ID();
 
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**

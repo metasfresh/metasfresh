@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1173892971L;
+	private static final long serialVersionUID = -1942363997L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -569,18 +569,6 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getSetupTimeRequiered() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SetupTimeRequiered);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override

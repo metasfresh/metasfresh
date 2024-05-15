@@ -146,11 +146,7 @@ public class PrintingDataToPDFFileStorer
 	{
 		final StringBuilder result = new StringBuilder();
 
-		final boolean includePInstanceId = sysConfigBL.getBooleanValue(
-				SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME,
-				false /*defaultValue*/,
-				ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, printingData.getOrgId()));
-		if (includePInstanceId && printingData.getPInstanceId() != null)
+		if (printingData.getPInstanceId() != null && isIncludePInstanceIdIntoFilename(printingData))
 		{
 			result.append(PInstanceId.toRepoId(printingData.getPInstanceId())).append("_");
 		}
@@ -163,6 +159,14 @@ public class PrintingDataToPDFFileStorer
 		result.append(printingData.getDocumentFileName());
 
 		return FileUtil.stripIllegalCharacters(result.toString());
+	}
+
+	private boolean isIncludePInstanceIdIntoFilename(final @NonNull PrintingData printingData)
+	{
+		return sysConfigBL.getBooleanValue(
+				SYSCONFIG_STORE_PDF_INCLUDE_AD_PInstance_ID_IN_FILENAME,
+				false /*defaultValue*/,
+				ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, printingData.getOrgId()));
 	}
 
 	private boolean isIncludeSystemTimeIntoFilename(final @NonNull PrintingData printingData)

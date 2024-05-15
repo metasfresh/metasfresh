@@ -457,6 +457,6 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final boolean ensureSingleQrAssignment = qrCodeConfigurationService.get().isOneQrCodeForAggregatedHUsEnabledFor(receivedHu);
 		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()), ensureSingleQrAssignment);
 
-		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
+		processPlanning(ppOrderId, PPOrderPlanningStatus.COMPLETE);
 	}
 }
