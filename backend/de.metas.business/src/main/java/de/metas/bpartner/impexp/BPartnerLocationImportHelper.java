@@ -1,12 +1,6 @@
 package de.metas.bpartner.impexp;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.impexp.BPartnersCache.BPartner;
@@ -18,6 +12,10 @@ import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
 
 /*
  * #%L
@@ -170,7 +168,7 @@ import lombok.NonNull;
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		final LocationId locationId = locationDAO.createLocation(LocationCreateRequest.builder()
+		final LocationId locationId = locationDAO.createOrReuseLocation(LocationCreateRequest.builder()
 				.address1(importRecord.getAddress1())
 				.address2(importRecord.getAddress2())
 				.address3(importRecord.getAddress3())

@@ -213,7 +213,7 @@ class BPartnerCompositeRepositoryTest
 	void save_and_load_existingLocationId()
 	{
 		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-		final LocationId existingLocationId = locationDAO.createLocation(LocationCreateRequest.builder()
+		final LocationId existingLocationId = locationDAO.createOrReuseLocation(LocationCreateRequest.builder()
 				.address1("address1")
 				.address2("address2")
 				.address3("address3")
