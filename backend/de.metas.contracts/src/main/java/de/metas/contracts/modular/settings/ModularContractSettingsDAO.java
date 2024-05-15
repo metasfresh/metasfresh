@@ -252,7 +252,7 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
-	public Optional<ModularContractSettings> getFirstOptionalByQuery(final @NonNull ModularContractSettingsQuery query)
+	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
 	{
 		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
 		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
@@ -282,8 +282,7 @@ public class ModularContractSettingsDAO
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract);
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 		}
-		final Optional<I_ModCntr_Settings> settingRecord = queryBuilder.create().firstOptional();
-		return settingRecord.map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID())));
+		return queryBuilder.create().stream().map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID()))).toList();
 	}
 
 	@Nullable
@@ -459,6 +458,12 @@ public class ModularContractSettingsDAO
 	{
 		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
 		return fromRecord(record, getContractTypes());
+	}
+
+	public void updateModuleProduct(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ProductId rawProductId)
+	{
+		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		updateModuleProduct(record, rawProductId);
 	}
 
 	public void updateModuleProduct(@NonNull final I_ModCntr_Module existingModuleConfig, @NonNull final ProductId rawProductId)
