@@ -24,6 +24,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.uom.UOMPrecision;
@@ -213,4 +214,6 @@ public interface IProductBL extends ISingletonService
 	@NonNull ITranslatableString getProductNameTrl(@NonNull I_M_Product product);
 
 	@NonNull ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
+
+	Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull ProductId productId);
 }

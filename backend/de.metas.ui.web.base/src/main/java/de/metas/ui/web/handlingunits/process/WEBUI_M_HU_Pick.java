@@ -115,6 +115,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 		{
 			final PPOrderLinesView ppOrderView = (PPOrderLinesView)view;
 			return ppOrderView.getDocBaseType().isManufacturingOrder()
+					&& ppOrderView.getDocStatus().isCompleted()
 					? ProcessPreconditionsResolution.accept()
 					: ProcessPreconditionsResolution.rejectWithInternalReason("not needed for PPOrderLinesView view");
 		}

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
@@ -74,4 +75,6 @@ public class PPOrderId implements RepoIdAware
 	}
 
 	public TableRecordReference toRecordRef() {return TableRecordReference.of(I_PP_Order.Table_Name, this);}
+
+	public static PPOrderId ofRecordRef(@NonNull final TableRecordReference recordRef) {return recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);}
 }

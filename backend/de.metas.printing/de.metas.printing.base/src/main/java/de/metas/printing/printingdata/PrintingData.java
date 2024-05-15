@@ -24,12 +24,12 @@ package de.metas.printing.printingdata;
 
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.PdfReader;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
 import de.metas.process.PInstanceId;
+import de.metas.report.PrintCopies;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -51,28 +51,18 @@ public class PrintingData
 	// Services
 	private static final Logger logger = LogManager.getLogger(PrintingData.class);
 
-	@Getter
-	private final @Nullable PInstanceId pInstanceId;
-	
-	@Getter
-	private final ImmutableList<PrintingSegment> segments;
+	@Nullable @Getter private final PInstanceId pInstanceId;
+	@NonNull @Getter private final ImmutableList<PrintingSegment> segments;
+	@NonNull @Getter private final PrintingQueueItemId printingQueueItemId;
+	@NonNull @Getter private final String documentFileName;
+	@Nullable @Getter private transient final byte[] data;
+	@NonNull @Getter private final OrgId orgId;
+	@NonNull @Getter private final PrintCopies additionalCopies;
+	private final boolean adjustSegmentPageRanges; // needed for toBuilder()
 
-	@Getter
-	private final PrintingQueueItemId printingQueueItemId;
+	private Integer _numberOfPages = null; // lazy
 
-	@Getter
-	private final String documentFileName;
-
-	// Archive's Data
-	@Getter
-	private transient final byte[] data;
-
-	@Getter
-	private final OrgId orgId;
-
-	private Integer numberOfPages = null;
-
-	@Builder
+	@Builder(toBuilder = true)
 	private PrintingData(
 			@Nullable final PInstanceId pInstanceId,
 			@Singular @NonNull final List<PrintingSegment> segments,
@@ -80,21 +70,19 @@ public class PrintingData
 			@NonNull final OrgId orgId,
 			@Nullable final byte[] data,
 			@NonNull final String documentFileName,
-			@Nullable final Boolean adjustSegmentPageRanges)
+			@Nullable final Boolean adjustSegmentPageRanges,
+			@Nullable final PrintCopies additionalCopies)
 	{
 		this.pInstanceId = pInstanceId;
 		this.printingQueueItemId = printingQueueItemId;
 		this.data = data;
 		this.orgId = orgId;
 		this.documentFileName = documentFileName;
-		if (CoalesceUtil.coalesce(adjustSegmentPageRanges, true))
-		{
-			this.segments = adjustSegmentPageRanges(this, segments);
-		}
-		else
-		{
-			this.segments = ImmutableList.copyOf(segments);
-		}
+		this.additionalCopies = additionalCopies != null ? additionalCopies : PrintCopies.ZERO;
+		this.adjustSegmentPageRanges = adjustSegmentPageRanges == null || adjustSegmentPageRanges;
+		this.segments = this.adjustSegmentPageRanges
+				? adjustSegmentPageRanges(this, segments)
+				: ImmutableList.copyOf(segments);
 	}
 
 	private static ImmutableList<PrintingSegment> adjustSegmentPageRanges(
@@ -138,6 +126,7 @@ public class PrintingData
 			}
 
 			// Calculate PageFrom/PageTo
+			//noinspection UnnecessaryLocalVariable
 			final int pageTo = numberOfPagesAvailable;
 			final int pageFrom = numberOfPagesAvailable - lastPages + 1;
 			if (pageFrom > pageTo)
@@ -218,8 +207,8 @@ public class PrintingData
 	}
 
 	private static int skipBackward(final boolean[] pagesCovered,
-			final int pageTo,
-			final int limit)
+									final int pageTo,
+									final int limit)
 	{
 		int pageToFinal = pageTo;
 		for (int i = pageTo; i >= limit; i--)
@@ -234,8 +223,8 @@ public class PrintingData
 	}
 
 	private static int skipForward(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int limit)
+								   final int pageFrom,
+								   final int limit)
 	{
 		final int limitToUse = Math.min(limit, pagesCovered.length);
 
@@ -252,8 +241,8 @@ public class PrintingData
 	}
 
 	private static void markCovered(final boolean[] pagesCovered,
-			final int pageFrom,
-			final int pageTo)
+									final int pageFrom,
+									final int pageTo)
 	{
 		for (int i = pageFrom; i <= pageTo; i++)
 		{
@@ -268,11 +257,16 @@ public class PrintingData
 
 	public int getNumberOfPages()
 	{
-		if (numberOfPages != null)
+		Integer numberOfPages = this._numberOfPages;
+		if (numberOfPages == null)
 		{
-			return numberOfPages;
+			numberOfPages = this._numberOfPages = computeNumberOfPages();
 		}
+		return numberOfPages;
+	}
 
+	private int computeNumberOfPages()
+	{
 		if (!hasData())
 		{
 			return 0;
@@ -282,8 +276,7 @@ public class PrintingData
 		try
 		{
 			reader = new PdfReader(getData());
-			numberOfPages = reader.getNumberOfPages();
-			return numberOfPages;
+			return reader.getNumberOfPages();
 		}
 		catch (final IOException e)
 		{
@@ -307,7 +300,7 @@ public class PrintingData
 	public PrintingData onlyWithType(@NonNull final OutputType outputType)
 	{
 		final ImmutableList<PrintingSegment> filteredSegments = segments.stream()
-				.filter(s -> Objects.equals(s.getPrinter().getOutputType(), outputType))
+				.filter(s -> OutputType.equals(s.getPrinter().getOutputType(), outputType))
 				.collect(ImmutableList.toImmutableList());
 
 		return PrintingData.builder()
@@ -328,13 +321,9 @@ public class PrintingData
 				.filter(s -> s.getPrinter().getExternalSystemParentConfigId() != null)
 				.collect(ImmutableList.toImmutableList());
 
-		return PrintingData.builder()
-				.adjustSegmentPageRanges(false)
-				.data(this.data)
-				.documentFileName(this.documentFileName)
-				.orgId(this.orgId)
-				.printingQueueItemId(this.printingQueueItemId)
+		return toBuilder()
 				.segments(filteredSegments)
+				.adjustSegmentPageRanges(false)
 				.build();
 	}
 }

@@ -49,13 +49,14 @@ public class ManufacturingOrderQuery
 	@Nullable WarehouseId warehouseId;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Instant datePromisedDay;
+	@NonNull @Singular ImmutableSet<PPOrderId> onlyIds;
 
 	@Nullable APIExportStatus exportStatus;
 	@Nullable Instant canBeExportedFrom;
 	@Nullable ProductBOMVersionsId bomVersionsId;
 	boolean onlyDrafted;
 
-	@Nullable ImmutableSet<PPOrderPlanningStatus> onlyPlanningStatuses;
+	@NonNull @Singular ImmutableSet<PPOrderPlanningStatus> onlyPlanningStatuses;
 
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 	@NonNull @Singular ImmutableList<SortingOption> sortingOptions;
