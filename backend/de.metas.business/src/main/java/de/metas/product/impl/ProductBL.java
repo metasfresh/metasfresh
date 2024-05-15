@@ -7,6 +7,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -566,5 +567,11 @@ public final class ProductBL implements IProductBL
 	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
 	{
 		return productsRepo.getByIdsInTrx(productIds);
+	}
+
+	@Override
+	public Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull final ProductId productId)
+	{
+		return ClearanceStatus.optionalOfNullableCode(productsRepo.getById(productId).getHUClearanceStatus());
 	}
 }

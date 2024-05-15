@@ -88,7 +88,6 @@ import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -112,6 +111,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -148,6 +148,12 @@ public class PPOrderBL implements IPPOrderBL
 	public I_PP_Order getById(@NonNull final PPOrderId id)
 	{
 		return ppOrdersRepo.getById(id);
+	}
+
+	@Override
+	public Collection<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ids)
+	{
+		return ppOrdersRepo.getByIds(ids);
 	}
 
 	@Override
@@ -353,8 +359,15 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 
-		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
-		ppOrdersRepo.save(ppOrder);
+		closeOrder(ppOrder);
+	}
+
+	@Override
+	public void closeOrder(final I_PP_Order ppOrder)
+	{
+		// NOTE: on before complete we expect to get the PlanningStatus set to COMPLETE + process
+		// ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
 	}

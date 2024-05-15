@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -32,6 +33,7 @@ import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -454,7 +456,9 @@ public class ManufacturingJobService
 
 		if (job.isLastActivity(jobActivityId))
 		{
-			ppOrderBL.closeOrder(ppOrderId);
+			final ManufacturingJobActivity activity = job.getActivityById(jobActivityId);
+			PPOrderTargetPlanningStatus targetPlanningStatus = CoalesceUtil.coalesceNotNull(activity.getTargetPlanningStatus(), PPOrderTargetPlanningStatus.COMPLETE);
+			ppOrderBL.processPlanning(ppOrderId, PPOrderPlanningStatus.of(targetPlanningStatus));
 			jobNeedsReload = true;
 		}
 

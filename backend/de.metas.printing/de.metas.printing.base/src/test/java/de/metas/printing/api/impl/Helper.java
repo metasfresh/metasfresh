@@ -54,6 +54,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
@@ -76,6 +77,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -390,7 +392,7 @@ public class Helper
 							createHWName(trayName),
 							hwTrayNumber,
 							printerName,
-							trayName							);
+							trayName);
 				}
 				finally
 				{
@@ -522,7 +524,7 @@ public class Helper
 			@Nullable final Integer hwTrayNumber,
 			@NonNull final String printerName,
 			@Nullable final String trayName
-			)
+	)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -628,6 +630,23 @@ public class Helper
 		{
 			throw new RuntimeException(e); // NOPMD by tsa on 2/28/13 2:14 AM
 		}
+	}
+
+	public void assertEqualsPDF(final byte[] pdfExpected, final File pdfActualFile)
+	{
+		assertThat(pdfActualFile).exists();
+
+		final byte[] pdfActual;
+		try
+		{
+			pdfActual = Files.readAllBytes(pdfActualFile.toPath());
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Failed reading " + pdfActualFile, e);
+		}
+
+		assertEqualsPDF(testDisplayName, pdfExpected, pdfActual);
 	}
 
 	public void assertEqualsPDF(final byte[] pdfExpected, final byte[] pdfActual)

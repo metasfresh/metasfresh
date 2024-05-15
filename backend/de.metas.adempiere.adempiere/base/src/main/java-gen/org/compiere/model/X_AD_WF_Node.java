@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1836041737L;
+	private static final long serialVersionUID = -1873666284L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -350,33 +350,6 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public int getC_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class);
-	}
-
-	@Override
-	public void setC_Doc_Approval_Strategy(final org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Doc_Approval_Strategy_ID, org.compiere.model.I_C_Doc_Approval_Strategy.class, C_Doc_Approval_Strategy);
-	}
-
-	@Override
-	public void setC_Doc_Approval_Strategy_ID (final int C_Doc_Approval_Strategy_ID)
-	{
-		if (C_Doc_Approval_Strategy_ID < 1) 
-			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Doc_Approval_Strategy_ID, C_Doc_Approval_Strategy_ID);
-	}
-
-	@Override
-	public int getC_Doc_Approval_Strategy_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Doc_Approval_Strategy_ID);
 	}
 
 	@Override
@@ -842,6 +815,18 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
 	public void setS_Resource_ID (final int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
@@ -896,6 +881,27 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public java.lang.String getSubflowExecution() 
 	{
 		return get_ValueAsString(COLUMNNAME_SubflowExecution);
+	}
+
+	/** 
+	 * TargetPlanningStatus AD_Reference_ID=541869
+	 * Reference name: PP_Order_TargetPlanningStatus
+	 */
+	public static final int TARGETPLANNINGSTATUS_AD_Reference_ID=541869;
+	/** Complete = C */
+	public static final String TARGETPLANNINGSTATUS_Complete = "C";
+	/** Review = R */
+	public static final String TARGETPLANNINGSTATUS_Review = "R";
+	@Override
+	public void setTargetPlanningStatus (final @Nullable java.lang.String TargetPlanningStatus)
+	{
+		set_Value (COLUMNNAME_TargetPlanningStatus, TargetPlanningStatus);
+	}
+
+	@Override
+	public java.lang.String getTargetPlanningStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_TargetPlanningStatus);
 	}
 
 	@Override
