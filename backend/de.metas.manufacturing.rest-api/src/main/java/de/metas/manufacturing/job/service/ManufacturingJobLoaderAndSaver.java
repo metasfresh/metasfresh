@@ -162,6 +162,7 @@ public class ManufacturingJobLoaderAndSaver
 				.routingActivityStatus(from.getStatus())
 				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
 				.userInstructions(from.getUserInstructions())
+				.targetPlanningStatus(from.getTargetPlanningStatus())
 				.scannedQRCode(from.getScannedQRCode());
 	}
 
@@ -227,18 +228,18 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(schedule.getProductId()))
 				.qtyToIssue(schedule.getQtyToIssue())
 				.issueFromLocator(LocatorInfo.builder()
-										  .id(schedule.getIssueFromLocatorId())
-										  .caption(locatorCaption)
-										  .qrCode(LocatorQRCode.builder()
-														  .locatorId(schedule.getIssueFromLocatorId())
-														  .caption(locatorCaption)
-														  .build())
-										  .build())
+						.id(schedule.getIssueFromLocatorId())
+						.caption(locatorCaption)
+						.qrCode(LocatorQRCode.builder()
+								.locatorId(schedule.getIssueFromLocatorId())
+								.caption(locatorCaption)
+								.build())
+						.build())
 				.issueFromHU(HUInfo.builder()
-									 .id(schedule.getIssueFromHUId())
-									 .huCapacity(getHUCapacity(schedule))
-									 .barcode(supportingServices.getFirstQRCodeByHuId(schedule.getIssueFromHUId()))
-									 .build())
+						.id(schedule.getIssueFromHUId())
+						.huCapacity(getHUCapacity(schedule))
+						.barcode(supportingServices.getFirstQRCodeByHuId(schedule.getIssueFromHUId()))
+						.build())
 				.issued(schedule.getIssued())
 				.build();
 	}

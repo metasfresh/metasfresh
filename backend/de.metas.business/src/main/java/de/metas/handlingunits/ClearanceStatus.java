@@ -22,46 +22,44 @@
 
 package de.metas.handlingunits;
 
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_M_Product;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 
+@RequiredArgsConstructor
+@Getter
 public enum ClearanceStatus implements ReferenceListAwareEnum
 {
-	Cleared(X_M_HU.CLEARANCESTATUS_Cleared),
-	Locked(X_M_HU.CLEARANCESTATUS_Locked),
-	Quarantined(X_M_HU.CLEARANCESTATUS_Quarantined),
-	TestPending(X_M_HU.CLEARANCESTATUS_TestPending);
+	Cleared(X_M_Product.HUCLEARANCESTATUS_Cleared),
+	Locked(X_M_Product.HUCLEARANCESTATUS_Locked),
+	Quarantined(X_M_Product.HUCLEARANCESTATUS_Quarantined),
+	TestPending(X_M_Product.HUCLEARANCESTATUS_TestPending),
+	;
 
-	@Getter
-	private final String code;
+	private static final ReferenceListAwareEnums.ValuesIndex<ClearanceStatus> index = ReferenceListAwareEnums.index(values());
 
-	ClearanceStatus(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	@Nullable
-	public static ClearanceStatus ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
-
-	@NonNull
-	public static Optional<ClearanceStatus> ofCodeOptional(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
-	}
+	@NonNull private final String code;
 
 	public static ClearanceStatus ofCode(@NonNull final String code)
 	{
-		return typesByCode.ofCode(code);
+		return index.ofCode(code);
 	}
 
-	private static final ReferenceListAwareEnums.ValuesIndex<ClearanceStatus> typesByCode = ReferenceListAwareEnums.index(values());
+	@Nullable
+	public static ClearanceStatus ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
+	@NonNull
+	public static Optional<ClearanceStatus> optionalOfNullableCode(@Nullable final String code)
+	{
+		return index.optionalOfNullableCode(code);
+	}
+
+	public static boolean equals(ClearanceStatus status1, ClearanceStatus status2) {return Objects.equals(status1, status2);}
 }

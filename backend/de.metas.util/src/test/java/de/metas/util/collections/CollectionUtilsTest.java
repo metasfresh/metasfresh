@@ -23,11 +23,11 @@
 package de.metas.util.collections;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class CollectionUtilsTest
 {
@@ -38,15 +38,13 @@ class CollectionUtilsTest
 		@Test
 		void empty()
 		{
-			final Object result = CollectionUtils.emptyOrSingleElement(ImmutableList.of());
-			assertThat(result).isNull();
+			assertThat(CollectionUtils.<Object>emptyOrSingleElement(ImmutableList.of())).isNull();
 		}
 
 		@Test
 		void oneElement()
 		{
-			final String result = CollectionUtils.emptyOrSingleElement(ImmutableList.of("1"));
-			assertThat(result).isEqualTo("1");
+			assertThat(CollectionUtils.emptyOrSingleElement(ImmutableList.of("1"))).isEqualTo("1");
 		}
 
 		@Test
@@ -65,5 +63,32 @@ class CollectionUtilsTest
 					.isInstanceOf(RuntimeException.class)
 					.hasMessageStartingWith("The given collection needs to have ZERO or ONE item");
 		}
+	}
+
+	@Nested
+	class mapKeys_SetMultimap
+	{
+		@Test
+		void empty()
+		{
+			final ImmutableSetMultimap<Object, Object> multimap = ImmutableSetMultimap.of();
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k)).isSameAs(multimap);
+		}
+
+		@Test
+		void noChange()
+		{
+			final ImmutableSetMultimap<Integer, String> multimap = ImmutableSetMultimap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k)).isSameAs(multimap);
+		}
+
+		@Test
+		void oneElementChanged()
+		{
+			final ImmutableSetMultimap<Integer, String> multimap = ImmutableSetMultimap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.mapKeys(multimap, k -> k == 1 ? k * 10 : k))
+					.isEqualTo(ImmutableSetMultimap.of(10, "one", 2, "two"));
+		}
+
 	}
 }
