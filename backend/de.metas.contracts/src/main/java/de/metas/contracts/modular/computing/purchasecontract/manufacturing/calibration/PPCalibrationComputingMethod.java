@@ -24,8 +24,16 @@ package de.metas.contracts.modular.computing.purchasecontract.manufacturing.cali
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -37,10 +45,52 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class PPCalibrationComputingMethod implements IComputingMethodHandler
 {
+	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
+	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final ComputingMethodService computingMethodService;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
+		if (!logEntryContractType.isModularContractType())
+		{
+			return false;
+		}
+
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(recordRef).orElse(null);
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssuedIfApplies(recordRef).orElse(null);
+		if (manufacturingProcessedReceipt != null)
+		{
+			return manufacturingFacadeService.isModularOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
+		}
+		else if (manufacturingRawIssued != null)
+		{
+			return manufacturingFacadeService.isModularOrder(manufacturingRawIssued.getManufacturingOrderId());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		if (settings.getProcessedProductId() == null)
+		{
+			return false;
+		}
+
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(recordRef).orElse(null);
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssuedIfApplies(recordRef).orElse(null);
+		if (manufacturingProcessedReceipt != null)
+		{
+			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
+			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
+		}
+		else if (manufacturingRawIssued != null)
+		{
+			final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingRawIssued.getManufacturingOrderId());
+			return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId())
+					&& ProductId.equals(manufacturingRawIssued.getRawProductId(), settings.getRawProductId());
+		}
 		return false;
 	}
 
