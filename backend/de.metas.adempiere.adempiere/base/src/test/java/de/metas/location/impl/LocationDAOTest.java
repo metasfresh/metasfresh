@@ -30,6 +30,7 @@ class LocationDAOTest
 		this.countryId_DE = createCountry("DE");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private CountryId createCountry(@NonNull final String countryCode)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);

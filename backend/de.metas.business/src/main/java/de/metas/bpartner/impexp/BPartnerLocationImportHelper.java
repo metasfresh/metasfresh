@@ -78,10 +78,6 @@ import org.compiere.model.ModelValidationEngine;
 
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
-	 *
-	 * @param importRecord
-	 * @param importRecordsForSameBPartner
-	 * @return
 	 */
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -119,9 +115,6 @@ import org.compiere.model.ModelValidationEngine;
 	 * <ul>
 	 * * City not empty
 	 * </ul>
-	 *
-	 * @param importRecord
-	 * @return
 	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -220,13 +213,13 @@ import org.compiere.model.ModelValidationEngine;
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
 	}
