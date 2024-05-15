@@ -56,7 +56,7 @@ import lombok.RequiredArgsConstructor;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 @RequiredArgsConstructor
-public abstract class AbstractManufacturingOrderLogHandler implements IModularContractLogHandler
+public abstract class AbstractManufacturingProcessedReceiptLogHandler implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
 

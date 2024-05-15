@@ -27,13 +27,13 @@ import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingF
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
+import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AVProcessedManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
+public class AVProcessedManufacturingOrderLog extends AbstractManufacturingProcessedReceiptLogHandler
 {
 	public AVProcessedManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
