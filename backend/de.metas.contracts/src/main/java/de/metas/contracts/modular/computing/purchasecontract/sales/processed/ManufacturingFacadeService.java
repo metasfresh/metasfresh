@@ -23,7 +23,7 @@ import java.util.Optional;
  * Service used to hide behind all manufacturing BLs & models and present the manufacturing in modular contracts ubiquitous language
  */
 @Service
-class ManufacturingFacadeService
+public class ManufacturingFacadeService
 {
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
