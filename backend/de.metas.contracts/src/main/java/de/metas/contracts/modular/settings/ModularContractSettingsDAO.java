@@ -57,6 +57,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.tuple.Pair;
+import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -274,9 +275,11 @@ public class ModularContractSettingsDAO
 
 		if(query.isCheckHasCompletedModularCondition())
 		{
-			queryBuilder.andCollectChildren(I_C_Flatrate_Conditions.COLUMN_ModCntr_Settings_ID);
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract);
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed);
+			final IQuery<I_C_Flatrate_Conditions> completedModularConditions = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+					.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract)
+					.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+					.create();
+			queryBuilder.addInSubQueryFilter(I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, completedModularConditions);
 		}
 		return queryBuilder.create().stream().map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID()))).toList();
 	}
