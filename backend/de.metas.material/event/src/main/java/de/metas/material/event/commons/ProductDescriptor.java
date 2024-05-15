@@ -51,7 +51,7 @@ public class ProductDescriptor
 
 	public static ProductDescriptor completeForProductIdAndEmptyAttribute(final ProductId productId)
 	{
-		return new ProductDescriptor(ProductId.toRepoId(productId), AttributesKey.NONE, AttributeSetInstanceId.NONE.getRepoId());
+		return completeForProductIdAndEmptyAttribute(ProductId.toRepoId(productId));
 	}
 
 	public static ProductDescriptor forProductAndAttributes(
