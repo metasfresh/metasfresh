@@ -1207,9 +1207,9 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId());
 
 		}
-		if (!modularFlatrateTermQuery.getProductIds().isEmpty())
+		if (modularFlatrateTermQuery.getProductId() != null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductIds());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
 		}
 
 		if (modularFlatrateTermQuery.getDateFromLessOrEqual() != null)
@@ -1238,9 +1238,9 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
 		}
 
-		if (!request.getProductIds().isEmpty())
+		if (request.getProductId() != null)
 		{
-			queryBuilder.addInArrayFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductIds());
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductId());
 		}
 
 		return queryBuilder.create();

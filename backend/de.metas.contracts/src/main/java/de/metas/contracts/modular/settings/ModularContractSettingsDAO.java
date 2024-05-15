@@ -248,7 +248,7 @@ public class ModularContractSettingsDAO
 				.anyMatch();
 	}
 
-	public Optional<ModularContractSettings> getFirstOptionalByQuery(final @NonNull ModularContractSettingsQuery query)
+	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
 	{
 		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
 		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
@@ -278,8 +278,7 @@ public class ModularContractSettingsDAO
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract);
 			queryBuilder.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed);
 		}
-		final Optional<I_ModCntr_Settings> settingRecord = Optional.ofNullable(queryBuilder.create().firstOnlyOrNull(I_ModCntr_Settings.class));
-		return settingRecord.map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID())));
+		return queryBuilder.create().stream().map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID()))).toList();
 	}
 
 	@Nullable

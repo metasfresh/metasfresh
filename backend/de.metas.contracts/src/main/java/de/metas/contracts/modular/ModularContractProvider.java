@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
@@ -86,7 +85,7 @@ public class ModularContractProvider
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	@NonNull ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@NonNull
 	public Stream<FlatrateTermId> streamSalesContractsForSalesOrderLine(@NonNull final OrderAndLineId orderAndLineId)
@@ -252,26 +251,20 @@ public class ModularContractProvider
 
 		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
-		final Optional<ModularContractSettings> settings = modularContractSettingsBL.getFirstOptionalByQuery(ModularContractSettingsQuery.builder()
+		final List<ModularContractSettings> settings = modularContractSettingsBL.getSettingsByQuery(ModularContractSettingsQuery.builder()
 																													 .processedProductId(inOutProductId)
 																													 .yearAndCalendarId(yearAndCalendarId)
 																													 .soTrx(SOTrx.PURCHASE)
 																													 .checkHasCompletedModularCondition(true)
 																													 .build());
 
-		final ImmutableSet<ProductId> productIds;
-		if(settings.isPresent())
-		{
-			productIds = ImmutableSet.of(inOutProductId, settings.get().getRawProductId());
-		}
-		else
-		{
-			productIds = ImmutableSet.of(inOutProductId);
-		}
+		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
+		final ProductId productIdToUse;
+        productIdToUse = settingsProductId != null ? settingsProductId : inOutProductId;
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
-				.productIds(productIds)
+				.productId(productIdToUse)
 				.yearId(harvestingYearId)
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(MODULAR_CONTRACT)
