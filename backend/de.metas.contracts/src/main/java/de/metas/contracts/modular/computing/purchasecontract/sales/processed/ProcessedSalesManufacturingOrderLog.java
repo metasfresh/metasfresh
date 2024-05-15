@@ -34,6 +34,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -129,7 +130,7 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(handleLogsRequest.getTableRecordReference());
 
@@ -138,6 +139,7 @@ public class ProcessedSalesManufacturingOrderLog implements IModularContractLogH
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 }

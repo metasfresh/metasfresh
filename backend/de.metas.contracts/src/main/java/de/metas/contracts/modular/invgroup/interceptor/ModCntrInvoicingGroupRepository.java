@@ -124,6 +124,7 @@ public class ModCntrInvoicingGroupRepository
 				.map(this::fromDB);
 	}
 
+	@NonNull
 	public InvoicingGroup getById(@NonNull final InvoicingGroupId invoicingGroupId)
 	{
 		final I_ModCntr_InvoicingGroup invoicingGroup = InterfaceWrapperHelper.load(invoicingGroupId, I_ModCntr_InvoicingGroup.class);
@@ -134,6 +135,7 @@ public class ModCntrInvoicingGroupRepository
 	{
 		return InvoicingGroup.builder()
 				.id(InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID()))
+				.name(invoicingGroup.getName())
 				.productId(ProductId.ofRepoIdOrNull(invoicingGroup.getGroup_Product_ID()))
 				.yearId(YearId.ofRepoId(invoicingGroup.getHarvesting_Year_ID()))
 				.amtToDistribute(Money.ofOrNull(invoicingGroup.getTotalInterest(), CurrencyId.ofRepoId(invoicingGroup.getC_Currency_ID())))

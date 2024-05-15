@@ -2,6 +2,7 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -178,5 +179,10 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return list.stream()
 				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter, logHandlerRegistry))
 				.collect(collect());
+	}
+
+	public InvoicingGroupId getSingleInvoicingGroup()
+	{
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getInvoicingGroupId);
 	}
 }

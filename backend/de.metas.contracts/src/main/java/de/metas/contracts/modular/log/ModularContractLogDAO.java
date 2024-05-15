@@ -282,7 +282,8 @@ public class ModularContractLogDAO
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, request.referencedModel().getAD_Table_ID())
 				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_Record_ID, request.referencedModel().getRecord_ID())
 				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, request.flatrateTermId())
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType());
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ContractType, request.logEntryContractType())
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, request.modularContractModuleId());
 
 		if (request.subEntryId() != null)
 		{

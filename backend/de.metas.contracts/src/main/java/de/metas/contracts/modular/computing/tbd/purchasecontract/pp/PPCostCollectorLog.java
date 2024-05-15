@@ -34,6 +34,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -172,7 +173,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
 		final PPCostCollectorId ppCostCollectorId = PPCostCollectorId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName()));
@@ -183,6 +184,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 				.subEntryId(LogSubEntryId.ofCostCollectorId(ppCostCollectorId))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 }

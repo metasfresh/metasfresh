@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 
 @Builder
 public record InvoicingGroup(@NonNull InvoicingGroupId id,
+							 @NonNull String name,
 							 @Nullable ProductId productId,
 							 @NonNull YearId yearId,
 							 @Nullable Money amtToDistribute)
