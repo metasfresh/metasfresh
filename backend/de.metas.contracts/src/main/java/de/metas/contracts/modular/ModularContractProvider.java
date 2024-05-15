@@ -259,8 +259,7 @@ public class ModularContractProvider
 																													 .build());
 
 		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
-		final ProductId productIdToUse;
-        productIdToUse = settingsProductId != null ? settingsProductId : inOutProductId;
+		final ProductId productIdToUse = settingsProductId != null ? settingsProductId : inOutProductId;
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
