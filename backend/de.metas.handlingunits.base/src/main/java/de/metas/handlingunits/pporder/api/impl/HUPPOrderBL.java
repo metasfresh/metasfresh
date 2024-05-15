@@ -191,8 +191,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	@Override
 	public void processPlanning(@NonNull final PPOrderId ppOrderId, @NonNull final PPOrderPlanningStatus targetPlanningStatus)
 	{
-		final I_PP_Order ppOrder = getById(ppOrderId);
-		processPlanning(ppOrder, targetPlanningStatus, false);
+		trxManager.runInThreadInheritedTrx(() -> {
+			final I_PP_Order ppOrder = getById(ppOrderId);
+			processPlanning(ppOrder, targetPlanningStatus, false);
+		});
 	}
 
 	@Override
