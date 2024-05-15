@@ -26,14 +26,21 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -48,6 +55,8 @@ public class PPCalibrationComputingMethod implements IComputingMethodHandler
 	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
+
+	@Getter @NonNull ComputingMethodType computingMethodType = ComputingMethodType.ReductionCalibration;
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -97,13 +106,23 @@ public class PPCalibrationComputingMethod implements IComputingMethodHandler
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return Stream.empty();
+		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptOrIssuedId(recordRef));
 	}
 
 	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
+	public @NonNull ComputingResponse compute(@NonNull final ComputingRequest request)
 	{
-		return ComputingMethodType.ReductionCalibration;
-	}
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
+		return ComputingResponse.builder()
+				.ids(logs.getIds())
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(Money.zero(request.getCurrencyId()))
+							   .uomId(stockUOMId)
+							   .build())
+				.qty(computingMethodService.getQtySum(logs, stockUOMId))
+				.build();
+	}
 }
