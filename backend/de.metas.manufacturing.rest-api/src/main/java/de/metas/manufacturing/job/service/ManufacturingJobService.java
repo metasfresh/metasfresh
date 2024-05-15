@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -34,6 +35,7 @@ import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCr
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -193,11 +195,11 @@ public class ManufacturingJobService
 	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
 	{
 		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-														   .onlyCompleted(true)
-														   .sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
-														   .responsibleId(ValueRestriction.equalsTo(responsibleId))
-														   .onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-														   .build());
+				.onlyCompleted(true)
+				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
+				.build());
 	}
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
@@ -338,7 +340,9 @@ public class ManufacturingJobService
 
 		if (job.isLastActivity(jobActivityId))
 		{
-			ppOrderBL.closeOrder(ppOrderId);
+			final ManufacturingJobActivity activity = job.getActivityById(jobActivityId);
+			PPOrderTargetPlanningStatus targetPlanningStatus = CoalesceUtil.coalesceNotNull(activity.getTargetPlanningStatus(), PPOrderTargetPlanningStatus.COMPLETE);
+			ppOrderBL.processPlanning(ppOrderId, PPOrderPlanningStatus.of(targetPlanningStatus));
 			jobNeedsReload = true;
 		}
 
@@ -478,10 +482,10 @@ public class ManufacturingJobService
 				.filter(Check::isNotBlank)
 				.map(BigDecimal::new)
 				.flatMap(qtyBD -> deviceAccessor.getConfigValue(DEVICE_PARAM_RoundingToQty_UOM_ID)
-							.filter(Check::isNotBlank)
-							.map(Integer::parseInt)
-							.map(UomId::ofRepoId)
-							.map(uomId -> Quantitys.create(qtyBD, uomId)))
+						.filter(Check::isNotBlank)
+						.map(Integer::parseInt)
+						.map(UomId::ofRepoId)
+						.map(uomId -> Quantitys.create(qtyBD, uomId)))
 				.orElse(null);
 
 		return ScaleDevice.builder()
@@ -507,7 +511,7 @@ public class ManufacturingJobService
 			@Nullable final GlobalQRCode scannedQRCode)
 	{
 		// No change
-		if(GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
+		if (GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
 		{
 			return job;
 		}

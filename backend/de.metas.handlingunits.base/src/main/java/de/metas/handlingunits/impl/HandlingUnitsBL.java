@@ -161,7 +161,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public ImmutableMap<HuId, I_M_HU> getByIdsReturningMap(@NonNull final Collection<HuId> huIds)
 	{
 		final List<I_M_HU> hus = handlingUnitsRepo.getByIds(huIds);
-		return Maps.uniqueIndex(hus, hu -> HuId.ofRepoId(hu.getM_HU_ID()));
+		return Maps.uniqueIndex(hus, HandlingUnitsBL::extractHuId);
 	}
 
 	@Override
@@ -303,7 +303,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		if (huContext.isDontDestroyHu(extractHuId(hu)))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
@@ -641,7 +641,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.build();
 
 		return getTopLevelHUs(query).stream()
-				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.map(HandlingUnitsBL::extractHuId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -986,8 +986,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private static ImmutableSet<HuId> extractHuIds(final Collection<I_M_HU> hus)
 	{
 		return hus.stream()
-				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.map(HandlingUnitsBL::extractHuId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static @NonNull HuId extractHuId(final I_M_HU hu)
+	{
+		return HuId.ofRepoId(hu.getM_HU_ID());
 	}
 
 	@Override
@@ -1141,22 +1146,32 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@NonNull final ClearanceStatusInfo clearanceStatusInfo)
 	{
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
-
 		if (hu == null)
 		{
 			throw new AdempiereException("Hu with ID: " + huId.getRepoId() + " does not exist!");
 		}
 
-		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
-		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
+		setClearanceStatusRecursively(hu, clearanceStatusInfo);
+	}
 
-		final InstantAndOrgId clearanceDate = clearanceStatusInfo.getClearanceDate();
-		hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
+	@Override
+	public void setClearanceStatusRecursively(@NonNull final I_M_HU hu, final @NonNull ClearanceStatusInfo clearanceStatusInfo)
+	{
+		updateHURecordFromClearanceStatusInfo(hu, clearanceStatusInfo);
 
 		handlingUnitsRepo.saveHU(hu);
 
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
-				.forEach(includedHU -> setClearanceStatusRecursively(HuId.ofRepoId(includedHU.getM_HU_ID()), clearanceStatusInfo));
+				.forEach(includedHU -> setClearanceStatusRecursively(extractHuId(includedHU), clearanceStatusInfo));
+	}
+
+	private static void updateHURecordFromClearanceStatusInfo(final I_M_HU hu, final @NonNull ClearanceStatusInfo from)
+	{
+		hu.setClearanceStatus(from.getClearanceStatus().getCode());
+		hu.setClearanceNote(from.getClearanceNote());
+
+		final InstantAndOrgId clearanceDate = from.getClearanceDate();
+		hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
 	}
 
 	@Override

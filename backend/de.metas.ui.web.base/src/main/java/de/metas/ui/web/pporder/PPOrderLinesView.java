@@ -2,6 +2,7 @@ package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.order.OrderLineId;
@@ -46,8 +47,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -85,13 +84,13 @@ public class PPOrderLinesView implements IView
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
 	private final PPOrderId ppOrderId;
-	@Getter
-	private final PPOrderDocBaseType docBaseType;
+	@Getter private final PPOrderDocBaseType docBaseType;
+	@Getter private final DocStatus docStatus;
 	private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
 
-	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	public static PPOrderLinesView cast(final IView view)
 	{
@@ -107,6 +106,8 @@ public class PPOrderLinesView implements IView
 			@Nullable final Set<DocumentPath> referencingDocumentPaths,
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPOrderDocBaseType docBaseType,
+			@NonNull final DocStatus docStatus,
+			@Nullable final OrderLineId salesOrderLineId,
 			@NonNull final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
@@ -120,8 +121,8 @@ public class PPOrderLinesView implements IView
 
 		this.ppOrderId = ppOrderId;
 		this.docBaseType = docBaseType;
-		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
-		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
+		this.docStatus = docStatus;
+		this.salesOrderLineId = salesOrderLineId;
 
 		this.dataSupplier = dataSupplier;
 	}
@@ -148,7 +149,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public ViewHeaderProperties getHeaderProperties() { return getData().getHeaderProperties(); }
+	public ViewHeaderProperties getHeaderProperties() {return getData().getHeaderProperties();}
 
 	/**
 	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
@@ -333,7 +334,14 @@ public class PPOrderLinesView implements IView
 	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
-		return additionalRelatedProcessDescriptors;
+		if (docStatus.isCompleted())
+		{
+			return additionalRelatedProcessDescriptors;
+		}
+		else
+		{
+			return ImmutableList.of();
+		}
 	}
 
 	@Override

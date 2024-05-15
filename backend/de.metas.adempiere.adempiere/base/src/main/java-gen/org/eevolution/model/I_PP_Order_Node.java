@@ -781,33 +781,6 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
 	 * Set Scanned QR Code.
 	 *
 	 * <br>Type: TextLong
@@ -892,6 +865,54 @@ public interface I_PP_Order_Node
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeRequiered = new ModelColumn<>(I_PP_Order_Node.class, "SetupTimeRequiered", null);
 	String COLUMNNAME_SetupTimeRequiered = "SetupTimeRequiered";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTargetPlanningStatus (@Nullable java.lang.String TargetPlanningStatus);
+
+	/**
+	 * Get Target Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTargetPlanningStatus();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_TargetPlanningStatus = new ModelColumn<>(I_PP_Order_Node.class, "TargetPlanningStatus", null);
+	String COLUMNNAME_TargetPlanningStatus = "TargetPlanningStatus";
 
 	/**
 	 * Get Updated.

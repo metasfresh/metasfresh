@@ -24,7 +24,9 @@ package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.order.OrderLineId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -47,6 +49,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderDocBaseType;
@@ -57,26 +60,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
+@RequiredArgsConstructor
 @ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	private final ASIRepository asiRepository;
-	private final DefaultHUEditorViewFactory huEditorViewFactory;
-	private final HUReservationService huReservationService;
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final ASIRepository asiRepository;
+	@NonNull private final DefaultHUEditorViewFactory huEditorViewFactory;
+	@NonNull private final HUReservationService huReservationService;
 
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
-
-	public PPOrderLinesViewFactory(
-			@NonNull final ASIRepository asiRepository,
-			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
-			@NonNull final HUReservationService huReservationService)
-	{
-		this.asiRepository = asiRepository;
-		this.huEditorViewFactory = huEditorViewFactory;
-		this.huReservationService = huReservationService;
-	}
 
 	@Override
 	public PPOrderLinesView createView(final @NonNull CreateViewRequest request)
@@ -84,7 +78,6 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
-		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
 				.builder()
@@ -102,7 +95,9 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewType(request.getViewType())
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(ppOrderId)
-				.docBaseType(ppOrderDocBaseType)
+				.docBaseType(PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType()))
+				.docStatus(DocStatus.ofNullableCodeOrUnknown(ppOrder.getDocStatus()))
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID()))
 				.dataSupplier(dataSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();

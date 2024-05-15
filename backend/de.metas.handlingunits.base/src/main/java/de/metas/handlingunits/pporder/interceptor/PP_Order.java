@@ -57,7 +57,7 @@ public class PP_Order
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(order.getPlanningStatus());
 		if (!planningStatus.isComplete())
 		{
-			ppOrderBL.processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
+			ppOrderBL.processPlanning(order, PPOrderPlanningStatus.COMPLETE, true);
 		}
 	}
 
