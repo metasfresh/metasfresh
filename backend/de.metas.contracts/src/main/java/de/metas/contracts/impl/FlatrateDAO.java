@@ -1238,7 +1238,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, request.getYearId());
 		}
 
-		if (request.getProductIds() != null)
+		if (!request.getProductIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductIds());
 		}
