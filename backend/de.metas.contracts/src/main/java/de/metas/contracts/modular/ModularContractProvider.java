@@ -25,6 +25,7 @@ package de.metas.contracts.modular;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
@@ -259,7 +260,7 @@ public class ModularContractProvider
 																													 .build());
 
 		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
-		final ProductId productIdToUse = settingsProductId != null ? settingsProductId : inOutProductId;
+		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, inOutProductId);
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))
