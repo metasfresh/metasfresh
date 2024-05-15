@@ -56,7 +56,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	LocalDate p_BillingDate;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID)
-	Integer p_InvoicingGroupId;
+	InvoicingGroupId p_InvoicingGroupId;
 
 	@Nullable @Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_TotalInterest)
 	BigDecimal p_InterestToDistribute;
@@ -77,7 +77,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
-		final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoIdOrNull(p_InvoicingGroupId);
+		final InvoicingGroupId invoicingGroupId = p_InvoicingGroupId;
 		if (invoicingGroupId != null)
 		{
 			final Money interestToDistribute = Money.ofOrNull(p_InterestToDistribute, CurrencyId.ofRepoIdOrNull(p_InterestToDistributeCurrencyId));
@@ -139,7 +139,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	{
 		if (I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID.equals(parameterName))
 		{
-			final InvoicingGroupId invoicingGroupId = InvoicingGroupId.ofRepoIdOrNull(p_InvoicingGroupId);
+			final InvoicingGroupId invoicingGroupId = p_InvoicingGroupId;
 			if (invoicingGroupId == null)
 			{
 				p_InterestToDistribute = null;

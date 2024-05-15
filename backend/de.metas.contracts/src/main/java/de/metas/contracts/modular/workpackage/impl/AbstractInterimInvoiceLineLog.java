@@ -119,7 +119,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
 		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId);
-		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
+		final ProductId productId = createLogRequest.getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
 				.money(priceActual)
