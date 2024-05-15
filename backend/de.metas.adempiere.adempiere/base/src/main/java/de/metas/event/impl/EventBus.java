@@ -50,6 +50,7 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -220,9 +221,20 @@ final class EventBus implements IEventBus
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		enqueueEvent(Event.builder()
-							 .withBody(json)
-							 .shallBeLogged()
-							 .build());
+				.withBody(json)
+				.shallBeLogged()
+				.build());
+	}
+
+	@Override
+	public void enqueueObjectsCollection(@NonNull final Collection<?> objs)
+	{
+		if (objs.isEmpty())
+		{
+			return;
+		}
+
+		objs.forEach(this::enqueueObject);
 	}
 
 	@Override
@@ -333,13 +345,13 @@ final class EventBus implements IEventBus
 			micrometerEventBusStatsCollector
 					.getEventProcessingTimer()
 					.record(() ->
-							{
-								try (final MDCCloseable ignored = EventMDC.putEvent(event))
-								{
-									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-									invokeEventListener(this.eventListener, event);
-								}
-							});
+					{
+						try (final MDCCloseable ignored = EventMDC.putEvent(event))
+						{
+							logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+							invokeEventListener(this.eventListener, event);
+						}
+					});
 		}
 	}
 
