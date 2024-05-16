@@ -25,6 +25,9 @@ COMMIT
 INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','C_Currency_ID','NUMERIC(10)',null,null)
 ;
 
+INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','C_Currency_ID',null,'NOT NULL',null)
+;
+
 -- 2024-05-13T15:32:43.510Z
 ALTER TABLE ModCntr_InvoicingGroup ADD CONSTRAINT CCurrency_ModCntrInvoicingGroup FOREIGN KEY (C_Currency_ID) REFERENCES public.C_Currency DEFERRABLE INITIALLY DEFERRED
 ;
