@@ -28,19 +28,17 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.lock.api.ILock;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class InterestComputationWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
-	private final InterestComputationService interestComputationService = SpringContextHolder.instance.getBean(InterestComputationService.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		interestComputationService.distributeInterestAndBonus(getRequest());
+		new InterestComputationCommand().distributeInterestAndBonus(getRequest());
 
 		return Result.SUCCESS;
 	}

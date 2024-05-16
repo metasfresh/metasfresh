@@ -80,7 +80,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (logEntryContractType.isModularContractType() && recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		if (logEntryContractType.isModularContractType() && recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
@@ -90,7 +90,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 			return yearAndCalendarId != null;
 		}
 
-		if (logEntryContractType.isInterimContractType() && recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name))
+		if (logEntryContractType.isInterimContractType() && recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
 		{
 			final I_C_Invoice invoice = Optional.of(recordRef)
 					.map(lineRef -> lineRef.getIdAssumingTableName(I_C_InvoiceLine.Table_Name, InvoiceLineId::ofRepoId))
@@ -109,13 +109,13 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		if (recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		if (recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
 			return contractProvider.streamPurchaseContractsForSalesOrderLine(OrderAndLineId.ofRepoIds(line.getC_Order_ID(), line.getC_OrderLine_ID()));
 		}
-		if (recordRef.getTableName().equals(I_C_InvoiceLine.Table_Name))
+		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
 		{
 			return contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 		}
@@ -141,13 +141,13 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				.contractModuleId(request.getModularContractModuleId())
 				.lockOwner(request.getLockOwner())
 				.build();
-		final PInstanceId pInstanceId = modularContractLogService.getModularContractLogEntrySelection(query);
-		if (pInstanceId == null)
+		final PInstanceId selectionId = modularContractLogService.getModularContractLogEntrySelection(query);
+		if (selectionId == null)
 		{
 			return IComputingMethodHandler.super.compute(request);
 		}
 		final ModularLogInterestRepository.LogInterestQuery logInterestQuery = ModularLogInterestRepository.LogInterestQuery.builder()
-				.modularLogSelection(pInstanceId)
+				.modularLogSelection(selectionId)
 				.onlyBonusRecords(getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim)
 				.build();
 
