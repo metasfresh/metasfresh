@@ -51,7 +51,7 @@ with recursive priceListVersion as (
         basePLV2.M_PriceList_Version_ID as basePLVID,
         plv2.M_Pricelist_ID,
         plv2.validFrom,
-        plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
+        (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
 from priceListVersion as plv2
     inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
     left join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
