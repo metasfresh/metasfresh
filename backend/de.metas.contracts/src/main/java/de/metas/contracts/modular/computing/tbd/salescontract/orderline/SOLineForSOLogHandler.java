@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.orderline;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -106,7 +107,8 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 																				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -125,7 +127,7 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 											.quantity(quantity)
 											.amount(amount)
 											.transactionDate(transactionDate)
-											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())

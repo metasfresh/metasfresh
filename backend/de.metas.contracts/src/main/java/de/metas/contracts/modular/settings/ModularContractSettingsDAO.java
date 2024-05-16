@@ -48,6 +48,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.Value;
@@ -219,6 +220,8 @@ public class ModularContractSettingsDAO
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
+				.additionalInterestDays(settingsRecord.getAddInterestDays())
+				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))

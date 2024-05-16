@@ -22,11 +22,15 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -38,6 +42,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -45,6 +50,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -112,6 +118,36 @@ public class ModularContractLogService
 	public ModularContractLogEntriesList getModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return modularContractLogDAO.getModularContractLogEntries(query);
+	}
+
+	@Nullable
+	public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractLogEntrySelection(query);
+	}
+
+	@NonNull
+	public IQueryFilter<I_ModCntr_Log> getModularContractLogEntryFilter(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractLogEntryFilter(query);
+	}
+
+	@NonNull
+	public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.streamModularContractLogEntries(query);
+	}
+
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractIds(query);
+	}
+
+	@Nullable
+	public PInstanceId getSelection(@NonNull final LockOwner lockOwner)
+	{
+		return modularContractLogDAO.getSelection(lockOwner);
 	}
 
 	public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)

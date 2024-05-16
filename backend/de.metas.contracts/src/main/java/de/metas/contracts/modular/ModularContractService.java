@@ -43,6 +43,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
@@ -159,5 +160,19 @@ public class ModularContractService
 	public ImmutableMap<FlatrateTermId, ModularContractSettings> getSettingsByContractIds(@NonNull final ImmutableSet<FlatrateTermId> contractIds)
 	{
 		return modularContractSettingsDAO.getOrLoadBy(contractIds);
+	}
+
+	@NonNull
+	public ModularContractSettings getModularSettingsForContract(@NonNull final FlatrateTermId contractId)
+	{
+		final ModularContractSettings settings = getSettingsByContractIds(ImmutableSet.of(contractId))
+				.get(contractId);
+
+		if (settings == null)
+		{
+			throw new AdempiereException("No ModularContractSettings found for contractId=" + contractId);
+		}
+
+		return settings;
 	}
 }

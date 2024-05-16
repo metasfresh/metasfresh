@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.workpackage.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -125,7 +126,8 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 																				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = request.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -143,7 +145,7 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(transactionDate)
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
 											.configId(request.getConfigId())

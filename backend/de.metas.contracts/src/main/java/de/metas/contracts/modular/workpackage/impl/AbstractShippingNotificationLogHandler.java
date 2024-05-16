@@ -24,7 +24,9 @@ package de.metas.contracts.modular.workpackage.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -42,6 +44,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shippingnotification.ShippingNotificationId;
@@ -49,6 +52,7 @@ import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -71,12 +75,14 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	@NonNull private final ShippingNotificationService notificationService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
+	@NonNull private final ModularContractService modularContractService;
 
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -99,8 +105,11 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 
 		final LocalDateAndOrgId transactionDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
+
+		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(wrapper.getLineReference())
@@ -109,6 +118,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.producerBPartnerId(wrapper.getBPartnerId())
 											.invoicingBPartnerId(wrapper.getBPartnerId())
 											.warehouseId(wrapper.getWarehouseId())
+											.initialProductId(createLogRequest.getModularContractSettings().getRawProductId())
 											.productId(productId)
 											.productName(createLogRequest.getProductName())
 											.documentType(getLogEntryDocumentType())
@@ -122,6 +132,8 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
 											.invoicingGroupId(invoicingGroupId)
+											.priceActual(contractSpecificPrice)
+											.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
 											.build());
 	}
 
@@ -151,6 +163,13 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	}
 
 	public abstract SOTrx getSOTrx();
+
+	@NonNull
+	private ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	{
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+				.negateIf(request.isCostsType());
+	}
 
 	private record NotificationAndLineWrapper(
 			@NonNull I_M_Shipping_Notification notification,

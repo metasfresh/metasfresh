@@ -34,7 +34,9 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -65,6 +67,9 @@ public class ModularContractSettings
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
+	int additionalInterestDays;
+	@Builder.Default @Getter
+	@NonNull Percent interestPercent = Percent.ZERO;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
@@ -146,4 +151,9 @@ public class ModularContractSettings
 				.count();
 	}
 
+	@NonNull
+	public Percent getBonusInterestRate()
+	{
+		return interestPercent;
+	}
 }
