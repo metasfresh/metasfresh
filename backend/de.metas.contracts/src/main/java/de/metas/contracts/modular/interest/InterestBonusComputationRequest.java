@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.interest;
 
-import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.LockOwner;
@@ -49,17 +48,6 @@ public class InterestBonusComputationRequest
 		return BonusComputationDetails.builder()
 				.billingDate(billingDate)
 				.interimDate(interimDate)
-				.build();
-	}
-
-	@NonNull
-	public InterestComputationRequest getInterestDistributionRequest(@NonNull final InterestRunId runId)
-	{
-		return InterestComputationRequest.builder()
-				.interestRunId(runId)
-				.interestToDistribute(interestToDistribute)
-				.invoicingGroupId(invoicingGroupId)
-				.lockOwner(involvedModularLogsLock.getOwner())
 				.build();
 	}
 

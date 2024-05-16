@@ -41,6 +41,7 @@ public class InterestComputationRequest
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
 	@NonNull ComputingMethodType computingMethodType;
+	@NonNull Integer interestScale;
 	@Nullable BonusComputationDetails bonusComputationDetails;
 
 	@Builder(toBuilder = true)
@@ -49,6 +50,7 @@ public class InterestComputationRequest
 			@NonNull final InvoicingGroupId invoicingGroupId,
 			@NonNull final Money interestToDistribute,
 			@NonNull final LockOwner lockOwner,
+			@NonNull final Integer interestScale,
 			@Nullable final BonusComputationDetails bonusComputationDetails)
 	{
 		this.interestRunId = interestRunId;
@@ -58,6 +60,7 @@ public class InterestComputationRequest
 		this.computingMethodType = bonusComputationDetails != null
 				? ComputingMethodType.SubtractValueOnInterim
 				: ComputingMethodType.AddValueOnInterim;
+		this.interestScale = interestScale;
 		this.bonusComputationDetails = bonusComputationDetails;
 	}
 }

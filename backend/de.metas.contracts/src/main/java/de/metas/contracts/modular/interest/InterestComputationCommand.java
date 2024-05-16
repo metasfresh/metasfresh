@@ -90,7 +90,7 @@ public class InterestComputationCommand
 
 		deletePreviousProgress(currentLogSelection);
 
-		final InterestComputationRequest interestComputationRequest = request.getInterestDistributionRequest(runId);
+		final InterestComputationRequest interestComputationRequest = getInterestDistributionRequest(request,runId);
 
 		computeAndDistributeInterest(interestComputationRequest);
 
@@ -106,7 +106,7 @@ public class InterestComputationCommand
 
 		final InitialInterestAllocationResult result = createInterestRecords(request);
 		final BigDecimal interestDistributionPercent = request.getInterestToDistribute().toBigDecimal()
-				.divide(result.getTotalInterestScore(), result.getTotalInterestScore().scale(), RoundingMode.HALF_UP);
+				.divide(result.getTotalInterestScore(), request.getInterestScale(), RoundingMode.HALF_UP);
 		distributeInterest(request, interestDistributionPercent);
 	}
 
@@ -238,9 +238,9 @@ public class InterestComputationCommand
 
 		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
-		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount()
-				.toBigDecimal(), shippingNotification.getOpenAmount()
-				.toBigDecimal().precision())
+		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(
+				shippingNotification.getOpenAmount().toBigDecimal(),
+				request.getInterestScale())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP);
 
@@ -391,6 +391,20 @@ public class InterestComputationCommand
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim,
 					 "Bonus can only be distributed for" + ComputingMethodType.SubtractValueOnInterim);
 		createInterestRecords(request);
+	}
+
+	@NonNull
+	public InterestComputationRequest getInterestDistributionRequest(
+			@NonNull final InterestBonusComputationRequest request,
+			@NonNull final InterestRunId runId)
+	{
+		return InterestComputationRequest.builder()
+				.interestScale(currencyBL.getStdPrecision(request.getInterestToDistribute().getCurrencyId()).toInt())
+				.interestRunId(runId)
+				.interestToDistribute(request.getInterestToDistribute())
+				.invoicingGroupId(request.getInvoicingGroupId())
+				.lockOwner(request.getLockOwner())
+				.build();
 	}
 
 	@Value(staticConstructor = "of")
