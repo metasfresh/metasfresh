@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor7
 Feature: create production simulation
   As a user
   I want to simulate the production of a Sales Order's line

@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: Physical Inventory and disposal - Production dispo scenarios
 
   Background:

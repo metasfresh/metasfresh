@@ -1,5 +1,6 @@
 @from:cucumber
 @topic:commissionContracts
+@ghActions:run_on_executor3
 Feature: Hierarchy commission and license fee commission combined
 
   Background:

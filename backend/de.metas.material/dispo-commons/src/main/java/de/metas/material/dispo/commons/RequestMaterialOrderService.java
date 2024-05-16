@@ -129,7 +129,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
-		materialEventService.postEventAsync(ppOrderRequestEvent);
+		materialEventService.enqueueEventNow(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -146,7 +146,7 @@ public class RequestMaterialOrderService
 			{
 				if (groupMember.getDemandDetail().getOrderLineId() > 0)
 				{
-				ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
+					ppOrderDataBuilder.orderLineId(IdConstants.toRepoId(groupMember.getDemandDetail().getOrderLineId()));
 				}
 
 				if (groupMember.getDemandDetail().getShipmentScheduleId() > 0)
@@ -212,7 +212,7 @@ public class RequestMaterialOrderService
 	private void createAndFireDDOrderRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
 	{
 		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group, traceId);
-		materialEventService.postEventAsync(ddOrderRequestEvent);
+		materialEventService.enqueueEventNow(ddOrderRequestEvent);
 	}
 
 	@VisibleForTesting
@@ -282,7 +282,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group, @Nullable final String traceId)
@@ -319,7 +319,7 @@ public class RequestMaterialOrderService
 	private void createAndFireForecastRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
-		materialEventService.postEventAfterNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEventAfterNextCommit(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final List<Candidate> group)

@@ -184,11 +184,16 @@ jobs:
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        run: |
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -456,23 +461,13 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: build-report-compat
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.backend.report.compat \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-floating }}-compat \
-          --tag metasfresh/metas-report:${{ needs.init.outputs.tag-fixed }}-compat \
-          .
       - name: build-mobile-compat
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.mobile.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
           .
@@ -487,15 +482,20 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
-        run: |
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: |
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
             docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
@@ -538,7 +538,6 @@ jobs:
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
@@ -626,11 +625,23 @@ jobs:
         profile: [profile1, profile2, catchall]
         include:
           - profile: profile1
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor1 and not @flaky and not @ignore"
           - profile: profile2
-            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @ignore"
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor2 and not @flaky and not @ignore"
+          - profile: profile3
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor3 and not @flaky and not @ignore"
+          - profile: profile4
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor4 and not @flaky and not @ignore"
+          - profile: profile5
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor5 and not @flaky and not @ignore"
+          - profile: profile6
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor6 and not @flaky and not @ignore"
+          - profile: profile7
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
+          - profile: flaky
+            params: -Dcucumber.filter.tags="@flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ignore"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -736,11 +747,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh webui
-#      - name: mobile health check
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./containerHealthCheck.sh mobile
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
 #      - name: run api health checks
 #        working-directory: docker-builds/health/
 #        if: success() || failure()
@@ -758,7 +769,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
-#          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
       - name: stop docker-compose
         working-directory: docker-builds/compose/
         env:

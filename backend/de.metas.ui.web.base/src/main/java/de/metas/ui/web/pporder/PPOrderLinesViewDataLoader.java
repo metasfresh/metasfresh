@@ -3,6 +3,7 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -44,7 +45,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
@@ -98,7 +98,7 @@ class PPOrderLinesViewDataLoader
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	//
@@ -110,15 +110,18 @@ class PPOrderLinesViewDataLoader
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
+				.adReferenceService(adReferenceService)
 				.build();
 
+		this.adReferenceService = adReferenceService;
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
 
@@ -161,7 +164,7 @@ class PPOrderLinesViewDataLoader
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.caption(msgBL.translatable(I_PP_Order.COLUMNNAME_PlanningStatus))
-								.value(adReferenceDAO.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
+								.value(adReferenceService.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
 								.build())
 						.build())
 				.build();

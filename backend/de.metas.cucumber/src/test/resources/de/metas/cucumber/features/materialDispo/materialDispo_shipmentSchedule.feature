@@ -1,11 +1,13 @@
 @from:cucumber
 @topic:materialdispo
+@ghActions:run_on_executor6
 Feature: material-dispo updates on shipment-schedule events
   As a user
   I want material dispo to be updated properly if shipment-schedules are created
   So that the ATP is always correct
 
   Background: Initial Data
+    Given infrastructure and metasfresh are running
     And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name                | Value              | OPT.Description            | OPT.IsActive |

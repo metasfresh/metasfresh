@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor3
 Feature: ASI support in Product BOM rest-api
   Add ProductBOM and ProductBOMLine with ASI via rest-api
   Using default ad_orgId 1000000

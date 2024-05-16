@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.ad_reference.ADRefList;
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -18,7 +19,6 @@ import de.metas.product.IProductBL;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -58,7 +58,7 @@ public class DistributionRestService
 				.build();
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}

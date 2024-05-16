@@ -43,8 +43,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-
 @UtilityClass
 public class DataTableUtil
 {
@@ -77,17 +75,6 @@ public class DataTableUtil
 				() -> dataTableRow.get(StepDefConstants.TABLECOLUMN_IDENTIFIER),
 				() -> dataTableRow.get(columnNamePrefix + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER),
 				() -> DataTableUtil.createFallbackRecordIdentifier(fallbackPrefix));
-	}
-
-	public String extractRecordIdentifier(
-			@NonNull final Map<String, String> dataTableRow,
-			@NonNull final String columnNamePrefix,
-			@NonNull final String fallbackPrefix)
-	{
-		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> dataTableRow.get(TABLECOLUMN_IDENTIFIER),
-				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
-				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
 	
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)

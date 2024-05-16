@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor6
 Feature: create multiple production candidates
   As a user
   I want to create multiple production candidates for the same Sales Order

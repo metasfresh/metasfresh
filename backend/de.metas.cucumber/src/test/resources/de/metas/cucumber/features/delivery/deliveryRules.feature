@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Delivery rules with and without quantity in stock
 
   Background:

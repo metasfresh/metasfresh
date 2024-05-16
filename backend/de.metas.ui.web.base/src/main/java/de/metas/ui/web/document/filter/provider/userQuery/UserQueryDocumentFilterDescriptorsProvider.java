@@ -145,15 +145,15 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 				final Optional<LookupDescriptor> lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentFilterParamDescriptor.builder()
-											.setJoinAnd(join == Join.AND)
-											.setDisplayName(computeParameterDisplayName(queryRestriction))
-											.setFieldName(fieldName)
-											.setWidgetType(widgetType)
-											.setOperator(operator)
-											.setDefaultValue(value)
-											.setDefaultValueTo(valueTo)
-											.setMandatory(queryRestriction.isMandatory())
-											.setLookupDescriptor(lookupDescriptor));
+											.joinAnd(join == Join.AND)
+											.displayName(computeParameterDisplayName(queryRestriction))
+											.fieldName(fieldName)
+											.widgetType(widgetType)
+											.operator(operator)
+											.defaultValue(value)
+											.defaultValueTo(valueTo)
+											.mandatory(queryRestriction.isMandatory())
+											.lookupDescriptor(lookupDescriptor));
 			}
 			else
 			{

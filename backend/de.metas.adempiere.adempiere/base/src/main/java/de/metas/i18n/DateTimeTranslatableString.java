@@ -80,6 +80,11 @@ final class DateTimeTranslatableString implements ITranslatableString
 		return new DateTimeTranslatableString(instant, DisplayType.Time);
 	}
 
+	static DateTimeTranslatableString ofObject(@NonNull final Object obj)
+	{
+		return ofObject(obj, -1);
+	}
+
 	static DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
 	{
 		if (obj instanceof java.util.Date)
@@ -94,7 +99,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 			{
 				return ofDateTime(date);
 			}
-			else
+			else // default:
 			{
 				return ofDateTime(date);
 			}
@@ -110,6 +115,10 @@ final class DateTimeTranslatableString implements ITranslatableString
 		else if (obj instanceof Instant)
 		{
 			return ofDateTime((Instant)obj);
+		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return ofDateTime((ZonedDateTime)obj);
 		}
 		else
 		{

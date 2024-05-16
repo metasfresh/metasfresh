@@ -1,20 +1,13 @@
 package de.metas.ui.web.document.filter.provider;
 
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import org.adempiere.ad.element.api.AdTabId;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import lombok.NonNull;
+import java.util.List;
 
 /*
  * #%L
@@ -57,14 +50,12 @@ public final class DocumentFilterDescriptorsProvidersService
 		logger.info("Provider factories: {}", providerFactories);
 	}
 
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		final ImmutableList<DocumentFilterDescriptorsProvider> providers = providerFactories
 				.stream()
 				.filter(DocumentFilterDescriptorsProviderFactory::isActive)
-				.map(provider -> provider.createFiltersProvider(context, fields))
+				.map(provider -> provider.createFiltersProvider(context))
 				.filter(NullDocumentFilterDescriptorsProvider::isNotNull)
 				.collect(ImmutableList.toImmutableList());
 

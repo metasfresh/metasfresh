@@ -10,13 +10,12 @@ import de.metas.event.impl.EventBusMonitoringService;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;
-import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
 /*
@@ -93,7 +92,7 @@ public class RabbitMQEventBusRemoteEndpoint implements IEventBusRemoteEndpoint
 
 		if (Type.LOCAL == topic.getType() && !Objects.equals(getSenderId(), senderId))
 		{
-			logger.debug("onRemoteEvent - event's senderId is equal to the *local* sender id (={}); -> ignoring event", senderId);
+			logger.debug("onEvent - type LOCAL but event's senderId={} is not equal to the *local* senderId={}; -> ignoring event", senderId, getSenderId());
 			return;
 		}
 
