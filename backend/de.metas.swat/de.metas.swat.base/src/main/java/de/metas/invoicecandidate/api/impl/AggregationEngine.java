@@ -66,7 +66,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -480,7 +479,7 @@ public final class AggregationEngine
 					else
 					{
 						invoiceHeader.setDocTypeInvoiceId(null, false);
-						invoiceHeader.setIsTakeDocTypeFromPool(true);
+						invoiceHeader.setTakeDocTypeFromPool(true);
 					}
 				}
 
