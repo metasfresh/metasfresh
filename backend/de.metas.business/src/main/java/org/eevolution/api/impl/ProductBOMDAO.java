@@ -198,7 +198,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 		final ImmutableList<I_PP_Product_BOMLine> bomLines = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
-				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.Component.getCode())
 				.create()
 				.listImmutable(I_PP_Product_BOMLine.class);
 

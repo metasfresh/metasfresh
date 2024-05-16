@@ -146,7 +146,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Bill of material found for 
 
 -- Value: de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch
 -- 2024-05-16T07:42:04.706Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545407,0,TO_TIMESTAMP('2024-05-16 09:42:04.587','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Das angebene Kuppelprodukt stimmt nicht mit dem Co-Produkt ( {0} ) der gefundene Stückliste überein.','E',TO_TIMESTAMP('2024-05-16 09:42:04.587','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545407,0,TO_TIMESTAMP('2024-05-16 09:42:04.587','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Das angebene Kuppelprodukt stimmt nicht mit dem Co-Produkt der gefundene Stückliste überein.','E',TO_TIMESTAMP('2024-05-16 09:42:04.587','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch')
 ;
 
 -- 2024-05-16T07:42:04.708Z
@@ -165,6 +165,24 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-16 09:4
 
 -- Value: de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch
 -- 2024-05-16T07:43:42.465Z
-UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Set Co-Product doesn''t match Co-Product ( {0} ) of found Bill of Material.',Updated=TO_TIMESTAMP('2024-05-16 09:43:42.465','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545407
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Set Co-Product doesn''t match Co-Product of found Bill of Material.',Updated=TO_TIMESTAMP('2024-05-16 09:43:42.465','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545407
 ;
 
+-- 2024-05-16T13:14:07.301Z
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545408 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- Value: de.metas.contracts.modular.settings.interceptor.SettingLineDependOnProduct
+-- 2024-05-16T13:14:13.398Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-16 15:14:13.398','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545408
+;
+
+-- Value: de.metas.contracts.modular.settings.interceptor.SettingLineDependOnProduct
+-- 2024-05-16T13:14:18.501Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-16 15:14:18.501','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545408
+;
+
+-- Value: de.metas.contracts.modular.settings.interceptor.SettingLineDependOnProduct
+-- 2024-05-16T13:14:32.526Z
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='SettingLines still containing ComputingMethods depending on this product',Updated=TO_TIMESTAMP('2024-05-16 15:14:32.526','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545408
+;

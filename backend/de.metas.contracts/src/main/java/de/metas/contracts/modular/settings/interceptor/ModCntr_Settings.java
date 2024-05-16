@@ -29,8 +29,8 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -47,6 +47,8 @@ import org.eevolution.api.impl.ProductBOM;
 import org.eevolution.api.impl.ProductBOMRequest;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -64,6 +66,7 @@ public class ModCntr_Settings
 	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_RAW_COMPONENT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyRawComponent");
 	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyCoProduct");
 	private static final AdMessageKey ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch");
+	private static final AdMessageKey ERROR_SETTING_LINES_DEPEND_ON_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineDependOnProduct");
 
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
@@ -104,7 +107,7 @@ public class ModCntr_Settings
 	public void updateModulesCoProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
 		final ImmutableList<ComputingMethodType> coComputingMethods = ImmutableList.of(ComputingMethodType.CoProduct);
-		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), coComputingMethods, ProductId.ofRepoId(record.getM_Co_Product_ID()));
+		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), coComputingMethods, ProductId.ofRepoIdOrNull(record.getM_Co_Product_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
@@ -112,17 +115,23 @@ public class ModCntr_Settings
 	public void updateModulesProcessedProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
 	{
 		final ImmutableList<ComputingMethodType> processedComputingMethods = ImmutableList.of(ComputingMethodType.SalesOnProcessedProduct);
-		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), processedComputingMethods, ProductId.ofRepoId(record.getM_Processed_Product_ID()));
+		updateModulesProducts(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()), processedComputingMethods, ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID()));
 	}
 
 	private void updateModulesProducts(
 			@NonNull final ModularContractSettingsId modularContractSettingsId,
 			@NonNull final ImmutableList<ComputingMethodType> list,
-			@NonNull final ProductId productId)
+			@Nullable final ProductId productId)
 	{
-		modularContractSettingsBL.getById(modularContractSettingsId)
-				.getModuleConfigs(list)
-				.forEach((moduleConfig) -> modularContractSettingsBL.updateModuleProduct(moduleConfig, productId));
+		final List<ModuleConfig> moduleConfigs = modularContractSettingsBL.getById(modularContractSettingsId)
+				.getModuleConfigs(list);
+
+		if(productId == null && !moduleConfigs.isEmpty())
+		{
+			throw new AdempiereException("SettingLines still containing ComputingMethods depending on this product");
+		}
+
+		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModuleProduct(moduleConfig, productId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -131,7 +140,7 @@ public class ModCntr_Settings
 	{
 		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
 		final ProductId coProductId = ProductId.ofRepoIdOrNull(record.getM_Co_Product_ID());
-		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Co_Product_ID());
+		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
 		if(coProductId == null && processedProductId == null)
 		{
 			return;
@@ -177,14 +186,13 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT);
 		}
 		final ProductId bomCoProductId = bom.getCoProducts().get(0).getProductId();
-		final ITranslatableString bomCoProductName = productBL.getProductNameTrl(bomCoProductId);
 		if (coProductId == null)
 		{
-			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS, bomCoProductName);
+			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
 		}
 		if (!ProductId.equals(bomCoProductId, coProductId))
 		{
-			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS, bomCoProductName);
+			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
 		}
 	}
 }
