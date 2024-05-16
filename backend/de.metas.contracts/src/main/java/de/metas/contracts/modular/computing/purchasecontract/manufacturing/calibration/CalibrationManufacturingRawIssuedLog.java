@@ -36,6 +36,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -87,7 +88,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(request.getRecordRef());
 		final ProductId productId = request.getProductId();
 		final InstantAndOrgId transactionDate = manufacturingRawIssued.getTransactionDate();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant()).orElse(null);
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, request.getModularContractSettings().getYearAndCalendarId()).orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
 		final Quantity qtyIssued =  manufacturingRawIssued.getQtyIssued();
 		final Quantity qty = qtyIssued.isPositive() ? qtyIssued.negate() : qtyIssued;
@@ -133,7 +134,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 
 	@Override
 	@NonNull
-	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, @NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(handleLogsRequest.getTableRecordReference());
 
@@ -142,6 +143,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 }
