@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interest;
 
 import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.lock.api.ILock;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -37,7 +38,7 @@ import java.time.Instant;
 public class InterestBonusComputationRequest
 {
 	@NonNull InvoicingGroupId invoicingGroupId;
-	@NonNull LockOwner lockOwner;
+	@NonNull ILock involvedModularLogsLock;
 	@NonNull Money interestToDistribute;
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
@@ -58,7 +59,13 @@ public class InterestBonusComputationRequest
 				.interestRunId(runId)
 				.interestToDistribute(interestToDistribute)
 				.invoicingGroupId(invoicingGroupId)
-				.lockOwner(lockOwner)
+				.lockOwner(involvedModularLogsLock.getOwner())
 				.build();
+	}
+
+	@NonNull
+	public LockOwner getLockOwner()
+	{
+		return involvedModularLogsLock.getOwner();
 	}
 }

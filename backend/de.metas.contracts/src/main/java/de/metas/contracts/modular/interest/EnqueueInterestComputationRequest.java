@@ -27,11 +27,13 @@ import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
 
 @Value
 @Builder
+@Jacksonized
 public class EnqueueInterestComputationRequest
 {
 	@NonNull InvoicingGroupId invoicingGroupId;

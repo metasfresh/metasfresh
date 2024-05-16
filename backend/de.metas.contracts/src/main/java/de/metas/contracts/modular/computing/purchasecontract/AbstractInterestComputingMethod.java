@@ -84,7 +84,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (logEntryContractType.isModularContractType() && recordRef.getTableName().equals(I_M_Shipping_NotificationLine.Table_Name))
+		if (logEntryContractType.isModularContractType() && recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 

@@ -321,7 +321,7 @@ public class InterestComputationService
 		Check.assumeNotNull(invoice.getAmount(), "Invoices with no amount should've been skipped already! LogId="
 				+ invoice.getId());
 
-		final Instant conversionDate = Instant.now();
+		final Instant conversionDate = invoice.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		final CurrencyConversionContext context = currencyBL.createCurrencyConversionContext(conversionDate,
 																							 invoice.getClientAndOrgId().getClientId(),
 																							 invoice.getClientAndOrgId().getOrgId());
@@ -353,7 +353,7 @@ public class InterestComputationService
 				.ofNullable(shippingNotification.getAmount())
 				.orElse(Money.zero(targetCurrencyId));
 
-		final Instant conversionDate = Instant.now();
+		final Instant conversionDate = shippingNotification.getTransactionDate().toInstant(orgDAO::getTimeZone);
 		final CurrencyConversionContext context = currencyBL.createCurrencyConversionContext(conversionDate,
 																							 shippingNotification.getClientAndOrgId().getClientId(),
 																							 shippingNotification.getClientAndOrgId().getOrgId());

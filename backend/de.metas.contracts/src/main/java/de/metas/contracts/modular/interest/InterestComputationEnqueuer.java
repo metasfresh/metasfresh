@@ -25,26 +25,13 @@ package de.metas.contracts.modular.interest;
 import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
-import de.metas.contracts.model.I_ModCntr_Log;
-import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.invgroup.InvoicingGroupId;
-import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
-import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
@@ -56,11 +43,8 @@ public class InterestComputationEnqueuer
 {
 	public static final String ENQUEUED_REQUEST_PARAM = "ENQUEUED_REQUEST_PARAM";
 
-	@NonNull private final ModularContractLogService contractLogService;
-
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final ILockManager lockManager = Services.get(ILockManager.class);
 
 	public void enqueueNow(
 			@NonNull final EnqueueInterestComputationRequest request,
@@ -73,16 +57,12 @@ public class InterestComputationEnqueuer
 			@NonNull final EnqueueInterestComputationRequest request,
 			@NonNull final UserId userId)
 	{
-		final TableRecordReference invGroupReference = TableRecordReference.of(I_ModCntr_InvoicingGroup.Table_Name, request.getInvoicingGroupId());
-
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), InterestComputationWorkPackageProcessor.class)
 				.newWorkPackage()
 				// ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()
 				.parameters(getParameters(request))
-				.addElement(invGroupReference)
 				.setUserInChargeId(userId)
-				.setElementsLocker(createElementsLocker(request.getInvoicingGroupId()))
 				.buildAndEnqueue();
 	}
 
@@ -91,31 +71,5 @@ public class InterestComputationEnqueuer
 	{
 		final String serializedRequest = JsonObjectMapperHolder.toJson(request);
 		return ImmutableMap.of(ENQUEUED_REQUEST_PARAM, Objects.requireNonNull(serializedRequest));
-	}
-
-	@NonNull
-	private ILockCommand createElementsLocker(@NonNull final InvoicingGroupId invoicingGroupId)
-	{
-		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.computingMethodType(ComputingMethodType.AddValueOnInterim)
-				.computingMethodType(ComputingMethodType.SubtractValueOnInterim)
-				.processed(false)
-				.billable(true)
-				.invoicingGroupId(invoicingGroupId)
-				.build();
-
-		final PInstanceId selectionId = contractLogService.getModularContractLogEntrySelection(query);
-
-		if (selectionId == null)
-		{
-			throw new AdempiereException("Nothing to enqueue, no logs available for the selected invoicing group!")
-					.markAsUserValidationError();
-		}
-
-		return lockManager.lock()
-				.setOwner(LockOwner.newOwner(InterestComputationEnqueuer.class.getSimpleName() + "_" + Instant.now()))
-				.setAutoCleanup(false)
-				.setFailIfAlreadyLocked(true)
-				.setRecordsBySelection(I_ModCntr_Log.class, selectionId);
 	}
 }

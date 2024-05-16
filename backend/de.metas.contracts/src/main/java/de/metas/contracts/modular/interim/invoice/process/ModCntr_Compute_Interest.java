@@ -70,7 +70,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	private BigDecimal p_InterestToDistribute;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_C_Currency_ID)
-	private Integer p_InterestToDistributeCurrencyId = -1;
+	private int p_InterestToDistributeCurrencyId = -1;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)

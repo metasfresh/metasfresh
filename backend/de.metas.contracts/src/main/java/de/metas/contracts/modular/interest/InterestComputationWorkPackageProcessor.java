@@ -25,22 +25,42 @@ package de.metas.contracts.modular.interest;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
+import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Optional;
 
 public class InterestComputationWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final InterestComputationService interestComputationService = SpringContextHolder.instance.getBean(InterestComputationService.class);
+	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+
+	private final ILockManager lockManager = Services.get(ILockManager.class);
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		interestComputationService.distributeInterestAndBonus(getRequest());
+		final InterestBonusComputationRequest computationRequest = getRequest();
+		try
+		{
+			interestComputationService.distributeInterestAndBonus(computationRequest);
+		}
+		finally
+		{
+			computationRequest.getInvolvedModularLogsLock().unlockAll();
+		}
 
 		return Result.SUCCESS;
 	}
@@ -48,16 +68,39 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 	@NonNull
 	private InterestBonusComputationRequest getRequest()
 	{
-		return Optional.of(getParameters())
+		final EnqueueInterestComputationRequest enqueueRequest = Optional.of(getParameters())
 				.map(params -> params.getParameterAsString(InterestComputationEnqueuer.ENQUEUED_REQUEST_PARAM))
 				.map(serializedRequest -> JsonObjectMapperHolder.fromJson(serializedRequest, EnqueueInterestComputationRequest.class))
-				.map(enqueueRequest -> InterestBonusComputationRequest.builder()
-						.interestToDistribute(enqueueRequest.getInterestToDistribute())
-						.billingDate(enqueueRequest.getBillingDate())
-						.interimDate(enqueueRequest.getInterimDate())
-						.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
-						.lockOwner(getElementsLock().map(ILock::getOwner).orElseThrow(() -> new AdempiereException("Missing lock owner!")))
-						.build())
 				.orElseThrow(() -> new AdempiereException("Missing mandatory ENQUEUED_REQUEST_PARAM!"));
+
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.computingMethodType(ComputingMethodType.AddValueOnInterim)
+				.computingMethodType(ComputingMethodType.SubtractValueOnInterim)
+				.processed(false)
+				.billable(true)
+				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
+				.build();
+
+		final PInstanceId selectionId = modularContractLogService.getModularContractLogEntrySelection(query);
+		if (selectionId == null)
+		{
+			throw new AdempiereException("Nothing to process, no logs available for the selected invoicing group!")
+					.markAsUserValidationError();
+		}
+
+		final ILock lock = lockManager.lock()
+				.setOwner(LockOwner.newOwner(InterestComputationEnqueuer.class.getSimpleName() + "_" + Instant.now()))
+				.setAutoCleanup(false)
+				.setFailIfAlreadyLocked(true)
+				.setRecordsBySelection(I_ModCntr_Log.class, selectionId)
+				.acquire();
+
+		return InterestBonusComputationRequest.builder()
+				.interestToDistribute(enqueueRequest.getInterestToDistribute())
+				.billingDate(enqueueRequest.getBillingDate())
+				.interimDate(enqueueRequest.getInterimDate())
+				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
+				.involvedModularLogsLock(lock)
+				.build();
 	}
 }
