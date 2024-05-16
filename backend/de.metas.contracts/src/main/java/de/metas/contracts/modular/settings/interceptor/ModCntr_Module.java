@@ -74,6 +74,8 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsRaw");
+	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsProcessed");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -205,7 +207,7 @@ public class ModCntr_Module
 		final UomId rawUOMId = productBL.getStockUOMId(settings.getRawProductId());
 		if (module.isMatchingAnyOf(rawComputingMethods) && !UomId.equals(moduleUOMId, rawUOMId))
 		{
-			throw new AdempiereException("Product needs to be the same UOM as raw product");//TODO ADMsg
+			throw new AdempiereException(ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW);
 		}
 
 		if(settings.getProcessedProductId() == null)
@@ -216,7 +218,7 @@ public class ModCntr_Module
 		final UomId processedUOMId = productBL.getStockUOMId(settings.getProcessedProductId());
 		if (module.isMatchingAnyOf(processedComputingMethods) && !UomId.equals(moduleUOMId, processedUOMId))
 		{
-			throw new AdempiereException("Product needs to be the same UOM as processed product");//TODO ADMsg
+			throw new AdempiereException(ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED);
 		}
 	}
 }

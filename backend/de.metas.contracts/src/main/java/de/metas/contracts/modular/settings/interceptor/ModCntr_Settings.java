@@ -29,6 +29,7 @@ import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.IProductBL;
@@ -57,6 +58,12 @@ public class ModCntr_Settings
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
+
+	private static final AdMessageKey ERROR_CO_PRODUCT_SET_WITHOUT_PROCESSED_PRODUCT_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.CoProductSetWithoutProcessedProductSet");
+	private static final AdMessageKey ERROR_NO_BOM_FOUND_FOR_PROCESSED_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.NoBOMFoundForProcessedProduct");
+	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_RAW_COMPONENT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyRawComponent");
+	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyCoProduct");
+	private static final AdMessageKey ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch");
 
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
@@ -119,7 +126,7 @@ public class ModCntr_Settings
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID })
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID })
 	public void validateProducts(@NonNull final I_ModCntr_Settings record)
 	{
 		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
@@ -131,7 +138,7 @@ public class ModCntr_Settings
 		}
 		else if (coProductId != null && processedProductId == null)
 		{
-			throw new AdempiereException("processed product needs to be set if co product is set"); //TODO ADMsg
+			throw new AdempiereException(ERROR_CO_PRODUCT_SET_WITHOUT_PROCESSED_PRODUCT_SET);
 		}
 
 
@@ -143,18 +150,18 @@ public class ModCntr_Settings
 
 		if(bomOptional.isEmpty())
 		{
-			throw new AdempiereException("No BOM found for processed product"); //TODO ADMsg
+			throw new AdempiereException(ERROR_NO_BOM_FOUND_FOR_PROCESSED_PRODUCT);
 		}
 
 		final ProductBOM bom = bomOptional.get();
 		Check.assume(ProductId.equals(processedProductId, bom.getProductId()), "BOM should be for processed product");
 		if(bom.getComponents().size() != 1)
 		{
-			throw new AdempiereException("Only BOMs with only the raw product as component are supported"); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_RAW_COMPONENT);
 		}
 		else if (!ProductId.equals(ProductId.ofRepoId(bom.getComponents().get(0).getM_Product_ID()), rawProductId))
 		{
-			throw new AdempiereException("Found BOM doesn't have raw product as component"); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_RAW_COMPONENT);
 		}
 
 		if(coProductId == null && bom.getCoProducts().isEmpty())
@@ -163,21 +170,21 @@ public class ModCntr_Settings
 		}
 		else if (coProductId != null && bom.getCoProducts().isEmpty())
 		{
-			throw new AdempiereException("Co-Product is set, but matching bom doesn't have a co-product"); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT);
 		}
 		else if (bom.getCoProducts().size() != 1)
 		{
-			throw new AdempiereException("Only BOMs with one co product are supported"); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT);
 		}
 		final ProductId bomCoProductId = bom.getCoProducts().get(0).getProductId();
 		final ITranslatableString bomCoProductName = productBL.getProductNameTrl(bomCoProductId);
 		if (coProductId == null)
 		{
-			throw new AdempiereException("Co-Product is not set, but matching bom has a co-product " + bomCoProductName); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS, bomCoProductName);
 		}
 		if (!ProductId.equals(bomCoProductId, coProductId))
 		{
-			throw new AdempiereException("Co-Product doesn't match found bom with co-product " + bomCoProductName); //TODO ADMsg
+			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS, bomCoProductName);
 		}
 	}
 }
