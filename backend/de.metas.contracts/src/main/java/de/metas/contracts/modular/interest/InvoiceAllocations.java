@@ -71,8 +71,8 @@ public class InvoiceAllocations
 
 	public boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
 	{
-		return invoiceEntry.getTransactionDate().toLocalDate()
-				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toLocalDate());
+		return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
+				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
 	}
 
 	@NonNull
