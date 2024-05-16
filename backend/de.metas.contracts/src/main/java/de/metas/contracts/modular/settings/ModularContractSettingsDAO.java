@@ -265,12 +265,12 @@ public class ModularContractSettingsDAO
 
 		if(query.getCoProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, query.getRawProductId());
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, query.getCoProductId());
 		}
 
-		if(query.getRawProductId() != null)
+		if(query.getProcessedProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, query.getRawProductId());
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, query.getProcessedProductId());
 		}
 
 		if(query.isCheckHasCompletedModularCondition())
