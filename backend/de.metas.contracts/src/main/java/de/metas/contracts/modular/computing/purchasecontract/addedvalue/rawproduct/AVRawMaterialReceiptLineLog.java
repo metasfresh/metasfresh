@@ -25,22 +25,17 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawprod
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
-import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 public class AVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull private final AVRawComputingMethod computingMethod;
-
 	public AVRawMaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final AVRawComputingMethod computingMethod,
 			@NonNull final ModularContractService modularContractService)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService);
-		this.computingMethod = computingMethod;
+		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);
 	}
 }

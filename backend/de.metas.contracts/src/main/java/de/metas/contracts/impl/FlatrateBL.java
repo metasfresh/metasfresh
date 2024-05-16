@@ -2480,7 +2480,7 @@ public class FlatrateBL implements IFlatrateBL
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Raw_Product_ID());
 		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
-				.productId(productId)
+				.rawProductId(productId)
 				.soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
 				.build()))
 		{

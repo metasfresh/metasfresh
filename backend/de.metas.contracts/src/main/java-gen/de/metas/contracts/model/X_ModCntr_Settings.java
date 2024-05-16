@@ -2,6 +2,7 @@
 package de.metas.contracts.model;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -12,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1981497425L;
+	private static final long serialVersionUID = -569725144L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -32,6 +33,18 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAddInterestDays (final int AddInterestDays)
+	{
+		set_Value (COLUMNNAME_AddInterestDays, AddInterestDays);
+	}
+
+	@Override
+	public int getAddInterestDays() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AddInterestDays);
 	}
 
 	@Override
@@ -86,6 +99,19 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public int getC_Year_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Year_ID);
+	}
+
+	@Override
+	public void setInterestRate (final BigDecimal InterestRate)
+	{
+		set_Value (COLUMNNAME_InterestRate, InterestRate);
+	}
+
+	@Override
+	public BigDecimal getInterestRate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestRate);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

@@ -48,14 +48,17 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.tuple.Pair;
+import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -219,6 +222,8 @@ public class ModularContractSettingsDAO
 				.coProductId(ProductId.ofRepoIdOrNull(settingsRecord.getM_Co_Product_ID()))
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
+				.additionalInterestDays(settingsRecord.getAddInterestDays())
+				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
@@ -239,14 +244,49 @@ public class ModularContractSettingsDAO
 
 	public boolean isSettingsExist(final @NonNull ModularContractSettingsQuery query)
 	{
-		final YearAndCalendarId yearAndCalendarId = query.yearAndCalendarId();
+		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
 		return queryBL.createQueryBuilder(I_ModCntr_Settings.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
 				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.productId())
-				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.soTrx().toBoolean())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.getRawProductId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean())
 				.anyMatch();
+	}
+
+	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
+	{
+		final YearAndCalendarId yearAndCalendarId = query.getYearAndCalendarId();
+		final IQueryBuilder<I_ModCntr_Settings> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_Settings.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_C_Year_ID, yearAndCalendarId.yearId())
+				.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_IsSOTrx, query.getSoTrx().toBoolean());
+
+		if(query.getRawProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, query.getRawProductId());
+		}
+
+		if(query.getCoProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, query.getCoProductId());
+		}
+
+		if(query.getProcessedProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, query.getProcessedProductId());
+		}
+
+		if(query.isCheckHasCompletedModularCondition())
+		{
+			final IQuery<I_C_Flatrate_Conditions> completedModularConditions = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
+					.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_ModularContract)
+					.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed)
+					.create();
+			queryBuilder.addInSubQueryFilter(I_ModCntr_Settings.COLUMNNAME_ModCntr_Settings_ID,I_C_Flatrate_Conditions.COLUMNNAME_ModCntr_Settings_ID, completedModularConditions);
+		}
+		return queryBuilder.create().stream().map(setting -> getById(ModularContractSettingsId.ofRepoId(setting.getModCntr_Settings_ID()))).toList();
 	}
 
 	@Nullable
@@ -422,6 +462,12 @@ public class ModularContractSettingsDAO
 	{
 		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
 		return fromRecord(record, getContractTypes());
+	}
+
+	public void updateModuleProduct(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ProductId rawProductId)
+	{
+		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
+		updateModuleProduct(record, rawProductId);
 	}
 
 	public void updateModuleProduct(@NonNull final I_ModCntr_Module existingModuleConfig, @NonNull final ProductId rawProductId)

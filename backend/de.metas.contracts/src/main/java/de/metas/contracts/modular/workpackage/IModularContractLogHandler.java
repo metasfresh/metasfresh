@@ -73,12 +73,13 @@ public interface IModularContractLogHandler
 	IComputingMethodHandler getComputingMethod();
 
 	@NonNull
-	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	default LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		return LogEntryDeleteRequest.builder()
 				.referencedModel(handleLogsRequest.getTableRecordReference())
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 
@@ -152,6 +153,11 @@ public interface IModularContractLogHandler
 		public boolean isCostsType()
 		{
 			return moduleConfig.isCostsType();
+		}
+
+		public boolean isServicesType()
+		{
+			return moduleConfig.isServicesType();
 		}
 
 		@NonNull

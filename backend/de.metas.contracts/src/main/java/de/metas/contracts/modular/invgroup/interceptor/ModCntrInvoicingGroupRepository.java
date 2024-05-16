@@ -22,24 +22,26 @@
 
 package de.metas.contracts.modular.invgroup.interceptor;
 
-import de.metas.common.util.time.SystemTime;
+import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.calendar.standard.YearId;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
+import de.metas.contracts.modular.invgroup.InvoicingGroup;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupProductId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
-import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -52,8 +54,7 @@ public class ModCntrInvoicingGroupRepository
 	public void validateInvoicingGroupProductNoOverlap(
 			@NonNull final ProductId productId,
 			@Nullable final InvoicingGroupProductId excludeInvoicingGroupProductId,
-			@NonNull final Timestamp validFrom,
-			@NonNull final Timestamp validTo)
+			@NonNull final YearAndCalendarId yearAndCalendarId)
 	{
 		final IQueryBuilder<I_ModCntr_InvoicingGroup_Product> queryBuilder = queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
 				.addOnlyActiveRecordsFilter()
@@ -64,7 +65,8 @@ public class ModCntrInvoicingGroupRepository
 		}
 		final boolean invoicingGroupsOverlapingForProduct = queryBuilder
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addIntervalIntersection(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, validFrom.toInstant(), validTo.toInstant())
+				.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_C_Harvesting_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_Harvesting_Year_ID, yearAndCalendarId.yearId())
 				.create()
 				.anyMatch();
 		if (invoicingGroupsOverlapingForProduct)
@@ -82,33 +84,61 @@ public class ModCntrInvoicingGroupRepository
 	}
 
 	@NonNull
-	public Optional<ProductId> getInvoicingGroupProductFor(@NonNull final ProductId productId)
+	public Optional<ProductId> getInvoicingGroupProductFor(@NonNull final ProductId productId,@NonNull final YearAndCalendarId yearAndCalendarId)
 	{
-		return getInvoicingGroupRecordFor(productId, SystemTime.asInstant())
+		return getInvoicingGroupRecordFor(productId, yearAndCalendarId)
 				.map(group -> ProductId.ofRepoId(group.getGroup_Product_ID()));
 	}
 
 	@NonNull
 	public Optional<InvoicingGroupId> getInvoicingGroupIdFor(
 			@NonNull final ProductId productId,
-			@NonNull final Instant effectiveDate)
+			@NonNull final YearAndCalendarId yearAndCalendarId)
 	{
-		return getInvoicingGroupRecordFor(productId, effectiveDate)
+		return getInvoicingGroupRecordFor(productId, yearAndCalendarId)
 				.map(group -> InvoicingGroupId.ofRepoId(group.getModCntr_InvoicingGroup_ID()));
 	}
 
 	@NonNull
 	private Optional<I_ModCntr_InvoicingGroup> getInvoicingGroupRecordFor(
 			@NonNull final ProductId productId,
-			@NonNull final Instant effectiveDate)
+			@NonNull final YearAndCalendarId yearAndCalendarId)
 	{
 		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ModCntr_InvoicingGroup_Product.COLUMNNAME_M_Product_ID, productId)
 				.andCollect(I_ModCntr_InvoicingGroup_Product.COLUMN_ModCntr_InvoicingGroup_ID)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, effectiveDate)
-				.addCompareFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_ValidTo, Operator.GREATER, effectiveDate)
+				.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_C_Harvesting_Calendar_ID, yearAndCalendarId.calendarId())
+				.addEqualsFilter(I_ModCntr_InvoicingGroup.COLUMNNAME_Harvesting_Year_ID, yearAndCalendarId.yearId())
 				.create()
 				.firstOnlyOptional();
+	}
+
+	public Stream<InvoicingGroup> streamAll()
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_InvoicingGroup.class)
+				//currently there's no tighter filter criteria to minimise the number of invoicing groups that are considered
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::fromDB);
+	}
+
+	@NonNull
+	public InvoicingGroup getById(@NonNull final InvoicingGroupId invoicingGroupId)
+	{
+		final I_ModCntr_InvoicingGroup invoicingGroup = InterfaceWrapperHelper.load(invoicingGroupId, I_ModCntr_InvoicingGroup.class);
+		return fromDB(invoicingGroup);
+	}
+
+	private InvoicingGroup fromDB(@NonNull final I_ModCntr_InvoicingGroup invoicingGroup)
+	{
+		return InvoicingGroup.builder()
+				.id(InvoicingGroupId.ofRepoId(invoicingGroup.getModCntr_InvoicingGroup_ID()))
+				.name(invoicingGroup.getName())
+				.productId(ProductId.ofRepoIdOrNull(invoicingGroup.getGroup_Product_ID()))
+				.yearId(YearId.ofRepoId(invoicingGroup.getHarvesting_Year_ID()))
+				.amtToDistribute(Money.ofOrNull(invoicingGroup.getTotalInterest(), CurrencyId.ofRepoId(invoicingGroup.getC_Currency_ID())))
+				.build();
 	}
 }

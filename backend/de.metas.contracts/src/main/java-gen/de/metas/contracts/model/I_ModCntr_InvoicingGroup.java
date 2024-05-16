@@ -1,6 +1,8 @@
-package org.compiere.model;
+package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for ModCntr_InvoicingGroup
  *  @author metasfresh (generated) 
@@ -50,6 +52,53 @@ public interface I_ModCntr_InvoicingGroup
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Harvesting_Calendar_ID (int C_Harvesting_Calendar_ID);
+
+	/**
+	 * Get Harvesting Calendar.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Harvesting_Calendar_ID();
+
+	org.compiere.model.I_C_Calendar getC_Harvesting_Calendar();
+
+	void setC_Harvesting_Calendar(org.compiere.model.I_C_Calendar C_Harvesting_Calendar);
+
+	ModelColumn<I_ModCntr_InvoicingGroup, org.compiere.model.I_C_Calendar> COLUMN_C_Harvesting_Calendar_ID = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "C_Harvesting_Calendar_ID", org.compiere.model.I_C_Calendar.class);
+	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -95,6 +144,31 @@ public interface I_ModCntr_InvoicingGroup
 	String COLUMNNAME_Group_Product_ID = "Group_Product_ID";
 
 	/**
+	 * Set Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHarvesting_Year_ID (int Harvesting_Year_ID);
+
+	/**
+	 * Get Harvesting Year.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHarvesting_Year_ID();
+
+	org.compiere.model.I_C_Year getHarvesting_Year();
+
+	void setHarvesting_Year(org.compiere.model.I_C_Year Harvesting_Year);
+
+	ModelColumn<I_ModCntr_InvoicingGroup, org.compiere.model.I_C_Year> COLUMN_Harvesting_Year_ID = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "Harvesting_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -118,7 +192,7 @@ public interface I_ModCntr_InvoicingGroup
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Rechnungsgruppe.
+	 * Set Invoice Group.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -127,7 +201,7 @@ public interface I_ModCntr_InvoicingGroup
 	void setModCntr_InvoicingGroup_ID (int ModCntr_InvoicingGroup_ID);
 
 	/**
-	 * Get Rechnungsgruppe.
+	 * Get Invoice Group.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -160,6 +234,27 @@ public interface I_ModCntr_InvoicingGroup
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Total interest.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalInterest (BigDecimal TotalInterest);
+
+	/**
+	 * Get Total interest.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalInterest();
+
+	ModelColumn<I_ModCntr_InvoicingGroup, Object> COLUMN_TotalInterest = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "TotalInterest", null);
+	String COLUMNNAME_TotalInterest = "TotalInterest";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *
@@ -183,48 +278,4 @@ public interface I_ModCntr_InvoicingGroup
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Valid From.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValidFrom (java.sql.Timestamp ValidFrom);
-
-	/**
-	 * Get Valid From.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getValidFrom();
-
-	ModelColumn<I_ModCntr_InvoicingGroup, Object> COLUMN_ValidFrom = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "ValidFrom", null);
-	String COLUMNNAME_ValidFrom = "ValidFrom";
-
-	/**
-	 * Set Valid to.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setValidTo (java.sql.Timestamp ValidTo);
-
-	/**
-	 * Get Valid to.
-	 * Valid to including this date (last day)
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getValidTo();
-
-	ModelColumn<I_ModCntr_InvoicingGroup, Object> COLUMN_ValidTo = new ModelColumn<>(I_ModCntr_InvoicingGroup.class, "ValidTo", null);
-	String COLUMNNAME_ValidTo = "ValidTo";
 }

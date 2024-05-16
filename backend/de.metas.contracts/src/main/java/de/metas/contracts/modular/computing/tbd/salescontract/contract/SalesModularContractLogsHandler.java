@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.contract;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -117,7 +118,8 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler
 																				OrgId.ofRepoId(modularContractRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = request.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -135,7 +137,7 @@ class SalesModularContractLogsHandler implements IModularContractLogHandler
 											.processed(false)
 											.quantity(quantity)
 											.transactionDate(transactionDate)
-											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
 											.configId(request.getConfigId())

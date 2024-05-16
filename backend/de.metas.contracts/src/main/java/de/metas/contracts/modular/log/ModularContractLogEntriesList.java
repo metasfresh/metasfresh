@@ -2,6 +2,7 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -132,11 +133,6 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		Check.assumeEquals(getSingleProductId(), expectedProductId, "All logs entry shall have product {}: {}", expectedProductId, this);
 	}
 
-	public void assertUniqueProductPriceOrError()
-	{
-		getUniqueProductPriceOrError(); // ignore return
-	}
-
 	@NonNull
 	public ProductPrice getUniqueProductPriceOrErrorNotNull()
 	{
@@ -174,9 +170,13 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
 		assertAllUnprocessed();
-		assertUniqueProductPriceOrError();
 		return list.stream()
 				.map(log -> log.withPriceActualAndCalculateAmount(price, quantityUOMConverter, logHandlerRegistry))
 				.collect(collect());
+	}
+
+	public InvoicingGroupId getSingleInvoicingGroup()
+	{
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getInvoicingGroupId);
 	}
 }

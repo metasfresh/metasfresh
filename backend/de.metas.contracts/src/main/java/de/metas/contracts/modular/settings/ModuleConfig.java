@@ -69,4 +69,9 @@ public class ModuleConfig
 	{
 		return getInvoicingGroup().isCostsType();
 	}
+
+	public boolean isServicesType()
+	{
+		return getInvoicingGroup().isServicesType();
+	}
 }

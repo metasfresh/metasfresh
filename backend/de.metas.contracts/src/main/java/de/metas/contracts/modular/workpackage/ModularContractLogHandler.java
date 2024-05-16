@@ -191,7 +191,7 @@ class ModularContractLogHandler
 	{
 		modularLogService.throwErrorIfProcessedLogsExistForRecord(request.getHandleLogsRequest().getTableRecordReference(), MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED);
 
-		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest()));
+		contractLogDAO.delete(handler.toLogEntryDeleteRequest(request.getHandleLogsRequest(), request.getModularContractModuleId()));
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Method: {} | Logs were successfully deleted for request: {}!", "recreateLogs", request);

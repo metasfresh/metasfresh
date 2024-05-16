@@ -1,4 +1,4 @@
-package org.compiere.model;
+package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
 
@@ -98,29 +98,7 @@ public interface I_ModCntr_InvoicingGroup_Product
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Product.
-	 * Product, Service, Item
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Product_ID();
-
-	String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Rechnungsgruppe.
+	 * Set Invoice Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -129,7 +107,7 @@ public interface I_ModCntr_InvoicingGroup_Product
 	void setModCntr_InvoicingGroup_ID (int ModCntr_InvoicingGroup_ID);
 
 	/**
-	 * Get Rechnungsgruppe.
+	 * Get Invoice Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -137,11 +115,11 @@ public interface I_ModCntr_InvoicingGroup_Product
 	 */
 	int getModCntr_InvoicingGroup_ID();
 
-	org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+	de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
 
-	void setModCntr_InvoicingGroup(org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+	void setModCntr_InvoicingGroup(de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
 
-	ModelColumn<I_ModCntr_InvoicingGroup_Product, org.compiere.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_InvoicingGroup_Product.class, "ModCntr_InvoicingGroup_ID", org.compiere.model.I_ModCntr_InvoicingGroup.class);
+	ModelColumn<I_ModCntr_InvoicingGroup_Product, de.metas.contracts.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_InvoicingGroup_Product.class, "ModCntr_InvoicingGroup_ID", de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**
@@ -164,6 +142,28 @@ public interface I_ModCntr_InvoicingGroup_Product
 
 	ModelColumn<I_ModCntr_InvoicingGroup_Product, Object> COLUMN_ModCntr_InvoicingGroup_Product_ID = new ModelColumn<>(I_ModCntr_InvoicingGroup_Product.class, "ModCntr_InvoicingGroup_Product_ID", null);
 	String COLUMNNAME_ModCntr_InvoicingGroup_Product_ID = "ModCntr_InvoicingGroup_Product_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Get Updated.

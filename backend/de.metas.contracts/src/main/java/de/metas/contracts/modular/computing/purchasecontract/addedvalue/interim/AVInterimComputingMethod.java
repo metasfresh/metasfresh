@@ -22,32 +22,27 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.purchasecontract.AbstractInterestComputingMethod;
+import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.shippingnotification.ShippingNotificationRepository;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Stream;
-
 @Component
-@RequiredArgsConstructor
-public class AVInterimComputingMethod implements IComputingMethodHandler
+public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 {
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	public AVInterimComputingMethod(
+			@NonNull final ShippingNotificationRepository shippingNotificationRepository,
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ModCntrInvoicingGroupRepository invoicingGroupRepository,
+			@NonNull final ModularContractLogService modularContractLogService,
+			@NonNull final ModularLogInterestRepository modularLogInterestRepository)
 	{
-		return false;
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		return Stream.empty();
+		super(shippingNotificationRepository, contractProvider, invoicingGroupRepository, modularContractLogService, modularLogInterestRepository);
 	}
 
 	@Override
@@ -55,5 +50,4 @@ public class AVInterimComputingMethod implements IComputingMethodHandler
 	{
 		return ComputingMethodType.AddValueOnInterim;
 	}
-
 }
