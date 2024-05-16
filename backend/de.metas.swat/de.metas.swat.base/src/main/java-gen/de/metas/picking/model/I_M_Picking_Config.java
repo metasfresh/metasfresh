@@ -140,27 +140,6 @@ public interface I_M_Picking_Config
 	String COLUMNNAME_IsAutoProcess = "IsAutoProcess";
 
 	/**
-	 * Set Forbid Aggregation of CUs for diff. orders.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsForbidAggCUsForDifferentOrders (boolean IsForbidAggCUsForDifferentOrders);
-
-	/**
-	 * Get Forbid Aggregation of CUs for diff. orders.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isForbidAggCUsForDifferentOrders();
-
-	ModelColumn<I_M_Picking_Config, Object> COLUMN_IsForbidAggCUsForDifferentOrders = new ModelColumn<>(I_M_Picking_Config.class, "IsForbidAggCUsForDifferentOrders", null);
-	String COLUMNNAME_IsForbidAggCUsForDifferentOrders = "IsForbidAggCUsForDifferentOrders";
-
-	/**
 	 * Set Picking configuration.
 	 *
 	 * <br>Type: ID
@@ -213,7 +192,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setWEBUI_PickingTerminal_ViewProfile (String WEBUI_PickingTerminal_ViewProfile);
+	void setWEBUI_PickingTerminal_ViewProfile (java.lang.String WEBUI_PickingTerminal_ViewProfile);
 
 	/**
 	 * Get Picking terminal view profile.
@@ -222,7 +201,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getWEBUI_PickingTerminal_ViewProfile();
+	java.lang.String getWEBUI_PickingTerminal_ViewProfile();
 
 	ModelColumn<I_M_Picking_Config, Object> COLUMN_WEBUI_PickingTerminal_ViewProfile = new ModelColumn<>(I_M_Picking_Config.class, "WEBUI_PickingTerminal_ViewProfile", null);
 	String COLUMNNAME_WEBUI_PickingTerminal_ViewProfile = "WEBUI_PickingTerminal_ViewProfile";

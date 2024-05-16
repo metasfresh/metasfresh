@@ -43,7 +43,8 @@ public enum ProductType implements ReferenceListAwareEnum
 	Resource(X_M_Product.PRODUCTTYPE_Resource), // R
 	ExpenseType(X_M_Product.PRODUCTTYPE_ExpenseType), // E
 	Online(X_M_Product.PRODUCTTYPE_Online), // O
-	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost) // F
+	FreightCost(X_M_Product.PRODUCTTYPE_FreightCost), // F
+	Food(X_M_Product.PRODUCTTYPE_Nahrung)//N
 	;
 
 	@Getter

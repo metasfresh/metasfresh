@@ -25,11 +25,10 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import de.metas.ad_reference.ADRefTable;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
+import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
@@ -85,6 +84,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -128,7 +129,6 @@ public class WindowRestController
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-	private final ADReferenceService adReferenceService;
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
@@ -139,8 +139,7 @@ public class WindowRestController
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
 			@NonNull final CommentsService commentsService,
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
@@ -151,7 +150,6 @@ public class WindowRestController
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
-		this.adReferenceService = adReferenceService;
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -780,17 +778,19 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
-					.getLookupDescriptor()
-					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
-							.setParameter("field", field)));
+																  .getLookupDescriptor()
+																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+																		  .setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
+				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+
 				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
-				final ADRefTable tableRefInfo = labelsValueReferenceId != null
-						? adReferenceService.retrieveTableRefInfo(labelsValueReferenceId)
-						: adReferenceService.getTableDirectRefInfo(labelsValueColumnName);
+				final TableRefInfo tableRefInfo = labelsValueReferenceId != null
+						? lookupDAO.retrieveTableRefInfo(labelsValueReferenceId.getRepoId())
+						: lookupDAO.retrieveTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
@@ -954,9 +954,16 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
+			final NewRecordContext newRecordContext = NewRecordContext.builder()
+					.loginOrgId(userSession.getOrgId())
+					.loggedUserId(userSession.getLoggedUserId())
+					.loginLanguage(userSession.getAD_Language())
+					.build();
+
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document);
+					.processNewRecordDocument(document,
+											  newRecordContext);
 		}));
 	}
 

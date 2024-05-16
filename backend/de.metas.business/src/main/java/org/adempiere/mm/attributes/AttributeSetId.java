@@ -10,6 +10,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -70,7 +72,7 @@ public class AttributeSetId implements RepoIdAware
 		}
 	}
 
-	public static int toRepoId(final AttributeSetId attributeSetId)
+	public static int toRepoId(@Nullable final AttributeSetId attributeSetId)
 	{
 		return attributeSetId != null ? attributeSetId.getRepoId() : -1;
 	}

@@ -26,6 +26,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.greeting.GreetingRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
@@ -35,10 +36,12 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.junit.Test;
 
@@ -85,6 +88,9 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 	}
 
 	@Test

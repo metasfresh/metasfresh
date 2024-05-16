@@ -22,13 +22,20 @@
 
 package de.metas.camel.externalsystems.core;
 
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.core.authorization.MetasfreshAuthorizationTokenNotifier;
+import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
+import de.metas.common.util.Check;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.spring.boot.CamelContextConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+
+import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 
 @Configuration
 public class AppConfiguration
@@ -48,10 +55,56 @@ public class AppConfiguration
 		return camelContext.createProducerTemplate();
 	}
 
+	@Bean
+	public CustomRouteController customRouteController()
+	{
+		return new CustomRouteController(this.camelContext);
+	}
+
 	@PostConstruct
 	public void auditEventNotifier()
 	{
 		camelContext.getManagementStrategy()
 				.addEventNotifier(new AuditEventNotifier(context.getBean(ProducerTemplate.class)));
+	}
+
+	@PostConstruct
+	public void authorizationTokenNotifier()
+	{
+		final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+
+		if (Check.isBlank(metasfreshAPIBaseURL))
+		{
+			throw new RuntimeException("Missing mandatory property! property = " + ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+		}
+
+		final MetasfreshAuthProvider metasfreshAuthProvider = context.getBean(MetasfreshAuthProvider.class);
+		final CustomRouteController customRouteController = customRouteController();
+		final ProducerTemplate producerTemplate = producerTemplate();
+
+		camelContext.getManagementStrategy()
+				.addEventNotifier(new MetasfreshAuthorizationTokenNotifier(metasfreshAuthProvider, metasfreshAPIBaseURL, customRouteController, producerTemplate));
+	}
+
+	@Bean
+	CamelContextConfiguration contextConfiguration()
+	{
+		return new CamelContextConfiguration()
+		{
+			@Override
+			public void beforeApplicationStart(final CamelContext camelContext)
+			{
+				camelContext.setAutoStartup(false);
+			}
+
+			@Override
+			public void afterApplicationStart(final CamelContext camelContext)
+			{
+				customRouteController().startAlwaysRunningRoutes();
+
+				producerTemplate()
+						.sendBody("direct:" + CUSTOM_TO_MF_ROUTE_ID, "Trigger external system authentication!");
+			}
+		};
 	}
 }

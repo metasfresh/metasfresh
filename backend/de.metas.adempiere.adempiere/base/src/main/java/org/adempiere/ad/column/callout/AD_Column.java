@@ -47,6 +47,9 @@ public class AD_Column
 {
 	public static final String ENTITYTYPE_Dictionary = "D";
 
+	private final IColumnBL columnBL = Services.get(IColumnBL.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 	public AD_Column()
 	{
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -62,7 +65,7 @@ public class AD_Column
 		}
 
 		final String columnName = column.getColumnName();
-		column.setIsAllowLogging(Services.get(IColumnBL.class).getDefaultAllowLoggingByColumnName(columnName));
+		column.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(columnName));
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnName })
@@ -93,10 +96,10 @@ public class AD_Column
 		column.setName(element.getName());
 		column.setDescription(element.getDescription());
 		column.setHelp(element.getHelp());
-		column.setIsCalculated(Services.get(IColumnBL.class).getDefaultIsCalculatedByColumnName(elementColumnName));
+		column.setIsCalculated(columnBL.getDefaultIsCalculatedByColumnName(elementColumnName));
 
 		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
-		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		final I_AD_Table table = adTableDAO.retrieveTable(adTableId);
 
 		String entityType = table.getEntityType();
 
@@ -117,12 +120,12 @@ public class AD_Column
 		updateIsExcludeFromZoomTargets(column);
 	}
 
-	private static void setTypeAndLength(final I_AD_Column column)
+	private void setTypeAndLength(final I_AD_Column column)
 	{
 		final String columnName = column.getColumnName();
 		final int previousDisplayType = column.getAD_Reference_ID();
 		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
-		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
+		final I_AD_Table table = adTableDAO.retrieveTable(adTableId);
 		final String tableName = table.getTableName();
 
 		if (columnName.equalsIgnoreCase(tableName + "_ID"))
@@ -333,6 +336,12 @@ public class AD_Column
 		column.setIsIdentifier(true);
 		column.setSeqNo(1);
 		column.setFieldLength(40);
+	}
+
+	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_ColumnSQL })
+	public void upadteIsLazyLoading(final I_AD_Column column)
+	{
+		column.setIsLazyLoading(adTableDAO.isVirtualColumn(column));
 	}
 
 	@CalloutMethod(columnNames = { I_AD_Column.COLUMNNAME_AD_Reference_ID })

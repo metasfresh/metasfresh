@@ -1,16 +1,5 @@
 package de.metas.document.archive.mailrecipient.process;
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.Mutable;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
@@ -28,6 +17,16 @@ import de.metas.process.ProcessInfo;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.Mutable;
+
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * Contains basic utility BL needed to create processes which send mails for given selection.
@@ -95,12 +94,11 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 
 		docOutboundLines.forEach(docOutboundLogLine -> {
 			queue
-					.newBlock()
-					.setAD_PInstance_Creator_ID(pinstanceId)
-					.newWorkpackage()
+					.newWorkPackage()
+					.setAD_PInstance_ID(pinstanceId)
 					// .bindToThreadInheritedTrx() // let's start as soon as the workpackage is created
 					.addElement(docOutboundLogLine)
-					.build();
+					.buildAndEnqueue();
 
 			counter.setValue(counter.getValue() + 1);
 		});

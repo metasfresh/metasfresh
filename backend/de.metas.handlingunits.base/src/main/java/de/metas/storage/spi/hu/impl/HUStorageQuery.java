@@ -22,36 +22,17 @@ package de.metas.storage.spi.hu.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Attribute;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
@@ -59,34 +40,52 @@ import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Attribute;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * A HU-based IStorageQuery implementation.
  * <p>
  * <b>IMPORTANT</b> this implementation will ignore HUs that are located in a <code>M_Locator</code> with {@link I_M_Locator#COLUMNNAME_IsAfterPickingLocator IsAfterPickingLocator} <code>='Y'</code>,
  * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
- *
  */
+@EqualsAndHashCode
+@ToString
 public class HUStorageQuery implements IStorageQuery
 {
-	public static final HUStorageQuery cast(final IStorageQuery storageQuery)
+	public static HUStorageQuery cast(final IStorageQuery storageQuery)
 	{
 		Check.assumeInstanceOf(storageQuery, HUStorageQuery.class, "storageQuery");
-		final HUStorageQuery huStorageQuery = (HUStorageQuery)storageQuery;
-		return huStorageQuery;
+		return (HUStorageQuery)storageQuery;
 	}
 
-	// services
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 	private final IHUQueryBuilder huQueryBuilder;
-	private ImmutableSet<AttributeId> _availableAttributeIds;
+	private transient ImmutableSet<AttributeId> _availableAttributeIds;
 	private final Set<ProductId> _productIds = new HashSet<>();
 
 	/* package */ HUStorageQuery()
 	{
+		// services
+		IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder();
 
 		//
@@ -107,42 +106,6 @@ public class HUStorageQuery implements IStorageQuery
 
 		// by default, consider only HUs which are *not* in an after-picking locator (08123)
 		huQueryBuilder.setExcludeAfterPickingLocator(true);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(huQueryBuilder)
-				// .append(_availableAttributeIds) // nop, because that one is retrieved & cached
-				.append(_productIds)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object otherObj)
-	{
-		if (this == otherObj)
-		{
-			return true;
-		}
-		final HUStorageQuery other = EqualsBuilder.getOther(this, otherObj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(huQueryBuilder, other.huQueryBuilder)
-				// .append(_availableAttributeIds) // nop, because that one is retrieved & cached
-				.append(_productIds, other._productIds)
-				.isEqual();
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	public final IHUQueryBuilder createHUQueryBuilder()
@@ -229,12 +192,7 @@ public class HUStorageQuery implements IStorageQuery
 		//
 		// Check if required attributes are matching
 		final IAttributeSet recordAttributes = storageRecord.getAttributes();
-		if (!huQueryBuilder.matches(recordAttributes))
-		{
-			return false;
-		}
-
-		return true;
+		return huQueryBuilder.matches(recordAttributes);
 	}
 
 	@Override
@@ -245,7 +203,8 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
-	private final Set<ProductId> getProductIds()
+	@NonNull
+	private Set<ProductId> getProductIds()
 	{
 		return _productIds;
 	}
@@ -257,7 +216,8 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
-	private final Set<BPartnerId> getBPartnerIds()
+	@NonNull
+	private Set<BPartnerId> getBPartnerIds()
 	{
 		return huQueryBuilder.getOnlyInBPartnerIds();
 	}
@@ -276,7 +236,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
-	private final Set<Integer> getWarehouseIds()
+	private Set<Integer> getWarehouseIds()
 	{
 		return huQueryBuilder
 				.getOnlyInWarehouseIds()
@@ -286,7 +246,7 @@ public class HUStorageQuery implements IStorageQuery
 	}
 
 	/**
-	 * Adds a filter for the given attribute, <b>if</b> it is relevant according to {@link IHUStorageBL#getAvailableAttributeIds(java.util.Properties)}.
+	 * Adds a filter for the given attribute, <b>if</b> it is relevant according to {@link IHUStorageBL#getAvailableAttributeIds()}.
 	 */
 	@Override
 	public IStorageQuery addAttribute(
@@ -294,6 +254,8 @@ public class HUStorageQuery implements IStorageQuery
 			final String attributeValueType,
 			@Nullable final Object attributeValue)
 	{
+		final AgeAttributesService ageAttributesService = SpringContextHolder.instance.getBean(AgeAttributesService.class);
+
 		// Skip null values because in this case user filled nothing => so we accept any value
 		if (attributeValue == null)
 		{
@@ -312,8 +274,19 @@ public class HUStorageQuery implements IStorageQuery
 
 		//
 		// Add attribute query restrictions
-		final List<Object> attributeValues = Arrays.asList(attributeValue);
-		huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+		{
+			// "explode" the age-attribute value to a range, using before- and after-intervals from the masterdata
+			final List<Object> ageValues = ageAttributesService.extractMatchingValues(getBPartnerIds(), getProductIds(), attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
+		}
+		else
+		{
+			final List<Object> attributeValues = Collections.singletonList(attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		}
 
 		return this;
 	}
@@ -341,7 +314,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
-	private final Set<AttributeId> getAvailableAttributeIds()
+	private Set<AttributeId> getAvailableAttributeIds()
 	{
 		if (_availableAttributeIds == null)
 		{
@@ -361,7 +334,7 @@ public class HUStorageQuery implements IStorageQuery
 	@Override
 	public IStorageQuery setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
 	{
-		huQueryBuilder.setExcludeReservedToOtherThan(orderLineId);
+		huQueryBuilder.setExcludeReservedToOtherThan(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 		return this;
 	}
 

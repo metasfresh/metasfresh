@@ -25,8 +25,11 @@ package de.metas.camel.externalsystems.shopware6;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -36,10 +39,12 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.BUILD_ORDERS_CONTEXT_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PAGE_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_OLCAND_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -64,7 +69,7 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new GetOrdersRouteBuilder(Mockito.mock(ProcessLogger.class), Mockito.mock(ProducerTemplate.class));
 	}
 
 	@Override
@@ -80,11 +85,16 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 		final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor = new MockErrorRouteEndpointProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor successfullyClearOrdersProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor();
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor();
+		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
+
+		final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder().build();
 
 		prepareRouteForTesting(failingMockUpsertBPartnerProcessor,
 							   mockErrorRouteEndpointProcessor,
 							   successfullyClearOrdersProcessor,
-							   runtimeParamsProcessor);
+							   runtimeParamsProcessor,
+							   successfullyCalledGetOrderPage,
+							   externalSystemRequest);
 
 		context.start();
 
@@ -93,18 +103,26 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 		assertThat(mockErrorRouteEndpointProcessor.called).isEqualTo(1);
 		assertThat(successfullyClearOrdersProcessor.getCalled()).isEqualTo(1);
 		assertThat(runtimeParamsProcessor.getCalled()).isEqualTo(1);
+		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(
 			final FailingMockUpsertBPartnerProcessor failingMockUpsertBPartnerProcessor,
 			final MockErrorRouteEndpointProcessor mockErrorRouteEndpointProcessor,
 			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyProcessOLCandProcessor olCandClearProcessor,
-			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor) throws Exception
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage,
+			final JsonExternalSystemRequest externalSystemRequest) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
 									  .replace()
-									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockGetOrdersProcessor()));
+									  .process(new GetOrdersRouteBuilder_HappyFlow_Tests.MockBuildOrdersContextProcessor(externalSystemRequest, 1, GetOrdersRouteBuilder_HappyFlow_Tests.JSON_ORDERS_RESOURCE_PATH, ExternalSystemConstants.DEFAULT_SW6_ORDER_PAGE_SIZE)));
+
+		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
+							  advice -> advice.weaveById(GET_ORDERS_PAGE_PROCESSOR_ID)
+									  .after()
+									  .process(successfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {

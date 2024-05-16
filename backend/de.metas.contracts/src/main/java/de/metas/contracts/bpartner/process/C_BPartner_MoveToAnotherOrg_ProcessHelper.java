@@ -58,6 +58,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 	public static final String PARAM_GroupCategory_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
 	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
+	public static final String PARAM_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	protected OrgId p_orgTargetId;
@@ -70,6 +71,9 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 
 	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
 	protected boolean isShowMembershipParameter;
+
+	@Param(parameterName = PARAM_IsCloseInvoiceCandidate)
+	private boolean isCloseInvoiceCandidate;
 
 	@Override
 	protected String doIt() throws Exception
@@ -84,6 +88,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 				.groupCategoryId(p_groupCategoryId)
 				.orgFromId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 				.orgToId(p_orgTargetId)
+				.isCloseInvoiceCandidate(isCloseInvoiceCandidate)
 				.build();
 
 		service.moveToNewOrg(orgChangeRequest);

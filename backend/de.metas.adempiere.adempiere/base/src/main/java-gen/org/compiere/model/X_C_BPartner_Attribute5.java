@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Attribute5 extends org.compiere.model.PO implements I_C_BPartner_Attribute5, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1180528785L;
+	private static final long serialVersionUID = -229975619L;
 
     /** Standard Constructor */
     public X_C_BPartner_Attribute5 (final Properties ctx, final int C_BPartner_Attribute5_ID, @Nullable final String trxName)
@@ -39,6 +39,26 @@ public class X_C_BPartner_Attribute5 extends org.compiere.model.PO implements I_
 	 * Reference name: Attributes5
 	 */
 	public static final int ATTRIBUTES5_AD_Reference_ID=541336;
+	/** Vereinszugehörigkeit = Vereinszugehörigkeit */
+	public static final String ATTRIBUTES5_Vereinszugehoerigkeit = "Vereinszugehörigkeit";
+	/** Politisches Engagement = Politisches Engagement */
+	public static final String ATTRIBUTES5_PolitischesEngagement = "Politisches Engagement";
+	/** Rechtsauskunft = Rechtsauskunft */
+	public static final String ATTRIBUTES5_Rechtsauskunft = "Rechtsauskunft";
+	/** Beratungen = Beratungen */
+	public static final String ATTRIBUTES5_Beratungen = "Beratungen";
+	/** Zeitung = Zeitung */
+	public static final String ATTRIBUTES5_Zeitung = "Zeitung";
+	/** Vergünstigungen = Vergünstigungen */
+	public static final String ATTRIBUTES5_Verguenstigungen = "Vergünstigungen";
+	/** Dienstleistungen = Dienstleistungen */
+	public static final String ATTRIBUTES5_Dienstleistungen = "Dienstleistungen";
+	/** Andere = Andere */
+	public static final String ATTRIBUTES5_Andere = "Andere";
+	/** Netzwerk = Netzwerk */
+	public static final String ATTRIBUTES5_Netzwerk = "Netzwerk";
+	/** Seminare & Veranstaltungen = Seminare & Veranstaltungen */
+	public static final String ATTRIBUTES5_SeminareVeranstaltungen = "Seminare & Veranstaltungen";
 	@Override
 	public void setAttributes5 (final java.lang.String Attributes5)
 	{

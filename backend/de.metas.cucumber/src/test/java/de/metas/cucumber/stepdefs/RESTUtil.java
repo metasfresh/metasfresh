@@ -22,11 +22,12 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
-
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
@@ -48,6 +49,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -65,16 +67,19 @@ import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
+import static de.metas.util.web.audit.ApiAuditService.API_RESPONSE_HEADER_REQUEST_AUDIT_ID;
 import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
@@ -113,8 +118,6 @@ public class RESTUtil
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
-		final CloseableHttpClient httpClient = HttpClients.createDefault();
-
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + apiRequest.getEndpointPath();
 		final String verb = apiRequest.getVerb();
@@ -137,43 +140,62 @@ public class RESTUtil
 		}
 
 		setHeaders(request, authToken, apiRequest.getAdditionalHeaders());
-		final HttpResponse response = httpClient.execute(request);
 
-		final Header contentType = response.getEntity().getContentType();
-		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
-		if (contentType != null)
+		try(final CloseableHttpClient httpClient = HttpClients.createDefault())
 		{
-			apiResponseBuilder.contentType(contentType.getValue());
+			final HttpResponse response = httpClient.execute(request);
+
+			final Header contentType = response.getEntity().getContentType();
+			final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
+			if (contentType != null)
+			{
+				apiResponseBuilder.contentType(contentType.getValue());
+			}
+
+			final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			response.getEntity().writeTo(stream);
+
+			final String endpointPath = apiRequest.getEndpointPath();
+
+			if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
+			{
+				final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+				try
+				{
+					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+
+					final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+
+					apiResponseBuilder
+							.requestId(jsonApiResponse.getRequestId())
+							.content(content);
+
+					logDetails(jsonApiResponse.getRequestId());
+				}
+				catch (final MismatchedInputException mismatchedInputException)
+				{
+					extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
+				}
+				catch (final JsonParseException jsonParseException)
+				{
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+				}
+			}
+			else
+			{
+				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+			}
+
+			assertThat(response.getStatusLine().getStatusCode())
+					.withFailMessage(() -> MessageFormat.format("Status code did not match! expected: {0}, actual: {1} ! See full response: {2}",
+																CoalesceUtil.coalesce(statusCode, 200),
+																response.getStatusLine().getStatusCode(),
+																apiResponseBuilder.build().getContent()))
+					.isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
+
+			return apiResponseBuilder.build();
 		}
-
-		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		response.getEntity().writeTo(stream);
-		final String content;
-
-		final String endpointPath = apiRequest.getEndpointPath();
-
-		if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
-		{
-			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-			final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
-
-			content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
-
-			apiResponseBuilder.requestId(jsonApiResponse.getRequestId());
-
-			logDetails(jsonApiResponse);
-		}
-		else
-		{
-			content = stream.toString(StandardCharsets.UTF_8.name());
-		}
-
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
-
-		return apiResponseBuilder
-				.content(content)
-				.build();
 	}
 
 	private void setHeaders(
@@ -181,11 +203,20 @@ public class RESTUtil
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader("content-type", "application/json");
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
-		if (additionalHeaders != null)
+		if (additionalHeaders == null)
 		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		}
+		else
+		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON_VALUE));
+			request.addHeader(HttpHeaders.ACCEPT,
+							  CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.ACCEPT), MediaType.APPLICATION_JSON_VALUE));
+
 			additionalHeaders.forEach(request::addHeader);
 		}
 	}
@@ -279,10 +310,8 @@ public class RESTUtil
 		return request;
 	}
 
-	private void logDetails(@NonNull final JsonApiResponse apiResponse)
+	private void logDetails(@NonNull final JsonMetasfreshId id)
 	{
-		final JsonMetasfreshId id = apiResponse.getRequestId();
-
 		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(id.getValue());
 
 		final I_API_Request_Audit apiRequestAuditRecord = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
@@ -307,7 +336,7 @@ public class RESTUtil
 		apiReqLogs.forEach(log -> {
 			if (EmptyUtil.isNotBlank(log.getLogmessage()))
 			{
-				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}", 
+				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}",
 							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_Log_ID(), log.getLogmessage());
 			}
 		});
@@ -327,5 +356,26 @@ public class RESTUtil
 				.stream()
 				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {} - AD_Issue_ID -> {} \n IssueSummary -> {}\n StackTrace -> {}",
 											  apiRequestAuditId.getRepoId(), issue.getAD_Issue_ID(), issue.getIssueSummary(), issue.getStackTrace()));
+	}
+
+	private void extractRequestAuditIdFromHeader(
+			@NonNull final HttpResponse response,
+			@NonNull final ByteArrayOutputStream bodyContent,
+			@NonNull final APIResponse.APIResponseBuilder apiResponseBuilder) throws UnsupportedEncodingException
+	{
+		apiResponseBuilder.content(bodyContent.toString(StandardCharsets.UTF_8.name()));
+
+		final Header requestIdParam = response.getFirstHeader(API_RESPONSE_HEADER_REQUEST_AUDIT_ID);
+
+		if (requestIdParam == null)
+		{
+			return;
+		}
+
+		final JsonMetasfreshId requestId = JsonMetasfreshId.of(Integer.parseInt(requestIdParam.getValue()));
+
+		apiResponseBuilder.requestId(requestId);
+
+		logDetails(requestId);
 	}
 }

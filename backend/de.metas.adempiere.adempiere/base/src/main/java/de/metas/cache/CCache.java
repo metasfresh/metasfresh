@@ -73,7 +73,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @param expireAfterMinutes if positive, the entries will expire after given number of minutes
 	 * @return new cache instance
 	 */
-	public static final <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
+	public static <K, V> CCache<K, V> newLRUCache(final String cacheName, final int maxSize, final int expireAfterMinutes)
 	{
 		return CCache.<K, V> builder()
 				.cacheName(cacheName)
@@ -88,8 +88,9 @@ public class CCache<K, V> implements CacheInterface
 	 * Similar to {@link #newLRUCache(String, int, int)}.
 	 *
 	 * @param cacheName cache name; shall respect the current naming conventions, see {@link #extractTableNameForCacheName(String)}
+	 * @   
 	 */
-	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
+	public static <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
 		return CCache.<K, V> builder()
 				.cacheName(cacheName)
@@ -271,11 +272,11 @@ public class CCache<K, V> implements CacheInterface
 	 *
 	 * NOTE: we assume cacheName has following format: TableName#by#ColumnName1#ColumnName2...
 	 *
-	 * @param cacheName
 	 * @return tableName or null
 	 */
 	// NOTE: public for testing
-	public static final String extractTableNameForCacheName(final String cacheName)
+	@Nullable
+	public static String extractTableNameForCacheName(final String cacheName)
 	{
 		if (cacheName == null || cacheName.isEmpty())
 		{

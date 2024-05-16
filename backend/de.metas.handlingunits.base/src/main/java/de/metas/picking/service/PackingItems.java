@@ -7,6 +7,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.service.PackingItemPart.PackingItemPartBuilder;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

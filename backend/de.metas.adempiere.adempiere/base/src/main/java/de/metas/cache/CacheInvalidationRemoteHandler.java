@@ -22,6 +22,8 @@ import org.slf4j.MDC.MDCCloseable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -86,8 +88,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Enable cache invalidation broadcasting for given table name.
-	 *
-	 * @param tableName
 	 */
 	public void enableForTableName(@NonNull final String tableName)
 	{
@@ -97,8 +97,6 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	/**
 	 * Enable cache invalidation broadcasting for given table names.
-	 *
-	 * @param tableName
 	 */
 	public void enableForTableNamesGroup(@NonNull final TableNamesGroup group)
 	{
@@ -143,7 +141,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 		// Broadcast the event.
 		final Event event = createEventFromRequest(request);
-		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			logger.debug("Broadcasting cacheInvalidateMultiRequest={}", request);
 			Services.get(IEventBusFactory.class)
@@ -194,13 +192,12 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 	@VisibleForTesting
 	Event createEventFromRequest(@NonNull final CacheInvalidateMultiRequest request)
 	{
-		final Event event = Event.builder()
+		return Event.builder()
 				.putProperty(EVENT_PROPERTY, jsonSerializer.toJson(request))
 				.build();
-
-		return event;
 	}
 
+	@Nullable
 	private CacheInvalidateMultiRequest createRequestFromEvent(final Event event)
 	{
 		final String jsonRequest = event.getProperty(EVENT_PROPERTY);

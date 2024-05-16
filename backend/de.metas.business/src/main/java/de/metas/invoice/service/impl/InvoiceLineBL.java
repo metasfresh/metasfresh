@@ -60,6 +60,7 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
@@ -551,5 +552,17 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				qtyEntered,
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);
+	}
+
+
+	@NonNull
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
+
+		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
+
+		return Quantity.of(qtyInvoiced, stockUOM);
 	}
 }

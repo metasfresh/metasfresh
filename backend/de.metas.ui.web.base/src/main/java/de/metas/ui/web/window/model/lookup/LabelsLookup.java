@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ReferenceId;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -13,6 +13,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -126,7 +127,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
 
-		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName+"/-1"));
+		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
 	}
 
 	@Override
@@ -299,11 +300,13 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		}
 	}
 
-	public String getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
+	public ColumnSql getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
 	{
-		return "SELECT array_agg(" + labelsValueColumnName + ")"
+		final String sql = "SELECT array_agg(" + labelsValueColumnName + ")"
 				+ " FROM " + labelsTableName
 				+ " WHERE " + labelsLinkColumnName + "=" + tableNameOrAlias + "." + linkColumnName
 				+ " AND IsActive='Y'";
+
+		return ColumnSql.ofSql(sql, tableNameOrAlias);
 	}
 }

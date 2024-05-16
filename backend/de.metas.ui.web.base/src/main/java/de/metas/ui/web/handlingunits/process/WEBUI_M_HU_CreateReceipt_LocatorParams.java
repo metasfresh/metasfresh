@@ -1,17 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.api.impl.WarehouseDAO;
-import org.adempiere.warehouse.model.I_M_Warehouse;
-import org.compiere.Adempiere;
-import org.springframework.context.annotation.Profile;
-
 import de.metas.Profiles;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -29,6 +17,17 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.impl.WarehouseDAO;
+import org.compiere.Adempiere;
+import org.compiere.model.I_M_Warehouse;
+import org.springframework.context.annotation.Profile;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -92,14 +91,9 @@ public class WEBUI_M_HU_CreateReceipt_LocatorParams
 
 			if (existQuarantineHUs())
 			{
-				final I_M_Warehouse quarantineWarehouse = Services.get(IWarehouseDAO.class).retrieveQuarantineWarehouseOrNull();
-
-				if (quarantineWarehouse == null)
-				{
-					throw new AdempiereException("@" + WarehouseDAO.MSG_M_Warehouse_NoQuarantineWarehouse + "@");
-				}
-
-				return quarantineWarehouse.getM_Warehouse_ID();
+				final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+				final WarehouseId quarantineWarehouseId = warehouseDAO.retrieveQuarantineWarehouseId();
+				return quarantineWarehouseId.getRepoId();
 			}
 
 			final int singleWarehouseId = CollectionUtils.extractSingleElementOrDefault(

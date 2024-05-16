@@ -56,6 +56,29 @@ public class M_Locator_StepDef
 		this.locatorTable = locatorTable;
 	}
 
+	@And("load M_Locator:")
+	public void load_M_Locator(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_M_Locator.COLUMNNAME_Value);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+
+			final I_M_Locator locatorRecord = queryBL.createQueryBuilder(I_M_Locator.class)
+					.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+					.addEqualsFilter(I_M_Locator.COLUMNNAME_Value, value)
+					.orderByDescending(COLUMNNAME_M_Locator_ID)
+					.create()
+					.firstNotNull(I_M_Locator.class);
+
+			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			locatorTable.put(locatorIdentifier, locatorRecord);
+		}
+	}
+
 	@And("metasfresh contains M_Locator:")
 	public void create_M_Locator(@NonNull final DataTable dataTable)
 	{

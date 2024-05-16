@@ -74,6 +74,8 @@ public class AlbertaPatientRepository
 		record.setNumberOfInsured(patient.getNumberOfInsured());
 
 		record.setDeactivationComment(patient.getDeactivationComment());
+		record.setClassification(patient.getClassification());
+		record.setCareDegree(patient.getCareDegree());
 
 		InterfaceWrapperHelper.save(record);
 
@@ -118,6 +120,8 @@ public class AlbertaPatientRepository
 				.deactivationReason(DeactivationReasonType.ofCodeNullable(record.getDeactivationReason()))
 				.deactivationDate(TimeUtil.asLocalDate(record.getDeactivationDate(), SystemTime.zoneId()))
 				.deactivationComment(record.getDeactivationComment())
+				.classification(record.getClassification())
+				.careDegree(record.getCareDegree())
 				.createdAt(TimeUtil.asInstant(record.getCreatedAt()))
 				.createdById(createdById)
 				.updatedAt(TimeUtil.asInstant(record.getUpdatedAt()))

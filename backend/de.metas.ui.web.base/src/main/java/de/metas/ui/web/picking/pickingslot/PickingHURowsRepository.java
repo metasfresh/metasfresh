@@ -162,7 +162,7 @@ public class PickingHURowsRepository
 
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final WarehouseId effectiveWarehouseId = currentShipmentSchedule != null ? shipmentScheduleEffectiveBL.getWarehouseId(currentShipmentSchedule) : null;
-		builder.warehouseId(effectiveWarehouseId);
+		builder.warehouseIds(ImmutableSet.of(effectiveWarehouseId));
 		return builder.build();
 	}
 

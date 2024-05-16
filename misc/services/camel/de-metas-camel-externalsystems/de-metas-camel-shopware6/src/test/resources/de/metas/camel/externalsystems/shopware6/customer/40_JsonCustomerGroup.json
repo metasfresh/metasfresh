@@ -1,0 +1,36 @@
+{
+  "data": {
+    "name": "test_group",
+    "displayGross": false,
+    "translations": null,
+    "customers": null,
+    "salesChannels": null,
+    "registrationActive": false,
+    "registrationTitle": "registrationTitle",
+    "registrationIntroduction": null,
+    "registrationOnlyCompanyRegistration": true,
+    "registrationSeoMetaDescription": null,
+    "registrationSalesChannels": null,
+    "_uniqueIdentifier": "uniqueIdentifier",
+    "versionId": null,
+    "translated": {
+      "name": "test_group",
+      "customFields": {},
+      "registrationTitle": "registrationTitle",
+      "registrationIntroduction": null,
+      "registrationOnlyCompanyRegistration": true,
+      "registrationSeoMetaDescription": null
+    },
+    "createdAt": "2021-04-07T13:55:53.042+00:00",
+    "updatedAt": "2021-04-13T08:40:31.120+00:00",
+    "extensions": {
+      "foreignKeys": {
+        "apiAlias": null,
+        "extensions": []
+      }
+    },
+    "id": "id",
+    "customFields": null,
+    "apiAlias": "customer_group"
+  }
+}

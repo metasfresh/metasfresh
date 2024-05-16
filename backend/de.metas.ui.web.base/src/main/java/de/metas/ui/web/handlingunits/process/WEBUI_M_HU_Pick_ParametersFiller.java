@@ -64,7 +64,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-final class WEBUI_M_HU_Pick_ParametersFiller
+public final class WEBUI_M_HU_Pick_ParametersFiller
 {
 	public static final String PARAM_M_PickingSlot_ID = I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID;
 	public static final String PARAM_M_ShipmentSchedule_ID = I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;

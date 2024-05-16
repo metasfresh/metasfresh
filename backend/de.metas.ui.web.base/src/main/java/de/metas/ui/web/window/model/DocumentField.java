@@ -64,12 +64,16 @@ class DocumentField implements IDocumentField
 	private final Optional<LookupDataSource> _lookupDataSource;
 	private boolean lookupValuesStaled = true;
 
+	@Nullable
 	private transient ICalloutField _calloutField; // lazy
 
 	//
 	// State
+	@Nullable
 	private Object _initialValue;
+	@Nullable
 	private Object _valueOnCheckout;
+	@Nullable
 	private Object _value;
 
 	private static final LogicExpressionResult MANDATORY_InitialValue = LogicExpressionResult.namedConstant("mandatory-initial", false);
@@ -168,6 +172,7 @@ class DocumentField implements IDocumentField
 	}
 
 	@Override
+	@Nullable
 	public Object getInitialValue()
 	{
 		return _initialValue;
@@ -189,7 +194,6 @@ class DocumentField implements IDocumentField
 
 		//
 		// Update the current value too
-		// final Object valueOld = _value;
 		_value = initialValueConv;
 
 		// Update valid status
@@ -213,12 +217,14 @@ class DocumentField implements IDocumentField
 	}
 
 	@Override
+	@Nullable
 	public Object getValue()
 	{
 		return _value;
 	}
 
 	@Override
+	@Nullable
 	public Object getValueAsJsonObject(@NonNull final JSONOptions jsonOpts)
 	{
 		Object value = getValue();
@@ -258,9 +264,9 @@ class DocumentField implements IDocumentField
 	}
 
 	@Override
+	@Nullable
 	public <T> T getValueAs(@NonNull final Class<T> returnType)
 	{
-		Preconditions.checkNotNull(returnType, "returnType shall not be null");
 		return convertToValueClass(_value, null, returnType);
 	}
 
@@ -274,6 +280,7 @@ class DocumentField implements IDocumentField
 	}
 
 	@Override
+	@Nullable
 	public Object getOldValue()
 	{
 		return _valueOnCheckout;
@@ -291,6 +298,7 @@ class DocumentField implements IDocumentField
 	 *
 	 * @return value converted and corrected
 	 */
+	@Nullable
 	private Object convertToValueClassAndCorrect(final Object value)
 	{
 		final Object valueConv = convertToValueClass(value);
@@ -323,10 +331,11 @@ class DocumentField implements IDocumentField
 		return valueConv;
 	}
 
+	@Nullable
 	private <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,
-			final Class<T> targetType)
+			@NonNull final Class<T> targetType)
 	{
 		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSourceOrNull());
 	}

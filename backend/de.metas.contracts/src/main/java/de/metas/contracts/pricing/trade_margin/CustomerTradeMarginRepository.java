@@ -24,84 +24,73 @@ package de.metas.contracts.pricing.trade_margin;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.CCache;
-import de.metas.contracts.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin;
+import de.metas.contracts.commission.model.I_C_Customer_Trade_Margin_Line;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class CustomerTradeMarginRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<CacheKey, ImmutableList<CustomerTradeMarginSettings>> cache = CCache.<CacheKey, ImmutableList<CustomerTradeMarginSettings>> builder()
-			.cacheName("customerTradeMarginBySalesRepAndDate")
-			.cacheMapType(CCache.CacheMapType.LRU)
-			.initialCapacity(100)
-			.tableName(I_C_Customer_Trade_Margin.Table_Name)
-			.build();
-
-	public Optional<CustomerTradeMarginSettings> getBestMatchForCriteria(final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria)
+	@NonNull
+	public CustomerTradeMargin getById(@NonNull final CustomerTradeMarginId customerTradeMarginId)
 	{
-		final CacheKey cacheKey = CacheKey.of(customerTradeMarginSearchCriteria);
+		final I_C_Customer_Trade_Margin record = queryBL.createQueryBuilder(I_C_Customer_Trade_Margin.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Customer_Trade_Margin.COLUMNNAME_C_Customer_Trade_Margin_ID, customerTradeMarginId)
+				.create()
+				.firstOnlyNotNull(I_C_Customer_Trade_Margin.class);
 
-		final ImmutableList<CustomerTradeMarginSettings> customerTradeMarginList = cache.getOrLoad(cacheKey, this::loadRecordsForKey);
-
-		Optional<CustomerTradeMarginSettings> bestMatch = Optional.empty();
-
-		for (final CustomerTradeMarginSettings tradeMargin : customerTradeMarginList)
-		{
-			if ( tradeMargin.applicableOnlyTo( customerTradeMarginSearchCriteria.getCustomerId() )
-					|| tradeMargin.applicableToAllCustomers() && !bestMatch.isPresent() )
-			{
-				bestMatch = Optional.of(tradeMargin);
-			}
-		}
-		return bestMatch;
+		return toCustomerTradeMargin(record);
 	}
 
-	private ImmutableList<CustomerTradeMarginSettings> loadRecordsForKey(final CacheKey cacheKey)
+	@NonNull
+	private CustomerTradeMargin toCustomerTradeMargin(@NonNull final I_C_Customer_Trade_Margin record)
 	{
-		final List<I_C_Customer_Trade_Margin> customerTradeMarginList =
-				Optional.of(Services.get(IQueryBL.class)
-						.createQueryBuilderOutOfTrx(I_C_Customer_Trade_Margin.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter( I_C_Customer_Trade_Margin.COLUMNNAME_C_BPartner_SalesRep_ID, cacheKey.getSalesRepId().getRepoId() )
-						.addCompareFilter( I_C_Customer_Trade_Margin.COLUMN_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL, cacheKey.getRequestedDate() )
-						.create()
-						.list())
-						.orElseGet(ArrayList::new);
+		final CustomerTradeMarginId customerTradeMarginId = CustomerTradeMarginId.ofRepoId(record.getC_Customer_Trade_Margin_ID());
 
-		return customerTradeMarginList.stream()
-				.map(CustomerTradeMarginSettings::of)
+		return CustomerTradeMargin.builder()
+				.customerTradeMarginId(customerTradeMarginId)
+				.commissionProductId(ProductId.ofRepoId(record.getCommission_Product_ID()))
+				.pointsPrecision(record.getPointsPrecision())
+				.name(record.getName())
+				.description(record.getDescription())
+				.lines(retrieveLinesForTradeMargin(customerTradeMarginId))
+				.build();
+	}
+
+	@NonNull
+	private ImmutableList<CustomerTradeMarginLine> retrieveLinesForTradeMargin(@NonNull final CustomerTradeMarginId customerTradeMarginId)
+	{
+		return queryBL.createQueryBuilder(I_C_Customer_Trade_Margin_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Customer_Trade_Margin_Line.COLUMNNAME_C_Customer_Trade_Margin_ID, customerTradeMarginId)
+				.create()
+				.stream()
+				.map(this::toCustomerTradeMarginLine)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Builder
-	@Value
-	private static class CacheKey
+	@NonNull
+	private CustomerTradeMarginLine toCustomerTradeMarginLine(@NonNull final I_C_Customer_Trade_Margin_Line record)
 	{
-		@NonNull
-		BPartnerId salesRepId;
+		final CustomerTradeMarginId customerTradeMarginId = CustomerTradeMarginId.ofRepoId(record.getC_Customer_Trade_Margin_ID());
 
-		@NonNull
-		LocalDate requestedDate;
-
-		public static CacheKey of(final CustomerTradeMarginSearchCriteria customerTradeMarginSearchCriteria)
-		{
-			return CacheKey.builder()
-					.requestedDate(customerTradeMarginSearchCriteria.getRequestedDate())
-					.salesRepId(customerTradeMarginSearchCriteria.getSalesRepId())
-					.build();
-		}
+		return CustomerTradeMarginLine.builder()
+				.customerTradeMarginLineId(CustomerTradeMarginLineId.ofRepoId(customerTradeMarginId, record.getC_Customer_Trade_Margin_Line_ID()))
+				.customerTradeMarginId(customerTradeMarginId)
+				.seqNo(record.getSeqNo())
+				.marginPercent(record.getMargin())
+				.customerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Customer_ID()))
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.active(record.isActive())
+				.build();
 	}
 }

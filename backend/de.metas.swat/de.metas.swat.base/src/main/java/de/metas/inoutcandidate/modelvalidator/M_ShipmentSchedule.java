@@ -55,6 +55,7 @@ public class M_ShipmentSchedule
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
+	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -181,7 +182,7 @@ public class M_ShipmentSchedule
 	}
 
 	/**
-	 * Note: it's important the the schedule is only invalidated on certain value changes.
+	 * Note: it's important the schedule is only invalidated on certain value changes.
 	 * For example, a change of lock status or valid status may not cause an invalidation
 	 */
 	@ModelChange( //
@@ -194,25 +195,22 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_BPartnerAddress_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_IsClosed
 			})
-	public void invalidate(final I_M_ShipmentSchedule schedule)
+	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
 		if (shipmentScheduleUpdater.isRunning())
 		{
 			return;
 		}
-		if (shipmentScheduleBL.isDoNotInvalidateOnChange(schedule))
+		if (shipmentScheduleBL.isDoNotInvalidateOnChange(shipmentSchedule))
 		{
 			return;
 		}
 
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
-
-		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
-		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(schedule);
+		invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule);
 	}
 
 	@ModelChange( //

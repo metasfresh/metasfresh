@@ -1,43 +1,10 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.callout.api.ICalloutExecutor;
-import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.callout.api.impl.CalloutExecutor;
-import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
-import org.adempiere.ad.callout.spi.ICalloutProvider;
-import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.ad.ui.spi.ITabCallout;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -65,6 +32,36 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutExecutor;
+import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.callout.api.impl.CalloutExecutor;
+import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
+import org.adempiere.ad.callout.spi.ICalloutProvider;
+import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -122,6 +119,8 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression displayLogic;
 	@Getter
 	private final boolean allowQuickInput;
+	@Getter
+	private final boolean autodetectDefaultDateFilter;
 
 	private final ImmutableMap<String, DocumentFieldDescriptor> fields;
 	@Getter
@@ -174,7 +173,8 @@ public class DocumentEntityDescriptor
 		allowDeleteLogic = builder.getAllowDeleteLogic();
 		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
-		allowQuickInput = builder.isAllowQuickInput();
+		allowQuickInput = builder.getQuickInputSupport() != null;
+		autodetectDefaultDateFilter = builder.isAutodetectDefaultDateFilter();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
 		idFields = builder.getIdFields();
@@ -329,8 +329,6 @@ public class DocumentEntityDescriptor
 	}
 
 	/**
-	 *
-	 * @param detailId
 	 * @return included {@link DocumentEntityDescriptor}; never returns null
 	 */
 	public DocumentEntityDescriptor getIncludedEntityByDetailId(final DetailId detailId) throws NoSuchElementException
@@ -358,12 +356,12 @@ public class DocumentEntityDescriptor
 
 	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(final Class<T> bindingType)
 	{
-		@SuppressWarnings("unchecked")
-		final T dataBindingCasted = (T)getDataBinding();
+		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
 	}
 
 	// legacy
+
 	/**
 	 * @throws IllegalArgumentException if AD_Tab_ID is not defined
 	 */
@@ -373,6 +371,7 @@ public class DocumentEntityDescriptor
 	}
 
 	// legacy
+
 	/**
 	 * @return tableName
 	 * @throws IllegalArgumentException if TableName is not defined
@@ -459,7 +458,12 @@ public class DocumentEntityDescriptor
 		private ILogicExpression _allowDeleteLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
-		private boolean _allowQuickInput = false;
+
+		@Getter
+		private QuickInputSupportDescriptor quickInputSupport = null;
+
+		private IncludedTabNewRecordInputMode includedTabNewRecordInputMode = IncludedTabNewRecordInputMode.ALL_AVAILABLE_METHODS;
+
 		private boolean _refreshViewOnChangeEvents = false;
 
 		//
@@ -473,6 +477,9 @@ public class DocumentEntityDescriptor
 
 		@Getter
 		private boolean singleRowDetail = false;
+
+		@Getter
+		private boolean autodetectDefaultDateFilter = true;
 
 		// Legacy
 		private Optional<AdTabId> _adTabId = Optional.empty();
@@ -754,8 +761,7 @@ public class DocumentEntityDescriptor
 
 		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(final Class<T> builderType)
 		{
-			@SuppressWarnings("unchecked")
-			final T dataBindingBuilder = (T)_dataBinding;
+			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
 		}
 
@@ -973,15 +979,27 @@ public class DocumentEntityDescriptor
 			return _readonlyLogic;
 		}
 
-		public Builder setAllowQuickInput(final boolean allowQuickInput)
+		public Builder setQuickInputSupport(@Nullable final QuickInputSupportDescriptor quickInputSupport)
 		{
-			this._allowQuickInput = allowQuickInput;
+			this.quickInputSupport = quickInputSupport;
 			return this;
 		}
 
-		public boolean isAllowQuickInput()
+		public Builder setIncludedTabNewRecordInputMode(@NonNull final IncludedTabNewRecordInputMode includedTabNewRecordInputMode)
 		{
-			return _allowQuickInput;
+			this.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
+			return this;
+		}
+
+		public IncludedTabNewRecordInputMode getIncludedTabNewRecordInputMode()
+		{
+			return includedTabNewRecordInputMode;
+		}
+
+		public Builder setAutodetectDefaultDateFilter(final boolean autodetectDefaultDateFilter)
+		{
+			this.autodetectDefaultDateFilter = autodetectDefaultDateFilter;
+            return this;
 		}
 
 		/**
@@ -1072,7 +1090,13 @@ public class DocumentEntityDescriptor
 			final AdTabId adTabId = getAdTabId().orElse(null);
 			final Collection<DocumentFieldDescriptor> fields = getFields().values();
 
-			return filterDescriptorsProvidersService.createFiltersProvider(adTabId, tableName, fields);
+			final CreateFiltersProviderContext context = CreateFiltersProviderContext.builder()
+					.adTabId(adTabId)
+					.tableName(tableName)
+					.isAutodetectDefaultDateFilter(isAutodetectDefaultDateFilter())
+					.build();
+
+			return filterDescriptorsProvidersService.createFiltersProvider(context, fields);
 		}
 
 		public Builder setFilterDescriptorsProvidersService(final DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService)

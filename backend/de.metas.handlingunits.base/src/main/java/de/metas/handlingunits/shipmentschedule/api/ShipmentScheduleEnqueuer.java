@@ -27,11 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IWorkPackageBlockBuilder;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -99,7 +97,6 @@ public class ShipmentScheduleEnqueuer
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private Properties _ctx;
 	private String _trxNameInitial;
@@ -172,10 +169,6 @@ public class ShipmentScheduleEnqueuer
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(localCtx.getCtx(), GenerateInOutFromShipmentSchedules.class);
 
-		final IWorkPackageBlockBuilder blockBuilder = queue
-				.newBlock()
-				.setAD_PInstance_Creator_ID(workPackageParameters.adPInstanceId)
-				.setContext(localCtx.getCtx());
 		IWorkPackageBuilder workpackageBuilder = null;
 		String lastHeaderAggregationKey = null;
 
@@ -213,21 +206,18 @@ public class ShipmentScheduleEnqueuer
 				// Create workpackage
 				if (workpackageBuilder == null)
 				{
-					workpackageBuilder = blockBuilder
-							.newWorkpackage()
+					workpackageBuilder = queue
+							.newWorkPackage()
+							.setAD_PInstance_ID(workPackageParameters.adPInstanceId)
 							.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
 							.setPriority(SizeBasedWorkpackagePrio.INSTANCE)
-							.bindToTrxName(localCtx.getTrxName());
-
-					if (shipmentSchedule.getC_Async_Batch_ID() > 0)
-					{
-						final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(AsyncBatchId.ofRepoId(shipmentSchedule.getC_Async_Batch_ID()));
-						workpackageBuilder.setC_Async_Batch(asyncBatch);
-					}
+							.bindToTrxName(localCtx.getTrxName())
+							.setC_Async_Batch_ID(AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID()));
 
 					workpackageBuilder
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
@@ -296,7 +286,7 @@ public class ShipmentScheduleEnqueuer
 		if (noSchedsAreToRecompute)
 		{
 			// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
-			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.build();
+			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.buildAndEnqueue();
 			result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
 		}
 		else
@@ -343,7 +333,7 @@ public class ShipmentScheduleEnqueuer
 	 * @author metas-dev <dev@metasfresh.com>
 	 * task https://metasfresh.atlassian.net/browse/FRESH-342
 	 */
-	public static class Result
+	public static class Result implements IEnqueueResult
 	{
 		@Getter
 		private int skippedPackagesCount;
@@ -369,6 +359,12 @@ public class ShipmentScheduleEnqueuer
 		{
 			skippedPackagesCount++;
 		}
+
+		@Override
+		public int getWorkpackageEnqueuedCount()
+		{
+			return enqueuedWorkpackageIds.size();
+		}
 	}
 
 	@Builder
@@ -376,6 +372,7 @@ public class ShipmentScheduleEnqueuer
 	public static class ShipmentScheduleWorkPackageParameters
 	{
 		public static final String PARAM_QuantityType = "QuantityType";
+		public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
@@ -392,6 +389,13 @@ public class ShipmentScheduleEnqueuer
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;
 
+		/**
+		 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
+		 * If {@code true}, then the on-the-fly picked HUs are created as TUs, using the respective shipment schedules' packing instructions.
+		 */
+		@Builder.Default
+		boolean onTheFlyPickToPackingInstructions = false;
+		
 		boolean completeShipments;
 		boolean isShipmentDateToday;
 

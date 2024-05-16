@@ -23,27 +23,19 @@
 package de.metas.treenode;
 
 import de.metas.acct.api.impl.ElementValueId;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
+import lombok.Value;
+import org.adempiere.model.tree.AdTreeId;
 
-@Data
-@Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+import javax.annotation.Nullable;
+
+@Value
+@Builder
 public class TreeNode
 {
-	@NonNull
-	TreeId treeId;
-
-	@NonNull
-	ElementValueId nodeId;
-
-	@NonFinal
-	ElementValueId parentId;
-
-	@NonFinal
+	@NonNull AdTreeId chartOfAccountsTreeId;
+	@NonNull ElementValueId nodeId;
+	@Nullable ElementValueId parentId;
 	int seqNo;
 }

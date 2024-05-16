@@ -47,14 +47,20 @@ docker-compose --env-file ./env-files/intensive_care_uat.env --project-name ${BR
 * (optionally) get the latest with `docker-compose --env-file ./env-files/${BRANCH_NAME}.env build --pull`
 * restart again with `docker-compose --env-file ./env-files/${BRANCH_NAME}.env  --project-name ${BRANCH_NAME}_infrastructure up -d`
 
-For bonus-points you can then do e.g. `docker-compose logs -f db` to see how the DB is repopulated.
+For bonus-points you can then do e.g. 
+`docker-compose --env-file ./env-files/${BRANCH_NAME}.env logs -f db` to see how the DB is repopulated.
 Don't forget to apply the latest migration scripts after that.
 
-Reset commands to copy&paste
+### The reset commands to copy&paste
+
 ```bash
-docker-compose down
-docker volume rm metasfresh_postgres
-docker volume rm metasfresh_elasticsearch
-docker-compose build --pull
-docker-compose up -d
+BRANCH_NAME=your_branch_name
+```
+
+```bash
+docker-compose --env-file ./env-files/${BRANCH_NAME}.env --project-name ${BRANCH_NAME}_infrastructure down
+docker volume rm ${BRANCH_NAME}_metasfresh_postgres
+docker volume rm ${BRANCH_NAME}_metasfresh_elasticsearch
+docker-compose --env-file ./env-files/${BRANCH_NAME}.env build --pull
+docker-compose --env-file ./env-files/${BRANCH_NAME}.env --project-name ${BRANCH_NAME}_infrastructure up -d
 ```

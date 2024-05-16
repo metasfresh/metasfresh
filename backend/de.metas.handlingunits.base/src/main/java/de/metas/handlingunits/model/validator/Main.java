@@ -28,17 +28,21 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
+import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
+import de.metas.distribution.ddorder.interceptor.DD_Order;
+import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
-import de.metas.handlingunits.ddorder.spi.impl.ForecastLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.HuInOutInvoiceCandidateVetoer;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
 import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
-import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -76,6 +80,7 @@ import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBu
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.spi.impl.HUReceiptScheduleProducer;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
@@ -101,6 +106,7 @@ import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_I_Inventory;
+import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -108,10 +114,17 @@ import java.util.Arrays;
 @Component
 public final class Main extends AbstractModuleInterceptor
 {
+	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
 
-	public Main(@NonNull final PickingBOMService pickingBOMService)
+	public Main(
+			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			@NonNull final DDOrderService ddOrderService,
+			@NonNull final PickingBOMService pickingBOMService)
 	{
+		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
+		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
 	}
 
@@ -122,8 +135,8 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Version());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_OrderLine());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_Order());
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.DD_OrderLine());
+		engine.addModelValidator(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
+		engine.addModelValidator(new DD_OrderLine(ddOrderMoveScheduleService));
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_PI_Item_Product());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
@@ -331,6 +344,12 @@ public final class Main extends AbstractModuleInterceptor
 			// 07042: we don't want shipment schedules for mere packaging order lines
 			Services.get(IShipmentScheduleHandlerBL.class)
 					.registerVetoer(new ShipmentSchedulePackingMaterialLineListener(), I_C_OrderLine.Table_Name);
+		}
+
+		//InOutLine
+		{
+			Services.get(IInvoiceCandBL.class)
+					.registerVetoer(new HuInOutInvoiceCandidateVetoer(), I_M_InOutLine.Table_Name);
 		}
 
 		// Order - Fast Input

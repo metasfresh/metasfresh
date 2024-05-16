@@ -10,6 +10,9 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
+import java.util.UUID;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -47,17 +50,37 @@ public class EventDescriptor
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return new EventDescriptor(clientAndOrgId);
+		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), null);
+	}
+
+	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
+	{
+		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), traceId);
+	}
+
+	public static EventDescriptor ofEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
+	{
+		return ofClientOrgAndTraceId(eventDescriptor.clientAndOrgId, eventDescriptor.getTraceId());
 	}
 
 	@JsonProperty("clientAndOrgId")
 	ClientAndOrgId clientAndOrgId;
 
+	@JsonProperty("eventId")
+	String eventId;
+
+	@JsonProperty("traceId")
+	String traceId;
+
 	@JsonCreator
 	private EventDescriptor(
-			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId)
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
+			@JsonProperty("eventId") @NonNull final String eventId,
+			@JsonProperty("traceId") @Nullable final String traceId)
 	{
 		this.clientAndOrgId = clientAndOrgId;
+		this.eventId = eventId;
+		this.traceId = traceId;
 	}
 
 	public ClientId getClientId()

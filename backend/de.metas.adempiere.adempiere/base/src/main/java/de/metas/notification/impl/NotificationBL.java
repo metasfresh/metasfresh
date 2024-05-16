@@ -1,7 +1,6 @@
 package de.metas.notification.impl;
 
-import java.util.List;
-
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.IRoleNotificationsConfigRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
@@ -15,6 +14,9 @@ import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 /*
  * #%L
@@ -40,6 +42,7 @@ import lombok.NonNull;
 
 public class NotificationBL implements INotificationBL
 {
+	private static final Logger logger = LogManager.getLogger(NotificationBL.class);
 	private final CompositeRecordTextProvider ctxProviders = new CompositeRecordTextProvider();
 
 	@Override
@@ -53,24 +56,45 @@ public class NotificationBL implements INotificationBL
 	@Override
 	public void sendAfterCommit(@NonNull final UserNotificationRequest request)
 	{
-		newNotificationSender().sendAfterCommit(request);
+		try
+		{
+			newNotificationSender().sendAfterCommit(request);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed sending notification: {}", request, ex);
+		}
 	}
 
 	@Override
 	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
-		if(requests.isEmpty())
+		try
 		{
-			return;
-		}
+			if (requests.isEmpty())
+			{
+				return;
+			}
 
-		newNotificationSender().sendAfterCommit(requests);
+			newNotificationSender().sendAfterCommit(requests);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed sending notifications: {}", requests, ex);
+		}
 	}
 
 	@Override
 	public void send(@NonNull final UserNotificationRequest request)
 	{
-		newNotificationSender().send(request);
+		try
+		{
+			newNotificationSender().send(request);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed sending notification: {}", request, ex);
+		}
 	}
 
 	@Override

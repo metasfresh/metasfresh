@@ -28,8 +28,9 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContractBuilder;
+import de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsId;
 import de.metas.contracts.commission.mediated.repository.MediatedCommissionSettingsRepo;
-import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettings;
 import de.metas.contracts.commission.model.I_C_MediatedCommissionSettingsLine;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -139,18 +140,12 @@ public class MediatedCommissionConfigFactoryTest
 		settingsLine.setIsActive(true);
 		saveRecord(settingsLine);
 
-		//contract
-		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setC_MediatedCommissionSettings_ID(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID());
-		InterfaceWrapperHelper.saveRecord(conditions);
-
-		final I_C_Flatrate_Term contract = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
-		contract.setBill_BPartner_ID(vendorId.getRepoId());
-		contract.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
-		contract.setType_Conditions(TypeConditions.MEDIATED_COMMISSION.getCode());
-		contract.setM_Product_ID(commissionProductId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(contract);
-
-		return contract;
+		return TestCommissionContractBuilder.commissionContractBuilder()
+				.commissionProductId(commissionProductId)
+				.contractBPartnerId(vendorId)
+				.orgId(orgId)
+				.mediatedCommissionSettingsId(MediatedCommissionSettingsId.ofRepoId(mediatedCommissionSettings.getC_MediatedCommissionSettings_ID()))
+				.typeConditions(TypeConditions.MEDIATED_COMMISSION)
+				.build();
 	}
 }

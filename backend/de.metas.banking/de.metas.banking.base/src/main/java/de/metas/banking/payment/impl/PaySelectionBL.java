@@ -24,6 +24,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -158,6 +159,10 @@ public class PaySelectionBL implements IPaySelectionBL
 				psl.setC_BP_BankAccount_ID(secondaryAcct);
 			}
 		}
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		{
+			psl.setReference(invoice.getPOReference());
+		}
 	}
 
 	@Override
@@ -207,7 +212,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			paySelectionDAO.save(line);
 
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed creating payment from " + line, e);
 		}

@@ -1,7 +1,8 @@
 package de.metas.location.interceptor;
 
-import java.util.Properties;
-
+import de.metas.location.CountryService;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -11,14 +12,14 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 /*
  * #%L
@@ -45,6 +46,8 @@ import lombok.NonNull;
 @Component
 public class C_Country
 {
+	final CountryService countryService = SpringContextHolder.instance.getBean(CountryService.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onCreateCountry(final I_C_Country country)
 	{
@@ -98,6 +101,12 @@ public class C_Country
 		{
 			return null;
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {I_C_Country.COLUMNNAME_DisplaySequence, I_C_Country.COLUMNNAME_DisplaySequenceLocal})
+	public void onChangeCountryDisplaySequence(@NonNull final I_C_Country country)
+	{
+		countryService.assertCountryValidDisplaySequence(country);
 	}
 
 	private AttributeListValue setCountryAttributeName(@NonNull final I_C_Country country)

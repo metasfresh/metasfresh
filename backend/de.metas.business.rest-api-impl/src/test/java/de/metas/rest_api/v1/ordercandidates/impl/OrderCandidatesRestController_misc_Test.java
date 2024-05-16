@@ -24,10 +24,13 @@ package de.metas.rest_api.v1.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.CreatedUpdatedInfo;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
+import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.MimeType;
 import org.junit.jupiter.api.AfterAll;
@@ -35,6 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.time.ZonedDateTime;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -56,18 +60,18 @@ public class OrderCandidatesRestController_misc_Test
 	}
 
 	/**
-	 * Asserts that every {@link AttachmentEntry.Type} has a matching {@link JsonAttachmentType} and vice versa
+	 * Asserts that every {@link AttachmentEntryType} has a matching {@link JsonAttachmentType} and vice versa
 	 */
 	@Test
 	void jsonAttachmentTypes()
 	{
 		for (final JsonAttachmentType jsonAttachmentEntryType : JsonAttachmentType.values())
 		{
-			final AttachmentEntry.Type attachmentEntryType = AttachmentEntry.Type.valueOf(jsonAttachmentEntryType.toString());
+			final AttachmentEntryType attachmentEntryType = AttachmentEntryType.valueOf(jsonAttachmentEntryType.name());
 			assertThat(attachmentEntryType.toString()).isEqualTo(jsonAttachmentEntryType.toString());
 		}
 
-		for (final AttachmentEntry.Type attachmentEntryType : AttachmentEntry.Type.values())
+		for (final AttachmentEntryType attachmentEntryType : AttachmentEntryType.values())
 		{
 			final JsonAttachmentType jsonAttachmentType = JsonAttachmentType.valueOf(attachmentEntryType.toString());
 			assertThat(jsonAttachmentType.toString()).isEqualTo(attachmentEntryType.toString());
@@ -80,17 +84,18 @@ public class OrderCandidatesRestController_misc_Test
 		final AttachmentEntry attachmentEntry = AttachmentEntry
 				.builder()
 				.id(AttachmentEntryId.ofRepoId(10))
-				.type(AttachmentEntry.Type.URL)
+				.type(AttachmentEntryType.URL)
 				.url(new URI("https://metasfresh.com"))
 				.mimeType(MimeType.TYPE_TextPlain)
+				.createdUpdatedInfo(CreatedUpdatedInfo.createNew(UserId.ofRepoId(10), ZonedDateTime.now()))
 				.build();
 
-		final JsonAttachment jsonAttachment = OrderCandidatesRestControllerImpl.toJsonAttachment(
+		final JsonAttachment jsonAttachment = OrderCandidatesRestController.toJsonAttachment(
 				"externalReference",
 				"dataSourceName",
 				attachmentEntry);
 
-		assertThat(jsonAttachment.getType().toString()).isEqualTo(AttachmentEntry.Type.URL.toString());
+		assertThat(jsonAttachment.getType().name()).isEqualTo(AttachmentEntryType.URL.name());
 
 		expect(jsonAttachment).toMatchSnapshot();
 	}
@@ -111,6 +116,6 @@ public class OrderCandidatesRestController_misc_Test
 
 	private ImmutableMap<String, String> invokeWith(final ImmutableList<String> of)
 	{
-		return OrderCandidatesRestControllerImpl.extractTags(of);
+		return OrderCandidatesRestController.extractTags(of);
 	}
 }

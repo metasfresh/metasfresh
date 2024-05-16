@@ -42,6 +42,15 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
+
 import java.math.BigDecimal;
 
 public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>

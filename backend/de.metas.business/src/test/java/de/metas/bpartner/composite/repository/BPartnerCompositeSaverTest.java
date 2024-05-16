@@ -126,7 +126,7 @@ public class BPartnerCompositeSaverTest
 		final ExternalId locExternalId = ExternalId.of("loc-123");
 		//Location added with postal code that already exists in C_Postal, but it set to another city&country
 		bpartnerComposite.getLocations().add(MockedBPartnerCompositeUtil.addLocation(locExternalId, HU_CITY, CH_POSTAL_CODE, HU_COUNTRY_CODE));
-		new BPartnerCompositeSaver(bpartnerBL).save(bpartnerComposite);
+		new BPartnerCompositeSaver(bpartnerBL).save(bpartnerComposite, true);
 
 		final Optional<BPartnerId> bpId = bPartnerDAO.getBPartnerIdByExternalId(externalId);
 		assertThat(bpId).isPresent();

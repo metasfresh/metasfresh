@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,7 +28,6 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -40,10 +39,8 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -62,10 +59,8 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,7 +87,6 @@ public class UpsertProduct_StepDef
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
 
 	private final TestContext testContext;
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ProductRepository productRepository;
 	private final ExternalSystems externalSystems;
@@ -103,29 +97,8 @@ public class UpsertProduct_StepDef
 		this.externalSystems = externalSystems;
 		productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
-		this.externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 	}
-
-	@And("no product external reference with value {string} exists")
-	public void noProductExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, ProductExternalReferenceType.PRODUCT.getCode())
-				.create()
-				.delete();
-	}
-
-	@And("no bpartner external reference with value {string} exists")
-	public void noBpartnerExternalReferenceWithValueExists(final String externalReferenceValue)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_ExternalReference.class)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReferenceValue)
-				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, BPartnerExternalReferenceType.BPARTNER.getCode())
-				.create()
-				.delete();
-	}
-
+		
 	@Then("verify if data is persisted correctly for each product")
 	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
 	{
@@ -200,56 +173,7 @@ public class UpsertProduct_StepDef
 			bPartnerProductsByProductCode.add(productCode, mapBpartnerProductRequestItem(dataTableEntry));
 		});
 	}
-
-	@Given("metasfresh contains S_ExternalReferences")
-	public void theUserAddsBpartnerExternalReference(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
-
-		final IQueryOrderBy orderBy =
-				queryBL.createQueryOrderByBuilder(I_C_BPartner.class)
-						.addColumn(I_C_BPartner.COLUMN_C_BPartner_ID)
-						.createQueryOrderBy();
-
-		final List<JsonMetasfreshId> bPartnerIds = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.setOrderBy(orderBy)
-				.list()
-				.stream()
-				.map(bPartner -> JsonMetasfreshId.of(bPartner.getC_BPartner_ID())).collect(Collectors.toList());
-
-		dataTableEntries.forEach(dataTableEntry -> {
-			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalSystem.Code");
-			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReference");
-			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReferenceType.Code"));
-
-			final JsonMetasfreshId metasfreshId;
-			if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
-			{
-				metasfreshId = bPartnerIds.get(dataTableEntries.indexOf(dataTableEntry));
-			}
-			else
-			{
-				throw new AdempiereException("No implementation for external reference type.");
-			}
-
-			final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemName)
-					.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemName));
-
-			final ExternalReference externalReference = ExternalReference.builder()
-					.orgId(defaultOrgId)
-					.externalSystem(externalSystem)
-					.externalReference(externalId)
-					.externalReferenceType(externalReferenceType)
-					.recordId(metasfreshId.getValue())
-					.build();
-
-			externalReferenceRepository.save(externalReference);
-		});
-
-	}
-
+	
 	private JsonRequestBPartnerProductUpsert mapBpartnerProductRequestItem(final Map<String, String> dataTableEntries)
 	{
 		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableEntries, "bpartnerIdentifier");

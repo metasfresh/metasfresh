@@ -1,28 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
@@ -42,6 +21,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
@@ -54,9 +34,30 @@ import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
 
 /*
  * #%L
@@ -89,6 +90,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
+	private final String clearanceNote;
 
 	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
@@ -98,16 +100,21 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	@Getter
 	private final ImmutableSet<AttributeCode> mandatoryAttributeNames;
 
-	/* package */ HUEditorRowAttributes(
+	@Builder
+	private HUEditorRowAttributes(
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
-			@NonNull final ImmutableSet<ProductId> productIDs,
-			final boolean readonly)
+			@NonNull final ImmutableSet<ProductId> productIds,
+			@NonNull final I_M_HU hu,
+			final boolean readonly,
+			final boolean isMaterialReceipt)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 
-		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage, hu));
+
+		this.clearanceNote = hu.getClearanceNote();
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
@@ -117,8 +124,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final ImmutableSet.Builder<AttributeCode> hiddenAttributeNames = ImmutableSet.builder();
 		final ImmutableSet.Builder<AttributeCode> mandatoryAttributeNames = ImmutableSet.builder();
 
-		final Collection<I_M_Attribute> attributes = attributesStorage.getAttributes();
-		for (final I_M_Attribute attribute : attributes)
+		for (final I_M_Attribute attribute : attributesStorage.getAttributes())
 		{
 			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
 
@@ -134,11 +140,11 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
-			if (!attributesStorage.isDisplayedUI(productIDs, attribute))
+			if (!attributesStorage.isDisplayedUI(attribute, productIds))
 			{
 				hiddenAttributeNames.add(attributeCode);
 			}
-			if (attributesStorage.isMandatory(attribute))
+			if (attributesStorage.isMandatory(attribute, productIds, isMaterialReceipt))
 			{
 				mandatoryAttributeNames.add(attributeCode);
 			}
@@ -167,15 +173,10 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			return true;
 		}
 
-		if (AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode))
-		{
-			return true;
-		}
-
-		return false;
+		return AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode);
 	}
 
-	private boolean isWeightAttribute(@NonNull AttributeCode attributeCode)
+	private boolean isWeightAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return Weightables.ATTR_WeightGross.equals(attributeCode)
 				|| Weightables.ATTR_WeightNet.equals(attributeCode)
@@ -197,12 +198,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		}
 
 		final String huStatus = hu.getHUStatus();
-		if (!X_M_HU.HUSTATUS_Planning.equals(huStatus))
-		{
-			return true;
-		}
-
-		return false; // not readonly
+		return !X_M_HU.HUSTATUS_Planning.equals(huStatus);// not readonly
 	}
 
 	@Override
@@ -222,12 +218,6 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
-	}
-
-	@Override
 	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
@@ -236,6 +226,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 				.stream()
 				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
+
+		getClearanceNoteField(jsonOpts).ifPresent(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
 
@@ -414,6 +406,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return attributesStorage.getValue(attributeCode);
 	}
 
+	@Nullable
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.getValueAsString(attributeCode);
@@ -422,6 +415,32 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public boolean hasAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.hasAttribute(attributeCode);
+	}
+
+	@NonNull
+	private Optional<JSONDocumentField> getClearanceNoteField(@NonNull final JSONOptions jsonOptions)
+	{
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (!isDisplayedClearanceStatus || Check.isBlank(clearanceNote))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
+	}
+
+
+	@NonNull
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	{
+		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
+
+		return JSONDocumentField.ofNameAndValue(I_M_HU.COLUMNNAME_ClearanceNote, jsonValue)
+				.setDisplayed(true)
+				.setMandatory(false)
+				.setReadonly(true)
+				.setWidgetType(JSONLayoutWidgetType.Text);
 	}
 
 	/**

@@ -44,10 +44,11 @@ public class MaterialEventConfiguration
 	@Profile(Profiles.PROFILE_Test)
 	public MetasfreshEventBusService createLocalMaterialEventService(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createLocalServiceThatIsReadyToUse(materialEventConverter, eventBusFactory);
+				.createLocalServiceThatIsReadyToUse(materialEventConverter, eventBusFactory, materialEventObserver);
 
 		return materialEventService;
 	}
@@ -57,10 +58,11 @@ public class MaterialEventConfiguration
 	@Profile(Profiles.PROFILE_NotTest)
 	public MetasfreshEventBusService createDistributedMaterialEventService(
 			@NonNull final MaterialEventConverter materialEventConverter,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final IEventBusFactory eventBusFactory,
+			@NonNull final MaterialEventObserver materialEventObserver)
 	{
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService
-				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter, eventBusFactory);
+				.createDistributedServiceThatNeedsToSubscribe(materialEventConverter, eventBusFactory, materialEventObserver);
 
 		return materialEventService;
 	}

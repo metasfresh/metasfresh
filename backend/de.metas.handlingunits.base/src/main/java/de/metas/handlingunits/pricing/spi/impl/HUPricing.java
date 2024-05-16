@@ -1,6 +1,7 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import ch.qos.logback.classic.Level;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
@@ -17,9 +18,11 @@ import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -130,7 +133,14 @@ public class HUPricing extends AttributePricing
 		//match packing material if we have a real packing material
 		if (packingMaterialId != null)
 		{
-			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			if (packingMaterialId.isRegular())
+			{
+				productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+			}
+			else
+			{
+				productPriceQuery.matching(HUPIItemProductMatcher_None);
+			}
 
 			noAttributeRelatedConditionSet = false;
 		}

@@ -22,18 +22,17 @@
 
 package de.metas.util.web.exception;
 
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 /** Thrown if a request could not be processed, because one of the required resources (e.g. product, or business partner) does not exist in metasfresh. */
 public class MissingResourceException extends AdempiereException
@@ -44,9 +43,7 @@ public class MissingResourceException extends AdempiereException
 	 *
 	 * @param resourceName name of the resource in terms of the respective endpoint. Example: {@code "billPartner"}.
 	 * @param resourceIdentifier identifier with which the lookup was attempted. Example: {@code "ext-product123"}. Can be {@code null} if the missing resource had not to be explicitly specified, such as a default location.
-	 * @param parentResource
 	 * @param detail optional detail message. If not {@code null}, it is incorporated into the exception message.
-	 * @param cause
 	 */
 	@Builder
 	private MissingResourceException(

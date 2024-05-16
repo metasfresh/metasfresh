@@ -46,6 +46,6 @@ public class ManageSchedulerRequest
 	public enum SupervisorAction
 	{
 		ENABLE,
-		DISABLE,
+		DISABLE
 	}
 }

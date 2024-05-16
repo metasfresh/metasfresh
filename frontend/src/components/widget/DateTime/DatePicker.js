@@ -91,7 +91,7 @@ class DatePicker extends PureComponent {
         // calling handleChange manually to update date stored in the MasterWidget
         handleChange && handleChange(field, date);
 
-        //console.log('callPatchIfNeeded: patching date', { date, datePatched });
+        // console.log('callPatchIfNeeded: patching date', { date, datePatched });
         patch && patch(date);
       }
       //else { console.log('callPatchIfNeeded: !!!!NOT!!!!! patching date', { date, datePatched }); }

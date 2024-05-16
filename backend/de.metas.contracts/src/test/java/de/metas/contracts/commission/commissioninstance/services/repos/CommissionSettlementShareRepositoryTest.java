@@ -3,6 +3,7 @@ package de.metas.contracts.commission.commissioninstance.services.repos;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShareId;
@@ -13,7 +14,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.settlement
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance.CreateCommissionInstanceResult;
@@ -22,13 +23,16 @@ import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -82,6 +86,8 @@ class CommissionSettlementShareRepositoryTest
 	private BPartnerId payerId;
 	private OrgId orgId;
 
+	final I_C_UOM uom = BusinessTestHelper.createUOM("uom");
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -125,7 +131,7 @@ class CommissionSettlementShareRepositoryTest
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
 		assertThat(configData.getBpartnerId2FlatrateTermId().entrySet()).hasSize(1); // guard
@@ -171,6 +177,8 @@ class CommissionSettlementShareRepositoryTest
 										.timestamp(incAndGetTimestamp()).build())
 								.build())
 				.mostRecentTriggerTimestamp(23L)
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(BigDecimal.TEN, uom))
 				.build()
 				.createCommissionData();
 
@@ -196,7 +204,7 @@ class CommissionSettlementShareRepositoryTest
 				.orgId(orgId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
 				.commissionProductId(commissionProductId)
 				.build()
 				.createConfigData();
@@ -221,6 +229,8 @@ class CommissionSettlementShareRepositoryTest
 								.isSOTrx(true)
 								.build())
 				.mostRecentTriggerTimestamp(23L)
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(BigDecimal.TEN, uom))
 				.build()
 				.createCommissionData();
 

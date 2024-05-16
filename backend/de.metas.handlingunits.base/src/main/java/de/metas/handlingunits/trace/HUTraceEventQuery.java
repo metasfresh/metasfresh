@@ -11,7 +11,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -54,7 +54,7 @@ import java.util.OptionalInt;
  */
 @Value
 @Builder
-@Wither
+@With
 public class HUTraceEventQuery
 {
 	public enum RecursionMode

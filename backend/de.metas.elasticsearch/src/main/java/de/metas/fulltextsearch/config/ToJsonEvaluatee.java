@@ -32,15 +32,22 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.ForwardingEvaluatee;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 
 @ToString
 public class ToJsonEvaluatee extends ForwardingEvaluatee
 {
 	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+	private final HashSet<String> skipConvertingToJsonVariableNames = new HashSet<>();
 
 	public ToJsonEvaluatee(@NonNull final Evaluatee delegate)
 	{
 		super(delegate);
+	}
+
+	public void skipConvertingToJson(@NonNull final String variableName)
+	{
+		this.skipConvertingToJsonVariableNames.add(variableName);
 	}
 
 	@Nullable
@@ -48,7 +55,14 @@ public class ToJsonEvaluatee extends ForwardingEvaluatee
 	public String get_ValueAsString(final String variableName)
 	{
 		final Object valueObj = super.get_ValueAsObject(variableName);
-		return toJsonString(valueObj);
+		if (skipConvertingToJsonVariableNames.contains(variableName))
+		{
+			return valueObj != null ? valueObj.toString() : "";
+		}
+		else
+		{
+			return toJsonString(valueObj);
+		}
 	}
 
 	private String toJsonString(@Nullable final Object valueObj)

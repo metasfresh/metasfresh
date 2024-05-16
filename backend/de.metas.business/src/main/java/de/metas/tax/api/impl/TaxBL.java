@@ -66,14 +66,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 */
 	@Override
 	@NonNull
-	public TaxId getTaxNotNull(final Properties ctx,
+	public TaxId getTaxNotNull(
 			@Nullable final Object model,
 			@Nullable final TaxCategoryId taxCategoryId,
 			final int productId,
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			final BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			@NonNull final SOTrx soTrx)
 	{
 		if (taxCategoryId != null)

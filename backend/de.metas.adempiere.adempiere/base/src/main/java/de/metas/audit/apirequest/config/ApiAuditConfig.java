@@ -22,12 +22,15 @@
 
 package de.metas.audit.apirequest.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.audit.apirequest.HttpMethod;
+import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.organization.OrgId;
 import de.metas.user.UserGroupId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -38,18 +41,21 @@ public class ApiAuditConfig
 {
 	@NonNull
 	ApiAuditConfigId apiAuditConfigId;
+	
+	boolean active;
 
 	@NonNull
 	OrgId orgId;
 
 	int seqNo;
 
-	boolean isInvokerWaitsForResponse;
+	boolean forceProcessedAsync;
 
 	int keepRequestDays;
 	int keepRequestBodyDays;
 	int keepResponseDays;
 	int keepResponseBodyDays;
+	int keepErroredRequestDays;
 
 	@Nullable
 	HttpMethod method;
@@ -63,9 +69,32 @@ public class ApiAuditConfig
 	@Nullable
 	UserGroupId userGroupInChargeId;
 
+	/**
+	 * If true, then still both {@link org.compiere.model.I_API_Request_Audit} and {@link org.compiere.model.I_API_Response_Audit} records are written for the request, but in an asynchrounous way, while the actual requests might already have been performed.
+	 * This implies better performance for the caller, but:
+	 * <li>no {@link org.compiere.model.I_API_Request_Audit_Log} records will be created</li>
+	 * <li>Creating those audit reocrds might fail without the API caller noticing it</li>
+	 */
+	boolean performAuditAsync;
+
+	/**
+	 * If true, the API response shall be wrapped into a {@link JsonApiResponse}
+	 * If false, it shall be communicated via a http response header.
+	 * Note that if {@link #performAuditAsync} is {@code true}, then the API response is never wrapped.
+	 */
+	boolean wrapApiResponse;
+
+	@NonNull
+	@Builder.Default
+	@JsonIgnore // not needed in snapshot-testing
+	AntPathMatcher antPathMatcher = new AntPathMatcher();
+
 	public boolean matchesRequest(@NonNull final String requestPath, @NonNull final String httpMethod)
 	{
-		final boolean isPathMatching = this.pathPrefix == null || requestPath.contains(this.pathPrefix);
+		final boolean isPathMatching = this.pathPrefix == null
+				|| requestPath.contains(this.pathPrefix)
+				|| antPathMatcher.match(pathPrefix, requestPath);
+
 		final boolean isMethodMatching = this.method == null || httpMethod.equalsIgnoreCase(method.getCode());
 
 		return isMethodMatching && isPathMatching;

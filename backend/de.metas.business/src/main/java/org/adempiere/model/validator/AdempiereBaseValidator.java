@@ -140,8 +140,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 
 		engine.addModelValidator(de.metas.process.model.interceptor.AD_Process.instance); // FRESH-727
 
-		engine.addModelValidator(de.metas.system.interceptor.AD_System.INSTANCE);
-
 		//
 		// Currency
 		{

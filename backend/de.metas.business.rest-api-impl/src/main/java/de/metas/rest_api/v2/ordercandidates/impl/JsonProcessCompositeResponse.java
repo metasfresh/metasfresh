@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
@@ -38,8 +39,10 @@ public class JsonProcessCompositeResponse
 {
 	JsonGenerateOrdersResponse orderResponse;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonCreateShipmentResponse shipmentResponse;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	List<JSONInvoiceInfoResponse> invoiceInfoResponse;
 
 	@Builder

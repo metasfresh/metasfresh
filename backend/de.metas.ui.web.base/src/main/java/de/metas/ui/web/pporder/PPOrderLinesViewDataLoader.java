@@ -3,7 +3,6 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
@@ -45,7 +44,10 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
@@ -96,7 +98,8 @@ class PPOrderLinesViewDataLoader
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final ADReferenceService adReferenceService;
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -107,18 +110,15 @@ class PPOrderLinesViewDataLoader
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final HUReservationService huReservationService)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
 				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
-				.adReferenceService(adReferenceService)
 				.build();
 
-		this.adReferenceService = adReferenceService;
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
 
@@ -132,8 +132,8 @@ class PPOrderLinesViewDataLoader
 
 		final PPOrderLineRow finishedGoodRow = createRowForFinishedGoodProduct(ppOrder, ppOrderQtysByBOMLineId.get(finishedGoodProductBOMLineId));
 		final List<PPOrderLineRow> bomLineRows = createRowsForBomLines(ppOrder, ppOrderQtysByBOMLineId);
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
+		final ImmutableSet<WarehouseId> issueFromWarehouseIds = getIssueFromWarehouseIds(ppOrder);
+		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(issueFromWarehouseIds, bomLineRows);
 
 		return PPOrderLinesViewData.builder()
 				.description(extractDescription(ppOrder))
@@ -143,6 +143,12 @@ class PPOrderLinesViewDataLoader
 				.sourceHURows(sourceHuRowsForIssueProducts)
 				.headerProperties(extractHeaderProperties(ppOrder))
 				.build();
+	}
+
+	private ImmutableSet<WarehouseId> getIssueFromWarehouseIds(final I_PP_Order ppOrder)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
 
 	public ViewHeaderProperties extractHeaderProperties(final I_PP_Order ppOrder)
@@ -155,7 +161,7 @@ class PPOrderLinesViewDataLoader
 								.build())
 						.entry(ViewHeaderProperty.builder()
 								.caption(msgBL.translatable(I_PP_Order.COLUMNNAME_PlanningStatus))
-								.value(adReferenceService.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
+								.value(adReferenceDAO.retrieveListNameTranslatableString(PPOrderPlanningStatus.AD_REFERENCE_ID, ppOrder.getPlanningStatus()))
 								.build())
 						.build())
 				.build();
@@ -190,7 +196,7 @@ class PPOrderLinesViewDataLoader
 	}
 
 	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(
-			final WarehouseId warehouseId,
+			final ImmutableSet<WarehouseId> issueFromWarehouseIds,
 			@NonNull final List<PPOrderLineRow> bomLineRows)
 	{
 		final ImmutableSet<ProductId> issueProductIds = bomLineRows.stream()
@@ -202,7 +208,8 @@ class PPOrderLinesViewDataLoader
 
 		final MatchingSourceHusQuery sourceHusQuery = MatchingSourceHusQuery.builder()
 				.productIds(issueProductIds)
-				.warehouseId(warehouseId).build();
+				.warehouseIds(issueFromWarehouseIds)
+				.build();
 
 		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{

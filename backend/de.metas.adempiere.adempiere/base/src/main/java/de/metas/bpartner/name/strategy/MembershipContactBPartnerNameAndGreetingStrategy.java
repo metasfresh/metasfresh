@@ -73,13 +73,13 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 		if (membershipContacts.isEmpty())
 		{
 			return !allContacts.isEmpty()
-					? computeForSingleContact(allContacts.get(0))
+					? computeForSingleContact(allContacts.get(0), false)
 					: ExplainedOptional.emptyBecause("no membership contact");
 		}
 		else if (membershipContacts.size() == 1)
 		{
 			final ComputeNameAndGreetingRequest.Contact contact = membershipContacts.get(0);
-			return computeForSingleContact(contact);
+			return computeForSingleContact(contact, true);
 		}
 		else // at least 2 membership contacts
 		{
@@ -92,7 +92,7 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 	}
 
 	@NonNull
-	private ExplainedOptional<NameAndGreeting> computeForSingleContact(final ComputeNameAndGreetingRequest.Contact contact)
+	private ExplainedOptional<NameAndGreeting> computeForSingleContact(@NonNull final ComputeNameAndGreetingRequest.Contact contact, final boolean isMembershipContact)
 	{
 		final String nameComposite =
 				contact.getFirstName()
@@ -101,7 +101,7 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 
 		return ExplainedOptional.of(NameAndGreeting.builder()
 				.name(nameComposite)
-				.greetingId(contact.getGreetingId())
+				.greetingId(isMembershipContact ? contact.getGreetingId() : null)
 				.build());
 	}
 

@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.user.UserId;
@@ -124,4 +125,12 @@ public interface IOrderDAO extends ISingletonService
 	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
 
 	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
+
+	Set<OrderLineId> retrieveSOLineIdsByPOLineId(OrderLineId orderLineId);
+
+	Set<OrderId> getSalesOrderIdsViaPOAllocation(OrderId purchaseOrderId);
+
+	void allocatePOLineToSOLine(OrderLineId purchaseOrderLineId, OrderLineId salesOrderLineId);
+
+	I_C_Order assignAsyncBatchId(OrderId orderId, AsyncBatchId asyncBatchId);
 }

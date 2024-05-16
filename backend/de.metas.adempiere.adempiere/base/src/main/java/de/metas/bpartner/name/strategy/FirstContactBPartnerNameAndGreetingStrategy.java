@@ -25,7 +25,6 @@ package de.metas.bpartner.name.strategy;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.user.api.IUserBL;
-import de.metas.util.Services;
 import org.compiere.model.X_C_BP_Group;
 import org.springframework.stereotype.Component;
 
@@ -33,8 +32,6 @@ import org.springframework.stereotype.Component;
 public final class FirstContactBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
 	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString(X_C_BP_Group.BPNAMEANDGREETINGSTRATEGY_FirstContact);
-
-	private final IUserBL userBL = Services.get(IUserBL.class);
 
 	@Override
 	public BPartnerNameAndGreetingStrategyId getId()
@@ -53,8 +50,7 @@ public final class FirstContactBPartnerNameAndGreetingStrategy implements BPartn
 		else
 		{
 			return ExplainedOptional.of(NameAndGreeting.builder()
-					.name(userBL.buildContactName(primaryContact.getFirstName(), primaryContact.getLastName()))
-					.greetingId(primaryContact.getGreetingId())
+					.name(IUserBL.buildContactName(primaryContact.getFirstName(), primaryContact.getLastName()))
 					.build());
 		}
 	}

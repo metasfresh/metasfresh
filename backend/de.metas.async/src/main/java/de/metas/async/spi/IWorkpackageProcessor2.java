@@ -25,11 +25,14 @@ import java.util.Optional;
  */
 
 
+import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.lock.api.ILock;
 import de.metas.lock.exceptions.LockFailedException;
+
+import javax.annotation.Nullable;
 
 /**
  * NOTE: don't extend this interface directly, but use {@link WorkpackageProcessorAdapter}.
@@ -43,8 +46,6 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	 * Sets workpackage parameters
 	 *
 	 * NOTE: don't call directly. It's called by API before the processor is executed.
-	 *
-	 * @param workpackageParams
 	 */
 	void setParameters(IParams workpackageParams);
 
@@ -52,8 +53,6 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	 * Sets the workpackage definition. This is exaclty the same as the workpackage that will be passed to {@link #processWorkPackage(I_C_Queue_WorkPackage, String)} method.
 	 *
 	 * NOTE: don't call directly. It's called by API before the processor is executed.
-	 *
-	 * @param workpackage
 	 */
 	void setC_Queue_WorkPackage(final I_C_Queue_WorkPackage workpackage);
 
@@ -78,7 +77,7 @@ public interface IWorkpackageProcessor2 extends IWorkpackageProcessor
 	boolean isAllowRetryOnError();
 
 	@Override
-	Result processWorkPackage(I_C_Queue_WorkPackage workPackage, String localTrxName);
+	Result processWorkPackage(I_C_Queue_WorkPackage workPackage, @Nullable String localTrxName);
 
 	/**
 	 * Gets existing lock used to lock workpackage's elements.

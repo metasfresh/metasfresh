@@ -23,15 +23,16 @@
 package de.metas.invoicecandidate.location.adapter;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 public class InvoiceCandidateLocationAdapterFactory
 {
-	public static BillLocationAdapter billLocationAdapter(final I_C_Invoice_Candidate ic)
+	public static BillLocationAdapter billLocationAdapter(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return new BillLocationAdapter(ic);
 	}
 
-	public static OverrideBillLocationAdapter billLocationOverrideAdapter(final I_C_Invoice_Candidate ic)
+	public static OverrideBillLocationAdapter billLocationOverrideAdapter(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return new OverrideBillLocationAdapter(ic);
 	}

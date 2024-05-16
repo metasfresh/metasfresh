@@ -1,42 +1,18 @@
 package de.metas.marketing.gateway.cleverreach;
 
-import static de.metas.util.Check.assumeNotEmpty;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.email.EmailValidator;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.core.ParameterizedTypeReference;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
 import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DataRecord;
+import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
@@ -46,6 +22,8 @@ import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.gateway.cleverreach.restapi.models.CreateGroupRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Group;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
+import de.metas.marketing.gateway.cleverreach.restapi.models.ReceiverUpsert;
+import de.metas.marketing.gateway.cleverreach.restapi.models.SendEmailActivationFormRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -56,6 +34,26 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.email.EmailValidator;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.core.ParameterizedTypeReference;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static de.metas.util.Check.assumeNotEmpty;
 
 /*
  * #%L
@@ -82,7 +80,10 @@ import lombok.Value;
 public class CleverReachClient implements PlatformClient
 {
 	// @formatter:off
-	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST =  new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
+	private static final ParameterizedTypeReference<List<Object>> HETEROGENOUS_LIST = new ParameterizedTypeReference<List<Object>>() {}; // @formatter:on
+
+	// @formatter:off
+	private static final ParameterizedTypeReference<Object> SINGLE_HETEROGENOUS_TYPE = new ParameterizedTypeReference<Object>() {}; // @formatter:on
 
 	// @formatter:off
 	private static final ParameterizedTypeReference<List<Group>> LIST_OF_GROUPS_TYPE = new ParameterizedTypeReference<List<Group>>() {}; // @formatter:on
@@ -98,7 +99,7 @@ public class CleverReachClient implements PlatformClient
 	@Getter(value = AccessLevel.PRIVATE, lazy = true)
 	private final CleverReachLowLevelClient lowLevelClient = CleverReachLowLevelClient.createAndLogin(cleverReachConfig);
 
-	private PlatformId platformId;
+	private final PlatformId platformId;
 
 	public CleverReachClient(@NonNull final CleverReachConfig cleverReachConfig)
 	{
@@ -108,23 +109,20 @@ public class CleverReachClient implements PlatformClient
 
 	private Group createGroup(@NonNull final Campaign campaign)
 	{
-		final Group newGroup = getLowLevelClient()
+		return getLowLevelClient()
 				.post(
 						CreateGroupRequest.ofName(campaign.getName()),
 						SINGLE_GROUP_TYPE,
 						"/groups.json/");
-		return newGroup;
 	}
 
-	private Group updateGroup(@NonNull final Campaign campaign)
+	private void updateGroup(@NonNull final Campaign campaign)
 	{
 		final String url = String.format("/groups.json/%s", campaign.getRemoteId());
-		final Group updatedGroup = getLowLevelClient()
-				.put(
-						UpdateGroupRequest.ofName(campaign.getName()),
-						SINGLE_GROUP_TYPE,
-						url);
-		return updatedGroup;
+		getLowLevelClient().put(
+				UpdateGroupRequest.ofName(campaign.getName()),
+				SINGLE_GROUP_TYPE,
+				url);
 	}
 
 	public LocalToRemoteSyncResult deleteCampaign(@NonNull final Campaign campaign)
@@ -142,51 +140,44 @@ public class CleverReachClient implements PlatformClient
 	public Campaign retrieveCampaign(@NonNull final String groupId)
 	{
 		final String url = String.format("/groups.json/%s", groupId);
-
-		final Group group = getLowLevelClient()
-				.get(SINGLE_GROUP_TYPE, url);
-
+		final Group group = getLowLevelClient().get(SINGLE_GROUP_TYPE, url);
 		return group.toCampaign();
 	}
 
 	public List<Campaign> retrieveAllCampaigns()
 	{
-		final List<Group> groups = retriveAllGroups();
+		final List<Group> groups = retrieveAllGroups();
 
 		return groups.stream()
 				.map(Group::toCampaign)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<Group> retriveAllGroups()
+	private List<Group> retrieveAllGroups()
 	{
 		final String url = "/groups.json";
-		final List<Group> groups = getLowLevelClient()
-				.get(LIST_OF_GROUPS_TYPE, url);
-		return groups;
+		return getLowLevelClient().get(LIST_OF_GROUPS_TYPE, url);
 	}
 
 	@VisibleForTesting
-	Iterator<Receiver> retrieveAllReceivers(@NonNull final Campaign campaign)
+	Stream<Receiver> streamAllReceivers(@NonNull final Campaign campaign)
 	{
-		final String remoteGroupId = campaign.getRemoteId();
-		final int pageSize = 1000; // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
-
+		final String remoteGroupId = Check.assumeNotNull(campaign.getRemoteId(), "campaign's remoteId is set: {}", campaign);
 		final PageFetcher<Receiver> pageFetcher = createReceiversPageFetcher(remoteGroupId);
 
-		final PagedIterator<Receiver> pagedIterator = PagedIterator.<Receiver> builder()
-				.pageSize(pageSize)
+		final PagedIterator<Receiver> iterator = PagedIterator.<Receiver>builder()
+				.pageSize(1000) // according to https://rest.cleverreach.com/explorer/v3/#!/groups-v3/list_groups_get, the maximum page size is 5000
 				.pageFetcher(pageFetcher)
 				.build();
-		return pagedIterator;
+
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 	}
 
 	private PageFetcher<Receiver> createReceiversPageFetcher(@NonNull final String remoteGroupId)
 	{
 		final String urlPathAndParams = "/groups.json/{group_id}/receivers?pagesize={pagesize}&page={page}";
 
-		final PageFetcher<Receiver> pageFetcher = (firstRow, pageSize) -> {
-
+		return (firstRow, pageSize) -> {
 			final int zeroBasedPageNo = firstRow / Check.assumeGreaterThanZero(pageSize, "currentPageSize");
 			final List<Receiver> receivers = getLowLevelClient()
 					.get(
@@ -200,7 +191,6 @@ public class CleverReachClient implements PlatformClient
 			}
 			return Page.ofRows(receivers);
 		};
-		return pageFetcher;
 	}
 
 	/**
@@ -210,68 +200,38 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final List<T> records,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<T> predicate = r -> Objects.equals(r.getPlatformId(), platformId);
 		final String errorMessage = StringUtils.formatMessage("Data record's platformId={} does not match this client's platFormId={}", platformId);
 
-		final Map<Boolean, List<T>> okAndNotOkDataRecords = partitionByOkAndNotOk(records, predicate);
+		final Map<Boolean, List<T>> okAndNotOkDataRecords = records
+				.stream()
+				.collect(Collectors.partitioningBy(record -> PlatformId.equals(record.getPlatformId(), platformId)));
 
 		okAndNotOkDataRecords.get(false)
 				.stream()
-				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
+				.map(record -> LocalToRemoteSyncResult.error(record, errorMessage))
 				.forEach(resultToAddErrorsTo::add);
 
-		final List<T> personsWithEmail = okAndNotOkDataRecords.get(true);
-		return personsWithEmail;
+		return okAndNotOkDataRecords.get(true);
 	}
 
 	/**
-	 * @param resultToAddTo to each contactPerson without an email, and error result is added to this list builder.
+	 * @param resultToAddErrorsTo to each contactPerson without an email, and error result is added to this list builder.
 	 * @return the persons that do have a non-empty email
 	 */
-	private List<ContactPerson> filterForPersonsWithEmail(
+	private static List<ContactPerson> filterForPersonsWithEmail(
 			@NonNull final List<ContactPerson> contactPersons,
 			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
 	{
-		final Predicate<ContactPerson> predicate = c -> EmailValidator.isValid(c.getEmailAddessStringOrNull());
-		final String errorMessage = "Contact person has no (valid) email address";
-
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = partitionByOkAndNotOk(contactPersons, predicate);
+		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = contactPersons
+				.stream()
+				.collect(Collectors.partitioningBy(contactPerson -> EmailValidator.isValid(contactPerson.getEmailAddressStringOrNull())));
 
 		personsWithAndWithoutEmail.get(false)
 				.stream()
-				.map(p -> LocalToRemoteSyncResult.error(p, errorMessage))
+				.map(contactPerson -> LocalToRemoteSyncResult.error(contactPerson, "Contact person has no (valid) email address"))
 				.forEach(resultToAddErrorsTo::add);
 
-		final List<ContactPerson> personsWithEmail = personsWithAndWithoutEmail.get(true);
-		return personsWithEmail;
-	}
-
-	private List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
-			@NonNull final List<ContactPerson> contactPersons,
-			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
-	{
-		final Predicate<ContactPerson> predicate = c -> c.getEmailAddessStringOrNull() != null;
-		final String errorMessage = "contact person has no email address";
-
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = partitionByOkAndNotOk(contactPersons, predicate);
-
-		personsWithAndWithoutEmailOrRemoteId.get(false)
-				.stream()
-				.map(p -> RemoteToLocalSyncResult.error(p, errorMessage))
-				.forEach(syncResultsToAddErrorsTo::add);
-
-		final List<ContactPerson> personsWithEmailOrRemoteId = personsWithAndWithoutEmailOrRemoteId.get(true);
-		return personsWithEmailOrRemoteId;
-	}
-
-	private static <T extends DataRecord> Map<Boolean, List<T>> partitionByOkAndNotOk(
-			final List<T> dataRecordToPartition,
-			final Predicate<T> okPredicate)
-	{
-		final Map<Boolean, List<T>> okAndNotOkDataRecords = dataRecordToPartition
-				.stream()
-				.collect(Collectors.partitioningBy(okPredicate));
-		return okAndNotOkDataRecords;
+		return personsWithAndWithoutEmail.get(true);
 	}
 
 	@Override
@@ -293,7 +253,7 @@ public class CleverReachClient implements PlatformClient
 						syncResults),
 				syncResults);
 
-		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(personsWithEmail, ContactPerson::getEmailAddessStringOrNull);
+		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(personsWithEmail, ContactPerson::getEmailAddressStringOrNull);
 
 		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutErrorResponse = new HashMap<>(email2contactPersons.asMap());
 
@@ -302,16 +262,16 @@ public class CleverReachClient implements PlatformClient
 			return syncResults.build();
 		}
 
-		final ImmutableList<Receiver> receivers = personsWithEmail
+		final ImmutableList<ReceiverUpsert> receiversUpserts = personsWithEmail
 				.stream()
-				.map(Receiver::of)
+				.map(ReceiverUpsert::of)
 				.collect(ImmutableList.toImmutableList());
 
 		final String groupRemoteId = assumeNotEmpty(campaign.getRemoteId(), "Then given campaign needs to have a RemoteId; campagin={}", campaign);
 		final String insertUrl = String.format("/groups.json/%s/receivers/upsert", groupRemoteId);
 
 		final List<Object> results = getLowLevelClient()
-				.post(receivers,
+				.post(receiversUpserts,
 						HETEROGENOUS_LIST,
 						insertUrl);
 
@@ -321,7 +281,7 @@ public class CleverReachClient implements PlatformClient
 		for (int i = 0; i < results.size(); i++)
 		{
 			final Object resultObj = results.get(i);
-			if (isNotEmptyString(resultObj))
+			if (isNotBlankString(resultObj))
 			{
 				final String resultStr = (String)resultObj;
 				final Optional<InvalidEmail> invalidEmailInfo = createInvalidEmailInfo(resultStr);
@@ -356,13 +316,16 @@ public class CleverReachClient implements PlatformClient
 		return syncResults.build();
 	}
 
-	public boolean isNotEmptyString(@Nullable final Object resultObj)
+	private static boolean isNotBlankString(@Nullable final Object resultObj)
 	{
 		if (resultObj instanceof String)
 		{
-			return !Check.isEmpty((String)resultObj, true);
+			return Check.isNotBlank((String)resultObj);
 		}
-		return false;
+		else
+		{
+			return false;
+		}
 	}
 
 	@Override
@@ -374,7 +337,7 @@ public class CleverReachClient implements PlatformClient
 
 		for (final Campaign campaign : campaignsWithCorrectPlatformId)
 		{
-			try (final MDCCloseable campaignMDC = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_MKTG_Campaign.Table_Name, campaign.getCampaignId()))
 			{
 				syncResults.add(createOrUpdateGroup(campaign));
 			}
@@ -391,7 +354,7 @@ public class CleverReachClient implements PlatformClient
 
 		final HashMap<String, Collection<Campaign>> remoteId2campaignsNotYetFound = new HashMap<>(remoteId2campaigns.asMap());
 
-		final List<CampaignRemoteUpdate> campaignUpdates = retriveAllGroups()
+		final List<CampaignRemoteUpdate> campaignUpdates = retrieveAllGroups()
 				.stream()
 				.map(Group::toCampaignUpdate)
 				.collect(ImmutableList.toImmutableList());
@@ -441,19 +404,18 @@ public class CleverReachClient implements PlatformClient
 		final ImmutableList.Builder<RemoteToLocalSyncResult> syncResults = ImmutableList.builder();
 
 		final List<ContactPerson> personsWithEmailOrRemoteId = filterForPersonsWithEmailOrRemoteId(contactPersons, syncResults);
-
 		final ImmutableList<ContactPerson> contactPersonsWithEmail = personsWithEmailOrRemoteId
 				.stream()
-				.filter(c -> c.getEmailAddessStringOrNull() != null)
+				.filter(ContactPerson::hasEmailAddress)
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(
 				contactPersonsWithEmail,
-				ContactPerson::getEmailAddessStringOrNull);
+				ContactPerson::getEmailAddressStringOrNull);
 
 		final Map<Boolean, List<ContactPerson>> contactPersonsWithAndWithoutRemoteId = personsWithEmailOrRemoteId
 				.stream()
-				.collect(Collectors.partitioningBy(c -> !Check.isEmpty(c.getRemoteId(), true)));
+				.collect(Collectors.partitioningBy(c -> !Check.isBlank(c.getRemoteId())));
 
 		final ImmutableSet<ContactPerson> contactPersonsWithRemoteId = ImmutableSet.copyOf(contactPersonsWithAndWithoutRemoteId.get(true));
 
@@ -465,23 +427,17 @@ public class CleverReachClient implements PlatformClient
 
 		final HashMap<String, Collection<ContactPerson>> remoteId2contactPersonsNotYetFound = new HashMap<>(remoteId2contactPersons.asMap());
 		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutIdNotYetFound = new HashMap<>(Multimaps
-				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddessStringOrNull)
+				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddressStringOrNull)
 				.asMap());
 
-		final Iterator<Receiver> allReceivers = retrieveAllReceivers(campaign);
-
-		final Stream<Receiver> allReceiversStream = StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(allReceivers, Spliterator.ORDERED),
-				false);
-
-		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = allReceiversStream
+		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = streamAllReceivers(campaign)
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
 		for (final ContactPersonRemoteUpdate contactPersonUpdate : contactPersonUpdates)
 		{
 			final String receivedEmailAddress = Check.assumeNotEmpty(
-					EmailAddress.getEmailAddessStringOrNull(contactPersonUpdate.getAddress()),
+					EmailAddress.getEmailAddressStringOrNull(contactPersonUpdate.getAddress()),
 					"A contactPersonUpdate received from the remote API has an email address; contactPersonUpdate={}", contactPersonUpdate);
 
 			remoteId2contactPersonsNotYetFound.remove(contactPersonUpdate.getRemoteId());
@@ -503,18 +459,18 @@ public class CleverReachClient implements PlatformClient
 				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPerson);
 
 				final boolean existingContactHasDifferentEmail = !Objects.equals(
-						contactPerson.getEmailAddessStringOrNull(),
+						contactPerson.getEmailAddressStringOrNull(),
 						receivedEmailAddress);
 				if (existingContactHasDifferentEmail)
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteEmail(updatedContactPerson));
 				}
 
-				final Boolean activeOnRemotePlatform = EmailAddress.getActiveOnRemotePlatformOrNull(contactPersonUpdate.getAddress());
+				final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = EmailAddress.getDeactivatedOnRemotePlatform(contactPersonUpdate.getAddress());
 
-				final boolean existingContactHasDifferentActiveStatus = !Objects.equals(
-						contactPerson.getEmailAddessIsActivatedOrNull(),
-						activeOnRemotePlatform);
+				final boolean existingContactHasDifferentActiveStatus = !DeactivatedOnRemotePlatform.equals(
+						contactPerson.getDeactivatedOnRemotePlatform(),
+						deactivatedOnRemotePlatform);
 				if (existingContactHasDifferentActiveStatus)
 				{
 					syncResults.add(RemoteToLocalSyncResult.obtainedEmailBounceInfo(updatedContactPerson));
@@ -544,7 +500,23 @@ public class CleverReachClient implements PlatformClient
 		return syncResults.build();
 	}
 
-	public ImmutableList<LocalToRemoteSyncResult> createErrorResults(
+	private static List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
+			@NonNull final List<ContactPerson> contactPersons,
+			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
+	{
+		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = contactPersons
+				.stream()
+				.collect(Collectors.partitioningBy(ContactPerson::hasEmailAddress));
+
+		personsWithAndWithoutEmailOrRemoteId.get(false)
+				.stream()
+				.map(contactPerson -> RemoteToLocalSyncResult.error(contactPerson, "contact person has no email address"))
+				.forEach(syncResultsToAddErrorsTo::add);
+
+		return personsWithAndWithoutEmailOrRemoteId.get(true);
+	}
+
+	private static ImmutableList<LocalToRemoteSyncResult> createErrorResults(
 			@NonNull final ImmutableListMultimap<String, ContactPerson> email2contactPersons,
 			@NonNull final InvalidEmail invalidEmailInfo)
 	{
@@ -558,7 +530,7 @@ public class CleverReachClient implements PlatformClient
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Optional<InvalidEmail> createInvalidEmailInfo(final String singleResult)
+	private static Optional<InvalidEmail> createInvalidEmailInfo(final String singleResult)
 	{
 		final Pattern regExpInvalidAddress = Pattern.compile(".*invalid address *'(.*)'.*");
 		final Pattern regExpDuplicateAddress = Pattern.compile(".*duplicate address *'(.*).*'");
@@ -567,15 +539,11 @@ public class CleverReachClient implements PlatformClient
 		{
 			return invalidEmailIfno;
 		}
-		final Optional<InvalidEmail> createduplicateEmailInfo = createInvalidEmailInfo(regExpDuplicateAddress, singleResult);
-		if (createduplicateEmailInfo.isPresent())
-		{
-			return createduplicateEmailInfo;
-		}
-		return Optional.empty();
+
+		return createInvalidEmailInfo(regExpDuplicateAddress, singleResult);
 	}
 
-	public Optional<InvalidEmail> createInvalidEmailInfo(final Pattern regExpInvalidAddress, final String reponseString)
+	private static Optional<InvalidEmail> createInvalidEmailInfo(final Pattern regExpInvalidAddress, final String reponseString)
 	{
 		final Matcher invalidAddressMatcher = regExpInvalidAddress.matcher(reponseString);
 		if (invalidAddressMatcher.matches())
@@ -608,6 +576,25 @@ public class CleverReachClient implements PlatformClient
 
 		updateGroup(campaign);
 		return LocalToRemoteSyncResult.updated(campaign);
+	}
+
+	@Override
+	public void sendEmailActivationForm(
+			@NonNull final String formId,
+			@NonNull final String email)
+	{
+		final String url = "/forms/" + formId + "/send/activate";
+		final SendEmailActivationFormRequest body = SendEmailActivationFormRequest.builder()
+				.email(email)
+				.doidata(SendEmailActivationFormRequest.DoubleOptInData.builder()
+						.user_ip("1.2.3.4")
+						.referer("metasfresh")
+						.user_agent("metasfresh")
+						.build())
+				.build();
+
+		getLowLevelClient().post(body, SINGLE_HETEROGENOUS_TYPE, url);
+		// returns the email as string in case of success
 	}
 
 }

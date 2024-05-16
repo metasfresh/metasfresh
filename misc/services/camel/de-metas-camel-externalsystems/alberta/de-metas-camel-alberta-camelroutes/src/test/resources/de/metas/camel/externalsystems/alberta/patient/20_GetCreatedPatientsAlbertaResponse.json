@@ -49,6 +49,8 @@
     "mobilePhone": "mobilePhone",
     "deactivationReason": 1,
     "deactivationComment": "deactivationComment",
-    "deactivationDate": "2021-03-18"
+    "deactivationDate": "2021-03-18",
+    "classification": "classification",
+    "careDegree": 2
   }
 ]

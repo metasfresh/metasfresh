@@ -101,7 +101,7 @@ public interface IHUAssignmentBL extends ISingletonService
 	 * {@link IHUAssignmentListener#onHUUnassigned(IReference, IReference, String)}  for all registered listeners. Note that for HUs with <code>M_HU_ID <= 0</code> no unassignment is attempted, and the
 	 * listeners are not notified.
 	 */
-	void unassignHUs(Object model, Collection<HuId> husToUnassign);
+	void unassignHUs(TableRecordReference modelRef, Collection<HuId> husToUnassign);
 
 	void addAssignedHandlingUnits(Object model, Collection<I_M_HU> handlingUnits);
 

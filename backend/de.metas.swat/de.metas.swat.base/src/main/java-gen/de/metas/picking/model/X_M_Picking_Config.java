@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.picking.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Picking_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1617316970L;
+	private static final long serialVersionUID = 462743628L;
 
     /** Standard Constructor */
     public X_M_Picking_Config (final Properties ctx, final int M_Picking_Config_ID, @Nullable final String trxName)
@@ -59,18 +59,6 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	}
 
 	@Override
-	public void setIsForbidAggCUsForDifferentOrders (final boolean IsForbidAggCUsForDifferentOrders)
-	{
-		set_Value (COLUMNNAME_IsForbidAggCUsForDifferentOrders, IsForbidAggCUsForDifferentOrders);
-	}
-
-	@Override
-	public boolean isForbidAggCUsForDifferentOrders() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsForbidAggCUsForDifferentOrders);
-	}
-
-	@Override
 	public void setM_Picking_Config_ID (final int M_Picking_Config_ID)
 	{
 		if (M_Picking_Config_ID < 1) 
@@ -95,13 +83,13 @@ public class X_M_Picking_Config extends org.compiere.model.PO implements I_M_Pic
 	/** Group by Order = groupByOrder */
 	public static final String WEBUI_PICKINGTERMINAL_VIEWPROFILE_GroupByOrder = "groupByOrder";
 	@Override
-	public void setWEBUI_PickingTerminal_ViewProfile (final String WEBUI_PickingTerminal_ViewProfile)
+	public void setWEBUI_PickingTerminal_ViewProfile (final java.lang.String WEBUI_PickingTerminal_ViewProfile)
 	{
 		set_Value (COLUMNNAME_WEBUI_PickingTerminal_ViewProfile, WEBUI_PickingTerminal_ViewProfile);
 	}
 
 	@Override
-	public String getWEBUI_PickingTerminal_ViewProfile()
+	public java.lang.String getWEBUI_PickingTerminal_ViewProfile() 
 	{
 		return get_ValueAsString(COLUMNNAME_WEBUI_PickingTerminal_ViewProfile);
 	}

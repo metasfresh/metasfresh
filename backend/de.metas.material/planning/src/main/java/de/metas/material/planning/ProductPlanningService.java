@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Service
@@ -65,5 +66,30 @@ public class ProductPlanningService
 	public Optional<PPRoutingId> getDefaultRoutingId(@NonNull final PPRoutingType type)
 	{
 		return routingRepository.getDefaultRoutingIdByType(type);
+	}
+
+	public int calculateDurationDays(
+			@NonNull final I_PP_Product_Planning productPlanning,
+			@NonNull final BigDecimal qty)
+	{
+		final int leadTimeDays = calculateLeadTimeDays(productPlanning, qty);
+		return calculateDurationDays(leadTimeDays, productPlanning);
+	}
+
+	private int calculateLeadTimeDays(
+			@NonNull final I_PP_Product_Planning productPlanningRecord,
+			@NonNull final BigDecimal qty)
+	{
+		final int leadTimeDays = productPlanningRecord.getDeliveryTime_Promised().intValueExact();
+		if (leadTimeDays > 0)
+		{
+			// LeadTime was set in Product Planning/ take the leadtime as it is
+			return leadTimeDays;
+		}
+
+		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningRecord.getAD_Workflow_ID());
+		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningRecord.getS_Resource_ID());
+		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
+		return routingService.calculateDurationDays(routingId, plantId, qty);
 	}
 }

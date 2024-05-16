@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -40,6 +41,7 @@ import java.util.List;
 @Component
 public class C_OrderLine
 {
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 	@Init
 	public void init()
@@ -67,6 +69,16 @@ public class C_OrderLine
 			InterfaceWrapperHelper.save(olCand);
 
 			InterfaceWrapperHelper.delete(ola);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = de.metas.interfaces.I_C_OrderLine.COLUMNNAME_IsManualDiscount)
+	public void onManualDiscountChange(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isManualDiscount())
+		{
+			orderLineBL.updatePrices(orderLine);
 		}
 	}
 }

@@ -163,26 +163,18 @@ services:
       mode: replicated
       replicas: 1
 
-#  mobile:
-#    image: $mfregistry/metas-mobile:$mfversion
-#    ports:
-#      - "8880:80"
-#    volumes:
-#      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
-#    healthcheck:
-#      test: "curl --fail --silent http://localhost:80 || exit 1"
-#      interval: 10s
-#      timeout: 10s
-#      start_period: 60s
-#      retries: 30
-#    depends_on:
-#      webapi:
-#        condition: service_healthy
-#      app:
-#        condition: service_healthy
-#    deploy:
-#      mode: replicated
-#      replicas: 1
+  mobile:
+    image: $mfregistry/metas-mobile:$mfversion
+    ports:
+      - "8880:80"
+    volumes:
+      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+    depends_on:
+      - webapi
+      - app
+    deploy:
+      mode: replicated
+      replicas: 1
 
 volumes: {}
 configs: {}

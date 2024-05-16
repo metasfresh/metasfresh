@@ -1,17 +1,8 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -21,6 +12,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L

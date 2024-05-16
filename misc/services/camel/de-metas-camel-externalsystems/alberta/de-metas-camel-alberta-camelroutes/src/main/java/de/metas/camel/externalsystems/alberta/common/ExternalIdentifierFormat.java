@@ -51,4 +51,10 @@ public class ExternalIdentifierFormat
 	{
 		return CommonAlbertaConstants.EXTERNAL_IDENTIFIER_PREFIX + "-" + CommonAlbertaConstants.ALBERTA_EXTERNAL_REFERENCE_SYSTEM + "-" + GetOrdersRouteConstants.DELIVERY_ADDRESS_PREFIX + externalId;
 	}
+
+	@NonNull
+	public static String formatDeliveryAddressExternalIdHash(@NonNull final String externalId, @NonNull final String locationHash)
+	{
+		return CommonAlbertaConstants.EXTERNAL_IDENTIFIER_PREFIX + "-" + CommonAlbertaConstants.ALBERTA_EXTERNAL_REFERENCE_SYSTEM + "-" + externalId + "_" + locationHash;
+	}
 }

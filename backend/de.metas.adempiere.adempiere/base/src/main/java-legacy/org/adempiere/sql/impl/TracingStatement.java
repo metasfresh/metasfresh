@@ -1,18 +1,15 @@
 package org.adempiere.sql.impl;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
+import org.adempiere.ad.dao.IQueryStatisticsCollector;
+import org.compiere.util.CStatement;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
-
-import javax.sql.RowSet;
-
-import org.adempiere.ad.dao.IQueryStatisticsCollector;
-import org.compiere.util.CStatement;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 
 /*
  * #%L
@@ -67,7 +64,7 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 	}
 
 	@FunctionalInterface
-	protected static interface SqlCall<T>
+	protected interface SqlCall<T>
 	{
 		T call() throws SQLException;
 	}
@@ -106,12 +103,6 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 	public final String getSql()
 	{
 		return delegate.getSql();
-	}
-
-	@Override
-	public final RowSet getRowSet()
-	{
-		return delegate.getRowSet();
 	}
 
 	@Override
@@ -297,7 +288,7 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 	@Override
 	public final int[] executeBatch() throws SQLException
 	{
-		return trace(() -> delegate.executeBatch());
+		return trace(delegate::executeBatch);
 	}
 
 	@Override

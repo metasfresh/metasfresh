@@ -9,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.DeleteResult;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
@@ -17,6 +18,7 @@ import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
 
@@ -122,9 +123,19 @@ public class DemandCandiateHandler implements CandidateHandler
 				.createStockCandidate(savedCandidate.withNegatedQuantity())
 				.withCandidateId(preExistingChildStockId);
 
-		final Candidate savedStockCandidate = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-				.getCandidate();
+		final Candidate savedStockCandidate;
+		if (preExistingChildStockCandidate.isPresent())
+		{
+			savedStockCandidate = candidateRepositoryWriteService
+					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
+					.getCandidate();
+		}
+		else
+		{
+			savedStockCandidate = candidateRepositoryWriteService
+					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
+					.getCandidate();
+		}
 
 		final SaveResult deltaToApplyToLaterStockCandiates = candidateSaveResult.withNegatedQuantity();
 
@@ -136,7 +147,7 @@ public class DemandCandiateHandler implements CandidateHandler
 
 		if (savedCandidate.getType() == CandidateType.DEMAND)
 		{
-			fireSupplyRequiredEventIfQtyBelowZero(candidateToReturn);
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate);
 		}
 		return candidateToReturn;
 	}
@@ -146,9 +157,14 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
 
-		final CandidateRepositoryWriteService.DeleteResult stockDeleteResult = deleteCandidateFunc.apply(candidate.getId());
+		final Optional<Candidate> childStockCandidate = candidateRepository.retrieveSingleChild(candidate.getId());
+		if (!childStockCandidate.isPresent())
+		{
+			return; // nothing to do
+		}
+		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(childStockCandidate.get().getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
 
@@ -185,23 +201,7 @@ public class DemandCandiateHandler implements CandidateHandler
 		final BigDecimal requiredQty = computeRequiredQty(availableQuantityAfterDemandWasApplied, demandCandidateWithId.getMinMaxDescriptor());
 		if (requiredQty.signum() > 0)
 		{
-			// create supply record now! otherwise
-			final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
-					.type(CandidateType.SUPPLY)
-					.businessCase(null)
-					.businessCaseDetail(null)
-					.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
-					//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
-					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
-					.quantity(requiredQty)
-					.build();
-			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
-
-			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
-
-			materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent);
-			Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
+			postSupplyRequiredEvent(demandCandidateWithId, requiredQty);
 		}
 	}
 
@@ -215,5 +215,51 @@ public class DemandCandiateHandler implements CandidateHandler
 			return ZERO;
 		}
 		return minMaxDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
+	}
+
+	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate)
+	{
+		if (demandCandidate.isSimulated())
+		{
+			fireSimulatedSupplyRequiredEvent(demandCandidate, stockCandidate);
+		}
+		else
+		{
+			fireSupplyRequiredEventIfQtyBelowZero(demandCandidate);
+		}
+	}
+
+	private void fireSimulatedSupplyRequiredEvent(@NonNull final Candidate simulatedCandidate, @NonNull final Candidate stockCandidate)
+	{
+		Check.assume(simulatedCandidate.isSimulated(), "fireSimulatedSupplyRequiredEvent should only be called for simulated candidates!");
+
+		if (stockCandidate.getQuantity().signum() < 0)
+		{
+			postSupplyRequiredEvent(simulatedCandidate, stockCandidate.getQuantity().negate());
+		}
+	}
+
+	private void postSupplyRequiredEvent(@NonNull final Candidate demandCandidateWithId, @NonNull final BigDecimal requiredQty)
+	{
+		// create supply record now! otherwise
+		final Candidate supplyCandidate = Candidate.builderForClientAndOrgId(demandCandidateWithId.getClientAndOrgId())
+				.type(CandidateType.SUPPLY)
+				.businessCase(null)
+				.businessCaseDetail(null)
+				.materialDescriptor(demandCandidateWithId.getMaterialDescriptor().withQuantity(requiredQty))
+				//.groupId() // don't assign the new supply candidate to the demand candidate's groupId! it needs to "found" its own group
+				.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
+				.quantity(requiredQty)
+				.simulated(demandCandidateWithId.isSimulated())
+				.build();
+
+		final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
+
+		final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator
+				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());
+
+		materialEventService.postEventAfterNextCommit(supplyRequiredEvent);
+
+		Loggables.addLog("Fire supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
 	}
 }

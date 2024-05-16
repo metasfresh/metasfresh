@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -860447504L;
+	private static final long serialVersionUID = 1341313327L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -41,7 +41,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public java.lang.String getAddress() 
+	public java.lang.String getAddress()
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
@@ -302,6 +302,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsEphemeral (final boolean IsEphemeral)
+	{
+		set_Value (COLUMNNAME_IsEphemeral, IsEphemeral);
+	}
+
+	@Override
+	public boolean isEphemeral()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEphemeral);
+	}
+
+	@Override
 	public void setIsHandOverLocation (final boolean IsHandOverLocation)
 	{
 		set_Value (COLUMNNAME_IsHandOverLocation, IsHandOverLocation);
@@ -311,6 +323,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isHandOverLocation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
+	}
+
+	@Override
+	public void setIsNameReadWrite (final boolean IsNameReadWrite)
+	{
+		set_Value (COLUMNNAME_IsNameReadWrite, IsNameReadWrite);
+	}
+
+	@Override
+	public boolean isNameReadWrite() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNameReadWrite);
 	}
 
 	@Override
@@ -335,6 +359,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isRemitTo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
+	}
+
+	@Override
+	public void setIsReplicationLookupDefault (final boolean IsReplicationLookupDefault)
+	{
+		set_Value (COLUMNNAME_IsReplicationLookupDefault, IsReplicationLookupDefault);
+	}
+
+	@Override
+	public boolean isReplicationLookupDefault() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReplicationLookupDefault);
 	}
 
 	@Override
@@ -422,6 +458,21 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setPrevious_ID (final int Previous_ID)
+	{
+		if (Previous_ID < 1) 
+			set_Value (COLUMNNAME_Previous_ID, null);
+		else 
+			set_Value (COLUMNNAME_Previous_ID, Previous_ID);
+	}
+
+	@Override
+	public int getPrevious_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Previous_ID);
+	}
+
+	@Override
 	public void setSetup_Place_No (final @Nullable java.lang.String Setup_Place_No)
 	{
 		set_Value (COLUMNNAME_Setup_Place_No, Setup_Place_No);
@@ -431,6 +482,18 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getSetup_Place_No() 
 	{
 		return get_ValueAsString(COLUMNNAME_Setup_Place_No);
+	}
+
+	@Override
+	public void setValidFrom (final @Nullable java.sql.Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
 	}
 
 	@Override

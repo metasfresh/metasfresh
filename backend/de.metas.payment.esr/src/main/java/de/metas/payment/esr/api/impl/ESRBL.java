@@ -8,6 +8,8 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -54,7 +56,6 @@ import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.InvoiceReferenceNo;
 import de.metas.payment.esr.api.InvoiceReferenceNos;
-import de.metas.payment.esr.document.refid.spi.impl.InvoiceReferenceNoGenerator;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -113,9 +114,9 @@ public class ESRBL implements IESRBL
 		final InvoiceReferenceNo invoiceReferenceString = InvoiceReferenceNos.createFor(invoiceRecord, bankAccountRecord);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final BigDecimal openInvoiceAmount = invoiceDAO.retrieveOpenAmt(invoiceRecord);
+		final Amount openInvoiceAmount = invoiceDAO.retrieveOpenAmt(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
 
-		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount, bankAccountRecord);
+		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount.toBigDecimal(), bankAccountRecord);
 
 		// create payment request with invoiceRecord's Client and Org
 		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class, invoiceRecord);
@@ -123,7 +124,7 @@ public class ESRBL implements IESRBL
 		paymentRequestRecord.setFullPaymentString(renderedCodeStr);
 		paymentRequestRecord.setC_BP_BankAccount(bankAccountRecord);
 		paymentRequestRecord.setC_Invoice(invoiceRecord);
-		paymentRequestRecord.setAmount(openInvoiceAmount);
+		paymentRequestRecord.setAmount(openInvoiceAmount.toBigDecimal());
 		saveRecord(paymentRequestRecord);
 
 		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
@@ -139,8 +140,7 @@ public class ESRBL implements IESRBL
 		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
 
 		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
-		final I_C_BP_BankAccount bankAccount = bankAccounts.get(0);
-		return bankAccount;
+		return bankAccounts.get(0);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class ESRBL implements IESRBL
 	 * <ul>
 	 * <li>01 - invoice document type code (2 characters)
 	 * <li>SSSSSSSSSS - invoice amount, half round up, scale 0 (10 characters)
-	 * <li>IIIIIIIIIIIIIIIIIIIIIIIIIII - invoice reference number, see {@link InvoiceReferenceNoGenerator}
+	 * <li>IIIIIIIIIIIIIIIIIIIIIIIIIII - invoice reference number, see {@link IESRBL#createESRPaymentRequest(I_C_Invoice)}
 	 * <li>AAAAAA - Organization's ESR account number
 	 * </ul>
 	 */

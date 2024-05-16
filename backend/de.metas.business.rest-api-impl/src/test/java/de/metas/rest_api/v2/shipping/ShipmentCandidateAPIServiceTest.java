@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
@@ -43,6 +44,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
+import de.metas.rest_api.v2.shipping.custom.OxidAdaptor;
 import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -78,10 +80,8 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class ShipmentCandidateAPIServiceTest
@@ -132,9 +132,10 @@ class ShipmentCandidateAPIServiceTest
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
 				new ProductRepository(),
-				exportSequenceNumberProvider);
+				exportSequenceNumberProvider,
+				new OxidAdaptor());
 	}
 
 	@Test

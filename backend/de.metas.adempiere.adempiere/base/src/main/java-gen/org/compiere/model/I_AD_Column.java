@@ -917,6 +917,27 @@ public interface I_AD_Column
 	String COLUMNNAME_IsParent = "IsParent";
 
 	/**
+	 * Set IsRestAPICustomColumn.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRestAPICustomColumn (boolean IsRestAPICustomColumn);
+
+	/**
+	 * Get IsRestAPICustomColumn.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRestAPICustomColumn();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsRestAPICustomColumn = new ModelColumn<>(I_AD_Column.class, "IsRestAPICustomColumn", null);
+	String COLUMNNAME_IsRestAPICustomColumn = "IsRestAPICustomColumn";
+
+	/**
 	 * Set Selection Column.
 	 * Is this column used for finding rows in windows
 	 *

@@ -30,6 +30,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
@@ -55,11 +56,10 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 	@Override
 	@NonNull
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId ignored,
-			@Nullable final String tableName,
+			@NonNull final CreateFiltersProviderContext context,
 			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
-		if (!isValidTable(tableName))
+		if (!isValidTable(context.getTableName()))
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}

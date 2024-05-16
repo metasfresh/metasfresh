@@ -27,10 +27,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -64,13 +66,8 @@ public class InOutLinesWithMissingInvoiceCandidate
 	 * Get all {@link I_M_InOutLine}s which are not linked to an {@link I_C_OrderLine} and there is no invoice candidate already generated for them.
 	 * 
 	 * NOTE: this method will be used to identify those inout lines for which {@link M_InOutLine_Handler} will generate invoice candidates.
-	 * 
-	 * @param ctx
-	 * @param limit
-	 * @param trxName
-	 * @return inout lines
 	 */
-	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(final int limit)
+	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(@NonNull final QueryLimit limit)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
