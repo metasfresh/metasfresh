@@ -24,7 +24,6 @@ package de.metas.contracts.modular.interest;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,6 +33,10 @@ import java.math.RoundingMode;
 @Value(staticConstructor = "of")
 public class InterestScore
 {
+	/**
+	 * This is just something to make the score calculation values more manageable.
+	 */
+	public static final BigDecimal DIVISION_FACTOR = BigDecimal.valueOf(100);
 	@NonNull Money amount;
 	@NonNull Integer numberOfDays;
 
@@ -53,7 +56,7 @@ public class InterestScore
 	{
 		final BigDecimal amountAsBD = amount.toBigDecimal();
 
-		return amountAsBD.multiply(NumberUtils.asBigDecimal(interestDays))
-				.divide(NumberUtils.asBigDecimal(100), amountAsBD.scale(), RoundingMode.HALF_UP);
+		return amountAsBD.multiply(BigDecimal.valueOf(interestDays))
+				.divide(DIVISION_FACTOR, amountAsBD.scale(), RoundingMode.HALF_UP);
 	}
 }

@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
-import de.metas.common.util.NumberUtils;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -34,15 +33,15 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +66,9 @@ public class ModularContractSettings
 	@NonNull SOTrx soTrx;
 
 	@NonNull LocalDateAndOrgId storageCostStartDate;
+	int additionalInterestDays;
+	@Builder.Default @Getter
+	@NonNull Percent interestPercent = Percent.ZERO;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 
@@ -100,10 +102,6 @@ public class ModularContractSettings
 	}
 
 	public YearId getYearId() {return yearAndCalendarId.yearId();}
-
-	int additionalInterestDays;
-	@Nullable BigDecimal interestPercent;
-
 
 	@NonNull
 	public List<ModuleConfig> getModuleConfigs(@NonNull final ComputingMethodType computingMethodType)
@@ -143,13 +141,8 @@ public class ModularContractSettings
 	}
 
 	@NonNull
-	public BigDecimal getBonusInterestRate()
+	public Percent getBonusInterestRate()
 	{
-		if (interestPercent == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return interestPercent.divide(NumberUtils.asBigDecimal(100), RoundingMode.HALF_UP);
+		return interestPercent;
 	}
 }

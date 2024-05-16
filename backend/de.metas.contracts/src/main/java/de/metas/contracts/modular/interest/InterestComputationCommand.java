@@ -46,6 +46,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -184,7 +185,7 @@ public class InterestComputationCommand
 
 	private void saveSubtractedValueInterestRecords(
 			@NonNull final InterestComputationRequest request,
-			@NonNull final BigDecimal bonusInterestRate,
+			@NonNull final Percent bonusInterestRate,
 			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator,
 			@Nullable final InvoiceAllocations.AllocationItem currentShippingNotification)
 	{
@@ -227,7 +228,7 @@ public class InterestComputationCommand
 
 	private void saveSubtractValueInterestRecords(
 			@NonNull final InterestComputationRequest request,
-			@NonNull final BigDecimal bonusInterestRate,
+			@NonNull final Percent bonusInterestRate,
 			@NonNull final InvoiceAllocations.AllocationItem shippingNotification)
 	{
 		if (request.getBonusComputationDetails() == null)
@@ -237,9 +238,9 @@ public class InterestComputationCommand
 
 		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
-		final BigDecimal bonusAmountAsBD = shippingNotification.getOpenAmount()
-				.toBigDecimal()
-				.multiply(bonusInterestRate)
+		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount()
+				.toBigDecimal(), shippingNotification.getOpenAmount()
+				.toBigDecimal().precision())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP);
 
