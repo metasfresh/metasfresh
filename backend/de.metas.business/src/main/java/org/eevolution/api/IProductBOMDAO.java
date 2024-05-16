@@ -5,6 +5,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.eevolution.api.impl.ProductBOM;
+import org.eevolution.api.impl.ProductBOMRequest;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -16,6 +18,8 @@ import java.util.Optional;
 
 public interface IProductBOMDAO extends ISingletonService
 {
+	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest productBOMRequest);
+
 	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull ProductId productId, @NonNull BOMType bomType);
 
 	I_PP_Product_BOM getById(ProductBOMId bomId);

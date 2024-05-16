@@ -39,12 +39,15 @@ import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -68,8 +71,13 @@ public class ModularContractService
 			{
 				final ComputingMethodType computingMethodType = handler.getComputingMethodType();
 
-				for (final FlatrateTermId contractId : handler.streamContractIds(event.getTableRecordReference()).toList())
+
+				final List<FlatrateTermId> contractIds = handler.streamContractIds(event.getTableRecordReference()).toList();
+				Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+				if(!contractIds.isEmpty())
 				{
+					//If in future Iterations it's still max 1 we should replace it with Optional or Nullable
+					final FlatrateTermId contractId = contractIds.get(0);
 					if (!isApplicableContract(event.getTableRecordReference(), handler, contractId))
 					{
 						continue;

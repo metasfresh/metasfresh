@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.settings;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
@@ -55,6 +56,11 @@ public class ModuleConfig
 	public boolean isMatchingAnyOf(@NonNull final ComputingMethodType computingMethodType1, @NonNull final ComputingMethodType computingMethodType2)
 	{
 		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
+	}
+
+	public boolean isMatchingAnyOf(@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes)
+	{
+		return computingMethodTypes.stream().anyMatch(this::isMatching);
 	}
 
 	public @NonNull ModularContractTypeId getModularContractTypeId() {return getModularContractType().getId();}
