@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -143,5 +144,15 @@ public class ModularContractSettingsBL
 		{
 			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
 		}
+	}
+
+	public void updateModuleProduct(@NonNull final ModuleConfig moduleConfig, @NonNull final ProductId rawProductId)
+	{
+		modularContractSettingsDAO.updateModuleProduct(moduleConfig.getId().getModularContractModuleId(), rawProductId);
+	}
+
+	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
+	{
+		return modularContractSettingsDAO.getSettingsByQuery(query);
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.purchasecontract.storagecost;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
@@ -61,7 +62,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -106,6 +106,10 @@ class ShipmentLineLog implements IModularContractLogHandler
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(),
 																								   createLogRequest.getContractId());
 
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
+				.orElse(null);
+
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(createLogRequest.getProductId())
@@ -126,18 +130,12 @@ class ShipmentLineLog implements IModularContractLogHandler
 				.transactionDate(transactionDate)
 				.storageDays(storageDays)
 				.priceActual(contractSpecificPrice)
-				.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
+				.year(yearAndCalendarId.yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configId(createLogRequest.getConfigId())
-				.invoicingGroupId(getInvoicingGroupIdOrNull(productId, transactionDate))
+				.invoicingGroupId(invoicingGroupId)
 				.build());
-	}
-
-	@Nullable
-	private InvoicingGroupId getInvoicingGroupIdOrNull(final ProductId productId, final LocalDateAndOrgId transactionDate)
-	{
-		return modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone)).orElse(null);
 	}
 
 	@NotNull

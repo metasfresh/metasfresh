@@ -26,6 +26,7 @@ import com.jgoodies.common.base.Strings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.model.I_ModCntr_Type;
@@ -41,7 +42,6 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 

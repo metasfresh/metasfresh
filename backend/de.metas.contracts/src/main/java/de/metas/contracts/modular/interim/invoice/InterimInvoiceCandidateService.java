@@ -125,17 +125,19 @@ public class InterimInvoiceCandidateService
 		final UomId stockUOM = productBL.getStockUOMId(productId);
 		final OrgId orgId = OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID());
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(orgId);
-		final ProductId productIdToInvoice = modCntrInvoicingGroupRepository.getInvoicingGroupProductFor(productId)
+		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID());
+		final ProductId productIdToInvoice = modCntrInvoicingGroupRepository.getInvoicingGroupProductFor(productId, yearAndCalendarId)
 				.orElse(productId);
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
+
 
 		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.PURCHASE)
 				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
 				.invoiceRule(InvoiceRule.Immediate)
-				.harvestYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(flatrateTermRecord.getHarvesting_Year_ID(), flatrateTermRecord.getC_Harvesting_Calendar_ID()))
+				.harvestYearAndCalendarId(yearAndCalendarId)
 				.productId(productIdToInvoice)
 				.paymentTermId(PaymentTermId.ofRepoId(order.getC_PaymentTerm_ID()))
 				.billPartnerInfo(BPartnerInfo.builder()

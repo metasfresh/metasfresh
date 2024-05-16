@@ -37,6 +37,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -86,7 +87,7 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(request.getRecordRef());
 		final ProductId productId = extractProductIdToLog(request, manufacturingReceipt);
 		final InstantAndOrgId transactionDate = manufacturingReceipt.getTransactionDate();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant()).orElse(null);
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, request.getModularContractSettings().getYearAndCalendarId()).orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
 		final Quantity qty = manufacturingReceipt.getQtyReceived();
 		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, qty.abs().toString(), productName);
@@ -138,7 +139,7 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 
 	@Override
 	@NonNull
-	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, @NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(handleLogsRequest.getTableRecordReference());
 
@@ -147,6 +148,7 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 }

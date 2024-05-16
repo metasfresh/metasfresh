@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
-package org.compiere.model;
+package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_InvoicingGroup_Product
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_InvoicingGroup_Product extends org.compiere.model.PO implements I_ModCntr_InvoicingGroup_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1503766338L;
+	private static final long serialVersionUID = 199986130L;
 
     /** Standard Constructor */
     public X_ModCntr_InvoicingGroup_Product (final Properties ctx, final int ModCntr_InvoicingGroup_Product_ID, @Nullable final String trxName)
@@ -35,30 +35,15 @@ public class X_ModCntr_InvoicingGroup_Product extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public void setM_Product_ID (final int M_Product_ID)
+	public de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
 	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public void setModCntr_InvoicingGroup(final de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
 	{
-		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
-	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class);
-	}
-
-	@Override
-	public void setModCntr_InvoicingGroup(final org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
+		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
 	}
 
 	@Override
@@ -89,5 +74,20 @@ public class X_ModCntr_InvoicingGroup_Product extends org.compiere.model.PO impl
 	public int getModCntr_InvoicingGroup_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_InvoicingGroup_Product_ID);
+	}
+
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
+	}
+
+	@Override
+	public int getM_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 }
