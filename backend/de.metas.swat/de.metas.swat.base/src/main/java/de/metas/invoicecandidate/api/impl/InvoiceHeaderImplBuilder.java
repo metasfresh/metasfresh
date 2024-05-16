@@ -540,7 +540,7 @@ public class InvoiceHeaderImplBuilder
 	}
 
 	@Nullable
-	private static <T> T checkOverride(final String name, final @org.jetbrains.annotations.Nullable T value, @Nullable final T valueNew)
+	private static <T> T checkOverride(final String name, final @Nullable T value, @Nullable final T valueNew)
 	{
 		if (value == null)
 		{
