@@ -28,7 +28,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -54,8 +53,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
+@Component
 public class CalibrationManufacturingRawIssuedLog implements IModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
@@ -134,11 +135,11 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 	@NonNull
 	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
 	{
-		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceipt(handleLogsRequest.getTableRecordReference());
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(handleLogsRequest.getTableRecordReference());
 
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(manufacturingProcessedReceipt.getManufacturingOrderId().toRecordRef())
-				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingProcessedReceipt.getId()))
+				.referencedModel(manufacturingRawIssued.getManufacturingOrderId().toRecordRef())
+				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
 				.build();

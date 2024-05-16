@@ -128,7 +128,7 @@ public class ModCntr_Settings
 
 		if(productId == null && !moduleConfigs.isEmpty())
 		{
-			throw new AdempiereException("SettingLines still containing ComputingMethods depending on this product");
+			throw new AdempiereException(ERROR_SETTING_LINES_DEPEND_ON_PRODUCT);
 		}
 
 		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModuleProduct(moduleConfig, productId));
