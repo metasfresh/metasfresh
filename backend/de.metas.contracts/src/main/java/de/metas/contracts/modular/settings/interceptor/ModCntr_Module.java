@@ -184,7 +184,7 @@ public class ModCntr_Module
 
 				}
 			}
-			case CoProduct, ReductionCalibration ->
+			case CoProduct ->
 			{
 				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
