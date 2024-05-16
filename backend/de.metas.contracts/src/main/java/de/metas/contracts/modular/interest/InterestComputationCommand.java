@@ -105,9 +105,11 @@ public class InterestComputationCommand
 					 "Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
 
 		final InitialInterestAllocationResult result = createInterestRecords(request);
-		final BigDecimal interestDistributionPercent = request.getInterestToDistribute().toBigDecimal()
+
+		final BigDecimal interestScoreRate = request.getInterestToDistribute().toBigDecimal()
 				.divide(result.getTotalInterestScore(), request.getInterestScale(), RoundingMode.HALF_UP);
-		distributeInterest(request, interestDistributionPercent);
+
+		distributeInterest(request, interestScoreRate);
 	}
 
 	private void deletePreviousProgress(@NonNull final PInstanceId logSelectionId)
@@ -158,7 +160,7 @@ public class InterestComputationCommand
 
 					if (wasCreatedBeforeInvoice)
 					{
-						saveSubtractValueInterestRecords(request, settings.getBonusInterestRate(), currentShippingNotification);
+						saveSubtractValueInterestRecord(request, settings.getBonusInterestRate(), currentShippingNotification);
 					}
 
 					currentShippingNotification = initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
@@ -196,13 +198,13 @@ public class InterestComputationCommand
 
 		if (currentShippingNotification != null && currentShippingNotification.openAmountSignum() > 0)
 		{
-			saveSubtractValueInterestRecords(request, bonusInterestRate, currentShippingNotification);
+			saveSubtractValueInterestRecord(request, bonusInterestRate, currentShippingNotification);
 		}
 
 		while (shippingNotificationIterator.hasNext())
 		{
-			saveSubtractValueInterestRecords(request, bonusInterestRate, initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
-																							shippingNotificationIterator.next()));
+			saveSubtractValueInterestRecord(request, bonusInterestRate, initAllocationItem(request.getInterestToDistribute().getCurrencyId(),
+																						   shippingNotificationIterator.next()));
 		}
 	}
 
@@ -226,7 +228,7 @@ public class InterestComputationCommand
 		currentInvoiceAllocations.getAllocatedShippingNotifications().forEach(interestRepository::create);
 	}
 
-	private void saveSubtractValueInterestRecords(
+	private void saveSubtractValueInterestRecord(
 			@NonNull final InterestComputationRequest request,
 			@NonNull final Percent bonusInterestRate,
 			@NonNull final InvoiceAllocations.AllocationItem shippingNotification)
@@ -238,11 +240,11 @@ public class InterestComputationCommand
 
 		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
-		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(
-				shippingNotification.getOpenAmount().toBigDecimal(),
-				request.getInterestScale())
+		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
+																				 request.getInterestScale())
 				.multiply(BigDecimal.valueOf(interestDays))
-				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP);
+				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
+				.negate();
 
 		final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
 				.interestRunId(request.getInterestRunId())
@@ -296,21 +298,21 @@ public class InterestComputationCommand
 
 	private void distributeInterest(
 			@NonNull final InterestComputationRequest request,
-			@NonNull final BigDecimal interestDistributionPercent)
+			@NonNull final BigDecimal interestScoreRate)
 	{
 		final FlatrateTermId onlyForContractId = null; // we want all contracts involved
 		streamShippingNotificationLogEntries(request, onlyForContractId)
-				.forEach(logEntry -> distributeInterest(request, interestDistributionPercent, logEntry));
+				.forEach(logEntry -> distributeInterest(request, interestScoreRate, logEntry));
 	}
 
 	private void distributeInterest(
 			@NonNull final InterestComputationRequest request,
-			@NonNull final BigDecimal interestDistributionPercent,
+			@NonNull final BigDecimal interestScoreRate,
 			@NonNull final ModularContractLogEntry shippingNotification)
 	{
 		interestRepository.getForShippingNotificationLogId(request.getInterestRunId(), shippingNotification.getId())
 				.stream()
-				.map(interestLog -> interestLog.withComputedFinalInterest(interestDistributionPercent, request.getInterestToDistribute().getCurrencyId()))
+				.map(interestLog -> interestLog.withComputedFinalInterest(interestScoreRate, request.getInterestToDistribute().getCurrencyId()))
 				.forEach(interestRepository::save);
 	}
 
