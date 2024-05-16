@@ -139,7 +139,7 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-24 11:02:32.7
 ;
 
 -- 2024-04-24T08:02:34.371Z
-/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Harvesting_Calendar_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Harvesting_Calendar_ID NUMERIC(10) ')
 ;
 
 COMMIT
@@ -168,7 +168,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2024-04-24T08:03:54.065Z
-/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN Harvesting_Year_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN Harvesting_Year_ID NUMERIC(10)')
 ;
 
 UPDATE modcntr_invoicinggroup
