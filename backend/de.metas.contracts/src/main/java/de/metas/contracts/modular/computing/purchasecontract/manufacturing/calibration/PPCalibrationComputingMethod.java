@@ -35,6 +35,7 @@ import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingP
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -124,5 +125,12 @@ public class PPCalibrationComputingMethod implements IComputingMethodHandler
 							   .build())
 				.qty(computingMethodService.getQtySum(logs, stockUOMId))
 				.build();
+	}
+
+	@NonNull
+	@Override
+	public Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
+	{
+		return Stream.empty();
 	}
 }
