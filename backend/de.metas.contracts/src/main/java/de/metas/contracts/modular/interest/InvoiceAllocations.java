@@ -71,8 +71,8 @@ public class InvoiceAllocations
 
 	public boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
 	{
-		return invoiceEntry.getTransactionDate().toLocalDate()
-				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toLocalDate());
+		return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
+				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
 	}
 
 	@NonNull
@@ -151,12 +151,22 @@ public class InvoiceAllocations
 		return cachedInvoiceInterimDate;
 	}
 
-	@Builder(toBuilder = true)
 	@Value
 	public static class AllocationItem
 	{
 		@NonNull ModularContractLogEntry shippingNotificationEntry;
-		@With @NonNull Money openAmount;
+		@NonNull @With Money openAmount;
+
+		@Builder(toBuilder = true)
+		private AllocationItem(
+				@NonNull final ModularContractLogEntry shippingNotificationEntry,
+				@NonNull final Money openAmount)
+		{
+			Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
+
+			this.shippingNotificationEntry = shippingNotificationEntry;
+			this.openAmount = openAmount;
+		}
 
 		public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)
 		{

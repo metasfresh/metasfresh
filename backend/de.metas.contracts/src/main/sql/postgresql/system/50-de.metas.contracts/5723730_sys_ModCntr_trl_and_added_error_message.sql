@@ -124,20 +124,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=728707
 -- 2024-05-15T11:54:40.928Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728707,0,547205,551831,624735,'F',TO_TIMESTAMP('2024-05-15 14:54:40.752','YYYY-MM-DD HH24:MI:SS.US'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','N','Y','N','N','N',0,'Währung',20,0,0,TO_TIMESTAMP('2024-05-15 14:54:40.752','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
-
--- Value: de.metas.contracts.modular.interest.InterestNotCalculated
--- 2024-05-15T12:36:30.498Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545398,0,TO_TIMESTAMP('2024-05-15 15:36:30.371','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Die Zinsen müssen zunächst für die Rechnungsstellungsgruppe {} berechnet werden.','E',TO_TIMESTAMP('2024-05-15 15:36:30.371','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.interest.InterestNotCalculated')
-;
-
--- 2024-05-15T12:36:30.499Z
-INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545398 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
-;
-
--- Value: de.metas.contracts.modular.interest.InterestNotCalculated
--- 2024-05-15T12:36:46.103Z
-UPDATE AD_Message_Trl SET MsgText='The interest must first be calculated for the invoicing group {}.',Updated=TO_TIMESTAMP('2024-05-15 15:36:46.103','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545398
-;
+--No longer used
+-- -- Value: de.metas.contracts.modular.interest.InterestNotCalculated
+-- -- 2024-05-15T12:36:30.498Z
+-- INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545398,0,TO_TIMESTAMP('2024-05-15 15:36:30.371','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Die Zinsen müssen zunächst für die Rechnungsstellungsgruppe {} berechnet werden.','E',TO_TIMESTAMP('2024-05-15 15:36:30.371','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts.modular.interest.InterestNotCalculated')
+-- ;
+--
+-- -- 2024-05-15T12:36:30.499Z
+-- INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Message_ID=545398 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+-- ;
+--
+-- -- Value: de.metas.contracts.modular.interest.InterestNotCalculated
+-- -- 2024-05-15T12:36:46.103Z
+-- UPDATE AD_Message_Trl SET MsgText='The interest must first be calculated for the invoicing group {}.',Updated=TO_TIMESTAMP('2024-05-15 15:36:46.103','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545398
+-- ;
 
 -- Value: de.metas.contracts.modular.settings.interceptor.InterimRequiredInvoicingGroup
 -- 2024-05-15T18:41:38.441Z

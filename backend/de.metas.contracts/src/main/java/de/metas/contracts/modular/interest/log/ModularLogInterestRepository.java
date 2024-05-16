@@ -26,9 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.model.I_ModCntr_Log;
-import de.metas.contracts.model.I_ModCntr_Module;
-import de.metas.contracts.model.I_ModCntr_Type;
-import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.money.CurrencyId;
@@ -40,13 +37,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,25 +145,6 @@ public class ModularLogInterestRepository
 		return currenciesMap.values().stream().findFirst();
 	}
 
-	public boolean isInterestCalculated(final @NonNull LogInterestQuery query)
-	{
-		final IQueryBuilder<I_ModCntr_Log> calculatedInterestLogQueryBuilder = queryBL.createQueryBuilder(I_ModCntr_Type.class)
-				.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, ComputingMethodType.SubtractValueOnInterim, ComputingMethodType.AddValueOnInterim)
-				.andCollectChildren(I_ModCntr_Module.COLUMN_ModCntr_Type_ID)
-				.andCollectChildren(I_ModCntr_Log.COLUMN_ModCntr_Module_ID)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, true)
-				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, false);
-
-		final IQuery<I_ModCntr_Interest> calculatedInterestQuery = setSelectionOnQueryBuilder(query, calculatedInterestLogQueryBuilder)
-				.andCollectChildren(I_ModCntr_Interest.COLUMN_ShippingNotification_ModCntr_Log_ID)
-				.create();
-
-		return !setSelectionOnQueryBuilder(query, queryBL.createQueryBuilder(I_ModCntr_Log.class))
-				.addNotInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, I_ModCntr_Interest.COLUMNNAME_ShippingNotification_ModCntr_Log_ID, calculatedInterestQuery)
-				.create()
-				.anyMatch();
-	}
-
 	private IQueryBuilder<I_ModCntr_Interest> getQueryBuilder(final @NonNull LogInterestQuery query)
 	{
 		final IQueryBuilder<I_ModCntr_Interest> builder = setSelectionOnQueryBuilder(query, queryBL.createQueryBuilder(I_ModCntr_Log.class))
@@ -184,28 +158,12 @@ public class ModularLogInterestRepository
 
 	private static IQueryBuilder<I_ModCntr_Log> setSelectionOnQueryBuilder(final @NonNull LogInterestQuery query, final IQueryBuilder<I_ModCntr_Log> modCntrLogQueryBuilder)
 	{
-		if (query.modularLogSelection() != null)
-		{
-			modCntrLogQueryBuilder.setOnlySelection(query.modularLogSelection());
-		}
-		else
-		{
-			modCntrLogQueryBuilder.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID, query.logEntryIds());
-		}
-		return modCntrLogQueryBuilder;
+		return modCntrLogQueryBuilder.setOnlySelection(query.modularLogSelection());
 	}
 
 	@Builder
-	public record LogInterestQuery(@Nullable PInstanceId modularLogSelection,
-								   @Nullable Collection<ModularContractLogEntryId> logEntryIds,
+	public record LogInterestQuery(@NonNull PInstanceId modularLogSelection,
 								   boolean onlyBonusRecords)
 	{
-		public LogInterestQuery
-		{
-			if (modularLogSelection == null && (logEntryIds == null || logEntryIds.isEmpty()))
-			{
-				throw new AdempiereException("Selection not specified for LogInterestQuery");
-			}
-		}
 	}
 }

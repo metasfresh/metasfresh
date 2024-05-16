@@ -45,12 +45,12 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.springframework.stereotype.Service;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -60,15 +60,19 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-@Service
 @RequiredArgsConstructor
-public class InterestComputationService
+@Builder
+public class InterestComputationCommand
 {
-	@NonNull private final ModularLogInterestRepository interestRepository;
-	@NonNull private final ModularContractLogService modularContractLogService;
-	@NonNull private final MoneyService moneyService;
-	@NonNull private final ModularContractService modularContractService;
-	@NonNull private final InterestRunRepository interestRunRepository;
+	/**
+	 * we consider a fiscal year as having 12 months of 30 days
+	 */
+	public static final int TOTAL_DAYS_OF_FISCAL_YEAR = 360;
+	private final ModularLogInterestRepository interestRepository = SpringContextHolder.instance.getBean(ModularLogInterestRepository.class);
+	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
+	private final InterestRunRepository interestRunRepository = SpringContextHolder.instance.getBean(InterestRunRepository.class);
 
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -236,8 +240,8 @@ public class InterestComputationService
 		final BigDecimal bonusAmountAsBD = shippingNotification.getOpenAmount()
 				.toBigDecimal()
 				.multiply(bonusInterestRate)
-				.multiply(NumberUtils.asBigDecimal(interestDays))
-				.divide(NumberUtils.asBigDecimal(360), RoundingMode.HALF_UP);
+				.multiply(BigDecimal.valueOf(interestDays))
+				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP);
 
 		final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
 				.interestRunId(request.getInterestRunId())
