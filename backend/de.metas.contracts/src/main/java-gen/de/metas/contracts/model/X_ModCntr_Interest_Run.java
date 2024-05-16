@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Interest_Run extends org.compiere.model.PO implements I_ModCntr_Interest_Run, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -945197375L;
+	private static final long serialVersionUID = -951049191L;
 
     /** Standard Constructor */
     public X_ModCntr_Interest_Run (final Properties ctx, final int ModCntr_Interest_Run_ID, @Nullable final String trxName)
@@ -48,15 +48,18 @@ public class X_ModCntr_Interest_Run extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setDateStart (final java.sql.Timestamp DateStart)
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
-		set_Value (COLUMNNAME_DateStart, DateStart);
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
-	public java.sql.Timestamp getDateStart() 
+	public int getC_Currency_ID() 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateStart);
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -87,15 +90,15 @@ public class X_ModCntr_Interest_Run extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
+	public I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, I_ModCntr_InvoicingGroup.class);
 	}
 
 	@Override
-	public void setModCntr_InvoicingGroup(final de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
+	public void setModCntr_InvoicingGroup(final I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
+		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
 	}
 
 	@Override

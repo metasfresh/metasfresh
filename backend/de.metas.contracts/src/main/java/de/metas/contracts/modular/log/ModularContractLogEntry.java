@@ -31,6 +31,7 @@ import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
@@ -54,6 +55,9 @@ public class ModularContractLogEntry
 {
 	@NonNull
 	ModularContractLogEntryId id;
+
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
 
 	@NonNull
 	LogEntryContractType contractType;
@@ -119,6 +123,7 @@ public class ModularContractLogEntry
 	@Builder(toBuilder = true)
 	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
+			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LogEntryContractType contractType,
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
@@ -153,6 +158,7 @@ public class ModularContractLogEntry
 		}
 
 		this.id = id;
+		this.clientAndOrgId = clientAndOrgId;
 		this.contractType = contractType;
 		this.contractId = contractId;
 		this.productId = productId;

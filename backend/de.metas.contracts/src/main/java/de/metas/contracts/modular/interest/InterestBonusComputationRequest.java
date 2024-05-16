@@ -22,7 +22,9 @@
 
 package de.metas.contracts.modular.interest;
 
+import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,10 +34,31 @@ import java.time.Instant;
 
 @Value
 @Builder
-public class EnqueueInterestComputationRequest
+public class InterestBonusComputationRequest
 {
 	@NonNull InvoicingGroupId invoicingGroupId;
+	@NonNull LockOwner lockOwner;
+	@NonNull Money interestToDistribute;
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
-	@NonNull Money interestToDistribute;
+
+	@NonNull
+	public BonusComputationDetails getBonusComputationDetails()
+	{
+		return BonusComputationDetails.builder()
+				.billingDate(billingDate)
+				.interimDate(interimDate)
+				.build();
+	}
+
+	@NonNull
+	public InterestComputationRequest getInterestDistributionRequest(@NonNull final InterestRunId runId)
+	{
+		return InterestComputationRequest.builder()
+				.interestRunId(runId)
+				.interestToDistribute(interestToDistribute)
+				.invoicingGroupId(invoicingGroupId)
+				.lockOwner(lockOwner)
+				.build();
+	}
 }

@@ -41,9 +41,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -174,6 +176,7 @@ public class ModularContractLogDAO
 	{
 		return ModularContractLogEntry.builder()
 				.id(ModularContractLogEntryId.ofRepoId(record.getModCntr_Log_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
@@ -336,11 +339,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_Processed, query.getProcessed());
 		}
 
-		if (query.getComputingMethodType() != null)
+		if (!query.getComputingMethodTypes().isEmpty())
 		{
 			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodType())
+					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes())
 					.create();
 			final IQuery<I_ModCntr_Module> moduleFilter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 					.addOnlyActiveRecordsFilter()
@@ -367,6 +370,32 @@ public class ModularContractLogDAO
 		if (query.getInvoicingGroupId() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_InvoicingGroup_ID, query.getInvoicingGroupId());
+		}
+
+		if (query.getLogEntryDocumentType() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_DocumentType, query.getLogEntryDocumentType().getCode());
+		}
+
+		if (query.isOnlyIfAmountIsSet())
+		{
+			sqlQueryBuilder.addNotNull(I_ModCntr_Log.COLUMNNAME_C_Currency_ID);
+			sqlQueryBuilder.addNotNull(I_ModCntr_Log.COLUMNNAME_Amount);
+		}
+
+		if (!query.getOrderBys().isEmpty())
+		{
+			for (final ModularContractLogQuery.OrderBy orderBy : query.getOrderBys())
+			{
+				if (orderBy.isAscending())
+				{
+					sqlQueryBuilder.orderBy(orderBy.getColumnName());
+				}
+				else
+				{
+					sqlQueryBuilder.orderByDescending(orderBy.getColumnName());
+				}
+			}
 		}
 
 		return sqlQueryBuilder;
@@ -465,6 +494,27 @@ public class ModularContractLogDAO
 		return toSqlQuery(query)
 				.create()
 				.listImmutable(I_ModCntr_Log.class);
+	}
+
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
+	{
+		return toSqlQuery(query)
+				.create()
+				.listDistinct(I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID, Integer.class)
+				.stream()
+				.filter(contractId -> contractId > 0)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	public PInstanceId getSelection(@NonNull final LockOwner lockOwner)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addFilter(lockManager.getLockedByFilter(I_ModCntr_Log.class, lockOwner))
+				.create()
+				.createSelection();
 	}
 
 	@Nullable

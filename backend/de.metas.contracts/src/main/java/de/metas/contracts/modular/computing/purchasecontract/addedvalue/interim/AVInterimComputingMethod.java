@@ -25,7 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.purchasecontract.AbstractInterestComputingMethod;
-import de.metas.contracts.modular.interest.ModularLogInterestRepository;
+import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.shippingnotification.ShippingNotificationRepository;
@@ -49,11 +49,5 @@ public class AVInterimComputingMethod extends AbstractInterestComputingMethod
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return ComputingMethodType.AddValueOnInterim;
-	}
-
-	@Override
-	protected boolean isInterestBasedOnInterim()
-	{
-		return true;
 	}
 }

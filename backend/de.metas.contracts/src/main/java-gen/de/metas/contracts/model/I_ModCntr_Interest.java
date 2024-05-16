@@ -75,33 +75,6 @@ public interface I_ModCntr_Interest
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Invoice.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Invoice_ID (int C_Invoice_ID);
-
-	/**
-	 * Get Invoice.
-	 * Invoice Identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Invoice_ID();
-
-	@Nullable org.compiere.model.I_C_Invoice getC_Invoice();
-
-	void setC_Invoice(@Nullable org.compiere.model.I_C_Invoice C_Invoice);
-
-	ModelColumn<I_ModCntr_Interest, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_ModCntr_Interest.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
-	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -150,20 +123,20 @@ public interface I_ModCntr_Interest
 	/**
 	 * Set Interest days.
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setInterestDays (@Nullable BigDecimal InterestDays);
+	void setInterestDays (int InterestDays);
 
 	/**
 	 * Get Interest days.
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getInterestDays();
+	int getInterestDays();
 
 	ModelColumn<I_ModCntr_Interest, Object> COLUMN_InterestDays = new ModelColumn<>(I_ModCntr_Interest.class, "InterestDays", null);
 	String COLUMNNAME_InterestDays = "InterestDays";
@@ -190,25 +163,29 @@ public interface I_ModCntr_Interest
 	String COLUMNNAME_InterestScore = "InterestScore";
 
 	/**
-	 * Set Interim amount.
+	 * Set Interim Invoice Log.
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInterimAmt (BigDecimal InterimAmt);
+	void setInterimInvoice_ModCntr_Log_ID (int InterimInvoice_ModCntr_Log_ID);
 
 	/**
-	 * Get Interim amount.
+	 * Get Interim Invoice Log.
 	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getInterimAmt();
+	int getInterimInvoice_ModCntr_Log_ID();
 
-	ModelColumn<I_ModCntr_Interest, Object> COLUMN_InterimAmt = new ModelColumn<>(I_ModCntr_Interest.class, "InterimAmt", null);
-	String COLUMNNAME_InterimAmt = "InterimAmt";
+	@Nullable I_ModCntr_Log getInterimInvoice_ModCntr_Log();
+
+	void setInterimInvoice_ModCntr_Log(@Nullable I_ModCntr_Log InterimInvoice_ModCntr_Log);
+
+	ModelColumn<I_ModCntr_Interest, I_ModCntr_Log> COLUMN_InterimInvoice_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "InterimInvoice_ModCntr_Log_ID", I_ModCntr_Log.class);
+	String COLUMNNAME_InterimInvoice_ModCntr_Log_ID = "InterimInvoice_ModCntr_Log_ID";
 
 	/**
 	 * Set Active.
@@ -293,37 +270,37 @@ public interface I_ModCntr_Interest
 	 */
 	int getModCntr_Interest_Run_ID();
 
-	de.metas.contracts.model.I_ModCntr_Interest_Run getModCntr_Interest_Run();
+	I_ModCntr_Interest_Run getModCntr_Interest_Run();
 
-	void setModCntr_Interest_Run(de.metas.contracts.model.I_ModCntr_Interest_Run ModCntr_Interest_Run);
+	void setModCntr_Interest_Run(I_ModCntr_Interest_Run ModCntr_Interest_Run);
 
-	ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Interest_Run> COLUMN_ModCntr_Interest_Run_ID = new ModelColumn<>(I_ModCntr_Interest.class, "ModCntr_Interest_Run_ID", de.metas.contracts.model.I_ModCntr_Interest_Run.class);
+	ModelColumn<I_ModCntr_Interest, I_ModCntr_Interest_Run> COLUMN_ModCntr_Interest_Run_ID = new ModelColumn<>(I_ModCntr_Interest.class, "ModCntr_Interest_Run_ID", I_ModCntr_Interest_Run.class);
 	String COLUMNNAME_ModCntr_Interest_Run_ID = "ModCntr_Interest_Run_ID";
 
 	/**
-	 * Set Contract Module Log.
+	 * Set Shipping Notification Log.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModCntr_Log_ID (int ModCntr_Log_ID);
+	void setShippingNotification_ModCntr_Log_ID (int ShippingNotification_ModCntr_Log_ID);
 
 	/**
-	 * Get Contract Module Log.
+	 * Get Shipping Notification Log.
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getModCntr_Log_ID();
+	int getShippingNotification_ModCntr_Log_ID();
 
-	@Nullable de.metas.contracts.model.I_ModCntr_Log getModCntr_Log();
+	I_ModCntr_Log getShippingNotification_ModCntr_Log();
 
-	void setModCntr_Log(@Nullable de.metas.contracts.model.I_ModCntr_Log ModCntr_Log);
+	void setShippingNotification_ModCntr_Log(I_ModCntr_Log ShippingNotification_ModCntr_Log);
 
-	ModelColumn<I_ModCntr_Interest, de.metas.contracts.model.I_ModCntr_Log> COLUMN_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "ModCntr_Log_ID", de.metas.contracts.model.I_ModCntr_Log.class);
-	String COLUMNNAME_ModCntr_Log_ID = "ModCntr_Log_ID";
+	ModelColumn<I_ModCntr_Interest, I_ModCntr_Log> COLUMN_ShippingNotification_ModCntr_Log_ID = new ModelColumn<>(I_ModCntr_Interest.class, "ShippingNotification_ModCntr_Log_ID", I_ModCntr_Log.class);
+	String COLUMNNAME_ShippingNotification_ModCntr_Log_ID = "ShippingNotification_ModCntr_Log_ID";
 
 	/**
 	 * Get Updated.

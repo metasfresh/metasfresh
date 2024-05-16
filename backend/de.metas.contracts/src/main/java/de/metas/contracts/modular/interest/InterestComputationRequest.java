@@ -22,24 +22,42 @@
 
 package de.metas.contracts.modular.interest;
 
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
-import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 
 @Value
-@Builder
 public class InterestComputationRequest
 {
+	@NonNull InterestRunId interestRunId;
 	@NonNull InvoicingGroupId invoicingGroupId;
-	@NonNull LocalDate interimDate;
-	@NonNull LocalDate billingDate;
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
-	@NonNull PInstanceId logSelectionId;
+	@NonNull ComputingMethodType computingMethodType;
+	@Nullable BonusComputationDetails bonusComputationDetails;
+
+	@Builder(toBuilder = true)
+	public InterestComputationRequest(
+			@NonNull final InterestRunId interestRunId,
+			@NonNull final InvoicingGroupId invoicingGroupId,
+			@NonNull final Money interestToDistribute,
+			@NonNull final LockOwner lockOwner,
+			@Nullable final BonusComputationDetails bonusComputationDetails)
+	{
+		this.interestRunId = interestRunId;
+		this.invoicingGroupId = invoicingGroupId;
+		this.interestToDistribute = interestToDistribute;
+		this.lockOwner = lockOwner;
+		this.computingMethodType = bonusComputationDetails != null
+				? ComputingMethodType.SubtractValueOnInterim
+				: ComputingMethodType.AddValueOnInterim;
+		this.bonusComputationDetails = bonusComputationDetails;
+	}
 }

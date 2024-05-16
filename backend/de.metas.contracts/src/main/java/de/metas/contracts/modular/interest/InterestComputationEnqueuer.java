@@ -27,6 +27,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.model.I_ModCntr_Log;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -96,6 +97,8 @@ public class InterestComputationEnqueuer
 	private ILockCommand createElementsLocker(@NonNull final InvoicingGroupId invoicingGroupId)
 	{
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.computingMethodType(ComputingMethodType.AddValueOnInterim)
+				.computingMethodType(ComputingMethodType.SubtractValueOnInterim)
 				.processed(false)
 				.billable(true)
 				.invoicingGroupId(invoicingGroupId)

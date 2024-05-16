@@ -22,20 +22,22 @@
 
 package de.metas.contracts.modular.interest;
 
-import de.metas.contracts.modular.invgroup.InvoicingGroupId;
-import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.TimeUtil;
 
 import java.time.Instant;
 
 @Value
 @Builder
-public class EnqueueInterestComputationRequest
+public class BonusComputationDetails
 {
-	@NonNull InvoicingGroupId invoicingGroupId;
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
-	@NonNull Money interestToDistribute;
+
+	public int getBonusInterestDays()
+	{
+		return TimeUtil.getDaysBetween(interimDate, billingDate);
+	}
 }

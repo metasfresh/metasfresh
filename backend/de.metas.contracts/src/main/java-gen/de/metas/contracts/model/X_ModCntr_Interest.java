@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCntr_Interest, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1327321966L;
+	private static final long serialVersionUID = 925058310L;
 
     /** Standard Constructor */
     public X_ModCntr_Interest (final Properties ctx, final int ModCntr_Interest_ID, @Nullable final String trxName)
@@ -51,33 +51,6 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
-	}
-
-	@Override
-	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
-	}
-
-	@Override
-	public void setC_Invoice_ID (final int C_Invoice_ID)
-	{
-		if (C_Invoice_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
-	}
-
-	@Override
-	public int getC_Invoice_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
-	}
-
-	@Override
 	public void setFinalInterest (final @Nullable BigDecimal FinalInterest)
 	{
 		set_Value (COLUMNNAME_FinalInterest, FinalInterest);
@@ -91,16 +64,15 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setInterestDays (final @Nullable BigDecimal InterestDays)
+	public void setInterestDays (final int InterestDays)
 	{
 		set_Value (COLUMNNAME_InterestDays, InterestDays);
 	}
 
 	@Override
-	public BigDecimal getInterestDays() 
+	public int getInterestDays() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestDays);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_InterestDays);
 	}
 
 	@Override
@@ -117,16 +89,30 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setInterimAmt (final BigDecimal InterimAmt)
+	public I_ModCntr_Log getInterimInvoice_ModCntr_Log()
 	{
-		set_Value (COLUMNNAME_InterimAmt, InterimAmt);
+		return get_ValueAsPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, I_ModCntr_Log.class);
 	}
 
 	@Override
-	public BigDecimal getInterimAmt() 
+	public void setInterimInvoice_ModCntr_Log(final I_ModCntr_Log InterimInvoice_ModCntr_Log)
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterimAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
+		set_ValueFromPO(COLUMNNAME_InterimInvoice_ModCntr_Log_ID, I_ModCntr_Log.class, InterimInvoice_ModCntr_Log);
+	}
+
+	@Override
+	public void setInterimInvoice_ModCntr_Log_ID (final int InterimInvoice_ModCntr_Log_ID)
+	{
+		if (InterimInvoice_ModCntr_Log_ID < 1) 
+			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, null);
+		else 
+			set_Value (COLUMNNAME_InterimInvoice_ModCntr_Log_ID, InterimInvoice_ModCntr_Log_ID);
+	}
+
+	@Override
+	public int getInterimInvoice_ModCntr_Log_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
 	}
 
 	@Override
@@ -158,15 +144,15 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_Interest_Run getModCntr_Interest_Run()
+	public I_ModCntr_Interest_Run getModCntr_Interest_Run()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Interest_Run_ID, de.metas.contracts.model.I_ModCntr_Interest_Run.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_Interest_Run_ID, I_ModCntr_Interest_Run.class);
 	}
 
 	@Override
-	public void setModCntr_Interest_Run(final de.metas.contracts.model.I_ModCntr_Interest_Run ModCntr_Interest_Run)
+	public void setModCntr_Interest_Run(final I_ModCntr_Interest_Run ModCntr_Interest_Run)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Interest_Run_ID, de.metas.contracts.model.I_ModCntr_Interest_Run.class, ModCntr_Interest_Run);
+		set_ValueFromPO(COLUMNNAME_ModCntr_Interest_Run_ID, I_ModCntr_Interest_Run.class, ModCntr_Interest_Run);
 	}
 
 	@Override
@@ -185,29 +171,29 @@ public class X_ModCntr_Interest extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public de.metas.contracts.model.I_ModCntr_Log getModCntr_Log()
+	public I_ModCntr_Log getShippingNotification_ModCntr_Log()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class);
+		return get_ValueAsPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, I_ModCntr_Log.class);
 	}
 
 	@Override
-	public void setModCntr_Log(final de.metas.contracts.model.I_ModCntr_Log ModCntr_Log)
+	public void setShippingNotification_ModCntr_Log(final I_ModCntr_Log ShippingNotification_ModCntr_Log)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_Log_ID, de.metas.contracts.model.I_ModCntr_Log.class, ModCntr_Log);
+		set_ValueFromPO(COLUMNNAME_ShippingNotification_ModCntr_Log_ID, I_ModCntr_Log.class, ShippingNotification_ModCntr_Log);
 	}
 
 	@Override
-	public void setModCntr_Log_ID (final int ModCntr_Log_ID)
+	public void setShippingNotification_ModCntr_Log_ID (final int ShippingNotification_ModCntr_Log_ID)
 	{
-		if (ModCntr_Log_ID < 1) 
-			set_Value (COLUMNNAME_ModCntr_Log_ID, null);
+		if (ShippingNotification_ModCntr_Log_ID < 1) 
+			set_Value (COLUMNNAME_ShippingNotification_ModCntr_Log_ID, null);
 		else 
-			set_Value (COLUMNNAME_ModCntr_Log_ID, ModCntr_Log_ID);
+			set_Value (COLUMNNAME_ShippingNotification_ModCntr_Log_ID, ShippingNotification_ModCntr_Log_ID);
 	}
 
 	@Override
-	public int getModCntr_Log_ID() 
+	public int getShippingNotification_ModCntr_Log_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_ModCntr_Log_ID);
+		return get_ValueAsInt(COLUMNNAME_ShippingNotification_ModCntr_Log_ID);
 	}
 }

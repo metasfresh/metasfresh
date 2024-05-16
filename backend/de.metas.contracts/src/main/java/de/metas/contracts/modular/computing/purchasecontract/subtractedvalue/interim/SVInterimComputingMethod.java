@@ -25,7 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.in
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.purchasecontract.AbstractInterestComputingMethod;
-import de.metas.contracts.modular.interest.ModularLogInterestRepository;
+import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.shippingnotification.ShippingNotificationRepository;
@@ -50,11 +50,5 @@ public class SVInterimComputingMethod extends AbstractInterestComputingMethod
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return ComputingMethodType.SubtractValueOnInterim;
-	}
-
-	@Override
-	protected boolean isInterestBasedOnInterim()
-	{
-		return false;
 	}
 }

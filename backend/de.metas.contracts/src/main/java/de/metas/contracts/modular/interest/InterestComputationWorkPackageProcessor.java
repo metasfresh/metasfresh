@@ -40,18 +40,18 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		interestComputationService.computeInterest(getRequest());
+		interestComputationService.distributeInterestAndBonus(getRequest());
 
 		return Result.SUCCESS;
 	}
 
 	@NonNull
-	private InterestComputationRequest getRequest()
+	private InterestBonusComputationRequest getRequest()
 	{
 		return Optional.of(getParameters())
 				.map(params -> params.getParameterAsString(InterestComputationEnqueuer.ENQUEUED_REQUEST_PARAM))
 				.map(serializedRequest -> JsonObjectMapperHolder.fromJson(serializedRequest, EnqueueInterestComputationRequest.class))
-				.map(enqueueRequest -> InterestComputationRequest.builder()
+				.map(enqueueRequest -> InterestBonusComputationRequest.builder()
 						.interestToDistribute(enqueueRequest.getInterestToDistribute())
 						.billingDate(enqueueRequest.getBillingDate())
 						.interimDate(enqueueRequest.getInterimDate())

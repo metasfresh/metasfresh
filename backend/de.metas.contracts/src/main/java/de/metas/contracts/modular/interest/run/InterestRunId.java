@@ -20,38 +20,37 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interest;
+package de.metas.contracts.modular.interest.run;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.contracts.model.I_ModCntr_Interest_Run;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.contracts.model.I_ModCntr_Interest.COLUMNNAME_ModCntr_Interest_ID;
-
 @Value
-public class ModularInterestLogId implements RepoIdAware
+public class InterestRunId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static ModularInterestLogId ofRepoId(final int repoId)
+	public static InterestRunId ofRepoId(final int repoId)
 	{
-		return new ModularInterestLogId(repoId);
+		return new InterestRunId(repoId);
 	}
 
 	@Nullable
-	public static ModularInterestLogId ofRepoIdOrNull(@Nullable final Integer repoId)
+	public static InterestRunId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
-		return repoId != null && repoId > 0 ? new ModularInterestLogId(repoId) : null;
+		return repoId != null && repoId > 0 ? new InterestRunId(repoId) : null;
 	}
 
-	private ModularInterestLogId(final int repoId)
+	private InterestRunId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, COLUMNNAME_ModCntr_Interest_ID);
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_ModCntr_Interest_Run.COLUMNNAME_ModCntr_Interest_Run_ID);
 	}
 
 	@JsonValue

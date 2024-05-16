@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.interim.invoice.process;
 
+import ch.qos.logback.classic.Level;
 import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.modular.interest.EnqueueInterestComputationRequest;
 import de.metas.contracts.modular.interest.InterestComputationEnqueuer;
@@ -30,39 +31,46 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.IOrgDAO;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
 
 public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
 {
-	@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
+	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
+	@NonNull private final InterestComputationEnqueuer enqueuer = SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Param(parameterName = "InterimDate", mandatory = true)
 	private LocalDate p_InterimDate;
 
 	@Param(parameterName = "BillingDate", mandatory = true)
-	LocalDate p_BillingDate;
+	private LocalDate p_BillingDate;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID)
-	InvoicingGroupId p_InvoicingGroupId;
+	private InvoicingGroupId p_InvoicingGroupId;
 
 	@Nullable @Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_TotalInterest)
-	BigDecimal p_InterestToDistribute;
+	private BigDecimal p_InterestToDistribute;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_C_Currency_ID)
-	int p_InterestToDistributeCurrencyId;
+	private Integer p_InterestToDistributeCurrencyId = -1;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -77,60 +85,64 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 	@Override
 	protected String doIt() throws Exception
 	{
+		final Instant billingDate = Objects.requireNonNull(TimeUtil.asInstant(p_BillingDate, orgDAO.getTimeZone(Env.getOrgId())));
+		final Instant interimDate = Objects.requireNonNull(TimeUtil.asInstant(p_InterimDate, orgDAO.getTimeZone(Env.getOrgId())));
 		final InvoicingGroupId invoicingGroupId = p_InvoicingGroupId;
 		if (invoicingGroupId != null)
 		{
 			final Money interestToDistribute = Money.ofOrNull(p_InterestToDistribute, CurrencyId.ofRepoIdOrNull(p_InterestToDistributeCurrencyId));
-			if (getAndLogInterestToDistribute(interestToDistribute, invoicingGroupId))
+			if (skipInvoicingGroup(interestToDistribute, invoicingGroupId))
 			{
 				return MSG_Error;
 			}
+
 			final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
 					.interestToDistribute(Objects.requireNonNull(interestToDistribute))
-					.billingDate(p_BillingDate)
-					.interimDate(p_InterimDate)
+					.billingDate(billingDate)
+					.interimDate(interimDate)
 					.invoicingGroupId(invoicingGroupId)
 					.build();
 
-			SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class)
-					.enqueueNow(request, Env.getLoggedUserId());
+			enqueuer.enqueueNow(request, Env.getLoggedUserId());
 		}
-
 		else
 		{
-			modCntrInvoicingGroupRepository.streamAll()
-					.forEach(this::enqueue);
+			invoicingGroupRepository.streamAll().forEach(invoicingGroup -> enqueue(invoicingGroup, billingDate, interimDate));
 		}
 
 		return MSG_OK;
 	}
 
-	private void enqueue(@NonNull final InvoicingGroup invoicingGroup)
+	private void enqueue(
+			@NonNull final InvoicingGroup invoicingGroup,
+			@NonNull final Instant billingDate,
+			@NonNull final Instant interimDate)
 	{
-		if (getAndLogInterestToDistribute(invoicingGroup.amtToDistribute(), invoicingGroup.id()))
+		if (skipInvoicingGroup(invoicingGroup.amtToDistribute(), invoicingGroup.id()))
 		{
 			return;
 		}
 		final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
 				.interestToDistribute(Objects.requireNonNull(invoicingGroup.amtToDistribute()))
-				.billingDate(p_BillingDate)
-				.interimDate(p_InterimDate)
+				.billingDate(billingDate)
+				.interimDate(interimDate)
 				.invoicingGroupId(invoicingGroup.id())
 				.build();
 
-		SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class)
-				.enqueueNow(request, Env.getLoggedUserId());
+		enqueuer.enqueueNow(request, Env.getLoggedUserId());
 	}
 
-	private boolean getAndLogInterestToDistribute(final @Nullable Money interestToDistribute, final @NonNull InvoicingGroupId id)
+	private boolean skipInvoicingGroup(final @Nullable Money interestToDistribute, final @NonNull InvoicingGroupId id)
 	{
 		final BigDecimal amtToDistribute = Money.toBigDecimalOrZero(interestToDistribute);
-		if (amtToDistribute.compareTo(BigDecimal.ZERO) == 0)
+		if (amtToDistribute.signum() == 0)
 		{
-			log.info("Interest to distribute is 0 for invoicing group: {}. Skipping.", id);
+			Loggables.withLogger(log, Level.INFO)
+					.addLog("Interest to distribute is 0 for invoicing group: {}. Skipping.", id);
 			return true;
 		}
-		log.info("Enqueuing interest to distribute: {} for invoicing group: {}", amtToDistribute, id);
+		Loggables.withLogger(log, Level.INFO)
+				.addLog("Enqueuing interest to distribute: {} for invoicing group: {}", amtToDistribute, id);
 		return false;
 	}
 
@@ -147,8 +159,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 			}
 			else
 			{
-				final Money amtToDistribute = modCntrInvoicingGroupRepository.getById(invoicingGroupId)
-						.amtToDistribute();
+				final Money amtToDistribute = invoicingGroupRepository.getById(invoicingGroupId).amtToDistribute();
 				p_InterestToDistribute = Money.toBigDecimalOrZero(amtToDistribute);
 				p_InterestToDistributeCurrencyId = amtToDistribute == null ? -1 : amtToDistribute.getCurrencyId().getRepoId();
 			}

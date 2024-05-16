@@ -20,22 +20,22 @@
  * #L%
  */
 
-package de.metas.contracts.modular.interest;
+package de.metas.contracts.modular.interest.run;
 
-import de.metas.contracts.modular.log.ModularContractLogEntryId;
-import de.metas.invoice.InvoiceId;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
 @Builder
-public class CreateModularLogInterestRequest
+public class CreateInterestRunRequest
 {
-	@NonNull ModularContractLogEntryId logId;
-	@NonNull Money allocatedAmt;
-	@Nullable InvoiceId allocatedToInterimInvoiceId;
+	@NonNull InvoicingGroupId invoicingGroupId;
+	@NonNull Money interestToDistribute;
+	@NonNull Instant interimDate;
+	@NonNull Instant billingDate;
 }

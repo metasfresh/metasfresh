@@ -73,6 +73,28 @@ public interface I_ModCntr_Interest_Run
 	String COLUMNNAME_BillingDate = "BillingDate";
 
 	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -96,29 +118,6 @@ public interface I_ModCntr_Interest_Run
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Start Date.
-	 * Indicate the real date to start
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDateStart (java.sql.Timestamp DateStart);
-
-	/**
-	 * Get Start Date.
-	 * Indicate the real date to start
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getDateStart();
-
-	ModelColumn<I_ModCntr_Interest_Run, Object> COLUMN_DateStart = new ModelColumn<>(I_ModCntr_Interest_Run.class, "DateStart", null);
-	String COLUMNNAME_DateStart = "DateStart";
 
 	/**
 	 * Set Interim Date.
@@ -203,11 +202,11 @@ public interface I_ModCntr_Interest_Run
 	 */
 	int getModCntr_InvoicingGroup_ID();
 
-	de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
+	I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup();
 
-	void setModCntr_InvoicingGroup(de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
+	void setModCntr_InvoicingGroup(I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup);
 
-	ModelColumn<I_ModCntr_Interest_Run, de.metas.contracts.model.I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Interest_Run.class, "ModCntr_InvoicingGroup_ID", de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
+	ModelColumn<I_ModCntr_Interest_Run, I_ModCntr_InvoicingGroup> COLUMN_ModCntr_InvoicingGroup_ID = new ModelColumn<>(I_ModCntr_Interest_Run.class, "ModCntr_InvoicingGroup_ID", I_ModCntr_InvoicingGroup.class);
 	String COLUMNNAME_ModCntr_InvoicingGroup_ID = "ModCntr_InvoicingGroup_ID";
 
 	/**

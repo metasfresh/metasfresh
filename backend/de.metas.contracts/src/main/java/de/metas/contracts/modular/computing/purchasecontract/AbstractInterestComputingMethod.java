@@ -25,11 +25,12 @@ package de.metas.contracts.modular.computing.purchasecontract;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.interest.ModularLogInterestRepository;
+import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
@@ -142,6 +143,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				.billable(true)
 				.flatrateTermId(request.getFlatrateTermId())
 				.contractModuleId(request.getModularContractModuleId())
+				.lockOwner(request.getLockOwner())
 				.build();
 		final ModularContractLogEntriesList modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);
 		if (modularContractLogEntries.isEmpty())
@@ -152,7 +154,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 
 		final ModularLogInterestRepository.LogInterestQuery logInterestQuery = ModularLogInterestRepository.LogInterestQuery.builder()
 				.logEntryIds(modularContractLogEntriesIds)
-				.interestBasedOnInterim(isInterestBasedOnInterim())
+				.onlyBonusRecords(getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim)
 				.build();
 
 		if (modularLogInterestRepository.isInterestCalculated(logInterestQuery))
@@ -183,6 +185,4 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				.qty(qty)
 				.build();
 	}
-
-	protected abstract boolean isInterestBasedOnInterim();
 }

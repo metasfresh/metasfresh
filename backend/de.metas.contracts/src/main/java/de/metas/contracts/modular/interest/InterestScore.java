@@ -22,24 +22,38 @@
 
 package de.metas.contracts.modular.interest;
 
-import de.metas.contracts.modular.log.ModularContractLogEntryId;
-import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import lombok.Builder;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
-@Value
-@Builder
-public class ModularLogInterest
+@Value(staticConstructor = "of")
+public class InterestScore
 {
-	@NonNull ModularInterestLogId interestLogId;
-	@NonNull ModularContractLogEntryId logId;
-	@NonNull Money allocatedAmt;
-	@Nullable InvoiceId allocatedToInterimInvoiceId;
-	@Nullable BigDecimal interestScore;
-	@Nullable Money finalInterest;
+	@NonNull Money amount;
+	@NonNull Integer numberOfDays;
+
+	@NonNull
+	public BigDecimal getScore()
+	{
+		return computeScore(amount, numberOfDays);
+	}
+
+	public void assertCurrency(@NonNull final CurrencyId currencyId)
+	{
+		amount.assertCurrencyId(currencyId);
+	}
+
+	@NonNull
+	public static BigDecimal computeScore(@NonNull final Money amount, final int interestDays)
+	{
+		final BigDecimal amountAsBD = amount.toBigDecimal();
+
+		return amountAsBD.multiply(NumberUtils.asBigDecimal(interestDays))
+				.divide(NumberUtils.asBigDecimal(100), amountAsBD.scale(), RoundingMode.HALF_UP);
+	}
 }

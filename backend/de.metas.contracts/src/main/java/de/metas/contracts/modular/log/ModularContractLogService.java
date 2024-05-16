@@ -22,10 +22,12 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -126,6 +128,18 @@ public class ModularContractLogService
 	public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return modularContractLogDAO.streamModularContractLogEntries(query);
+	}
+
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractIds(query);
+	}
+
+	@Nullable
+	public PInstanceId getSelection(@NonNull final LockOwner lockOwner)
+	{
+		return modularContractLogDAO.getSelection(lockOwner);
 	}
 
 	public void validateLogPrices(@NonNull final ModularContractLogEntriesList logs)

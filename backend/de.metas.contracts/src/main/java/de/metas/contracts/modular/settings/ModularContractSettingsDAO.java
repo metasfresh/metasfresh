@@ -222,7 +222,7 @@ public class ModularContractSettingsDAO
 				.name(settingsRecord.getName())
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
-				.interestRate(settingsRecord.getInterestRate())
+				.interestPercent(settingsRecord.getInterestRate())
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))

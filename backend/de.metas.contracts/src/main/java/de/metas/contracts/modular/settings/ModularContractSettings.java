@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.standard.CalendarId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
+import de.metas.common.util.NumberUtils;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
@@ -41,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +102,7 @@ public class ModularContractSettings
 	public YearId getYearId() {return yearAndCalendarId.yearId();}
 
 	int additionalInterestDays;
-	@NonNull BigDecimal interestRate;
+	@Nullable BigDecimal interestPercent;
 
 
 	@NonNull
@@ -140,4 +142,14 @@ public class ModularContractSettings
 				.count();
 	}
 
+	@NonNull
+	public BigDecimal getBonusInterestRate()
+	{
+		if (interestPercent == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return interestPercent.divide(NumberUtils.asBigDecimal(100), RoundingMode.HALF_UP);
+	}
 }
