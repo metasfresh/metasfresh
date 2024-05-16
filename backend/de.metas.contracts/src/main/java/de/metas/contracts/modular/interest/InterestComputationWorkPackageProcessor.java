@@ -32,7 +32,6 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
-import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,18 +79,11 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
 				.build();
 
-		final PInstanceId selectionId = modularContractLogService.getModularContractLogEntrySelection(query);
-		if (selectionId == null)
-		{
-			throw new AdempiereException("Nothing to process, no logs available for the selected invoicing group!")
-					.markAsUserValidationError();
-		}
-
 		final ILock lock = lockManager.lock()
-				.setOwner(LockOwner.newOwner(InterestComputationEnqueuer.class.getSimpleName() + "_" + Instant.now()))
+				.setOwner(LockOwner.newOwner(InterestComputationWorkPackageProcessor.class.getSimpleName() + "_" + Instant.now()))
 				.setAutoCleanup(false)
 				.setFailIfAlreadyLocked(true)
-				.setRecordsBySelection(I_ModCntr_Log.class, selectionId)
+				.setSetRecordsByFilter(I_ModCntr_Log.class, modularContractLogService.getModularContractLogEntryFilter(query))
 				.acquire();
 
 		return InterestBonusComputationRequest.builder()

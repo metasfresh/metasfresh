@@ -24,6 +24,7 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -41,6 +42,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -122,6 +124,12 @@ public class ModularContractLogService
 	public PInstanceId getModularContractLogEntrySelection(@NonNull final ModularContractLogQuery query)
 	{
 		return modularContractLogDAO.getModularContractLogEntrySelection(query);
+	}
+
+	@NonNull
+	public IQueryFilter<I_ModCntr_Log> getModularContractLogEntryFilter(@NonNull final ModularContractLogQuery query)
+	{
+		return modularContractLogDAO.getModularContractLogEntryFilter(query);
 	}
 
 	@NonNull

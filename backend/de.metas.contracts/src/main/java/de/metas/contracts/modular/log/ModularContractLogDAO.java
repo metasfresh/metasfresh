@@ -453,6 +453,15 @@ public class ModularContractLogDAO
 	}
 
 	@NonNull
+	public IQueryFilter<I_ModCntr_Log> getModularContractLogEntryFilter(@NonNull final ModularContractLogQuery query)
+	{
+		return queryBL.createCompositeQueryFilter(I_ModCntr_Log.class)
+				.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
+									 I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
+									 toSqlQuery(query).create());
+	}
+
+	@NonNull
 	public Stream<ModularContractLogEntry> streamModularContractLogEntries(@NonNull final ModularContractLogQuery query)
 	{
 		return toSqlQuery(query)
