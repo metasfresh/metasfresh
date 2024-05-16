@@ -25,6 +25,7 @@ package de.metas.contracts.modular.interest;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.interest.run.InterestRunId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public class InterestComputationRequest
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
 	@NonNull ComputingMethodType computingMethodType;
-	@NonNull Integer interestScale;
+	@NonNull CurrencyPrecision interestCurrencyPrecision;
 	@Nullable BonusComputationDetails bonusComputationDetails;
 
 	@Builder(toBuilder = true)
@@ -50,7 +51,7 @@ public class InterestComputationRequest
 			@NonNull final InvoicingGroupId invoicingGroupId,
 			@NonNull final Money interestToDistribute,
 			@NonNull final LockOwner lockOwner,
-			@NonNull final Integer interestScale,
+			@NonNull final CurrencyPrecision interestCurrencyPrecision,
 			@Nullable final BonusComputationDetails bonusComputationDetails)
 	{
 		this.interestRunId = interestRunId;
@@ -60,7 +61,7 @@ public class InterestComputationRequest
 		this.computingMethodType = bonusComputationDetails != null
 				? ComputingMethodType.SubtractValueOnInterim
 				: ComputingMethodType.AddValueOnInterim;
-		this.interestScale = interestScale;
+		this.interestCurrencyPrecision = interestCurrencyPrecision;
 		this.bonusComputationDetails = bonusComputationDetails;
 	}
 }

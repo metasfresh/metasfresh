@@ -107,7 +107,7 @@ public class InterestComputationCommand
 		final InitialInterestAllocationResult result = createInterestRecords(request);
 
 		final BigDecimal interestScoreRate = request.getInterestToDistribute().toBigDecimal()
-				.divide(result.getTotalInterestScore(), request.getInterestScale(), RoundingMode.HALF_UP);
+				.divide(result.getTotalInterestScore(), request.getInterestCurrencyPrecision().toInt(), RoundingMode.HALF_UP);
 
 		distributeInterest(request, interestScoreRate);
 	}
@@ -241,7 +241,7 @@ public class InterestComputationCommand
 		final int interestDays = request.getBonusComputationDetails().getBonusInterestDays();
 
 		final BigDecimal bonusAmountAsBD = bonusInterestRate.computePercentageOf(shippingNotification.getOpenAmount().toBigDecimal(),
-																				 request.getInterestScale())
+																				 request.getInterestCurrencyPrecision().toInt())
 				.multiply(BigDecimal.valueOf(interestDays))
 				.divide(BigDecimal.valueOf(TOTAL_DAYS_OF_FISCAL_YEAR), RoundingMode.HALF_UP)
 				.negate();
@@ -401,7 +401,7 @@ public class InterestComputationCommand
 			@NonNull final InterestRunId runId)
 	{
 		return InterestComputationRequest.builder()
-				.interestScale(currencyBL.getStdPrecision(request.getInterestToDistribute().getCurrencyId()).toInt())
+				.interestCurrencyPrecision(currencyBL.getStdPrecision(request.getInterestToDistribute().getCurrencyId()))
 				.interestRunId(runId)
 				.interestToDistribute(request.getInterestToDistribute())
 				.invoicingGroupId(request.getInvoicingGroupId())
