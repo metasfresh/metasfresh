@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.shipment;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -109,7 +110,8 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -128,7 +130,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 											.quantity(quantity)
 											.amount(null)
 											.transactionDate(transactionDate)
-											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())

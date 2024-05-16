@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -33,6 +34,7 @@ import de.metas.contracts.modular.log.LogEntryDeleteRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
@@ -137,7 +139,8 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 																				OrgId.ofRepoId(ppCostCollector.getAD_Org_ID()),
 																				orgDAO::getTimeZone);
 
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, transactionDate.toInstant(orgDAO::getTimeZone))
+		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
@@ -153,7 +156,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 											.soTrx(SOTrx.PURCHASE)
 											.quantity(modCntrLogQty)
 											.transactionDate(transactionDate)
-											.year(modularContractSettings.getYearAndCalendarId().yearId())
+											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configId(createLogRequest.getConfigId())
@@ -170,7 +173,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 
 	@Override
 	@NonNull
-	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest)
+	public LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, final @NonNull ModularContractModuleId modularContractModuleId)
 	{
 		final TableRecordReference recordRef = handleLogsRequest.getTableRecordReference();
 		final PPCostCollectorId ppCostCollectorId = PPCostCollectorId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName()));
@@ -181,6 +184,7 @@ public class PPCostCollectorLog implements IModularContractLogHandler
 				.subEntryId(LogSubEntryId.ofCostCollectorId(ppCostCollectorId))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
+				.modularContractModuleId(modularContractModuleId)
 				.build();
 	}
 }

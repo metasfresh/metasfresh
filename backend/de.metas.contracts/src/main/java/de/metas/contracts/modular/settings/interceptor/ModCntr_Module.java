@@ -65,6 +65,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_SALES_RAW_AND_PROCESSED_PRODUCT_BOTH_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductAndSalesOnProcessedProductError");
 	private static final AdMessageKey ERROR_SALES_RAW_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnRawProductRequiredInvoicingGroup");
 	private static final AdMessageKey ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SalesOnProcessedProductRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_INTERIM_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimRequiredInvoicingGroup");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -138,6 +139,13 @@ public class ModCntr_Module
 				if (!ProductId.equals(settings.getRawProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);
+				}
+			}
+			case INTERIM_CONTRACT ->
+			{
+				if (!module.getInvoicingGroup().isServicesType())
+				{
+					throw new AdempiereException(ERROR_INTERIM_REQUIRED_INV_GROUP, InvoicingGroupType.SERVICES.getDisplayName());
 				}
 			}
 

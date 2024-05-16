@@ -22,14 +22,19 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -49,10 +54,14 @@ public class ModularContractLogQuery
 	@Nullable ModularContractModuleId contractModuleId;
 	@Nullable Boolean processed;
 	@Nullable Boolean billable;
-	@Nullable ComputingMethodType computingMethodType;
 	@Nullable InvoiceCandidateId invoiceCandidateId;
 	@Nullable LockOwner lockOwner;
+	@Nullable InvoicingGroupId invoicingGroupId;
+	@Nullable LogEntryDocumentType logEntryDocumentType;
+	boolean onlyIfAmountIsSet;
 	@NonNull @Singular ImmutableSet<ModularContractLogEntryId> entryIds;
+	@NonNull @Singular ImmutableList<OrderBy> orderBys;
+	@NonNull @Singular ImmutableSet<ComputingMethodType> computingMethodTypes;
 	
 	@NonNull
 	public static ModularContractLogQuery ofEntryIds(@NonNull final Set<ModularContractLogEntryId> entryIds)
@@ -60,5 +69,16 @@ public class ModularContractLogQuery
 		return ModularContractLogQuery.builder()
 				.entryIds(entryIds)
 				.build();
+	}
+
+	@Getter
+	@AllArgsConstructor
+	public enum OrderBy
+	{
+		TRANSACTION_DATE_ASC(I_ModCntr_Log.COLUMNNAME_DateTrx, true),
+		;
+
+		final String columnName;
+		final boolean ascending;
 	}
 }

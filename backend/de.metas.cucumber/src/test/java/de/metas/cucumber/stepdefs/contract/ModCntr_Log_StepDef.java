@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Type;
@@ -88,7 +89,6 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 

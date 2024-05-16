@@ -35,18 +35,13 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull
-	private final ReceiptComputingMethod computingMethod;
-
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -55,8 +50,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 			@NonNull final ReceiptComputingMethod computingMethod,
 			@NonNull final ModularContractService modularContractService)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService);
-		this.computingMethod = computingMethod;
+		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);
 	}
 
 	@Override
