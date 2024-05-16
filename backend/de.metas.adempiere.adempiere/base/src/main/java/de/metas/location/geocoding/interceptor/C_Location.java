@@ -1,5 +1,14 @@
 package de.metas.location.geocoding.interceptor;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.Topic;
+import de.metas.location.LocationId;
+import de.metas.location.geocoding.GeocodingService;
+import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -7,11 +16,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.asynchandler.LocationGeocodeEventRequest;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -37,30 +42,30 @@ import de.metas.util.Services;
 
 @Component
 @Interceptor(I_C_Location.class)
+@RequiredArgsConstructor
 public class C_Location
 {
 	public static final Topic EVENTS_TOPIC = Topic.distributed("de.metas.location.geocoding.events");
 
-	private final IEventBusFactory eventBusFactory;
-
-	public C_Location(final IEventBusFactory eventBusFactory)
-	{
-		this.eventBusFactory = eventBusFactory;
-	}
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IEventBusFactory eventBusFactory;
+	@NonNull private final GeocodingService geocodingService;
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onNewLocation(final I_C_Location locationRecord)
 	{
-		final LocationId locationId = LocationId.ofRepoId(locationRecord.getC_Location_ID());
-
-		Services.get(ITrxManager.class)
-				.runAfterCommit(() -> fireLocationGeocodeRequest(locationId));
+		if (geocodingService.isProviderConfigured())
+		{
+			trxManager.accumulateAndProcessAfterCommit(
+					"LocationGeocodeEventRequest",
+					ImmutableList.of(LocationGeocodeEventRequest.of(LocationId.ofRepoId(locationRecord.getC_Location_ID()))),
+					this::fireLocationGeocodeRequests
+			);
+		}
 	}
 
-	private void fireLocationGeocodeRequest(final LocationId locationId)
+	private void fireLocationGeocodeRequests(final List<LocationGeocodeEventRequest> requests)
 	{
-		eventBusFactory
-				.getEventBus(EVENTS_TOPIC)
-				.enqueueObject(LocationGeocodeEventRequest.of(locationId));
+		eventBusFactory.getEventBus(EVENTS_TOPIC).enqueueObjectsCollection(requests);
 	}
 }
