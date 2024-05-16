@@ -10,8 +10,13 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
@@ -46,13 +51,17 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 {
 
 	private final DocOutBoundRecipientRepository recipientRepository;
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public InvoiceDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL)
 	{
 		this.recipientRepository = recipientRepository;
+		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepository;
 		this.bpartnerBL = bpartnerBL;
 	}
 
@@ -71,15 +80,34 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 	@Override
 	public Optional<DocOutBoundRecipient> provideMailRecipient(@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		final I_C_Invoice invoiceRecord = request.getRecordRef()
-				.getModel(I_C_Invoice.class);
+		final I_C_Invoice invoiceRecord = request.getRecordRef().getModel(I_C_Invoice.class);
+
+		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
+				ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
+
+		final String invoiceEmail = propagateToDocOutboundLog? invoiceRecord.getEMail() : null;
+
+		final String locationEmail = invoiceBL.getLocationEmail(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+
 		if (invoiceRecord.getAD_User_ID() > 0)
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(invoiceRecord.getAD_User_ID()));
-			if (!Check.isEmpty(invoiceUser.getEmailAddress(), true))
+
+			if (Check.isNotBlank(invoiceEmail))
+			{
+				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
+			}
+
+			if (Check.isNotBlank(invoiceUser.getEmailAddress()))
 			{
 				return Optional.of(invoiceUser);
 			}
+
+			if (Check.isNotBlank(locationEmail))
+			{
+				return Optional.of(invoiceUser.withEmailAddress(locationEmail));
+			}
+
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
@@ -90,15 +118,31 @@ public class InvoiceDocOutboundLogMailRecipientProvider
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceRecord.getC_BPartner_Location_ID()))
 						.contactType(ContactType.BILL_TO_DEFAULT)
-						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
+
 		if (billContact != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
-			return Optional.of(docOutBoundRecipient);
+
+			if (Check.isNotBlank(invoiceEmail))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
+			}
+
+			if (Check.isNotBlank(locationEmail))
+			{
+				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+			}
+
+			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
+			{
+				return Optional.of(docOutBoundRecipient);
+			}
 		}
+
 		return Optional.empty();
+
 	}
 
 }

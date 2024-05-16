@@ -174,18 +174,16 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
-      # - name: build-mobile
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
-          # .
+      - name: build-mobile
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: push-images
-            # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-            # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -194,11 +192,13 @@ jobs:
           command: |
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
-          # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   test-frontend:
     name: test (frontend)
@@ -461,16 +461,16 @@ jobs:
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      # - name: build-mobile-compat
-        # run: |
-          # docker buildx build \
-          # --file docker-builds/Dockerfile.mobile.compat \
-          # --cache-to type=inline \
-          # --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
-          # --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
-          # .
+      - name: build-mobile-compat
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile.compat \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
+          --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat \
+          .
       - name: build-frontend-compat
         run: |
           docker buildx build \
@@ -482,8 +482,6 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
       - name: push-images
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-          # docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -496,6 +494,8 @@ jobs:
             docker push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
             docker tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
@@ -641,7 +641,7 @@ jobs:
           - profile: flaky
             params: -Dcucumber.filter.tags="@flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @flaky"
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -747,11 +747,11 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh webui
-#      - name: mobile health check
-#        working-directory: docker-builds/health/
-#        if: success() || failure()
-#        run: |
-#          ./containerHealthCheck.sh mobile
+      - name: mobile health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh mobile
 #      - name: run api health checks
 #        working-directory: docker-builds/health/
 #        if: success() || failure()
@@ -769,7 +769,7 @@ jobs:
           docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
           docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
-#          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
+          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
       - name: stop docker-compose
         working-directory: docker-builds/compose/
         env:

@@ -38,6 +38,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -121,8 +122,6 @@ public class HUAssignmentBL implements IHUAssignmentBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 		final int recordId = InterfaceWrapperHelper.getId(model);
-
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final IHUAssignmentBuilder builder = createHUAssignmentBuilder();
 
@@ -338,18 +337,17 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign, final String trxName)
+	public void unassignHUs(@NonNull final Object model, @NonNull final Collection<HuId> husToUnassign, final String trxName)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		huAssignmentDAO.deleteHUAssignments(model, husToUnassign, trxName);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
+		final TableRecordReference modelRef = TableRecordReference.of(model);
+		huAssignmentDAO.deleteHUAssignments(ctx, modelRef, husToUnassign, trxName);
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign)
+	public void unassignHUs(@NonNull final TableRecordReference modelRef, @NonNull final Collection<HuId> husToUnassign)
 	{
-		Check.assumeNotNull(model, "model not null");
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-		unassignHUs(model, husToUnassign, trxName);
+		huAssignmentDAO.deleteHUAssignments(Env.getCtx(), modelRef, husToUnassign, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Override
@@ -363,8 +361,6 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			@NonNull final Object sourceModel,
 			@NonNull final Object targetModel)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-
 		final List<I_M_HU_Assignment> //
 				huAssignmentsForSource = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(sourceModel);
 

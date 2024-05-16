@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
@@ -38,7 +39,8 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
-import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
+import de.metas.common.externalsystem.JsonProductLookup;
+import de.metas.common.ordercandidates.v2.request.JsonGroupCompensationOrderBy;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -46,26 +48,31 @@ import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_VIA_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_ORDER_LINE_DISCOUNT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ORDER_LINE_SEQUENCE_INCREMENT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ORDER_LINE_SEQUENCE_INITIAL_VALUE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.VALUE_PREFIX;
 import static java.math.BigDecimal.ZERO;
@@ -74,16 +81,17 @@ public class OLCandRequestProcessor implements Processor
 {
 
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+		final ImportOrdersRouteContext importOrdersRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
 		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResponseList = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
 		final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse = Check.singleElement(bPartnerUpsertResponseList.getResponseItems());
 
 		if (bPartnerUpsertResponse == null)
 		{
-			throw new RuntimeException("No JsonResponseUpsert present! OrderId=" + importOrdersRouteContext.getOrderNotNull().getJsonOrder().getId());
+			final JsonOrder order = importOrdersRouteContext.getOrderNotNull().getJsonOrder();
+			throw new RuntimeException("Order " + order.getOrderNumber() + " (ID=" + order.getId() + "): No JsonResponseUpsert present!");
 		}
 
 		final JsonOLCandCreateBulkRequest olCandBulkRequest = buildOlCandRequest(importOrdersRouteContext, bPartnerUpsertResponse);
@@ -95,28 +103,33 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder olCandCreateBulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
+		final ImmutableList.Builder<JsonOLCandCreateRequest> olCandCreateRequests = ImmutableList.builder();
 
 		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final JsonOrder jsonOrder = orderCandidate.getJsonOrder();
 
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
+
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
-				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderCandidate.getJsonOrder().getCurrencyId()))
-				.externalHeaderId(orderCandidate.getJsonOrder().getId())
-				.poReference(orderCandidate.getJsonOrder().getOrderNumber())
+				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), jsonOrder.getCurrencyId()))
+				.externalHeaderId(jsonOrder.getId())
+				.poReference(jsonOrder.getOrderNumber())
 				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
 				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
-				.dateOrdered(getDateOrdered(orderCandidate.getJsonOrder()))
+				.dateOrdered(getDateOrdered(jsonOrder))
 				.dateRequired(context.getDateRequired())
-				.dateCandidate(getDateCandidate(orderCandidate.getJsonOrder()))
+				.dateCandidate(getDateCandidate(jsonOrder))
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
-				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null);
+				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null)
+				.email(jsonOrder.getOrderCustomer().getEmail())
+				.phone(context.getOrderShippingAddressNotNull().getPhoneNumber())
+				.bpartnerName(context.getExtendedShippingLocationBPartnerName());
 
 		if (Check.isNotBlank(context.getShippingMethodId()))
 		{
@@ -132,16 +145,15 @@ public class OLCandRequestProcessor implements Processor
 
 		processShopwareConfigs(context, olCandCreateRequestBuilder);
 
-		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderCandidate.getJsonOrder().getId());
-
+		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, jsonOrder.getId());
 		if (orderLines.isEmpty())
 		{
-			throw new RuntimeException("Missing order lines! OrderId=" + orderCandidate.getJsonOrder().getId());
+			throw new RuntimeException("Order " + jsonOrder.getOrderNumber() + " (ID=" + jsonOrder.getId() + "): Missing order lines!");
 		}
 
 		orderLines.stream()
-				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine))
-				.forEach(olCandCreateBulkRequestBuilder::request);
+				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine, context.getJsonProductLookup()))
+				.forEach(olCandCreateRequests::add);
 
 		final TaxProductIdProvider taxProductIdProvider = context.getTaxProductIdProvider();
 		if (taxProductIdProvider != null)
@@ -158,7 +170,7 @@ public class OLCandRequestProcessor implements Processor
 				if (!hasCalculatedTaxes)
 				{ // case: the order is tax-free; there is just a total shipping price
 					final BigDecimal taxRate = ZERO;
-					olCandCreateBulkRequestBuilder.request(
+					olCandCreateRequests.add(
 							olCandCreateRequestBuilder
 									.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + taxRate)
 									.line(null)
@@ -174,11 +186,12 @@ public class OLCandRequestProcessor implements Processor
 					calculatedTaxes.stream()
 							.map(tax -> processTax(taxProductIdProvider, olCandCreateRequestBuilder, tax))
 							.filter(Optional::isPresent).map(Optional::get)
-							.forEach(olCandCreateBulkRequestBuilder::request);
+							.forEach(olCandCreateRequests::add);
 				}
 			}
 		}
-		return olCandCreateBulkRequestBuilder.build();
+
+		return renumberLinesIfRequired(olCandCreateRequests.build());
 	}
 
 	@NonNull
@@ -186,31 +199,30 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final OrderCandidate orderCandidate = context.getOrderNotNull();
-
-		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
-		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
+		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
-		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
+		final String shippingBPLocationExternalIdentifier = context.getShippingBPLocationExternalIdNotNull();
 
-		// extract the AD_User_ID (contact-ID)
-		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
-				bPartnerUpsertResponse.getResponseContactItems(),
-				shippingBPLocationExternalIdentifier);
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				shippingBPLocationExternalIdentifier);
 
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
+				.filter(items -> !items.isEmpty())
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
+				.orElse(null);
+
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
 				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(shippingBPartnerLocationId))
-				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
+				.contactIdentifier(JsonMetasfreshId.toValueStrOrNull(contactId))
 				.build();
 	}
 
@@ -219,30 +231,30 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final String bPartnerExternalIdentifier = context.getBPExternalIdentifier().getIdentifier();
 
-		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
-		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
-		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
+		final String billingBPLocationExternalIdentifier = context.getBillingBPLocationExternalIdNotNull();
 
-		// extract the AD_User_ID (contact-ID)
-		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
-				bPartnerUpsertResponse.getResponseContactItems(),
-				billingBPLocationExternalIdentifier);
 		// extract the C_BPartner_Location_ID
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				billingBPLocationExternalIdentifier);
 
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = Optional.ofNullable(bPartnerUpsertResponse.getResponseContactItems())
+				.filter(items -> !items.isEmpty())
+				.map(items -> getMetasfreshIdForExternalIdentifier(items, context.getUserId().getIdentifier()))
+				.orElse(null);
+
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
 				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(billingBPartnerLocationId))
-				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
+				.contactIdentifier(JsonMetasfreshId.toValueStrOrNull(contactId))
 				.build();
 	}
 
@@ -255,12 +267,13 @@ public class OLCandRequestProcessor implements Processor
 
 		return shopwareClient.getOrderLines(orderId)
 				.map(JsonOrderLines::filterForOrderLinesWithProductId)
-				.orElseThrow(() -> new RuntimeException("Missing order lines! OrderId=" + orderId));
+				.orElse(ImmutableList.of()); // exception will be thrown by the caller
 	}
 
 	private JsonOLCandCreateRequest processOrderLine(
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
-			@NonNull final JsonOrderLine orderLine)
+			@NonNull final JsonOrderLine orderLine,
+			@NonNull final JsonProductLookup lookup)
 	{
 		final JsonOrderLineGroup jsonOrderLineGroup = getJsonOrderLineGroup(orderLine);
 
@@ -271,7 +284,7 @@ public class OLCandRequestProcessor implements Processor
 
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getId())
-				.productIdentifier(ExternalIdentifierFormat.formatExternalId(orderLine.getProductId()))
+				.productIdentifier(getProductIdentifier(orderLine, lookup))
 				.price(price)
 				.qty(orderLine.getQuantity())
 				.description(orderLine.getDescription())
@@ -304,6 +317,7 @@ public class OLCandRequestProcessor implements Processor
 		return JsonOrderLineGroup.builder()
 				.groupKey(isBundle ? orderLine.getId() : orderLine.getParentId())
 				.isGroupMainItem(isBundle)
+				.ordering(JsonGroupCompensationOrderBy.GroupFirst)
 				.build();
 	}
 
@@ -322,7 +336,7 @@ public class OLCandRequestProcessor implements Processor
 				return responseItem.getMetasfreshId();
 			}
 		}
-		throw new RuntimeException("No JsonResponseUpsertItem was found for externalIdentifier=" + externalIdentifier);
+		throw new RuntimeException("No JsonResponseUpsertItem matched the externalIdentifier=" + externalIdentifier + "\nresponseUpsertItems=" + responseUpsertItems);
 	}
 
 	@Nullable
@@ -367,17 +381,17 @@ public class OLCandRequestProcessor implements Processor
 				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
 				.findFirst();
 
-		if(matchingConfigOpt.isPresent())
+		if (matchingConfigOpt.isPresent())
 		{
 			final JsonExternalSystemShopware6ConfigMapping matchingConfig = matchingConfigOpt.get();
 			olCandCreateRequestBuilder
-					.orderDocType(JsonOrderDocType.ofCode(matchingConfig.getDocTypeOrder()))
-					.paymentRule(JSONPaymentRule.ofCode(matchingConfig.getPaymentRule()))
+					.orderDocType(JsonOrderDocType.ofCodeOrNull(matchingConfig.getDocTypeOrder()))
+					.paymentRule(JSONPaymentRule.ofCodeOrNull(matchingConfig.getPaymentRule()))
 					.paymentTerm(Check.isBlank(matchingConfig.getPaymentTermValue())
 										 ? null
-										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());	
+										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());
 		}
-		
+
 	}
 
 	@NonNull
@@ -401,5 +415,100 @@ public class OLCandRequestProcessor implements Processor
 						.qty(BigDecimal.ONE)
 						.build()
 		);
+	}
+
+	@NonNull
+	private String getProductIdentifier(@NonNull final JsonOrderLine orderLine, @NonNull final JsonProductLookup lookup)
+	{
+		if (orderLine.getPayload() == null || Check.isBlank(orderLine.getPayload().getProductNumber()))
+		{
+			return ExternalIdentifierFormat.formatExternalId(orderLine.getProductIdNotNull());
+		}
+
+		switch (lookup)
+		{
+			case ProductNumber -> {
+				return VALUE_PREFIX + "-" + orderLine.getPayload().getProductNumber();
+			}
+
+			case ProductId -> {
+				return ExternalIdentifierFormat.formatExternalId(orderLine.getProductIdNotNull());
+			}
+
+			default -> throw new RuntimeCamelException("Unsupported JsonProductLookupMode " + lookup);
+		}
+	}
+
+	@NonNull
+	private JsonOLCandCreateBulkRequest renumberLinesIfRequired(@NonNull final List<JsonOLCandCreateRequest> olCandCreateRequests)
+	{
+		final boolean needsRenumbering = olCandCreateRequests
+				.stream()
+				.anyMatch(request -> request.getOrderLineGroup() != null);
+
+		if (!needsRenumbering)
+		{
+			return JsonOLCandCreateBulkRequest.builder().requests(olCandCreateRequests).build();
+		}
+
+		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder bulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
+
+		final MutableInt sequence = new MutableInt(ORDER_LINE_SEQUENCE_INITIAL_VALUE);
+
+		final HashMap<String, List<JsonOLCandCreateRequest>> groupKey2CompensationLines = new HashMap<>();
+
+		olCandCreateRequests.stream()
+				.filter(req -> req.getOrderLineGroup() != null && !req.getOrderLineGroup().isGroupMainItem())
+				.forEach(req -> {
+					final ArrayList<JsonOLCandCreateRequest> requests = new ArrayList<>();
+					requests.add(req);
+
+					groupKey2CompensationLines.merge(req.getOrderLineGroup().getGroupKey(), requests, (l1, l2) -> {
+						l1.addAll(l2);
+						return l1;
+					});
+				});
+
+		olCandCreateRequests
+				.stream()
+				.filter(request -> request.getOrderLineGroup() == null || request.getOrderLineGroup().isGroupMainItem())
+				.sorted(getLineComparatorNullsLast())
+				.forEach(request -> {
+					final List<JsonOLCandCreateRequest> compensationLines = groupKey2CompensationLines.get(request.getExternalLineId());
+
+					bulkRequestBuilder.request(request.toBuilder()
+													   .line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+													   .build());
+
+					if (compensationLines != null)
+					{
+						compensationLines
+								.stream()
+								.sorted(getLineComparatorNullsLast())
+								.map(line -> line.toBuilder()
+										.line(sequence.addAndGet(ORDER_LINE_SEQUENCE_INCREMENT))
+										.build())
+								.forEach(bulkRequestBuilder::request);
+					}
+				});
+
+		return bulkRequestBuilder.build();
+	}
+
+	private static Comparator<JsonOLCandCreateRequest> getLineComparatorNullsLast()
+	{
+		return (l1, l2) -> {
+			if (l1.getLine() == null)
+			{
+				return 1;
+			}
+
+			if (l2.getLine() == null)
+			{
+				return -1;
+			}
+
+			return l1.getLine().compareTo(l2.getLine());
+		};
 	}
 }

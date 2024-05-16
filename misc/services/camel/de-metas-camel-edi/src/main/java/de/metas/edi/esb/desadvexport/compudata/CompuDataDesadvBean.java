@@ -80,7 +80,10 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		exchange.getIn().setBody(source, H000.class);
 	}
 
-	private H000 createEDIDesadvFromXMLBean(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat, final String testFlag)
+	private H000 createEDIDesadvFromXMLBean(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final DecimalFormat decimalFormat,
+			@NonNull final String testFlag)
 	{
 		final H000 h000 = new H000();
 		h000.setMessageDate(SystemTime.asDate());
@@ -99,7 +102,9 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		return h000;
 	}
 
-	protected final List<H100> createH100LinesFromXmlDesadv(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat)
+	protected final List<H100> createH100LinesFromXmlDesadv(
+			@NonNull final EDIExpDesadvType xmlDesadv,
+			@NonNull final DecimalFormat decimalFormat)
 	{
 		final H100 h100 = new H100();
 
@@ -200,8 +205,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
-		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
-				? xmlDesadv.getDropShipLocationID() : 
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN())
+				? xmlDesadv.getDropShipLocationID() :
 				buyrLocation;
 		return dropShipLocation.getGLN();
 	}
@@ -214,7 +219,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 				buyrLocation;
 		return dropShipLocation.getName();
 	}
-	
+
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -287,7 +292,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		p100.setCUperTU(
 				formatNumber(pack.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
-						decimalFormat));
+							 decimalFormat));
 
 		// note that validateExchange() made sure there is at least one
 		p100.setCurrency(xmlDesadv.getCCurrencyID().getISOCode());
@@ -295,7 +300,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDeliverQTY(formatNumber(
 				pack.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
-		
+
 		// this is required for the only compudata user that we currently have
 		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
 		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())

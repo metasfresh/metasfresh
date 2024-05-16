@@ -186,12 +186,11 @@ public class ESRImportEnqueuer
 
 			//
 			final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, LoadESRImportFileWorkpackageProcessor.class);
-			queue.newBlock()
-					.setContext(ctx)
-					.newWorkpackage()
+			queue
+					.newWorkPackage()
 					.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 					.addElement(esrImport)
-					.build();
+					.buildAndEnqueue();
 		}
 
 	}

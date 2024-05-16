@@ -30,6 +30,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
@@ -55,12 +56,14 @@ import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
+import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Related documents provider for one single relation type
@@ -346,6 +349,23 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 		}
 
 		return whereParsed;
+	}
+
+	/**
+	 * Retrieve destinations for the zoom origin given as parameter.
+	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
+	 */
+	public <T> List<T> retrieveDestinations(final Properties ctx, final PO fromDocumentPO, final Class<T> clazz, final String trxName)
+	{
+		final IZoomSource fromDocument = POZoomSource.of(fromDocumentPO);
+
+		final MQuery query = mkZoomOriginQuery(fromDocument);
+
+		return new Query(ctx, query.getZoomTableName(), query.getWhereClause(false), trxName)
+				.setClient_ID()
+				.setOnlyActiveRecords(true)
+				.setOrderBy(query.getZoomColumnName())
+				.list(clazz);
 	}
 
 	@Value

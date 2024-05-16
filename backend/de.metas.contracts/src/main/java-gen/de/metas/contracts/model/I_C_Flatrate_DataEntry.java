@@ -1,51 +1,42 @@
 package de.metas.contracts.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Flatrate_DataEntry
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Flatrate_DataEntry 
 {
 
-    /** TableName=C_Flatrate_DataEntry */
-    public static final String Table_Name = "C_Flatrate_DataEntry";
+	String Table_Name = "C_Flatrate_DataEntry";
 
-    /** AD_Table_ID=540309 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540309 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
 	 * Set Istmenge.
-	 * Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQty (java.math.BigDecimal ActualQty);
+	void setActualQty (@Nullable BigDecimal ActualQty);
 
 	/**
 	 * Get Istmenge.
-	 * Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQty();
+	BigDecimal getActualQty();
 
-    /** Column definition for ActualQty */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQty = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQty", null);
-    /** Column name ActualQty */
-    public static final String COLUMNNAME_ActualQty = "ActualQty";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQty = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQty", null);
+	String COLUMNNAME_ActualQty = "ActualQty";
 
 	/**
 	 * Set Diff. Menge.
@@ -55,7 +46,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQtyDiffAbs (java.math.BigDecimal ActualQtyDiffAbs);
+	void setActualQtyDiffAbs (@Nullable BigDecimal ActualQtyDiffAbs);
 
 	/**
 	 * Get Diff. Menge.
@@ -65,12 +56,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQtyDiffAbs();
+	BigDecimal getActualQtyDiffAbs();
 
-    /** Column definition for ActualQtyDiffAbs */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffAbs = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffAbs", null);
-    /** Column name ActualQtyDiffAbs */
-    public static final String COLUMNNAME_ActualQtyDiffAbs = "ActualQtyDiffAbs";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffAbs = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffAbs", null);
+	String COLUMNNAME_ActualQtyDiffAbs = "ActualQtyDiffAbs";
 
 	/**
 	 * Set Diff. Menge %.
@@ -80,7 +69,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQtyDiffPercent (java.math.BigDecimal ActualQtyDiffPercent);
+	void setActualQtyDiffPercent (@Nullable BigDecimal ActualQtyDiffPercent);
 
 	/**
 	 * Get Diff. Menge %.
@@ -90,12 +79,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQtyDiffPercent();
+	BigDecimal getActualQtyDiffPercent();
 
-    /** Column definition for ActualQtyDiffPercent */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPercent = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPercent", null);
-    /** Column name ActualQtyDiffPercent */
-    public static final String COLUMNNAME_ActualQtyDiffPercent = "ActualQtyDiffPercent";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPercent = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPercent", null);
+	String COLUMNNAME_ActualQtyDiffPercent = "ActualQtyDiffPercent";
 
 	/**
 	 * Set Diff. Menge % eff..
@@ -105,7 +92,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQtyDiffPercentEff (java.math.BigDecimal ActualQtyDiffPercentEff);
+	void setActualQtyDiffPercentEff (@Nullable BigDecimal ActualQtyDiffPercentEff);
 
 	/**
 	 * Get Diff. Menge % eff..
@@ -115,12 +102,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQtyDiffPercentEff();
+	BigDecimal getActualQtyDiffPercentEff();
 
-    /** Column definition for ActualQtyDiffPercentEff */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPercentEff = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPercentEff", null);
-    /** Column name ActualQtyDiffPercentEff */
-    public static final String COLUMNNAME_ActualQtyDiffPercentEff = "ActualQtyDiffPercentEff";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPercentEff = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPercentEff", null);
+	String COLUMNNAME_ActualQtyDiffPercentEff = "ActualQtyDiffPercentEff";
 
 	/**
 	 * Set Differenz/Maßeinheit.
@@ -130,7 +115,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQtyDiffPerUOM (java.math.BigDecimal ActualQtyDiffPerUOM);
+	void setActualQtyDiffPerUOM (@Nullable BigDecimal ActualQtyDiffPerUOM);
 
 	/**
 	 * Get Differenz/Maßeinheit.
@@ -140,12 +125,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQtyDiffPerUOM();
+	BigDecimal getActualQtyDiffPerUOM();
 
-    /** Column definition for ActualQtyDiffPerUOM */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPerUOM = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPerUOM", null);
-    /** Column name ActualQtyDiffPerUOM */
-    public static final String COLUMNNAME_ActualQtyDiffPerUOM = "ActualQtyDiffPerUOM";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyDiffPerUOM = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQtyDiffPerUOM", null);
+	String COLUMNNAME_ActualQtyDiffPerUOM = "ActualQtyDiffPerUOM";
 
 	/**
 	 * Set Istmenge/Maßeinheit.
@@ -155,7 +138,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setActualQtyPerUnit (java.math.BigDecimal ActualQtyPerUnit);
+	void setActualQtyPerUnit (@Nullable BigDecimal ActualQtyPerUnit);
 
 	/**
 	 * Get Istmenge/Maßeinheit.
@@ -165,58 +148,44 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getActualQtyPerUnit();
+	BigDecimal getActualQtyPerUnit();
 
-    /** Column definition for ActualQtyPerUnit */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyPerUnit = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "ActualQtyPerUnit", null);
-    /** Column name ActualQtyPerUnit */
-    public static final String COLUMNNAME_ActualQtyPerUnit = "ActualQtyPerUnit";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_ActualQtyPerUnit = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "ActualQtyPerUnit", null);
+	String COLUMNNAME_ActualQtyPerUnit = "ActualQtyPerUnit";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_Client>(I_C_Flatrate_DataEntry.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_Org>(I_C_Flatrate_DataEntry.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Gemeldet durch.
@@ -226,7 +195,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_Reported_ID (int AD_User_Reported_ID);
+	void setAD_User_Reported_ID (int AD_User_Reported_ID);
 
 	/**
 	 * Get Gemeldet durch.
@@ -236,45 +205,31 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_Reported_ID();
+	int getAD_User_Reported_ID();
 
-	public org.compiere.model.I_AD_User getAD_User_Reported();
-
-	public void setAD_User_Reported(org.compiere.model.I_AD_User AD_User_Reported);
-
-    /** Column definition for AD_User_Reported_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User> COLUMN_AD_User_Reported_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User>(I_C_Flatrate_DataEntry.class, "AD_User_Reported_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_Reported_ID */
-    public static final String COLUMNNAME_AD_User_Reported_ID = "AD_User_Reported_ID";
+	String COLUMNNAME_AD_User_Reported_ID = "AD_User_Reported_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_Currency>(I_C_Flatrate_DataEntry.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Abrechnungssatz.
@@ -283,7 +238,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID);
+	void setC_Flatrate_DataEntry_ID (int C_Flatrate_DataEntry_ID);
 
 	/**
 	 * Get Abrechnungssatz.
@@ -292,183 +247,151 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Flatrate_DataEntry_ID();
+	int getC_Flatrate_DataEntry_ID();
 
-    /** Column definition for C_Flatrate_DataEntry_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_C_Flatrate_DataEntry_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "C_Flatrate_DataEntry_ID", null);
-    /** Column name C_Flatrate_DataEntry_ID */
-    public static final String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_C_Flatrate_DataEntry_ID = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "C_Flatrate_DataEntry_ID", null);
+	String COLUMNNAME_C_Flatrate_DataEntry_ID = "C_Flatrate_DataEntry_ID";
 
 	/**
-	 * Set Pauschale - Vertragsperiode.
+	 * Set Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
 
 	/**
-	 * Get Pauschale - Vertragsperiode.
+	 * Get Flatrate Term.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Flatrate_Term_ID();
+	int getC_Flatrate_Term_ID();
 
-	public de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
+	de.metas.contracts.model.I_C_Flatrate_Term getC_Flatrate_Term();
 
-	public void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
+	void setC_Flatrate_Term(de.metas.contracts.model.I_C_Flatrate_Term C_Flatrate_Term);
 
-    /** Column definition for C_Flatrate_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.contracts.model.I_C_Flatrate_Term>(I_C_Flatrate_DataEntry.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
-    /** Column name C_Flatrate_Term_ID */
-    public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+	ModelColumn<I_C_Flatrate_DataEntry, de.metas.contracts.model.I_C_Flatrate_Term> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "C_Flatrate_Term_ID", de.metas.contracts.model.I_C_Flatrate_Term.class);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
 	 * Set Rechnungskand. Nachzahlung/Erstattung.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Candidate_Corr_ID (int C_Invoice_Candidate_Corr_ID);
+	void setC_Invoice_Candidate_Corr_ID (int C_Invoice_Candidate_Corr_ID);
 
 	/**
 	 * Get Rechnungskand. Nachzahlung/Erstattung.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Candidate_Corr_ID();
+	int getC_Invoice_Candidate_Corr_ID();
 
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate_Corr();
-
-	public void setC_Invoice_Candidate_Corr(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate_Corr);
-
-    /** Column definition for C_Invoice_Candidate_Corr_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_Corr_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_Flatrate_DataEntry.class, "C_Invoice_Candidate_Corr_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-    /** Column name C_Invoice_Candidate_Corr_ID */
-    public static final String COLUMNNAME_C_Invoice_Candidate_Corr_ID = "C_Invoice_Candidate_Corr_ID";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_C_Invoice_Candidate_Corr_ID = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "C_Invoice_Candidate_Corr_ID", null);
+	String COLUMNNAME_C_Invoice_Candidate_Corr_ID = "C_Invoice_Candidate_Corr_ID";
 
 	/**
-	 * Set Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	 * Set Invoice candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
+	void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
 
 	/**
-	 * Get Rechnungskandidat.
-	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
+	 * Get Invoice candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Candidate_ID();
+	int getC_Invoice_Candidate_ID();
 
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate();
-
-	public void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
-
-    /** Column definition for C_Invoice_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_Flatrate_DataEntry.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-    /** Column name C_Invoice_Candidate_ID */
-    public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "C_Invoice_Candidate_ID", null);
+	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
-	 * Set Periode.
-	 * Periode des Kalenders
+	 * Set Period.
+	 * Period of the Calendar
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Period_ID (int C_Period_ID);
+	void setC_Period_ID (int C_Period_ID);
 
 	/**
-	 * Get Periode.
-	 * Periode des Kalenders
+	 * Get Period.
+	 * Period of the Calendar
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Period_ID();
+	int getC_Period_ID();
 
-	public org.compiere.model.I_C_Period getC_Period();
+	org.compiere.model.I_C_Period getC_Period();
 
-	public void setC_Period(org.compiere.model.I_C_Period C_Period);
+	void setC_Period(org.compiere.model.I_C_Period C_Period);
 
-    /** Column definition for C_Period_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_Period>(I_C_Flatrate_DataEntry.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
-    /** Column name C_Period_ID */
-    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
+	ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User>(I_C_Flatrate_DataEntry.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_C_UOM>(I_C_Flatrate_DataEntry.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Gemeldet am.
@@ -478,7 +401,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDate_Reported (java.sql.Timestamp Date_Reported);
+	void setDate_Reported (@Nullable java.sql.Timestamp Date_Reported);
 
 	/**
 	 * Get Gemeldet am.
@@ -488,62 +411,54 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDate_Reported();
+	@Nullable java.sql.Timestamp getDate_Reported();
 
-    /** Column definition for Date_Reported */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Date_Reported = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Date_Reported", null);
-    /** Column name Date_Reported */
-    public static final String COLUMNNAME_Date_Reported = "Date_Reported";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Date_Reported = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Date_Reported", null);
+	String COLUMNNAME_Date_Reported = "Date_Reported";
 
 	/**
-	 * Set Belegverarbeitung.
+	 * Set Process Batch.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocAction (java.lang.String DocAction);
+	void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Belegverarbeitung.
+	 * Get Process Batch.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocAction();
+	java.lang.String getDocAction();
 
-    /** Column definition for DocAction */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "DocAction", null);
-    /** Column name DocAction */
-    public static final String COLUMNNAME_DocAction = "DocAction";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_DocAction = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocStatus();
+	java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Pauschalenbetrag.
@@ -553,7 +468,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFlatrateAmt (java.math.BigDecimal FlatrateAmt);
+	void setFlatrateAmt (@Nullable BigDecimal FlatrateAmt);
 
 	/**
 	 * Get Pauschalenbetrag.
@@ -563,12 +478,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFlatrateAmt();
+	BigDecimal getFlatrateAmt();
 
-    /** Column definition for FlatrateAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmt = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "FlatrateAmt", null);
-    /** Column name FlatrateAmt */
-    public static final String COLUMNNAME_FlatrateAmt = "FlatrateAmt";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmt = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "FlatrateAmt", null);
+	String COLUMNNAME_FlatrateAmt = "FlatrateAmt";
 
 	/**
 	 * Set Nachzahlung/Erstattung.
@@ -578,7 +491,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFlatrateAmtCorr (java.math.BigDecimal FlatrateAmtCorr);
+	void setFlatrateAmtCorr (@Nullable BigDecimal FlatrateAmtCorr);
 
 	/**
 	 * Get Nachzahlung/Erstattung.
@@ -588,12 +501,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFlatrateAmtCorr();
+	BigDecimal getFlatrateAmtCorr();
 
-    /** Column definition for FlatrateAmtCorr */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmtCorr = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "FlatrateAmtCorr", null);
-    /** Column name FlatrateAmtCorr */
-    public static final String COLUMNNAME_FlatrateAmtCorr = "FlatrateAmtCorr";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmtCorr = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "FlatrateAmtCorr", null);
+	String COLUMNNAME_FlatrateAmtCorr = "FlatrateAmtCorr";
 
 	/**
 	 * Set Betrag/Maßeinheit.
@@ -602,7 +513,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFlatrateAmtPerUOM (java.math.BigDecimal FlatrateAmtPerUOM);
+	void setFlatrateAmtPerUOM (@Nullable BigDecimal FlatrateAmtPerUOM);
 
 	/**
 	 * Get Betrag/Maßeinheit.
@@ -611,40 +522,36 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFlatrateAmtPerUOM();
+	BigDecimal getFlatrateAmtPerUOM();
 
-    /** Column definition for FlatrateAmtPerUOM */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmtPerUOM = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "FlatrateAmtPerUOM", null);
-    /** Column name FlatrateAmtPerUOM */
-    public static final String COLUMNNAME_FlatrateAmtPerUOM = "FlatrateAmtPerUOM";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_FlatrateAmtPerUOM = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "FlatrateAmtPerUOM", null);
+	String COLUMNNAME_FlatrateAmtPerUOM = "FlatrateAmtPerUOM";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Planspiel.
+	 * Set Simulation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -652,100 +559,85 @@ public interface I_C_Flatrate_DataEntry
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsSimulation (boolean IsSimulation);
+	void setIsSimulation (boolean IsSimulation);
 
 	/**
-	 * Get Planspiel.
+	 * Get Simulation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public boolean isSimulation();
+	boolean isSimulation();
 
-    /** Column definition for IsSimulation */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_IsSimulation = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "IsSimulation", null);
-    /** Column name IsSimulation */
-    public static final String COLUMNNAME_IsSimulation = "IsSimulation";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_IsSimulation = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "IsSimulation", null);
+	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
 	 * Set Produkt.
 	 * Produkt, zu dem die Depotgebühr erhoben wird
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_DataEntry_ID (int M_Product_DataEntry_ID);
+	void setM_Product_DataEntry_ID (int M_Product_DataEntry_ID);
 
 	/**
 	 * Get Produkt.
 	 * Produkt, zu dem die Depotgebühr erhoben wird
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_DataEntry_ID();
+	int getM_Product_DataEntry_ID();
 
-	public org.compiere.model.I_M_Product getM_Product_DataEntry();
-
-	public void setM_Product_DataEntry(org.compiere.model.I_M_Product M_Product_DataEntry);
-
-    /** Column definition for M_Product_DataEntry_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_M_Product> COLUMN_M_Product_DataEntry_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_M_Product>(I_C_Flatrate_DataEntry.class, "M_Product_DataEntry_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_DataEntry_ID */
-    public static final String COLUMNNAME_M_Product_DataEntry_ID = "M_Product_DataEntry_ID";
+	String COLUMNNAME_M_Product_DataEntry_ID = "M_Product_DataEntry_ID";
 
 	/**
-	 * Set Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Set Note.
+	 * Optional additional user defined information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setNote (java.lang.String Note);
+	void setNote (@Nullable java.lang.String Note);
 
 	/**
-	 * Get Notiz.
-	 * Optional weitere Information für ein Dokument
+	 * Get Note.
+	 * Optional additional user defined information
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getNote();
+	@Nullable java.lang.String getNote();
 
-    /** Column definition for Note */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Note = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Note", null);
-    /** Column name Note */
-    public static final String COLUMNNAME_Note = "Note";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Note = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Note", null);
+	String COLUMNNAME_Note = "Note";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Processed = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -754,7 +646,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -763,12 +655,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Geplante Menge.
@@ -778,7 +668,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty_Planned (java.math.BigDecimal Qty_Planned);
+	void setQty_Planned (@Nullable BigDecimal Qty_Planned);
 
 	/**
 	 * Get Geplante Menge.
@@ -788,12 +678,10 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty_Planned();
+	BigDecimal getQty_Planned();
 
-    /** Column definition for Qty_Planned */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Qty_Planned = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Qty_Planned", null);
-    /** Column name Qty_Planned */
-    public static final String COLUMNNAME_Qty_Planned = "Qty_Planned";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Qty_Planned = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Qty_Planned", null);
+	String COLUMNNAME_Qty_Planned = "Qty_Planned";
 
 	/**
 	 * Set Gemeldete Menge.
@@ -803,7 +691,7 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQty_Reported (java.math.BigDecimal Qty_Reported);
+	void setQty_Reported (@Nullable BigDecimal Qty_Reported);
 
 	/**
 	 * Get Gemeldete Menge.
@@ -813,65 +701,56 @@ public interface I_C_Flatrate_DataEntry
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty_Reported();
+	BigDecimal getQty_Reported();
 
-    /** Column definition for Qty_Reported */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Qty_Reported = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Qty_Reported", null);
-    /** Column name Qty_Reported */
-    public static final String COLUMNNAME_Qty_Reported = "Qty_Reported";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Qty_Reported = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Qty_Reported", null);
+	String COLUMNNAME_Qty_Reported = "Qty_Reported";
 
 	/**
-	 * Set Art.
+	 * Set Type.
 	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setType (java.lang.String Type);
+	void setType (java.lang.String Type);
 
 	/**
-	 * Get Art.
+	 * Get Type.
 	 * Type of Validation (SQL, Java Script, Java Language)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getType();
+	java.lang.String getType();
 
-    /** Column definition for Type */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Type = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Type", null);
-    /** Column name Type */
-    public static final String COLUMNNAME_Type = "Type";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Type = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, Object>(I_C_Flatrate_DataEntry.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Flatrate_DataEntry, Object> COLUMN_Updated = new ModelColumn<>(I_C_Flatrate_DataEntry.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_DataEntry, org.compiere.model.I_AD_User>(I_C_Flatrate_DataEntry.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

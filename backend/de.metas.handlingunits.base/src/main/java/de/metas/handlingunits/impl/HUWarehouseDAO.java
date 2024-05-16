@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
@@ -39,6 +40,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -60,7 +62,7 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 				.create();
 
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_isPickingWarehouse, true)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsPickingWarehouse, true)
 				.addInSubQueryFilter(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Locator.COLUMNNAME_M_Warehouse_ID, subQuery)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -73,30 +75,28 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	}
 
 	@Override
-	public I_M_Locator suggestAfterPickingLocator(final int locatorRepoId)
+	public Optional<LocatorId> suggestAfterPickingLocatorId(final int locatorRepoId)
 	{
 		Check.assumeGreaterThanZero(locatorRepoId, "locatorRepoId");
-		final org.compiere.model.I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorByRepoId(locatorRepoId);
+		final I_M_Locator locator = InterfaceWrapperHelper.create(
+				warehouseDAO.getLocatorByRepoId(locatorRepoId),
+				I_M_Locator.class);
 
 		//
 		// If given locator is "after-picking" return it
-		final I_M_Locator huLocator = InterfaceWrapperHelper.create(locator, I_M_Locator.class);
-		if (huLocator.isAfterPickingLocator())
+		if (locator.isAfterPickingLocator())
 		{
-			return huLocator;
+			return Optional.of(LocatorId.ofRepoId(locator.getM_Warehouse_ID(), locator.getM_Locator_ID()));
 		}
 
 		//
 		// Search for an after-picking locator in same warehouse as our given locator
-		final I_M_Warehouse warehouse = huLocator.getM_Warehouse();
-		return suggestAfterPickingLocator(warehouse);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+		return suggestAfterPickingLocatorId(warehouseId);
 	}
 
-	@Override
-	public I_M_Locator suggestAfterPickingLocator(@NonNull final I_M_Warehouse warehouse)
+	public Optional<LocatorId> suggestAfterPickingLocatorId(@NonNull final WarehouseId warehouseId)
 	{
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
-
 		for (final I_M_Locator huCurrentLocator : warehouseDAO.getLocators(warehouseId, I_M_Locator.class))
 		{
 			if (!huCurrentLocator.isActive())
@@ -106,12 +106,12 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 
 			if (huCurrentLocator.isAfterPickingLocator())
 			{
-				return huCurrentLocator;
+				return Optional.of(LocatorId.ofRepoId(huCurrentLocator.getM_Warehouse_ID(), huCurrentLocator.getM_Locator_ID()));
 			}
 		}
 
 		// no after-picking locator was found => return null
-		return null;
+		return Optional.empty();
 	}
 
 	@Override
@@ -120,19 +120,6 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 		final Set<WarehouseId> warehouseIds = retrieveQualityReturnWarehouseIds();
 
 		return Services.get(IWarehouseDAO.class).getByIds(warehouseIds, de.metas.handlingunits.model.I_M_Warehouse.class);
-	}
-
-	@NonNull
-	public WarehouseId retrieveQuarantineWarehouseId()
-	{
-		final I_M_Warehouse warehouse = warehouseDAO.retrieveQuarantineWarehouseOrNull();
-
-		if (warehouse == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsQuarantineWarehouse@=@Y@)");
-		}
-
-		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 
 	public Set<WarehouseId> retrieveQualityReturnWarehouseIds()

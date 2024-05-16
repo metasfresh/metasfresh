@@ -4,13 +4,13 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.IdConstants;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -60,8 +60,8 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
+import static de.metas.common.util.IdConstants.toRepoId;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
@@ -450,7 +450,12 @@ public class CandidateRepositoryWriteService
 						|| candidate.getType().equals(CandidateType.INVENTORY_DOWN)
 						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_FROM)
 						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_TO);
-		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0 || typeImpliesProcessedDone)
+
+		if (candidate.isSimulated())
+		{
+			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated);
+		}
+		else if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0 || typeImpliesProcessedDone)
 		{
 			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
 		}
@@ -556,6 +561,8 @@ public class CandidateRepositoryWriteService
 		productionDetailRecordToUpdate.setPP_Product_BOMLine_ID(productionDetail.getProductBomLineId());
 		productionDetailRecordToUpdate.setPP_Product_Planning_ID(productionDetail.getProductPlanningId());
 		productionDetailRecordToUpdate.setPP_Order_ID(productionDetail.getPpOrderId());
+		productionDetailRecordToUpdate.setPP_Order_Candidate_ID(productionDetail.getPpOrderCandidateId());
+		productionDetailRecordToUpdate.setPP_OrderLine_Candidate_ID(productionDetail.getPpOrderLineCandidateId());
 		productionDetailRecordToUpdate.setPP_Order_BOMLine_ID(productionDetail.getPpOrderLineId());
 		productionDetailRecordToUpdate.setPP_Order_DocStatus(DocStatus.toCodeOrNull(productionDetail.getPpOrderDocStatus()));
 		productionDetailRecordToUpdate.setPlannedQty(productionDetail.getQty());
@@ -630,6 +637,7 @@ public class CandidateRepositoryWriteService
 		detailRecordToUpdate.setM_ShipmentSchedule_ID(toRepoId(demandDetail.getShipmentScheduleId()));
 		detailRecordToUpdate.setC_OrderLine_ID(toRepoId(demandDetail.getOrderLineId()));
 		detailRecordToUpdate.setC_SubscriptionProgress_ID(toRepoId(demandDetail.getSubscriptionProgressId()));
+		detailRecordToUpdate.setM_InOutLine_ID(toRepoId(demandDetail.getInOutLineId()));
 
 		detailRecordToUpdate.setPlannedQty(demandDetail.getQty());
 		detailRecordToUpdate.setActualQty(candidate.computeActualQty());
@@ -837,6 +845,17 @@ public class CandidateRepositoryWriteService
 		deleteRecord(candidateRecord);
 
 		return deleteResult;
+	}
+
+	public void deactivateSimulatedCandidates()
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_MD_Candidate.COLUMNNAME_IsActive, false)
+				.execute();
 	}
 
 	private void deleteRelatedRecordsForId(

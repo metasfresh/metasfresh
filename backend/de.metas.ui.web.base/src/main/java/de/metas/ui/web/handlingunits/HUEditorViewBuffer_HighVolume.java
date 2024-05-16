@@ -7,6 +7,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;

@@ -1,6 +1,7 @@
 package de.metas.printing.model.validator;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
@@ -9,6 +10,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.async.spi.impl.AutomaticallyInvoicePdfPrintinAsyncBatchListener;
 import de.metas.printing.async.spi.impl.PDFPrintingAsyncBatchListener;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -48,7 +50,6 @@ import java.util.Properties;
  * Printing base - Main Validator
  *
  * @author tsa
- *
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -180,6 +181,7 @@ public class Main extends AbstractModuleInterceptor
 		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingRecordTextProvider.instance);
 
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new AutomaticallyInvoicePdfPrintinAsyncBatchListener(), Async_Constants.C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting);
 	}
 
 	@Override

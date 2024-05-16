@@ -38,17 +38,10 @@ public interface IReferenceNoBL extends ISingletonService
 
 	/**
 	 * Creates/Updates {@link I_C_ReferenceNo} for given <code>po</code>. If already exists, just a link is created ({@link I_C_ReferenceNo_Doc}).
-	 * 
-	 * @param po
-	 * @param instance
 	 */
-	public void linkReferenceNo(PO po, IReferenceNoGeneratorInstance instance);
+	void linkReferenceNo(PO po, IReferenceNoGeneratorInstance instance);
 
-	/**
-	 * 
-	 * @param po
-	 */
-	public void unlinkReferenceNo(PO po, IReferenceNoGeneratorInstance instance);
+	void unlinkReferenceNo(PO po, IReferenceNoGeneratorInstance instance);
 
 	List<IReferenceNoGeneratorInstance> getReferenceNoGeneratorInstances(Properties ctx);
 
@@ -58,9 +51,6 @@ public interface IReferenceNoBL extends ISingletonService
 	 * Link <code>fromModel</code> to same reference numbers as <code>toModel</code> is linked.
 	 * 
 	 * For linking, use the context and trxName of <code>toModel</code>.
-	 * 
-	 * @param fromModel
-	 * @param toModel
 	 */
 	void linkOnSameReferenceNo(Object fromModel, Object toModel);
 

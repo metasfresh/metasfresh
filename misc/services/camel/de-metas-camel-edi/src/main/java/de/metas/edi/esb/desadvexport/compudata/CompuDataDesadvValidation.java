@@ -22,16 +22,15 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
-import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
-
-import java.util.List;
-
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import java.util.List;
+
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 public class CompuDataDesadvValidation
 {

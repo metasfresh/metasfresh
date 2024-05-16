@@ -19,9 +19,9 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 package de.metas.pricing.rules.price_list_version;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
@@ -42,6 +42,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -99,7 +100,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		final ProductScalePriceService.ProductPriceSettings productPriceSettings = productScalePriceService.getProductPriceSettings(productPrice, pricingCtx.getQuantity());
 		if (productPriceSettings == null)
 		{
-			logger.trace("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No ProductPriceSettings returned for qty : {} and M_ProductPrice_ID: {}", pricingCtx.getQty(), productPrice.getM_ProductPrice_ID());
 			return;
 		}
 
@@ -117,7 +118,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
-		result.setDiscountEditable(productPrice.isDiscountEditable());
+		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));

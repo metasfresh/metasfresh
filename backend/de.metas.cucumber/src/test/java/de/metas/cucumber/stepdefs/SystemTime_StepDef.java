@@ -26,12 +26,20 @@ import de.metas.common.util.time.SystemTime;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 
+import java.time.ZonedDateTime;
+
 public class SystemTime_StepDef
 {
 	@Given("^metasfresh has date and time (.*)$")
 	public void metasfresh_has_the_local_time(String zonedDateTime)
 	{
 		SystemTime.setFixedTimeSource(zonedDateTime);
+	}
+
+	@Given("metasfresh has current date and time")
+	public void metasfresh_has_current_date_and_time()
+	{
+		SystemTime.setFixedTimeSource(ZonedDateTime.now());
 	}
 
 	@And("we wait for {int} ms")

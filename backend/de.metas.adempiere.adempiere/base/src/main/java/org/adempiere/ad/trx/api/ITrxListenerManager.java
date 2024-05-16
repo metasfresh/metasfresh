@@ -31,7 +31,7 @@ public interface ITrxListenerManager
 		 * Method called <b>each time</b> after a transaction was successfully committed.
 		 * If an exception is thrown from this method, the exception will be JUST logged but it will not fail or stop the execution.
 		 *
-		 * <b>The transaction the handler method is invoked with is already closed</b>
+		 * <b>Note that the transaction with which the handler-method is invoked might also already be closed</b>
 		 */
 		AFTER_COMMIT(20),
 

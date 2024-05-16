@@ -1,5 +1,6 @@
 package de.metas.server.housekeep;
 
+import de.metas.cache.CacheMgt;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -37,7 +38,6 @@ import de.metas.util.Loggables;
 @Component
 public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTask
 {
-
 	private static final transient Logger logger = LogManager.getLogger(SignDatabaseBuildHouseKeepingTask.class);
 
 	@Override
@@ -59,6 +59,9 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		{
 			final String sql = "UPDATE AD_System SET LastBuildInfo = ?";
 			DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { lastBuildInfo }, ITrx.TRXNAME_None);
+			CacheMgt.get().reset("AD_System");
+
+			logger.info("Set AD_System.LastBuildInfo={}", lastBuildInfo);
 		}
 		catch (final Exception ex)
 		{

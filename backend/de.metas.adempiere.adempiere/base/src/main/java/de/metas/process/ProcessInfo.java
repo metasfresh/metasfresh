@@ -675,18 +675,19 @@ public final class ProcessInfo implements Serializable
 		// also restrict to the client(s) and org(s) the user shall see with its current role.
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
-		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, Access.WRITE));
-		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name in this case
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
+		compositeFilter.addFilter(whereFilter);
 
-		compositeFilter.addFilter(whereFilter)
-				.addFilter(clientFilter)
-				.addFilter(orgFilter);
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(null, null, Access.WRITE));
+		compositeFilter.addFilter(clientFilter);
+
+		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
+		role.getOrgWhere(null, Access.WRITE)
+				.map(TypedSqlQueryFilter::<T>of)
+				.ifPresent(compositeFilter::addFilter);
 
 		return compositeFilter;
 	}
@@ -876,7 +877,7 @@ public final class ProcessInfo implements Serializable
 								adOrgId,
 								adUserId,
 								Env.getLocalDate(processCtx))
-						.orNull();
+						.orElse(null);
 				adRoleId = role == null ? null : role.getRoleId();
 			}
 			Env.setContext(processCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(adRoleId, Env.CTXVALUE_AD_Role_ID_NONE));

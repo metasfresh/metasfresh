@@ -71,7 +71,9 @@ public final class DocumentFilterDescriptor
 	@Getter
 	private final boolean frequentUsed;
 
-	/** How to render it when the filter is inline (i.e. {@link #frequentUsed} is true) */
+	/**
+	 * How to render it when the filter is inline (i.e. {@link #frequentUsed} is true)
+	 */
 	@Getter
 	private final DocumentFilterInlineRenderMode inlineRenderMode;
 
@@ -190,11 +192,11 @@ public final class DocumentFilterDescriptor
 			}
 
 			filter.addParameter(DocumentFilterParam.builder()
-										.setFieldName(paramDescriptor.getFieldName())
-										.setOperator(paramDescriptor.getOperator())
-										.setValue(value)
-										.setValueTo(valueTo)
-										.build());
+					.setFieldName(paramDescriptor.getFieldName())
+					.setOperator(paramDescriptor.getOperator())
+					.setValue(value)
+					.setValueTo(valueTo)
+					.build());
 		}
 
 		for (final DocumentFilterParam internalParam : getInternalParameters())
@@ -204,7 +206,6 @@ public final class DocumentFilterDescriptor
 
 		return filter.build();
 	}
-
 
 	//
 	//
@@ -248,12 +249,12 @@ public final class DocumentFilterDescriptor
 						final Integer nextParamIndex = nextParamIndexByFieldName.get(fieldName);
 						if (nextParamIndex == null)
 						{
-							paramBuilder.setParameterName(fieldName);
+							paramBuilder.parameterName(fieldName);
 							nextParamIndexByFieldName.put(fieldName, 2);
 						}
 						else
 						{
-							paramBuilder.setParameterName(fieldName + nextParamIndex);
+							paramBuilder.parameterName(fieldName + nextParamIndex);
 							nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
 						}
 					})

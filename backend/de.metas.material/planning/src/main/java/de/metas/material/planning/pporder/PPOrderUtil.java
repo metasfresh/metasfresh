@@ -1,7 +1,10 @@
 package de.metas.material.planning.pporder;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.exception.BOMExpiredException;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.product.IProductDAO;
@@ -12,6 +15,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -21,6 +25,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -61,7 +66,7 @@ public class PPOrderUtil
 	{
 		final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
-		final ProductId finishedGoodProductId = ProductId.ofRepoId(ppOrderPojo.getProductDescriptor().getProductId());
+		final ProductId finishedGoodProductId = ProductId.ofRepoId(ppOrderPojo.getPpOrderData().getProductDescriptor().getProductId());
 		final I_PP_Product_BOMLine bomLine = getProductBomLine(ppOrderLinePojo);
 		return bomsService.computeQtyRequired(bomLine, finishedGoodProductId, qtyFinishedGood);
 	}
@@ -130,7 +135,7 @@ public class PPOrderUtil
 
 	public I_PP_Product_BOMLine getProductBomLine(@NonNull final PPOrderLine ppOrderLinePojo)
 	{
-		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
+		return InterfaceWrapperHelper.create(Env.getCtx(), ppOrderLinePojo.getPpOrderLineData().getProductBomLineId(), I_PP_Product_BOMLine.class, ITrx.TRXNAME_None);
 	}
 
 	/**
@@ -145,6 +150,14 @@ public class PPOrderUtil
 			@NonNull final Date ppOrderStartSchedule,
 			@NonNull final I_PP_Product_BOM ppOrderProductBOM)
 	{
+		// Product BOM should be completed
+		if (!DocStatus.ofCode(ppOrderProductBOM.getDocStatus()).isCompleted())
+		{
+			throw new MrpException(StringUtils.formatMessage(
+					"Product BOM is not completed; PP_Product_BOM={}",
+					ppOrderProductBOM));
+		}
+
 		// Product from Order should be same as product from BOM - teo_sarca [ 2817870 ]
 		if (ppOrderProductId.getRepoId() != ppOrderProductBOM.getM_Product_ID())
 		{
@@ -180,5 +193,28 @@ public class PPOrderUtil
 		orderBOMLine.setAD_Org_ID(fromOrder.getAD_Org_ID());
 		orderBOMLine.setM_Warehouse_ID(fromOrder.getM_Warehouse_ID());
 		orderBOMLine.setM_Locator_ID(fromOrder.getM_Locator_ID());
+	}
+
+	/**
+	 * @return {@code true} if the respective ppOrder's matching product planning exists and has {@code PP_Product_Planning.IsPickDirectlyIfFeasible='Y'}
+	 */
+	public boolean pickIfFeasible(@NonNull final PPOrderData ppOrderData)
+	{
+		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+
+		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId());
+
+		final IProductPlanningDAO.ProductPlanningQuery productPlanningQuery = IProductPlanningDAO.ProductPlanningQuery.builder()
+				.orgId(ppOrderData.getClientAndOrgId().getOrgId())
+				.warehouseId(ppOrderData.getWarehouseId())
+				.plantId(ppOrderData.getPlantId())
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
+				.build();
+
+		return productPlanningDAO.find(productPlanningQuery)
+				.map(I_PP_Product_Planning::isPickDirectlyIfFeasible)
+				.orElse(false);
 	}
 }

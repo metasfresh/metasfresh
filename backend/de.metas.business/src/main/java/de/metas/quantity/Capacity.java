@@ -23,6 +23,7 @@ package de.metas.quantity;
  */
 
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -38,10 +39,48 @@ import java.util.Optional;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = "uom")
 public final class Capacity
 {
 
+	private final ProductId productId;
+	private final UomId uomId;
+	private final I_C_UOM uom;
+	private final BigDecimal capacity;
+	private final boolean infiniteCapacity;
+	private final boolean allowNegativeCapacity;
+	/**
+	 * Constructs a finite capacity definition
+	 */
+	private Capacity(
+			@NonNull final BigDecimal capacity,
+			@NonNull final ProductId productId,
+			@NonNull final I_C_UOM uom,
+			final boolean allowNegativeCapacity)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		this.capacity = capacity;
+
+		infiniteCapacity = false;
+		this.allowNegativeCapacity = allowNegativeCapacity;
+	}
+	/**
+	 * Constructs an infinite capacity definition
+	 */
+	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
+	{
+		this.productId = productId;
+		this.uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+		this.uom = uom;
+
+		capacity = null;
+
+		infiniteCapacity = true;
+		allowNegativeCapacity = true;
+	}
 	public static Capacity createInfiniteCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom)
@@ -66,43 +105,11 @@ public final class Capacity
 		return new Capacity(qty, productId, uom, allowNegativeCapacity);
 	}
 
-	private final ProductId productId;
-	private final I_C_UOM uom;
-	private final BigDecimal capacity;
-
-	private final boolean infiniteCapacity;
-	private final boolean allowNegativeCapacity;
-
-	/**
-	 * Constructs a finite capacity definition
-	 */
-	private Capacity(
-			@NonNull final BigDecimal capacity,
-			@NonNull final ProductId productId,
-			@NonNull final I_C_UOM uom,
-			final boolean allowNegativeCapacity)
+	public static Capacity createCapacity(
+			@NonNull final Quantity qty,
+			@NonNull final ProductId productId)
 	{
-		this.productId = productId;
-		this.uom = uom;
-
-		this.capacity = capacity;
-
-		infiniteCapacity = false;
-		this.allowNegativeCapacity = allowNegativeCapacity;
-	}
-
-	/**
-	 * Constructs an infinite capacity definition
-	 */
-	private Capacity(@NonNull final ProductId productId, @NonNull final I_C_UOM uom)
-	{
-		this.productId = productId;
-		this.uom = uom;
-
-		capacity = null;
-
-		infiniteCapacity = true;
-		allowNegativeCapacity = true;
+		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
 	}
 
 	public boolean isInfiniteCapacity()
@@ -271,7 +278,7 @@ public final class Capacity
 	@Override
 	public String toString()
 	{
-		return "CapacityImpl ["
+		return "Capacity ["
 				+ "infiniteCapacity=" + infiniteCapacity
 				+ ", capacity(qty)=" + capacity
 				+ ", product=" + productId

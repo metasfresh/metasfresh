@@ -1,9 +1,11 @@
 package de.metas.process.processtools;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Map;
-
+import de.metas.process.IADProcessDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessClassInfo;
+import de.metas.process.ProcessClassParamInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,12 +14,9 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.M_Element;
 import org.compiere.util.DisplayType;
 
-import de.metas.process.IADProcessDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessClassInfo;
-import de.metas.process.ProcessClassParamInfo;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.Map;
 
 /*
  * #%L
@@ -58,6 +57,7 @@ public class AD_Process_Para_UpdateFromAnnotations extends JavaProcess
 		final I_AD_Process process = getRecord(I_AD_Process.class);
 		final Map<String, I_AD_Process_Para> processParams = retriveProcessParams(process);
 
+		ProcessClassInfo.resetCache();
 		final ProcessClassInfo processClassInfo = ProcessClassInfo.ofClassname(process.getClassname());
 		for (final ProcessClassParamInfo paramInfo : processClassInfo.getParameterInfos())
 		{

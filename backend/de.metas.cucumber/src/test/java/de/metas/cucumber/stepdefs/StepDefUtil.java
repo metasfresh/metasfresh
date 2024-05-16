@@ -39,6 +39,9 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+/**
+ * TODO: move all "waiting" methods to de.metas.common.util.{@link de.metas.common.util.TryAndWaitUtil}.
+ */
 @UtilityClass
 public class StepDefUtil
 {
@@ -152,7 +155,6 @@ public class StepDefUtil
 	 *
 	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
 	 */
-	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -191,56 +193,50 @@ public class StepDefUtil
 		return null;
 	}
 
-	/**
-	 * Waits for the given {@code worker} to supply an optional that is present.
-	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
-	 *
-	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
-	 */
-	public <T> T tryAndWaitForItem(
-			final long maxWaitSeconds,
-			final long checkingIntervalMs,
-			@NonNull final Supplier<Optional<T>> worker,
-			@Nullable final Supplier<String> logContext) throws InterruptedException
-	{
-		final long deadLineMillis = computeDeadLineMillis(maxWaitSeconds);
-
-		try
-		{
-			while (deadLineMillis > System.currentTimeMillis())
-			{
-				Thread.sleep(checkingIntervalMs);
-				final Optional<T> workerResult = worker.get();
-				if (workerResult.isPresent())
-				{
-					return workerResult.get();
-				}
-			}
-		}
-		catch (final Exception e)
-		{
-			if (logContext != null)
-			{
-				final String contextMessage = logContext.get();
-
-				throw new RuntimeException(contextMessage, e);
-			}
-
-			throw e;
-		}
-
-		final String context = Optional.ofNullable(logContext).map(Supplier::get).orElse("Context not provided!");
-
-		Assertions.fail("the given supplier didn't succeed within the " + maxWaitSeconds + "second timeout! \n Context: " + context);
-		return null;
-	}
-
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
 			@NonNull final Supplier<Optional<T>> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
+	}
+
+	private long computeDeadLineMillis(final long maxWaitSeconds)
+	{
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
+		return deadLineMillis;
+	}
+
+	@NonNull
+	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	{
+		return Arrays.stream(identifier.split(","))
+				.map(StringUtils::trim)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
+	}
+
+	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
+	{
+		if (Check.isNotBlank(errorMessage))
+		{
+			assertThat(e.getMessage()).contains(errorMessage);
+		}
+		else
+		{
+			throw e;
+		}
+	}
+
+	public List<String> splitByColon(@NonNull final String s)
+	{
+		return Arrays.asList(s.split(":"));
 	}
 
 	/**
@@ -275,39 +271,5 @@ public class StepDefUtil
 								+ "The logging output of the last try is:\n" + (lastWorkerResult == null ? "<null>" : lastWorkerResult.getLog())
 								+ "\n Context: " + context);
 		return null;
-
-	}
-
-	private long computeDeadLineMillis(final long maxWaitSeconds)
-	{
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = maxWaitSeconds > 0 ? nowMillis + (maxWaitSeconds * 1000L) : Long.MAX_VALUE;
-		return deadLineMillis;
-	}
-
-	@NonNull
-	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
-	{
-		return Arrays.stream(identifier.split(","))
-				.map(StringUtils::trim)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	public List<String> splitIdentifiers(@NonNull final String identifiers)
-	{
-		return Arrays.asList(identifiers.split(","));
-	}
-
-	public void validateErrorMessage(@NonNull final Exception e, @Nullable final String errorMessage) throws Exception
-	{
-		if (Check.isNotBlank(errorMessage))
-		{
-			assertThat(e.getMessage()).contains(errorMessage);
-		}
-		else
-		{
-			throw e;
-		}
 	}
 }

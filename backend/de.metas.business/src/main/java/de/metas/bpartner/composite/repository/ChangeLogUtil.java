@@ -82,6 +82,10 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
 			.put(I_C_BPartner.COLUMNNAME_IsVendor, BPartner.VENDOR)
 			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
+			.put(I_C_BPartner.COLUMNNAME_SalesPartnerCode, BPartner.SALES_PARTNER_CODE)
+			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
+			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
+			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Greeting_ID, BPartner.GREETING_ID)
@@ -92,6 +96,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_ExcludeFromPromotions, BPartner.EXCLUDE_FROM_PROMOTIONS)
 			.put(I_C_BPartner.COLUMNNAME_Referrer, BPartner.REFERRER)
 			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
+			.put(I_C_BPartner.COLUMNNAME_DebtorId, BPartner.DEBTOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_CreditorId, BPartner.CREDITOR_ID)
 			.build();
 
 	@VisibleForTesting
@@ -105,6 +111,7 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Firstname, BPartnerContact.FIRST_NAME)
 			.put(I_AD_User.COLUMNNAME_Lastname, BPartnerContact.LAST_NAME)
 			.put(I_AD_User.COLUMNNAME_Name, BPartnerContact.NAME)
+			.put(I_AD_User.COLUMNNAME_Birthday, BPartnerContact.BIRTHDAY)
 			.put(I_AD_User.COLUMNNAME_Phone, BPartnerContact.PHONE)
 			.put(I_AD_User.COLUMNNAME_IsDefaultContact, BPartnerContactType.DEFAULT_CONTACT)
 			.put(I_AD_User.COLUMNNAME_IsBillToContact_Default, BPartnerContactType.BILL_TO_DEFAULT)
@@ -121,6 +128,13 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_MobilePhone, BPartnerContact.MOBILE_PHONE)
 			.put(I_AD_User.COLUMNNAME_Description, BPartnerContact.DESCRIPTION)
 			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, BPartnerContact.GREETING_ID)
+			.put(I_AD_User.COLUMNNAME_C_Title_ID, BPartnerContact.TITLE_ID)
+			.put(I_AD_User.COLUMNNAME_C_BPartner_Location_ID, BPartnerContact.BPARTNER_LOCATION_ID)
+			.put(I_AD_User.COLUMNNAME_EMail2, BPartnerContact.EMAIL2)
+			.put(I_AD_User.COLUMNNAME_EMail3, BPartnerContact.EMAIL3)
+			.put(I_AD_User.COLUMNNAME_Title, BPartnerContact.TITLE)
+			.put(I_AD_User.COLUMNNAME_Phone2, BPartnerContact.PHONE2)
+			.put(I_AD_User.COLUMNNAME_C_Job_ID, BPartnerContact.JOB_ID)
 			.build();
 
 	@VisibleForTesting
@@ -136,6 +150,10 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, BPartnerLocationType.SHIP_TO_DEFAULT)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, BPartnerLocationType.SHIP_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, BPartnerLocation.ACTIVE)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsEphemeral, BPartnerLocation.EPHEMERAL)
+			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
+			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
+			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

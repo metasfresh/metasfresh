@@ -1,11 +1,9 @@
 package de.metas.ui.web.document.filter.provider;
 
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 /*
  * #%L
@@ -32,10 +30,7 @@ import java.util.Collection;
 public interface DocumentFilterDescriptorsProviderFactory
 {
 	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable AdTabId adTabId,
-			@Nullable String tableName,
-			@NonNull Collection<DocumentFieldDescriptor> fields);
+	DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull CreateFiltersProviderContext context);
 
 	default boolean isActive()
 	{

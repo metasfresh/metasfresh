@@ -31,7 +31,7 @@ import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
@@ -65,9 +65,10 @@ import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTAN
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.SINCE;
+import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/products" })
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/products" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ProductsRestController

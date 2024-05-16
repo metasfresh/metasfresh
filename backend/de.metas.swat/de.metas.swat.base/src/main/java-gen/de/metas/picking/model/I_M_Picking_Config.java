@@ -3,7 +3,7 @@ package de.metas.picking.model;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Config
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_M_Picking_Config 
@@ -213,7 +213,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setWEBUI_PickingTerminal_ViewProfile (String WEBUI_PickingTerminal_ViewProfile);
+	void setWEBUI_PickingTerminal_ViewProfile (java.lang.String WEBUI_PickingTerminal_ViewProfile);
 
 	/**
 	 * Get Picking terminal view profile.
@@ -222,7 +222,7 @@ public interface I_M_Picking_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getWEBUI_PickingTerminal_ViewProfile();
+	java.lang.String getWEBUI_PickingTerminal_ViewProfile();
 
 	ModelColumn<I_M_Picking_Config, Object> COLUMN_WEBUI_PickingTerminal_ViewProfile = new ModelColumn<>(I_M_Picking_Config.class, "WEBUI_PickingTerminal_ViewProfile", null);
 	String COLUMNNAME_WEBUI_PickingTerminal_ViewProfile = "WEBUI_PickingTerminal_ViewProfile";

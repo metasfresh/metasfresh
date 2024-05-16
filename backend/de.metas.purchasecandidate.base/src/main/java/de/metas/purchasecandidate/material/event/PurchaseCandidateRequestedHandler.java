@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.purchasecandidate.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.purchasecandidate.material.event;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -7,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
@@ -39,28 +62,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.purchasecandidate.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
@@ -144,6 +145,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
+				.simulated(event.isSimulated())
 				.build();
 
 		purchaseCandidateBL.updateCandidatePricingDiscount(newPurchaseCandidate);
@@ -178,7 +180,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
 	{
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(requestedEvent.getEventDescriptor())
+				.eventDescriptor(EventDescriptor.ofEventDescriptor(requestedEvent.getEventDescriptor()))
 				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())

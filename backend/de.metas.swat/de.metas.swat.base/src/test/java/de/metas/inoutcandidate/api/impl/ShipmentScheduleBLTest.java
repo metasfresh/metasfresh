@@ -4,6 +4,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;

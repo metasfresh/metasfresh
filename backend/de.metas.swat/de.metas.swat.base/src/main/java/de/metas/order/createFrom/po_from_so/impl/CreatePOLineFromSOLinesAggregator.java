@@ -1,9 +1,12 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
@@ -20,6 +23,8 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -56,17 +61,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * Creates purchase order lines for sales order lines. One instance of this aggregator is called with sales order lines that all belong to the same purchase order.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLine, I_C_OrderLine>
 {
 	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final I_C_Order purchaseOrder;
 
@@ -78,10 +84,10 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
 	/**
-	 *
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
 	 */
-	/* package */public CreatePOLineFromSOLinesAggregator(
+	/* package */
+	public CreatePOLineFromSOLinesAggregator(
 			final I_C_Order purchaseOrder,
 			final String purchaseQtySource,
 			@NonNull final PurchaseTypeEnum purchaseType)
@@ -153,7 +159,14 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			copyBPartnerAndLocationDetailsFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
+		}
+		else
+		{
+			OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
+		}
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
@@ -161,6 +174,16 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		IModelAttributeSetInstanceListener.DYNATTR_DisableASIUpdateOnModelChange.setValue(purchaseOrderLine, true); // (08091)
 
 		return purchaseOrderLine;
+	}
+
+	private void copyBPartnerAndLocationDetailsFromSalesToPurchaseOrderLine(
+			@NonNull final I_C_OrderLine salesOrderLine,
+			@NonNull final I_C_OrderLine purchaseOrderLine)
+	{
+		purchaseOrderLine.setC_BPartner_ID(salesOrderLine.getC_BPartner_ID());
+		purchaseOrderLine.setC_BPartner_Location_ID(salesOrderLine.getC_BPartner_Location_ID());
+		purchaseOrderLine.setC_BPartner_Location_Value_ID(salesOrderLine.getC_BPartner_Location_Value_ID());
+		purchaseOrderLine.setBPartnerAddress(salesOrderLine.getBPartnerAddress());
 	}
 
 	private void copyUserIdFromSalesToPurchaseOrderLine(
@@ -176,14 +199,17 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	{
 		final Set<OrderId> salesOrdersToBeClosed = new HashSet<>();
 		InterfaceWrapperHelper.save(purchaseOrderLine);
+
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
-			salesOrderLine.setLink_OrderLine(purchaseOrderLine);
-			InterfaceWrapperHelper.save(salesOrderLine);
+			orderDAO.allocatePOLineToSOLine(
+					OrderLineId.ofRepoId(purchaseOrderLine.getC_OrderLine_ID()), 
+					OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+			
 			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
 		}
 
-		if(PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		if (PurchaseTypeEnum.MEDIATED.equals(purchaseType))
 		{
 			salesOrdersToBeClosed.forEach(orderBL::closeOrder);
 		}

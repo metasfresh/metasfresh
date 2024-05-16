@@ -1,27 +1,7 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -33,9 +13,29 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.event.pporder.PPOrderLineData;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.valueOf;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /*
  * #%L
@@ -133,24 +133,28 @@ public class PPOrderChangedHandlerTest
 	private PPOrder createPPOrder()
 	{
 		return PPOrder.builder()
+				.ppOrderData(PPOrderData.builder()
+									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
+									 .datePromised(NOW)
+									 .dateStartSchedule(NOW)
+									 .plantId(ResourceId.ofRepoId(110))
+									 .productDescriptor(createProductDescriptor())
+									 .productPlanningId(130)
+									 .qtyRequired(TEN)
+									 .qtyDelivered(ONE)
+									 .warehouseId(WarehouseId.ofRepoId(150))
+									 .build())
 				.ppOrderId(123)
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
-				.datePromised(NOW)
-				.dateStartSchedule(NOW)
-				.plantId(ResourceId.ofRepoId(110))
-				.productDescriptor(createProductDescriptor())
-				.productPlanningId(130)
-				.qtyRequired(TEN)
-				.qtyDelivered(ONE)
-				.warehouseId(WarehouseId.ofRepoId(150))
 				.line(PPOrderLine.builder()
-						.productDescriptor(createProductDescriptorWithOffSet(20))
-						.issueOrReceiveDate(NOW)
-						.description("desc2")
-						.productBomLineId(380)
-						.qtyRequired(valueOf(320))
-						.receipt(false)
-						.build())
+							  .ppOrderLineData(PPOrderLineData.builder()
+													   .productDescriptor(createProductDescriptorWithOffSet(20))
+													   .issueOrReceiveDate(NOW)
+													   .description("desc2")
+													   .productBomLineId(380)
+													   .qtyRequired(valueOf(320))
+													   .receipt(false)
+													   .build())
+							  .build())
 				.build();
 	}
 

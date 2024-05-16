@@ -1,11 +1,12 @@
 package de.metas.document.archive.mailrecipient;
 
-import javax.annotation.Nullable;
-
 import de.metas.i18n.Language;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,6 +37,7 @@ public class DocOutBoundRecipient
 	@NonNull
 	DocOutBoundRecipientId id;
 
+	@With
 	@Nullable
 	String emailAddress;
 

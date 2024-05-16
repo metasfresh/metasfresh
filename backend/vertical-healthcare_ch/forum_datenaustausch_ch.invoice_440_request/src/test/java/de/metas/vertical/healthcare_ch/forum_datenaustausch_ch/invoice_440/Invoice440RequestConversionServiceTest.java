@@ -72,6 +72,7 @@ public class Invoice440RequestConversionServiceTest
 	public void init()
 	{
 		invoice440RequestConversionService = new Invoice440RequestConversionService();
+		invoice440RequestConversionService.setUsePrettyPrint(true);
 	}
 
 	/** Ignored; un-ignore if you have a local (private) file you want to run a quick test with. */
@@ -143,9 +144,7 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
-		final String exportXmlString = new String(outputStream.toByteArray());
-
-		expect(exportXmlString).toMatchSnapshot();
+		assertExportMatchesSnapshot(outputStream);
 	}
 
 	@Test
@@ -173,8 +172,12 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(withMod, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+		assertExportMatchesSnapshot(outputStream);
+	}
+
+	private void assertExportMatchesSnapshot(final ByteArrayOutputStream outputStream)
+	{
 		final String exportXmlString = new String(outputStream.toByteArray());
-		System.out.println(exportXmlString);
 
 		expect(exportXmlString).toMatchSnapshot();
 	}
@@ -207,6 +210,8 @@ public class Invoice440RequestConversionServiceTest
 		invoice440RequestConversionService.fromCrossVersionRequest(xRequest, outputStream);
 
 		assertXmlIsValid(new ByteArrayInputStream(outputStream.toByteArray()));
+
+		assertExportMatchesSnapshot(outputStream);
 	}
 
 	private InputStream createInputStream(@NonNull final String resourceName)

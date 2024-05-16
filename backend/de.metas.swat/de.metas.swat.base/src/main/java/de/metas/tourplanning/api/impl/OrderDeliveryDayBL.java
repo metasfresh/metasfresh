@@ -1,9 +1,17 @@
 package de.metas.tourplanning.api.impl;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.order.IOrderBL;
+import de.metas.tourplanning.api.IDeliveryDayBL;
+import de.metas.tourplanning.api.IOrderDeliveryDayBL;
+import de.metas.tourplanning.model.TourId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -13,23 +21,18 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.order.IOrderBL;
-import de.metas.tourplanning.api.IDeliveryDayBL;
-import de.metas.tourplanning.api.IOrderDeliveryDayBL;
-import de.metas.tourplanning.model.TourId;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
 	public static final String SYSCONFIG_Fallback_PreparationDate = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate";
 
+	public static final String SYSCONFIG_Fallback_PreparationDate_Offset_Hours = "de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours";
+
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean setPreparationDateAndTour(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
@@ -112,7 +115,10 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		}
 		else if (isUseFallback)
 		{
-			order.setPreparationDate(order.getDatePromised());
+			int offset = sysConfigBL.getIntValue(
+					SYSCONFIG_Fallback_PreparationDate_Offset_Hours,
+					0);
+			order.setPreparationDate(TimeUtil.addHours(order.getDatePromised(), offset));
 			order.setM_Tour_ID(-1);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} from order's DatePromised value, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}).",

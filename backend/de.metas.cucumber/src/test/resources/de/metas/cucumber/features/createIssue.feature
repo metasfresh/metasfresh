@@ -8,10 +8,18 @@ Feature: issue creation using metasfresh api
     Given infrastructure and metasfresh are running
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And I_AD_PInstance with id 123123 is created
+    # We want the issue to be created synchronously, so when the "POST" step is done, the AD_Issue shall be there without any further ado
+    # We use SeqNo=9 to make sure this config-record takes precedence
+    And the following API_Audit_Config records are created:
+      | Identifier  | SeqNo | OPT.Method | OPT.PathPrefix                       | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | wait4result | 9     | POST       | api/v2/externalsystem/externalstatus | N                     | Y                                | N                 |
+
+
 
   @from:cucumber
   Scenario: The request is good and the issue is created
-    When the metasfresh REST-API endpoint path 'api/externalsystem/123123/externalstatus/error' receives a 'POST' request with the payload
+
+    When the metasfresh REST-API endpoint path 'api/v2/externalsystem/externalstatus/123123/error' receives a 'POST' request with the payload
 """
 {
 	"errors": [

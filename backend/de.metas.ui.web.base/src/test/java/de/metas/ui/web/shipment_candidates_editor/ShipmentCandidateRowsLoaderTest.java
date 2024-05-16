@@ -7,6 +7,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;

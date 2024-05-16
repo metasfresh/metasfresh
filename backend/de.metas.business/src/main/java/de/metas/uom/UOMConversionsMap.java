@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.CoalesceUtil;
 import org.adempiere.exceptions.NoUOMConversionException;
 
 import com.google.common.collect.ImmutableMap;
@@ -46,22 +47,31 @@ public class UOMConversionsMap
 {
 	public static final UOMConversionsMap EMPTY = new UOMConversionsMap();
 
-	private final ProductId productId;
+	ProductId productId;
+	
 	@Getter(AccessLevel.NONE)
-	private final ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
+	ImmutableMap<FromAndToUomIds, UOMConversionRate> rates;
 
+	/**
+	 * {@code true} if this map is about a productId *and* contains at least one mapping besides the trivial times-one-mapping to and from the product's own stocking-UOM.
+	 */
+	boolean hasRatesForNonStockingUOMs;
+	
 	@Builder
 	private UOMConversionsMap(
 			@Nullable final ProductId productId,
+			@Nullable final Boolean hasRatesForNonStockingUOMs,
 			@NonNull @Singular final List<UOMConversionRate> rates)
 	{
 		this.productId = productId;
-		this.rates = Maps.uniqueIndex(rates, conversion -> toFromAndToUomIds(conversion));
+		this.hasRatesForNonStockingUOMs = CoalesceUtil.coalesceNotNull(hasRatesForNonStockingUOMs, false);
+		this.rates = Maps.uniqueIndex(rates, UOMConversionsMap::toFromAndToUomIds);
 	}
 
 	private UOMConversionsMap()
 	{
 		productId = null;
+		hasRatesForNonStockingUOMs = false;
 		rates = ImmutableMap.of();
 	}
 
@@ -80,6 +90,7 @@ public class UOMConversionsMap
 		return Optional.ofNullable(getRateOrNull(fromUomId, toUomId));
 	}
 
+	@Nullable
 	private UOMConversionRate getRateOrNull(@NonNull final UomId fromUomId, @NonNull final UomId toUomId)
 	{
 		if (fromUomId.equals(toUomId))

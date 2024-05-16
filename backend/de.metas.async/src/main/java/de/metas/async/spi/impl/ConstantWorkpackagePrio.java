@@ -22,6 +22,7 @@ package de.metas.async.spi.impl;
  * #L%
  */
 
+import lombok.EqualsAndHashCode;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
@@ -33,7 +34,11 @@ import java.util.Map;
 
 /**
  * TODO: check if we can do this better (using enum??)
+ * 
+ * @author ts
+ *
  */
+@EqualsAndHashCode
 public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 {
 	private final String prio;
@@ -105,31 +110,6 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	public String toString()
 	{
 		return "ConstantWorkpackagePrio[" + prio + "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(prio)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		final ConstantWorkpackagePrio other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(prio, other.prio)
-				.isEqual();
 	}
 
 }

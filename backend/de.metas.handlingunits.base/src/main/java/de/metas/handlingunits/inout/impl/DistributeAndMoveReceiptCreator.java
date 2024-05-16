@@ -1,19 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.api.ILotNumberBL;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Movement;
-import org.eevolution.model.I_DD_Order;
-import org.springframework.stereotype.Service;
-
-import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
-import de.metas.handlingunits.ddorder.api.QuarantineInOutLine;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.QuarantineInOutLine;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result.ResultBuilder;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -35,6 +23,16 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Movement;
+import org.eevolution.model.I_DD_Order;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -71,13 +69,16 @@ public class DistributeAndMoveReceiptCreator
 	private final transient ILotNumberBL lotNoBL = Services.get(ILotNumberBL.class);
 	private final transient LotNumberQuarantineRepository lotNumberQuarantineRepository;
 
-	private final transient IHUDDOrderBL huDDOrderBL = Services.get(IHUDDOrderBL.class);
+	private final transient DDOrderService ddOrderService;
 	private final transient IInOutDDOrderBL inoutDDOrderBL = Services.get(IInOutDDOrderBL.class);
 	private final transient IInOutMovementBL inoutMovementBL = Services.get(IInOutMovementBL.class);
 
-	public DistributeAndMoveReceiptCreator(@NonNull final LotNumberQuarantineRepository lotNumberQuarantineRepository)
+	public DistributeAndMoveReceiptCreator(
+			@NonNull final LotNumberQuarantineRepository lotNumberQuarantineRepository,
+			@NonNull final DDOrderService ddOrderService)
 	{
 		this.lotNumberQuarantineRepository = lotNumberQuarantineRepository;
+		this.ddOrderService = ddOrderService;
 	}
 
 	public Result createDocumentsFor(
@@ -93,7 +94,7 @@ public class DistributeAndMoveReceiptCreator
 
 		if (!Check.isEmpty(partitionedLines.getLinesToQuarantine()))
 		{
-			result.quarantineDDOrders(huDDOrderBL.createQuarantineDDOrderForReceiptLines(partitionedLines.getLinesToQuarantine()));
+			result.quarantineDDOrders(ddOrderService.createQuarantineDDOrderForReceiptLines(partitionedLines.getLinesToQuarantine()));
 			setInvoiceCandsInDispute(partitionedLines.getLinesToQuarantine());
 		}
 
@@ -161,7 +162,7 @@ public class DistributeAndMoveReceiptCreator
 
 	@Value
 	@Builder
-	private static final class PartitionedInOutLineRecords
+	private static class PartitionedInOutLineRecords
 	{
 		@Singular("lineToQuarantine")
 		List<QuarantineInOutLine> linesToQuarantine;
@@ -178,8 +179,8 @@ public class DistributeAndMoveReceiptCreator
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		lines.stream()
-				.map(line -> line.getInOutLine())
-				.forEach(receiptLine -> invoiceCandBL.markInvoiceCandInDisputeForReceiptLine(receiptLine));
+				.map(QuarantineInOutLine::getInOutLine)
+				.forEach(invoiceCandBL::markInvoiceCandInDisputeForReceiptLine);
 	}
 
 	private LotNumberQuarantine getQuarantineLotNoOrNull(final I_M_InOutLine inOutLine)

@@ -38,6 +38,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONCreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONGetViewActionsRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewHeaderProperties;
 import de.metas.ui.web.view.json.JSONViewLayout;
@@ -46,10 +47,8 @@ import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -84,6 +83,7 @@ import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Api
 @RestController
@@ -203,7 +203,7 @@ public class ViewRestController
 	 */
 	@PostMapping("/{viewId}/filter")
 	public JSONViewResult filterView( //
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
+									  @PathVariable(PARAM_WindowId) final String windowIdStr //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @RequestBody final JSONFilterViewRequest jsonRequest //
 	)
@@ -355,11 +355,6 @@ public class ViewRestController
 				.andComposeWith(userSession.toEvaluatee());
 	}
 
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
-	}
-
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
@@ -381,7 +376,7 @@ public class ViewRestController
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
-	public JSONLookupValuesList getFilterParameterDropdown(
+	public JSONLookupValuesPage getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_FilterId) final String filterId //
@@ -394,9 +389,8 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final Evaluatee ctx = createFilterParameterLookupContext(view);
 
-		return view
-				.getFilterParameterDropdown(filterId, parameterName, ctx)
-				.transform(this::toJSONLookupValuesList);
+		return view.getFilterParameterDropdown(filterId, parameterName, ctx)
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")
@@ -404,19 +398,19 @@ public class ViewRestController
 			@NonNull final String windowId,
 			@NonNull final String viewIdString,
 			final String viewProfileIdStr,
-			final String selectedIdsList,
+			final Set<String> selectedIds,
 			final String parentViewId,
-			final String parentViewSelectedIdsList,
+			final Set<String> parentViewSelectedIds,
 			final String childViewId,
-			final String childViewSelectedIdsList,
+			final Set<String> childViewSelectedIds,
 			final DisplayPlace displayPlace)
 	{
 		final ViewId viewId = ViewId.of(windowId, viewIdString);
 		final IView view = viewsRepo.getView(viewId);
 
-		ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(viewId, DocumentIdsSelection.ofCommaSeparatedString(selectedIdsList));
-		ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(parentViewId, parentViewSelectedIdsList);
-		ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(childViewId, childViewSelectedIdsList);
+		ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(viewId, selectedIds);
+		ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(parentViewId, parentViewSelectedIds);
+		ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(childViewId, childViewSelectedIds);
 
 		return ViewAsPreconditionsContext.builder()
 				.view(view)
@@ -428,65 +422,54 @@ public class ViewRestController
 				.build();
 	}
 
-	@GetMapping("/{viewId}/actions")
-	public JSONDocumentActionsList getDocumentActions(
+	@PostMapping("/{viewId}/actions")
+	public JSONDocumentActionsList getRowsActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
-			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
-			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
-			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
-			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr,
-			@RequestParam(name = "all", required = false) final boolean all)
+			@RequestBody final JSONGetViewActionsRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
-				.selectedIdsList(selectedIdsListStr)
-				.parentViewId(parentViewIdStr)
-				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
-				.childViewId(childViewIdStr)
-				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.selectedIds(request.getSelectedIds())
+				.parentViewId(request.getParentViewId())
+				.parentViewSelectedIds(request.getParentViewSelectedIds())
+				.childViewId(request.getChildViewId())
+				.childViewSelectedIds(request.getChildViewSelectedIds())
 				.displayPlace(DisplayPlace.ViewActionsMenu)
 				.build();
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 				.filter(descriptor -> descriptor.isDisplayedOn(preconditionsContext.getDisplayPlace())) // shall be already filtered out, but just to make sure
-				.filter(descriptor -> all || descriptor.isEnabled()) // only those which are enabled and not internally rejected
+				.filter(descriptor -> request.isAll() || descriptor.isEnabled()) // only those which are enabled and not internally rejected
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
-	@GetMapping("/{viewId}/quickActions")
-	public JSONDocumentActionsList getDocumentQuickActions(
+	@PostMapping("/{viewId}/quickActions")
+	public JSONDocumentActionsList getRowsQuickActions(
 			@PathVariable(PARAM_WindowId) final String windowId,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
-			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr,
-			@RequestParam(name = "parentViewId", required = false) final String parentViewIdStr,
-			@RequestParam(name = "parentViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String parentViewSelectedIdsListStr,
-			@RequestParam(name = "childViewId", required = false) final String childViewIdStr,
-			@RequestParam(name = "childViewSelectedIds", required = false) @ApiParam("comma separated IDs") final String childViewSelectedIdsListStr,
-			@RequestParam(name = "viewProfileId", required = false) final String viewProfileIdStr,
-			@RequestParam(name = "all", required = false) final boolean all)
+			@RequestBody final JSONGetViewActionsRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WebuiPreconditionsContext preconditionsContext = newPreconditionsContextBuilder()
 				.windowId(windowId)
 				.viewIdString(viewIdStr)
-				.viewProfileIdStr(viewProfileIdStr)
-				.selectedIdsList(selectedIdsListStr)
-				.parentViewId(parentViewIdStr)
-				.parentViewSelectedIdsList(parentViewSelectedIdsListStr)
-				.childViewId(childViewIdStr)
-				.childViewSelectedIdsList(childViewSelectedIdsListStr)
+				.viewProfileIdStr(request.getViewProfileId())
+				.selectedIds(request.getSelectedIds())
+				.parentViewId(request.getParentViewId())
+				.parentViewSelectedIds(request.getParentViewSelectedIds())
+				.childViewId(request.getChildViewId())
+				.childViewSelectedIds(request.getChildViewSelectedIds())
 				.displayPlace(DisplayPlace.ViewQuickActions)
 				.build();
 
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
 				.filter(descriptor -> descriptor.isDisplayedOn(preconditionsContext.getDisplayPlace())) // shall be already filtered out, but just to make sure
-				.filter(descriptor -> all || descriptor.isEnabledOrNotSilent()) // only those which are enabled or not silent
+				.filter(descriptor -> request.isAll() || descriptor.isEnabledOrNotSilent()) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 

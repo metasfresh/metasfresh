@@ -72,7 +72,6 @@ class MenuOverlayContainer extends Component {
 
         {type !== 'group' && (
           <MenuOverlayItem
-            printChildren={false}
             {...{
               showBookmarks,
               openModal,
@@ -114,28 +113,55 @@ class MenuOverlayContainer extends Component {
                 }}
               />
             ) : (
-              <MenuOverlayItem
-                key={subindex}
-                {...subitem}
-                {...{
-                  showBookmarks,
-                  openModal,
-                  back,
-                  printChildren,
-                  handlePath,
-                  onUpdateData,
-                  transparentBookmarks,
-                  handleMenuOverlay,
-                  handleNewRedirect,
-                  handleRedirect,
-                  handleClickOnFolder,
-                }}
-              />
+              this.renderSubItem(subitem, subindex)
             )
           )}
       </div>
     );
   }
+
+  renderSubItem = (subitem, subindex) => {
+    const { handleClickOnFolder } = this.props;
+
+    // In case there is no `handleClickOnFolder` function provided,
+    // don't even render the sub-item group because user can do nothing with it.
+    if (subitem.type === 'group' && !handleClickOnFolder) {
+      return null;
+    }
+
+    const {
+      handleRedirect,
+      handleNewRedirect,
+      handlePath,
+      printChildren,
+      back,
+      handleMenuOverlay,
+      openModal,
+      showBookmarks,
+      onUpdateData,
+      transparentBookmarks,
+    } = this.props;
+
+    return (
+      <MenuOverlayItem
+        key={subindex}
+        {...subitem}
+        {...{
+          showBookmarks,
+          openModal,
+          back,
+          printChildren,
+          handlePath,
+          onUpdateData,
+          transparentBookmarks,
+          handleMenuOverlay,
+          handleNewRedirect,
+          handleRedirect,
+          handleClickOnFolder,
+        }}
+      />
+    );
+  };
 }
 
 MenuOverlayContainer.propTypes = {

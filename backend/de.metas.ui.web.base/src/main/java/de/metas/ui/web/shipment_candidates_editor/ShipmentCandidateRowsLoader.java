@@ -8,6 +8,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;

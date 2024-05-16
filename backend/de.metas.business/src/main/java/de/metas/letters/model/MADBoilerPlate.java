@@ -1,55 +1,24 @@
 package de.metas.letters.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.getPO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLEditorKit;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.email.EMail;
+import de.metas.email.EMailAttachment;
+import de.metas.email.EMailSentStatus;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.process.PInstanceId;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -78,34 +47,37 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequest;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nullable;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
+import java.io.File;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.CCache;
-import de.metas.email.EMail;
-import de.metas.email.EMailAttachment;
-import de.metas.email.EMailSentStatus;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfo;
-import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import lombok.ToString;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getPO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -126,7 +98,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public static final String FUNCTION_upperCase = "upperCase";
 	public static final String FUNCTION_lowerCase = "lowerCase";
 
-	private static CCache<Integer, MADBoilerPlate> s_cache = new CCache<>(Table_Name, 20);
+	private static final CCache<Integer, MADBoilerPlate> s_cache = new CCache<>(Table_Name, 20);
 
 	public static MADBoilerPlate get(final Properties ctx, final int AD_BoilerPlate_ID)
 	{
@@ -151,44 +123,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(final String html, final BoilerPlateContext context)
-	{
-		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, context, ITrx.TRXNAME_None);
-		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-
-		final ProcessInfo pi = ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
-				.addParameter(I_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
-				//
-				.buildAndPrepareExecution()
-				.executeSync()
-				.getProcessInfo();
-
-		final ReportEngine re = ReportEngine.get(ctx, pi);
-		return re;
-	}
-
-	public static File getPDF(final String fileNamePrefix, final String html, final BoilerPlateContext context)
-	{
-		File file = null;
-		if (!Check.isEmpty(fileNamePrefix))
-		{
-			try
-			{
-				file = File.createTempFile(fileNamePrefix.trim(), ".pdf");
-			}
-			catch (final IOException e)
-			{
-				log.error(e.getLocalizedMessage(), e);
-				file = null;
-			}
-		}
-		//
-		final ReportEngine re = getReportEngine(html, context);
-		return re.getPDF(file);
-	}
 
 	public static void sendEMail(final IEMailEditor editor)
 	{
@@ -561,14 +495,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	/**
 	 * Get Parsed Text
-	 *
-	 * @param ctx
-	 * @param text
-	 * @param AD_Language
-	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
-	 * @param attrs       variables map. If null, no variable replacement will be made
-	 * @param trxName
-	 * @return
 	 */
 	public static String parseText(final Properties ctx, final String text,
 			final boolean isEmbeded,
@@ -692,26 +618,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 	}
 
-	/**
-	 * @param AD_Language
-	 * @param isEmbeded
-	 * @param attrs
-	 * @return
-	 * @see #getTextSnippetParsed(String, boolean, Map) and consider isEmbeded = true
-	 */
 	public String getTextSnippetParsed(final BoilerPlateContext context)
 	{
 		return getTextSnippetParsed(false, context);
 	}
 
-	/**
-	 * Get Parsed Text
-	 *
-	 * @param AD_Language
-	 * @param attrs       variables map. If null, no variable repacement will be made
-	 * @param isEmbeded   will this text be embeded (i.e. shoud we strip html, head, body tags?
-	 * @return parsed text
-	 */
 	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
 	{
 		final String AD_Language = getAD_Language(Env.getCtx(), context);
@@ -975,12 +886,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return firstContact;
 	}
 
-	/**
-	 * Get Language from attributes
-	 *
-	 * @param attributes
-	 * @return
-	 */
 	public static String getAD_Language(final Properties ctx, final BoilerPlateContext context)
 	{
 		if (context != null)
@@ -1007,15 +912,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return result.toString();
 	}
 
-	/**
-	 * Create record into T_BoilerPlate_Spool table
-	 *
-	 * @param ctx
-	 * @param AD_Client_ID
-	 * @param AD_PInstance_ID
-	 * @param text
-	 * @param trxName
-	 */
 	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
 		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("

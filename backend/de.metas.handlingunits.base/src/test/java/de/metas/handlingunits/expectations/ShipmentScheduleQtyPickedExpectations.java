@@ -27,6 +27,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;

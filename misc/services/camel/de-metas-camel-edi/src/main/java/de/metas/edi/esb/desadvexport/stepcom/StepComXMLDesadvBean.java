@@ -22,38 +22,28 @@
 
 package de.metas.edi.esb.desadvexport.stepcom;
 
-import static de.metas.edi.esb.commons.Util.formatNumber;
-import static de.metas.edi.esb.commons.Util.toDate;
-import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
-import static de.metas.edi.esb.commons.Util.trimAndTruncate;
-import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.edi.esb.commons.DesadvSettings;
-import de.metas.edi.esb.desadvexport.LineAndPack;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.lang.Nullable;
-
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.DesadvSettings;
+import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
+import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.desadvexport.LineAndPack;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.AddressQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.ControlQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.DateQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.DiscrepencyCode;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.DocumentFunction;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.DocumentType;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.IdentificationQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.PackIdentificationQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.PackagingLevel;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductDescQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductDescType;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.QuantityQual;
+import de.metas.edi.esb.desadvexport.stepcom.qualifier.ReferenceQual;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCUOMType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
@@ -76,24 +66,32 @@ import de.metas.edi.esb.jaxb.stepcom.desadv.PACKINXlief;
 import de.metas.edi.esb.jaxb.stepcom.desadv.PPACK1;
 import de.metas.edi.esb.jaxb.stepcom.desadv.TRAILR;
 import de.metas.edi.esb.jaxb.stepcom.desadv.Xlief4H;
-import de.metas.edi.esb.commons.MeasurementUnit;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.AddressQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.ControlQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.DateQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.DiscrepencyCode;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.DocumentFunction;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.DocumentType;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.IdentificationQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.PackIdentificationQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.PackagingLevel;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductDescQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductDescType;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.ProductQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.QuantityQual;
-import de.metas.edi.esb.desadvexport.stepcom.qualifier.ReferenceQual;
-import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.lang.Nullable;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.edi.esb.commons.Util.formatNumber;
+import static de.metas.edi.esb.commons.Util.toDate;
+import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+import static de.metas.edi.esb.commons.Util.trimAndTruncate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
+import static java.math.BigDecimal.ZERO;
 
 public class StepComXMLDesadvBean
 {
@@ -220,7 +218,7 @@ public class StepComXMLDesadvBean
 			@NonNull final String supplierGln)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = validateObject(xmlDesadv.getCBPartnerLocationID(),
-				"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
+																		"@FillMandatory@ @EDI_Desadv_ID@=" + xmlDesadv.getDocumentNo() + " @C_BPartner_Location_ID@");
 
 		final HADRE1 buyerAddress = DESADV_objectFactory.createHADRE1();
 		buyerAddress.setDOCUMENTID(header.getDOCUMENTID());
@@ -537,7 +535,7 @@ public class StepComXMLDesadvBean
 			if (settings.isDesadvLineCUTURequired())
 			{
 				final BigDecimal qtyItemCapacity = validateObject(pack.getQtyCU(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+																  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
 				final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 				cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 				cuTuQuantity.setMEASUREMENTUNIT(measurementUnitName);
@@ -550,7 +548,7 @@ public class StepComXMLDesadvBean
 			if (dmark1Required)
 			{
 				final String lotNumber = validateString(pack.getLotNumber(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
+														"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @LotNumber@");
 
 				final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
 				dmark1.setDOCUMENTID(documentId);
@@ -560,7 +558,7 @@ public class StepComXMLDesadvBean
 				if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
 				{
 					final XMLGregorianCalendar bestBefore = validateObject(pack.getBestBeforeDate(),
-							"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
+																		   "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @BestBeforeDate@");
 					dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
 				}
 				detail.getDMARK1().add(dmark1);
@@ -607,7 +605,7 @@ public class StepComXMLDesadvBean
 		if (qtyDelivered.signum() > 0 && settings.isDesadvLineCUTURequired())
 		{
 			final BigDecimal qtyItemCapacity = validateObject(qtyCU,
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
+															  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @QtyCU@");
 			final DQUAN1 cuTuQuantity = createQuantityDetail(documentId, lineNumber, QuantityQual.CUTU);
 			cuTuQuantity.setQUANTITY(formatNumber(qtyItemCapacity, decimalFormat));
 			cuTuQuantity.setMEASUREMENTUNIT(measurementUnitName);
@@ -628,6 +626,7 @@ public class StepComXMLDesadvBean
 		return detail;
 	}
 
+	@Nullable
 	private String extractMeasurementUnitOrNull(
 			@Nullable final EDIExpCUOMType uom,
 			@NonNull final EDIExpDesadvLineType line,
@@ -673,7 +672,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANCRequired())
 		{
 			final String eanc = ValidationHelper.validateString(line.getEANCU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANCU@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANCU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -685,7 +684,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineEANTRequired())
 		{
 			final String eant = ValidationHelper.validateString(line.getEANTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANTU@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @EANTU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -697,7 +696,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineGTINRequired())
 		{
 			final String gtin = ValidationHelper.validateString(line.getGTIN(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @GTIN@");
 
 			final DPRIN1 gtinProdInfo = DESADV_objectFactory.createDPRIN1();
 			gtinProdInfo.setDOCUMENTID(documentId);
@@ -709,7 +708,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineUPCCRequired())
 		{
 			final String upcc = ValidationHelper.validateString(line.getUPC(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPC@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPC@");
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
 			eancProdInfo.setPRODUCTQUAL(ProductQual.UPCC.toString());
@@ -720,7 +719,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineUPCCRequired())
 		{
 			final String upct = ValidationHelper.validateString(line.getUPCTU(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCTU@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @UPCTU@");
 
 			final DPRIN1 eancProdInfo = DESADV_objectFactory.createDPRIN1();
 			eancProdInfo.setDOCUMENTID(documentId);
@@ -733,7 +732,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLineBUYRRequired())
 		{
 			final String buyr = ValidationHelper.validateString(line.getProductNo(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @ProductNo@");
+																"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @ProductNo@");
 
 			final DPRIN1 prodInfo = DESADV_objectFactory.createDPRIN1();
 			prodInfo.setDOCUMENTID(documentId);
@@ -755,7 +754,7 @@ public class StepComXMLDesadvBean
 		if (settings.isDesadvLinePRICRequired())
 		{
 			final BigDecimal priceActual = validateObject(line.getPriceActual(),
-					"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @PriceActual@");
+														  "@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @PriceActual@");
 
 			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
 			prodDescr.setDOCUMENTID(documentId);

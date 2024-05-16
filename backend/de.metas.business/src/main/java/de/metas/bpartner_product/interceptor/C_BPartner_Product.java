@@ -1,7 +1,13 @@
 package de.metas.bpartner_product.interceptor;
 
-import java.util.List;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,14 +20,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -79,6 +78,15 @@ public class C_BPartner_Product
 		{
 			final ITranslatableString translatableMsgText = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_C_BPartner_Product_Duplicate_ASI);
 			throw new AdempiereException(translatableMsgText).markAsUserValidationError();
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner_Product.COLUMNNAME_IsExcludedFromPurchase)
+	public void resetExclusionFromPurchaseReason(final I_C_BPartner_Product bpProduct)
+	{
+		if (!bpProduct.isExcludedFromPurchase())
+		{
+			bpProduct.setExclusionFromPurchaseReason(null);
 		}
 	}
 

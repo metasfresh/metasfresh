@@ -23,7 +23,6 @@ import {
   FETCH_TOP_ACTIONS_SUCCESS,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  NO_CONNECTION,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
@@ -108,7 +107,6 @@ const initialModalState = {
  * - inlineTab keys ${windowId}_{$tabId}_${rowId}
  */
 export const initialState = {
-  connectionError: false,
   showSpinner: false,
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
@@ -158,6 +156,7 @@ export const initialState = {
  * @summary getter for master data
  *
  * @param {object} state - redux state
+ * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
   const selector = isModal ? 'modal' : 'master';
@@ -243,13 +242,6 @@ export const getElementWidgetData = createCachedSelector(
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, isModal, layoutPath) => layoutPath);
 
-/**
- * @method getInlineTabWidgetFields
- *
- * @param {object} state - redux state
- * @param {boolean} isModal
- * @param {string} layoutPath - indexes of elements in the layout structure
- */
 export const getInlineTabWidgetFields = ({ state, inlineTabId }) => {
   const data = state.windowHandler.inlineTab[`${inlineTabId}`].data;
 
@@ -314,11 +306,6 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
-    case NO_CONNECTION:
-      return {
-        ...state,
-        connectionError: action.status,
-      };
     case OPEN_MODAL:
       return {
         ...state,

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -17,8 +18,6 @@ import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 
 /*
@@ -53,11 +52,11 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
+		final String tableName = context.getTableName();
+		final AdTabId adTabId = context.getAdTabId();
+
 		if (tableName == null || adTabId == null)
 		{
 			return NullDocumentFilterDescriptorsProvider.instance;
@@ -67,9 +66,9 @@ final public class UserQueryDocumentFilterDescriptorsProviderFactory implements 
 
 		final int adTableId = adTablesRepo.retrieveTableId(tableName);
 
-		final List<IUserQueryField> searchFields = fields
+		final List<IUserQueryField> searchFields = context.getFields()
 				.stream()
-				.map(field -> createUserQueryField(field))
+				.map(UserQueryDocumentFilterDescriptorsProviderFactory::createUserQueryField)
 				.collect(ImmutableList.toImmutableList());
 
 		final UserQueryRepository repository = UserQueryRepository.builder()

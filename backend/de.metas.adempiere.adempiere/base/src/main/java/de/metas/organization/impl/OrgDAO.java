@@ -1,5 +1,6 @@
 package de.metas.organization.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
@@ -18,6 +19,7 @@ import de.metas.organization.OrgTypeId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PricingSystemId;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserGroupId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -90,6 +93,32 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	public List<I_AD_Org> getByIds(final Set<OrgId> orgIds)
+	{
+		if (orgIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class)
+				.addInArrayFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, orgIds)
+				.create()
+				.listImmutable(I_AD_Org.class);
+	}
+
+	@Override
+	public List<I_AD_Org> getAllActiveOrgs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Override
 	public OrgInfo createOrUpdateOrgInfo(@NonNull final OrgInfoUpdateRequest request)
 	{
 		I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(request.getOrgId(), ITrx.TRXNAME_ThreadInherited);
@@ -134,11 +163,13 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-
+	
+	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
 		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
@@ -159,7 +190,7 @@ public class OrgDAO implements IOrgDAO
 				.firstOnly(I_AD_OrgInfo.class);
 	}
 
-	public static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
+	public static OrgInfo toOrgInfo(@NonNull final I_AD_OrgInfo record)
 	{
 		final OrgId parentOrgId = record.getParent_Org_ID() > 0
 				? OrgId.ofRepoId(record.getParent_Org_ID())
@@ -191,6 +222,12 @@ public class OrgDAO implements IOrgDAO
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
+
+				.autoInvoiceFlatrateTerms(record.isAutoInvoiceFlatrateTerm())
+
+				//
+				.partnerCreatedFromAnotherOrgNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID()))
+				.supplierApprovalExpirationNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID()))
 				//
 				.build();
 	}
@@ -201,13 +238,13 @@ public class OrgDAO implements IOrgDAO
 		{
 			final HashMap<String, AdImageId> result = new HashMap<>();
 			final AdImageId logoId = AdImageId.ofRepoIdOrNull(orgInfo.getLogo_ID());
-			if(logoId != null)
+			if (logoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_Logo_ID, logoId);
 			}
 
 			final AdImageId reportBottomLogoId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBottom_Logo_ID());
-			if(reportBottomLogoId != null)
+			if (reportBottomLogoId != null)
 			{
 				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
 			}
@@ -225,7 +262,7 @@ public class OrgDAO implements IOrgDAO
 					final AdImageId imageId = InterfaceWrapperHelper.getValue(orgInfo, columnName)
 							.map(AdImageId::ofNullableObject)
 							.orElse(null);
-					if(imageId != null)
+					if (imageId != null)
 					{
 						result.put(columnName, imageId);
 					}
@@ -320,6 +357,33 @@ public class OrgDAO implements IOrgDAO
 			throw new AdempiereException("No Organization found for ID: " + orgId);
 		}
 		return org.isEUOneStopShop();
+	}
+
+	@Override
+	public UserGroupId getSupplierApprovalExpirationNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getSupplierApprovalExpirationNotifyUserGroupID();
+	}
+
+	@Override
+	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
+	{
+		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
+	}
+
+	@Override
+	public String getOrgName(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getName();
+	}
+
+	@Override
+	public boolean isAutoInvoiceFlatrateTerm(@NonNull final OrgId orgId)
+	{
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
+
+		return orgInfo.isAutoInvoiceFlatrateTerms();
+
 	}
 
 }

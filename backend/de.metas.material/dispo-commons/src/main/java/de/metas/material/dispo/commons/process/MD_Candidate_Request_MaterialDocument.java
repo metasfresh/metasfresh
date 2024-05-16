@@ -1,11 +1,5 @@
 package de.metas.material.dispo.commons.process;
 
-import java.util.function.Predicate;
-
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.SpringContextHolder;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
@@ -17,6 +11,11 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.SpringContextHolder;
+
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -85,7 +84,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 				.map(r -> MaterialDispoGroupId.ofInt(r.getMD_Candidate_GroupId()))
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", RequestMaterialOrderService.class.getSimpleName(), groupId))
-				.forEach(service::requestMaterialOrderForCandidates);
+				.forEach(groupId -> service.requestMaterialOrderForCandidates(groupId, null));
 
 		return MSG_OK;
 	}

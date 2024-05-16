@@ -265,12 +265,12 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
+				.quantity(orderedQuantity.subtract(getActualDeliveredQty(shipmentSchedule)))
 				.build();
 	}
 
 	@NonNull
-	private BigDecimal getDeliveredQtyFromHUs(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private BigDecimal getActualDeliveredQty(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPicked = shipmentScheduleAllocDAO
 				.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);

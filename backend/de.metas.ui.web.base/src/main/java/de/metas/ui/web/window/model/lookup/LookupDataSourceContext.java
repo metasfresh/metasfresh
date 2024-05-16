@@ -702,7 +702,8 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 					&& !Check.isBlank(lookupTableName)
 					&& UserRolePermissionsKey.fromContextOrNull(ctx) != null)
 			{
-				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ);
+				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ)
+						.orElse("true");
 			}
 
 			// Fallback to document evaluatee

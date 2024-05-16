@@ -20,7 +20,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.inout.IInOutDDOrderBL;
-import de.metas.handlingunits.model.I_DD_OrderLine;
+import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;

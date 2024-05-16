@@ -30,7 +30,9 @@ import lombok.Getter;
 public enum TechnicalNameEnum
 {
 	OPEN("open"),
-	PAID("paid");
+	IN_PROGRESS("in_progress"),
+	PAID("paid"),
+	CANCELLED("cancelled");
 
 	private final String value;
 }

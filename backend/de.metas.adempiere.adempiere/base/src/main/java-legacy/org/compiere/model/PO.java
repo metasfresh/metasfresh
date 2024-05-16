@@ -88,6 +88,7 @@ import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
@@ -591,7 +592,7 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(@NonNull final Properties ctx)
+	public final void setCtx(@NonNull final Properties ctx)
 	{
 		this.p_ctx = ctx;
 	}
@@ -3002,7 +3003,7 @@ public abstract class PO
 	 * @param success success
 	 * @return true if saved
 	 */
-	private final boolean saveFinish(final boolean newRecord, boolean success) throws Exception
+	private boolean saveFinish(final boolean newRecord, boolean success) throws Exception
 	{
 		// Translations
 		if (success)
@@ -3309,11 +3310,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						final int docTypeId = get_ValueAsInt(docTypeIndex);
-						value = documentNoFactory.forDocType(docTypeId, false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null) 	// not overwritten by DocType and not manually entered
 					{
@@ -3590,10 +3594,14 @@ public abstract class PO
 
 					if (docTypeIndex != -1) 		// get based on Doc Type (might return null)
 					{
-						value = documentNoFactory.forDocType(get_ValueAsInt(docTypeIndex), false) // useDefiniteSequence=false
-								.setDocumentModel(this)
-								.setFailOnError(false)
-								.build();
+						final int docTypeRepoId = get_ValueAsInt(docTypeIndex);
+						if (docTypeRepoId > 0)
+						{
+							value = documentNoFactory.forDocType(docTypeRepoId, false) // useDefiniteSequence=false
+									.setDocumentModel(this)
+									.setFailOnError(false)
+									.build();
+						}
 					}
 					if (value == null || value == IDocumentNoBuilder.NO_DOCUMENTNO) 	// not overwritten by DocType and not manually entered
 					{
@@ -4797,7 +4805,7 @@ public abstract class PO
 			final DOMSource source = new DOMSource(get_xmlDocument(xml.length() != 0));
 			final TransformerFactory tFactory = TransformerFactory.newInstance();
 			final Transformer transformer = tFactory.newTransformer();
-			transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(source, result);
 			final StringBuffer newXML = writer.getBuffer();
 			//
@@ -5040,9 +5048,9 @@ public abstract class PO
 	/**
 	 * Get Dynamic Attribute
 	 *
-	 * @param name
 	 * @return attribute value or null if not found
 	 */
+	@Nullable
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)
@@ -5279,20 +5287,20 @@ public abstract class PO
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Client getAD_Client()
+	public I_AD_Client getAD_Client()
 	{
-		return get_ValueAsPO("AD_Client_ID", org.compiere.model.I_AD_Client.class);
+		return get_ValueAsPO("AD_Client_ID", I_AD_Client.class);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Org getAD_Org()
+	public I_AD_Org getAD_Org()
 	{
-		return get_ValueAsPO("AD_Org_ID", org.compiere.model.I_AD_Org.class);
+		return get_ValueAsPO("AD_Org_ID", I_AD_Org.class);
 	}
 
-	public final void setAD_Org(final org.compiere.model.I_AD_Org org)
+	public final void setAD_Org(final I_AD_Org org)
 	{
-		set_ValueFromPO("AD_Org_ID", org.compiere.model.I_AD_Org.class, org);
+		set_ValueFromPO("AD_Org_ID", I_AD_Org.class, org);
 	}
 
 	/**

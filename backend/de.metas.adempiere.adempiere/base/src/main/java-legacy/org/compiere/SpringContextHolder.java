@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -64,7 +65,7 @@ public final class SpringContextHolder
 
 	/**
 	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
-	 *
+	 * <p>
 	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
 	 * See <code>SwingUIApplication</code> to know what I mean.
 	 */
@@ -132,7 +133,9 @@ public final class SpringContextHolder
 		return springApplicationContext.getBean(requiredType);
 	}
 
-	/** can be used if a service might be retrieved before the spring application context is up */
+	/**
+	 * can be used if a service might be retrieved before the spring application context is up
+	 */
 	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
@@ -155,7 +158,7 @@ public final class SpringContextHolder
 		{
 			return springApplicationContext.getBean(requiredType);
 		}
-		catch (final NoSuchBeanDefinitionException e)
+		catch (final NoSuchBeanDefinitionException | IllegalStateException e)
 		{
 			if (Adempiere.isUnitTestMode())
 			{
@@ -267,4 +270,41 @@ public final class SpringContextHolder
 		instance.junitRegisteredBeans.registerJUnitBeans(beanType, beansToAdd);
 	}
 
+	public static <T> Lazy<T> lazyBean(@NonNull final Class<T> requiredType)
+	{
+		return new Lazy<>(requiredType, null);
+	}
+
+	public static <T> Lazy<T> lazyBean(@NonNull final Class<T> requiredType, @Nullable final T initialBean)
+	{
+		return new Lazy<>(requiredType, initialBean);
+	}
+
+	//
+	//
+	//
+
+	@ToString
+	public static final class Lazy<T>
+	{
+		private final Class<T> requiredType;
+		private T bean;
+
+		private Lazy(@NonNull final Class<T> requiredType, @Nullable final T initialBean)
+		{
+			this.requiredType = requiredType;
+			this.bean = initialBean;
+		}
+
+		@NonNull
+		public T get()
+		{
+			T bean = this.bean;
+			if (bean == null)
+			{
+				bean = this.bean = instance.getBean(requiredType);
+			}
+			return bean;
+		}
+	}
 }

@@ -26,5 +26,8 @@ public interface ApiConstants
 {
 	String RABBIT_MQ_PAYLOAD_ENCODING = "string";
 
-	int PERSISTENT_DELIVERY_MODE = 2;
+	int RABBITMQ_PROPS_PERSISTENT_DELIVERY_MODE = 2;
+	String RABBITMQ_HEADERS_SUBJECT = "subject";
+	String RABBITMQ_HEADERS_METASFRESH_BUSINESS_PARTNER_SYNC = "metasfresh_business_partner_sync";
+	String RABBITMQ_HEADERS_METASFRESH_EXTERNAL_REFERENCE_SYNC = "metasfresh_external_reference_sync";
 }

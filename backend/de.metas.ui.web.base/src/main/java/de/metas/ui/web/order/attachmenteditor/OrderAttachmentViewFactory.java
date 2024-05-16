@@ -26,6 +26,7 @@ import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.OrderId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -58,13 +59,15 @@ public class OrderAttachmentViewFactory implements IViewFactory
 			@NonNull final AttachmentEntryService attachmentEntryService,
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
-			@NonNull final AlbertaPatientRepository albertaPatientRepository)
+			@NonNull final AlbertaPatientRepository albertaPatientRepository,
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 		this.rowsRepo = OrderAttachmentRowsRepository.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
 				.attachmentEntryRepository(attachmentEntryRepository)
 				.albertaPatientRepository(albertaPatientRepository)
+				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.build();
 	}
 

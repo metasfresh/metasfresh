@@ -348,7 +348,7 @@ public class TranslatableStrings
 	{
 		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
 	}
-	
+
 	public static ITranslatableString parse(@Nullable final String text)
 	{
 		if (text == null || text.isEmpty())

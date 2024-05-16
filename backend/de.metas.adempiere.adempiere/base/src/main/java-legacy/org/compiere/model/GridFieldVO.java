@@ -13,11 +13,37 @@
  * For the text or an alternative of this public license, you may reach us *
  * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
  * or via info@compiere.org or http://www.compiere.org/license.html *
- * 
+ *
  * @contributor Victor Perez , e-Evolution.SC FR [ 1757088 ] *
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.FieldGroupVO.FieldGroupType;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -27,31 +53,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.FieldGroupVO.FieldGroupType;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Getter;
 
 /**
  * Field Model Value Object
@@ -139,14 +140,14 @@ public class GridFieldVO implements Serializable
 
 	/**
 	 * Create Field Value Object
-	 * 
-	 * @param ctx context
-	 * @param WindowNo window
-	 * @param TabNo tab
+	 *
+	 * @param ctx          context
+	 * @param WindowNo     window
+	 * @param TabNo        tab
 	 * @param AD_Window_ID window
-	 * @param AD_Tab_ID tab
-	 * @param readOnly r/o
-	 * @param rs resultset AD_Field_v
+	 * @param AD_Tab_ID    tab
+	 * @param readOnly     r/o
+	 * @param rs           resultset AD_Field_v
 	 * @return MFieldVO
 	 */
 	static GridFieldVO create(
@@ -156,6 +157,7 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean readOnly,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy,
 			final boolean loadAllLanguages,
 			final boolean applyRolePermissions,
 			final ResultSet rs)
@@ -372,7 +374,7 @@ public class GridFieldVO implements Serializable
 				}
 				else if (columnName.equalsIgnoreCase("AD_Val_Rule_ID"))
 				{
-					vo.AD_Val_Rule_ID = rs.getInt(i);					// metas: 03271
+					vo.AD_Val_Rule_ID = rs.getInt(i);                    // metas: 03271
 				}
 				else if (columnName.equalsIgnoreCase("ColumnSQL"))
 				{
@@ -413,7 +415,7 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
-			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs, tabIncludeFiltersStrategy);
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
@@ -441,25 +443,54 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   // create
 
-	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
+	@Nullable
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(
+			@NonNull final ResultSet rs,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy) throws SQLException
 	{
-		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
-		if (!defaultFilter && !facetFilter)
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.None)
+		{
+			return null;
+		}
+
+		final OptionalBoolean isFilterField = OptionalBoolean.ofNullableString(rs.getString(I_AD_Field.COLUMNNAME_IsFilterField));
+		if (isFilterField.isFalse())
+		{
+			return null;
+		}
+
+		final boolean isDefaultFilterColumn;
+		final boolean isFacetFilter;
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Explicit)
+		{
+			isDefaultFilterColumn = isFilterField.isTrue();
+			isFacetFilter = isFilterField.isTrue() && StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Auto)
+		{
+			isDefaultFilterColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+			isFacetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown TabIncludeFiltersStrategy: " + tabIncludeFiltersStrategy);
+		}
+
+		if (!isDefaultFilterColumn && !isFacetFilter)
 		{
 			return null;
 		}
 
 		return GridFieldDefaultFilterDescriptor.builder()
 				//
-				.defaultFilter(defaultFilter)
+				.defaultFilter(isDefaultFilterColumn)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				//
-				.facetFilter(facetFilter)
+				.facetFilter(isFacetFilter)
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
 				.maxFacetsToFetch(rs.getInt(I_AD_Column.COLUMNNAME_MaxFacetsToFetch))
 				//
@@ -476,11 +507,11 @@ public class GridFieldVO implements Serializable
 
 	/**
 	 * Init Field for Process Parameter
-	 * 
-	 * @param ctx context
+	 *
+	 * @param ctx      context
 	 * @param WindowNo window No
-	 * @param tabNo Tab No or {@link Env#TAB_None}
-	 * @param rs result set AD_Process_Para
+	 * @param tabNo    Tab No or {@link Env#TAB_None}
+	 * @param rs       result set AD_Process_Para
 	 * @return MFieldVO
 	 */
 	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
@@ -545,7 +576,7 @@ public class GridFieldVO implements Serializable
 
 	/**
 	 * Create range "to" Parameter Field from "from" Parameter Field
-	 * 
+	 *
 	 * @param vo parameter from VO
 	 */
 	public static GridFieldVO createParameterTo(final GridFieldVO vo)
@@ -591,15 +622,15 @@ public class GridFieldVO implements Serializable
 
 	/**
 	 * Make a standard field (Created/Updated/By)
-	 * 
-	 * @param ctx context
-	 * @param WindowNo window
-	 * @param TabNo tab
+	 *
+	 * @param ctx          context
+	 * @param WindowNo     window
+	 * @param TabNo        tab
 	 * @param AD_Window_ID window
-	 * @param AD_Tab_ID tab
-	 * @param tabReadOnly rab is r/o
-	 * @param isCreated is Created field
-	 * @param isTimestamp is the timestamp (not by)
+	 * @param AD_Tab_ID    tab
+	 * @param tabReadOnly  rab is r/o
+	 * @param isCreated    is Created field
+	 * @param isTimestamp  is the timestamp (not by)
 	 * @return MFieldVO
 	 */
 	public static GridFieldVO createStdField(
@@ -622,7 +653,7 @@ public class GridFieldVO implements Serializable
 		vo.displayType = isTimestamp ? DisplayType.DateTime : DisplayType.Table;
 		if (!isTimestamp)
 		{
-			vo.AD_Reference_Value_ID = 110;		// AD_User Table Reference
+			vo.AD_Reference_Value_ID = 110;        // AD_User Table Reference
 		}
 		vo.IsDisplayed = false;
 		vo.isDisplayedGrid = false;
@@ -654,145 +685,245 @@ public class GridFieldVO implements Serializable
 
 	static final long serialVersionUID = 4385061125114436797L;
 
-	/** Context */
+	/**
+	 * Context
+	 */
 	private Properties ctx;
-	/** Window No */
+	/**
+	 * Window No
+	 */
 	public final int WindowNo;
-	/** Tab No */
+	/**
+	 * Tab No
+	 */
 	public final int TabNo;
 	@Getter
 	private final AdWindowId adWindowId;
-	/** AD_Tab_ID */
+	/**
+	 * AD_Tab_ID
+	 */
 	public final int AD_Tab_ID;
-	/** Is the Tab Read Only */
+	/**
+	 * Is the Tab Read Only
+	 */
 	public final boolean tabReadOnly;
 
-	/** Is Process Parameter */
+	/**
+	 * Is Process Parameter
+	 */
 	private boolean isProcess = false;
 	private boolean isFormField = false;
 
 	/**
 	 * Is Process Parameter To.
-	 *
+	 * <p>
 	 * NOTE: This one is set to true only if {@link #isProcess} is set.
 	 */
 	private boolean isProcessParameterTo = false;
 
-	/** Column name */
+	/**
+	 * Column name
+	 */
 	private String ColumnName = "";
-	/** Column sql */
+	/**
+	 * Column sql
+	 */
 	public String ColumnSQL;
 
 	// metas: adding column class
-	/** Column class */
+	/**
+	 * Column class
+	 */
 	public String ColumnClass;
 	// metas end
 
-	/** Label */
+	/**
+	 * Label
+	 */
 	private String header = "";
 	private Map<String, String> headerTrls = null; // lazy
-	/** DisplayType */
+	/**
+	 * DisplayType
+	 */
 	private int displayType = 0;
-	/** Table ID */
+	/**
+	 * Table ID
+	 */
 	private int AD_Table_ID = 0;
-	/** Column ID */
+	/**
+	 * Column ID
+	 */
 	private int AD_Column_ID = 0;
-	/** Field ID */
+	/**
+	 * Field ID
+	 */
 	public int AD_Field_ID = 0; // metas
 	private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
 	private int seqNo = 0;
 	private int seqNoGrid = 0;
-	/** Displayed */
+	/**
+	 * Displayed
+	 */
 	private boolean IsDisplayed = false;
-	/** Displayed (grid mode) */
+	/**
+	 * Displayed (grid mode)
+	 */
 	private boolean isDisplayedGrid = false;
 	/**
 	 * Indicates that the field is hidden from UI
-	 * 
+	 *
 	 * @task 09504
 	 */
 	private boolean isHiddenFromUI = false;
-	/** Dislay Logic */
+	/**
+	 * Dislay Logic
+	 */
 	private String DisplayLogic = "";
 	private ILogicExpression DisplayLogicExpr; // metas: 03093
-	/** Color Logic */
+	/**
+	 * Color Logic
+	 */
 	private String ColorLogic = "";
 	private IStringExpression ColorLogicExpr = IStringExpression.NULL; // metas-2009_0021_AP1_CR045
-	/** Default Value */
+	/**
+	 * Default Value
+	 */
 	public String DefaultValue = "";
-	/** Mandatory (in UI) */
+	/**
+	 * Mandatory (in UI)
+	 */
 	private boolean IsMandatory = false;
-	/** Mandatory (in database/model) */
+	/**
+	 * Mandatory (in database/model)
+	 */
 	private boolean IsMandatoryDB = false;
-	/** Read Only */
+	/**
+	 * Read Only
+	 */
 	private boolean IsReadOnly = false;
-	/** Updateable */
+	/**
+	 * Updateable
+	 */
 	private boolean IsUpdateable = false;
-	/** Always Updateable */
+	/**
+	 * Always Updateable
+	 */
 	private boolean IsAlwaysUpdateable = false;
-	/** Heading Only */
+	/**
+	 * Heading Only
+	 */
 	private boolean IsHeading = false;
-	/** Field Only */
+	/**
+	 * Field Only
+	 */
 	private boolean IsFieldOnly = false;
-	/** Display Encryption */
+	/**
+	 * Display Encryption
+	 */
 	private boolean IsEncryptedField = false;
-	/** Storage Encryption */
+	/**
+	 * Storage Encryption
+	 */
 	public boolean IsEncryptedColumn = false;
-	/** Filtering info */
+	/**
+	 * Filtering info
+	 */
 	private GridFieldDefaultFilterDescriptor defaultFilterDescriptor;
-	/** Order By */
+	/**
+	 * Order By
+	 */
 	public int SortNo = 0;
-	/** Field Length */
+	/**
+	 * Field Length
+	 */
 	private int fieldLength = 0;
-	/** Format enforcement */
+	/**
+	 * Format enforcement
+	 */
 	public String VFormat = "";
 	private String formatPattern = "";
-	/** Min. Value */
+	/**
+	 * Min. Value
+	 */
 	public String ValueMin = "";
-	/** Max. Value */
+	/**
+	 * Max. Value
+	 */
 	public String ValueMax = "";
-	/** Field Group */
+	/**
+	 * Field Group
+	 */
 	private FieldGroupVO fieldGroup = FieldGroupVO.NULL;
-	/** PK */
+	/**
+	 * PK
+	 */
 	public boolean IsKey = false;
-	/** FK */
+	/**
+	 * FK
+	 */
 	private boolean IsParent = false;
-	/** Process */
+	/**
+	 * Process
+	 */
 	public int AD_Process_ID = 0;
-	/** Description */
+	/**
+	 * Description
+	 */
 	private String description = "";
 	private Map<String, String> descriptionTrls = null; // lazy
-	/** Help */
+	/**
+	 * Help
+	 */
 	private String help = "";
 	private Map<String, String> helpTrls = null; // lazy
-	/** Mandatory Logic */
+	/**
+	 * Mandatory Logic
+	 */
 	@Nullable
 	private ILogicExpression mandatoryLogicExpr; // metas: 03093
-	/** Read Only Logic */
+	/**
+	 * Read Only Logic
+	 */
 	public String ReadOnlyLogic = "";
 	private ILogicExpression ReadOnlyLogicExpr; // metas: 03093
-	/** Display Obscure */
+	/**
+	 * Display Obscure
+	 */
 	public String ObscureType = null;
-	/** Included Tab Height - metas-2009_0021_AP1_CR051 */
+	/**
+	 * Included Tab Height - metas-2009_0021_AP1_CR051
+	 */
 	public int IncludedTabHeight = 0; // metas
 
-	/** Validation rule */
+	/**
+	 * Validation rule
+	 */
 	private int AD_Val_Rule_ID = -1; // metas: 03271
-	/** Reference Value */
+	/**
+	 * Reference Value
+	 */
 	private int AD_Reference_Value_ID = 0;
 
-	/** Process Parameter Range */
+	/**
+	 * Process Parameter Range
+	 */
 	public boolean isRange = false;
-	/** Process Parameter Value2 */
+	/**
+	 * Process Parameter Value2
+	 */
 	public String DefaultValue2 = "";
 
-	/** Lookup Value Object */
+	/**
+	 * Lookup Value Object
+	 */
 	private MLookupInfo lookupInfo = null;
 
 	// * Feature Request FR [ 1757088 ]
 	public int Included_Tab_ID = 0;
 
-	/** Autocompletion for textfields - Feature Request FR [ 1757088 ] */
+	/**
+	 * Autocompletion for textfields - Feature Request FR [ 1757088 ]
+	 */
 	private boolean autocomplete = false;
 
 	public boolean IsCalculated = false; // metas
@@ -807,7 +938,7 @@ public class GridFieldVO implements Serializable
 
 	/**
 	 * Set Context including contained elements
-	 * 
+	 *
 	 * @param newCtx new context
 	 */
 	public void setCtx(final Properties newCtx)
@@ -875,8 +1006,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Create lookup info if the type is lookup and control the creation trough displayed param
 	 *
-	 * @param alwaysCreate
-	 *            always create the lookup info, even if the field is not displayed
+	 * @param alwaysCreate always create the lookup info, even if the field is not displayed
 	 */
 	// metas : cg: task 02354
 	private void createLookupInfo(final boolean alwaysCreate)
@@ -926,12 +1056,12 @@ public class GridFieldVO implements Serializable
 	 * <li>{@link #isProcessParameterTo} is set to false</li>
 	 * </ul>
 	 *
-	 * @param Ctx context
-	 * @param windowNo window no
-	 * @param tabNo tab no
+	 * @param Ctx          context
+	 * @param windowNo     window no
+	 * @param tabNo        tab no
 	 * @param ad_Window_ID window id
-	 * @param ad_Tab_ID tab id
-	 * @param TabReadOnly r/o
+	 * @param ad_Tab_ID    tab id
+	 * @param TabReadOnly  r/o
 	 */
 	public GridFieldVO clone(
 			final Properties Ctx,
@@ -1012,7 +1142,7 @@ public class GridFieldVO implements Serializable
 		clone.isHiddenFromUI = isHiddenFromUI;
 
 		return clone;
-	}	// clone
+	}    // clone
 
 	public GridFieldVO copy()
 	{
@@ -1241,7 +1371,9 @@ public class GridFieldVO implements Serializable
 		return isProcess;
 	}
 
-	/** @return true if this is a custom form field */
+	/**
+	 * @return true if this is a custom form field
+	 */
 	public boolean isFormField()
 	{
 		return isFormField;
@@ -1301,7 +1433,9 @@ public class GridFieldVO implements Serializable
 		return formatPattern;
 	}
 
-	/** @return true if it's mandatory in UI */
+	/**
+	 * @return true if it's mandatory in UI
+	 */
 	public boolean isMandatory()
 	{
 		return IsMandatory;
@@ -1312,7 +1446,9 @@ public class GridFieldVO implements Serializable
 		this.IsMandatory = mandatory;
 	}
 
-	/** @return true if it's mandatory in database */
+	/**
+	 * @return true if it's mandatory in database
+	 */
 	public boolean isMandatoryDB()
 	{
 		return IsMandatoryDB;
@@ -1441,7 +1577,12 @@ public class GridFieldVO implements Serializable
 			}
 		}
 		return ColumnName;
-	}	// getColumnSQL
+	}    // getColumnSQL
+
+	public ColumnSql getColumnSql(@NonNull final String ctxTableName)
+	{
+		return ColumnSql.ofSql(getColumnSQL(false), ctxTableName);
+	}
 
 	/**
 	 * Is Virtual Column
@@ -1456,7 +1597,7 @@ public class GridFieldVO implements Serializable
 			return true;
 		}
 		return false;
-	}	// isColumnVirtual
+	}    // isColumnVirtual
 
 	public int getIncluded_Tab_ID()
 	{
@@ -1512,7 +1653,7 @@ public class GridFieldVO implements Serializable
 	{
 		return IsEncryptedColumn;
 	}
-	
+
 	public int getFieldLength()
 	{
 		return fieldLength;

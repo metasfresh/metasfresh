@@ -51,7 +51,7 @@ class OrderCandidateRestModuleInit extends AbstractModuleInterceptor
 	{
 		Services.get(IInputDataSourceDAO.class).createIfMissing(InputDataSourceCreateRequest.builder()
 				.entityType(OrderCandidate_Constants.ENTITY_TYPE)
-				.internalName(OrderCandidatesRestControllerImpl.DATA_SOURCE_INTERNAL_NAME)
+				.internalName(OrderCandidatesRestController.DATA_SOURCE_INTERNAL_NAME)
 				.destination(false)
 				.build());
 	}

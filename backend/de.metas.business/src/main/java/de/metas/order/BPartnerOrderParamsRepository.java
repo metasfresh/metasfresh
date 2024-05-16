@@ -1,12 +1,5 @@
 package de.metas.order;
 
-import java.util.Optional;
-
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.springframework.stereotype.Repository;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
@@ -20,6 +13,12 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public class BPartnerOrderParamsRepository
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
 	private final CCache<BPartnerOrderParamsQuery, BPartnerOrderParams> cache = CCache
-			.<BPartnerOrderParamsQuery, BPartnerOrderParams> builder()
+			.<BPartnerOrderParamsQuery, BPartnerOrderParams>builder()
 			.cacheName(this.getClass().getSimpleName())
 			.tableName(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Group.Table_Name)
@@ -91,7 +90,7 @@ public class BPartnerOrderParamsRepository
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
 				.freightCostRule(getFreightCostRule(shipBPartnerRecord))
-				.invoiceRule(getInvoiceRule(billBPartnerRecord))
+				.invoiceRule(getInvoiceRule(billBPartnerRecord, soTrx))
 				.paymentRule(getPaymentRule(billBPartnerRecord, soTrx))
 				.paymentTermId(getPaymentTermId(billBPartnerRecord, soTrx))
 				.pricingSystemId(getPricingSystemId(billBPartnerRecord, soTrx))
@@ -113,9 +112,13 @@ public class BPartnerOrderParamsRepository
 		return Optional.ofNullable(FreightCostRule.ofNullableCode(bpartnerRecord.getFreightCostRule()));
 	}
 
-	private Optional<InvoiceRule> getInvoiceRule(@NonNull final I_C_BPartner bpartnerRecord)
+	private Optional<InvoiceRule> getInvoiceRule(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
 	{
-		return Optional.ofNullable(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()));
+		final InvoiceRule invoiceRule = soTrx.isSales()
+				? InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule())
+				: InvoiceRule.ofNullableCode(bpartnerRecord.getPO_InvoiceRule());
+
+		return Optional.ofNullable(invoiceRule);
 	}
 
 	private Optional<DeliveryRule> getDeliveryRuleOrNull(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)

@@ -47,7 +47,6 @@ import static org.junit.Assert.assertNotNull;
 public class OutOfStockNotice_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final TestContext testContext;
 
 	public OutOfStockNotice_StepDef(@NonNull final TestContext testContext)

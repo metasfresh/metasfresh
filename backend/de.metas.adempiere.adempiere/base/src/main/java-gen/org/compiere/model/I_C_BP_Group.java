@@ -79,8 +79,8 @@ public interface I_C_BP_Group
 	String COLUMNNAME_AD_PrintColor_ID = "AD_PrintColor_ID";
 
 	/**
-	 * Set Business Partner and Greeting Strategy.
-	 * Describes how the name of the new business partner is initialized, based on the names and greetings of the added contacts.
+	 * Set Individual business partner's name format.
+	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -89,8 +89,8 @@ public interface I_C_BP_Group
 	void setBPNameAndGreetingStrategy (@Nullable java.lang.String BPNameAndGreetingStrategy);
 
 	/**
-	 * Get Business Partner and Greeting Strategy.
-	 * Describes how the name of the new business partner is initialized, based on the names and greetings of the added contacts.
+	 * Get Individual business partner's name format.
+	 * Describes how the new business partner's name is initiated, based on the added contacts' names and forms of address.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -361,7 +361,7 @@ public interface I_C_BP_Group
 	String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
 
 	/**
-	 * Set Preisliste.
+	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir
@@ -371,7 +371,7 @@ public interface I_C_BP_Group
 	void setM_PriceList_ID (int M_PriceList_ID);
 
 	/**
-	 * Get Preisliste.
+	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
 	 * <br>Type: TableDir

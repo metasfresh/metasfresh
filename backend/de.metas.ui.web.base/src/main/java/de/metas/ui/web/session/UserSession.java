@@ -13,7 +13,7 @@ import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.session.json.WebuiSessionId;
-import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.user.UserId;

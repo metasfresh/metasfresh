@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -23,7 +21,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -143,15 +140,9 @@ public class HUEditorView implements IView
 		return viewType;
 	}
 
-	@Override
-	public ITranslatableString getDescription()
-	{
-		return TranslatableStrings.empty();
-	}
-
 	/**
 	 * Always returns {@link I_M_HU#Table_Name}, even if the underlying {@link HUEditorRow}'s type is {@link HUEditorRowType#HUStorage}.<br>
-	 * (because i don't understand it well enough)
+	 * (because I don't understand it well enough)
 	 */
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId documentId)
@@ -252,14 +243,13 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
-				.findEntities(ctx)
-				.getValues();
+				.findEntities(ctx);
 	}
 
 	@Override

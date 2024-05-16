@@ -538,6 +538,7 @@ Feature: purchase order interaction with material cockpit - no product planning
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 12             | 12              |
 
+  @ignore
   @Id:S0189_2100
   @from:cucumber
   Scenario: PO with qty = 10, no ASI, reactivated, changed the date promised

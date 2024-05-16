@@ -36,27 +36,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_OrderLine;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
@@ -72,10 +51,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 public class C_Invoice_Candidate
 {
 	private static final Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
+
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
-	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IDocumentLocationBL documentLocationBL;
 
 	public C_Invoice_Candidate(
@@ -274,7 +257,7 @@ public class C_Invoice_Candidate
 	public void updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice_Candidate ic)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ic))
-		{
+		{ // at this point the fix/update of Bill_Location_Value_ID is coming too late for the IC's header aggregation key!
 			InvoiceCandidateLocationsUpdater.builder()
 					.documentLocationBL(documentLocationBL)
 					.record(ic)
@@ -434,6 +417,7 @@ public class C_Invoice_Candidate
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
+
 		if (ic.isProcessed()
 				|| invoiceCandBL.extractProcessedOverride(ic).isTrue()
 				|| isBackgroundProcessInProcess)
@@ -441,9 +425,15 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
-		aggregationBL.setHeaderAggregationKey(ic);
+		if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
+		{
+			aggregationBL.setHeaderAggregationKey(ic);
+			return;
+		}
+
+		invoiceCandDAO.invalidateCand(ic);
 	}
+
 
 	/**
 	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.

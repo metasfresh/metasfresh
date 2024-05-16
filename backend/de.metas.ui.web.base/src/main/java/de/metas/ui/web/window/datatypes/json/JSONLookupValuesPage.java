@@ -84,7 +84,7 @@ public class JSONLookupValuesPage
 		else
 		{
 			return builder()
-					.values(JSONLookupValuesList.toListOfJSONLookupValues(page.getValues(), adLanguage))
+					.values(JSONLookupValuesList.toListOfJSONLookupValues(page.getValues(), adLanguage, false))
 					.hasMoreResults(page.getHasMoreResults().toBooleanOrNull())
 					.isAlwaysDisplayNewBPartner(isAlwaysDisplayNewBPartner)
 					.build();

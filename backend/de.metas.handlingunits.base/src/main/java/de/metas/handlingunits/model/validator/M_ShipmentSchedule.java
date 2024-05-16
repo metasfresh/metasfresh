@@ -22,12 +22,24 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import java.math.BigDecimal;
+
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -44,9 +56,20 @@ import java.math.BigDecimal;
 @Component
 public class M_ShipmentSchedule
 {
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+	private final ShipmentScheduleInvalidateBL invalidSchedulesService;
+	private final ShipmentScheduleUpdater shipmentScheduleUpdater;
+
+	public M_ShipmentSchedule(
+			@NonNull final ShipmentScheduleInvalidateBL invalidSchedulesService,
+			@NonNull final ShipmentScheduleUpdater shipmentScheduleUpdater)
+	{
+		this.invalidSchedulesService = invalidSchedulesService;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_IsClosed)
@@ -108,20 +131,26 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = {
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
-			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Calculated,
-			I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Calculated,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyTU_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
-			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID,
-			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_ID,
-			I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID,
 					I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered
-	})
+			})
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
+		if (shipmentScheduleUpdater.isRunning())
+		{
+			return;
+		}
+		if (shipmentScheduleBL.isDoNotInvalidateOnChange(shipmentSchedule))
+		{
+			return;
+		}
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesService.flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
-		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(shipmentSchedule);
+		invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery
 	}
 }

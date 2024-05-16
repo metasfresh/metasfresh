@@ -79,17 +79,14 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		return getView(PickingSlotsClearingView.class);
 	}
 
-	public final void invalidatePickingSlotsClearingView()
-	{
-		invalidateView(getPickingSlotsClearingView().getViewId());
-	}
-
 	protected final boolean isSingleSelectedPickingSlotRow()
 	{
 		return getSelectedRowIds().isSingleDocumentId();
 	}
 
-	/** @return single selected picking slot row (left side) */
+	/**
+	 * @return single selected picking slot row (left side)
+	 */
 	protected final PickingSlotRow getSingleSelectedPickingSlotRow()
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
@@ -99,8 +96,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 	{
 		final PickingSlotRow huRow = getSingleSelectedPickingSlotRow();
 		Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow);
-		final I_M_HU fromHU = InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
-		return fromHU;
+		return InterfaceWrapperHelper.load(huRow.getHuId(), I_M_HU.class);
 	}
 
 	protected final List<PickingSlotRow> getSelectedPickingSlotRows()
@@ -115,7 +111,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		return getSelectedPickingSlotRows()
 				.stream()
 				.peek(huRow -> Check.assume(huRow.isTopLevelHU(), "row {} shall be a top level HU", huRow))
-				.map(huRow -> huRow.getHuId())
+				.map(PickingSlotRow::getHuId)
 				.distinct()
 				.map(huId -> InterfaceWrapperHelper.load(huId, I_M_HU.class))
 				.collect(ImmutableList.toImmutableList());
@@ -137,7 +133,9 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 
 	}
 
-	/** @return the actual picking slow row (the top level row) */
+	/**
+	 * @return the actual picking slow row (the top level row)
+	 */
 	protected final PickingSlotRow getRootRowForSelectedPickingSlotRows()
 	{
 		final Set<PickingSlotRowId> rootRowIds = getRootRowIdsForSelectedPickingSlotRows();
@@ -246,14 +244,12 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		final String huStatus = hu.getHUStatus();
 
 		// Move the HU to an after picking locator
-		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator_ID());
-		if(afterPickingLocator == null)
+		final LocatorId afterPickingLocatorId = huWarehouseDAO.suggestAfterPickingLocatorId(hu.getM_Locator_ID())
+				.orElseThrow(() -> new AdempiereException("No after picking locator found for locatorId=" + hu.getM_Locator_ID()));
+
+		if (afterPickingLocatorId.getRepoId() != hu.getM_Locator_ID())
 		{
-			throw new AdempiereException("No after picking locator found for locatorId=" + hu.getM_Locator_ID());
-		}
-		if (afterPickingLocator.getM_Locator_ID() != hu.getM_Locator_ID())
-		{
-			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocator);
+			huMovementBL.moveHUsToLocator(ImmutableList.of(hu), afterPickingLocatorId);
 
 			//
 			// FIXME: workaround to restore HU's HUStatus (i.e. which was changed from Picked to Active by the moveHUsToLocator() method, indirectly).

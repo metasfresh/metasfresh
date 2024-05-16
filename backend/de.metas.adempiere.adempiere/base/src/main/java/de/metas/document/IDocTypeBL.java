@@ -20,7 +20,7 @@ public interface IDocTypeBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
-	
+
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
 	/**
@@ -68,6 +68,8 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isRequisition(DocTypeId docTypeId);
 
 	boolean isMediated(DocTypeId docTypeId);
-	
+
+	boolean isCallOrder(DocTypeId docTypeId);
+
 	void save(I_C_DocType dt);
 }

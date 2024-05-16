@@ -54,6 +54,7 @@ public class OrgChangeHistoryRepository
 		orgChangeHistory.setC_BPartner_From_ID(orgChangeRequest.getBpartnerId().getRepoId());
 		orgChangeHistory.setC_BPartner_To_ID(bPartnerToComposite.getBpartner().getId().getRepoId());
 		orgChangeHistory.setDate_OrgChange(TimeUtil.asTimestamp(orgChangeRequest.getStartDate()));
+		orgChangeHistory.setIsCloseInvoiceCandidate(orgChangeRequest.isCloseInvoiceCandidate());
 
 		saveRecord(orgChangeHistory);
 

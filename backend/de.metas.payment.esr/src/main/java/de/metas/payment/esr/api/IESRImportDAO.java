@@ -105,4 +105,6 @@ public interface IESRImportDAO extends ISingletonService
 	I_ESR_ImportFile getImportFileById(int esr_importFile_id);
 
 	void validateEsrImport(I_ESR_Import esrImport);
+
+	I_ESR_Import getById(ESRImportId esrImportId);
 }

@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.junit.Before;
@@ -56,11 +57,11 @@ public class ISourceHuService_SourceHusQueryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		I_M_HU_PI virtualPI = newInstance(I_M_HU_PI.class);
+		final I_M_HU_PI virtualPI = newInstance(I_M_HU_PI.class);
 		virtualPI.setM_HU_PI_ID(HuPackingInstructionsId.VIRTUAL.getRepoId());
 		saveRecord(virtualPI);
 
-		I_M_HU_PI_Version virtualPIVersion = newInstance(I_M_HU_PI_Version.class);
+		final I_M_HU_PI_Version virtualPIVersion = newInstance(I_M_HU_PI_Version.class);
 		virtualPIVersion.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
 		virtualPIVersion.setM_HU_PI_ID(virtualPI.getM_HU_PI_ID());
 		virtualPIVersion.setIsCurrent(true);
@@ -81,7 +82,7 @@ public class ISourceHuService_SourceHusQueryTest
 
 		final MatchingSourceHusQuery query = SourceHUsService.MatchingSourceHusQuery.fromHuId(HuId.ofRepoId(hu.getM_HU_ID()));
 		assertThat(query).isNotNull();
-		assertThat(query.getWarehouseId().getRepoId()).isEqualTo(warehouse.getM_Warehouse_ID());
+		assertThat(query.getWarehouseIds()).containsExactly(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 		assertThat(query.getProductIds()).containsOnly(storageProductId2, storageProductId3);
 	}
 

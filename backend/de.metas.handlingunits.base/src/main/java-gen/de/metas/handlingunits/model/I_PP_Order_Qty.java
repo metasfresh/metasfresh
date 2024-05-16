@@ -316,6 +316,31 @@ public interface I_PP_Order_Qty
 	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
+	 * Set Manufacturing Order Issue Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_IssueSchedule_ID (int PP_Order_IssueSchedule_ID);
+
+	/**
+	 * Get Manufacturing Order Issue Schedule.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_IssueSchedule_ID();
+
+	@Nullable de.metas.handlingunits.model.I_PP_Order_IssueSchedule getPP_Order_IssueSchedule();
+
+	void setPP_Order_IssueSchedule(@Nullable de.metas.handlingunits.model.I_PP_Order_IssueSchedule PP_Order_IssueSchedule);
+
+	ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_PP_Order_IssueSchedule> COLUMN_PP_Order_IssueSchedule_ID = new ModelColumn<>(I_PP_Order_Qty.class, "PP_Order_IssueSchedule_ID", de.metas.handlingunits.model.I_PP_Order_IssueSchedule.class);
+	String COLUMNNAME_PP_Order_IssueSchedule_ID = "PP_Order_IssueSchedule_ID";
+
+	/**
 	 * Set Manufacturing order Issue/Receipt quantity.
 	 *
 	 * <br>Type: ID

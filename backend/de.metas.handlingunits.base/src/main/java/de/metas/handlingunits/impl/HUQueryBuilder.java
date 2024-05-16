@@ -28,14 +28,15 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.age.AgeAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Reservation;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,6 +45,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -56,6 +58,7 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
@@ -91,6 +94,7 @@ import java.util.Set;
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 	private final transient HUReservationRepository huReservationRepository;
+	private final transient AgeAttributesService ageAttributesService;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
@@ -127,20 +131,24 @@ import java.util.Set;
 	/**
 	 * {@code null} means "no restriction". Empty means that no HU matches.
 	 */
-	private Set<Integer> _onlyHUIds = null;
+	@Nullable
+	private Set<HuId> _onlyHUIds = null;
 
-	private final Set<Integer> _huIdsToExclude = new HashSet<>();
+	private final Set<HuId> _huIdsToExclude = new HashSet<>();
+	private final Set<HuId> _huIdsToAlwaysInclude = new HashSet<>();
 	private final Set<HuPackingInstructionsVersionId> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
 
-	private OrderLineId _excludeReservedToOtherThanOrderLineId = null;
+	private HUReservationDocRef _excludeReservedToOtherThanRef = null;
 	private boolean _excludeReserved = false;
 
+	@Nullable
 	private IQuery<I_M_HU> huSubQueryFilter = null;
 
 	/**
 	 * Other Filters to be applied
 	 */
+	@Nullable
 	private ICompositeQueryFilter<I_M_HU> otherFilters = null;
 
 	private Boolean locked = null;
@@ -152,17 +160,20 @@ import java.util.Set;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
 
-	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
+	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
 	{
 		this.huReservationRepository = huReservationRepository;
 
+		this.ageAttributesService = ageAttributesService;
+
 		this.locators = new HUQueryBuilder_Locator();
-		this.attributes = new HUQueryBuilder_Attributes();
+		this.attributes = new HUQueryBuilder_Attributes(ageAttributesService);
 	}
 
 	private HUQueryBuilder(final HUQueryBuilder from)
 	{
 		this.huReservationRepository = from.huReservationRepository;
+		this.ageAttributesService = from.ageAttributesService;
 
 		this._contextProvider = from._contextProvider;
 		this.huItemParentNull = from.huItemParentNull;
@@ -186,9 +197,10 @@ import java.util.Set;
 		this._onlyHUIds = from._onlyHUIds == null ? null : new HashSet<>(from._onlyHUIds);
 
 		this._huIdsToExclude.addAll(from._huIdsToExclude);
+		this._huIdsToAlwaysInclude.addAll(from._huIdsToAlwaysInclude);
 		this._huPIVersionIdsToInclude.addAll(from._huPIVersionIdsToInclude);
 		this._excludeHUsOnPickingSlot = from._excludeHUsOnPickingSlot;
-		this._excludeReservedToOtherThanOrderLineId = from._excludeReservedToOtherThanOrderLineId;
+		this._excludeReservedToOtherThanRef = from._excludeReservedToOtherThanRef;
 		this._excludeReserved = from._excludeReserved;
 
 		this.huSubQueryFilter = from.huSubQueryFilter == null ? null : from.huSubQueryFilter.copy();
@@ -229,9 +241,10 @@ import java.util.Set;
 				.append(onlyStockedProducts)
 				.append(_onlyHUIds)
 				.append(_huIdsToExclude)
+				.append(_huIdsToAlwaysInclude)
 				.append(_huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot)
-				.append(_excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReservedToOtherThanRef)
 				.append(_excludeReserved)
 				.append(otherFilters)
 				.append(huSubQueryFilter)
@@ -273,9 +286,10 @@ import java.util.Set;
 				.append(onlyStockedProducts, other.onlyStockedProducts)
 				.append(_onlyHUIds, other._onlyHUIds)
 				.append(_huIdsToExclude, other._huIdsToExclude)
+				.append(_huIdsToAlwaysInclude, other._huIdsToAlwaysInclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
 				.append(_excludeHUsOnPickingSlot, other._excludeHUsOnPickingSlot)
-				.append(_excludeReservedToOtherThanOrderLineId, other._excludeReservedToOtherThanOrderLineId)
+				.append(_excludeReservedToOtherThanRef, other._excludeReservedToOtherThanRef)
 				.append(_excludeReserved, other._excludeReserved)
 				.append(otherFilters, other.otherFilters)
 				.append(huSubQueryFilter, other.huSubQueryFilter)
@@ -327,39 +341,39 @@ import java.util.Set;
 	@Override
 	public final ICompositeQueryFilter<I_M_HU> createQueryFilter()
 	{
-		final ICompositeQueryFilter<I_M_HU> filters = queryBL.createCompositeQueryFilter(I_M_HU.class);
+		final ICompositeQueryFilter<I_M_HU> andFilters = queryBL.createCompositeQueryFilter(I_M_HU.class).setJoinAnd();
 
 		//
 		// Only Active HUs
 		if (onlyActiveHUs)
 		{
-			filters.addOnlyActiveRecordsFilter();
+			andFilters.addOnlyActiveRecordsFilter();
 		}
 
 		final ICompositeQueryFilter<I_M_HU> locatorFilters = locators.createQueryFilter();
 		if (!locatorFilters.isEmpty())
 		{
-			filters.addFilter(locatorFilters);
+			andFilters.addFilter(locatorFilters);
 		}
 
 		//
 		// Enforce M_HU.C_BPartner_ID to be set
 		if (onlyIfAssignedToBPartner)
 		{
-			filters.addNotEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, null);
+			andFilters.addNotEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, null);
 		}
 		//
 		// Filter by C_BPartner_ID
 		final Set<BPartnerId> onlyWithBPartnerIds = getOnlyInBPartnerIds();
 		if (!onlyWithBPartnerIds.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, onlyWithBPartnerIds);
+			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, onlyWithBPartnerIds);
 		}
 
 		// Filter by C_BPartner_Location_ID
 		if (!_onlyWithBPartnerLocationIds.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
+			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
 		if (onlyStockedProducts != null)
 		{
@@ -370,7 +384,7 @@ import java.util.Set;
 					.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, onlyStockedProducts)
 					.create();
 			huStoragesQueryBuilder.addInSubQueryFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQueryBuilder);
-			filters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_HU_Storage.COLUMNNAME_M_HU_ID, huStoragesQueryBuilder.create());
+			andFilters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_HU_Storage.COLUMNNAME_M_HU_ID, huStoragesQueryBuilder.create());
 		}
 
 		//
@@ -389,8 +403,8 @@ import java.util.Set;
 
 			final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
 
-			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
-										I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
+			andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
+					I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
 		}
 
 		//
@@ -409,13 +423,13 @@ import java.util.Set;
 				// We must rewrite (Not)InSubQueryFilter using EXISTS
 
 				// return only entries with empty storages
-				filters.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Storage.COLUMN_M_HU_ID, notEmptyHUStoragesQuery);
+				andFilters.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Storage.COLUMN_M_HU_ID, notEmptyHUStoragesQuery);
 			}
 			// Not Empty Storage Only
 			else
 			{
 				// entries with empty storages are excluded
-				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Storage.COLUMN_M_HU_ID, notEmptyHUStoragesQuery);
+				andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Storage.COLUMN_M_HU_ID, notEmptyHUStoragesQuery);
 			}
 		}
 
@@ -423,13 +437,13 @@ import java.util.Set;
 		// Filter Top Level HUs / Included HUs
 		if (huItemParentNull)
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
+			andFilters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
 		}
 		else
 		{
 			if (parentHUItemId > 0)
 			{
-				filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, parentHUItemId);
+				andFilters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, parentHUItemId);
 			}
 			if (parentHUId > 0)
 			{
@@ -437,9 +451,9 @@ import java.util.Set;
 						.addOnlyActiveRecordsFilter()
 						.addEqualsFilter(I_M_HU_Item.COLUMNNAME_M_HU_ID, parentHUId)
 						.create();
-				filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID,
-											I_M_HU_Item.COLUMN_M_HU_Item_ID,
-											parentHUItemQuery);
+				andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID,
+						I_M_HU_Item.COLUMN_M_HU_Item_ID,
+						parentHUItemQuery);
 			}
 		}
 
@@ -447,15 +461,15 @@ import java.util.Set;
 		// Filter by HU Status:
 		// include
 		final Set<String> huStatusesToInclude = getHUStatusesToInclude();
-		if (huStatusesToInclude != null && !huStatusesToInclude.isEmpty())
+		if (!huStatusesToInclude.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
+			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMN_HUStatus, huStatusesToInclude);
 		}
 		// exclude
 		final Set<String> huStatusesToExclude = getHUStatusesToExclude();
-		if (huStatusesToExclude != null && !huStatusesToExclude.isEmpty())
+		if (!huStatusesToExclude.isEmpty())
 		{
-			filters.addNotInArrayFilter(I_M_HU.COLUMN_HUStatus, huStatusesToExclude);
+			andFilters.addNotInArrayFilter(I_M_HU.COLUMN_HUStatus, huStatusesToExclude);
 		}
 
 		//
@@ -463,21 +477,21 @@ import java.util.Set;
 		final ICompositeQueryFilter<I_M_HU> attributesFilter = attributes.createQueryFilter();
 		if (!attributesFilter.isEmpty())
 		{
-			filters.addFilter(attributesFilter);
+			andFilters.addFilter(attributesFilter);
 		}
 
 		//
 		// Include only specific HUs
 		if (_onlyHUIds != null)
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
+			andFilters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
 
 		//
 		// Exclude specified HUs
-		if (_huIdsToExclude != null && !_huIdsToExclude.isEmpty())
+		if (!_huIdsToExclude.isEmpty())
 		{
-			filters.addNotInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _huIdsToExclude);
+			andFilters.addNotInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _huIdsToExclude);
 		}
 
 		//
@@ -485,7 +499,7 @@ import java.util.Set;
 		final Set<HuPackingInstructionsVersionId> huPIVersionIdsToInclude = getPIVersionIdsToInclude();
 		if (!huPIVersionIdsToInclude.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
+			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_PI_Version_ID, huPIVersionIdsToInclude);
 		}
 
 		//
@@ -496,27 +510,27 @@ import java.util.Set;
 			// only locked
 			if (locked)
 			{
-				filters.addFilter(huLockBL.isLockedFilter());
+				andFilters.addFilter(huLockBL.isLockedFilter());
 			}
 			// only not locked
 			else
 			{
-				filters.addFilter(huLockBL.isNotLockedFilter());
+				andFilters.addFilter(huLockBL.isNotLockedFilter());
 			}
 		}
 
 		//
-		// Apply other filters
+		// Apply other andFilters
 		if (otherFilters != null && !otherFilters.isEmpty())
 		{
-			filters.addFilter(otherFilters);
+			andFilters.addFilter(otherFilters);
 		}
 
 		//
 		// Apply in sub-query filter
 		if (huSubQueryFilter != null)
 		{
-			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, huSubQueryFilter);
+			andFilters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, huSubQueryFilter);
 		}
 
 		//
@@ -525,13 +539,15 @@ import java.util.Set;
 		{
 			final IQueryFilter<I_M_HU> husOnPickingSlotFilter = huPickingSlotDAO.createHUOnPickingSlotQueryFilter(getContextProvider());
 			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = NotQueryFilter.of(husOnPickingSlotFilter);
-			filters.addFilter(husNotOnPickingSlotFilter);
+			andFilters.addFilter(husNotOnPickingSlotFilter);
 		}
 
-		if (_excludeReservedToOtherThanOrderLineId != null)
+		//
+		// Exclude those which are reserved to other order line than the one specified
+		if (_excludeReservedToOtherThanRef != null)
 		{
 			final IQuery<I_M_HU_Reservation> //
-					excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanOrderLineId);
+					excludeSubQuery = huReservationRepository.createQueryReservedToOtherThan(_excludeReservedToOtherThanRef);
 
 			final ICompositeQueryFilter<I_M_HU> //
 					notReservedToOtherOrderLineFilter = queryBL
@@ -540,14 +556,32 @@ import java.util.Set;
 					.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false)
 					.addNotInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID, I_M_HU_Reservation.COLUMN_VHU_ID, excludeSubQuery);
 
-			filters.addFilter(notReservedToOtherOrderLineFilter);
+			andFilters.addFilter(notReservedToOtherOrderLineFilter);
 		}
 		else if (_excludeReserved)
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false);
+			andFilters.addEqualsFilter(I_M_HU.COLUMN_IsReserved, false);
 		}
 
-		return filters;
+		//
+		// Apply always include HUs filter
+		final ICompositeQueryFilter<I_M_HU> filtersFinal;
+		if (!_huIdsToAlwaysInclude.isEmpty())
+		{
+			filtersFinal = queryBL.createCompositeQueryFilter(I_M_HU.class)
+					.setJoinOr()
+					.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, _huIdsToAlwaysInclude);
+			if(!andFilters.isEmpty())
+			{
+				filtersFinal.addFilter(andFilters);
+			}
+		}
+		else
+		{
+			filtersFinal = andFilters;
+		}
+
+		return filtersFinal;
 	}
 
 	@Override
@@ -558,7 +592,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public Set<HuId> listIds()
+	public ImmutableSet<HuId> listIds()
 	{
 		final IQuery<I_M_HU> query = createQuery();
 		return query.listIds(HuId::ofRepoId);
@@ -575,7 +609,7 @@ import java.util.Set;
 	{
 		final IQuery<I_M_HU> query = createQuery();
 		final List<I_M_HU> hus = query
-				.setLimit(limit)
+				.setLimit(QueryLimit.ofInt(limit))
 				.list();
 
 		if (hus.isEmpty())
@@ -655,7 +689,7 @@ import java.util.Set;
 		return this;
 	}
 
-	private final Object getContextProvider()
+	private Object getContextProvider()
 	{
 		if (_contextProvider == null)
 		{
@@ -724,12 +758,26 @@ import java.util.Set;
 	@Override
 	public HUQueryBuilder addOnlyInLocatorId(final int locatorId)
 	{
+		locators.addOnlyInLocatorRepoId(locatorId);
+		return this;
+	}
+
+	@Override
+	public HUQueryBuilder addOnlyInLocatorId(@NonNull final LocatorId locatorId)
+	{
 		locators.addOnlyInLocatorId(locatorId);
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<Integer> locatorIds)
+	public IHUQueryBuilder addOnlyInLocatorRepoIds(final Collection<Integer> locatorIds)
+	{
+		locators.addOnlyInLocatorRepoIds(locatorIds);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyInLocatorIds(final Collection<LocatorId> locatorIds)
 	{
 		locators.addOnlyInLocatorIds(locatorIds);
 		return this;
@@ -776,7 +824,7 @@ import java.util.Set;
 	{
 		if (product == null)
 		{
-			return addOnlyWithProductIds(Collections.<Integer>emptyList());
+			return addOnlyWithProductIds(Collections.emptyList());
 		}
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return addOnlyWithProductId(productId);
@@ -846,10 +894,6 @@ import java.util.Set;
 
 	private Set<String> getHUStatusesToInclude()
 	{
-		if (_huStatusesToInclude == null)
-		{
-			return Collections.emptySet();
-		}
 		return _huStatusesToInclude;
 	}
 
@@ -870,10 +914,6 @@ import java.util.Set;
 
 	private Set<String> getHUStatusesToExclude()
 	{
-		if (_huStatusesToExclude == null)
-		{
-			return Collections.emptySet();
-		}
 		return _huStatusesToExclude;
 	}
 
@@ -917,7 +957,7 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<? extends Object> values)
+	public IHUQueryBuilder addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, final List<?> values)
 	{
 		attributes.addOnlyWithAttributeInList(attribute, attributeValueType, values);
 		return this;
@@ -945,9 +985,19 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
+	public IHUQueryBuilder addOnlyWithAttributes(@NonNull final ImmutableAttributeSet attributeSet)
 	{
 		attributes.addOnlyWithAttributes(attributeSet);
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithAttributeValuesMatchingPartnerAndProduct(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableAttributeSet attributeSet)
+	{
+		attributes.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 		return this;
 	}
 
@@ -1035,10 +1085,8 @@ import java.util.Set;
 
 	/**
 	 * Throws "No Items Found" exception if it's configured
-	 *
-	 * @param query
 	 */
-	private final void throwErrorNoHUsFoundIfNeeded(final IQuery<I_M_HU> query) throws HUException
+	private void throwErrorNoHUsFoundIfNeeded(final IQuery<I_M_HU> query) throws HUException
 	{
 		if (!_errorIfNoHUs)
 		{
@@ -1068,11 +1116,11 @@ import java.util.Set;
 	public HUQueryBuilder addOnlyHUValue(@NonNull final String huValue)
 	{
 		final HuId huId = HuId.ofHUValue(huValue);
-		return addOnlyHUIds(ImmutableSet.of(huId.getRepoId()));
+		return addOnlyHUIds(ImmutableSet.of(huId));
 	}
 
 	@Override
-	public HUQueryBuilder addOnlyHUIds(@Nullable final Collection<Integer> onlyHUIds)
+	public HUQueryBuilder addOnlyHUIds(@Nullable final Collection<HuId> onlyHUIds)
 	{
 		if (onlyHUIds == null || onlyHUIds.isEmpty())
 		{
@@ -1089,31 +1137,29 @@ import java.util.Set;
 	}
 
 	@Override
-	public HUQueryBuilder addHUsToExclude(final Collection<I_M_HU> husToExclude)
-	{
-		if (husToExclude == null || husToExclude.isEmpty())
-		{
-			return this;
-		}
-
-		for (final I_M_HU hu : husToExclude)
-		{
-			final int huId = hu.getM_HU_ID();
-			_huIdsToExclude.add(huId);
-		}
-
-		return this;
-	}
-
-	@Override
-	public HUQueryBuilder addHUIdsToExclude(final Collection<Integer> huIdsToExclude)
+	public HUQueryBuilder addHUIdsToExclude(final Collection<HuId> huIdsToExclude)
 	{
 		if (huIdsToExclude == null || huIdsToExclude.isEmpty())
 		{
 			return this;
 		}
 
-		_huIdsToExclude.addAll(huIdsToExclude);
+		this._huIdsToExclude.addAll(huIdsToExclude);
+		this._huIdsToAlwaysInclude.removeAll(huIdsToExclude);
+
+		return this;
+	}
+
+	@Override
+	public HUQueryBuilder addHUIdsToAlwaysInclude(final Collection<HuId> huIdsToAlwaysInclude)
+	{
+		if (huIdsToAlwaysInclude == null || huIdsToAlwaysInclude.isEmpty())
+		{
+			return this;
+		}
+
+		this._huIdsToAlwaysInclude.addAll(huIdsToAlwaysInclude);
+		this._huIdsToExclude.removeAll(huIdsToAlwaysInclude);
 
 		return this;
 	}
@@ -1125,7 +1171,7 @@ import java.util.Set;
 		return this;
 	}
 
-	private final Set<HuPackingInstructionsVersionId> getPIVersionIdsToInclude()
+	private Set<HuPackingInstructionsVersionId> getPIVersionIdsToInclude()
 	{
 		return _huPIVersionIdsToInclude;
 	}
@@ -1152,9 +1198,9 @@ import java.util.Set;
 	}
 
 	@Override
-	public IHUQueryBuilder setExcludeReservedToOtherThan(@NonNull final OrderLineId orderLineId)
+	public IHUQueryBuilder setExcludeReservedToOtherThan(@Nullable final HUReservationDocRef documentRef)
 	{
-		_excludeReservedToOtherThanOrderLineId = orderLineId;
+		_excludeReservedToOtherThanRef = documentRef;
 		return this;
 	}
 

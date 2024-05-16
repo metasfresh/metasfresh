@@ -46,6 +46,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
@@ -97,6 +99,7 @@ class PPOrderLinesViewDataLoader
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ADReferenceService adReferenceService;
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	//
 	private final transient HUEditorViewRepository huEditorRepo;
@@ -132,8 +135,8 @@ class PPOrderLinesViewDataLoader
 
 		final PPOrderLineRow finishedGoodRow = createRowForFinishedGoodProduct(ppOrder, ppOrderQtysByBOMLineId.get(finishedGoodProductBOMLineId));
 		final List<PPOrderLineRow> bomLineRows = createRowsForBomLines(ppOrder, ppOrderQtysByBOMLineId);
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(warehouseId, bomLineRows);
+		final ImmutableSet<WarehouseId> issueFromWarehouseIds = getIssueFromWarehouseIds(ppOrder);
+		final List<PPOrderLineRow> sourceHuRowsForIssueProducts = createRowsForIssueProductSourceHUs(issueFromWarehouseIds, bomLineRows);
 
 		return PPOrderLinesViewData.builder()
 				.description(extractDescription(ppOrder))
@@ -143,6 +146,12 @@ class PPOrderLinesViewDataLoader
 				.sourceHURows(sourceHuRowsForIssueProducts)
 				.headerProperties(extractHeaderProperties(ppOrder))
 				.build();
+	}
+
+	private ImmutableSet<WarehouseId> getIssueFromWarehouseIds(final I_PP_Order ppOrder)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
 
 	public ViewHeaderProperties extractHeaderProperties(final I_PP_Order ppOrder)
@@ -190,7 +199,7 @@ class PPOrderLinesViewDataLoader
 	}
 
 	private List<PPOrderLineRow> createRowsForIssueProductSourceHUs(
-			final WarehouseId warehouseId,
+			final ImmutableSet<WarehouseId> issueFromWarehouseIds,
 			@NonNull final List<PPOrderLineRow> bomLineRows)
 	{
 		final ImmutableSet<ProductId> issueProductIds = bomLineRows.stream()
@@ -202,7 +211,8 @@ class PPOrderLinesViewDataLoader
 
 		final MatchingSourceHusQuery sourceHusQuery = MatchingSourceHusQuery.builder()
 				.productIds(issueProductIds)
-				.warehouseId(warehouseId).build();
+				.warehouseIds(issueFromWarehouseIds)
+				.build();
 
 		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{

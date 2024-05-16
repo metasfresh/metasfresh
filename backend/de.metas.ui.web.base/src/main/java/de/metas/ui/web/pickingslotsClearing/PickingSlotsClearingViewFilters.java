@@ -1,5 +1,6 @@
 package de.metas.ui.web.pickingslotsClearing;
 
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import org.compiere.util.DisplayType;
 
 import de.metas.bpartner.BPartnerId;
@@ -62,18 +63,18 @@ public class PickingSlotsClearingViewFilters
 				.setFilterId(FILTER_ID_BPartner)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_C_BPartner_ID)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setLookupDescriptor(bpartnerLookupDescriptor))
+						.fieldName(PARAM_C_BPartner_ID)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_C_BPartner_ID))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Lookup)
+						.lookupDescriptor(bpartnerLookupDescriptor))
 				.build();
 
 	}
 
-	public static String getPickingSlotBarcode(final DocumentFilterList filters)
+	public static PickingSlotQRCode getPickingSlotQRCode(final DocumentFilterList filters)
 	{
-		return PickingSlotViewFilters.getPickingSlotBarcode(filters);
+		return PickingSlotViewFilters.getPickingSlotQRCode(filters);
 	}
 
 	public static BPartnerId getBPartnerId(final DocumentFilterList filters)

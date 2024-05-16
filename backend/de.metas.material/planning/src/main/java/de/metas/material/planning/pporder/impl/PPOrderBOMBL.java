@@ -26,8 +26,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
-import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.material.planning.pporder.ComputeQtyRequiredRequest;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -67,7 +67,9 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -86,6 +88,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
 		return orderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
+	{
+		return orderBOMsRepo.retrieveOrderBOMLines(orderId, orderBOMLineClass);
 	}
 
 	@Override
@@ -159,6 +167,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// orderBOMLine.setM_AttributeSetInstance_ID(bomLine.getM_AttributeSetInstance_ID()); // see below
 		orderBOMLine.setM_Product_ID(bomLine.getM_Product_ID());
 		orderBOMLine.setScrap(bomLine.getScrap());
+		orderBOMLine.setIsEnforceTolerance(bomLine.isEnforceTolerance());
+		orderBOMLine.setTolerance_Perc(bomLine.getTolerance_Perc());
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
 		orderBOMLine.setValidTo(bomLine.getValidTo());
 		orderBOMLine.setBackflushGroup(bomLine.getBackflushGroup());
@@ -188,6 +198,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.execute();
 	}
 
+	@Nullable
+	public Quantity getQtyRequired(@NonNull final ComputeQtyRequiredRequest computeQtyRequiredRequest)
+	{
+		final I_PP_Product_BOMLine productBomLine = bomDAO.getBOMLineById(computeQtyRequiredRequest.getProductBOMLineId().getRepoId());
+		return computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty());
+	}
+
 	Quantity computeQtyRequiredByQtyOfFinishedGoods(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final Quantity qtyFinishedGood)
@@ -198,10 +215,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	@Override
 	public Quantity computeQtyRequiredByQtyOfFinishedGoods(
-			@NonNull final PPOrderLine ppOrderLinePojo,
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
 			@NonNull final Quantity qtyFinishedGood)
 	{
-		return toQtyCalculationsBOMLine(ppOrderLinePojo).computeQtyRequired(qtyFinishedGood);
+		return toQtyCalculationsBOMLine(productBOMLine).computeQtyRequired(qtyFinishedGood);
 	}
 
 	@Override
@@ -271,12 +288,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@VisibleForTesting
-	QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final PPOrderLine ppOrderBOMLine)
+	QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final I_PP_Product_BOMLine productBOMLine)
 	{
-		final I_PP_Product_BOMLine bomLine = bomDAO.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
-		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(productBOMLine.getPP_Product_BOM_ID());
 		final I_PP_Product_BOM bom = bomDAO.getById(bomId);
-		return bomBL.toQtyCalculationsBOMLine(bomLine, bom);
+		return bomBL.toQtyCalculationsBOMLine(productBOMLine, bom);
 	}
 
 	@VisibleForTesting
@@ -577,5 +593,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.lines(lines)
 				.orderId(PPOrderId.ofRepoIdOrNull(order.getPP_Order_ID()))
 				.build();
+	}
+
+	@Override
+	public void save(final I_PP_Order_BOMLine orderBOMLine)
+	{
+		orderBOMsRepo.save(orderBOMLine);
 	}
 }

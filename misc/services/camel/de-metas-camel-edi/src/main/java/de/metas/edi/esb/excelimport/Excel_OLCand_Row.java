@@ -102,7 +102,7 @@ public class Excel_OLCand_Row
 	private final int M_ProductPrice_ID;
 	private final int M_ProductPrice_Attribute_ID;
 	private final int M_HU_PI_Item_Product_ID;
-	
+
 	private final int C_BPartner_ID;
 	private final int C_BPartner_Location_ID;
 	
@@ -112,8 +112,8 @@ public class Excel_OLCand_Row
 	@Getter private final int HandOver_Location_ID;
 	@Getter private final int DropShip_BPartner_ID;
 	@Getter private final int DropShip_Location_ID;
-			
-	
+
+
 
 	/* package */Excel_OLCand_Row(final Excel_OLCand_Row_Builder builder)
 	{
@@ -154,7 +154,7 @@ public class Excel_OLCand_Row
 		this.M_ProductPrice_ID = builder.M_ProductPrice_ID;
 		this.M_ProductPrice_Attribute_ID = builder.M_ProductPrice_Attribute_ID;
 		this.M_HU_PI_Item_Product_ID = builder.M_HU_PI_Item_Product_ID;
-		
+
 		this.C_BPartner_ID = builder.C_BPartner_ID;
 		this.C_BPartner_Location_ID = builder.C_BPartner_Location_ID;
 		this.Bill_BPartner_ID = builder.Bill_BPartner_ID;

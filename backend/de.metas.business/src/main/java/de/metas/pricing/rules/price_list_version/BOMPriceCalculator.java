@@ -22,12 +22,14 @@
 
 package de.metas.pricing.rules.price_list_version;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -42,15 +44,10 @@ import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
-import de.metas.pricing.service.ProductPrices;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 class BOMPriceCalculator
 {
@@ -163,18 +160,9 @@ class BOMPriceCalculator
 			return null;
 		}
 
-		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOM(bomProduct).orElse(null);
-		if (bom == null)
-		{
-			return null;
-		}
-
-		if (!isEligible(bom))
-		{
-			return null;
-		}
-
-		return bom;
+		return bomsRepo.getDefaultBOMByProductId(bomProductId)
+				.filter(this::isEligible)
+				.orElse(null);
 	}
 
 	private boolean isEligible(final I_PP_Product_BOM bom)

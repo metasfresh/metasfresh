@@ -22,7 +22,9 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -30,12 +32,15 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+
+import java.sql.Timestamp;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -48,34 +53,33 @@ public class C_BPartner_Location
 		final IProgramaticCalloutProvider calloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		calloutProvider.registerAnnotatedCallout(new de.metas.bpartner.callout.C_BPartner_Location());
 	}
-	// metas-ts: Commenting out de.metas.terminable related code, because it assumes that the columns C_BPartner_Location.Next_ID and C_BPartner_Location.ValidTo exist
-	/*
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Next_ID })
-	public void updateNextLocation(I_C_BPartner_Location bpLocation)
-	{
-		Services.get(IBPartnerBL.class).updateNextLocation(bpLocation);
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidTo })
-	public void noTerminationInPast(I_C_BPartner_Location bpLocation)
-	{
-		if (Services.get(IBPartnerBL.class).isTerminatedInThePast(bpLocation))
-		{
-			throw new AdempiereException("@AddressTerminatedInThePast@");
-		}
-	}
-	*/
 
 	/**
 	 * Update {@link I_C_BPartner_Location#COLUMNNAME_Address} field right before new. Updating on TYPE_BEFORE_CHANGE is not needed because C_Location_ID is not changing and if user edits the address,
 	 * then {@link org.adempiere.bpartner.callout.BPartnerLocation#evalInput(GridTab)} is managing the case.
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void updateAddressString(I_C_BPartner_Location bpLocation)
+	public void updateAddressString(final I_C_BPartner_Location bpLocation)
 	{
 		Services.get(IBPartnerBL.class).setAddress(bpLocation);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_Previous_ID })
+	public void updateNextLocation(final I_C_BPartner_Location bpLocation)
+	{
+		Services.get(IBPartnerBL.class).updateFromPreviousLocationNoSave(bpLocation);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
+			, ifColumnsChanged = { I_C_BPartner_Location.COLUMNNAME_ValidFrom })
+	public void noTerminationInPast(final I_C_BPartner_Location bpLocation)
+	{
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom != null && validFrom.before(Env.getDate()))
+		{
+			throw new AdempiereException("@AddressTerminatedInThePast@");
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_C_Location_ID)
@@ -87,5 +91,35 @@ public class C_BPartner_Location
 		final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 
 		warehouseBL.updateWarehouseLocation(oldLocationId, newLocationId);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void updateName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		if (!bpLocation.isNameReadWrite())
+		{
+			updateBPLocationName(bpLocation);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+	public void newName(@NonNull final I_C_BPartner_Location bpLocation)
+	{
+		updateBPLocationName(bpLocation);
+	}
+
+	private void updateBPLocationName(final @NonNull I_C_BPartner_Location bpLocation)
+	{
+		final int cBPartnerId = bpLocation.getC_BPartner_ID();
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		bpLocation.setName(MakeUniqueNameCommand.builder()
+								   .name(bpLocation.getName())
+								   .address(bpLocation.getC_Location())
+								   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
+								   .existingNames(MakeUniqueNameCommand.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+								   .build()
+								   .execute());
 	}
 }

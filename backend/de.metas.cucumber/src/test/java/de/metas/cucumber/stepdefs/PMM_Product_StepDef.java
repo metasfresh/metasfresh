@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.shipment.PMM_Product_StepDefData;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;

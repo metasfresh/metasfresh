@@ -15,7 +15,6 @@ import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.TimeZone;
 
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

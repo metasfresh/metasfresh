@@ -37,17 +37,15 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -73,12 +71,9 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 
 	@Nullable
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
-			@NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
-		return StringUtils.trimBlankToOptional(tableName)
+		return StringUtils.trimBlankToOptional(context.getTableName())
 				.map(this::createFiltersProvider)
 				.orElse(null);
 	}
@@ -117,9 +112,9 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 						.setFrequentUsed(true)
 						.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.setFieldName(PARAM_SearchText)
-								.setDisplayName(caption)
-								.setWidgetType(DocumentFieldWidgetType.Text))
+								.fieldName(PARAM_SearchText)
+								.displayName(caption)
+								.widgetType(DocumentFieldWidgetType.Text))
 						.addInternalParameter(PARAM_Context, context)
 						.build());
 	}

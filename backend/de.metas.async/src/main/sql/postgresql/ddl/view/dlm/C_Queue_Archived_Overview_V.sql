@@ -11,16 +11,13 @@ SELECT
 	END AS islocked, 
 	i.ad_issue_id, 
 	i.issuesummary, 
-	qpp.classname, 
-	qb.c_queue_block_id, 
-	qb.created AS qb_created, 
-	qb.ad_pinstance_creator_id, 
+	qpp.classname,
+	qwp.ad_pinstance_id as ad_pinstance_creator_id,
 	qe.c_queue_element_id, 
 	t.tablename AS qe_table_name, 
 	qe.record_id AS qe_record_id
 FROM dlm.c_queue_workpackage_archived qwp
-   JOIN dlm.c_queue_block_archived qb ON qb.c_queue_block_id = qwp.c_queue_block_id
-   JOIN c_queue_packageprocessor qpp ON qpp.c_queue_packageprocessor_id = qb.c_queue_packageprocessor_id
+   JOIN c_queue_packageprocessor qpp ON qpp.c_queue_packageprocessor_id = qwp.c_queue_packageprocessor_id
    LEFT JOIN t_lock l ON l.ad_table_id = 540425::numeric AND l.record_id = qwp.c_queue_workpackage_id
    LEFT JOIN dlm.c_queue_element_archived qe ON qe.c_queue_workpackage_id = qwp.c_queue_workpackage_id
    LEFT JOIN ad_table t ON t.ad_table_id = qe.ad_table_id

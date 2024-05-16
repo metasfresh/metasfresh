@@ -36,9 +36,10 @@ import lombok.Value;
 public interface IContractChangeBL extends ISingletonService
 {
 
-	public static final String ChangeTerm_ACTION_SwitchContract = "SC";
-	public static final String ChangeTerm_ACTION_Cancel = "CA";
-	public static final String ChangeTerm_ACTION_VoidSingleContract = "VO";
+	String ChangeTerm_ACTION_SwitchContract = "SC";
+	String ChangeTerm_ACTION_Cancel = "CA";
+	String ChangeTerm_ACTION_VoidSingleContract = "VO";
+
 	/**
 	 *
 	 *<code>changeDate</code> the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.contracts.model.I_C_Contract_Change} record
@@ -49,17 +50,17 @@ public interface IContractChangeBL extends ISingletonService
 	 */
 	@Value
 	@Builder
-	public class ContractChangeParameters
+	class ContractChangeParameters
 	{
 		@NonNull
-		private final Timestamp changeDate;
-		private final boolean isCloseInvoiceCandidate;
+		Timestamp changeDate;
+		boolean isCloseInvoiceCandidate;
 		@Default
-		private boolean isCreditOpenInvoices = false;
-		private final String terminationMemo;
-		private final String terminationReason;
+		boolean isCreditOpenInvoices = false;
+		String terminationMemo;
+		String terminationReason;
 		@Default
-		private String action = ChangeTerm_ACTION_Cancel;
+		String action = ChangeTerm_ACTION_Cancel;
 
 		public boolean isVoidSingleContract()
 		{
@@ -92,7 +93,6 @@ public interface IContractChangeBL extends ISingletonService
 	/**
 	 * ending naturally a contract
 	 * Actually is just setting the status to Ending contract
-	 * @param term
 	 */
 	void endContract(I_C_Flatrate_Term term);
 

@@ -3,6 +3,7 @@ package de.metas.dataentry.data;
 import java.time.LocalDate;
 import javax.annotation.Nullable;
 
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,7 +41,7 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<LocalDate>
 
 	public static DataEntryRecordFieldDate of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final LocalDate value)
 	{
 		return new DataEntryRecordFieldDate(
@@ -51,7 +52,7 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<LocalDate>
 
 	private DataEntryRecordFieldDate(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final LocalDate value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);
