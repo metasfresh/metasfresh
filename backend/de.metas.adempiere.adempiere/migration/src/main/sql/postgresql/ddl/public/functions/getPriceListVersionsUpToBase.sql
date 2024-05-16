@@ -67,7 +67,8 @@ $BODY$
     )
     select array_agg(M_PriceList_Version_ID order by SeqNo) from priceListVersion;
 $BODY$
-LANGUAGE SQL
+    STABLE
+    LANGUAGE SQL
 ;
 COMMENT ON FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(numeric, timestamp with time zone) 
 IS 'Gets an array starting with your given price list version and the pricing date and then recursively all base price list versions to fallback for pricing. Robost against loops.';
@@ -98,7 +99,8 @@ $BODY$
 			), p_date
 		)
 $BODY$
-LANGUAGE SQL
+    STABLE
+    LANGUAGE SQL 
 ;
 
 
