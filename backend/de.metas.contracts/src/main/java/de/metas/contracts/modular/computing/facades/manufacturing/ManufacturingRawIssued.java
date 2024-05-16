@@ -33,7 +33,7 @@ import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderId;
 
 /**
- * Manufacturing Order Receipt (in modular contracts ubiquitous language)
+ * Manufacturing Order Issue of the raw product (in modular contracts ubiquitous language)
  */
 @Value
 @Builder
