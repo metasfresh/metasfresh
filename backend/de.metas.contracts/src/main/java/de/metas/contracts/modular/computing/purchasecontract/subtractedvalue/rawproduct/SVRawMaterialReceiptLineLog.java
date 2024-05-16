@@ -44,7 +44,7 @@ public class SVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 	@NonNull
 	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId()).negate()
-				.negateIf(request.isCostsType());
+		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+				.negateIf(request.isServicesType());
 	}
 }
