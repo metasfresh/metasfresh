@@ -133,20 +133,26 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581157)
 ;
 
+
 -- Column: ModCntr_InvoicingGroup.C_Harvesting_Calendar_ID
 -- 2024-04-24T08:02:32.715Z
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2024-04-24 11:02:32.715','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588195
 ;
 
 -- 2024-04-24T08:02:34.371Z
-/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Harvesting_Calendar_ID NUMERIC(10) ')
+/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Harvesting_Calendar_ID NUMERIC(10)')
 ;
+
 
 UPDATE modcntr_invoicinggroup
 SET c_harvesting_calendar_id=1000000
 ;
 
 COMMIT
+;
+
+-- 2024-04-01T12:24:46.186Z
+INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','C_Harvesting_Calendar_ID','NUMERIC(10)',null,null)
 ;
 
 -- 2024-04-24T08:02:34.441Z
@@ -175,6 +181,10 @@ SET harvesting_year_id=540017
 ;
 
 COMMIT
+;
+
+-- 2024-04-01T12:24:46.186Z
+INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','Harvesting_Year_ID','NUMERIC(10)',null,null)
 ;
 
 -- 2024-04-24T08:03:54.135Z
