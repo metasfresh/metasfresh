@@ -33,12 +33,9 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -46,6 +43,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
@@ -70,8 +68,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public abstract class AbstractInterestComputingMethod implements IComputingMethodHandler
 {
-	public static final AdMessageKey MSG_INTEREST_NOT_CALCULATED = AdMessageKey.of("de.metas.contracts.modular.interest.InterestNotCalculated");
-
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository;
@@ -145,23 +141,15 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				.contractModuleId(request.getModularContractModuleId())
 				.lockOwner(request.getLockOwner())
 				.build();
-		final ModularContractLogEntriesList modularContractLogEntries = modularContractLogService.getModularContractLogEntries(query);
-		if (modularContractLogEntries.isEmpty())
+		final PInstanceId pInstanceId = modularContractLogService.getModularContractLogEntrySelection(query);
+		if (pInstanceId == null)
 		{
 			return IComputingMethodHandler.super.compute(request);
 		}
-		final ImmutableSet<ModularContractLogEntryId> modularContractLogEntriesIds = modularContractLogEntries.getIds();
-
 		final ModularLogInterestRepository.LogInterestQuery logInterestQuery = ModularLogInterestRepository.LogInterestQuery.builder()
-				.logEntryIds(modularContractLogEntriesIds)
+				.modularLogSelection(pInstanceId)
 				.onlyBonusRecords(getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim)
 				.build();
-
-		if (modularLogInterestRepository.isInterestCalculated(logInterestQuery))
-		{
-			final String invoicingGroupName = invoicingGroupRepository.getById(modularContractLogEntries.getSingleInvoicingGroup()).name();
-			throw new AdempiereException(MSG_INTEREST_NOT_CALCULATED, invoicingGroupName );
-		}
 
 		final Optional<Money> totalInterest = modularLogInterestRepository.getTotalInterest(logInterestQuery);
 

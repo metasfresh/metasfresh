@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.interest;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
@@ -321,7 +322,7 @@ public class InterestComputationService
 		Check.assumeNotNull(invoice.getAmount(), "Invoices with no amount should've been skipped already! LogId="
 				+ invoice.getId());
 
-		final Instant conversionDate = Instant.now();
+		final Instant conversionDate = SystemTime.asInstant();
 		final CurrencyConversionContext context = currencyBL.createCurrencyConversionContext(conversionDate,
 																							 invoice.getClientAndOrgId().getClientId(),
 																							 invoice.getClientAndOrgId().getOrgId());

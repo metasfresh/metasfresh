@@ -78,6 +78,9 @@ public interface IComputingMethodHandler
 	@NonNull
 	Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef);
 
+	/**
+	 * This is the default implementation, used by yet-unimplemented methods. Its result ensures the IC is not created.
+	 */
 	default @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
