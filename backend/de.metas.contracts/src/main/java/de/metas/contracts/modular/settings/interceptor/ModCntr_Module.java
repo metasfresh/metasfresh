@@ -181,12 +181,11 @@ public class ModCntr_Module
 				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresProcessedProduct);
-
 				}
 			}
 			case CoProduct ->
 			{
-				if (!ProductId.equals(settings.getProcessedProductId(), productId))
+				if (!ProductId.equals(settings.getCoProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresCoProduct);
 
