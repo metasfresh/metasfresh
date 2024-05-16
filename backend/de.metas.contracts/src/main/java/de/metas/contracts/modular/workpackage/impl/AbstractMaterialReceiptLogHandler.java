@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -74,6 +75,8 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 
 	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.MATERIAL_RECEIPT;
+
+	@NonNull @Getter private final IComputingMethodHandler computingMethod;
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(

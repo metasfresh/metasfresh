@@ -28,25 +28,19 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.product.ProductId;
-import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
 @Component
-@Getter
 class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 {
-	@NonNull
-	private final InterimComputingMethod computingMethod;
-
 	public MaterialReceiptLineLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService contractService,
 			@NonNull final InterimComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, contractService);
-		this.computingMethod = computingMethod;
+		super(modCntrInvoicingGroupRepository, contractService, computingMethod);
 	}
 
 	@Override

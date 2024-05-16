@@ -22,37 +22,20 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.rawproduct;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractRawComputingMethod;
+import de.metas.contracts.modular.computing.ComputingMethodService;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Stream;
-
 @Component
-@RequiredArgsConstructor
-public class SVRawComputingMethod implements IComputingMethodHandler
+public class SVRawComputingMethod extends AbstractRawComputingMethod
 {
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
+	public SVRawComputingMethod(
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ComputingMethodService computingMethodService)
 	{
-		return false;
+		super(contractProvider, computingMethodService, ComputingMethodType.SubtractValueOnRawProduct);
 	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return ComputingMethodType.SubtractValueOnRawProduct;
-	}
-
 }
