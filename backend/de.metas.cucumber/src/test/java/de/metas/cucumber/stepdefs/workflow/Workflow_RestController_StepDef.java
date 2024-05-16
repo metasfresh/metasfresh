@@ -68,7 +68,7 @@ import org.eevolution.model.I_PP_Order;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class Workflow_RestController_StepDef
 {

@@ -47,7 +47,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class M_HU_Reservation_StepDef
