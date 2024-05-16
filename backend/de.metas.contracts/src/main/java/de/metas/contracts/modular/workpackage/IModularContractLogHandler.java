@@ -154,6 +154,11 @@ public interface IModularContractLogHandler
 			return moduleConfig.isCostsType();
 		}
 
+		public boolean isServicesType()
+		{
+			return moduleConfig.isServicesType();
+		}
+
 		@NonNull
 		public ProductId getProductId()
 		{

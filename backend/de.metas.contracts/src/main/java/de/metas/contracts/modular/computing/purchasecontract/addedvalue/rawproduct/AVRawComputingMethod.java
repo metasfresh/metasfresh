@@ -22,106 +22,20 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.addedvalue.rawproduct;
 
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractRawComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
-import java.util.stream.Stream;
-
 @Component
-@RequiredArgsConstructor
-public class AVRawComputingMethod implements IComputingMethodHandler
+public class AVRawComputingMethod extends AbstractRawComputingMethod
 {
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
-
-	@NonNull private final ModularContractProvider contractProvider;
-	@NonNull private final ComputingMethodService computingMethodService;
-
-	@Override
-	public boolean applies(final @NonNull TableRecordReference recordRef, final @NonNull LogEntryContractType logEntryContractType)
+	public AVRawComputingMethod(
+			@NonNull final ModularContractProvider contractProvider,
+			@NonNull final ComputingMethodService computingMethodService)
 	{
-		if (!logEntryContractType.isModularContractType()
-				|| !recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
-		{
-			return false;
-		}
-
-		final I_M_InOutLine inOutLineRecord = getReceiptLine(recordRef);
-		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
-
-		return !inOutRecord.isSOTrx() && !inOutBL.isReversal(inOutRecord);
-	}
-
-	private I_M_InOutLine getReceiptLine(final @NotNull TableRecordReference recordRef)
-	{
-		final InOutLineId receiptLineId = getReceiptLineId(recordRef);
-		return inOutBL.getLineByIdInTrx(receiptLineId);
-	}
-
-	private static InOutLineId getReceiptLineId(final @NotNull TableRecordReference recordRef)
-	{
-		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
-	}
-
-	@Override
-	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
-	{
-		return contractProvider.streamModularPurchaseContractsForReceiptLine(getReceiptLineId(recordRef));
-	}
-
-	@Override
-	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
-	{
-		final I_M_InOutLine receiptLine = getReceiptLine(recordRef);
-		final ProductId receivedProductId = ProductId.ofRepoId(receiptLine.getM_Product_ID());
-		return ProductId.equals(receivedProductId, settings.getRawProductId());
-	}
-
-	@Override
-	public @NonNull ComputingMethodType getComputingMethodType()
-	{
-		return ComputingMethodType.AddValueOnRawProduct;
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
-		if (logs.isEmpty())
-		{
-			return computingMethodService.toZeroResponse(request);
-		}
-
-		final Quantity qtyInStockUOM = computingMethodService.getQtySumInStockUOM(logs);
-
-		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
-		final ProductPrice pricePerStockUOM = computingMethodService.productPriceToUOM(price, qtyInStockUOM.getUomId());
-
-		return ComputingResponse.builder()
-				.ids(logs.getIds())
-				.price(pricePerStockUOM)
-				.qty(qtyInStockUOM)
-				.build();
+		super(contractProvider, computingMethodService, ComputingMethodType.AddValueOnRawProduct);
 	}
 }
