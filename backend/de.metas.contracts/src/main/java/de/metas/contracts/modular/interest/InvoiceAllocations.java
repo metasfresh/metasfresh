@@ -151,12 +151,22 @@ public class InvoiceAllocations
 		return cachedInvoiceInterimDate;
 	}
 
-	@Builder(toBuilder = true)
 	@Value
 	public static class AllocationItem
 	{
 		@NonNull ModularContractLogEntry shippingNotificationEntry;
-		@With @NonNull Money openAmount;
+		@NonNull @With Money openAmount;
+
+		@Builder(toBuilder = true)
+		private AllocationItem(
+				@NonNull final ModularContractLogEntry shippingNotificationEntry,
+				@NonNull final Money openAmount)
+		{
+			Check.assume(openAmount.signum() >= 0, "OpenAmount cannot be negative!");
+
+			this.shippingNotificationEntry = shippingNotificationEntry;
+			this.openAmount = openAmount;
+		}
 
 		public AllocationItem subtractAllocatedAmount(@NonNull final Money allocatedAmt)
 		{
