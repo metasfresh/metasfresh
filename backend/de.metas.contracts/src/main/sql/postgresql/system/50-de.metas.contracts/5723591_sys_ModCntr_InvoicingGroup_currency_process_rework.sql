@@ -12,7 +12,20 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2024-05-13T15:32:43.439Z
-/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Currency_ID NUMERIC(10) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('ModCntr_InvoicingGroup','ALTER TABLE public.ModCntr_InvoicingGroup ADD COLUMN C_Currency_ID NUMERIC(10)')
+;
+
+UPDATE modcntr_invoicinggroup
+SET c_currency_id=318 --CHF
+;
+
+COMMIT
+;
+
+INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','C_Currency_ID','NUMERIC(10)',null,null)
+;
+
+INSERT INTO t_alter_column values('ModCntr_InvoicingGroup','C_Currency_ID',null,'NOT NULL',null)
 ;
 
 -- 2024-05-13T15:32:43.510Z
