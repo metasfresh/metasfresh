@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -42,6 +41,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -49,10 +50,12 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +71,6 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractService modularContractService;
 	@NonNull protected final ManufacturingFacadeService manufacturingFacadeService;
 
 	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
@@ -98,7 +100,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
 		final BPartnerId invoicingBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID());
 		final BPartnerId collectionPointBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID());
-		final ProductPrice price = modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId());
+		final ProductPrice price = getPriceActual(request);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(contractId)
@@ -144,6 +146,25 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
 				.modularContractModuleId(modularContractModuleId)
+				.build();
+	}
+
+	@NonNull
+	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	{
+		final FlatrateTermId flatrateTermId = request.getContractId();
+		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
+		final ProductId productId = request.getModularContractSettings().getRawProductId();
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
+		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
+				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(stockUOMId)
+				.money(Money.zero(currencyId))
 				.build();
 	}
 }
