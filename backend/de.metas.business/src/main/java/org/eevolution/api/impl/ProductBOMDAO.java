@@ -11,9 +11,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.organization.IOrgDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.IssuingToleranceValueType;
@@ -42,8 +42,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.IQuery;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -184,6 +182,28 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public Optional<ProductBOM> retrieveValidProductBOM(@NonNull final ProductBOMRequest request)
 	{
 		return productBOMCCache.getOrLoad(request, this::retrieveValidProductBOM0);
+	}
+
+	private Optional<ProductBOM> retrieveValidProductBOM0(@NonNull final ProductBOMRequest request)
+	{
+		final ProductId productId = ProductId.ofRepoId(request.getProductDescriptor().getProductId());
+		final ICompositeQueryFilter<I_PP_Product_BOM> validToFilter = queryBL.createCompositeQueryFilter(I_PP_Product_BOM.class)
+				.setJoinOr()
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, GREATER, request.getDate())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_ValidTo, null);
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMType, BOMType.CurrentActive.getCode())
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_BOMUse, BOMUse.Manufacturing.getCode())
+				.addCompareFilter(I_PP_Product_BOM.COLUMNNAME_ValidFrom, LESS_OR_EQUAL, request.getDate())
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_AD_Org_ID)
+				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
+				.filter(validToFilter)
+				.create()
+				.firstOptional(I_PP_Product_BOM.class)
+				.map(productBOM -> toProductBOM(productBOM, request));
 	}
 
     private ProductBOM toProductBOM(@NonNull final I_PP_Product_BOM ppProductBom, @NonNull final ProductBOMRequest request)

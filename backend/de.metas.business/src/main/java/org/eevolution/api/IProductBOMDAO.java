@@ -21,8 +21,6 @@ public interface IProductBOMDAO extends ISingletonService
 {
 	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest productBOMRequest);
 
-	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull ProductId productId, @NonNull BOMType bomType);
-
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
 	@Deprecated
