@@ -22,19 +22,32 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.manufacturing.calibration;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufacturingProcessedReceiptLogHandler
 {
+	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+
 	public CalibrationManufacturingProcessedReceiptLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
@@ -57,5 +70,25 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 			@NonNull final ManufacturingProcessedReceipt manufacturingProcessedReceipt)
 	{
 		return request.getProductId();
+	}
+
+	@NonNull
+	@Override
+	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	{
+		final FlatrateTermId flatrateTermId = request.getContractId();
+		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
+		final ProductId productId = request.getProductId();
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
+		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
+				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(stockUOMId)
+				.money(Money.zero(currencyId))
+				.build();
 	}
 }

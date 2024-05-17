@@ -124,7 +124,7 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 	}
 
 	@NonNull
-	private ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
 				.negateIf(request.isCostsType());
