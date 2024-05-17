@@ -78,7 +78,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
-		final ProductId productId = request.getModularContractSettings().getRawProductId();
+		final ProductId productId = request.getProductId();
 		final UomId stockUOMId = productBL.getStockUOMId(productId);
 
 		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
