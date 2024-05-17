@@ -23,15 +23,17 @@
 package de.metas.contracts.modular.computing.purchasecontract.sales.processed;
 
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
-import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingOrderLogHandler;
+import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOrderLogHandler
+public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingProcessedReceiptLogHandler
 {
 	public ProcessedSalesManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
@@ -45,17 +47,17 @@ public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingOr
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(request.getRecordRef()).orElse(null);
-		return manufacturingReceipt != null
-				&& ProductId.equals(manufacturingReceipt.getProductId(), request.getProductId());
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(request.getRecordRef()).orElse(null);
+		return manufacturingProcessedReceipt != null
+				&& ProductId.equals(manufacturingProcessedReceipt.getProcessedProductId(), request.getProductId());
 	}
 
 	@NonNull
 	protected ProductId extractProductIdToLog(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
-			@NonNull final ManufacturingReceipt manufacturingReceipt)
+			@NonNull final ManufacturingProcessedReceipt manufacturingProcessedReceipt)
 	{
-		return manufacturingReceipt.getProductId();
+		return manufacturingProcessedReceipt.getProcessedProductId();
 	}
 
 }

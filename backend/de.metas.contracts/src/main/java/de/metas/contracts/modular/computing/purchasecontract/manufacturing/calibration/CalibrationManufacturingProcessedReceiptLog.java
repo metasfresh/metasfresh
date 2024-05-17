@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.addedvalue.processedproduct;
+package de.metas.contracts.modular.computing.purchasecontract.manufacturing.calibration;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
@@ -33,13 +33,13 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AVProcessedManufacturingOrderLog extends AbstractManufacturingProcessedReceiptLogHandler
+public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufacturingProcessedReceiptLogHandler
 {
-	public AVProcessedManufacturingOrderLog(
+	public CalibrationManufacturingProcessedReceiptLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
-			@NonNull final AVProcessedComputingMethod computingMethod)
+			@NonNull final PPCalibrationComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
 	}

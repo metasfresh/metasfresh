@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,42 +22,20 @@
 
 package org.eevolution.api.impl;
 
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
-import java.util.List;
-import java.util.Map;
+import org.eevolution.api.ProductBOMLineId;
 
 @Value
-@Builder(toBuilder = true)
-public class ProductBOM
+@Builder
+public class ProductBOMLine
 {
 	@NonNull
-	ProductBOMId productBOMId;
+	ProductBOMLineId productBOMLineId;
 
 	@NonNull
-	ProductDescriptor productDescriptor;
+	ProductId productId;
 
-	@NonNull
-	UomId uomId;
-
-	@NonNull
-	List<I_PP_Product_BOMLine> components;
-
-	@NonNull
-	Map<ProductDescriptor, ProductBOM> componentsProductBOMs;
-
-	@NonNull
-	List<ProductBOMLine> coProducts;
-
-	public ProductId getProductId()
-	{
-		return ProductId.ofRepoId(productDescriptor.getProductId());
-	}
 }
