@@ -150,7 +150,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 	}
 
 	@NonNull
-	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	private ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
