@@ -1,17 +1,17 @@
 drop function if exists getPriceListVersionsUpToBase
 (
-	/* p_Start_PriceList_Version_ID */ numeric
+    /* p_Start_PriceList_Version_ID */ numeric
 );
 drop function if exists getPriceListVersionsUpToBase
 (
-	/* p_M_PriceList_ID */ numeric,
+    /* p_M_PriceList_ID */ numeric,
     /* p_Date */ timestamp with time zone
 );
 
 drop function if exists getpricelistversionsuptobase_ForPricelistVersion
 (
-	/* p_start_pricelist_version_id */  numeric,
-	/* p_datePromised */  timestamp with time zone
+    /* p_start_pricelist_version_id */  numeric,
+    /* p_datePromised */  timestamp with time zone
 );
 
 create or replace function getpricelistversionsuptobase_ForPricelistVersion
@@ -52,23 +52,23 @@ with recursive priceListVersion as (
         plv2.M_Pricelist_ID,
         plv2.validFrom,
         (plv2.path || basePLV2.M_PriceList_Version_ID)::numeric(10,0)[] as path -- add new base-plv array
-    from priceListVersion as plv2
-             inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
-             left join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
-             left join M_Pricelist_Version basePLV2 on basePLV2.M_Pricelist_ID = basePL2.M_Pricelist_ID
-        and basePLV2.validFrom = (select max(ValidFrom)
-                                  from M_Pricelist_Version
-                                  where isActive = 'Y'
-                                    and M_Pricelist_ID = basePL2.M_Pricelist_ID
-                                    and validFrom <= p_datePromised)
-    where
-        basePLV2.IsActive='Y'
-      and NOT plv2.path @> ARRAY[basePLV2.M_PriceList_Version_ID] -- stop recursing if we already saw the current base-plv's M_PriceList_Version_ID
-)
+from priceListVersion as plv2
+    inner join M_Pricelist pl2 on plv2.M_Pricelist_ID = pl2.M_Pricelist_ID
+    left join M_Pricelist basePL2 on pl2.basePricelist_ID = basePL2.M_PriceList_ID
+    left join M_Pricelist_Version basePLV2 on basePLV2.M_Pricelist_ID = basePL2.M_Pricelist_ID
+    and basePLV2.validFrom = (select max(ValidFrom)
+    from M_Pricelist_Version
+    where isActive = 'Y'
+    and M_Pricelist_ID = basePL2.M_Pricelist_ID
+    and validFrom <= p_datePromised)
+where
+    basePLV2.IsActive='Y'
+  and NOT plv2.path @> ARRAY[basePLV2.M_PriceList_Version_ID] -- stop recursing if we already saw the current base-plv's M_PriceList_Version_ID
+    )
 select array_agg(M_PriceList_Version_ID order by SeqNo) from priceListVersion;
 $BODY$
     STABLE
-    LANGUAGE SQL
+    LANGUAGE SQL 
 ;
 COMMENT ON FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(numeric, timestamp with time zone)
     IS 'Gets an array starting with your given price list version and the pricing date and then recursively all base price list versions to fallback for pricing. Robost against loops.';
@@ -102,8 +102,3 @@ $BODY$
     STABLE
     LANGUAGE SQL
 ;
-
-
-
-
-
