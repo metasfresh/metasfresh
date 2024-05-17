@@ -20,16 +20,14 @@
  * #L%
  */
 
-package de.metas.contracts.modular.workpackage.impl;
+package de.metas.contracts.modular.computing.purchasecontract.manufacturing.calibration;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.purchasecontract.sales.processed.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.purchasecontract.sales.processed.ManufacturingReceipt;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -43,6 +41,8 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
@@ -50,16 +50,20 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
-public abstract class AbstractManufacturingOrderLogHandler implements IModularContractLogHandler
+@Component
+public class CalibrationManufacturingRawIssuedLog implements IModularContractLogHandler
 {
-	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
+	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
 
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -67,30 +71,30 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractService modularContractService;
 	@NonNull protected final ManufacturingFacadeService manufacturingFacadeService;
 
 	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRODUCTION;
-	@Getter @NonNull private final IComputingMethodHandler computingMethod;
+	@Getter @NonNull private final PPCalibrationComputingMethod computingMethod;
 
 	@Override
-	public abstract boolean applies(final @NonNull CreateLogRequest ignoredRequest);
-
-	@NonNull
-	protected abstract ProductId extractProductIdToLog(@NonNull final IModularContractLogHandler.CreateLogRequest request, @NonNull final ManufacturingReceipt manufacturingReceipt);
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		return manufacturingFacadeService.getManufacturingRawIssuedIfApplies(request.getRecordRef()).isPresent();
+	}
 
 	@Override
 	@NonNull
 	public final ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(request.getRecordRef());
-		final ProductId productId = extractProductIdToLog(request, manufacturingReceipt);
-		final InstantAndOrgId transactionDate = manufacturingReceipt.getTransactionDate();
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(request.getRecordRef());
+		final ProductId productId = request.getProductId();
+		final InstantAndOrgId transactionDate = manufacturingRawIssued.getTransactionDate();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, request.getModularContractSettings().getYearAndCalendarId()).orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
-		final Quantity qty = manufacturingReceipt.getQtyReceived();
-		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, qty.abs().toString(), productName);
+		final Quantity qtyIssued =  manufacturingRawIssued.getQtyIssued();
+		final Quantity qty = qtyIssued.isPositive() ? qtyIssued.negate() : qtyIssued;
+		final String description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_ISSUE, qty.abs().toString(), productName);
 
 		final FlatrateTermId contractId = request.getContractId();
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
@@ -100,12 +104,12 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(contractId)
-				.referencedRecord(manufacturingReceipt.getManufacturingOrderId().toRecordRef())
-				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
+				.referencedRecord(manufacturingRawIssued.getManufacturingOrderId().toRecordRef())
+				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
 				.productId(productId)
 				.productName(request.getProductName())
 				.invoicingBPartnerId(invoicingBPartnerId)
-				.warehouseId(manufacturingReceipt.getWarehouseId())
+				.warehouseId(manufacturingRawIssued.getWarehouseId())
 				.documentType(getLogEntryDocumentType())
 				.contractType(getLogEntryContractType())
 				.soTrx(SOTrx.PURCHASE)
@@ -123,13 +127,6 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 				.build());
 	}
 
-	@NonNull
-	private ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
- 
 	@Override
 	@NonNull
 	public final ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -141,14 +138,33 @@ public abstract class AbstractManufacturingOrderLogHandler implements IModularCo
 	@NonNull
 	public final LogEntryDeleteRequest toLogEntryDeleteRequest(@NonNull final HandleLogsRequest handleLogsRequest, @NonNull final ModularContractModuleId modularContractModuleId)
 	{
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(handleLogsRequest.getTableRecordReference());
+		final ManufacturingRawIssued manufacturingRawIssued = manufacturingFacadeService.getManufacturingRawIssued(handleLogsRequest.getTableRecordReference());
 
 		return LogEntryDeleteRequest.builder()
-				.referencedModel(manufacturingReceipt.getManufacturingOrderId().toRecordRef())
-				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingReceipt.getId()))
+				.referencedModel(manufacturingRawIssued.getManufacturingOrderId().toRecordRef())
+				.subEntryId(LogSubEntryId.ofCostCollectorId(manufacturingRawIssued.getId()))
 				.flatrateTermId(handleLogsRequest.getContractId())
 				.logEntryContractType(getLogEntryContractType())
 				.modularContractModuleId(modularContractModuleId)
+				.build();
+	}
+
+	@NonNull
+	private ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	{
+		final FlatrateTermId flatrateTermId = request.getContractId();
+		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
+		final ProductId productId = request.getProductId();
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+
+		final CurrencyId currencyId = CurrencyId.optionalOfRepoId(modularContract.getC_Currency_ID())
+				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(stockUOMId)
+				.money(Money.zero(currencyId))
 				.build();
 	}
 }

@@ -29,6 +29,9 @@ import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
+import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -64,13 +67,13 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 			return false;
 		}
 
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceiptIfApplies(recordRef).orElse(null);
-		if (manufacturingReceipt == null)
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceiptIfApplies(recordRef).orElse(null);
+		if (manufacturingProcessedReceipt == null)
 		{
 			return false;
 		}
 
-		return manufacturingFacadeService.isModularOrder(manufacturingReceipt.getManufacturingOrderId());
+		return manufacturingFacadeService.isModularOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
 	}
 
 	@Override
@@ -81,15 +84,15 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 			return false;
 		}
 
-		final ManufacturingReceipt manufacturingReceipt = manufacturingFacadeService.getManufacturingReceipt(recordRef);
-		ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingReceipt.getManufacturingOrderId());
+		final ManufacturingProcessedReceipt manufacturingProcessedReceipt = manufacturingFacadeService.getManufacturingProcessedReceipt(recordRef);
+		final ManufacturingOrder manufacturingOrder = manufacturingFacadeService.getManufacturingOrder(manufacturingProcessedReceipt.getManufacturingOrderId());
 		return ProductId.equals(manufacturingOrder.getProcessedProductId(), settings.getProcessedProductId());
 	}
 
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
-		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptId(recordRef));
+		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptOrIssuedId(recordRef));
 	}
 
 	@Override

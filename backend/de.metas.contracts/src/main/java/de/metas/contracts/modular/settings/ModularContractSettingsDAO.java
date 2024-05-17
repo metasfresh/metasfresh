@@ -91,7 +91,6 @@ public class ModularContractSettingsDAO
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1000)
 			.tableName(I_C_Flatrate_Conditions.Table_Name)
-			.additionalTableNameToResetFor(I_C_Flatrate_Term.Table_Name)
 			.invalidationKeysMapper(new SettingsIdCachingKeysMapper())
 			.build();
 
@@ -100,7 +99,6 @@ public class ModularContractSettingsDAO
 			.initialCapacity(1000)
 			.tableName(I_ModCntr_Settings.Table_Name)
 			.additionalTableNameToResetFor(I_ModCntr_Module.Table_Name)
-			.additionalTableNameToResetFor(I_ModCntr_Type.Table_Name)
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
 

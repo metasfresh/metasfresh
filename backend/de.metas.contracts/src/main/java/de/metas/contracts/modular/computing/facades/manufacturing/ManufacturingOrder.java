@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,44 +20,21 @@
  * #L%
  */
 
-package org.eevolution.api.impl;
+package de.metas.contracts.modular.computing.facades.manufacturing;
 
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.product.ProductId;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.api.PPOrderId;
 
-import java.util.List;
-import java.util.Map;
-
+/**
+ * Manufacturing Order (in modular contracts ubiquitous language)
+ */
 @Value
-@Builder(toBuilder = true)
-public class ProductBOM
+@Builder
+public class ManufacturingOrder
 {
-	@NonNull
-	ProductBOMId productBOMId;
-
-	@NonNull
-	ProductDescriptor productDescriptor;
-
-	@NonNull
-	UomId uomId;
-
-	@NonNull
-	List<I_PP_Product_BOMLine> components;
-
-	@NonNull
-	Map<ProductDescriptor, ProductBOM> componentsProductBOMs;
-
-	@NonNull
-	List<ProductBOMLine> coProducts;
-
-	public ProductId getProductId()
-	{
-		return ProductId.ofRepoId(productDescriptor.getProductId());
-	}
+	@NonNull PPOrderId id;
+	@NonNull ProductId processedProductId;
 }
