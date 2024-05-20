@@ -188,6 +188,9 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 		);
 	}
 
+	/**
+	 * @return -1 if the interim amount & price actual should be negated in logs, 1 if not.
+	 */
 	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
 	{
 		return createLogRequest.isCostsType() ? -1 : 1;
