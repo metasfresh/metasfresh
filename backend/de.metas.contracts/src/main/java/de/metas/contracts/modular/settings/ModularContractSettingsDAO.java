@@ -462,15 +462,24 @@ public class ModularContractSettingsDAO
 		return fromRecord(record, getContractTypes());
 	}
 
-	public void updateModuleProduct(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final ProductId rawProductId)
+	public void updateModule(@NonNull final ModularContractModuleId modularContractModuleId,
+			@Nullable ModularContractTypeId modularContractTypeId,
+			@NonNull final ProductId rawProductId)
 	{
 		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
-		updateModuleProduct(record, rawProductId);
+		updateModule(record, modularContractTypeId, rawProductId);
 	}
 
-	public void updateModuleProduct(@NonNull final I_ModCntr_Module existingModuleConfig, @NonNull final ProductId rawProductId)
+	public void updateModule(@NonNull final I_ModCntr_Module existingModuleConfig,
+			@Nullable ModularContractTypeId modularContractTypeId,
+			@NonNull final ProductId productId)
 	{
-		existingModuleConfig.setM_Product_ID(rawProductId.getRepoId());
+		existingModuleConfig.setM_Product_ID(productId.getRepoId());
+
+		if(modularContractTypeId != null)
+		{
+			existingModuleConfig.setModCntr_Type_ID(modularContractTypeId.getRepoId());
+		}
 		saveRecord(existingModuleConfig);
 	}
 
@@ -621,4 +630,18 @@ public class ModularContractSettingsDAO
 				.create()
 				.firstOnly();
 	}
+
+
+	@Nullable
+	public I_ModCntr_Module retrieveDefinitiveInvoiceModuleRecordOrNull(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addEqualsFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Settings_ID, modularContractSettingsId)
+				.addInArrayFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID,
+								  ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct,
+								  ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
+				.create()
+				.firstOnly();
+	}
+
 }

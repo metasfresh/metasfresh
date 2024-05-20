@@ -94,6 +94,27 @@ public class ModCntr_Settings
 
 	}
 
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID },
+			ifUIAction = true)
+	public void upsertDefinitiveInvoiceModule(@NonNull final I_ModCntr_Settings record)
+	{
+		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
+
+		if (rawProductId == null)
+		{
+			// nothing to do
+			return;
+		}
+		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
+
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+
+		modularContractSettingsBL.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
+
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID })
 	public void updateModulesRawProductsIfNeeded(@NonNull final I_ModCntr_Settings record)
@@ -131,7 +152,7 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_SETTING_LINES_DEPEND_ON_PRODUCT);
 		}
 
-		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModuleProduct(moduleConfig, productId));
+		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModule(moduleConfig, null, productId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },

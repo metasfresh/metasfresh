@@ -33,6 +33,7 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -40,8 +41,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,6 +136,36 @@ public class ModularContractSettingsBL
 		);
 	}
 
+	private void createDefinitiveInvoiceModule(@NonNull final ModularContractSettingsId modularContractSettingsId)
+	{
+		final ModularContractSettings modularContractSettings = getById(modularContractSettingsId);
+		final ProductId moduleProductId;
+		final ModularContractType moduleContractType;
+		final ProductId processedProductId = modularContractSettings.getProcessedProductId();
+		if(processedProductId != null)
+		{
+			moduleProductId = processedProductId;
+			moduleContractType = modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct);
+		}
+		else
+		{
+			moduleProductId = modularContractSettings.getRawProductId();
+			moduleContractType = modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct);
+		}
+
+		final String moduleName = TranslatableStrings.adElementOrMessage("DefinitiveInvoice").translate(Env.getADLanguageOrBaseLanguage());
+		modularContractSettingsDAO.createModule(
+				ModuleConfigCreateRequest.builder()
+						.modularContractSettingsId(modularContractSettingsId)
+						.seqNo(SeqNo.ofInt(0))
+						.name(moduleName)
+						.modularContractType(moduleContractType)
+						.invoicingGroup(InvoicingGroupType.SERVICES)
+						.productId(moduleProductId)
+						.processed(true)
+						.build()
+		);
+	}
 	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
 	{
 		final I_ModCntr_Module existingModuleConfig = modularContractSettingsDAO.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
@@ -142,13 +175,37 @@ public class ModularContractSettingsBL
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
-			modularContractSettingsDAO.updateModuleProduct(existingModuleConfig, rawProductId);
+			modularContractSettingsDAO.updateModule(existingModuleConfig, null, rawProductId);
 		}
 	}
 
-	public void updateModuleProduct(@NonNull final ModuleConfig moduleConfig, @NonNull final ProductId rawProductId)
+	public void upsertDefinitiveInvoiceModule(@NonNull final ModularContractSettingsId modularContractSettingsId,
+			@NonNull final ProductId rawProductId,
+			@Nullable final ProductId processedProductId)
 	{
-		modularContractSettingsDAO.updateModuleProduct(moduleConfig.getId().getModularContractModuleId(), rawProductId);
+		final I_ModCntr_Module existingModuleConfig = modularContractSettingsDAO.retrieveDefinitiveInvoiceModuleRecordOrNull(modularContractSettingsId);
+		if (existingModuleConfig == null)
+		{
+			createDefinitiveInvoiceModule(modularContractSettingsId);
+		}
+		else if(processedProductId != null)
+		{
+
+			modularContractSettingsDAO.updateModule(existingModuleConfig,
+													ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct,
+													processedProductId);
+		}
+		else
+		{
+			modularContractSettingsDAO.updateModule(existingModuleConfig,
+													ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct,
+													rawProductId);
+		}
+	}
+
+	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId rawProductId)
+	{
+		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), modularContractTypeId, rawProductId);
 	}
 
 	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
