@@ -1175,7 +1175,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.saveHU(hu);
 
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
-				.forEach(includedHU -> setClearanceStatusRecursively(includedHU, clearanceStatusInfo));
+				.forEach(includedHU -> setClearanceStatusRecursively(includedHU, clearanceStatusInfo, filter));
 	}
 
 	@Override
