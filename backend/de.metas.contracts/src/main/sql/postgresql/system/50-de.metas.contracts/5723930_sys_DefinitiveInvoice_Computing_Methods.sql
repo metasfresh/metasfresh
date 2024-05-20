@@ -45,3 +45,17 @@ DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=543665
 
 
 
+-- Reference: Computing Methods
+-- Value: DefinitiveInvoiceRawProduct
+-- ValueName: DefinitiveInvoiceRawProduct
+-- 2024-05-20T13:38:06.331Z
+UPDATE AD_Ref_List SET IsActive='N',Updated=TO_TIMESTAMP('2024-05-20 16:38:06.331','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Ref_List_ID=543682
+;
+
+-- Reference: Computing Methods
+-- Value: DefinitiveInvoiceProcessedProduct
+-- ValueName: DefinitiveInvoiceProcessedProduct
+-- 2024-05-20T13:38:09.642Z
+UPDATE AD_Ref_List SET IsActive='N',Updated=TO_TIMESTAMP('2024-05-20 16:38:09.642','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Ref_List_ID=543683
+;
+

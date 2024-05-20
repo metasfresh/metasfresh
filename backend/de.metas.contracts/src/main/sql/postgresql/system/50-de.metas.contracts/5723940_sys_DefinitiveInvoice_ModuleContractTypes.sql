@@ -20,3 +20,13 @@ UPDATE ModCntr_Type SET Value='DefinitiveInvoiceProcessedProduct',Updated=TO_TIM
 -- 2024-05-20T13:16:40.687Z
 UPDATE ModCntr_Type SET Value='DefinitiveInvoiceRawProduct',Updated=TO_TIMESTAMP('2024-05-20 16:16:40.686','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ModCntr_Type_ID=540009
 ;
+
+
+
+-- 2024-05-20T13:37:16.556Z
+UPDATE ModCntr_Type SET IsActive='N',Updated=TO_TIMESTAMP('2024-05-20 16:37:16.556','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ModCntr_Type_ID=540009
+;
+
+-- 2024-05-20T13:37:21.071Z
+UPDATE ModCntr_Type SET IsActive='N',Updated=TO_TIMESTAMP('2024-05-20 16:37:21.071','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE ModCntr_Type_ID=540010
+;
