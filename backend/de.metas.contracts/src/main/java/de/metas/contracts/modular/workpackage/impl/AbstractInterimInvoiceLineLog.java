@@ -117,8 +117,9 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 		final Quantity qtyEntered = Quantitys.of(invoiceLineRecord.getQtyEntered(), uomId);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
-		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
-		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId);
+		final int multiplier = getMultiplier(createLogRequest);
+		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId).multiply(multiplier);
+		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId).multiply(multiplier);
 		final ProductId productId = createLogRequest.getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
@@ -185,6 +186,11 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.invoicingGroupId(invoicingGroupId)
 						.build()
 		);
+	}
+
+	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
+	{
+		return createLogRequest.isCostsType() ? -1 : 1;
 	}
 
 	@Override

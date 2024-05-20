@@ -74,7 +74,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 
 	@NonNull
 	@Override
-	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);

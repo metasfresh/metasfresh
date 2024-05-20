@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 @Getter
 public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
-	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
+	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
 
 	private final AVInterimComputingMethod computingMethod;
 

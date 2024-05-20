@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.calendar.standard.YearId;
-import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -75,7 +74,6 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	@NonNull private final ShippingNotificationService notificationService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
-	@NonNull private final ModularContractService modularContractService;
 
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
@@ -111,12 +109,13 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 
 		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
 
+		final BPartnerId warehouseBPartnerId = wrapper.getWarehouseBPartnerId(warehouseDAO);
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.referencedRecord(wrapper.getLineReference())
 											.contractId(createLogRequest.getContractId())
-											.collectionPointBPartnerId(wrapper.getWarehouseBPartnerId(warehouseDAO))
-											.producerBPartnerId(wrapper.getBPartnerId())
-											.invoicingBPartnerId(wrapper.getBPartnerId())
+											.collectionPointBPartnerId(warehouseBPartnerId)
+											.producerBPartnerId(warehouseBPartnerId)
+											.invoicingBPartnerId(warehouseBPartnerId)
 											.warehouseId(wrapper.getWarehouseId())
 											.initialProductId(productId)
 											.productId(contractSpecificPrice.getProductId())
@@ -163,13 +162,6 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	}
 
 	public abstract SOTrx getSOTrx();
-
-	@NonNull
-	private ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
 
 	private record NotificationAndLineWrapper(
 			@NonNull I_M_Shipping_Notification notification,

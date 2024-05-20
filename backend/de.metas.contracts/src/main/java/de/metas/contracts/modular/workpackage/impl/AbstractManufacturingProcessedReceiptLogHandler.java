@@ -123,13 +123,6 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 				.build());
 	}
 
-	@NonNull
-	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
- 
 	@Override
 	@NonNull
 	public final ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)

@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.computing.tbd.salescontract.shipnotification;
 
-import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -46,10 +45,9 @@ public class ShippingNotificationForSalesContractLogsHandler extends AbstractShi
 			@NonNull final ShippingNotificationForSalesModularContractHandler computingMethod,
 			@NonNull final ShippingNotificationService notificationService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModularContractLogDAO contractLogDAO)
 	{
-		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO, modularContractService);
+		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO);
 		this.computingMethod = computingMethod;
 	}
 

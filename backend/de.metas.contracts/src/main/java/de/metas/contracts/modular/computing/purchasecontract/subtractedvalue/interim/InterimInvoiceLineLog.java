@@ -25,17 +25,22 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.in
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
+import de.metas.product.ProductPrice;
+import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 @Component
 @Getter
 public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
-	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
+	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
 
 	private final SVInterimComputingMethod computingMethod;
 
@@ -47,5 +52,17 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 	{
 		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
+	}
+
+	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
+	{
+		return -1 * super.getMultiplier(createLogRequest);
+	}
+
+	public @Nullable ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
+	{
+		final ProductPrice priceActual = super.getPriceActual(logEntry);
+		Check.assumeNotNull(priceActual, "PriceActual shouldn't be null");
+		return priceActual.negate();
 	}
 }
