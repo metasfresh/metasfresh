@@ -507,3 +507,82 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferstatus', PrintName='Lief
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542886,'de_CH')
 ;
 
+
+-- Element: DeliveryStatus_Color_ID
+-- 2024-05-21T09:45:29.262Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferstatus', PrintName='Lieferstatus',Updated=TO_TIMESTAMP('2024-05-21 09:45:29.262000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581958 AND AD_Language='fr_CH'
+;
+
+-- 2024-05-21T09:45:29.265Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581958,'fr_CH')
+;
+
+-- Element: DeliveryStatus_Color_ID
+-- 2024-05-21T09:45:35.962Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferstatus', PrintName='Lieferstatus',Updated=TO_TIMESTAMP('2024-05-21 09:45:35.962000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581958 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T09:45:35.963Z
+UPDATE AD_Element SET Name='Lieferstatus', PrintName='Lieferstatus', Updated=TO_TIMESTAMP('2024-05-21 09:45:35.963000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581958
+;
+
+-- 2024-05-21T09:45:36.337Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581958,'de_DE')
+;
+
+-- 2024-05-21T09:45:36.339Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581958,'de_DE')
+;
+
+-- Element: Shipper_BPartner_ID
+-- 2024-05-21T09:53:32.022Z
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Partner', PrintName='Verlader Partner',Updated=TO_TIMESTAMP('2024-05-21 09:53:32.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_CH'
+;
+
+-- 2024-05-21T09:53:32.024Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540091,'de_CH')
+;
+
+-- Element: Shipper_BPartner_ID
+-- 2024-05-21T09:53:42.442Z
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Partner', PrintName='Verlader Partner',Updated=TO_TIMESTAMP('2024-05-21 09:53:42.442000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T09:53:42.443Z
+UPDATE AD_Element SET Description='', Name='Verlader Partner', PrintName='Verlader Partner', Updated=TO_TIMESTAMP('2024-05-21 09:53:42.443000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540091
+;
+
+-- 2024-05-21T09:53:42.824Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(540091,'de_DE')
+;
+
+-- 2024-05-21T09:53:42.826Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540091,'de_DE')
+;
+
+-- Element: Shipper_Location_ID
+-- 2024-05-21T09:55:01.682Z
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Standort', PrintName='Verlader Standort',Updated=TO_TIMESTAMP('2024-05-21 09:55:01.682000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T09:55:01.684Z
+UPDATE AD_Element SET Description='', Name='Verlader Standort', PrintName='Verlader Standort', Updated=TO_TIMESTAMP('2024-05-21 09:55:01.683000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540095
+;
+
+-- 2024-05-21T09:55:02.031Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(540095,'de_DE')
+;
+
+-- 2024-05-21T09:55:02.032Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540095,'de_DE')
+;
+
+-- Element: Shipper_Location_ID
+-- 2024-05-21T09:55:15.179Z
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Standort', PrintName='Verlader Standort',Updated=TO_TIMESTAMP('2024-05-21 09:55:15.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_CH'
+;
+
+-- 2024-05-21T09:55:15.182Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540095,'de_CH')
+;
+
