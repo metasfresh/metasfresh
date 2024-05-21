@@ -481,3 +481,29 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Alle Lieferpapiere drucken',Up
 UPDATE AD_Process SET Name='Alle Lieferpapiere drucken', Updated=TO_TIMESTAMP('2024-05-20 16:41:13.405000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=541228
 ;
 
+-- Element: DeliveryStatus
+-- 2024-05-21T09:38:52.955Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferstatus', PrintName='Lieferstatus',Updated=TO_TIMESTAMP('2024-05-21 09:38:52.954000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=542886 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T09:38:52.961Z
+UPDATE AD_Element SET Name='Lieferstatus', PrintName='Lieferstatus', Updated=TO_TIMESTAMP('2024-05-21 09:38:52.959000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=542886
+;
+
+-- 2024-05-21T09:38:53.346Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542886,'de_DE')
+;
+
+-- 2024-05-21T09:38:53.356Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542886,'de_DE')
+;
+
+-- Element: DeliveryStatus
+-- 2024-05-21T09:39:21.054Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferstatus', PrintName='Lieferstatus',Updated=TO_TIMESTAMP('2024-05-21 09:39:21.054000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=542886 AND AD_Language='de_CH'
+;
+
+-- 2024-05-21T09:39:21.056Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542886,'de_CH')
+;
+
