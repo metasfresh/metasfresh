@@ -93,6 +93,7 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod implements ICom
 	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
 	{
 		return contractProvider.streamModularPurchaseContractsForPPOrder(ManufacturingFacadeService.getManufacturingReceiptOrIssuedId(recordRef));
+		// TODO : do for this, shipment and inventory
 	}
 
 	@Override

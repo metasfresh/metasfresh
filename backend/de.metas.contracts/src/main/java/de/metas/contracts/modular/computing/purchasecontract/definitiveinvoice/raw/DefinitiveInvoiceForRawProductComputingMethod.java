@@ -22,12 +22,16 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.raw;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.AbstractRawComputingMethod;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Stream;
 
 @Component
 public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractRawComputingMethod
@@ -38,5 +42,12 @@ public class DefinitiveInvoiceForRawProductComputingMethod extends AbstractRawCo
 			@NonNull final ComputingMethodService computingMethodService)
 	{
 		super(contractProvider, computingMethodService, ComputingMethodType.DefinitiveInvoiceRawProduct);
+	}
+
+	@Override
+	public @NonNull Stream<FlatrateTermId> streamContractIds(final @NonNull TableRecordReference recordRef)
+	{
+		return contractProvider.streamModularPurchaseContractsForReceiptLine(getReceiptLineId(recordRef));
+		// TODO
 	}
 }
