@@ -268,3 +268,53 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(583113)
 ;
 
+-- Column: M_ShipmentSchedule_Split.UserElementNumber1
+-- 2024-05-21T07:13:48.764Z
+UPDATE AD_Column SET AD_Element_ID=583112, AD_Reference_ID=22, ColumnName='UserElementNumber1', Description=NULL, FieldLength=10, Help=NULL, Name='UserElementNumber1',Updated=TO_TIMESTAMP('2024-05-21 10:13:48.764','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588130
+;
+
+-- 2024-05-21T07:13:48.768Z
+UPDATE AD_Column_Trl trl SET Name='UserElementNumber1' WHERE AD_Column_ID=588130 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T07:13:48.769Z
+UPDATE AD_Field SET Name='UserElementNumber1', Description=NULL, Help=NULL WHERE AD_Column_ID=588130
+;
+
+-- 2024-05-21T07:13:48.771Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583112)
+;
+
+-- 2024-05-21T07:13:53.204Z
+/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_ShipmentSchedule_Split ADD COLUMN UserElementNumber1 NUMERIC')
+;
+
+-- Column: M_ShipmentSchedule_Split.UserElementNumber2
+-- 2024-05-21T07:14:05.828Z
+UPDATE AD_Column SET AD_Element_ID=583113, AD_Reference_ID=22, ColumnName='UserElementNumber2', Description=NULL, FieldLength=10, Help=NULL, Name='UserElementNumber2',Updated=TO_TIMESTAMP('2024-05-21 10:14:05.828','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588131
+;
+
+-- 2024-05-21T07:14:05.830Z
+UPDATE AD_Column_Trl trl SET Name='UserElementNumber2' WHERE AD_Column_ID=588131 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T07:14:05.831Z
+UPDATE AD_Field SET Name='UserElementNumber2', Description=NULL, Help=NULL WHERE AD_Column_ID=588131
+;
+
+-- 2024-05-21T07:14:05.833Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583113)
+;
+
+-- 2024-05-21T07:14:08.231Z
+/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_ShipmentSchedule_Split ADD COLUMN UserElementNumber2 NUMERIC')
+;
+
+
+SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_ShipmentSchedule_Split DROP COLUMN UserElementString1')
+;
+
+SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_ShipmentSchedule_Split DROP COLUMN UserElementString2')
+;
+
+
