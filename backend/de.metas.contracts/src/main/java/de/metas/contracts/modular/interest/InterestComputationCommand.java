@@ -301,6 +301,11 @@ public class InterestComputationCommand
 			@NonNull final InterestComputationRequest request,
 			@NonNull final InitialInterestAllocationResult result)
 	{
+		if (result.getTotalInterestScore().signum() == 0)
+		{ // nothing to distribute
+			return;
+		}
+
 		final FlatrateTermId onlyForContractId = null; // we want all contracts involved
 		streamShippingNotificationLogEntries(request, onlyForContractId)
 				.forEach(logEntry -> distributeInterest(request, result, logEntry));
