@@ -29,9 +29,12 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 @Component
 public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine>
@@ -54,6 +57,8 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
+				.userElementNumber1(record.getUserElementNumber1())
+				.userElementNumber2(record.getUserElementNumber2())
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -77,6 +82,8 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		//record.setM_Product_ID((ProductId.toRepoId(from.getProductId())));
 		record.setC_BPartner2_ID(BPartnerId.toRepoId(from.getBpartnerId2()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		record.setUserElementNumber1(from.getUserElementNumber1());
+		record.setUserElementNumber2(from.getUserElementNumber2());
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

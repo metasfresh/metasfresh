@@ -156,6 +156,8 @@ public class Dimension implements Comparable<Dimension>
 		@Nullable HashSet<Integer> user2_ID = null;
 		@Nullable HashSet<Integer> userElement1Id = null;
 		@Nullable HashSet<Integer> userElement2Id = null;
+		@Nullable HashSet<BigDecimal> userElementNumber1 = null;
+		@Nullable HashSet<BigDecimal> userElementNumber2 = null;
 		@Nullable HashSet<String> userElementString1 = null;
 		@Nullable HashSet<String> userElementString2 = null;
 		@Nullable HashSet<String> userElementString3 = null;
@@ -178,6 +180,8 @@ public class Dimension implements Comparable<Dimension>
 			user2_ID = collectValueIfPositive(user2_ID, dimension.getUser2_ID());
 			userElement1Id = collectValueIfPositive(userElement1Id, dimension.getUserElement1Id());
 			userElement2Id = collectValueIfPositive(userElement2Id, dimension.getUserElement2Id());
+			userElementNumber1 = collectValueIfNotNull(userElementNumber1, dimension.getUserElementNumber1());
+			userElementNumber2 = collectValueIfNotNull(userElementNumber2, dimension.getUserElementNumber2());
 			userElementString1 = collectValueIfNotNull(userElementString1, dimension.getUserElementString1());
 			userElementString2 = collectValueIfNotNull(userElementString2, dimension.getUserElementString2());
 			userElementString3 = collectValueIfNotNull(userElementString3, dimension.getUserElementString3());
@@ -200,6 +204,8 @@ public class Dimension implements Comparable<Dimension>
 				.user2_ID(singleElementOrZero(user2_ID))
 				.userElement1Id(singleElementOrZero(userElement1Id))
 				.userElement2Id(singleElementOrZero(userElement2Id))
+				.userElementNumber1(CollectionUtils.singleElementOrDefault(userElementNumber1, BigDecimal.ZERO))
+				.userElementNumber2(CollectionUtils.singleElementOrDefault(userElementNumber2, BigDecimal.ZERO))
 				.userElementString1(CollectionUtils.singleElementOrNull(userElementString1))
 				.userElementString2(CollectionUtils.singleElementOrNull(userElementString2))
 				.userElementString3(CollectionUtils.singleElementOrNull(userElementString3))

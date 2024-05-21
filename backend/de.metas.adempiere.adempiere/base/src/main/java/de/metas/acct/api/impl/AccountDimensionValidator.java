@@ -240,6 +240,14 @@ import java.util.Set;
 		{
 			return accountDimension.getUser2_ID();
 		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementNumber1))
+		{
+			return accountDimension.getUserElementNumber1();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementNumber2))
+		{
+			return accountDimension.getUserElementNumber2();
+		}
 		else if (elementType.equals(AcctSchemaElementType.UserElementString1))
 		{
 			return accountDimension.getUserElementString1();
