@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.interceptor;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -32,7 +31,6 @@ import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.interim.bpartner.BPartnerInterimContractService;
 import de.metas.contracts.modular.interim.invoice.service.IInterimFlatrateTermService;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.document.engine.DocStatus;
@@ -112,7 +110,6 @@ public class C_Flatrate_Term
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 				.tableRecordReference(TableRecordReference.of(flatrateTermRecord))
 				.modelAction(COMPLETED)
-				.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
 				.userInChargeId(Env.getLoggedUserId())
 				.build());
 
@@ -133,7 +130,6 @@ public class C_Flatrate_Term
 				.forEach(inoutLine -> modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 						.tableRecordReference(TableRecordReference.of(inoutLine))
 						.modelAction(COMPLETED)
-						.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.INTERIM))
 						.userInChargeId(Env.getLoggedUserId())
 						.build())
 				);
@@ -150,7 +146,6 @@ public class C_Flatrate_Term
 		modularContractService.scheduleLogCreation(DocStatusChangedEvent.builder()
 				.tableRecordReference(TableRecordReference.of(flatrateTermRecord))
 				.modelAction(COMPLETED)
-				.logEntryContractTypes(ImmutableSet.of(LogEntryContractType.MODULAR_CONTRACT))
 				.userInChargeId(Env.getLoggedUserId())
 				.build()
 		);

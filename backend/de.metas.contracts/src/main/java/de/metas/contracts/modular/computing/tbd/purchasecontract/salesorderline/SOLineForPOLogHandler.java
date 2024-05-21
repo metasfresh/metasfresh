@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -34,7 +35,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -56,7 +57,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -69,8 +69,7 @@ import org.springframework.stereotype.Component;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SOLineForPOLogHandler implements IModularContractLogHandler
+class SOLineForPOLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesOrderLineModularContractHandler.OnReverse.Description");
@@ -87,6 +86,17 @@ class SOLineForPOLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final SOLineForPOModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_ORDER;
+
+	public SOLineForPOLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull SOLineForPOModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.contractLogDAO = contractLogDAO;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)

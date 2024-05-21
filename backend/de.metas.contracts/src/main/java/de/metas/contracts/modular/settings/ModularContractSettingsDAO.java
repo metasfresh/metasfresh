@@ -102,6 +102,12 @@ public class ModularContractSettingsDAO
 			.invalidationKeysMapper(new SettingsInfoCachingKeysMapper())
 			.build();
 
+	private final CCache<ModularContractModuleId, ModuleConfig> id2ModuleConfig = CCache.<ModularContractModuleId, ModuleConfig>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(1000)
+			.tableName(I_ModCntr_Module.Table_Name)
+			.build();
+
 	@NotNull
 	private static ModularContractSettingsId extractId(final I_ModCntr_Settings settings)
 	{
@@ -457,6 +463,11 @@ public class ModularContractSettingsDAO
 
 	@NonNull
 	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return id2ModuleConfig.getOrLoad(modularContractModuleId, this::loadByModuleId);
+	}
+
+	private  ModuleConfig loadByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
 		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
 		return fromRecord(record, getContractTypes());
