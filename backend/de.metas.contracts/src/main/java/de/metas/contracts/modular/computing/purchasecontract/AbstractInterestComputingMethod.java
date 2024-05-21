@@ -153,7 +153,9 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				.reduce(Money.zero(request.getCurrencyId()), Money::add);
 
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
+		final Quantity qty = amount.signum() == 0
+				? Quantity.of(BigDecimal.ZERO, stockUOM)
+				: Quantity.of(BigDecimal.ONE, stockUOM);
 
 		return ComputingResponse.builder()
 				.ids(logEntryIdsCollector.build())
