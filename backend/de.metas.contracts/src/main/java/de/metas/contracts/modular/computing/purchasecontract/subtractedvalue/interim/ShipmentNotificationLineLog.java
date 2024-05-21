@@ -55,7 +55,7 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	@Override
 	public SOTrx getSOTrx()
 	{
-		return SOTrx.SALES;
+		return SOTrx.PURCHASE;
 	}
 
 	@NonNull

@@ -25,6 +25,8 @@ package de.metas.contracts.modular.settings.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -54,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 import static de.metas.contracts.modular.ComputingMethodType.AddValueOnProcessedProduct;
 import static de.metas.contracts.modular.ComputingMethodType.AddValueOnRawProduct;
@@ -77,6 +80,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsRaw");
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsProcessed");
 	private static final AdMessageKey ERROR_INTERIM_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_INV_GROUP_NOT_FOUND = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InvoicingGroupNotFound");
 	private static final AdMessageKey ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -84,6 +88,7 @@ public class ModCntr_Module
 
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
 	@Init
 	public void init(final IModelValidationEngine engine)
@@ -135,6 +140,7 @@ public class ModCntr_Module
 		final ComputingMethodType computingMethodType = type.getComputingMethodType();
 		final ModularContractSettings settings = modularContractSettingsBL.getById(modularContractSettingsId);
 		final ProductId productId = module.getProductId();
+		final Optional<InvoicingGroupId> invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(settings.getRawProductId(), settings.getYearAndCalendarId());
 
 		final boolean hasAlreadyComputingTypeAndProduct = settings.countMatching(computingMethodType, productId) > 1;
 		if (hasAlreadyComputingTypeAndProduct)
@@ -206,8 +212,11 @@ public class ModCntr_Module
 				{
 					throw new AdempiereException(ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM, InvoicingGroupType.COSTS.getDisplayName());
 				}
+				if (invoicingGroupId.isEmpty())
+				{
+					throw new AdempiereException(ERROR_INV_GROUP_NOT_FOUND);
+				}
 			}
-
 		}
 	}
 
