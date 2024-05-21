@@ -520,3 +520,59 @@ INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,C
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543688 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:46:10.955Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541870,Updated=TO_TIMESTAMP('2024-05-21 11:46:10.955','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588286
+;
+
+-- 2024-05-21T08:46:17.504Z
+INSERT INTO t_alter_column values('m_productprice','ScalePriceQuantityFrom','VARCHAR(5)',null,null)
+;
+
+-- Field: Produkt Preise_OLD(540325,D) -> Produkt Preis(540787,D) -> Staffelpreis Menge ab
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:49:52.134Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588286,728717,0,540787,0,TO_TIMESTAMP('2024-05-21 11:49:51.969','YYYY-MM-DD HH24:MI:SS.US'),100,5,'D',0,'Y','Y','Y','N','N','N','N','N','N','Staffelpreis Menge ab',0,200,0,1,1,TO_TIMESTAMP('2024-05-21 11:49:51.969','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-21T08:49:52.137Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=728717 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-05-21T08:49:52.139Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583115)
+;
+
+-- 2024-05-21T08:49:52.142Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728717
+;
+
+-- 2024-05-21T08:49:52.144Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(728717)
+;
+
+-- Field: Produkt Preise_OLD(540325,D) -> Produkt Preis(540787,D) -> Staffelpreis Menge ab
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:50:03.438Z
+UPDATE AD_Field SET DisplayLogic='@UseScalePrice@=''Y''',Updated=TO_TIMESTAMP('2024-05-21 11:50:03.437','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728717
+;
+
+-- Field: Produkt Preise_OLD(540325,D) -> Produkt Preis(540787,D) -> Staffelpreis Menge ab
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:53:08.809Z
+UPDATE AD_Field SET DisplayLogic='@UseScalePrice@ !=''N''',Updated=TO_TIMESTAMP('2024-05-21 11:53:08.809','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728717
+;
+
+-- UI Element: Produkt Preise_OLD(540325,D) -> Produkt Preis(540787,D) -> main -> 20 -> flags.Staffelpreis Menge ab
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:53:56.777Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728717,0,540787,540126,624738,'F',TO_TIMESTAMP('2024-05-21 11:53:56.63','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','Y','N','N','Staffelpreis Menge ab',45,130,0,TO_TIMESTAMP('2024-05-21 11:53:56.63','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+
+-- Field: Produkt Preise_OLD(540325,D) -> Produkt Preis(540787,D) -> Staffelpreis Menge ab
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T09:55:14.616Z
+UPDATE AD_Field SET DisplayLogic='@UseScalePrice@ != N',Updated=TO_TIMESTAMP('2024-05-21 12:55:14.616','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728717
+;
+
