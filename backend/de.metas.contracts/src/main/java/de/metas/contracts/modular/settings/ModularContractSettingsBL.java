@@ -203,9 +203,9 @@ public class ModularContractSettingsBL
 		}
 	}
 
-	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId rawProductId)
+	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId productId)
 	{
-		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), modularContractTypeId, rawProductId);
+		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), modularContractTypeId, productId);
 	}
 
 	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
