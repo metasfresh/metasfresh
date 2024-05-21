@@ -70,7 +70,6 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull protected final ModularContractService modularContractService;
 
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 
@@ -84,7 +83,6 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.modularContractService = modularContractService;
 		this.computingMethod = computingMethod;
 	}
 
@@ -177,6 +175,6 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
 			@NonNull final I_M_InOutLine receiptLineRecord)
 	{
-		return request.getProductId();	
+		return request.getProductId();
 	}
 }
