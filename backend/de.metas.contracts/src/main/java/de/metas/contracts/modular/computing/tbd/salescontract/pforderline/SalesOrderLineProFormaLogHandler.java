@@ -23,11 +23,12 @@
 package de.metas.contracts.modular.computing.tbd.salescontract.pforderline;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.ExplainedOptional;
@@ -48,7 +49,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,8 +64,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
+class SalesOrderLineProFormaLogHandler extends AbstractModularContractLogHandler
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -75,6 +74,13 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final SalesOrderLineProFormaModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO;
+
+	public SalesOrderLineProFormaLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull SalesOrderLineProFormaModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -97,29 +103,29 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
-											.contractId(createLogRequest.getContractId())
-											.collectionPointBPartnerId(warehousePartnerId)
-											.producerBPartnerId(bPartnerId)
-											.invoicingBPartnerId(billBPartnerId)
-											.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
-											.productId(productId)
-											.productName(createLogRequest.getProductName())
-											.documentType(getLogEntryDocumentType())
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.SALES)
-											.processed(false)
-											.quantity(quantity)
-											.transactionDate(LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(),
-																						   OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-																						   orgDAO::getTimeZone))
-											.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
-											.description(description)
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.amount(amount)
-											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-											.priceActual(orderLineBL.getPriceActual(orderLine))
-											.build());
+				.referencedRecord(TableRecordReference.of(I_C_OrderLine.Table_Name, orderLine.getC_OrderLine_ID()))
+				.contractId(createLogRequest.getContractId())
+				.collectionPointBPartnerId(warehousePartnerId)
+				.producerBPartnerId(bPartnerId)
+				.invoicingBPartnerId(billBPartnerId)
+				.warehouseId(WarehouseId.ofRepoId(orderRecord.getM_Warehouse_ID()))
+				.productId(productId)
+				.productName(createLogRequest.getProductName())
+				.documentType(getLogEntryDocumentType())
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
+				.soTrx(SOTrx.SALES)
+				.processed(false)
+				.quantity(quantity)
+				.transactionDate(LocalDateAndOrgId.ofTimestamp(orderRecord.getDateOrdered(),
+						OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+						orgDAO::getTimeZone))
+				.year(createLogRequest.getModularContractSettings().getYearAndCalendarId().yearId())
+				.description(description)
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.amount(amount)
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.priceActual(orderLineBL.getPriceActual(orderLine))
+				.build());
 	}
 
 	@Override

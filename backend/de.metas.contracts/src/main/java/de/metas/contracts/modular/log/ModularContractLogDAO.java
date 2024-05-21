@@ -387,6 +387,11 @@ public class ModularContractLogDAO
 			sqlQueryBuilder.addNotNull(I_ModCntr_Log.COLUMNNAME_Amount);
 		}
 
+		if (!query.getExcludedReferencedTableIds().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, query.getExcludedReferencedTableIds());
+		}
+
 		if (!query.getOrderBys().isEmpty())
 		{
 			for (final ModularContractLogQuery.OrderBy orderBy : query.getOrderBys())

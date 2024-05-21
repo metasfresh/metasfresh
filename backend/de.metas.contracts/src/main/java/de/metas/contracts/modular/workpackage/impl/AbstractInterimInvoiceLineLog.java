@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -36,16 +37,13 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -61,19 +59,16 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Optional;
 
 @Component
-@RequiredArgsConstructor
-public abstract class AbstractInterimInvoiceLineLog implements IModularContractLogHandler
+public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
@@ -84,12 +79,22 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+
+	public AbstractInterimInvoiceLineLog(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModularContractLogService modularContractLogService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
+	{
+		super(modularContractService);
+		this.contractLogDAO = contractLogDAO;
+		this.modularContractLogService = modularContractLogService;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+	}
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -117,8 +122,9 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 		final Quantity qtyEntered = Quantitys.of(invoiceLineRecord.getQtyEntered(), uomId);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
-		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
-		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId);
+		final int multiplier = getMultiplier(createLogRequest);
+		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId).multiply(multiplier);
+		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId).multiply(multiplier);
 		final ProductId productId = createLogRequest.getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
@@ -141,10 +147,6 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 		}
 
 		final ModularContractLogEntry modularContractLogEntry = modularContractLogEntryOptional.get();
-
-		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
-		final InvoiceCandidateId invoiceCandidateId = invoiceCandidates.size() != 1 ? null
-				: InvoiceCandidateId.ofRepoId(invoiceCandidates.get(0).getC_Invoice_Candidate_ID());
 
 		final String productName = productBL.getProductValueAndName(productId);
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered);
@@ -181,10 +183,17 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.modularContractTypeId(createLogRequest.getTypeId())
 						.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 						.priceActual(productPrice)
-						.invoiceCandidateId(invoiceCandidateId)
 						.invoicingGroupId(invoicingGroupId)
 						.build()
 		);
+	}
+
+	/**
+	 * @return -1 if the interim amount & price actual should be negated in logs, 1 if not.
+	 */
+	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
+	{
+		return createLogRequest.isCostsType() ? -1 : 1;
 	}
 
 	@Override

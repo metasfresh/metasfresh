@@ -41,7 +41,7 @@ public class ProcessedSalesManufacturingOrderLog extends AbstractManufacturingPr
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final ProcessedSalesComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
+		super(modCntrInvoicingGroupRepository, manufacturingFacadeService, modularContractService, computingMethod);
 	}
 
 	@Override

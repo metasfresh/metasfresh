@@ -35,6 +35,7 @@ import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductPrice;
@@ -174,5 +175,11 @@ public class ModularContractService
 		}
 
 		return settings;
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return modularContractSettingsDAO.getByModuleId(modularContractModuleId);
 	}
 }

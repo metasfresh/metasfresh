@@ -20,17 +20,16 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
  * #L%
  */
 
-
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -52,7 +51,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
@@ -61,8 +59,7 @@ import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
-class PurchaseOrderLineLog implements IModularContractLogHandler
+class PurchaseOrderLineLog extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_PO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.PurchaseOrderLineLogHandler.OnComplete.Description");
 
@@ -77,6 +74,15 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 	@Getter @NonNull private final InformativeLogComputingMethod computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_ORDER;
+
+	public PurchaseOrderLineLog(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull InformativeLogComputingMethod computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -93,8 +99,8 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(order.getDateOrdered(),
-																				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
@@ -104,40 +110,40 @@ class PurchaseOrderLineLog implements IModularContractLogHandler
 		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_PO_COMPLETED, productName, quantity.abs().toString());
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(createLogRequest.getContractId())
-											.productId(productId)
-											.productName(createLogRequest.getProductName())
-											.referencedRecord(recordRef)
-											.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-											.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-											.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
-											.documentType(getLogEntryDocumentType())
-											.contractType(LogEntryContractType.MODULAR_CONTRACT)
-											.soTrx(SOTrx.PURCHASE)
-											.processed(false)
-											.quantity(quantity)
-											.amount(amount)
-											.transactionDate(transactionDate)
-											.year(yearAndCalendarId.yearId())
-											.description(description)
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-											.priceActual(orderLineBL.getPriceActual(orderLine))
-											.invoicingGroupId(invoicingGroupId)
-											.isBillable(false)
-											.build());
+				.contractId(createLogRequest.getContractId())
+				.productId(productId)
+				.productName(createLogRequest.getProductName())
+				.referencedRecord(recordRef)
+				.producerBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.invoicingBPartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()))
+				.collectionPointBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
+				.documentType(getLogEntryDocumentType())
+				.contractType(LogEntryContractType.MODULAR_CONTRACT)
+				.soTrx(SOTrx.PURCHASE)
+				.processed(false)
+				.quantity(quantity)
+				.amount(amount)
+				.transactionDate(transactionDate)
+				.year(yearAndCalendarId.yearId())
+				.description(description)
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.priceActual(orderLineBL.getPriceActual(orderLine))
+				.invoicingGroupId(invoicingGroupId)
+				.isBillable(false)
+				.build());
 	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(createLogRequest.getRecordRef())
-											.flatrateTermId(createLogRequest.getContractId())
-											.description(null)
-											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModularContractModuleId())
-											.build());
+				.referencedModel(createLogRequest.getRecordRef())
+				.flatrateTermId(createLogRequest.getContractId())
+				.description(null)
+				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+				.contractModuleId(createLogRequest.getModularContractModuleId())
+				.build());
 	}
 }

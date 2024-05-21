@@ -23,6 +23,7 @@
 package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
@@ -43,6 +44,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -58,6 +61,7 @@ public class ModularContractLogService
 {
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
+	public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -189,6 +193,7 @@ public class ModularContractLogService
 						.flatrateTermId(request.flatrateTermId())
 						.processed(false)
 						.contractModuleId(request.modularContractModuleId())
+								.excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
 						.build())
 				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
 	}

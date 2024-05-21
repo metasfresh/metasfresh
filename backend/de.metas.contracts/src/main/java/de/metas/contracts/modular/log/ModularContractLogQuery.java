@@ -38,6 +38,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
@@ -62,6 +63,7 @@ public class ModularContractLogQuery
 	@NonNull @Singular ImmutableSet<ModularContractLogEntryId> entryIds;
 	@NonNull @Singular ImmutableList<OrderBy> orderBys;
 	@NonNull @Singular ImmutableSet<ComputingMethodType> computingMethodTypes;
+	@NonNull @Singular ImmutableSet<AdTableId> excludedReferencedTableIds;
 	
 	@NonNull
 	public static ModularContractLogQuery ofEntryIds(@NonNull final Set<ModularContractLogEntryId> entryIds)

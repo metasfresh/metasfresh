@@ -81,7 +81,11 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (logEntryContractType.isModularContractType() && recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
+		if (!logEntryContractType.isModularContractType())
+		{
+			return false;
+		}
+		if (recordRef.tableNameEqualsTo(I_M_Shipping_NotificationLine.Table_Name))
 		{
 			final I_M_Shipping_NotificationLine line = shippingNotificationRepository.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecord_ID()));
 
@@ -91,7 +95,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 			return yearAndCalendarId != null;
 		}
 
-		if (logEntryContractType.isInterimContractType() && recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
+		if (recordRef.tableNameEqualsTo(I_C_InvoiceLine.Table_Name))
 		{
 			final I_C_Invoice invoice = Optional.of(recordRef)
 					.map(lineRef -> lineRef.getIdAssumingTableName(I_C_InvoiceLine.Table_Name, InvoiceLineId::ofRepoId))

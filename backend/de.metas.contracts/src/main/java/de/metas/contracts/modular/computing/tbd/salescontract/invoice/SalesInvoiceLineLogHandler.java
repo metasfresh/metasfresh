@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -35,7 +36,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -57,7 +58,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -69,8 +69,7 @@ import org.springframework.stereotype.Component;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SalesInvoiceLineLogHandler implements IModularContractLogHandler
+class SalesInvoiceLineLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.SalesInvoiceLineModularContractHandler.OnReverse.Description");
@@ -88,6 +87,16 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_INVOICE;
 
+	public SalesInvoiceLineLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull SalesInvoiceLineModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.contractLogDAO = contractLogDAO;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@NonNull
 	private static Quantity extractQtyEntered(final @NonNull I_C_InvoiceLine invoiceLine)
@@ -114,8 +123,8 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered);
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoice.getDateInvoiced(),
-																				OrgId.ofRepoId(invoiceLine.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
+				OrgId.ofRepoId(invoiceLine.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
