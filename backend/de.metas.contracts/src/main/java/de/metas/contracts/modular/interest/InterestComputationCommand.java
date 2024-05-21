@@ -173,7 +173,7 @@ public class InterestComputationCommand
 
 			saveAddedValueInterestRecords(currentInvoiceAllocations);
 			totalInterestScore = totalInterestScore.add(currentInvoiceAllocations.getAllocatedInterestScore());
-			splitOpenAmount(request, currentInvoiceAllocations);
+			splitOpenAmount(currentInvoiceAllocations);
 		}
 
 		saveSubtractedValueInterestRecords(request,
@@ -190,11 +190,6 @@ public class InterestComputationCommand
 			@NonNull final Iterator<ModularContractLogEntry> shippingNotificationIterator,
 			@Nullable final InvoiceAllocations.AllocationItem currentShippingNotification)
 	{
-		if (request.getBonusComputationDetails() == null)
-		{
-			return;
-		}
-
 		if (currentShippingNotification != null && currentShippingNotification.openAmountSignum() > 0)
 		{
 			saveSubtractValueInterestRecord(request, bonusInterestRate, currentShippingNotification);
@@ -234,6 +229,15 @@ public class InterestComputationCommand
 	{
 		if (request.getBonusComputationDetails() == null)
 		{
+			final CreateModularLogInterestRequest createInterestRequest = CreateModularLogInterestRequest.builder()
+					.interestRunId(request.getInterestRunId())
+					.shippingNotificationLogId(shippingNotification.getShippingNotificationEntry().getId())
+					.allocatedAmt(shippingNotification.getOpenAmount())
+					.interestDays(0)
+					.finalInterest(Money.zero(request.getInterestToDistribute().getCurrencyId()))
+					.build();
+
+			interestRepository.create(createInterestRequest);
 			return;
 		}
 
@@ -397,14 +401,11 @@ public class InterestComputationCommand
 		createInterestRecords(request);
 	}
 
-	private void splitOpenAmount(
-			@NonNull final InterestComputationRequest request,
-			@NonNull final InvoiceAllocations invoiceAllocations)
+	private void splitOpenAmount(@NonNull final InvoiceAllocations invoiceAllocations)
 	{
 		final ModularContractLogEntry invoice = invoiceAllocations.getInvoiceEntry();
 		if (invoice.getAmount() == null
 				|| invoiceAllocations.openAmountSignum() <= 0
-				|| request.getComputingMethodType() != ComputingMethodType.AddValueOnInterim
 				|| invoiceAllocations.getAllocatedShippingNotifications().isEmpty())
 		{
 			return;
