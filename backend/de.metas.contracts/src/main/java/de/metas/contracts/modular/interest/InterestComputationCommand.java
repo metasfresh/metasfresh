@@ -212,8 +212,6 @@ public class InterestComputationCommand
 																	   .lockOwner(request.getLockOwner())
 																	   .processed(false)
 																	   .billable(true)
-																	   .onlyIfAmountIsSet(true)
-																	   .logEntryDocumentType(LogEntryDocumentType.INTERIM_INVOICE)
 																	   .build());
 	}
 
