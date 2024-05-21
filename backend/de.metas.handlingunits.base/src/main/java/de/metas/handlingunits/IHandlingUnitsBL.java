@@ -637,6 +637,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	void setClearanceStatusRecursively(@NonNull I_M_HU hu, @NonNull ClearanceStatusInfo clearanceStatusInfo);
 
+	void setClearanceStatusRecursively(
+			@NonNull Collection<I_M_HU> hus,
+			@NonNull ClearanceStatusInfo clearanceStatusInfo,
+			@Nullable Predicate<I_M_HU> filter);
+
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
 
 	ClientAndOrgId getClientAndOrgId(@NonNull final HuId huId);
