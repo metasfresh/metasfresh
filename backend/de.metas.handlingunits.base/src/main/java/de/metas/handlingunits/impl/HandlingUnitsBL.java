@@ -1157,12 +1157,39 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void setClearanceStatusRecursively(@NonNull final I_M_HU hu, final @NonNull ClearanceStatusInfo clearanceStatusInfo)
 	{
+		setClearanceStatusRecursively(hu, clearanceStatusInfo, null);
+	}
+
+	private void setClearanceStatusRecursively(
+			@NonNull final I_M_HU hu,
+			@NonNull final ClearanceStatusInfo clearanceStatusInfo,
+			@Nullable final Predicate<I_M_HU> filter)
+	{
+		if (filter != null && !filter.test(hu))
+		{
+			return;
+		}
+
 		updateHURecordFromClearanceStatusInfo(hu, clearanceStatusInfo);
 
 		handlingUnitsRepo.saveHU(hu);
 
 		handlingUnitsRepo.retrieveIncludedHUs(hu)
-				.forEach(includedHU -> setClearanceStatusRecursively(extractHuId(includedHU), clearanceStatusInfo));
+				.forEach(includedHU -> setClearanceStatusRecursively(includedHU, clearanceStatusInfo, filter));
+	}
+
+	@Override
+	public void setClearanceStatusRecursively(
+			@NonNull final Collection<I_M_HU> hus,
+			@NonNull final ClearanceStatusInfo clearanceStatusInfo,
+			@Nullable final Predicate<I_M_HU> filter)
+	{
+		if (hus.isEmpty())
+		{
+			return;
+		}
+
+		hus.forEach(hu -> setClearanceStatusRecursively(hu, clearanceStatusInfo, filter));
 	}
 
 	private static void updateHURecordFromClearanceStatusInfo(final I_M_HU hu, final @NonNull ClearanceStatusInfo from)
