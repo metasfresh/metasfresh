@@ -171,4 +171,31 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+	@Override
+	public org.compiere.model.I_AD_Column getAD_Column()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
+	}
+
+	@Override
+	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
+	}
+
+	@Override
+	public void setAD_Column_ID (final int AD_Column_ID)
+	{
+		if (AD_Column_ID < 1)
+			set_Value (COLUMNNAME_AD_Column_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
+	}
+
+	@Override
+	public int getAD_Column_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
+	}
 }

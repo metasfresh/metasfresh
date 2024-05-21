@@ -2,6 +2,7 @@ package de.metas.contracts.model;
 
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_C_AcctSchema_Element;
 
 /** Generated Interface for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -27,6 +28,33 @@ public interface I_ModCntr_Type
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Link Column.
+	 * Link Column for Multi-Parent tables
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Column_ID (int AD_Column_ID);
+
+	/**
+	 * Get Link Column.
+	 * Link Column for Multi-Parent tables
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Column_ID();
+
+	@Nullable org.compiere.model.I_AD_Column getAD_Column();
+
+	void setAD_Column(@Nullable org.compiere.model.I_AD_Column AD_Column);
+
+	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
+	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
 	 * Set Organisation.

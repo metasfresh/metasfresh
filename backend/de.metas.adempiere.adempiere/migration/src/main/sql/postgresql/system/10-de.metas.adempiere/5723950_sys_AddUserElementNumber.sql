@@ -318,3 +318,102 @@ SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_Sh
 ;
 
 
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:03:31.385Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588285,104,0,19,542337,'AD_Column_ID',TO_TIMESTAMP('2024-05-21 11:03:31.218','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Spalte in der Tabelle','de.metas.contracts',0,10,'Verbindung zur Spalte der Tabelle','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Spalte',0,0,TO_TIMESTAMP('2024-05-21 11:03:31.218','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T08:03:31.388Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588285 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T08:03:31.391Z
+/* DDL */  select update_Column_Translation_From_AD_Element(104)
+;
+
+-- Name: UserElementNumberX
+-- 2024-05-21T08:04:17.359Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540676,TO_TIMESTAMP('2024-05-21 11:04:17.247','YYYY-MM-DD HH24:MI:SS.US'),100,'UserElementNumberX from M_InOutLine/C_Invoice_Candidate.','D','Y','UserElementNumberX ','S',TO_TIMESTAMP('2024-05-21 11:04:17.247','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Name: UserElementNumberX
+-- 2024-05-21T08:07:08.890Z
+UPDATE AD_Val_Rule SET Code='AD_Column.AD_Table_ID in (320,540270) AND AD_Column.ColumnName ilike ''UserElementNumber%''',Updated=TO_TIMESTAMP('2024-05-21 11:07:08.887','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540676
+;
+
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:07:25.754Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540676,Updated=TO_TIMESTAMP('2024-05-21 11:07:25.754','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588285
+;
+
+-- 2024-05-21T08:07:33.114Z
+/* DDL */ SELECT public.db_alter_table('ModCntr_Type','ALTER TABLE public.ModCntr_Type ADD COLUMN AD_Column_ID NUMERIC(10)')
+;
+
+-- 2024-05-21T08:07:33.122Z
+ALTER TABLE ModCntr_Type ADD CONSTRAINT ADColumn_ModCntrType FOREIGN KEY (AD_Column_ID) REFERENCES public.AD_Column DEFERRABLE INITIALLY DEFERRED
+;
+
+-- Field: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> Spalte
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:07:56.179Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588285,728716,0,547011,0,TO_TIMESTAMP('2024-05-21 11:07:56.033','YYYY-MM-DD HH24:MI:SS.US'),100,'Spalte in der Tabelle',0,'U','Verbindung zur Spalte der Tabelle',0,'Y','Y','Y','N','N','N','N','N','N','Spalte',0,10,0,1,1,TO_TIMESTAMP('2024-05-21 11:07:56.033','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-21T08:07:56.181Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=728716 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-05-21T08:07:56.183Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(104)
+;
+
+-- 2024-05-21T08:07:56.189Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728716
+;
+
+-- 2024-05-21T08:07:56.190Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(728716)
+;
+
+-- Field: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> Spalte
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:09:17.514Z
+UPDATE AD_Field SET DisplayLogic='@ModularContractHandlerType@=''AverageAddedValueOnShippedQuantity''',Updated=TO_TIMESTAMP('2024-05-21 11:09:17.514','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728716
+;
+
+-- Field: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> Spalte
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:10:08.402Z
+UPDATE AD_Field SET DisplayLength=10,Updated=TO_TIMESTAMP('2024-05-21 11:10:08.402','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728716
+;
+
+-- Field: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> Spalte
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:11:19.353Z
+UPDATE AD_Field SET DisplayLogic='@ModularContractHandlerType@=AverageAddedValueOnShippedQuantity',Updated=TO_TIMESTAMP('2024-05-21 11:11:19.353','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728716
+;
+
+-- UI Element: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> main -> 10 -> infos.Link Column
+-- Column: AD_SQLColumn_SourceTableColumn.Link_Column_ID
+-- 2024-05-21T08:24:40.572Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728716,0,547011,550769,624737,'F',TO_TIMESTAMP('2024-05-21 11:24:40.445','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Link Column',30,0,0,TO_TIMESTAMP('2024-05-21 11:24:40.445','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> main -> 10 -> infos.Column
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:25:59.547Z
+UPDATE AD_UI_Element SET Name='Column',Updated=TO_TIMESTAMP('2024-05-21 11:25:59.547','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=624737
+;
+
+-- Field: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ(547011,de.metas.contracts) -> Spalte
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:27:00.799Z
+UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2024-05-21 11:27:00.799','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728716
+;
+
+-- Column: ModCntr_Type.AD_Column_ID
+-- 2024-05-21T08:27:12.552Z
+UPDATE AD_Column SET MandatoryLogic='@ModularContractHandlerType@=AverageAddedValueOnShippedQuantity',Updated=TO_TIMESTAMP('2024-05-21 11:27:12.552','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588285
+;
+
