@@ -205,7 +205,7 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT);
 		}
 		final ProductId bomCoProductId = bom.getCoProducts().get(0).getProductId();
-		if (!ProductId.equals(bomCoProductId, coProductId))
+		if (coProductId != null && !ProductId.equals(bomCoProductId, coProductId))
 		{
 			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
 		}
