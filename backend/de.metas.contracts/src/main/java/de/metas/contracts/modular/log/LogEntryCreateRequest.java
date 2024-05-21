@@ -26,8 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
-import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
@@ -113,7 +113,7 @@ public class LogEntryCreateRequest
 	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
-	ModuleConfigAndSettingsId configId;
+	ModularContractModuleId configModuleId;
 
 	@Nullable
 	ProductPrice priceActual;
@@ -122,6 +122,38 @@ public class LogEntryCreateRequest
 	InvoicingGroupId invoicingGroupId;
 
 	boolean isBillable;
+
+	@NonNull
+	public static LogEntryCreateRequest ofEntry(@NonNull final ModularContractLogEntry entry)
+	{
+		return LogEntryCreateRequest.builder()
+				.contractId(entry.getContractId())
+				.productId(entry.getProductId())
+				.initialProductId(entry.getInitialProductId())
+				.productName(entry.getProductName())
+				.referencedRecord(entry.getReferencedRecord())
+				.collectionPointBPartnerId(entry.getCollectionPointBPartnerId())
+				.producerBPartnerId(entry.getProducerBPartnerId())
+				.invoicingBPartnerId(entry.getInvoicingBPartnerId())
+				.warehouseId(entry.getWarehouseId())
+				.documentType(entry.getDocumentType())
+				.contractType(entry.getContractType())
+				.soTrx(entry.getSoTrx())
+				.processed(entry.isProcessed())
+				.quantity(entry.getQuantity())
+				.amount(entry.getAmount())
+				.transactionDate(entry.getTransactionDate())
+				.storageDays(entry.getStorageDays())
+				.invoiceCandidateId(entry.getInvoiceCandidateId())
+				.year(entry.getYear())
+				.description(entry.getDescription())
+				.modularContractTypeId(entry.getModularContractTypeId())
+				.configModuleId(entry.getModularContractModuleId())
+				.priceActual(entry.getPriceActual())
+				.invoicingGroupId(entry.getInvoicingGroupId())
+				.isBillable(entry.isBillable())
+				.build();
+	}
 
 	@Builder(toBuilder = true)
 	public LogEntryCreateRequest(
@@ -147,7 +179,7 @@ public class LogEntryCreateRequest
 			@NonNull final YearId year,
 			@Nullable final String description,
 			@Nullable final ModularContractTypeId modularContractTypeId,
-			@NonNull final ModuleConfigAndSettingsId configId,
+			@NonNull final ModularContractModuleId configModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			@Nullable final Boolean isBillable)
@@ -184,7 +216,7 @@ public class LogEntryCreateRequest
 		this.year = year;
 		this.description = description;
 		this.modularContractTypeId = modularContractTypeId;
-		this.configId = configId;
+		this.configModuleId = configModuleId;
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;

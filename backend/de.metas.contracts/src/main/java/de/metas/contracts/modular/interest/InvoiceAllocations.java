@@ -46,15 +46,15 @@ public class InvoiceAllocations
 {
 	@NonNull private final InterestRunId interestRunId;
 	@NonNull private final Integer additionalInterestDays;
-	@NonNull private final ModularContractLogEntry invoiceEntry;
+	@NonNull @Getter private final ModularContractLogEntry invoiceEntry;
 
 	@NonNull private final IOrgDAO orgDAO;
 
-	@NonNull private Money openAmount;
+	@NonNull @Getter private Money openAmount;
 	@Nullable private Instant cachedInvoiceInterimDate;
 	@Getter @NonNull private final List<CreateModularLogInterestRequest> allocatedShippingNotifications = new ArrayList<>();
 
-	public boolean canAllocate(@Nullable final AllocationItem shippingNotification)
+	public synchronized boolean canAllocate(@Nullable final AllocationItem shippingNotification)
 	{
 		if (shippingNotification == null)
 		{
@@ -69,14 +69,14 @@ public class InvoiceAllocations
 		return !isInvoiceCreatedAfter(shippingNotification);
 	}
 
-	public boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
+	public synchronized boolean isInvoiceCreatedAfter(@NonNull final AllocationItem shippingNotification)
 	{
 		return invoiceEntry.getTransactionDate().toInstant(orgDAO::getTimeZone)
 				.isAfter(shippingNotification.getShippingNotificationEntry().getTransactionDate().toInstant(orgDAO::getTimeZone));
 	}
 
 	@NonNull
-	public BigDecimal getAllocatedInterestScore()
+	public synchronized BigDecimal getAllocatedInterestScore()
 	{
 		return allocatedShippingNotifications.stream()
 				.map(CreateModularLogInterestRequest::getInterestScore)

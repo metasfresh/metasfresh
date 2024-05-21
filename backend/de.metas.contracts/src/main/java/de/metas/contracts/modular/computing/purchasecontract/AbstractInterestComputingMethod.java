@@ -25,14 +25,15 @@ package de.metas.contracts.modular.computing.purchasecontract;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -50,7 +51,6 @@ import de.metas.shippingnotification.ShippingNotificationLineId;
 import de.metas.shippingnotification.ShippingNotificationRepository;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +62,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -138,6 +139,38 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 	@Override
 	public ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
+		final ImmutableSet.Builder<ModularContractLogEntryId> logEntryIdsCollector = ImmutableSet.builder();
+		final Money amount = streamInterestRecords(request)
+				.peek(interestLog -> {
+					logEntryIdsCollector.add(interestLog.getShippingNotificationLogId());
+					if (interestLog.getInterimInvoiceLogId() != null)
+					{
+						logEntryIdsCollector.add(interestLog.getInterimInvoiceLogId());
+					}
+				})
+				.map(ModularLogInterest::getFinalInterest)
+				.filter(Objects::nonNull)
+				.reduce(Money.zero(request.getCurrencyId()), Money::add);
+
+		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
+		final Quantity qty = amount.signum() == 0
+				? Quantity.of(BigDecimal.ZERO, stockUOM)
+				: Quantity.of(BigDecimal.ONE, stockUOM);
+
+		return ComputingResponse.builder()
+				.ids(logEntryIdsCollector.build())
+				.price(ProductPrice.builder()
+							   .productId(request.getProductId())
+							   .money(amount.negate())
+							   .uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
+							   .build())
+				.qty(qty)
+				.build();
+	}
+
+	@NonNull
+	private Stream<ModularLogInterest> streamInterestRecords(final @NonNull ComputingRequest request)
+	{
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
 				.processed(false)
 				.billable(true)
@@ -148,33 +181,12 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 		final PInstanceId selectionId = modularContractLogService.getModularContractLogEntrySelection(query);
 		if (selectionId == null)
 		{
-			return IComputingMethodHandler.super.compute(request);
+			return Stream.empty();
 		}
 		final ModularLogInterestRepository.LogInterestQuery logInterestQuery = ModularLogInterestRepository.LogInterestQuery.builder()
 				.modularLogSelection(selectionId)
-				.onlyBonusRecords(getComputingMethodType() == ComputingMethodType.SubtractValueOnInterim)
 				.build();
 
-		final Optional<Money> totalInterest = modularLogInterestRepository.getTotalInterest(logInterestQuery);
-
-		return totalInterest.map(interest -> computeResponse(request, interest))
-				.orElseGet(() -> IComputingMethodHandler.super.compute(request));
-	}
-
-	private ComputingResponse computeResponse(final ComputingRequest request, final Money interest)
-	{
-		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
-		final Quantity qty = Quantity.of(BigDecimal.ONE, stockUOM);
-		Check.assumeEquals(request.getCurrencyId(), interest.getCurrencyId());
-
-		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
-				.price(ProductPrice.builder()
-						.productId(request.getProductId())
-						.money(interest)
-						.uomId(UomId.ofRepoId(stockUOM.getC_UOM_ID()))
-						.build())
-				.qty(qty)
-				.build();
+		return modularLogInterestRepository.streamInterestEntries(logInterestQuery);
 	}
 }

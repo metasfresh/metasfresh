@@ -71,13 +71,9 @@ public class ModularLogInterest
 	}
 
 	@NonNull
-	public ModularLogInterest withComputedFinalInterest(
-			@NonNull final BigDecimal interestScoreRate,
-			@NonNull final CurrencyId expectingCurrencyId)
+	public ModularLogInterest withFinalInterest(@NonNull final Money finalInterest)
 	{
-		final BigDecimal finalInterestAmount = getInterestScoreEnsuringCurrency(expectingCurrencyId).multiply(interestScoreRate);
-		return toBuilder().finalInterest(Money.of(finalInterestAmount, expectingCurrencyId))
-				.build();
+		return toBuilder().finalInterest(finalInterest).build();
 	}
 
 	@NonNull
@@ -87,7 +83,7 @@ public class ModularLogInterest
 	}
 
 	@NonNull
-	private BigDecimal getInterestScoreEnsuringCurrency(@NonNull final CurrencyId currencyId)
+	public BigDecimal getInterestScoreEnsuringCurrency(@NonNull final CurrencyId currencyId)
 	{
 		final InterestScore interestScore = getInterestScore();
 		interestScore.assertCurrency(currencyId);

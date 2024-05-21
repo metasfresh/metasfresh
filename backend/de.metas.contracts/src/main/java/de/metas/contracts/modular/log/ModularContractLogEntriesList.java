@@ -47,6 +47,12 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return list.isEmpty() ? ModularContractLogEntriesList.EMPTY : new ModularContractLogEntriesList(ImmutableList.copyOf(list));
 	}
 
+	@NonNull
+	public static ModularContractLogEntriesList ofSingle(@NonNull final ModularContractLogEntry entry)
+	{
+		return new ModularContractLogEntriesList(ImmutableList.of(entry));
+	}
+
 	public static Collector<ModularContractLogEntry, ?, ModularContractLogEntriesList> collect()
 	{
 		return GuavaCollectors.collectUsingListAccumulator(ModularContractLogEntriesList::ofCollection);

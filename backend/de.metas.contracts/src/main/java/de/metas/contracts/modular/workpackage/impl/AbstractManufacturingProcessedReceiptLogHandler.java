@@ -123,7 +123,7 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler extends Ab
 				.year(request.getYearId())
 				.description(description)
 				.modularContractTypeId(request.getTypeId())
-				.configId(request.getConfigId())
+				.configModuleId(request.getConfigId().getModularContractModuleId())
 				.collectionPointBPartnerId(collectionPointBPartnerId)
 				.invoicingGroupId(invoicingGroupId)
 				.isBillable(true)

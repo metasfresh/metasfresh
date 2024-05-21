@@ -44,6 +44,7 @@ import java.util.Optional;
 public class InterestComputationWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
+	private final InterestService interestService = SpringContextHolder.instance.getBean(InterestService.class);
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 
@@ -53,7 +54,7 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 		final InterestBonusComputationRequest computationRequest = getRequest();
 		try
 		{
-			new InterestComputationCommand().distributeInterestAndBonus(computationRequest);
+			interestService.distributeInterestAndBonus(computationRequest);
 		}
 		finally
 		{
