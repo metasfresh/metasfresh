@@ -318,6 +318,7 @@ SELECT public.db_alter_table('M_ShipmentSchedule_Split','ALTER TABLE public.M_Sh
 ;
 
 
+
 -- Column: ModCntr_Type.AD_Column_ID
 -- 2024-05-21T08:03:31.385Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588285,104,0,19,542337,'AD_Column_ID',TO_TIMESTAMP('2024-05-21 11:03:31.218','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Spalte in der Tabelle','de.metas.contracts',0,10,'Verbindung zur Spalte der Tabelle','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Spalte',0,0,TO_TIMESTAMP('2024-05-21 11:03:31.218','YYYY-MM-DD HH24:MI:SS.US'),100,0)
@@ -415,5 +416,107 @@ UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2024-05-21 11:27:00.79
 -- Column: ModCntr_Type.AD_Column_ID
 -- 2024-05-21T08:27:12.552Z
 UPDATE AD_Column SET MandatoryLogic='@ModularContractHandlerType@=AverageAddedValueOnShippedQuantity',Updated=TO_TIMESTAMP('2024-05-21 11:27:12.552','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588285
+;
+
+-- 2024-05-21T08:30:36.116Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583115,0,'ScalePriceQuantityFrom',TO_TIMESTAMP('2024-05-21 11:30:35.996','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Scale price quantity from','Scale price quantity from',TO_TIMESTAMP('2024-05-21 11:30:35.996','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-21T08:30:36.118Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=583115 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: ScalePriceQuantityFrom
+-- 2024-05-21T08:30:51.288Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Staffelpreis Menge ab', PrintName='Staffelpreis Menge ab',Updated=TO_TIMESTAMP('2024-05-21 11:30:51.288','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583115 AND AD_Language='de_CH'
+;
+
+-- 2024-05-21T08:30:51.292Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583115,'de_CH')
+;
+
+-- Element: ScalePriceQuantityFrom
+-- 2024-05-21T08:30:54.421Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Staffelpreis Menge ab', PrintName='Staffelpreis Menge ab',Updated=TO_TIMESTAMP('2024-05-21 11:30:54.421','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583115 AND AD_Language='de_DE'
+;
+
+-- 2024-05-21T08:30:54.424Z
+UPDATE AD_Element SET Name='Staffelpreis Menge ab', PrintName='Staffelpreis Menge ab' WHERE AD_Element_ID=583115
+;
+
+-- 2024-05-21T08:30:54.655Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583115,'de_DE')
+;
+
+-- 2024-05-21T08:30:54.657Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583115,'de_DE')
+;
+
+-- Element: ScalePriceQuantityFrom
+-- 2024-05-21T08:30:57.611Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-21 11:30:57.611','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=583115 AND AD_Language='en_US'
+;
+
+-- 2024-05-21T08:30:57.615Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583115,'en_US')
+;
+
+-- Column: M_ProductPrice.ScalePriceQuantityFrom
+-- 2024-05-21T08:31:17.595Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588286,583115,0,10,251,'ScalePriceQuantityFrom',TO_TIMESTAMP('2024-05-21 11:31:17.482','YYYY-MM-DD HH24:MI:SS.US'),100,'N','D',0,5,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Staffelpreis Menge ab',0,0,TO_TIMESTAMP('2024-05-21 11:31:17.482','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T08:31:17.597Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588286 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T08:31:17.601Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583115)
+;
+
+-- 2024-05-21T08:31:22.093Z
+/* DDL */ SELECT public.db_alter_table('M_ProductPrice','ALTER TABLE public.M_ProductPrice ADD COLUMN ScalePriceQuantityFrom VARCHAR(5)')
+;
+
+-- Name: Scale price quantity from
+-- 2024-05-21T08:32:01.596Z
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541870,TO_TIMESTAMP('2024-05-21 11:32:01.456','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','Scale price quantity from',TO_TIMESTAMP('2024-05-21 11:32:01.456','YYYY-MM-DD HH24:MI:SS.US'),100,'L')
+;
+
+-- 2024-05-21T08:32:01.599Z
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=541870 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- Reference: Scale price quantity from
+-- Value: Q
+-- ValueName: Quantity
+-- 2024-05-21T08:32:19.943Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541870,543686,TO_TIMESTAMP('2024-05-21 11:32:19.839','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','Quantity',TO_TIMESTAMP('2024-05-21 11:32:19.839','YYYY-MM-DD HH24:MI:SS.US'),100,'Q','Quantity')
+;
+
+-- 2024-05-21T08:32:19.945Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543686 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference: Scale price quantity from
+-- Value: UEN1
+-- ValueName: UserElementNumber1
+-- 2024-05-21T08:42:45.142Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541870,543687,TO_TIMESTAMP('2024-05-21 11:42:44.922','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','User Element Number 1',TO_TIMESTAMP('2024-05-21 11:42:44.922','YYYY-MM-DD HH24:MI:SS.US'),100,'UEN1','UserElementNumber1')
+;
+
+-- 2024-05-21T08:42:45.145Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543687 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference: Scale price quantity from
+-- Value: UEN2
+-- ValueName: UserElementNumber2
+-- 2024-05-21T08:42:57.673Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541870,543688,TO_TIMESTAMP('2024-05-21 11:42:57.551','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','User Element Number 2',TO_TIMESTAMP('2024-05-21 11:42:57.551','YYYY-MM-DD HH24:MI:SS.US'),100,'UEN2','UserElementNumber2')
+;
+
+-- 2024-05-21T08:42:57.675Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543688 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
