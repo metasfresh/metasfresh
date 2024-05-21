@@ -40,13 +40,13 @@ public class SplitShipmentRow implements IViewRow
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, fieldName = FIELD_QtyToDeliver)
 	@NonNull @Getter private final Quantity qtyToDeliver;
 
-	public static final String FIELD_UserElementString1 = "UserElementString1";
-	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, fieldName = FIELD_UserElementString1)
-	@Nullable @Getter private final String userElementString1;
+	public static final String FIELD_UserElementNumber1 = "UserElementNumber1";
+	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small, fieldName = FIELD_UserElementNumber1)
+	@Nullable @Getter private final BigDecimal userElementNumber1;
 
-	public static final String FIELD_UserElementString2 = "UserElementString2";
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Text, widgetSize = WidgetSize.Small, fieldName = FIELD_UserElementString2)
-	@Nullable @Getter private final String userElementString2;
+	public static final String FIELD_UserElementNumber2 = "UserElementNumber2";
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Number, widgetSize = WidgetSize.Small, fieldName = FIELD_UserElementNumber2)
+	@Nullable @Getter private final BigDecimal userElementNumber2;
 
 	private final boolean readonly;
 
@@ -57,14 +57,14 @@ public class SplitShipmentRow implements IViewRow
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITABLE = ImmutableMap.<String, ViewEditorRenderMode>builder()
 			.put(FIELD_DeliveryDate, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_QtyToDeliver, ViewEditorRenderMode.ALWAYS)
-			.put(FIELD_UserElementString1, ViewEditorRenderMode.ALWAYS)
-			.put(FIELD_UserElementString2, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementNumber1, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementNumber2, ViewEditorRenderMode.ALWAYS)
 			.build();
 	private static final ImmutableMap<String, ViewEditorRenderMode> READONLY = ImmutableMap.<String, ViewEditorRenderMode>builder()
 			.put(FIELD_DeliveryDate, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_QtyToDeliver, ViewEditorRenderMode.ALWAYS)
-			.put(FIELD_UserElementString1, ViewEditorRenderMode.ALWAYS)
-			.put(FIELD_UserElementString2, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementNumber1, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_UserElementNumber2, ViewEditorRenderMode.ALWAYS)
 			.build();
 
 	@Builder(toBuilder = true)
@@ -75,13 +75,13 @@ public class SplitShipmentRow implements IViewRow
 			//
 			@Nullable final LocalDate deliveryDate,
 			@NonNull final Quantity qtyToDeliver,
-			@Nullable final String userElementString1,
-			@Nullable final String userElementString2)
+			@Nullable final BigDecimal userElementNumber1,
+			@Nullable final BigDecimal userElementNumber2)
 	{
 		this.deliveryDate = deliveryDate;
 		this.qtyToDeliver = qtyToDeliver;
-		this.userElementString1 = userElementString1;
-		this.userElementString2 = userElementString2;
+		this.userElementNumber1 = userElementNumber1;
+		this.userElementNumber2 = userElementNumber2;
 
 		this.readonly = readonly;
 		this.rowId = rowId;
@@ -118,8 +118,10 @@ public class SplitShipmentRow implements IViewRow
 	{
 		return deliveryDate != null 
 				&& qtyToDeliver.signum() != 0 
-				&& !Check.isBlank(userElementString1)
-				&& !Check.isBlank(userElementString2);
+				&& userElementNumber1 !=null
+				&& userElementNumber1.signum() != 0
+				&& userElementNumber2 !=null
+				&& userElementNumber2.signum() != 0;
 	}
 
 	public boolean isDeletable()
@@ -145,8 +147,8 @@ public class SplitShipmentRow implements IViewRow
 			{
 				case FIELD_DeliveryDate -> builder.deliveryDate(request.getValueAsLocalDate());
 				case FIELD_QtyToDeliver -> builder.qtyToDeliver(Quantity.of(request.getValueAsBigDecimal(BigDecimal.ZERO), this.qtyToDeliver.getUOM()));
-				case FIELD_UserElementString1 -> builder.userElementString1(request.getValueAsString(null));
-				case FIELD_UserElementString2 -> builder.userElementString2(request.getValueAsString(null));
+				case FIELD_UserElementNumber1 -> builder.userElementNumber1(request.getValueAsBigDecimal(BigDecimal.ZERO));
+				case FIELD_UserElementNumber2 -> builder.userElementNumber2(request.getValueAsBigDecimal(BigDecimal.ZERO));
 				default -> throw new AdempiereException("Unknown field: " + request.getPath());
 			}
 		}

@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -664,7 +665,49 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementString1.
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<I_C_AcctSchema_Element, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_AcctSchema_Element.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+
+	/**
+	 * Set Protein.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -673,7 +716,7 @@ public interface I_C_AcctSchema_Element
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get Protein.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -685,7 +728,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set Hl.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -694,7 +737,7 @@ public interface I_C_AcctSchema_Element
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get Hl.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

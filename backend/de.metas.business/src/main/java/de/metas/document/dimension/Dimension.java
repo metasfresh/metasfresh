@@ -37,6 +37,7 @@ import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -69,6 +70,8 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable String userElementString5;
 	@Nullable String userElementString6;
 	@Nullable String userElementString7;
+	@Nullable BigDecimal userElementNumber1;
+	@Nullable BigDecimal userElementNumber2;
 	@Nullable YearAndCalendarId harvestingYearAndCalendarId;
 
 	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2) {return Objects.equals(d1, d2);}
@@ -111,6 +114,9 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString5(CoalesceUtil.coalesce(this.userElementString5, other.userElementString5))
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
+				.userElement1Id(CoalesceUtil.firstGreaterThanZero(this.userElement1Id, other.userElement1Id))
+				.userElementNumber1(CoalesceUtil.firstGreaterThanZero(this.userElementNumber1, other.userElementNumber1))
+				.userElementNumber2(CoalesceUtil.firstGreaterThanZero(this.userElementNumber2, other.userElementNumber2))
 				.harvestingYearAndCalendarId(CoalesceUtil.coalesce(this.harvestingYearAndCalendarId, other.harvestingYearAndCalendarId))
 				.build();
 
