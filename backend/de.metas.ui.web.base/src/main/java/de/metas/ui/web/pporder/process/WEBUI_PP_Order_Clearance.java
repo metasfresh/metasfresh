@@ -77,13 +77,7 @@ public class WEBUI_PP_Order_Clearance extends ViewBasedProcessTemplate implement
 		final ClearanceStatusInfo clearanceStatusInfoToSet = getClearanceStatusInfoToSet();
 		final Set<HuId> receivedHUIds = huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderIds);
 		final List<I_M_HU> receivedHUs = handlingUnitsBL.getByIds(receivedHUIds);
-		for (final I_M_HU receivedHU : receivedHUs)
-		{
-			if (isInitialClearanceStatus(receivedHU))
-			{
-				handlingUnitsBL.setClearanceStatusRecursively(receivedHU, clearanceStatusInfoToSet);
-			}
-		}
+		handlingUnitsBL.setClearanceStatusRecursively(receivedHUs, clearanceStatusInfoToSet, this::isInitialClearanceStatus);
 
 		return MSG_OK;
 	}
