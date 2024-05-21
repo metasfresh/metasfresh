@@ -130,7 +130,7 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 											.year(wrapper.getHarvestingYearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.invoicingGroupId(invoicingGroupId)
 											.priceActual(contractSpecificPrice)
 											.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))

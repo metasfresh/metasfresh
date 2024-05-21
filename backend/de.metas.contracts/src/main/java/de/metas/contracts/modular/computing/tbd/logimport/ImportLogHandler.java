@@ -110,7 +110,7 @@ class ImportLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				//
 				.referencedRecord(TableRecordReference.of(I_I_ModCntr_Log.Table_Name, record.getI_ModCntr_Log_ID()))
-				.configId(createLogRequest.getConfigId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.year(harvestingYearId)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))

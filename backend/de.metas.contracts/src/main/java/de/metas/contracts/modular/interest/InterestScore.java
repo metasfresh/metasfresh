@@ -37,6 +37,7 @@ public class InterestScore
 	 * This is just something to make the score calculation values more manageable.
 	 */
 	public static final BigDecimal DIVISION_FACTOR = BigDecimal.valueOf(100);
+	public static final int DEFAULT_SCALE = 2;
 	@NonNull Money amount;
 	@NonNull Integer numberOfDays;
 
@@ -55,8 +56,9 @@ public class InterestScore
 	public static BigDecimal computeScore(@NonNull final Money amount, final int interestDays)
 	{
 		final BigDecimal amountAsBD = amount.toBigDecimal();
+		final int scaleToUse = Integer.max(amountAsBD.scale(), DEFAULT_SCALE);
 
 		return amountAsBD.multiply(BigDecimal.valueOf(interestDays))
-				.divide(DIVISION_FACTOR, amountAsBD.scale(), RoundingMode.HALF_UP);
+				.divide(DIVISION_FACTOR, scaleToUse, RoundingMode.HALF_UP);
 	}
 }

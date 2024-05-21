@@ -179,7 +179,7 @@ public abstract class AbstractInterimInvoiceLineLog implements IModularContractL
 						.year(yearAndCalendarId.yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
-						.configId(createLogRequest.getConfigId())
+						.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 						.priceActual(productPrice)
 						.invoiceCandidateId(invoiceCandidateId)
 						.invoicingGroupId(invoicingGroupId)

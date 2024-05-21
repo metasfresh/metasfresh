@@ -148,7 +148,7 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
+											.configModuleId(request.getConfigId().getModularContractModuleId())
 											.priceActual(priceActual)
 											.amount(amount)
 											.invoicingGroupId(invoicingGroupId)

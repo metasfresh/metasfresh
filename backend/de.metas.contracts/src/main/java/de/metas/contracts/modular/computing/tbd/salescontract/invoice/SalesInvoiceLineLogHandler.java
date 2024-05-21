@@ -141,7 +141,7 @@ class SalesInvoiceLineLogHandler implements IModularContractLogHandler
 						.year(yearAndCalendarId.yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
-						.configId(createLogRequest.getConfigId())
+						.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 						.priceActual(invoiceLineBL.getPriceActual(invoiceLine))
 						.invoicingGroupId(invoicingGroupId)
 						.build()

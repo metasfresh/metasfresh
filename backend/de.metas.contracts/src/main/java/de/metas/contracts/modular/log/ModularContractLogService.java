@@ -193,4 +193,13 @@ public class ModularContractLogService
 				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
 	}
 
+	public void updateModularLog(@NonNull final ModularContractLogEntry logEntry)
+	{
+		modularContractLogDAO.save(ModularContractLogEntriesList.ofSingle(logEntry));
+	}
+
+	public ModularContractLogEntryId create(@NonNull final LogEntryCreateRequest request)
+	{
+		return modularContractLogDAO.create(request);
+	}
 }

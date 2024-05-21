@@ -117,7 +117,7 @@ class SalesOrderLineProFormaLogHandler implements IModularContractLogHandler
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.amount(amount)
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.build());
 	}

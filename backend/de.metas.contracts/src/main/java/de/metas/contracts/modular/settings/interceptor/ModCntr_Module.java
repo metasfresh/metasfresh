@@ -77,6 +77,7 @@ public class ModCntr_Module
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsRaw");
 	private static final AdMessageKey ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_PROCESSED = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineProductNeedsSameStockUOMAsProcessed");
 	private static final AdMessageKey ERROR_INTERIM_REQUIRED_INV_GROUP = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimRequiredInvoicingGroup");
+	private static final AdMessageKey ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM");
 
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -197,6 +198,13 @@ public class ModCntr_Module
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresCoProduct);
 
+				}
+			}
+			case AddValueOnInterim, SubtractValueOnInterim ->
+			{
+				if (!module.getInvoicingGroup().isCostsType())
+				{
+					throw new AdempiereException(ERROR_ADDED_SUBTRACTED_VALUE_ON_INTERIM, InvoicingGroupType.COSTS.getDisplayName());
 				}
 			}
 
