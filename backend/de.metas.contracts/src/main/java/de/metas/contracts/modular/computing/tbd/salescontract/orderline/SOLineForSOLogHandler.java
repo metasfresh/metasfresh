@@ -138,7 +138,7 @@ class SOLineForSOLogHandler extends AbstractModularContractLogHandler
 											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.invoicingGroupId(invoicingGroupId)
 											.build());

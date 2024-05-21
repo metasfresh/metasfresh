@@ -145,7 +145,7 @@ class SOLineForPOLogHandler extends AbstractModularContractLogHandler
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.amount(amount)
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.invoicingGroupId(invoicingGroupId)
 											.build());

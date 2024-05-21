@@ -167,7 +167,7 @@ public class PPCostCollectorLog extends AbstractModularContractLogHandler
 				.year(yearAndCalendarId.yearId())
 				.description(description)
 				.modularContractTypeId(createLogRequest.getTypeId())
-				.configId(createLogRequest.getConfigId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID()))
 				.invoicingGroupId(invoicingGroupId)
 				.build());

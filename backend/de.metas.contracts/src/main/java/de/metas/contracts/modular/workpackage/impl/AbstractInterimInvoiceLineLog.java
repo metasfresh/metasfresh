@@ -181,7 +181,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 						.year(yearAndCalendarId.yearId())
 						.description(description)
 						.modularContractTypeId(createLogRequest.getTypeId())
-						.configId(createLogRequest.getConfigId())
+						.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 						.priceActual(productPrice)
 						.invoicingGroupId(invoicingGroupId)
 						.build()

@@ -131,7 +131,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 				.year(yearAndCalendarId.yearId())
 				.description(description)
 				.modularContractTypeId(request.getTypeId())
-				.configId(request.getConfigId())
+				.configModuleId(request.getConfigId().getModularContractModuleId())
 				.productName(request.getProductName())
 				.invoicingGroupId(invoicingGroupId)
 				.isBillable(isBillable)

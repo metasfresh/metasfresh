@@ -133,7 +133,7 @@ class SalesProFormaModularContractLogsHandler extends AbstractModularContractLog
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
+											.configModuleId(request.getConfigId().getModularContractModuleId())
 											.priceActual(priceActual)
 											.amount(amount)
 											.build());
