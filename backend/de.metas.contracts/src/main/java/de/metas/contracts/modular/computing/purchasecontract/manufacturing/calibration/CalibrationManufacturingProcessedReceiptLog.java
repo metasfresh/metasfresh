@@ -54,7 +54,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final PPCalibrationComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
+		super(modCntrInvoicingGroupRepository,manufacturingFacadeService, modularContractService, computingMethod);
 	}
 
 	@Override

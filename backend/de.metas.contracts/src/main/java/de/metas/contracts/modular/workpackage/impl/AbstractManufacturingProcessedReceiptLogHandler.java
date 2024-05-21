@@ -38,6 +38,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -53,11 +54,9 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.eevolution.model.I_PP_Cost_Collector;
 
-@RequiredArgsConstructor
-public abstract class AbstractManufacturingProcessedReceiptLogHandler implements IModularContractLogHandler
+public abstract class AbstractManufacturingProcessedReceiptLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_RECEIPT = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Receipt");
 
@@ -67,12 +66,22 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler implements
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull private final ModularContractService modularContractService;
 	@NonNull protected final ManufacturingFacadeService manufacturingFacadeService;
 
 	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRODUCTION;
 	@Getter @NonNull private final IComputingMethodHandler computingMethod;
+
+	protected AbstractManufacturingProcessedReceiptLogHandler(final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ManufacturingFacadeService manufacturingFacadeService,
+			final @NonNull ModularContractService modularContractService,
+			final @NonNull IComputingMethodHandler computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.manufacturingFacadeService = manufacturingFacadeService;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public abstract boolean applies(final @NonNull CreateLogRequest ignoredRequest);

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.addedvalue.interim;
 
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -40,12 +41,13 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 	private final AVInterimComputingMethod computingMethod;
 
 	public InterimInvoiceLineLog(
+			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final AVInterimComputingMethod computingMethod)
 	{
-		super(contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
+		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
 }

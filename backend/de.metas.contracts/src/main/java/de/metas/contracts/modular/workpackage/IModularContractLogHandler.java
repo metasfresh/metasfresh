@@ -27,7 +27,6 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
-import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -37,7 +36,6 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
@@ -53,14 +51,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 
 public interface IModularContractLogHandler
 {
-	ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
-	ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
+
 	default boolean applies(@NonNull final CreateLogRequest ignoredRequest) {return true;}
 
 	@NonNull
@@ -104,20 +100,8 @@ public interface IModularContractLogHandler
 				.priceActual(priceActual)
 				.build();
 	}
-
-	default @Nullable ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
-	{
-		Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
-		final boolean isCostsType = modularContractSettingsDAO.getByModuleId(logEntry.getModularContractModuleId()).isCostsType();
-		return logEntry.getPriceActual().negateIf(isCostsType);
-	}
-
-	@NonNull
-	default ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
+	@Nullable
+	ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry);
 
 	@Value
 	@Builder

@@ -40,7 +40,6 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 {
 	@NonNull
 	private final SVInterimComputingMethod computingMethod;
-	@NonNull private final ModularContractService modularContractService;
 
 	public ShipmentNotificationLineLog(
 			@NonNull final ShippingNotificationService notificationService,
@@ -49,9 +48,8 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final SVInterimComputingMethod computingMethod)
 	{
-		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO);
+		super(notificationService, modCntrInvoicingGroupRepository, contractLogDAO, modularContractService);
 		this.computingMethod = computingMethod;
-		this.modularContractService = modularContractService;
 	}
 
 	@Override
