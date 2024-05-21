@@ -828,7 +828,7 @@ public final class Quantity implements Comparable<Quantity>
 		return Percent.of(toBigDecimal(), whole.toBigDecimal());
 	}
 	
-	private void assertUOM(@NonNull final UomId uomId)
+	private void assertUOMOrSourceUOM(@NonNull final UomId uomId)
 	{
 		if (!getUomId().equals(uomId) && !getSourceUomId().equals(uomId))
 		{
@@ -842,7 +842,7 @@ public final class Quantity implements Comparable<Quantity>
 	@NonNull
 	public BigDecimal toBigDecimalAssumingUOM(@NonNull final UomId uomId)
 	{
-		assertUOM(uomId);
+		assertUOMOrSourceUOM(uomId);
 		
 		return getUomId().equals(uomId) ? toBigDecimal() : getSourceQty();
 	}
