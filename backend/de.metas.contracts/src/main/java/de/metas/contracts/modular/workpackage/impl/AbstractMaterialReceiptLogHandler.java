@@ -33,6 +33,7 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -52,14 +53,12 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
-@RequiredArgsConstructor
-public abstract class AbstractMaterialReceiptLogHandler implements IModularContractLogHandler
+public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptReverseLogDescription");
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.receiptCompleteLogDescription");
@@ -78,6 +77,16 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.MATERIAL_RECEIPT;
 
 	@NonNull @Getter private final IComputingMethodHandler computingMethod;
+
+	protected AbstractMaterialReceiptLogHandler(final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ModularContractService modularContractService,
+			final @NonNull IComputingMethodHandler computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.modularContractService = modularContractService;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(
@@ -163,13 +172,6 @@ public abstract class AbstractMaterialReceiptLogHandler implements IModularContr
 				.build());
 	}
 
-	@NonNull
-	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
-	
 	@NonNull
 	protected ProductId getProductId(
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,

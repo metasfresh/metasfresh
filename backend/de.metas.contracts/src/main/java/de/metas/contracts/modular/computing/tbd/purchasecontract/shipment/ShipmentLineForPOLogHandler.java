@@ -26,13 +26,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -49,7 +50,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
@@ -61,8 +61,7 @@ import org.springframework.stereotype.Component;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class ShipmentLineForPOLogHandler implements IModularContractLogHandler
+class ShipmentLineForPOLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
@@ -77,6 +76,15 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final ShipmentLineForPOModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
+
+	public ShipmentLineForPOLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ShipmentLineForPOModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -96,35 +104,35 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs().toString());
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
-																				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
+				OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(createLogRequest.getContractId())
-											.productId(productId)
-											.productName(createLogRequest.getProductName())
-											.referencedRecord(recordRef)
-											.collectionPointBPartnerId(bPartnerId)
-											.producerBPartnerId(bPartnerId)
-											.invoicingBPartnerId(bPartnerId)
-											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-											.documentType(getLogEntryDocumentType())
-											.contractType(getLogEntryContractType())
-											.soTrx(SOTrx.PURCHASE)
-											.processed(false)
-											.quantity(quantity)
-											.amount(null)
-											.transactionDate(transactionDate)
-											.year(yearAndCalendarId.yearId())
-											.description(description)
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
-											.invoicingGroupId(invoicingGroupId)
-											.build());
+				.contractId(createLogRequest.getContractId())
+				.productId(productId)
+				.productName(createLogRequest.getProductName())
+				.referencedRecord(recordRef)
+				.collectionPointBPartnerId(bPartnerId)
+				.producerBPartnerId(bPartnerId)
+				.invoicingBPartnerId(bPartnerId)
+				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+				.documentType(getLogEntryDocumentType())
+				.contractType(getLogEntryContractType())
+				.soTrx(SOTrx.PURCHASE)
+				.processed(false)
+				.quantity(quantity)
+				.amount(null)
+				.transactionDate(transactionDate)
+				.year(yearAndCalendarId.yearId())
+				.description(description)
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.configId(createLogRequest.getConfigId())
+				.invoicingGroupId(invoicingGroupId)
+				.build());
 	}
 
 	@Override
@@ -141,11 +149,11 @@ class ShipmentLineForPOLogHandler implements IModularContractLogHandler
 		final String description = msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs().toString());
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(recordRef)
-											.flatrateTermId(createLogRequest.getContractId())
-											.description(description)
-											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModularContractModuleId())
-											.build());
+				.referencedModel(recordRef)
+				.flatrateTermId(createLogRequest.getContractId())
+				.description(description)
+				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+				.contractModuleId(createLogRequest.getModularContractModuleId())
+				.build());
 	}
 }

@@ -54,7 +54,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final PPCalibrationComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
+		super(modCntrInvoicingGroupRepository,manufacturingFacadeService, modularContractService, computingMethod);
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 
 	@NonNull
 	@Override
-	protected ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);

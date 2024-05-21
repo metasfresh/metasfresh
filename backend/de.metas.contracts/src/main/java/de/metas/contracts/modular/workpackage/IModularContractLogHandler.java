@@ -41,6 +41,8 @@ import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.settings.ModuleConfigAndSettingsId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -50,8 +52,11 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import javax.annotation.Nullable;
+
 public interface IModularContractLogHandler
 {
+
 	default boolean applies(@NonNull final CreateLogRequest ignoredRequest) {return true;}
 
 	@NonNull
@@ -86,12 +91,17 @@ public interface IModularContractLogHandler
 	@NonNull
 	default ModularContractLogEntry calculateAmount(@NonNull final ModularContractLogEntry logEntry, @NonNull final QuantityUOMConverter uomConverter)
 	{
-		Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
-		Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
-		return logEntry.toBuilder()
-				.amount(logEntry.getPriceActual().computeAmount(logEntry.getQuantity(), uomConverter))
+		final ProductPrice priceActual = getPriceActual(logEntry);
+		final Quantity logEntryQuantity = logEntry.getQuantity();
+		Check.assumeNotNull(logEntryQuantity, "Quantity shouldn't be null");
+		return priceActual == null ? logEntry :
+				logEntry.toBuilder()
+				.amount(priceActual.computeAmount(logEntryQuantity, uomConverter))
+				.priceActual(priceActual)
 				.build();
 	}
+	@Nullable
+	ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry);
 
 	@Value
 	@Builder
