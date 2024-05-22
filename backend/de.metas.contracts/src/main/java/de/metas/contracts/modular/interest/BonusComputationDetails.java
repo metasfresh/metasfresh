@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.compiere.util.TimeUtil;
 
+import java.sql.Date;
 import java.time.Instant;
 
 @Value
@@ -38,6 +39,6 @@ public class BonusComputationDetails
 
 	public int getBonusInterestDays()
 	{
-		return TimeUtil.getDaysBetween(interimDate, billingDate);
+		return TimeUtil.getDaysBetween(Date.from(interimDate), Date.from(billingDate));
 	}
 }
