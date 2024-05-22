@@ -1,36 +1,17 @@
 package de.metas.material.planning.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.DayOfWeek;
-import java.time.temporal.TemporalUnit;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -44,22 +25,18 @@ import org.compiere.model.X_M_Product;
 import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.collect.ImmutableSet;
+import java.time.DayOfWeek;
+import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.ResourceTypeId;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ResourceId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ResourceDAO implements IResourceDAO
 {
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public ResourceType getResourceTypeById(@NonNull final ResourceTypeId resourceTypeId)
 	{
@@ -151,7 +128,7 @@ public class ResourceDAO implements IResourceDAO
 			+ "#" + I_S_Resource.COLUMNNAME_IsManufacturingResource)
 	public List<I_S_Resource> retrievePlants(final @CacheCtx Properties ctx)
 	{
-		final IQueryBuilder<I_S_Resource> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_S_Resource> queryBuilder = queryBL
 				.createQueryBuilder(I_S_Resource.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_S_Resource> filters = queryBuilder.getCompositeFilter();
@@ -234,7 +211,7 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public void onResourceTypeChanged(final I_S_ResourceType resourceTypeRecord)
 	{
-		final Set<ResourceId> resourceIds = Services.get(IQueryBL.class)
+		final Set<ResourceId> resourceIds = queryBL
 				.createQueryBuilder(I_S_Resource.class) // in trx!
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceTypeRecord.getS_ResourceType_ID())
@@ -255,5 +232,16 @@ public class ResourceDAO implements IResourceDAO
 		product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
 		product.setC_UOM_ID(from.getDurationUomId().getRepoId());
 		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(from.getProductCategoryId()));
+	}
+
+	@Override
+	public ImmutableSet<ResourceId> getActivePlantIds()
+	{
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.create()
+				.listIds(ResourceId::ofRepoId);
+
 	}
 }
