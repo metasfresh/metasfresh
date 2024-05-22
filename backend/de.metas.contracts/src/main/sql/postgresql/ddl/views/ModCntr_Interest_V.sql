@@ -29,7 +29,8 @@ WITH interimAmts AS (SELECT SUM(amount
 SELECT finalIL.C_Invoice_ID as C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
-       m.name,
+       p.name as name,
+       t.modularcontracthandlertype,
        bp.value                  AS Bill_BPartner_Value,
        bp.name                   AS Bill_BPartner_Name,
        ig.name                   AS InvoicingGroup_Name,
@@ -62,7 +63,7 @@ FROM modcntr_interest mi
          left join c_invoice_candidate finalIC on l.c_invoice_candidate_id = finalIC.c_invoice_candidate_id
          left join C_Invoice_Line_Alloc finalILA on finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
          left join c_invoiceline finalIL on finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
+         inner join m_product p on l.initial_product_id=p.m_product_id
 WHERE mi.finalinterest != 0
-ORDER BY bp.c_bpartner_id,
-         mi.created
-;
+ORDER BY bp.value,
+         l.datetrx;
