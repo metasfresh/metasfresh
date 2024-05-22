@@ -74,6 +74,7 @@ public class InterestComputationCommand
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final ModularContractService modularContractService;
 	@NonNull private final InterestRunRepository interestRunRepository;
+	@NonNull private final InterestComputationNotificationsProducer notificationsProducer;
 	@NonNull private final ICurrencyBL currencyBL;
 	@NonNull private final IOrgDAO orgDAO;
 
@@ -96,6 +97,8 @@ public class InterestComputationCommand
 		computeAndDistributeBonus(interestComputationRequest.toBuilder()
 										  .bonusComputationDetails(request.getBonusComputationDetails())
 										  .build());
+
+		notificationsProducer.notifyGenerated(runId, request.getInvoicingGroupId(), request.getUserId());
 	}
 
 	private void computeAndDistributeInterest(@NonNull final InterestComputationRequest request)

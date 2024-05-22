@@ -24,6 +24,7 @@ package de.metas.contracts.modular.interest;
 
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.money.Money;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,4 +41,5 @@ public class EnqueueInterestComputationRequest
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
 	@NonNull Money interestToDistribute;
+	@NonNull UserId userId;
 }

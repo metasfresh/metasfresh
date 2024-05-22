@@ -38,6 +38,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -96,14 +97,16 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 				return MSG_Error;
 			}
 
+			final UserId loggedUserId = getLoggedUserId();
 			final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
 					.interestToDistribute(Objects.requireNonNull(interestToDistribute))
 					.billingDate(billingDate)
 					.interimDate(interimDate)
 					.invoicingGroupId(invoicingGroupId)
+					.userId(loggedUserId)
 					.build();
 
-			enqueuer.enqueueNow(request, Env.getLoggedUserId());
+			enqueuer.enqueueNow(request, loggedUserId);
 		}
 		else
 		{
