@@ -26,11 +26,11 @@ WITH interimAmts AS (SELECT SUM(amount
                      WHERE mi.interiminvoice_modcntr_log_id IS NOT NULL
                        AND finalinterest != 0
                      ORDER BY datetrx, modcntr_interest_id)
-SELECT finalIL.C_Invoice_ID as C_FinalInvoice_ID,
+SELECT finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
        l.productname,
-       p.name as name,
+       p.name                    AS name,
        t.modularcontracthandlertype,
        bp.value                  AS Bill_BPartner_Value,
        bp.name                   AS Bill_BPartner_Name,
@@ -38,6 +38,7 @@ SELECT finalIL.C_Invoice_ID as C_FinalInvoice_ID,
        interimInvoice.documentno AS InterimInvoice_documentNo,
        l.datetrx,
        l.qty,
+       uom.x12de355              AS uom,
        ir.interimdate,
        ir.billingdate,
        ir.totalinterest,
@@ -62,10 +63,12 @@ FROM modcntr_interest mi
          LEFT JOIN modcntr_log interimInvoiceLineLog ON mi.interiminvoice_modcntr_log_id = interimInvoiceLineLog.modcntr_log_id
          LEFT JOIN c_invoiceline il ON interimInvoiceLineLog.record_id = il.c_invoiceline_id
          LEFT JOIN c_invoice interimInvoice ON il.c_invoice_id = interimInvoice.c_invoice_id
-         left join c_invoice_candidate finalIC on l.c_invoice_candidate_id = finalIC.c_invoice_candidate_id
-         left join C_Invoice_Line_Alloc finalILA on finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
-         left join c_invoiceline finalIL on finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
-         inner join m_product p on l.initial_product_id=p.m_product_id
+         LEFT JOIN c_invoice_candidate finalIC ON l.c_invoice_candidate_id = finalIC.c_invoice_candidate_id
+         LEFT JOIN C_Invoice_Line_Alloc finalILA ON finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
+         LEFT JOIN c_invoiceline finalIL ON finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
+         INNER JOIN m_product p ON l.initial_product_id = p.m_product_id
+         INNER JOIN C_UOM uom ON l.c_uom_id = uom.c_uom_id
 WHERE mi.finalinterest != 0
 ORDER BY bp.value,
-         l.datetrx;
+         l.datetrx
+;
