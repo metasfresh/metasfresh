@@ -28,7 +28,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Transportmittel', PrintName='T
 
 -- Element: null
 -- 2024-05-20T14:55:40.996Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anweisung zur Lieferung', PrintName='Anweisung zur Lieferung',Updated=TO_TIMESTAMP('2024-05-20 14:55:40.996000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581903 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferanweisungen', PrintName='Lieferanweisungen',Updated=TO_TIMESTAMP('2024-05-20 14:55:40.996000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581903 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T14:55:40.999Z
@@ -37,11 +37,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anweisung zur Lieferung', Prin
 
 -- Element: null
 -- 2024-05-20T14:55:49.071Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anweisung zur Lieferung', PrintName='Anweisung zur Lieferung',Updated=TO_TIMESTAMP('2024-05-20 14:55:49.071000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581903 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferanweisungen', PrintName='Lieferanweisungen',Updated=TO_TIMESTAMP('2024-05-20 14:55:49.071000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581903 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T14:55:49.073Z
-UPDATE AD_Element SET Name='Anweisung zur Lieferung', PrintName='Anweisung zur Lieferung', Updated=TO_TIMESTAMP('2024-05-20 14:55:49.073000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581903
+UPDATE AD_Element SET Name='Lieferanweisungen', PrintName='Lieferanweisungen', Updated=TO_TIMESTAMP('2024-05-20 14:55:49.073000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581903
 ;
 
 -- 2024-05-20T14:55:49.580Z
@@ -106,11 +106,11 @@ UPDATE AD_Element SET Name='Lieferanweisungen für die Lieferplanung', PrintName
 
 -- Element: LoadingTime
 -- 2024-05-20T14:57:45.856Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ladezeit', PrintName='Ladezeit',Updated=TO_TIMESTAMP('2024-05-20 14:57:45.856000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581895 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Uhrzeit der Verladung', PrintName='Uhrzeit der Verladung',Updated=TO_TIMESTAMP('2024-05-20 14:57:45.856000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581895 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T14:57:45.857Z
-UPDATE AD_Element SET Name='Ladezeit', PrintName='Ladezeit', Updated=TO_TIMESTAMP('2024-05-20 14:57:45.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581895
+UPDATE AD_Element SET Name='Uhrzeit der Verladung', PrintName='Uhrzeit der Verladung', Updated=TO_TIMESTAMP('2024-05-20 14:57:45.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581895
 ;
 
 -- 2024-05-20T14:57:46.292Z
@@ -123,7 +123,7 @@ UPDATE AD_Element SET Name='Ladezeit', PrintName='Ladezeit', Updated=TO_TIMESTAM
 
 -- Element: LoadingTime
 -- 2024-05-20T14:57:53.819Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ladezeit', PrintName='Ladezeit',Updated=TO_TIMESTAMP('2024-05-20 14:57:53.819000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581895 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Uhrzeit der Verladung', PrintName='Uhrzeit der Verladung',Updated=TO_TIMESTAMP('2024-05-20 14:57:53.819000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581895 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T14:57:53.822Z
@@ -132,7 +132,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ladezeit', PrintName='Ladezeit
 
 -- Element: DeliveryTime
 -- 2024-05-20T14:58:31.352Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferfrist', PrintName='Lieferfrist',Updated=TO_TIMESTAMP('2024-05-20 14:58:31.352000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581896 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Uhrzeit der Ablieferung', PrintName='Uhrzeit der Ablieferung',Updated=TO_TIMESTAMP('2024-05-20 14:58:31.352000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581896 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T14:58:31.354Z
@@ -141,11 +141,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferfrist', PrintName='Liefe
 
 -- Element: DeliveryTime
 -- 2024-05-20T14:58:39.685Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferfrist', PrintName='Lieferfrist',Updated=TO_TIMESTAMP('2024-05-20 14:58:39.685000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581896 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Uhrzeit der Ablieferung', PrintName='Uhrzeit der Ablieferung',Updated=TO_TIMESTAMP('2024-05-20 14:58:39.685000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581896 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T14:58:39.687Z
-UPDATE AD_Element SET Name='Lieferfrist', PrintName='Lieferfrist', Updated=TO_TIMESTAMP('2024-05-20 14:58:39.687000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581896
+UPDATE AD_Element SET Name='Uhrzeit der Ablieferung', PrintName='Uhrzeit der Ablieferung', Updated=TO_TIMESTAMP('2024-05-20 14:58:39.687000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581896
 ;
 
 -- 2024-05-20T14:58:40.089Z
@@ -158,11 +158,11 @@ UPDATE AD_Element SET Name='Lieferfrist', PrintName='Lieferfrist', Updated=TO_TI
 
 -- Element: null
 -- 2024-05-20T14:59:03.330Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Bestellung/Aufträge Zeile Menge', PrintName='Bestellung/Aufträge Zeile Menge',Updated=TO_TIMESTAMP('2024-05-20 14:59:03.329000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=582051 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Positionsmenge Auftrag/Bestellung', PrintName='Positionsmenge Auftrag/Bestellung',Updated=TO_TIMESTAMP('2024-05-20 14:59:03.329000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=582051 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T14:59:03.332Z
-UPDATE AD_Element SET Name='Bestellung/Aufträge Zeile Menge', PrintName='Bestellung/Aufträge Zeile Menge', Updated=TO_TIMESTAMP('2024-05-20 14:59:03.332000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=582051
+UPDATE AD_Element SET Name='Positionsmenge Auftrag/Bestellung', PrintName='Positionsmenge Auftrag/Bestellung', Updated=TO_TIMESTAMP('2024-05-20 14:59:03.332000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=582051
 ;
 
 -- 2024-05-20T14:59:03.840Z
@@ -175,7 +175,7 @@ UPDATE AD_Element SET Name='Bestellung/Aufträge Zeile Menge', PrintName='Bestel
 
 -- Element: null
 -- 2024-05-20T14:59:35.019Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Bestellung/Aufträge Zeile Menge', PrintName='Bestellung/Aufträge Zeile Menge',Updated=TO_TIMESTAMP('2024-05-20 14:59:35.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=582051 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Positionsmenge Auftrag/Bestellung', PrintName='Positionsmenge Auftrag/Bestellung',Updated=TO_TIMESTAMP('2024-05-20 14:59:35.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=582051 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T14:59:35.022Z
@@ -184,11 +184,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Bestellung/Aufträge Zeile Men
 
 -- Element: null
 -- 2024-05-20T15:01:41.961Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Dokument-Status', PrintName='Dokument-Status',Updated=TO_TIMESTAMP('2024-05-20 15:01:41.961000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581929 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Belegstatus', PrintName='Belegstatus',Updated=TO_TIMESTAMP('2024-05-20 15:01:41.961000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581929 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T15:01:41.963Z
-UPDATE AD_Element SET Name='Dokument-Status', PrintName='Dokument-Status', Updated=TO_TIMESTAMP('2024-05-20 15:01:41.962000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581929
+UPDATE AD_Element SET Name='Belegstatus', PrintName='Belegstatus', Updated=TO_TIMESTAMP('2024-05-20 15:01:41.962000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581929
 ;
 
 -- 2024-05-20T15:01:42.522Z
@@ -201,7 +201,7 @@ UPDATE AD_Element SET Name='Dokument-Status', PrintName='Dokument-Status', Updat
 
 -- Element: null
 -- 2024-05-20T15:01:49.386Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Dokument-Status', PrintName='Dokument-Status',Updated=TO_TIMESTAMP('2024-05-20 15:01:49.386000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581929 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Belegstatus', PrintName='Belegstatus',Updated=TO_TIMESTAMP('2024-05-20 15:01:49.386000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581929 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T15:01:49.389Z
@@ -210,7 +210,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Dokument-Status', PrintName='D
 
 -- Element: C_BPartner_Location_Loading_ID
 -- 2024-05-20T15:02:08.931Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Adresse laden', PrintName='Adresse laden',Updated=TO_TIMESTAMP('2024-05-20 15:02:08.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581899 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verladeadresse', PrintName='Verladeadresse',Updated=TO_TIMESTAMP('2024-05-20 15:02:08.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581899 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T15:02:08.934Z
@@ -219,11 +219,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Adresse laden', PrintName='Adr
 
 -- Element: C_BPartner_Location_Loading_ID
 -- 2024-05-20T15:02:15.198Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Adresse laden', PrintName='Adresse laden',Updated=TO_TIMESTAMP('2024-05-20 15:02:15.198000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581899 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verladeadresse', PrintName='Verladeadresse',Updated=TO_TIMESTAMP('2024-05-20 15:02:15.198000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581899 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T15:02:15.199Z
-UPDATE AD_Element SET Name='Adresse laden', PrintName='Adresse laden', Updated=TO_TIMESTAMP('2024-05-20 15:02:15.199000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581899
+UPDATE AD_Element SET Name='Verladeadresse', PrintName='Verladeadresse', Updated=TO_TIMESTAMP('2024-05-20 15:02:15.199000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581899
 ;
 
 -- 2024-05-20T15:02:15.755Z
@@ -236,11 +236,11 @@ UPDATE AD_Element SET Name='Adresse laden', PrintName='Adresse laden', Updated=T
 
 -- Element: LoadingDate
 -- 2024-05-20T15:02:34.410Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Datum laden', PrintName='Datum laden',Updated=TO_TIMESTAMP('2024-05-20 15:02:34.410000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581900 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ladetermin', PrintName='Ladetermin',Updated=TO_TIMESTAMP('2024-05-20 15:02:34.410000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581900 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T15:02:34.412Z
-UPDATE AD_Element SET Name='Datum laden', PrintName='Datum laden', Updated=TO_TIMESTAMP('2024-05-20 15:02:34.412000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581900
+UPDATE AD_Element SET Name='Ladetermin', PrintName='Ladetermin', Updated=TO_TIMESTAMP('2024-05-20 15:02:34.412000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581900
 ;
 
 -- 2024-05-20T15:02:34.856Z
@@ -253,7 +253,7 @@ UPDATE AD_Element SET Name='Datum laden', PrintName='Datum laden', Updated=TO_TI
 
 -- Element: LoadingDate
 -- 2024-05-20T15:02:40.379Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Datum laden', PrintName='Datum laden',Updated=TO_TIMESTAMP('2024-05-20 15:02:40.379000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581900 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ladetermin', PrintName='Ladetermin',Updated=TO_TIMESTAMP('2024-05-20 15:02:40.379000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581900 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T15:02:40.382Z
@@ -342,30 +342,30 @@ UPDATE AD_Process SET Name='Lieferinstruktion generieren', Updated=TO_TIMESTAMP(
 
 -- Process: M_Delivery_Planning_ReGenerateDeliveryInstruction(de.metas.deliveryplanning.process.M_Delivery_Planning_ReGenerateDeliveryInstruction)
 -- 2024-05-20T15:09:07.584Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anpassung der Lieferanweisung',Updated=TO_TIMESTAMP('2024-05-20 15:09:07.584000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585191
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferanweisungen anpassen',Updated=TO_TIMESTAMP('2024-05-20 15:09:07.584000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585191
 ;
 
 -- Process: M_Delivery_Planning_ReGenerateDeliveryInstruction(de.metas.deliveryplanning.process.M_Delivery_Planning_ReGenerateDeliveryInstruction)
 -- 2024-05-20T15:09:11.506Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Anpassung der Lieferanweisung',Updated=TO_TIMESTAMP('2024-05-20 15:09:11.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585191
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferanweisungen anpassen',Updated=TO_TIMESTAMP('2024-05-20 15:09:11.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585191
 ;
 
 -- 2024-05-20T15:09:11.507Z
-UPDATE AD_Process SET Name='Anpassung der Lieferanweisung', Updated=TO_TIMESTAMP('2024-05-20 15:09:11.507000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=585191
+UPDATE AD_Process SET Name='Lieferanweisungen anpassen', Updated=TO_TIMESTAMP('2024-05-20 15:09:11.507000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=585191
 ;
 
 -- Process: M_Delivery_Planning_CancelDeliveryInstruction(de.metas.deliveryplanning.process.M_Delivery_Planning_CancelDeliveryInstruction)
 -- 2024-05-20T15:09:31.518Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferung storniert',Updated=TO_TIMESTAMP('2024-05-20 15:09:31.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585195
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferung stornieren',Updated=TO_TIMESTAMP('2024-05-20 15:09:31.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585195
 ;
 
 -- Process: M_Delivery_Planning_CancelDeliveryInstruction(de.metas.deliveryplanning.process.M_Delivery_Planning_CancelDeliveryInstruction)
 -- 2024-05-20T15:09:37.577Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferung storniert',Updated=TO_TIMESTAMP('2024-05-20 15:09:37.577000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585195
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Lieferung stornieren',Updated=TO_TIMESTAMP('2024-05-20 15:09:37.577000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585195
 ;
 
 -- 2024-05-20T15:09:37.578Z
-UPDATE AD_Process SET Name='Lieferung storniert', Updated=TO_TIMESTAMP('2024-05-20 15:09:37.578000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=585195
+UPDATE AD_Process SET Name='Lieferung stornieren', Updated=TO_TIMESTAMP('2024-05-20 15:09:37.578000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=585195
 ;
 
 -- Element: Type_MoT
@@ -422,11 +422,11 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Geladene Menge', PrintName='Ge
 
 -- Element: null
 -- 2024-05-20T16:38:01.599Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abgeleitete Menge', PrintName='Abgeleitete Menge',Updated=TO_TIMESTAMP('2024-05-20 16:38:01.599000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581928 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Entladene Menge', PrintName='Entladene Menge',Updated=TO_TIMESTAMP('2024-05-20 16:38:01.599000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581928 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-20T16:38:01.600Z
-UPDATE AD_Element SET Name='Abgeleitete Menge', PrintName='Abgeleitete Menge', Updated=TO_TIMESTAMP('2024-05-20 16:38:01.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581928
+UPDATE AD_Element SET Name='Entladene Menge', PrintName='Entladene Menge', Updated=TO_TIMESTAMP('2024-05-20 16:38:01.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=581928
 ;
 
 -- 2024-05-20T16:38:01.962Z
@@ -439,7 +439,7 @@ UPDATE AD_Element SET Name='Abgeleitete Menge', PrintName='Abgeleitete Menge', U
 
 -- Element: null
 -- 2024-05-20T16:38:09.623Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abgeleitete Menge', PrintName='Abgeleitete Menge',Updated=TO_TIMESTAMP('2024-05-20 16:38:09.622000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581928 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Entladene Menge', PrintName='Entladene Menge',Updated=TO_TIMESTAMP('2024-05-20 16:38:09.622000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581928 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-20T16:38:09.626Z
@@ -474,11 +474,11 @@ UPDATE AD_Element SET Name='Versandpaket', PrintName='Versandpaket', Updated=TO_
 
 -- Process: PrintAllShipmentDocuments(de.metas.handlingunits.shipping.process.PrintAllShipmentDocuments)
 -- 2024-05-20T16:41:13.404Z
-UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Alle Lieferpapiere drucken',Updated=TO_TIMESTAMP('2024-05-20 16:41:13.404000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541228
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Alle Transportbelege drucken',Updated=TO_TIMESTAMP('2024-05-20 16:41:13.404000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541228
 ;
 
 -- 2024-05-20T16:41:13.405Z
-UPDATE AD_Process SET Name='Alle Lieferpapiere drucken', Updated=TO_TIMESTAMP('2024-05-20 16:41:13.405000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=541228
+UPDATE AD_Process SET Name='Alle Transportbelege drucken', Updated=TO_TIMESTAMP('2024-05-20 16:41:13.405000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Process_ID=541228
 ;
 
 -- Element: DeliveryStatus
@@ -536,7 +536,7 @@ UPDATE AD_Element SET Name='Lieferstatus', PrintName='Lieferstatus', Updated=TO_
 
 -- Element: Shipper_BPartner_ID
 -- 2024-05-21T09:53:32.022Z
-UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Partner', PrintName='Verlader Partner',Updated=TO_TIMESTAMP('2024-05-21 09:53:32.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader', PrintName='Verlader',Updated=TO_TIMESTAMP('2024-05-21 09:53:32.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-21T09:53:32.024Z
@@ -545,11 +545,11 @@ UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Partn
 
 -- Element: Shipper_BPartner_ID
 -- 2024-05-21T09:53:42.442Z
-UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Partner', PrintName='Verlader Partner',Updated=TO_TIMESTAMP('2024-05-21 09:53:42.442000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader', PrintName='Verlader',Updated=TO_TIMESTAMP('2024-05-21 09:53:42.442000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540091 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-21T09:53:42.443Z
-UPDATE AD_Element SET Description='', Name='Verlader Partner', PrintName='Verlader Partner', Updated=TO_TIMESTAMP('2024-05-21 09:53:42.443000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540091
+UPDATE AD_Element SET Description='', Name='Verlader', PrintName='Verlader', Updated=TO_TIMESTAMP('2024-05-21 09:53:42.443000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540091
 ;
 
 -- 2024-05-21T09:53:42.824Z
@@ -562,11 +562,11 @@ UPDATE AD_Element SET Description='', Name='Verlader Partner', PrintName='Verlad
 
 -- Element: Shipper_Location_ID
 -- 2024-05-21T09:55:01.682Z
-UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Standort', PrintName='Verlader Standort',Updated=TO_TIMESTAMP('2024-05-21 09:55:01.682000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Standort Verlader', PrintName='Standort Verlader',Updated=TO_TIMESTAMP('2024-05-21 09:55:01.682000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_DE'
 ;
 
 -- 2024-05-21T09:55:01.684Z
-UPDATE AD_Element SET Description='', Name='Verlader Standort', PrintName='Verlader Standort', Updated=TO_TIMESTAMP('2024-05-21 09:55:01.683000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540095
+UPDATE AD_Element SET Description='', Name='Standort Verlader', PrintName='Standort Verlader', Updated=TO_TIMESTAMP('2024-05-21 09:55:01.683000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=540095
 ;
 
 -- 2024-05-21T09:55:02.031Z
@@ -579,7 +579,7 @@ UPDATE AD_Element SET Description='', Name='Verlader Standort', PrintName='Verla
 
 -- Element: Shipper_Location_ID
 -- 2024-05-21T09:55:15.179Z
-UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Verlader Standort', PrintName='Verlader Standort',Updated=TO_TIMESTAMP('2024-05-21 09:55:15.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Standort Verlader', PrintName='Standort Verlader',Updated=TO_TIMESTAMP('2024-05-21 09:55:15.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=540095 AND AD_Language='de_CH'
 ;
 
 -- 2024-05-21T09:55:15.182Z
