@@ -28,11 +28,12 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -52,7 +53,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -62,8 +62,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
-@RequiredArgsConstructor
-public abstract class AbstractPurchaseContractHandler implements IModularContractLogHandler
+public abstract class AbstractPurchaseContractHandler extends AbstractModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
 	private final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
@@ -79,6 +78,13 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 
 	@NonNull @Getter private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 
+	public AbstractPurchaseContractHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+	}
+
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
 	{
@@ -87,7 +93,7 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
 		final I_C_Flatrate_Term modularContractRecord;
 		final boolean isInterimContract;
-		if(TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
+		if (TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
 		{
 			modularContractRecord = flatrateTermRecord;
 			isInterimContract = false;
@@ -108,8 +114,8 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
 
 		final Quantity quantity = Quantitys.of(modularContractRecord.getPlannedQtyPerUnit(),
-											   UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
-											   productId);
+				UomId.ofRepoIdOrNull(modularContractRecord.getC_UOM_ID()),
+				productId);
 
 		final String productName = productBL.getProductValueAndName(productId);
 
@@ -123,37 +129,37 @@ public abstract class AbstractPurchaseContractHandler implements IModularContrac
 				: null;
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(flatrateTermRecord.getStartDate(),
-																				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
-																				orgDAO::getTimeZone);
+				OrgId.ofRepoId(flatrateTermRecord.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = request.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(request.getContractId())
-											.productId(productId)
-											.productName(request.getProductName())
-											.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
-											.producerBPartnerId(billBPartnerId)
-											.invoicingBPartnerId(billBPartnerId)
-											.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
-											.warehouseId(warehouseId)
-											.documentType(getLogEntryDocumentType())
-											.contractType(getLogEntryContractType())
-											.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
-											.processed(false)
-											.quantity(quantity)
-											.transactionDate(transactionDate)
-											.year(yearAndCalendarId.yearId())
-											.description(description)
-											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
-											.priceActual(priceActual)
-											.amount(amount)
-											.invoicingGroupId(invoicingGroupId)
-											.isBillable(false)
-											.build());
+				.contractId(request.getContractId())
+				.productId(productId)
+				.productName(request.getProductName())
+				.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
+				.producerBPartnerId(billBPartnerId)
+				.invoicingBPartnerId(billBPartnerId)
+				.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
+				.warehouseId(warehouseId)
+				.documentType(getLogEntryDocumentType())
+				.contractType(getLogEntryContractType())
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.processed(false)
+				.quantity(quantity)
+				.transactionDate(transactionDate)
+				.year(yearAndCalendarId.yearId())
+				.description(description)
+				.modularContractTypeId(request.getTypeId())
+				.configModuleId(request.getConfigId().getModularContractModuleId())
+				.priceActual(priceActual)
+				.amount(amount)
+				.invoicingGroupId(invoicingGroupId)
+				.isBillable(false)
+				.build());
 	}
 
 	@Override

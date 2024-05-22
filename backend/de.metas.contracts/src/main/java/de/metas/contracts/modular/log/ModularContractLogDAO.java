@@ -157,7 +157,7 @@ public class ModularContractLogDAO
 						},
 						() -> log.setPriceActual(null));
 
-		log.setModCntr_Module_ID(request.getConfigId().getRepoId());
+		log.setModCntr_Module_ID(request.getConfigModuleId().getRepoId());
 
 		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 
@@ -179,6 +179,9 @@ public class ModularContractLogDAO
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.contractId(FlatrateTermId.ofRepoIdOrNull(record.getC_Flatrate_Term_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.initialProductId(ProductId.ofRepoIdOrNull(record.getInitial_Product_ID()))
+				.productName(record.getProductName())
+				.modularContractTypeId(ModularContractTypeId.ofRepoIdOrNull(record.getModCntr_Type_ID()))
 				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.contractType(LogEntryContractType.ofCode(record.getContractType()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(record.getCollectionPoint_BPartner_ID()))
@@ -196,6 +199,7 @@ public class ModularContractLogDAO
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
+				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
 				.build();
 	}
 
@@ -381,6 +385,11 @@ public class ModularContractLogDAO
 		{
 			sqlQueryBuilder.addNotNull(I_ModCntr_Log.COLUMNNAME_C_Currency_ID);
 			sqlQueryBuilder.addNotNull(I_ModCntr_Log.COLUMNNAME_Amount);
+		}
+
+		if (!query.getExcludedReferencedTableIds().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_ModCntr_Log.COLUMNNAME_AD_Table_ID, query.getExcludedReferencedTableIds());
 		}
 
 		if (!query.getOrderBys().isEmpty())

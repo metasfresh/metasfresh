@@ -23,11 +23,12 @@
 package de.metas.contracts.modular.computing.tbd.purchasecontract.pforderline;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.ExplainedOptional;
@@ -48,7 +49,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,8 +64,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
+class SalesOrderLineProFormaPOLogHandler extends AbstractModularContractLogHandler
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -76,6 +75,12 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO;
 
+	public SalesOrderLineProFormaPOLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull SalesOrderLineProFormaPOModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -118,7 +123,7 @@ class SalesOrderLineProFormaPOLogHandler implements IModularContractLogHandler
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.amount(amount)
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.build());
 	}

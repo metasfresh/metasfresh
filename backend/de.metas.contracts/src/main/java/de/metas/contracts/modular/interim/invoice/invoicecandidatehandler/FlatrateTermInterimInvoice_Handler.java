@@ -51,7 +51,7 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -78,7 +78,6 @@ import static java.util.Collections.emptyIterator;
 
 public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -102,7 +101,9 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	{
 		final UomId uomId = HandlerTools.retrieveUomId(invoiceCandidateRecord);
 
-		return Quantitys.of(invoiceCandidateRecord.getQtyEntered(), uomId);
+		final Quantity quantityEntered = Quantitys.of(invoiceCandidateRecord.getQtyEntered(), UomId.ofRepoId(invoiceCandidateRecord.getC_UOM_ID()));
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidateRecord.getM_Product_ID());
+		return uomConversionBL.convertQuantityTo(quantityEntered, productId, uomId);
 	}
 
 	@Override
@@ -180,12 +181,11 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
 
-
 		final ProductPrice productPrice = Check.assumeNotNull(modularContractLogEntry.getPriceActual(), "productPrice shouldn't be null");
-		final UomId stockUOM = productBL.getStockUOMId(productPrice.getProductId());
-		final ProductPrice productPriceToInvoice = productPrice.convertToUom(stockUOM,
-																			 currencyBL.getStdPrecision(productPrice.getCurrencyId()),
-																			 uomConversionBL
+		final UomId uomId = HandlerTools.retrieveUomId(ic);
+		final ProductPrice productPriceToInvoice = productPrice.convertToUom(uomId,
+				currencyBL.getStdPrecision(productPrice.getCurrencyId()),
+				uomConversionBL
 		);
 
 		final ContractSpecificPrice contractSpecificPrice = ContractSpecificPrice.builder()

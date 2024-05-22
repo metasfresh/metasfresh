@@ -1204,9 +1204,9 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Voided)
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, X_C_Flatrate_Term.CONTRACTSTATUS_Quit);
 
-		if (modularFlatrateTermQuery.getProductId() != null)
+		if (modularFlatrateTermQuery.getBPartnerId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, modularFlatrateTermQuery.getProductId());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, modularFlatrateTermQuery.getBPartnerId());
 		}
 
 		if (modularFlatrateTermQuery.getDateFromLessOrEqual() != null)
@@ -1237,7 +1237,12 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		if (request.getProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductId());
+			queryBuilder.filter(queryBL.createCompositeQueryFilter(I_ModCntr_Settings.class)
+					.setJoinOr()
+					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductId())
+					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, request.getProductId())
+					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, request.getProductId()));
+
 		}
 
 		return queryBuilder.create();

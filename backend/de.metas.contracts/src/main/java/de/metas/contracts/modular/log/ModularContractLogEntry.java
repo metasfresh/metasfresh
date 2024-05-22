@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
@@ -67,6 +68,13 @@ public class ModularContractLogEntry
 
 	@Nullable
 	ProductId productId;
+
+	@Nullable
+	ProductId initialProductId;
+	@NonNull
+	String productName;
+	@Nullable
+	ModularContractTypeId modularContractTypeId;
 
 	@NonNull
 	TableRecordReference referencedRecord;
@@ -127,6 +135,9 @@ public class ModularContractLogEntry
 			@NonNull final LogEntryContractType contractType,
 			@Nullable final FlatrateTermId contractId,
 			@Nullable final ProductId productId,
+			@Nullable final ProductId initialProductId,
+			@NonNull final String productName,
+			@Nullable final ModularContractTypeId modularContractTypeId,
 			@NonNull final TableRecordReference referencedRecord,
 			@Nullable final BPartnerId collectionPointBPartnerId,
 			@Nullable final BPartnerId producerBPartnerId,
@@ -162,6 +173,9 @@ public class ModularContractLogEntry
 		this.contractType = contractType;
 		this.contractId = contractId;
 		this.productId = productId;
+		this.initialProductId = initialProductId;
+		this.productName = productName;
+		this.modularContractTypeId = modularContractTypeId;
 		this.referencedRecord = referencedRecord;
 		this.collectionPointBPartnerId = collectionPointBPartnerId;
 		this.producerBPartnerId = producerBPartnerId;
@@ -198,6 +212,4 @@ public class ModularContractLogEntry
 	{
 		return logHandlerRegistry.getApplicableHandlerForOrError(this).calculateAmount(this.toBuilder().priceActual(price).build(), uomConverter);
 	}
-
-
 }

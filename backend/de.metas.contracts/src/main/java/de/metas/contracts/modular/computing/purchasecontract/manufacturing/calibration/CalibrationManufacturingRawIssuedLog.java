@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -36,6 +37,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.LogSubEntryId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -54,14 +56,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
-@RequiredArgsConstructor
 @Component
-public class CalibrationManufacturingRawIssuedLog implements IModularContractLogHandler
+public class CalibrationManufacturingRawIssuedLog extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION_ISSUE = AdMessageKey.of("de.metas.contracts.modular.impl.IssueReceiptModularContractHandler.Description.Issue");
 
@@ -76,6 +76,17 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 	@Getter @NonNull private final String supportedTableName = I_PP_Cost_Collector.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRODUCTION;
 	@Getter @NonNull private final PPCalibrationComputingMethod computingMethod;
+
+	public CalibrationManufacturingRawIssuedLog(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ManufacturingFacadeService manufacturingFacadeService,
+			final @NonNull PPCalibrationComputingMethod computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.manufacturingFacadeService = manufacturingFacadeService;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public boolean applies(@NonNull final CreateLogRequest request)
@@ -118,7 +129,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 				.year(request.getYearId())
 				.description(description)
 				.modularContractTypeId(request.getTypeId())
-				.configId(request.getConfigId())
+				.configModuleId(request.getConfigId().getModularContractModuleId())
 				.collectionPointBPartnerId(collectionPointBPartnerId)
 				.invoicingGroupId(invoicingGroupId)
 				.isBillable(true)
@@ -150,7 +161,7 @@ public class CalibrationManufacturingRawIssuedLog implements IModularContractLog
 	}
 
 	@NonNull
-	private ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);

@@ -37,11 +37,11 @@ public class AVProcessedManufacturingOrderLog extends AbstractManufacturingProce
 {
 	public AVProcessedManufacturingOrderLog(
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
-			@NonNull final AVProcessedComputingMethod computingMethod)
+			@NonNull final AVProcessedComputingMethod computingMethod,
+			@NonNull final ModularContractService modularContractService)
 	{
-		super(modCntrInvoicingGroupRepository, modularContractService, manufacturingFacadeService, computingMethod);
+		super(modCntrInvoicingGroupRepository, manufacturingFacadeService, modularContractService,computingMethod);
 	}
 
 	@Override
