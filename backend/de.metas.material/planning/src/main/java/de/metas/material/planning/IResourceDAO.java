@@ -25,6 +25,7 @@ package de.metas.material.planning;
 import java.util.List;
 import java.util.Properties;
 
+import com.google.common.collect.ImmutableSet;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
@@ -47,4 +48,5 @@ public interface IResourceDAO extends ISingletonService
 
 	void onResourceTypeChanged(I_S_ResourceType resourceType);
 
+	ImmutableSet<ResourceId> getActivePlantIds();
 }

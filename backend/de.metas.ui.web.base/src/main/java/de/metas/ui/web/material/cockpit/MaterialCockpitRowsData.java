@@ -34,6 +34,7 @@ import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
+import de.metas.ui.web.view.template.RowsDataTool;
 import de.metas.ui.web.view.template.SynchronizedRowsIndexHolder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -55,12 +56,14 @@ import java.util.Set;
  */
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
+	@NonNull private final MaterialCockpitRowFactory materialCockpitRowFactory;
+
 	private final boolean includePerPlantDetailRows;
-	private final MaterialCockpitRowFactory materialCockpitRowFactory;
-	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
+	@NonNull private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
+	@NonNull private DocumentIdsSelection invalidRowIds = DocumentIdsSelection.EMPTY;
 
 	/**
-	 * Every row has a product, and so does every MD_Stock and MD_Candidate..
+	 * Every row has a product, and so does every MD_Stock and MD_Candidate.
 	 */
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
@@ -83,8 +86,9 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	}
 
 	@Override
-	public Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
+	public synchronized Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
 	{
+		recomputeInvalidRows();
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
@@ -120,9 +124,21 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	 * Recomputes the given rows.
 	 */
 	@Override
-	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
+	public synchronized void invalidate(@NonNull final DocumentIdsSelection rowIds)
 	{
-		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowIds);
+		this.invalidRowIds = this.invalidRowIds.addAll(rowIds);
+	}
+
+	private synchronized void recomputeInvalidRows()
+	{
+		final DocumentIdsSelection rowIds = this.invalidRowIds;
+
+		if (rowIds.isEmpty())
+		{
+			return;
+		}
+
+		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowsHolder.getDocumentId2TopLevelRows(), rowIds);
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
@@ -159,17 +175,18 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 		}
 
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+		this.invalidRowIds = DocumentIdsSelection.EMPTY;
 	}
 
 	@NonNull
-	private ArrayList<MaterialCockpitRow> extractRows(@NonNull final DocumentIdsSelection rowIds)
+	private static ArrayList<MaterialCockpitRow> extractRows(
+			@NonNull final ImmutableMap<DocumentId, MaterialCockpitRow> documentId2TopLevelRows,
+			@NonNull final DocumentIdsSelection rowIds)
 	{
-		final ImmutableMap<DocumentId, MaterialCockpitRow> documentId2TopLevelRows = rowsHolder.getDocumentId2TopLevelRows();
-
 		final ArrayList<MaterialCockpitRow> rowsToInvalidate = new ArrayList<>();
 		if (rowIds.isAll())
 		{
-			rowsToInvalidate.addAll(getAllRows());
+			rowsToInvalidate.addAll(RowsDataTool.extractAllRows(documentId2TopLevelRows.values()).values());
 		}
 		else
 		{

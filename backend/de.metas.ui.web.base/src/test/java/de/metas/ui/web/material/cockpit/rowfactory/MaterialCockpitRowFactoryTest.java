@@ -53,7 +53,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -81,7 +81,6 @@ public class MaterialCockpitRowFactoryTest
 {
 	private static final BigDecimal TWELVE = new BigDecimal("12");
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
-	private AttributesTestHelper attributesTestHelper;
 	private MaterialCockpitRowFactory materialCockpitRowFactory;
 	private I_M_Product product;
 	private I_M_Attribute attr1;
@@ -99,8 +98,6 @@ public class MaterialCockpitRowFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(ADReferenceService.class, ADReferenceService.newMocked());
-
-		attributesTestHelper = new AttributesTestHelper();
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
 		productCategory.setName("productCategoryName");
@@ -122,6 +119,7 @@ public class MaterialCockpitRowFactoryTest
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
+		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr1_value1 = attributesTestHelper.createM_AttributeValue(attr1, "test1_value1");
 
@@ -129,7 +127,7 @@ public class MaterialCockpitRowFactoryTest
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
 		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		materialCockpitRowFactory = new MaterialCockpitRowFactory();
+		materialCockpitRowFactory = MaterialCockpitRowFactory.newInstanceForUnitTesting();
 	}
 
 	private void initDimensionSpec_notEmpty()
@@ -144,7 +142,7 @@ public class MaterialCockpitRowFactoryTest
 
 		dimensionspecGroup_attr1_value1 = groups.get(1);
 		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getId()));
-	
+
 		dimensionspecGroup_attr2_value1 = groups.get(2);
 		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey())
 				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", dimensionspecGroup_attr1_value1.getAttributesKey())
@@ -261,7 +259,7 @@ public class MaterialCockpitRowFactoryTest
 		// 1: both stock records are added to a counting record
 		assertThat(includedRows).hasSize(4);
 
-		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty); 
+		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty);
 		assertThat(emptyGroupRow.getAllIncludedStockRecordIds()).contains(stockRecordWithEmptyAttributesKey.getMD_Stock_ID());
 		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo(TWELVE);
 		assertThat(emptyGroupRow.getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(ONE);
@@ -279,6 +277,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(countingRow.getProductCategoryOrSubRowName()).isEqualTo("plantName");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_M_Warehouse createWarehousewithPlant(@NonNull final String plantName)
 	{
 		final I_S_Resource plant = newInstance(I_S_Resource.class);
@@ -308,12 +307,10 @@ public class MaterialCockpitRowFactoryTest
 	private static MaterialCockpitRow extractSingleCountingRow(
 			@NonNull final List<MaterialCockpitRow> rows)
 	{
-		final MaterialCockpitRow emptyGroupRow = rows.stream()
-				.filter(row -> row.getId().toString().startsWith("countingRow")
-
-				)
-				.findFirst().get();
-		return emptyGroupRow;
+		return rows.stream()
+				.filter(row -> row.getId().toString().startsWith("countingRow"))
+				.findFirst()
+				.get();
 	}
 
 	@Test
@@ -321,14 +318,17 @@ public class MaterialCockpitRowFactoryTest
 	{
 		initDimensionSpec_notEmpty();
 
-		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
+		final LocalDate today = SystemTime.asLocalDate();
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// invoke method under test
-		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
-				ImmutableSet.of(productId),
-				today,
-				true);
+		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.newCreateRowsCommand(
+						CreateRowsRequest.builder().date(today).build()
+				)
+				.createEmptyRowBuckets(
+						ImmutableSet.of(productId),
+						today,
+						true);
 
 		assertThat(result).hasSize(1);
 		final MainRowBucketId productIdAndDate = MainRowBucketId.createPlainInstance(productId, today);
@@ -337,7 +337,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
 
 		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
-		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
+		assertThat(subRowBuckets).hasSameSizeAs(dimensionSpec.retrieveGroups());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}
 
@@ -348,7 +348,7 @@ public class MaterialCockpitRowFactoryTest
 	public void createRows_empty_dimension_spec_includePerPlantDetailRows()
 	{
 		final CreateRowsRequest request = setup(true);
-		
+
 		// when
 		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
 
@@ -362,7 +362,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
 		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isNull();
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
-		
+
 		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
 		assertThat(result.get(0).getIncludedRows().get(1).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
@@ -389,7 +389,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(result.get(0).getIncludedRows().get(0).getQtySupplyPurchaseOrderAtDate()).isEqualByComparingTo(TEN);
 		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
 	}
-	
+
 	private CreateRowsRequest setup(boolean includePerPlantDetailRows)
 	{
 		// given
