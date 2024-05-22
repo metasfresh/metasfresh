@@ -29,18 +29,17 @@ WITH interimAmts AS (SELECT SUM(amount
 SELECT finalIL.C_Invoice_ID as C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
-       t.modularcontracthandlertype,
+       m.name,
        bp.value                  AS Bill_BPartner_Value,
        bp.name                   AS Bill_BPartner_Name,
        ig.name                   AS InvoicingGroup_Name,
        interimInvoice.documentno AS InterimInvoice_documentNo,
+       l.datetrx,
        ir.interimdate,
        ir.billingdate,
-       ir.c_currency_id,
        ir.totalinterest,
        s.addinterestdays,
        s.interestrate,
-       l.datetrx,
        ABS(interim_amt)          AS InterimAmt,
        mi.matchedamt,
        matchedAmts.matched_amt   AS TotalAmt,
@@ -55,8 +54,8 @@ FROM modcntr_interest mi
          INNER JOIN modCntr_module m ON l.modcntr_module_id = m.modcntr_module_id
          INNER JOIN modcntr_type t ON l.modcntr_type_id = t.modcntr_type_id
          INNER JOIN modcntr_settings s ON m.modcntr_settings_id = s.modcntr_settings_id
-         INNER JOIN interimAmts ON l.c_flatrate_term_id = interimAmts.c_flatrate_term_id AND l.modcntr_module_id = interimAmts.modcntr_module_id
-         INNER JOIN matchedAmts ON matchedamts.modcntr_interest_id = mi.modcntr_interest_id
+         LEFT JOIN interimAmts ON l.c_flatrate_term_id = interimAmts.c_flatrate_term_id AND l.modcntr_module_id = interimAmts.modcntr_module_id
+         LEFT JOIN matchedAmts ON matchedamts.modcntr_interest_id = mi.modcntr_interest_id
          LEFT JOIN modcntr_log interimInvoiceLineLog ON mi.interiminvoice_modcntr_log_id = interimInvoiceLineLog.modcntr_log_id
          LEFT JOIN c_invoiceline il ON interimInvoiceLineLog.record_id = il.c_invoiceline_id
          LEFT JOIN c_invoice interimInvoice ON il.c_invoice_id = interimInvoice.c_invoice_id
