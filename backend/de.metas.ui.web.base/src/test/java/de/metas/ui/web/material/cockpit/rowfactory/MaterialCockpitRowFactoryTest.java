@@ -15,7 +15,6 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -128,10 +127,7 @@ public class MaterialCockpitRowFactoryTest
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
 		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		materialCockpitRowFactory = new MaterialCockpitRowFactory(
-				ADReferenceService.get(),
-				PurchaseLastMaxPriceService.newInstanceForUnitTesting()
-		);
+		materialCockpitRowFactory = MaterialCockpitRowFactory.newInstanceForUnitTesting();
 	}
 
 	private void initDimensionSpec_notEmpty()

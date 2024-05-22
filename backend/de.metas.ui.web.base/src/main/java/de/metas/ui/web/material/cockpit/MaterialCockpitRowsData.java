@@ -58,7 +58,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
 	@NonNull private final MaterialCockpitRowFactory materialCockpitRowFactory;
 
-	@NonNull private final boolean includePerPlantDetailRows;
+	private final boolean includePerPlantDetailRows;
 	@NonNull private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 	@NonNull private DocumentIdsSelection invalidRowIds = DocumentIdsSelection.EMPTY;
 
