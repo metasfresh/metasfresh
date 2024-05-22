@@ -707,7 +707,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
 
 	/**
-	 * Set Protein.
+	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -716,7 +716,7 @@ public interface I_C_AcctSchema_Element
 	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
-	 * Get Protein.
+	 * Get UserElementString1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -728,7 +728,7 @@ public interface I_C_AcctSchema_Element
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
 
 	/**
-	 * Set Hl.
+	 * Set UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -737,7 +737,7 @@ public interface I_C_AcctSchema_Element
 	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
-	 * Get Hl.
+	 * Get UserElementString2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
