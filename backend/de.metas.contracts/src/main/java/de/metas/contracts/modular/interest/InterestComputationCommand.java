@@ -92,21 +92,24 @@ public class InterestComputationCommand
 
 		final InterestComputationRequest interestComputationRequest = getInterestDistributionRequest(request,runId);
 
-		computeAndDistributeInterest(interestComputationRequest);
+		final InterestDistributionResult distributionResult = computeAndDistributeInterest(interestComputationRequest);
 
 		computeAndDistributeBonus(interestComputationRequest.toBuilder()
 										  .bonusComputationDetails(request.getBonusComputationDetails())
 										  .build());
 
-		notificationsProducer.notifyGenerated(runId, request.getInvoicingGroupId(), request.getUserId());
+		if (distributionResult.isAnyInterestDistributed())
+		{
+			notificationsProducer.notifyGenerated(runId, request.getInvoicingGroupId(), request.getUserId());
+		}
 	}
 
-	private void computeAndDistributeInterest(@NonNull final InterestComputationRequest request)
+	private InterestDistributionResult computeAndDistributeInterest(@NonNull final InterestComputationRequest request)
 	{
 		Check.assume(request.getComputingMethodType() == ComputingMethodType.AddValueOnInterim,
 					 "Interest can only be distributed for" + ComputingMethodType.AddValueOnInterim);
 
-		distributeInterest(request, createInterestRecords(request));
+		return distributeInterest(request, createInterestRecords(request));
 	}
 
 	private void deletePreviousProgress(@NonNull final PInstanceId logSelectionId)
@@ -300,26 +303,27 @@ public class InterestComputationCommand
 		return modularContractLogService.streamModularContractLogEntries(query);
 	}
 
-	private void distributeInterest(
+	private InterestDistributionResult distributeInterest(
 			@NonNull final InterestComputationRequest request,
 			@NonNull final InitialInterestAllocationResult result)
 	{
 		if (result.getTotalInterestScore().signum() == 0)
 		{ // nothing to distribute
-			return;
+			return InterestDistributionResult.of(0);
 		}
 
 		final FlatrateTermId onlyForContractId = null; // we want all contracts involved
-		streamShippingNotificationLogEntries(request, onlyForContractId)
-				.forEach(logEntry -> distributeInterest(request, result, logEntry));
+		return InterestDistributionResult.of(streamShippingNotificationLogEntries(request, onlyForContractId)
+				.mapToLong(logEntry -> distributeInterest(request, result, logEntry))
+				.sum());
 	}
 
-	private void distributeInterest(
+	private long distributeInterest(
 			@NonNull final InterestComputationRequest request,
 			@NonNull final InitialInterestAllocationResult result,
 			@NonNull final ModularContractLogEntry shippingNotification)
 	{
-		interestRepository.getForShippingNotificationLogId(request.getInterestRunId(), shippingNotification.getId())
+		return interestRepository.getForShippingNotificationLogId(request.getInterestRunId(), shippingNotification.getId())
 				.stream()
 				.map(interestLog -> {
 					final BigDecimal interestScore = interestLog.getInterestScoreEnsuringCurrency(request.getInterestToDistribute().getCurrencyId());
@@ -329,7 +333,8 @@ public class InterestComputationCommand
 
 					return interestLog.withFinalInterest(Money.of(finalInterest, request.getInterestToDistribute().getCurrencyId()));
 				})
-				.forEach(interestRepository::save);
+				.peek(interestRepository::save)
+				.count();
 	}
 
 	@NonNull
@@ -475,5 +480,16 @@ public class InterestComputationCommand
 	{
 		@NonNull
 		BigDecimal totalInterestScore;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class InterestDistributionResult
+	{
+		long interestRecordsCreated;
+
+		public boolean isAnyInterestDistributed()
+		{
+			return interestRecordsCreated > 0;
+		}
 	}
 }

@@ -125,14 +125,15 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 		{
 			return;
 		}
+		final UserId loggedUserId = Env.getLoggedUserId();
 		final EnqueueInterestComputationRequest request = EnqueueInterestComputationRequest.builder()
 				.interestToDistribute(Objects.requireNonNull(invoicingGroup.amtToDistribute()))
 				.billingDate(billingDate)
 				.interimDate(interimDate)
 				.invoicingGroupId(invoicingGroup.id())
+				.userId(loggedUserId)
 				.build();
-
-		enqueuer.enqueueNow(request, Env.getLoggedUserId());
+		enqueuer.enqueueNow(request, loggedUserId);
 	}
 
 	private boolean skipInvoicingGroup(final @Nullable Money interestToDistribute, final @NonNull InvoicingGroupId id)

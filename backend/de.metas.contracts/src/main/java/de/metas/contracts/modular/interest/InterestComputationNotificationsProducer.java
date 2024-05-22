@@ -38,12 +38,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
+@Component
 public class InterestComputationNotificationsProducer
 {
 	private static final Topic EVENTBUS_TOPIC = Topic.builder().name("de.metas.modcntr.interestRun.UserNotifications").type(Type.DISTRIBUTED).build();
-	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InvoiceGenerated");
+	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InterestRunGenerated");
 	private static final Logger logger = LogManager.getLogger(InterestComputationNotificationsProducer.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 

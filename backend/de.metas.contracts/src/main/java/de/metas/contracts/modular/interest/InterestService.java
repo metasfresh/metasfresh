@@ -43,6 +43,8 @@ public class InterestService
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final ModularContractService modularContractService;
 	@NonNull private final InterestRunRepository interestRunRepository;
+	@NonNull private final InterestComputationNotificationsProducer interestComputationNotificationsProducer;
+
 
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -55,6 +57,7 @@ public class InterestService
 				.interestRunRepository(interestRunRepository)
 				.moneyService(moneyService)
 				.modularContractLogService(modularContractLogService)
+				.notificationsProducer(interestComputationNotificationsProducer)
 				.currencyBL(currencyBL)
 				.orgDAO(orgDAO)
 				.build()

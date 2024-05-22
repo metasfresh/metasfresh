@@ -44,20 +44,16 @@ public class ModularContractComputingMethodHandlerRegistry
 
 	public ModularContractComputingMethodHandlerRegistry(@NonNull final List<IComputingMethodHandler> knownHandlers)
 	{
-		this.handlersByType = Maps.uniqueIndex(filterDeprecatedHandlers(knownHandlers), IComputingMethodHandler::getComputingMethodType);
+		final List<IComputingMethodHandler> currentHandlers = knownHandlers.stream()
+				.filter(this::isNotDeprecated)
+				.toList();
+		this.handlersByType = Maps.uniqueIndex(currentHandlers, IComputingMethodHandler::getComputingMethodType);
 		logger.info("Handlers: {}", this.handlersByType);
 	}
 
-	private Iterable<IComputingMethodHandler> filterDeprecatedHandlers(@NonNull final List<IComputingMethodHandler> knownHandlers)
+	private boolean isNotDeprecated(@NonNull final IComputingMethodHandler iComputingMethodHandler)
 	{
-		return knownHandlers.stream()
-				.filter(this::isDeprecated)
-				.toList();
-	}
-
-	private boolean isDeprecated(@NonNull final IComputingMethodHandler iComputingMethodHandler)
-	{
-		return iComputingMethodHandler.getClass().isAnnotationPresent(Deprecated.class);
+		return !iComputingMethodHandler.getClass().isAnnotationPresent(Deprecated.class);
 	}
 
 	@NonNull
