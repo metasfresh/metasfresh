@@ -24,13 +24,14 @@ package de.metas.contracts.modular.computing.tbd.salescontract.orderline;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -52,7 +53,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -67,8 +67,7 @@ import org.springframework.stereotype.Component;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SOLineForSOLogHandler implements IModularContractLogHandler
+class SOLineForSOLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SOLineForSOLogHandler.OnComplete.Description");
 
@@ -84,6 +83,15 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final SalesOrderLineModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SALES_ORDER;
+
+	public SOLineForSOLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull SalesOrderLineModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -130,7 +138,7 @@ class SOLineForSOLogHandler implements IModularContractLogHandler
 											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.priceActual(orderLineBL.getPriceActual(orderLine))
 											.invoicingGroupId(invoicingGroupId)
 											.build());

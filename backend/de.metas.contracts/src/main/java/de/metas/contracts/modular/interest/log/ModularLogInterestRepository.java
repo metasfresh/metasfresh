@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.interest.log;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.model.I_ModCntr_Interest;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.interest.run.InterestRunId;
@@ -31,7 +30,6 @@ import de.metas.contracts.modular.log.ModularContractLogEntryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.PInstanceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,7 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class ModularLogInterestRepository
@@ -129,31 +127,19 @@ public class ModularLogInterestRepository
 	}
 
 	@NonNull
-	public Optional<Money> getTotalInterest(@NonNull final LogInterestQuery query)
+	public Stream<ModularLogInterest> streamInterestEntries(final @NonNull LogInterestQuery query)
 	{
-		final IQueryBuilder<I_ModCntr_Interest> builder = getQueryBuilder(query);
-		final ImmutableMap<CurrencyId, Money> currenciesMap = builder
+		return getQueryBuilder(query)
 				.create()
-				.sumMoney(I_ModCntr_Interest.COLUMNNAME_FinalInterest, I_ModCntr_Interest.COLUMNNAME_C_Currency_ID)
-				.stream()
-				.collect(Money.sumByCurrency());
-		if (currenciesMap.isEmpty())
-		{
-			return Optional.empty();
-		}
-		Check.assumeEquals(currenciesMap.size(), 1);
-		return currenciesMap.values().stream().findFirst();
+				.iterateAndStream()
+				.map(ModularLogInterestRepository::ofRecord);
 	}
 
+	@NonNull
 	private IQueryBuilder<I_ModCntr_Interest> getQueryBuilder(final @NonNull LogInterestQuery query)
 	{
-		final IQueryBuilder<I_ModCntr_Interest> builder = setSelectionOnQueryBuilder(query, queryBL.createQueryBuilder(I_ModCntr_Log.class))
+		return setSelectionOnQueryBuilder(query, queryBL.createQueryBuilder(I_ModCntr_Log.class))
 				.andCollectChildren(I_ModCntr_Interest.COLUMN_ShippingNotification_ModCntr_Log_ID);
-		if (query.onlyBonusRecords())
-		{
-			builder.addIsNull(I_ModCntr_Interest.COLUMNNAME_InterimInvoice_ModCntr_Log_ID);
-		}
-		return builder;
 	}
 
 	private static IQueryBuilder<I_ModCntr_Log> setSelectionOnQueryBuilder(final @NonNull LogInterestQuery query, final IQueryBuilder<I_ModCntr_Log> modCntrLogQueryBuilder)
@@ -162,8 +148,7 @@ public class ModularLogInterestRepository
 	}
 
 	@Builder
-	public record LogInterestQuery(@NonNull PInstanceId modularLogSelection,
-								   boolean onlyBonusRecords)
+	public record LogInterestQuery(@NonNull PInstanceId modularLogSelection)
 	{
 	}
 }

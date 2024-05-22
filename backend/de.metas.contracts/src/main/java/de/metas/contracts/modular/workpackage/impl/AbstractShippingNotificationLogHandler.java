@@ -35,7 +35,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -57,7 +57,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,8 +65,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import java.time.ZoneId;
 import java.util.function.Function;
 
-@RequiredArgsConstructor
-public abstract class AbstractShippingNotificationLogHandler implements IModularContractLogHandler
+public abstract class AbstractShippingNotificationLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler.OnReverse.Description");
@@ -75,7 +73,6 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	@NonNull private final ShippingNotificationService notificationService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
-	@NonNull private final ModularContractService modularContractService;
 
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPPING_NOTIFICATION;
 
@@ -83,6 +80,17 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+	protected AbstractShippingNotificationLogHandler(final @NonNull ShippingNotificationService notificationService,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ModularContractLogDAO contractLogDAO,
+			@NonNull final ModularContractService modularContractService)
+	{
+		super(modularContractService);
+		this.notificationService = notificationService;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.contractLogDAO = contractLogDAO;
+	}
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -106,35 +114,36 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 		final LocalDateAndOrgId transactionDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(createLogRequest.getModularContractSettings().getRawProductId(), yearAndCalendarId)
 				.orElse(null);
 
 		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
 
+		final BPartnerId warehouseBPartnerId = wrapper.getWarehouseBPartnerId(warehouseDAO);
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.referencedRecord(wrapper.getLineReference())
-											.contractId(createLogRequest.getContractId())
-											.collectionPointBPartnerId(wrapper.getWarehouseBPartnerId(warehouseDAO))
-											.producerBPartnerId(wrapper.getBPartnerId())
-											.invoicingBPartnerId(wrapper.getBPartnerId())
-											.warehouseId(wrapper.getWarehouseId())
-											.initialProductId(createLogRequest.getModularContractSettings().getRawProductId())
-											.productId(productId)
-											.productName(createLogRequest.getProductName())
-											.documentType(getLogEntryDocumentType())
-											.contractType(getLogEntryContractType())
-											.soTrx(getSOTrx())
-											.processed(false)
-											.quantity(quantity)
-											.transactionDate(transactionDate)
-											.year(wrapper.getHarvestingYearId())
-											.description(description)
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
-											.invoicingGroupId(invoicingGroupId)
-											.priceActual(contractSpecificPrice)
-											.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
-											.build());
+				.referencedRecord(wrapper.getLineReference())
+				.contractId(createLogRequest.getContractId())
+				.collectionPointBPartnerId(warehouseBPartnerId)
+				.producerBPartnerId(warehouseBPartnerId)
+				.invoicingBPartnerId(warehouseBPartnerId)
+				.warehouseId(wrapper.getWarehouseId())
+				.initialProductId(productId)
+				.productId(contractSpecificPrice.getProductId())
+				.productName(createLogRequest.getProductName())
+				.documentType(getLogEntryDocumentType())
+				.contractType(getLogEntryContractType())
+				.soTrx(getSOTrx())
+				.processed(false)
+				.quantity(quantity)
+				.transactionDate(transactionDate)
+				.year(wrapper.getHarvestingYearId())
+				.description(description)
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.invoicingGroupId(invoicingGroupId)
+				.priceActual(contractSpecificPrice)
+				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
+				.build());
 	}
 
 	@Override
@@ -146,9 +155,9 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 		final TableRecordReference notificationLineRef = TableRecordReference.of(notificationLine);
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
-																						 .flatrateTermId(createLogRequest.getContractId())
-																						 .referenceSet(TableRecordReferenceSet.of(notificationLineRef))
-																						 .build());
+				.flatrateTermId(createLogRequest.getContractId())
+				.referenceSet(TableRecordReferenceSet.of(notificationLineRef))
+				.build());
 
 		final String description = msgBL.getMsg(MSG_ON_REVERSE_DESCRIPTION, ImmutableList.of(String.valueOf(notificationLine.getM_Product_ID()), quantity.toString()));
 
@@ -163,13 +172,6 @@ public abstract class AbstractShippingNotificationLogHandler implements IModular
 	}
 
 	public abstract SOTrx getSOTrx();
-
-	@NonNull
-	private ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
-				.negateIf(request.isCostsType());
-	}
 
 	private record NotificationAndLineWrapper(
 			@NonNull I_M_Shipping_Notification notification,

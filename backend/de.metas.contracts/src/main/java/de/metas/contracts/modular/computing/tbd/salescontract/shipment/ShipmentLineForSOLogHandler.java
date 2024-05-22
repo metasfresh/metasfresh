@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -34,7 +35,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -51,7 +52,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,8 +66,7 @@ import org.springframework.stereotype.Component;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class ShipmentLineForSOLogHandler implements IModularContractLogHandler
+class ShipmentLineForSOLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_COMPLETED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnComplete.Description");
 	private static final AdMessageKey MSG_INFO_SHIPMENT_SO_REVERSED = AdMessageKey.of("de.metas.contracts.modular.impl.ShipmentLineForSOLogHandler.OnReverse.Description");
@@ -86,6 +85,16 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
 
+	ShipmentLineForSOLogHandler(final @NonNull ModularContractLogDAO contractLogDAO,
+			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			final @NonNull ModularContractService modularContractService,
+			final @NonNull ShipmentLineForSOModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.contractLogDAO = contractLogDAO;
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -133,7 +142,7 @@ class ShipmentLineForSOLogHandler implements IModularContractLogHandler
 											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}

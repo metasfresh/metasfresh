@@ -26,10 +26,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -49,7 +50,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,8 +64,7 @@ import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class SalesProFormaModularContractLogsHandler implements IModularContractLogHandler
+class SalesProFormaModularContractLogsHandler extends AbstractModularContractLogHandler
 {
 	private final static AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.impl.SalesProFormaModularContractLogsHandler.CompleteLogDescription");
 
@@ -79,6 +78,13 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 	@Getter @NonNull private final SalesContractProFormaModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PRO_FORMA_SO_MODULAR_CONTRACT;
+
+	SalesProFormaModularContractLogsHandler(final @NonNull ModularContractService modularContractService,
+			final @NonNull SalesContractProFormaModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest request)
@@ -127,7 +133,7 @@ class SalesProFormaModularContractLogsHandler implements IModularContractLogHand
 											.year(request.getModularContractSettings().getYearAndCalendarId().yearId())
 											.description(description)
 											.modularContractTypeId(request.getTypeId())
-											.configId(request.getConfigId())
+											.configModuleId(request.getConfigId().getModularContractModuleId())
 											.priceActual(priceActual)
 											.amount(amount)
 											.build());

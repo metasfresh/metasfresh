@@ -26,12 +26,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -48,7 +50,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -65,8 +66,7 @@ import java.util.Optional;
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class InventoryLineLogHandler implements IModularContractLogHandler
+class InventoryLineLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.impl.InventoryLineModularContractHandler.Description");
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -79,6 +79,13 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 	@Getter @NonNull private final InventoryLineModularContractHandler computingMethod;
 	@Getter @NonNull private final String supportedTableName = I_M_InventoryLine.Table_Name;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INVENTORY;
+
+	public InventoryLineLogHandler(@NonNull final ModularContractService modularContractService, final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository, final @NonNull InventoryLineModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	@NonNull
@@ -135,7 +142,7 @@ class InventoryLineLogHandler implements IModularContractLogHandler
 											.year(yearAndCalendarId.yearId())
 											.description(description)
 											.modularContractTypeId(createLogRequest.getTypeId())
-											.configId(createLogRequest.getConfigId())
+											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.invoicingGroupId(invoicingGroupId)
 											.build());
 	}

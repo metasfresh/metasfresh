@@ -26,11 +26,13 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.lang.SOTrx;
@@ -47,7 +49,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -56,19 +57,26 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+
 /**
  * @deprecated If needed, please move/use code in the new computing methods in package de.metas.contracts.modular.computing.purchasecontract
  */
 @Deprecated
 @Component
-@RequiredArgsConstructor
-class ImportLogHandler implements IModularContractLogHandler
+class ImportLogHandler extends AbstractModularContractLogHandler
 {
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Getter @NonNull private final ImportLogModularContractHandler computingMethod;
 	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.IMPORT_LOG;
+
+	public ImportLogHandler(@NonNull final ModularContractService modularContractService,
+			final @NonNull ImportLogModularContractHandler computingMethod)
+	{
+		super(modularContractService);
+		this.computingMethod = computingMethod;
+	}
 
 	@Override
 	public @NonNull String getSupportedTableName()
@@ -110,7 +118,7 @@ class ImportLogHandler implements IModularContractLogHandler
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				//
 				.referencedRecord(TableRecordReference.of(I_I_ModCntr_Log.Table_Name, record.getI_ModCntr_Log_ID()))
-				.configId(createLogRequest.getConfigId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.year(harvestingYearId)
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))

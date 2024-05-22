@@ -20,7 +20,7 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
  * #L%
  */
 
-
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.workpackage.impl.AbstractPurchaseContractHandler;
@@ -36,10 +36,11 @@ class PurchaseModularContractLog extends AbstractPurchaseContractHandler
 	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.PURCHASE_MODULAR_CONTRACT;
 
 	public PurchaseModularContractLog(
+			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final InformativeLogComputingMethod computingMethod)
 	{
-		super(modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
 }
