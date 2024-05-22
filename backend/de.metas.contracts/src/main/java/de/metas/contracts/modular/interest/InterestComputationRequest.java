@@ -41,7 +41,6 @@ public class InterestComputationRequest
 	@NonNull InvoicingGroupId invoicingGroupId;
 	@NonNull Money interestToDistribute;
 	@NonNull LockOwner lockOwner;
-	@NonNull ComputingMethodType computingMethodType;
 	@NonNull CurrencyPrecision interestCurrencyPrecision;
 	@Nullable BonusComputationDetails bonusComputationDetails;
 
@@ -58,10 +57,15 @@ public class InterestComputationRequest
 		this.invoicingGroupId = invoicingGroupId;
 		this.interestToDistribute = interestToDistribute;
 		this.lockOwner = lockOwner;
-		this.computingMethodType = bonusComputationDetails != null
-				? ComputingMethodType.SubtractValueOnInterim
-				: ComputingMethodType.AddValueOnInterim;
 		this.interestCurrencyPrecision = interestCurrencyPrecision;
 		this.bonusComputationDetails = bonusComputationDetails;
+	}
+
+	@NonNull
+	public ComputingMethodType getComputingMethodType()
+	{
+		return bonusComputationDetails != null
+				? ComputingMethodType.SubtractValueOnInterim
+				: ComputingMethodType.AddValueOnInterim;
 	}
 }

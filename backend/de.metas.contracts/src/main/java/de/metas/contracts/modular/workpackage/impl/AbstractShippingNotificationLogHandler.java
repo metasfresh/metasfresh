@@ -114,7 +114,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		final LocalDateAndOrgId transactionDate = wrapper.getTransactionDate(orgDAO::getTimeZone);
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(createLogRequest.getModularContractSettings().getRawProductId(), yearAndCalendarId)
 				.orElse(null);
 
 		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
@@ -139,7 +139,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 				.year(wrapper.getHarvestingYearId())
 				.description(description)
 				.modularContractTypeId(createLogRequest.getTypeId())
-				.configId(createLogRequest.getConfigId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId)
 				.priceActual(contractSpecificPrice)
 				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))

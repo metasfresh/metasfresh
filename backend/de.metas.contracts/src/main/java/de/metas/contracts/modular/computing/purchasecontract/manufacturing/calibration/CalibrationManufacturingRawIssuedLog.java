@@ -129,7 +129,7 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 				.year(request.getYearId())
 				.description(description)
 				.modularContractTypeId(request.getTypeId())
-				.configId(request.getConfigId())
+				.configModuleId(request.getConfigId().getModularContractModuleId())
 				.collectionPointBPartnerId(collectionPointBPartnerId)
 				.invoicingGroupId(invoicingGroupId)
 				.isBillable(true)
