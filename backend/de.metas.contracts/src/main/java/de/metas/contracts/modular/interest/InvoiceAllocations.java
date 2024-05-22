@@ -37,6 +37,7 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +137,7 @@ public class InvoiceAllocations
 				.getTransactionDate()
 				.toInstant(orgDAO::getTimeZone);
 
-		return TimeUtil.getDaysBetween(getInterimDate(), shippingDate) + additionalInterestDays;
+		return TimeUtil.getDaysBetween(Date.from(getInterimDate()), Date.from(shippingDate)) + additionalInterestDays;
 	}
 
 	@NonNull
