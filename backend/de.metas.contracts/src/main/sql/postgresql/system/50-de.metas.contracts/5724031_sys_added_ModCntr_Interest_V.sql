@@ -26,7 +26,8 @@ WITH interimAmts AS (SELECT SUM(amount
                      WHERE mi.interiminvoice_modcntr_log_id IS NOT NULL
                        AND finalinterest != 0
                      ORDER BY datetrx, modcntr_interest_id)
-SELECT finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
+SELECT mi.modcntr_interest_id as modcntr_interest_v_id,
+       finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
        l.bill_bpartner_id,
@@ -55,7 +56,8 @@ SELECT finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
        matchedAmts.matched_amt   AS TotalAmt,
        mi.interestdays,
        mi.interestscore,
-       mi.finalinterest
+       mi.finalinterest,
+       mi.ad_client_id
 FROM modcntr_interest mi
          INNER JOIN modCntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
          INNER JOIN modcntr_invoicinggroup ig ON l.modcntr_invoicinggroup_id = ig.modcntr_invoicinggroup_id
