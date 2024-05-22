@@ -27,7 +27,6 @@ class DocumentIdsSelectionTest
 			final DocumentIdsSelection fixedSet = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
 			assertThat(EMPTY.addAll(fixedSet)).isSameAs(fixedSet);
 			assertThat(fixedSet.addAll(EMPTY)).isSameAs(fixedSet);
-			assertThat(fixedSet.addAll(fixedSet)).isSameAs(fixedSet);
 		}
 
 		@Test
@@ -43,7 +42,7 @@ class DocumentIdsSelectionTest
 		{
 			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
 			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("3,4,5");
-			assertThat(fixedSet1.addAll(fixedSet2)).isSameAs(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,4,5"));
+			assertThat(fixedSet1.addAll(fixedSet2)).isEqualTo(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,4,5"));
 		}
 
 		@Test
@@ -51,8 +50,23 @@ class DocumentIdsSelectionTest
 		{
 			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
 			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("7,8,9");
-			assertThat(fixedSet1.addAll(fixedSet2)).isSameAs(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,7,8,9"));
+			assertThat(fixedSet1.addAll(fixedSet2)).isEqualTo(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,7,8,9"));
 		}
 
+		@Test
+		void sameFixedSet()
+		{
+			final DocumentIdsSelection fixedSet = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			assertThat(fixedSet.addAll(fixedSet)).isSameAs(fixedSet);
+		}
+
+		@Test
+		void included_sets()
+		{
+			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("1,3");
+			assertThat(fixedSet1.addAll(fixedSet2)).isSameAs(fixedSet1);
+			assertThat(fixedSet2.addAll(fixedSet1)).isSameAs(fixedSet1);
+		}
 	}
 }

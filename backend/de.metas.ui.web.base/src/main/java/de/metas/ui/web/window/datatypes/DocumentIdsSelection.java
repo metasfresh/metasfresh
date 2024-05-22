@@ -324,9 +324,20 @@ public final class DocumentIdsSelection
 			return documentIdsSelection;
 		}
 
-		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream())
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream()).collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection result = DocumentIdsSelection.of(combinedIds);
 
-		return DocumentIdsSelection.of(combinedIds);
+		if (this.equals(result))
+		{
+			return this;
+		}
+		else if (documentIdsSelection.equals(result))
+		{
+			return documentIdsSelection;
+		}
+		else
+		{
+			return result;
+		}
 	}
 }
