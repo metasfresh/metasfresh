@@ -1,5 +1,253 @@
 -- Run mode: SWING_CLIENT
 
+-- Table: ModCntr_Interest_V
+-- 2024-05-21T20:39:12.682Z
+INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength) VALUES ('3',0,0,0,542412,'N',TO_TIMESTAMP('2024-05-21 23:39:12.453','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','N','Y','N','N','N','N','N','N','N','Y',0,'ModCntr_Interest_V','NP','L','ModCntr_Interest_V','DTI',TO_TIMESTAMP('2024-05-21 23:39:12.453','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:12.684Z
+INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Table_ID=542412 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
+;
+
+-- Column: ModCntr_Interest_V.ModCntr_Interest_Run_ID
+-- 2024-05-21T20:39:38.835Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588289,583097,0,30,542412,'ModCntr_Interest_Run_ID',TO_TIMESTAMP('2024-05-21 23:39:38.656','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',10,'Y','Y','N','N','N','N','N','N','N','N','N','Zinsberechnungslauf',TO_TIMESTAMP('2024-05-21 23:39:38.656','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:38.837Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588289 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:38.839Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583097)
+;
+
+-- Column: ModCntr_Interest_V.C_Flatrate_Term_ID
+-- 2024-05-21T20:39:39.322Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588290,541447,0,30,542412,'C_Flatrate_Term_ID',TO_TIMESTAMP('2024-05-21 23:39:39.108','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',10,'Y','Y','N','N','N','N','N','N','N','N','N','Pauschale - Vertragsperiode',TO_TIMESTAMP('2024-05-21 23:39:39.108','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:39.323Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588290 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:39.325Z
+/* DDL */  select update_Column_Translation_From_AD_Element(541447)
+;
+
+-- Column: ModCntr_Interest_V.Bill_BPartner_Value
+-- 2024-05-21T20:39:39.683Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588291,581361,0,10,542412,'Bill_BPartner_Value',TO_TIMESTAMP('2024-05-21 23:39:39.584','YYYY-MM-DD HH24:MI:SS.US'),100,'','de.metas.contracts',40,'Y','Y','N','N','N','N','N','N','N','N','N','Rechnungspartner Suchschlüssel',TO_TIMESTAMP('2024-05-21 23:39:39.584','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:39.684Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588291 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:39.802Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581361)
+;
+
+-- Column: ModCntr_Interest_V.Bill_BPartner_Name
+-- 2024-05-21T20:39:40.131Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588292,542805,0,10,542412,'Bill_BPartner_Name',TO_TIMESTAMP('2024-05-21 23:39:40.05','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',100,'Y','Y','N','N','N','N','N','N','N','N','N','Name Rechnungspartner',TO_TIMESTAMP('2024-05-21 23:39:40.05','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:40.132Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588292 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:40.259Z
+/* DDL */  select update_Column_Translation_From_AD_Element(542805)
+;
+
+-- Column: ModCntr_Interest_V.InvoicingGroup_Name
+-- 2024-05-21T20:39:40.626Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588293,583118,0,10,542412,'InvoicingGroup_Name',TO_TIMESTAMP('2024-05-21 23:39:40.522','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',60,'Y','Y','N','N','N','N','N','N','N','N','N','Name der Abrechnungszeilengruppe',TO_TIMESTAMP('2024-05-21 23:39:40.522','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:40.627Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588293 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:40.739Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583118)
+;
+
+-- Column: ModCntr_Interest_V.InterimInvoice_documentNo
+-- 2024-05-21T20:39:41.093Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588294,583119,0,10,542412,'InterimInvoice_documentNo',TO_TIMESTAMP('2024-05-21 23:39:41.005','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',30,'Y','Y','N','N','N','N','N','N','N','N','N','Vorfinanzierungsnummer',TO_TIMESTAMP('2024-05-21 23:39:41.005','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:41.094Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588294 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:41.208Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583119)
+;
+
+-- Column: ModCntr_Interest_V.InterimDate
+-- 2024-05-21T20:39:41.553Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588295,583086,0,16,542412,'InterimDate',TO_TIMESTAMP('2024-05-21 23:39:41.463','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',29,'Y','Y','N','N','N','N','N','N','N','N','N','Datum Vorfinanzierung',TO_TIMESTAMP('2024-05-21 23:39:41.463','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:41.554Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588295 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:41.694Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583086)
+;
+
+-- Column: ModCntr_Interest_V.BillingDate
+-- 2024-05-21T20:39:42.096Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588296,583087,0,16,542412,'BillingDate',TO_TIMESTAMP('2024-05-21 23:39:42.012','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',29,'Y','Y','N','N','N','N','N','N','N','N','N','Abrechnungsdatum',TO_TIMESTAMP('2024-05-21 23:39:42.012','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:42.097Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588296 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:42.219Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583087)
+;
+
+-- Column: ModCntr_Interest_V.TotalInterest
+-- 2024-05-21T20:39:42.579Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588297,583091,0,22,542412,'TotalInterest',TO_TIMESTAMP('2024-05-21 23:39:42.481','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Gesamtzins',TO_TIMESTAMP('2024-05-21 23:39:42.481','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:42.580Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588297 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:42.707Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583091)
+;
+
+-- Column: ModCntr_Interest_V.AddInterestDays
+-- 2024-05-21T20:39:43.045Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588298,583089,0,11,542412,'AddInterestDays',TO_TIMESTAMP('2024-05-21 23:39:42.956','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',10,'Y','Y','N','N','N','N','N','N','N','N','N','Zusätzliche Zinstage',TO_TIMESTAMP('2024-05-21 23:39:42.956','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:43.046Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588298 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:43.167Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583089)
+;
+
+-- Column: ModCntr_Interest_V.InterestRate
+-- 2024-05-21T20:39:43.504Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588299,583090,0,22,542412,'InterestRate',TO_TIMESTAMP('2024-05-21 23:39:43.419','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Zinssatz',TO_TIMESTAMP('2024-05-21 23:39:43.419','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:43.505Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588299 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:43.641Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583090)
+;
+
+-- Column: ModCntr_Interest_V.DateTrx
+-- 2024-05-21T20:39:44Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588300,1297,0,16,542412,'DateTrx',TO_TIMESTAMP('2024-05-21 23:39:43.896','YYYY-MM-DD HH24:MI:SS.US'),100,'Vorgangsdatum','de.metas.contracts',29,'Das "Vorgangsdatum" bezeichnet das Datum des Vorgangs.','Y','Y','N','N','N','N','N','N','N','N','N','Vorgangsdatum',TO_TIMESTAMP('2024-05-21 23:39:43.896','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:44.001Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588300 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:44.139Z
+/* DDL */  select update_Column_Translation_From_AD_Element(1297)
+;
+
+-- Column: ModCntr_Interest_V.InterimAmt
+-- 2024-05-21T20:39:44.481Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588301,583100,0,12,542412,'InterimAmt',TO_TIMESTAMP('2024-05-21 23:39:44.396','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Vorfinanzierungsbetrag',TO_TIMESTAMP('2024-05-21 23:39:44.396','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:44.483Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588301 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:44.602Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583100)
+;
+
+-- Column: ModCntr_Interest_V.MatchedAmt
+-- 2024-05-21T20:39:44.950Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588302,583099,0,12,542412,'MatchedAmt',TO_TIMESTAMP('2024-05-21 23:39:44.864','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Übereinstimmender Betrag',TO_TIMESTAMP('2024-05-21 23:39:44.864','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:44.951Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588302 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:45.068Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583099)
+;
+
+-- Column: ModCntr_Interest_V.TotalAmt
+-- 2024-05-21T20:39:45.424Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588303,1539,0,12,542412,'TotalAmt',TO_TIMESTAMP('2024-05-21 23:39:45.321','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Gesamtbetrag',TO_TIMESTAMP('2024-05-21 23:39:45.321','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:45.426Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588303 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:45.553Z
+/* DDL */  select update_Column_Translation_From_AD_Element(1539)
+;
+
+-- Column: ModCntr_Interest_V.InterestDays
+-- 2024-05-21T20:39:45.997Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588304,583101,0,11,542412,'InterestDays',TO_TIMESTAMP('2024-05-21 23:39:45.905','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',10,'Y','Y','N','N','N','N','N','N','N','N','N','Zinstage',TO_TIMESTAMP('2024-05-21 23:39:45.905','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:45.998Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588304 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:46.120Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583101)
+;
+
+-- Column: ModCntr_Interest_V.InterestScore
+-- 2024-05-21T20:39:46.491Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588305,583107,0,22,542412,'InterestScore',TO_TIMESTAMP('2024-05-21 23:39:46.411','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Zinsnummer',TO_TIMESTAMP('2024-05-21 23:39:46.411','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:46.492Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588305 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:46.615Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583107)
+;
+
+-- Column: ModCntr_Interest_V.FinalInterest
+-- 2024-05-21T20:39:46.949Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,588306,583102,0,22,542412,'FinalInterest',TO_TIMESTAMP('2024-05-21 23:39:46.869','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts',14,'Y','Y','N','N','N','N','N','N','N','N','N','Endgültige Zinsen',TO_TIMESTAMP('2024-05-21 23:39:46.869','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-21T20:39:46.950Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588306 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-21T20:39:47.071Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583102)
+;
+
+-- Column: ModCntr_Interest_V.ModCntr_Interest_Run_ID
+-- 2024-05-21T20:40:32.882Z
+UPDATE AD_Column SET AD_Reference_ID=19, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2024-05-21 23:40:32.882','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588289
+;
+
 -- 2024-05-22T07:14:02.294Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583120,0,'C_FinalInvoice_ID',TO_TIMESTAMP('2024-05-22 10:14:02.018','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','Schlussabrechnung','Schlussabrechnung',TO_TIMESTAMP('2024-05-22 10:14:02.018','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
