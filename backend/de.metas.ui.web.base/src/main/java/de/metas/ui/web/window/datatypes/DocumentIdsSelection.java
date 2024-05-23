@@ -306,19 +306,38 @@ public final class DocumentIdsSelection
 
 	public DocumentIdsSelection addAll(@NonNull final DocumentIdsSelection documentIdsSelection)
 	{
-		if (this.all)
+		if (this.isEmpty())
+		{
+			return documentIdsSelection;
+		}
+		else if (documentIdsSelection.isEmpty())
 		{
 			return this;
 		}
 
-		if (documentIdsSelection.all)
+		if (this.all)
+		{
+			return this;
+		}
+		else if (documentIdsSelection.all)
 		{
 			return documentIdsSelection;
 		}
 
-		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream())
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream()).collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection result = DocumentIdsSelection.of(combinedIds);
 
-		return DocumentIdsSelection.of(combinedIds);
+		if (this.equals(result))
+		{
+			return this;
+		}
+		else if (documentIdsSelection.equals(result))
+		{
+			return documentIdsSelection;
+		}
+		else
+		{
+			return result;
+		}
 	}
 }

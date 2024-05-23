@@ -14,6 +14,14 @@ import java.awt.*;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.io.Serializable;
+import java.net.URL;
+import java.util.concurrent.ExecutionException;
 
 @Value
 public class MFColor implements Serializable
@@ -37,6 +45,7 @@ public class MFColor implements Serializable
 
 	Color textureTaintColor;
 	/**
+	 *
 	 * Texture Graph URL
 	 */
 	URL textureURL;
@@ -80,6 +89,11 @@ public class MFColor implements Serializable
 	 * Gradient repeat distance in points
 	 */
 	int gradientRepeatDistance;
+
+	/**
+	 * Can be null if the color is not persisted in metasfresh
+	 */
+	ColorId id;
 
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
 	{
@@ -454,5 +468,19 @@ public class MFColor implements Serializable
 			default:
 				throw new IllegalStateException("Type not supported: " + getType());
 		}
+	}
+
+	public String toHexString()
+	{
+		final Color awtColor = toFlatColor().getFlatColor();
+		return toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+	}
+
+	public static String toHexString(final int red, final int green, final int blue)
+	{
+		Check.assume(red >= 0 && red <= 255, "Invalid red value: {}", red);
+		Check.assume(green >= 0 && green <= 255, "Invalid green value: {}", green);
+		Check.assume(blue >= 0 && blue <= 255, "Invalid blue value: {}", blue);
+		return String.format("#%02x%02x%02x", red, green, blue);
 	}
 }

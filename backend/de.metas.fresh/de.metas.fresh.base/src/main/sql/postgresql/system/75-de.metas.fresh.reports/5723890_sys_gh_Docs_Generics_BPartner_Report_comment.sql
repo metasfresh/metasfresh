@@ -1,28 +1,32 @@
+-- also add the original DDL, since we did ad-hoc changes on some instances
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
                                                                                          p_doctype   text,
                                                                                          p_bp_loc_id numeric,
                                                                                          p_record_id numeric)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
-                                                                                 p_doctype   text,
-                                                                                 p_bp_loc_id numeric,
-                                                                                 p_record_id numeric)
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
+;
 
-    RETURNS TABLE
-            (
-                org_name        text,
-                org_addressline text,
-                address1        text,
-                postal          text,
-                city            text,
-                country         text,
-                gln             text,
-                addressblock    text
-            )
-    STABLE
-    LANGUAGE sql
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
+(
+    org_name        text,
+    Org_AddressLine text,
+    address1        text,
+    postal          text,
+    city            text,
+    country         text,
+    gln             text,
+    AddressBlock    text
+)
+;
 
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id    numeric,
+                                                                                            p_doctype   text,
+                                                                                            p_bp_loc_id numeric,
+                                                                                            p_record_id numeric)
+    RETURNS SETOF de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report
 AS
 $BODY$
 SELECT x.org_name,
@@ -36,10 +40,7 @@ SELECT x.org_name,
        CASE
            WHEN p_bp_loc_id IS NOT NULL
                THEN
-                   COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
-           WHEN p_doctype = 'shn'
-               THEN
-                   COALESCE(bpl.address, '')
+               COALESCE(bp.name || E'\n', '') || COALESCE(bpl.address, '')
            WHEN p_doctype = 'o'
                THEN o.BPartnerAddress
            WHEN p_doctype = 'o_delivery'
@@ -66,18 +67,16 @@ SELECT x.org_name,
                THEN COALESCE(mktbp.name || E'\n', '') || COALESCE(mktbpl.address, '')
            WHEN p_doctype = 'ci'
                THEN ci.BPartnerAddress
-		   WHEN p_doctype = 'di' -- Delivery Instructions 
-		       THEN ''
                ELSE 'Incompatible Parameter!'
        END || E'\n' AS addressblock
 FROM (
          SELECT COALESCE(org_bp.name, '')  AS org_name,
                 TRIM(
-                                    COALESCE(org_bp.name || ', ', '') ||
-                                    COALESCE(loc.address1 || ' ', '') ||
-                                    COALESCE(loc.postal || ' ', '') ||
-                                    COALESCE(loc.city, '')
-                    )                      AS org_addressline,
+                        COALESCE(org_bp.name || ', ', '') ||
+                        COALESCE(loc.address1 || ' ', '') ||
+                        COALESCE(loc.postal || ' ', '') ||
+                        COALESCE(loc.city, '')
+                )                      AS org_addressline,
                 COALESCE(loc.address1, '') AS address1,
                 COALESCE(loc.postal, '')   AS postal,
                 COALESCE(loc.city, '')     AS city,
@@ -147,5 +146,5 @@ $BODY$
 ;
 
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(numeric, text, numeric, numeric) IS
-'Note: if both p_bp_loc_id and p_record_id are not null, then **p_bp_loc_id** takes precendence.'
+    'Note: if both p_bp_loc_id and p_record_id are not null, then **p_bp_loc_id** takes precendence.'
 ;
