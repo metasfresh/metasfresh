@@ -93,6 +93,7 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 				.interimDate(enqueueRequest.getInterimDate())
 				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())
 				.involvedModularLogsLock(lock)
+				.userId(enqueueRequest.getUserId())
 				.build();
 	}
 }
