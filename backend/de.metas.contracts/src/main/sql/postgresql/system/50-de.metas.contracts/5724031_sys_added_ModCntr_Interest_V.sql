@@ -43,7 +43,10 @@ SELECT mi.modcntr_interest_id as modcntr_interest_v_id,
        bp.name                   AS Bill_BPartner_Name,
        ig.name                   AS InvoicingGroup_Name,
        interimInvoice.documentno AS InterimInvoice_documentNo,
+       interimInvoice.grandtotal AS InterimInvoice_GrandTotal,
+       shn.documentno            AS shippingNotificationNo,
        l.datetrx,
+       l.amount,
        l.qty,
        uom.x12de355              AS uom,
        ir.interimdate,
@@ -60,6 +63,7 @@ SELECT mi.modcntr_interest_id as modcntr_interest_v_id,
        mi.ad_client_id
 FROM modcntr_interest mi
          INNER JOIN modCntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
+         INNER JOIN m_shipping_notification shn ON l.record_id = shn.m_shipping_notification_id
          INNER JOIN modcntr_invoicinggroup ig ON l.modcntr_invoicinggroup_id = ig.modcntr_invoicinggroup_id
          INNER JOIN modcntr_interest_run ir ON ir.modcntr_interest_run_id = mi.modcntr_interest_run_id
          INNER JOIN c_bpartner bp ON l.bill_bpartner_id = bp.c_bpartner_id
