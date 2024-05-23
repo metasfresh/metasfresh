@@ -30,18 +30,14 @@ import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingOrder;
-import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -72,7 +68,7 @@ public class DefinitiveInvoiceForRawProductComputingMethod implements IComputing
 	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
-		return ComputingMethodType.DefinitiveInvoiceProcessedProduct;
+		return ComputingMethodType.DefinitiveInvoiceRawProduct;
 	}
 
 	@Override
