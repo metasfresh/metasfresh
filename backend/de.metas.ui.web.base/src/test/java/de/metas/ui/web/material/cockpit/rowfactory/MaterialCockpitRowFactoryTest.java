@@ -290,7 +290,9 @@ public class MaterialCockpitRowFactoryTest
 	private I_M_Warehouse createWarehousewithPlant(@NonNull final String plantName)
 	{
 		final I_S_Resource plant = newInstance(I_S_Resource.class);
+		plant.setValue(plantName);
 		plant.setName(plantName);
+		plant.setS_ResourceType_ID(1234);
 		save(plant);
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
@@ -332,7 +334,7 @@ public class MaterialCockpitRowFactoryTest
 
 		// invoke method under test
 		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.newCreateRowsCommand(
-						CreateRowsRequest.builder().date(today).build()
+						CreateRowsRequest.builder().date(today).detailsRowAggregation(MaterialCockpitDetailsRowAggregation.NONE).build()
 				)
 				.createEmptyRowBuckets(
 						ImmutableSet.of(productId),

@@ -105,8 +105,7 @@ public class MaterialCockpitRowFactory
 		@NonNull @Singular List<I_MD_Cockpit> cockpitRecords;
 		@NonNull @Singular List<I_MD_Stock> stockRecords;
 		@NonNull @Singular List<QtyDemandQtySupply> quantitiesRecords;
-		@NonNull
-		MaterialCockpitDetailsRowAggregation detailsRowAggregation;
+		@NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
