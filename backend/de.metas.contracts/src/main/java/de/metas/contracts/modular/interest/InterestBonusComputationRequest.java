@@ -26,6 +26,7 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.LockOwner;
 import de.metas.money.Money;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,6 +42,7 @@ public class InterestBonusComputationRequest
 	@NonNull Money interestToDistribute;
 	@NonNull Instant interimDate;
 	@NonNull Instant billingDate;
+	@NonNull UserId userId;
 
 	@NonNull
 	public BonusComputationDetails getBonusComputationDetails()
