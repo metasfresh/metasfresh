@@ -247,6 +247,8 @@ public class InventoryService
 	@NonNull
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req)
 	{
+		// TODO MAYBE?
+		//  link the inventory with a modular contract if it exists. See de.metas.contracts.modular.ModularContractProvider.streamModularPurchaseContractsForShipmentLine
 		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(req.getWarehouseId());
 
 		final InventoryHeaderCreateRequest createHeaderRequest = InventoryHeaderCreateRequest
@@ -300,4 +302,5 @@ public class InventoryService
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
 	}
+
 }
