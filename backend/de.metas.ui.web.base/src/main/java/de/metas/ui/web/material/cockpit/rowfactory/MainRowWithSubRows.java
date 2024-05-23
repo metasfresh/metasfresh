@@ -9,18 +9,14 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
-import de.metas.ui.web.window.datatypes.ColorValue;
-import de.metas.util.ColorId;
-import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
-import lombok.Builder;
 import io.micrometer.core.lang.NonNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.adempiere.warehouse.WarehouseId;
@@ -64,16 +60,18 @@ public class MainRowWithSubRows
 	@NonNull private final MainRowBucketId productIdAndDate;
 	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
 	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
-	@NonNull private final LinkedHashMap<Integer, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
+	@NonNull private final Map<MaterialCockpitDetailsRowAggregationIdentifier, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
 	@Builder
 	private MainRowWithSubRows(
 			@NonNull final IWarehouseDAO warehouseDAO,
+			@NonNull final MaterialCockpitRowLookups rowLookups,
 			@NonNull final MainRowBucketId productIdAndDate,
 			@Nullable final MFColor procurementStatusColor,
 			@Nullable final Money maxPurchasePrice)
 	{
 		this.warehouseDAO = warehouseDAO;
+		this.rowLookups = rowLookups;
 
 		this.productIdAndDate = productIdAndDate;
 		this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
@@ -98,7 +96,7 @@ public class MainRowWithSubRows
 	private CountingSubRowBucket newCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
 		return new CountingSubRowBucket(rowLookups,
-										detailsRowAggregationIdentifier);
+				detailsRowAggregationIdentifier);
 	}
 
 	public void addCockpitRecord(
@@ -289,7 +287,7 @@ public class MainRowWithSubRows
 
 			}
 		}
-		if(warehouseId!=null)
+		if (warehouseId != null)
 		{
 			if (detailsRowAggregation.isWarehouse())
 			{
@@ -317,7 +315,7 @@ public class MainRowWithSubRows
 	}
 
 	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,
-			final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+										  final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 
 		if (detailsRowAggregation.isNone())

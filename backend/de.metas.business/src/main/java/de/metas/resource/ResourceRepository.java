@@ -187,6 +187,11 @@ class ResourceRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public ImmutableSet<ResourceId> getActivePlantIds()
+	{
+		return getResourcesMap().getActivePlantIds();
+	}
+
 	//
 	//
 	//
@@ -265,5 +270,14 @@ class ResourceRepository
 					.map(Resource::getResourceId)
 					.collect(ImmutableSet.toImmutableSet());
 		}
+
+		public ImmutableSet<ResourceId> getActivePlantIds()
+		{
+			return streamAllActive()
+					.filter(resource -> resource.isActive() && resource.isPlant())
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
 	}
 }

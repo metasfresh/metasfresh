@@ -14,14 +14,6 @@ import java.awt.*;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import javax.swing.*;
-import java.awt.*;
-import java.io.Serializable;
-import java.net.URL;
-import java.util.concurrent.ExecutionException;
 
 @Value
 public class MFColor implements Serializable
@@ -89,11 +81,6 @@ public class MFColor implements Serializable
 	 * Gradient repeat distance in points
 	 */
 	int gradientRepeatDistance;
-
-	/**
-	 * Can be null if the color is not persisted in metasfresh
-	 */
-	ColorId id;
 
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
 	{

@@ -36,8 +36,6 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider;
@@ -45,10 +43,10 @@ import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceRequest;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.resource.ManufacturingResourceType;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
-import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -60,11 +58,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -80,19 +77,20 @@ import java.util.Set;
 public class MaterialCockpitRowFactory
 {
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	@NonNull private final ResourceService resourceService;
 	@NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
 	@NonNull private final ADReferenceService adReferenceService;
 	@NonNull private final PurchaseLastMaxPriceService purchaseLastMaxPriceService;
 
 	@VisibleForTesting
-	public static MaterialCockpitRowFactory newInstanceForUnitTesting()
+	public static MaterialCockpitRowFactory newInstanceForUnitTesting(MaterialCockpitRowLookups rowLookups)
 	{
 		Adempiere.assertUnitTestMode();
 		return new MaterialCockpitRowFactory(
+				rowLookups,
+				ResourceService.newInstanceForJUnitTesting(),
 				ADReferenceService.get(),
 				new PurchaseLastMaxPriceService(new MoneyService(new CurrencyRepository()))
 		);
@@ -120,9 +118,10 @@ public class MaterialCockpitRowFactory
 	CreateRowsCommand newCreateRowsCommand(final @NonNull CreateRowsRequest request)
 	{
 		return CreateRowsCommand.builder()
+				.rowLookups(rowLookups)
 				.warehouseDAO(warehouseDAO)
 				.productBL(productBL)
-				.resourceDAO(resourceDAO)
+				.resourceService(resourceService)
 				.colorRepository(colorRepository)
 				.adReferenceService(adReferenceService)
 				.purchaseLastMaxPriceProvider(purchaseLastMaxPriceService.newProvider())
@@ -136,9 +135,10 @@ public class MaterialCockpitRowFactory
 	@lombok.Builder
 	static class CreateRowsCommand
 	{
+		@NonNull private final MaterialCockpitRowLookups rowLookups;
 		@NonNull private final IWarehouseDAO warehouseDAO;
 		@NonNull private final IProductBL productBL;
-		@NonNull private final IResourceDAO resourceDAO;
+		@NonNull private final ResourceService resourceService;
 		@NonNull private final IColorRepository colorRepository;
 		@NonNull private final ADReferenceService adReferenceService;
 		@NonNull private final PurchaseLastMaxPriceProvider purchaseLastMaxPriceProvider;
@@ -154,7 +154,7 @@ public class MaterialCockpitRowFactory
 			final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 					request.getProductIdsToListEvenIfEmpty(),
 					request.getDate(),
-				request.getDetailsRowAggregation());
+					request.getDetailsRowAggregation());
 
 			final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
@@ -174,45 +174,43 @@ public class MaterialCockpitRowFactory
 		Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 				@NonNull final ImmutableSet<ProductId> productIds,
 				@NonNull final LocalDate timestamp,
-			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+				@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 		{
 			final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
 			final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
 
+			final Set<ResourceId> plantIds = retrieveCountingPlants();
 
-		final Set<ResourceId> plantIds = retrieveCountingPlants();
-
-
-		final List<I_M_Warehouse> warehouses = retrieveWarehouses();
+			final List<I_M_Warehouse> warehouses = retrieveWarehouses();
 
 			final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 			for (final ProductId productId : productIds)
 			{
 				final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
-			final MainRowWithSubRows mainRowBucket = newMainRowWithSubRows(key);
+				final MainRowWithSubRows mainRowBucket = newMainRowWithSubRows(key);
 
 				if (detailsRowAggregation.isPlant())
-			{
-				for (final ResourceId plantId : plantIds)
 				{
-					final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
-							.detailsRowAggregation(detailsRowAggregation)
-							.aggregationId(plantId)
-							.build();
-					mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
+					for (final ResourceId plantId : plantIds)
+					{
+						final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+								.detailsRowAggregation(detailsRowAggregation)
+								.aggregationId(plantId.getRepoId())
+								.build();
+						mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
+					}
 				}
-			}
-			else if (detailsRowAggregation.isWarehouse())
-			{
-				for (final I_M_Warehouse warehouse : warehouses)
+				else if (detailsRowAggregation.isWarehouse())
 				{
-					final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
-							.detailsRowAggregation(detailsRowAggregation)
-							.aggregationId(warehouse.getM_Warehouse_ID())
-							.build();
-					mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
-				}
+					for (final I_M_Warehouse warehouse : warehouses)
+					{
+						final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+								.detailsRowAggregation(detailsRowAggregation)
+								.aggregationId(warehouse.getM_Warehouse_ID())
+								.build();
+						mainRowBucket.addEmptyCountingSubrowBucket(detailsRowAggregationIdentifier);
+					}
 				}
 
 				for (final DimensionSpecGroup group : groups)
@@ -224,28 +222,19 @@ public class MaterialCockpitRowFactory
 			}
 			return result.build();
 		}
-	private MainRowWithSubRows newMainRowWithSubRows(final MainRowBucketId key)
+
+		private Set<ResourceId> retrieveCountingPlants()
 		{
-		return MainRowWithSubRows.create(key, highPriceProvider, rowLookups);
-	}
+			return resourceService.getActivePlantIds();
+		}
 
-	private List<I_S_Resource> retrieveCountingPlants()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_S_Resource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_ManufacturingResourceType, ManufacturingResourceType.Plant)
-				.create()
-				.list();
-	}
-
-	private List<I_M_Warehouse> retrieveWarehouses()
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Warehouse.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		private List<I_M_Warehouse> retrieveWarehouses()
+		{
+			return Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Warehouse.class)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.list();
 		}
 
 		private void addCockpitRowsToResult(
@@ -278,7 +267,7 @@ public class MaterialCockpitRowFactory
 				@NonNull final DimensionSpec dimensionSpec,
 				@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 		{
-		for (final QtyDemandQtySupply qtyRecord : request.getQuantitiesRecords())
+			for (final QtyDemandQtySupply qtyRecord : request.getQuantitiesRecords())
 			{
 				final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 
@@ -300,6 +289,7 @@ public class MaterialCockpitRowFactory
 
 			return MainRowWithSubRows.builder()
 					.warehouseDAO(warehouseDAO)
+					.rowLookups(rowLookups)
 					.productIdAndDate(mainRowBucketId)
 					.procurementStatusColor(procurementStatusColor)
 					.maxPurchasePrice(maxPurchasePrice)

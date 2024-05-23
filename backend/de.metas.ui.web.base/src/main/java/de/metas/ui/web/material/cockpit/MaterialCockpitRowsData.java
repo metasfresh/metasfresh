@@ -109,9 +109,8 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	}
 
 	@Override
-	public synchronized Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
+	public Map<DocumentId, MaterialCockpitRow> getDocumentId2TopLevelRows()
 	{
-		recomputeInvalidRows();
 		return rowsHolder.getDocumentId2TopLevelRows();
 	}
 
@@ -144,7 +143,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	}
 
 	@Override
-	public synchronized void invalidate(@NonNull final DocumentIdsSelection rowIds)
+	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
 	{
 		debouncer.add(rowIds);
 	}
@@ -156,7 +155,7 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			return;
 		}
 
-		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowIds);
+		final ArrayList<MaterialCockpitRow> rowsToInvalidate = extractRows(rowsHolder.getDocumentId2TopLevelRows(), rowIds);
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
