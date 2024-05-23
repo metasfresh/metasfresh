@@ -8,7 +8,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.compiere.util.TimeUtil;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /*
@@ -36,6 +35,17 @@ import java.time.LocalDate;
 @Value
 public class MainRowBucketId
 {
+	@NonNull ProductId productId;
+	@NonNull LocalDate date;
+
+	private MainRowBucketId(
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate date)
+	{
+		this.productId = productId;
+		this.date = date;
+	}
+
 	public static MainRowBucketId createInstanceForCockpitRecord(
 			@NonNull final I_MD_Cockpit dataRecord)
 	{
@@ -65,23 +75,4 @@ public class MainRowBucketId
 	{
 		return new MainRowBucketId(productId, date);
 	}
-
-	ProductId productId;
-	LocalDate date;
-	BigDecimal pmmQtyPromised = BigDecimal.ZERO;
-	BigDecimal qtyReserved = BigDecimal.ZERO;
-	BigDecimal qtyOrdered = BigDecimal.ZERO;
-	BigDecimal qtyMaterialentnahme = BigDecimal.ZERO;
-	BigDecimal qtyMrp = BigDecimal.ZERO;
-	BigDecimal qtyPromised = BigDecimal.ZERO;
-	BigDecimal qtyOnHand = BigDecimal.ZERO;
-
-	private MainRowBucketId(
-			@NonNull final ProductId productId,
-			@NonNull final LocalDate date)
-	{
-		this.productId = productId;
-		this.date = date;
-	}
-
 }

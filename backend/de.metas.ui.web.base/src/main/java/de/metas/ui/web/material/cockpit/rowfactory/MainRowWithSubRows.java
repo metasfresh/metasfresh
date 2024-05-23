@@ -1,36 +1,29 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.QtyDemandQtySupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.money.Money;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.product.IProductBL;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
-import de.metas.ui.web.window.datatypes.ColorValue;
-import de.metas.util.ColorId;
-import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
-import de.metas.util.Services;
 import io.micrometer.core.lang.NonNull;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,62 +54,28 @@ import java.util.Map;
 @EqualsAndHashCode(of = "productIdAndDate")
 public class MainRowWithSubRows
 {
+	@NonNull private final IWarehouseDAO warehouseDAO;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
+
 	@NonNull private final MainRowBucketId productIdAndDate;
+	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
+	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
+	@NonNull private final Map<MaterialCockpitDetailsRowAggregationIdentifier, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
 
-	@NonNull
-	private final MainRowBucket mainRow = new MainRowBucket();
-	@NonNull
-	private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
-	@NonNull
-	private final Map<MaterialCockpitDetailsRowAggregationIdentifier, CountingSubRowBucket> countingSubRows = new LinkedHashMap<>();
-	@NonNull
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull
-	final ADReferenceService adReferenceService = ADReferenceService.get();
-
-	public static MainRowWithSubRows create(
-			@NonNull final MainRowBucketId productIdAndDate,
-			@NonNull final HighPriceProvider highPriceProvider,
-			@NonNull final MaterialCockpitRowLookups rowLookups)
-	{
-		return new MainRowWithSubRows(productIdAndDate, highPriceProvider, rowLookups);
-	}
-
+	@Builder
 	private MainRowWithSubRows(
+			@NonNull final IWarehouseDAO warehouseDAO,
+			@NonNull final MaterialCockpitRowLookups rowLookups,
 			@NonNull final MainRowBucketId productIdAndDate,
-			@NonNull final HighPriceProvider highPriceProvider,
-			@NonNull final MaterialCockpitRowLookups rowLookups)
+			@Nullable final MFColor procurementStatusColor,
+			@Nullable final Money maxPurchasePrice)
 	{
-		this.productIdAndDate = productIdAndDate;
+		this.warehouseDAO = warehouseDAO;
 		this.rowLookups = rowLookups;
 
-		final I_M_Product product = productBL.getById(productIdAndDate.getProductId());
-		final ColorId colorId = adReferenceService.getColorId(product, I_M_Product.COLUMNNAME_ProcurementStatus, product.getProcurementStatus());
-		final String procurementStatus = colorId != null ? toHexString(Services.get(IColorRepository.class).getColorById(colorId)) : null;
-		this.mainRow.setProcurementStatus(procurementStatus);
-
-		final HighPriceProvider.HighPriceRequest request = HighPriceProvider.HighPriceRequest.builder()
-				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productIdAndDate.getProductId().getRepoId()))
-				.evalDate(productIdAndDate.getDate())
-				.build();
-
-		this.mainRow.setHighestPurchasePrice_AtDate(highPriceProvider.getHighestPrice(request).getMaxPurchasePrice());
-
-	}
-
-	@Nullable
-	private static String toHexString(@Nullable final MFColor color)
-	{
-		if (color == null)
-		{
-			return null;
-		}
-
-		final Color awtColor = color.toFlatColor().getFlatColor();
-		return ColorValue.toHexString(awtColor.getRed(), awtColor.getGreen(), awtColor.getBlue());
+		this.productIdAndDate = productIdAndDate;
+		this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
+		this.mainRow.setHighestPurchasePrice_AtDate(maxPurchasePrice);
 	}
 
 	public void addEmptyAttributesSubrowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
@@ -137,7 +96,7 @@ public class MainRowWithSubRows
 	private CountingSubRowBucket newCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
 		return new CountingSubRowBucket(rowLookups,
-										detailsRowAggregationIdentifier);
+				detailsRowAggregationIdentifier);
 	}
 
 	public void addCockpitRecord(
@@ -151,8 +110,7 @@ public class MainRowWithSubRows
 		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(cockpitRecord.getM_Warehouse_ID());
 		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-			ppPlantId = warehouse.getPP_Plant_ID();
+			ppPlantId = getPlantId(warehouseId);
 		}
 
 		if (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || ppPlantId > 0)
@@ -314,8 +272,7 @@ public class MainRowWithSubRows
 		final WarehouseId warehouseId = qtyDemandQtySupply.getWarehouseId();
 		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(qtyDemandQtySupply.getWarehouseId());
-			ppPlantId = warehouse.getPP_Plant_ID();
+			ppPlantId = getPlantId(warehouseId);
 		}
 
 		if (ppPlantId > 0)
@@ -330,7 +287,7 @@ public class MainRowWithSubRows
 
 			}
 		}
-		if(warehouseId!=null)
+		if (warehouseId != null)
 		{
 			if (detailsRowAggregation.isWarehouse())
 			{
@@ -358,7 +315,7 @@ public class MainRowWithSubRows
 	}
 
 	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,
-			final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+										  final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 
 		if (detailsRowAggregation.isNone())
@@ -367,8 +324,7 @@ public class MainRowWithSubRows
 			return;
 		}
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
-		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
-		final int plantId = warehouseRecord.getPP_Plant_ID();
+		final int plantId = getPlantId(warehouseId);
 
 		if (detailsRowAggregation.isPlant())
 		{
@@ -388,6 +344,12 @@ public class MainRowWithSubRows
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
 			countingSubRow.addStockRecord(stockRecord);
 		}
+	}
+
+	private int getPlantId(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
+		return warehouseRecord.getPP_Plant_ID();
 	}
 
 	/**

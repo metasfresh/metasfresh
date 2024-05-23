@@ -312,6 +312,8 @@ public class ResourceService
 		return resourceRepository.getResourceIdsByResourceTypeIds(resourceTypeIds);
 	}
 
+	public ImmutableSet<ResourceId> getActivePlantIds() {return resourceRepository.getActivePlantIds();}
+
 	//
 	//
 	// ------------------------------------------------------------------------
