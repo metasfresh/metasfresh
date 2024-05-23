@@ -24,13 +24,20 @@ WITH interimAmts AS (SELECT SUM(amount
                      FROM modcntr_interest mi
                               INNER JOIN modcntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
                      WHERE mi.interiminvoice_modcntr_log_id IS NOT NULL
-                     --  AND finalinterest != 0
+                       AND finalinterest != 0
                      ORDER BY datetrx, modcntr_interest_id)
-SELECT finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
+SELECT mi.modcntr_interest_id as modcntr_interest_v_id,
+       finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
        ir.modcntr_interest_run_id,
        l.c_flatrate_term_id,
+       l.bill_bpartner_id,
+       ig.modcntr_invoicinggroup_id,
+       l.initial_product_id,
+       interimInvoice.c_invoice_id as C_InterimInvoice_ID,
+       uom.c_uom_id,
        l.productname,
        p.name                    AS name,
+       p.value                   AS ProductValue,
        t.modularcontracthandlertype,
        bp.value                  AS Bill_BPartner_Value,
        bp.name                   AS Bill_BPartner_Name,
@@ -52,7 +59,8 @@ SELECT finalIL.C_Invoice_ID      AS C_FinalInvoice_ID,
        matchedAmts.matched_amt   AS TotalAmt,
        mi.interestdays,
        mi.interestscore,
-       mi.finalinterest
+       mi.finalinterest,
+       mi.ad_client_id
 FROM modcntr_interest mi
          INNER JOIN modCntr_log l ON mi.shippingnotification_modcntr_log_id = l.modcntr_log_id AND l.isbillable = 'Y'
          INNER JOIN m_shipping_notification shn ON l.record_id = shn.m_shipping_notification_id
@@ -72,8 +80,7 @@ FROM modcntr_interest mi
          LEFT JOIN c_invoiceline finalIL ON finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
          INNER JOIN m_product p ON l.initial_product_id = p.m_product_id
          INNER JOIN C_UOM uom ON l.c_uom_id = uom.c_uom_id
-WHERE finalIL.C_Invoice_ID = 1000606
-  AND mi.finalinterest != 0
+WHERE mi.finalinterest != 0
 ORDER BY bp.value,
          l.datetrx
 ;
