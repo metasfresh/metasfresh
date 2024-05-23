@@ -576,3 +576,137 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLogic='@UseScalePrice@ != N',Updated=TO_TIMESTAMP('2024-05-21 12:55:14.616','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=728717
 ;
 
+
+
+-- Column: ModCntr_Specific_Price.IsScalePrice
+-- 2024-05-23T12:50:44.030Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588320,580373,0,37,542405,'IsScalePrice',TO_TIMESTAMP('2024-05-23 15:50:43.844','YYYY-MM-DD HH24:MI:SS.US'),100,'N','N','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Staffelpreis',0,0,TO_TIMESTAMP('2024-05-23 15:50:43.844','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-23T12:50:44.038Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588320 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-23T12:50:44.042Z
+/* DDL */  select update_Column_Translation_From_AD_Element(580373)
+;
+
+-- Column: ModCntr_Specific_Price.IsScalePrice
+-- 2024-05-23T12:50:58.989Z
+UPDATE AD_Column SET DefaultValue='''N''',Updated=TO_TIMESTAMP('2024-05-23 15:50:58.989','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588320
+;
+
+-- Column: ModCntr_Specific_Price.IsScalePrice
+-- 2024-05-23T12:51:41.597Z
+UPDATE AD_Column SET AD_Reference_ID=20, DefaultValue='N', FieldLength=1,Updated=TO_TIMESTAMP('2024-05-23 15:51:41.597','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588320
+;
+
+-- 2024-05-23T12:51:44.910Z
+/* DDL */ SELECT public.db_alter_table('ModCntr_Specific_Price','ALTER TABLE public.ModCntr_Specific_Price ADD COLUMN IsScalePrice CHAR(1) DEFAULT ''N'' CHECK (IsScalePrice IN (''Y'',''N'')) NOT NULL')
+;
+
+-- Column: ModCntr_Specific_Price.MinValue
+-- 2024-05-23T12:53:33.800Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,588321,53400,0,12,542405,'MinValue',TO_TIMESTAMP('2024-05-23 15:53:33.676','YYYY-MM-DD HH24:MI:SS.US'),100,'N','0','de.metas.contracts',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Min Value',0,0,TO_TIMESTAMP('2024-05-23 15:53:33.676','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2024-05-23T12:53:33.803Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=588321 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2024-05-23T12:53:33.808Z
+/* DDL */  select update_Column_Translation_From_AD_Element(53400)
+;
+
+-- 2024-05-23T12:53:37.417Z
+/* DDL */ SELECT public.db_alter_table('ModCntr_Specific_Price','ALTER TABLE public.ModCntr_Specific_Price ADD COLUMN MinValue NUMERIC DEFAULT 0 NOT NULL')
+;
+
+-- Element: MinValue
+-- 2024-05-23T12:53:51.092Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Mindestwert', PrintName='Mindestwert',Updated=TO_TIMESTAMP('2024-05-23 15:53:51.092','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=53400 AND AD_Language='it_CH'
+;
+
+-- 2024-05-23T12:53:51.098Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(53400,'it_CH')
+;
+
+-- Element: MinValue
+-- 2024-05-23T12:53:53.667Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-23 15:53:53.667','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=53400 AND AD_Language='en_GB'
+;
+
+-- 2024-05-23T12:53:53.673Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(53400,'en_GB')
+;
+
+-- Element: MinValue
+-- 2024-05-23T12:53:57.496Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Mindestwert', PrintName='Mindestwert',Updated=TO_TIMESTAMP('2024-05-23 15:53:57.496','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=53400 AND AD_Language='de_CH'
+;
+
+-- 2024-05-23T12:53:57.499Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(53400,'de_CH')
+;
+
+-- Element: MinValue
+-- 2024-05-23T12:54:02.905Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Mindestwert', PrintName='Mindestwert',Updated=TO_TIMESTAMP('2024-05-23 15:54:02.905','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=53400 AND AD_Language='de_DE'
+;
+
+-- 2024-05-23T12:54:02.907Z
+UPDATE AD_Element SET Name='Mindestwert', PrintName='Mindestwert' WHERE AD_Element_ID=53400
+;
+
+-- 2024-05-23T12:54:03.128Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(53400,'de_DE')
+;
+
+-- 2024-05-23T12:54:03.130Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(53400,'de_DE')
+;
+
+-- Field: Vertrag(541798,de.metas.endcustomer.is184) -> Vertragsspezifische Preise(547537,de.metas.endcustomer.is184) -> Staffelpreis
+-- Column: ModCntr_Specific_Price.IsScalePrice
+-- 2024-05-23T12:55:12.214Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588320,728761,0,547537,0,TO_TIMESTAMP('2024-05-23 15:55:12.073','YYYY-MM-DD HH24:MI:SS.US'),100,10,'D',0,'Y','Y','Y','Y','N','N','N','N','N','N','Staffelpreis',10,1,1,TO_TIMESTAMP('2024-05-23 15:55:12.073','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-23T12:55:12.216Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=728761 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-05-23T12:55:12.218Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580373)
+;
+
+-- 2024-05-23T12:55:12.221Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728761
+;
+
+-- 2024-05-23T12:55:12.224Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(728761)
+;
+
+-- Field: Vertrag(541798,de.metas.endcustomer.is184) -> Vertragsspezifische Preise(547537,de.metas.endcustomer.is184) -> Mindestwert
+-- Column: ModCntr_Specific_Price.MinValue
+-- 2024-05-23T12:55:23.460Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,588321,728762,0,547537,0,TO_TIMESTAMP('2024-05-23 15:55:23.325','YYYY-MM-DD HH24:MI:SS.US'),100,10,'D',0,'Y','Y','Y','Y','N','N','N','N','N','N','Mindestwert',10,1,1,TO_TIMESTAMP('2024-05-23 15:55:23.325','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-23T12:55:23.462Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=728762 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2024-05-23T12:55:23.465Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(53400)
+;
+
+-- 2024-05-23T12:55:23.468Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=728762
+;
+
+-- 2024-05-23T12:55:23.469Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(728762)
+;
+
