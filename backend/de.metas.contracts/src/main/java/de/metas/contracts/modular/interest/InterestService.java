@@ -32,6 +32,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,6 +49,7 @@ public class InterestService
 
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void distributeInterestAndBonus(@NonNull final InterestBonusComputationRequest request)
 	{
@@ -60,6 +62,7 @@ public class InterestService
 				.notificationsProducer(interestComputationNotificationsProducer)
 				.currencyBL(currencyBL)
 				.orgDAO(orgDAO)
+				.queryBL(queryBL)
 				.build()
 				.distributeInterestAndBonus(request);
 	}

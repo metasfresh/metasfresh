@@ -44,8 +44,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class InterestComputationNotificationsProducer
 {
-	private static final Topic EVENTBUS_TOPIC = Topic.builder().name("de.metas.modcntr.interestRun.UserNotifications").type(Type.DISTRIBUTED).build();
-	private static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InterestRunGenerated");
+	public static final Topic EVENTBUS_TOPIC = Topic.builder().name("de.metas.modcntr.interestRun.UserNotifications").type(Type.DISTRIBUTED).build();
+	public static final AdMessageKey MSG_Event_InvoiceGenerated = AdMessageKey.of("Event_InterestRunGenerated");
 	private static final Logger logger = LogManager.getLogger(InterestComputationNotificationsProducer.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
