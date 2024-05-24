@@ -41,14 +41,13 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.Param;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_PaymentTerm;
 
 import java.util.HashMap;
 import java.util.List;

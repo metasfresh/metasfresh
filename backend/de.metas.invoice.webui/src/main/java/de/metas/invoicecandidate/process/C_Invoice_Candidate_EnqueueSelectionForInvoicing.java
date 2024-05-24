@@ -42,7 +42,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.BaseLineType;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
