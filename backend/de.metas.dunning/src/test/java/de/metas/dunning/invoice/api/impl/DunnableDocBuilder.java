@@ -68,14 +68,14 @@ public class DunnableDocBuilder
 	public IDunnableDoc create()
 	{
 		return new DunnableDoc(tableName, record_id,
-				documentNo, // FRESH-504: DocumentNo
-				AD_Client_ID, AD_Org_ID,
-				C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
-				C_Currency_ID, totalAmt, openAmt,
-				dueDate,
-				graceDate,
-				daysDue,
-				M_SectionCode_ID,
+							   documentNo, // FRESH-504: DocumentNo
+							   AD_Client_ID, AD_Org_ID,
+							   C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
+							   C_Currency_ID, totalAmt, openAmt,
+							   dueDate,
+							   graceDate,
+							   daysDue,
+							   M_SectionCode_ID,
 				isInDispute,
 				poReference);
 	}

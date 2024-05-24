@@ -17,23 +17,23 @@ import java.util.function.Function;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
-public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
-{
-	@NonNull private final LocalDate localDate;
-	@Getter @NonNull private final OrgId orgId;
+public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId> {
+    @NonNull
+    private final LocalDate localDate;
+    @Getter
+    @NonNull
+    private final OrgId orgId;
 
-	private LocalDateAndOrgId(final @NonNull LocalDate localDate, final @NonNull OrgId orgId)
-	{
-		this.localDate = localDate;
-		this.orgId = orgId;
-	}
+    private LocalDateAndOrgId(final @NonNull LocalDate localDate, final @NonNull OrgId orgId) {
+        this.localDate = localDate;
+        this.orgId = orgId;
+    }
 
-	public static LocalDateAndOrgId ofLocalDate(@NonNull final LocalDate localDate, @NonNull final OrgId orgId)
-	{
-		return new LocalDateAndOrgId(localDate, orgId);
-	}
+    public static LocalDateAndOrgId ofLocalDate(@NonNull final LocalDate localDate, @NonNull final OrgId orgId) {
+        return new LocalDateAndOrgId(localDate, orgId);
+    }
 
-	@Nullable
+    @Nullable
 	public static LocalDateAndOrgId ofNullableLocalDate(@Nullable final LocalDate localDate, @NonNull final OrgId orgId)
 	{
 		return localDate != null ? ofLocalDate(localDate, orgId) : null;
@@ -41,9 +41,9 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 
 	public static LocalDateAndOrgId ofTimestamp(@NonNull final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
-		final LocalDate localDate = timestamp.toInstant().atZone(orgMapper.apply(orgId)).toLocalDate();
-		return new LocalDateAndOrgId(localDate, orgId);
-	}
+        final LocalDate localDate = timestamp.toInstant().atZone(orgMapper.apply(orgId)).toLocalDate();
+        return new LocalDateAndOrgId(localDate, orgId);
+    }
 
 	@Nullable
 	public static LocalDateAndOrgId ofNullableTimestamp(@Nullable final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper)
@@ -78,38 +78,35 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
-		return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();
-	}
+        return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();
+    }
 
-	public Instant toEndOfDayInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
-	{
-		return localDate.atTime(LocalTime.MAX).atZone(orgMapper.apply(orgId)).toInstant();
-	}
+    public Instant toEndOfDayInstant(@NonNull final Function<OrgId, ZoneId> orgMapper) {
+        return localDate.atTime(LocalTime.MAX).atZone(orgMapper.apply(orgId)).toInstant();
+    }
 
-	public LocalDate toLocalDate() {return localDate;}
+    public LocalDate toLocalDate() {
+        return localDate;
+    }
 
-	public Timestamp toTimestamp(@NonNull final Function<OrgId, ZoneId> orgMapper)
-	{
-		return Timestamp.from(toInstant(orgMapper));
-	}
+    public Timestamp toTimestamp(@NonNull final Function<OrgId, ZoneId> orgMapper) {
+        return Timestamp.from(toInstant(orgMapper));
+    }
 
-	@Override
-	public int compareTo(final @Nullable LocalDateAndOrgId o)
-	{
-		return compareToByLocalDate(o);
-	}
+    @Override
+    public int compareTo(final @Nullable LocalDateAndOrgId o) {
+        return compareToByLocalDate(o);
+    }
 
-	/**
-	 * In {@code LocalDateAndOrgId}, only the localDate is the actual data, while orgId is used to give context for reading & writing purposes.
-	 * A calendar date is directly comparable to another one, without regard of "from which org has this date been extracted?"
-	 * That's why a comparison by local date is enough to provide correct ordering, even with different {@code OrgId}s.
-	 *
-	 * @see #compareTo(LocalDateAndOrgId)
-	 */
-	private int compareToByLocalDate(final @Nullable LocalDateAndOrgId o)
-	{
-		if (o == null)
-		{
+    /**
+     * In {@code LocalDateAndOrgId}, only the localDate is the actual data, while orgId is used to give context for reading & writing purposes.
+     * A calendar date is directly comparable to another one, without regard of "from which org has this date been extracted?"
+     * That's why a comparison by local date is enough to provide correct ordering, even with different {@code OrgId}s.
+     *
+     * @see #compareTo(LocalDateAndOrgId)
+     */
+    private int compareToByLocalDate(final @Nullable LocalDateAndOrgId o) {
+        if (o == null) {
 			return 1;
 		}
 		return this.localDate.compareTo(o.localDate);

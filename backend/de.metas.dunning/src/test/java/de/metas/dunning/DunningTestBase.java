@@ -73,7 +73,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -114,6 +113,7 @@ public class DunningTestBase
 	protected CurrencyId currencyEUR;
 	protected CurrencyId currencyCHF;
 	protected IDunningBL dunningBL;
+	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
