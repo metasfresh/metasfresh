@@ -228,7 +228,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
 	}
-
+	
 	@Override
 	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
 	{

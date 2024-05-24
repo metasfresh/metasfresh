@@ -73,7 +73,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -229,8 +228,8 @@ public class DunningTestBase
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
-											  .map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
-											  .orElse(null));
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -294,8 +293,8 @@ public class DunningTestBase
 	protected OrgInfo createOrgInfo()
 	{
 		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.MAIN)
-											 .build());
+				.orgId(OrgId.MAIN)
+				.build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)

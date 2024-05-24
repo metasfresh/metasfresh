@@ -592,9 +592,7 @@ public class TimeUtil
 
 	public static int getDaysBetween(@NonNull final LocalDateAndOrgId start, @NonNull final LocalDateAndOrgId end)
 	{
-		final LocalDate d1 = start.toLocalDate();
-		final LocalDate d2 = end.toLocalDate();
-		return Period.between(d1, d2).getDays();
+		return (int)LocalDateAndOrgId.daysBetween(start, end);
 	}
 	
 	/**
