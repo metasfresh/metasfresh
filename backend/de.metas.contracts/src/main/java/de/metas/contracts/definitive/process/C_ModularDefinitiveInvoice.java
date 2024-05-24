@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.contracts.finalinvoice.process;
+package de.metas.contracts.definitive.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
@@ -38,7 +38,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecondition
+public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessPrecondition
 {
 	private final static AdMessageKey NO_MODULAR_CONTRACT_SELECTED = AdMessageKey.of("de.metas.contracts.finalinvoice.process.NoModularContract");
 
@@ -70,7 +70,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
 				.getModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
 
-		modularContractInvoiceEnqueuer.enqueueFinalInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
+		modularContractInvoiceEnqueuer.enqueueDefinitiveInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
 	}
