@@ -22,6 +22,7 @@
 
 package de.metas.pricing.service;
 
+import de.metas.pricing.ProductPriceId;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -37,12 +38,16 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class ProductScalePriceService
 {
 	private final IProductPA productPA = Services.get(IProductPA.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+	@NonNull private ProductScalePriceRepository productScalePriceRepository;
 
 	@Nullable
 	public ProductPriceSettings getProductPriceSettings(@NonNull final I_M_ProductPrice productPrice, @Nullable final Quantity qty)
@@ -76,6 +81,26 @@ public class ProductScalePriceService
 		{
 			return null;
 		}
+	}
+
+	public List<ScaleProductPrice> getNotQuantityProductPriceScales(@NonNull final I_M_ProductPrice productPrice)
+	{
+
+		final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
+
+		if (!scalePriceUsage.useScalePrice())
+		{
+			return Collections.emptyList();
+		}
+
+		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.ofCode(productPrice.getScalePriceQuantityFrom());
+
+		if (scalePriceQtyFrom.scaleByQuantity())
+		{
+			return Collections.emptyList();
+		}
+
+		return productScalePriceRepository.retrieveScalePrices(ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID()));
 	}
 
 	@NonNull

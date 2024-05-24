@@ -26,6 +26,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.product.ProductId;
@@ -146,7 +147,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * </ul>
 	 */
 	@Nullable
-	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
+	PriceListVersionId getPriceListVersion(I_C_OrderLine orderLine);
 
 	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 

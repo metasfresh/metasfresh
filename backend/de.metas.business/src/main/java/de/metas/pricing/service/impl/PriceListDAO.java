@@ -339,6 +339,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@Nullable
 	public PriceListVersionId retrievePriceListVersionIdOrNull(
 			@NonNull final PriceListId priceListId,
 			@NonNull final ZonedDateTime date,
