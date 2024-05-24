@@ -909,8 +909,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
-		final Money allocationSourceOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
-		createRealizedGainLossFactLine(line, fact, factLine, allocationSourceOnPaymentDate);
+		final Money allocationAcctOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtAcct(), factLine.getAcctSchema().getCurrencyId());
+		createRealizedGainLossFactLine(line, fact, factLine, allocationAcctOnPaymentDate);
 	}
 
 	/**
@@ -1003,10 +1003,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * <p>
 	 * It is also creating a new FactLine where the currency gain/loss is booked.
 	 *
-	 * @param line
-	 * @param fact
 	 * @param invoiceFactLine             invoice related booking (on Invoice date)
-	 * @param allocationAcctOnPaymentDate
 	 */
 	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine invoiceFactLine, final Money allocationAcctOnPaymentDate)
 	{
@@ -1015,8 +1012,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get how much was booked for invoice, on allocation's date
 		final boolean isDR = invoiceFactLine.getAmtAcctDr().signum() != 0;
-		final Money allocationAcctOnInvoiceDate = isDR ? Money.of(invoiceFactLine.getAmtSourceDr(), invoiceFactLine.getCurrencyId())
-				: Money.of(invoiceFactLine.getAmtSourceCr(), invoiceFactLine.getCurrencyId());
+		final Money allocationAcctOnInvoiceDate = isDR
+				? Money.of(invoiceFactLine.getAmtAcctDr(), as.getCurrencyId())
+				: Money.of(invoiceFactLine.getAmtAcctCr(), as.getCurrencyId());
 
 		//
 		// Calculate our currency gain/loss by subtracting how much was booked at invoice time and how much shall be booked at payment time.
@@ -1034,9 +1032,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		setIsMultiCurrency(true);
 
 		// Build up the description for the new line
-		final StringBuilder description = new StringBuilder();
-		description.append("Amt(PaymentDate)=").append(allocationAcctOnPaymentDate);
-		description.append(", Amt(InvoiceDate)=").append(allocationAcctOnInvoiceDate);
+		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
+				+ ", Amt(InvoiceDate)=" + allocationAcctOnInvoiceDate;
 
 		//
 		// Check the "invoice minus paid" amount and decide if it's a gain or loss and book it.
@@ -1081,7 +1078,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Update created gain/loss fact line (description, dimensions etc)
 		fl.setAD_Org_ID(invoiceFactLine.getAD_Org_ID());
 		fl.setC_BPartner_ID(invoiceFactLine.getC_BPartner_ID());
-		fl.addDescription(description.toString());
+		fl.addDescription(description);
 
 	}
 
