@@ -54,15 +54,17 @@ import java.util.Objects;
 
 public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
 {
+	public static final String PARAM_INTERIM_DATE = "InterimDate";
+	public static final String PARAM_BILLING_DATE = "BillingDate";
 	@NonNull private final ModCntrInvoicingGroupRepository invoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
 	@NonNull private final InterestComputationEnqueuer enqueuer = SpringContextHolder.instance.getBean(InterestComputationEnqueuer.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	@Param(parameterName = "InterimDate", mandatory = true)
-	private LocalDate p_InterimDate;
+	@Param(parameterName = PARAM_INTERIM_DATE, mandatory = true)
+	@Nullable private LocalDate p_InterimDate;
 
-	@Param(parameterName = "BillingDate", mandatory = true)
-	private LocalDate p_BillingDate;
+	@Param(parameterName = PARAM_BILLING_DATE, mandatory = true)
+	@Nullable private LocalDate p_BillingDate;
 
 	@Param(parameterName = I_ModCntr_InvoicingGroup.COLUMNNAME_ModCntr_InvoicingGroup_ID)
 	private InvoicingGroupId p_InvoicingGroupId;
@@ -166,6 +168,18 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 				final Money amtToDistribute = invoicingGroupRepository.getById(invoicingGroupId).amtToDistribute();
 				p_InterestToDistribute = Money.toBigDecimalOrZero(amtToDistribute);
 				p_InterestToDistributeCurrencyId = amtToDistribute == null ? -1 : amtToDistribute.getCurrencyId().getRepoId();
+			}
+		}
+
+		else if (p_InterimDate != null && p_BillingDate != null && p_InterimDate.isAfter(p_BillingDate))
+		{
+			if (PARAM_INTERIM_DATE.equals(parameterName))
+			{
+				p_BillingDate = null;
+			}
+			else
+			{
+				p_InterimDate = null;
 			}
 		}
 	}
