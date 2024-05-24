@@ -114,7 +114,6 @@ public class DunningTestBase
 	protected CurrencyId currencyCHF;
 	protected IDunningBL dunningBL;
 	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	protected final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Before
 	public final void beforeTest()
@@ -229,8 +228,8 @@ public class DunningTestBase
 	{
 		final PlainDunningContext dunningContext = createPlainDunningContext();
 		dunningContext.setDunningDate(Optional.ofNullable(dunningDate)
-											  .map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
-											  .orElse(null));
+				.map(date -> LocalDateAndOrgId.ofLocalDate(date.toInstant().atZone(orgDAO.getTimeZone(OrgId.MAIN)).toLocalDate(), OrgId.MAIN))
+				.orElse(null));
 		dunningContext.setDunningLevel(dunningLevel);
 		return dunningContext;
 	}
@@ -294,8 +293,8 @@ public class DunningTestBase
 	protected OrgInfo createOrgInfo()
 	{
 		return orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-											 .orgId(OrgId.MAIN)
-											 .build());
+				.orgId(OrgId.MAIN)
+				.build());
 	}
 
 	public MockedDunnableSource getMockedDunnableSource(final IDunningContext context)
