@@ -23,6 +23,7 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -45,22 +46,11 @@ import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocBaseType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocCopyHandler;
-import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
+import de.metas.currency.*;
+import de.metas.document.*;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.forex.ForexContractId;
 import de.metas.forex.ForexContractRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
@@ -69,12 +59,16 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+<<<<<<< HEAD
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+=======
+import de.metas.invoice.*;
+>>>>>>> 8bf8f410b56 (Cherry-pick dunning fixes to `modified_carbon_uat` (#18060))
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -86,6 +80,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -101,11 +96,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxId;
+import de.metas.tax.api.*;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -126,20 +118,7 @@ import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Charge;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_RMA;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Tax;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -151,17 +130,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
@@ -210,6 +179,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+	
+	@Override
+	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(orderId));
 	}
 
 	@Override
@@ -2040,6 +2015,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+<<<<<<< HEAD
 	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
 	{
 		return invoiceDAO.retrieveLines(invoiceId);
@@ -2049,5 +2025,27 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public DocStatus getDocStatus(@NonNull final InvoiceId invoiceId)
 	{
 		return DocStatus.ofCode(invoiceDAO.getByIdInTrx(invoiceId).getDocStatus());
+=======
+	public boolean hasInvoicesWithForexContracts(
+			@NonNull final OrderId orderId,
+			@NonNull final Set<ForexContractId> contractIds)
+	{
+		Check.assumeNotEmpty(contractIds, "contractIds shall not be empty");
+
+		return getByOrderId(orderId)
+				.stream()
+				.map(InvoiceDAO::extractForeignContractRef)
+				.filter(Objects::nonNull)
+				.map(ForexContractRef::getForexContractId)
+				.anyMatch(contractIds::contains);
+	}
+
+	@Override
+	@NonNull
+	public PaymentTermId getPaymentTermId(@NonNull final InvoiceId invoiceId)
+	{
+		return PaymentTermId.ofRepoId(getById(invoiceId)
+				.getC_PaymentTerm_ID());
+>>>>>>> 8bf8f410b56 (Cherry-pick dunning fixes to `modified_carbon_uat` (#18060))
 	}
 }
