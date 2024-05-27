@@ -285,8 +285,8 @@ public final class FactLine extends X_Fact_Acct
 	{
 		return acctSchema;
 	}
-	
-	CurrencyId getAcctCurrencyId() { return getAcctSchema().getCurrencyId();}
+
+	CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
 
 	private void assertAcctCurrency(@NonNull final Money amt)
 	{
@@ -350,6 +350,11 @@ public final class FactLine extends X_Fact_Acct
 		setAmtSourceDr(roundAmountToPrecision("AmtSourceDr", AmtSourceDr, precision));
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
+
+	public void setAmtAcct(@NonNull final Balance balance)
+	{
+		setAmtAcct(balance.getDebit(), balance.getCredit());
+	}
 
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
@@ -1616,7 +1621,7 @@ public final class FactLine extends X_Fact_Acct
 	{
 		return CurrencyId.ofRepoId(getC_Currency_ID());
 	}
-	
+
 	public void setCurrencyId(final CurrencyId currencyId)
 	{
 		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
