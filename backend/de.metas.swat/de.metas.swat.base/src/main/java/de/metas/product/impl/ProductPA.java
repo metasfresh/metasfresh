@@ -28,7 +28,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheIgnore;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductPA;
 import de.metas.util.Services;
@@ -36,7 +35,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MProductPricing;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -44,12 +42,7 @@ import java.util.Properties;
 
 public class ProductPA implements IProductPA
 {
-
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private static final Logger logger = LogManager.getLogger(ProductPA.class);
-
-	private static final String PREFIX_ERR_MSG_NONEXISTING_PROD = "Param 'productId' must be the of product that exists in the database. Was: ";
 
 	@Override
 	public I_M_Product retrieveProduct(
