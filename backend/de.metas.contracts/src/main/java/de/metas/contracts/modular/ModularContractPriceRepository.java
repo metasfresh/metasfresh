@@ -23,7 +23,10 @@
 package de.metas.contracts.modular;
 
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.model.I_ModCntr_Module;
 import de.metas.contracts.model.I_ModCntr_Specific_Price;
+import de.metas.contracts.model.I_ModCntr_Type;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -34,11 +37,14 @@ import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -114,6 +120,53 @@ public class ModularContractPriceRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 
+				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
+				.map(ModularContractPriceRepository::fromRecord);
+	}
+
+	@NonNull
+	public ModCntrSpecificPrice retrieveScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
+	{
+		return retrieveOptionalScalePriceForProductAndContract(contractSpecificScalePriceRequest)
+				.orElseThrow(() -> new AdempiereException("No Price found for Product and Contract !")
+						.appendParametersToMessage()
+						.setParameter("ModularContractModuleId", contractSpecificScalePriceRequest.getModularContractModuleId().getRepoId())
+						.setParameter("ContractId", contractSpecificScalePriceRequest.getFlatrateTermId().getRepoId()));
+	}
+
+	@NonNull
+	public Optional<ModCntrSpecificPrice> retrieveOptionalScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
+	{
+		final ModularContractModuleId modularContractModuleId = contractSpecificScalePriceRequest.getModularContractModuleId();
+		final FlatrateTermId flatrateTermId = contractSpecificScalePriceRequest.getFlatrateTermId();
+		final String columnName = contractSpecificScalePriceRequest.getColumnName();
+		final BigDecimal value = contractSpecificScalePriceRequest.getValue();
+
+		final IQuery<I_ModCntr_Type> types = queryBL.createQueryBuilder(I_ModCntr_Type.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_AD_Column_ID, columnName)
+				.create();
+
+		final IQuery<I_ModCntr_Module> modules = queryBL.createQueryBuilder(I_ModCntr_Module.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID)
+				.subQuery(types)
+				.end()
+				.create();
+
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, modularContractModuleId)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_IsScalePrice, true)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID)
+				.subQuery(modules)
+				.end()
+				.addCompareFilter(I_ModCntr_Specific_Price.COLUMNNAME_MinValue, CompareQueryFilter.Operator.LESS_OR_EQUAL, value)
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_ModCntr_Specific_Price.COLUMNNAME_MinValue)
+				.create()
 				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
 				.map(ModularContractPriceRepository::fromRecord);
 	}

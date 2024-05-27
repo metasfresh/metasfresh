@@ -77,9 +77,11 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 	{
 		final ModCntrSpecificPriceId contractPriceId = ModCntrSpecificPriceId.ofRepoId(getRecord_ID());
 
+		ModCntrSpecificPrice newContractPrice;
+
 		if (p_asNewPrice)
 		{
-			modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+			newContractPrice = modularContractPriceService.cloneById(contractPriceId, contractPrice -> contractPrice.toBuilder()
 					.amount(Money.of(p_price, p_C_Currency_ID))
 					.uomId(p_C_UOM_ID)
 					.minValue(p_minValue)
@@ -87,19 +89,19 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 		}
 		else
 		{
-			final ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
+			newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
 					.amount(Money.of(p_price, p_C_Currency_ID))
 					.uomId(p_C_UOM_ID)
 					.minValue(p_minValue)
 					.build());
-
-			contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
-							.unitPrice(newContractPrice.getProductPrice())
-							.flatrateTermId(newContractPrice.flatrateTermId())
-							.modularContractModuleId(newContractPrice.modularContractModuleId())
-							.build(),
-					logHandlerRegistry);
 		}
+
+		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()
+						.unitPrice(newContractPrice.getProductPrice())
+						.flatrateTermId(newContractPrice.flatrateTermId())
+						.modularContractModuleId(newContractPrice.modularContractModuleId())
+						.build(),
+				logHandlerRegistry);
 
 		return MSG_OK;
 	}
