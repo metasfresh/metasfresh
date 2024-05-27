@@ -34,8 +34,8 @@ import java.math.BigDecimal;
 @Builder
 public class ContractSpecificScalePriceRequest
 {
-	@NonNull final ModularContractModuleId modularContractModuleId;
-	@NonNull final FlatrateTermId flatrateTermId;
-	@NonNull final String columnName;
-	@NonNull final BigDecimal value;
+	@NonNull ModularContractModuleId modularContractModuleId;
+	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull ColumnOption column;
+	@NonNull BigDecimal value;
 }

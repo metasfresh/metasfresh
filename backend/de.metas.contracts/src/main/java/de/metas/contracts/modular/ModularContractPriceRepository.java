@@ -145,7 +145,7 @@ public class ModularContractPriceRepository
 	{
 		final ModularContractModuleId modularContractModuleId = contractSpecificScalePriceRequest.getModularContractModuleId();
 		final FlatrateTermId flatrateTermId = contractSpecificScalePriceRequest.getFlatrateTermId();
-		final String columnName = contractSpecificScalePriceRequest.getColumnName();
+		final String columnName = contractSpecificScalePriceRequest.getColumn().getColumnName();
 		final BigDecimal value = contractSpecificScalePriceRequest.getValue();
 
 		final IQuery<I_ModCntr_Type> types = queryBL.createQueryBuilder(I_ModCntr_Type.class)

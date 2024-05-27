@@ -22,31 +22,17 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty;
 
-import de.metas.util.lang.ReferenceListAwareEnum;
-import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_Data_Export_Audit_Log;
 
-public enum ColumnOption implements ReferenceListAwareEnum
+@RequiredArgsConstructor
+@Getter
+public enum ColumnOption
 {
 	UserElementNumber1(I_M_InOutLine.COLUMNNAME_UserElementNumber1),
 	UserElementNumber2(I_M_InOutLine.COLUMNNAME_UserElementNumber2);
 
-	@Getter
-	private final String code;
-
-	ColumnOption(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	@NonNull
-	public static ColumnOption ofCode(@NonNull final String code)
-	{
-		return index.ofCode(code);
-	}
-
-	private static final ReferenceListAwareEnums.ValuesIndex<ColumnOption> index = ReferenceListAwareEnums.index(values());
+	@NonNull private final String columnName;
 }
