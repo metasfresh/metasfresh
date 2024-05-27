@@ -32,7 +32,6 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
-import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -70,15 +69,8 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContractLogHandler
+public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModularContractLogHandler
 {
-	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
-	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
-
-	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
-	@Getter @NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
-	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
-
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -89,7 +81,10 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 	@NonNull private final ModularContractLogService modularContractLogService;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
 
-	public AbstractInterimInvoiceLineLog(@NonNull final ModularContractService modularContractService,
+	@Getter @NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.INTERIM;
+	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+
+	public AbstractModularPurchaseInvoiceLineLog(@NonNull final ModularContractService modularContractService,
 			final @NonNull ModularContractLogDAO contractLogDAO,
 			final @NonNull ModularContractLogService modularContractLogService,
 			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
@@ -113,9 +108,8 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		final Quantity qtyEntered = Quantitys.of(invoiceLineRecord.getQtyEntered(), uomId);
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
-		final int multiplier = getMultiplier(createLogRequest);
-		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId).multiply(multiplier);
-		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId).multiply(multiplier);
+		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId);
+		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId);
 		final ProductId productId = createLogRequest.getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
@@ -140,7 +134,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		final ModularContractLogEntry modularContractLogEntry = modularContractLogEntryOptional.get();
 
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = msgBL.getBaseLanguageMsg(MSG_ON_COMPLETE_DESCRIPTION, productName, qtyEntered);
+		final String description = msgBL.getBaseLanguageMsg(getOnCompleteDescription(), productName, qtyEntered);
 
 		final LocalDateAndOrgId transactionDate = LocalDateAndOrgId.ofTimestamp(invoiceRecord.getDateInvoiced(),
 				OrgId.ofRepoId(invoiceLineRecord.getAD_Org_ID()),
@@ -161,7 +155,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
 						.initialProductId(rawProductId)
-						.productName(createLogRequest.getProductName())
+						.productName(invoiceLineRecord.getProductName())
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
@@ -179,13 +173,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		);
 	}
 
-	/**
-	 * @return -1 if the interim amount & price actual should be negated in logs, 1 if not.
-	 */
-	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
-	{
-		return createLogRequest.isCostsType() ? -1 : 1;
-	}
+	protected abstract AdMessageKey getOnCompleteDescription();
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -202,7 +190,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 
 		final ProductId productId = ProductId.ofRepoId(invoiceLineRecord.getM_Product_ID());
 		final String productName = productBL.getProductValueAndName(productId);
-		final String description = msgBL.getBaseLanguageMsg(MSG_ON_REVERSE_DESCRIPTION, productName, quantity);
+		final String description = msgBL.getBaseLanguageMsg(getOnReverseDescription(), productName, quantity);
 
 		return ExplainedOptional.of(
 				LogEntryReverseRequest.builder()
@@ -215,4 +203,5 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		);
 	}
 
+	protected abstract AdMessageKey getOnReverseDescription();
 }
