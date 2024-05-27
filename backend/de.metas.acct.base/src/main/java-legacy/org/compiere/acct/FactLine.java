@@ -924,7 +924,7 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	public boolean isDrSourceBalance()
 	{
-		return getSourceBalance().signum() >= 0;
+		return getSourceBalance().isDebit();
 	}
 
 	public Balance getAcctBalance()
