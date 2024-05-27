@@ -26,14 +26,13 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_Data_Export_Audit_Log;
 
 public enum ColumnOption implements ReferenceListAwareEnum
 {
-	Standalone(X_Data_Export_Audit_Log.DATA_EXPORT_ACTION_Exported_Standalone),
-	AlongWithParent(X_Data_Export_Audit_Log.DATA_EXPORT_ACTION_Exported_AlongWithParent),
-	AssignedToParent(X_Data_Export_Audit_Log.DATA_EXPORT_ACTION_AssignedToParent),
-	Deleted(X_Data_Export_Audit_Log.DATA_EXPORT_ACTION_Deleted);
+	UserElementNumber1(I_M_InOutLine.COLUMNNAME_UserElementNumber1),
+	UserElementNumber2(I_M_InOutLine.COLUMNNAME_UserElementNumber2);
 
 	@Getter
 	private final String code;

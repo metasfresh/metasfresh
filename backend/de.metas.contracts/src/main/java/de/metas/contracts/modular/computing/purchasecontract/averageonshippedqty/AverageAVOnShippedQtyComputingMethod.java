@@ -34,26 +34,16 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.money.Money;
-import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductPrice;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.shippingnotification.ShippingNotificationLineId;
-import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -107,25 +97,6 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
 				.build();
-	}
-
-
-	private Optional<ProductPrice> getPricePerUnitPerDay(@NonNull final ModularContractLogEntriesList logs)
-	{
-		final ProductPrice productPrice = logs.getUniqueProductPriceOrError().orElse(null);
-		if (productPrice == null)
-		{
-			return Optional.empty();
-		}
-		return Optional.of(productPrice);
-	}
-
-	private Money computeStorageCosts(
-			@NonNull final ModularContractLogEntriesList logs,
-			@NonNull final ProductPrice pricePerUnitPerDay)
-	{
-		final Quantity qty = computingMethodService.getQtyXStorageDaysSum(logs, pricePerUnitPerDay.getUomId());
-		return pricePerUnitPerDay.computeAmount(qty);
 	}
 
 	@Override

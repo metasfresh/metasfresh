@@ -101,8 +101,8 @@ class UEN1ShipmentLineLog extends AbstractUENShipmentLineLog
 		final I_M_InOut inOutRecord = inOutBL.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(createLogRequest.getContractId());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(flatrateTermRecord.getBill_BPartner_ID());
-		final BigDecimal uen1 = inOutLineRecord.getUserElementNumber2();
-		final String columName = "UEN1";
+		final BigDecimal uen1 = inOutLineRecord.getUserElementNumber1();
+		final String columName = ColumnOption.UserElementNumber1.getCode();
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
