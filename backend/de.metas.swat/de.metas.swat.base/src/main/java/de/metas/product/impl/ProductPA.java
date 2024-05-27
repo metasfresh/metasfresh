@@ -30,48 +30,34 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.DBException;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProductPricing;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
+import org.compiere.model.X_M_ProductPrice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Properties;
+
 public class ProductPA implements IProductPA
 {
 
-	public static final String WHERE_PRODUCT_PRICE = I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "=?";
-
-	public static final String WHERE_PRODUCT_SCALE_PRICE = I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?";
+	final private IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final Logger logger = LogManager.getLogger(ProductPA.class);
-
-	private final static String SQL_SCALEPRICE_FOR_QTY = //
-			" SELECT * "//
-					+ " FROM " + I_M_ProductScalePrice.Table_Name //
-					+ " WHERE " //
-					+ I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?" //
-					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "<=?" //
-					+ "    AND " + I_M_ProductScalePrice.COLUMNNAME_IsActive + "='Y'" //
-					+ " ORDER BY " + I_M_ProductScalePrice.COLUMNNAME_Qty + " DESC";
 
 	private static final String PREFIX_ERR_MSG_NONEXISTING_PROD = "Param 'productId' must be the of product that exists in the database. Was: ";
 
@@ -101,15 +87,14 @@ public class ProductPA implements IProductPA
 	}
 
 	@Cached(cacheName = I_M_Product.Table_Name + "#By#ColumnName")
-	/* package */I_M_Product retrieveProduct(
+		/* package */I_M_Product retrieveProduct(
 			final @CacheCtx Properties ctx,
 			final String colName,
 			final @CacheAllowMutable Object param,
 			final @CacheIgnore boolean throwEx,
 			final @CacheTrx String trxName)
 	{
-		final I_M_Product product = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Product.class, ctx, trxName)
+		final I_M_Product product = queryBL.createQueryBuilder(I_M_Product.class, ctx, trxName)
 				.addEqualsFilter(colName, param)
 				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
@@ -153,10 +138,20 @@ public class ProductPA implements IProductPA
 	@Override
 	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
 	{
-		return new Query(Env.getCtx(), I_M_ProductScalePrice.Table_Name, WHERE_PRODUCT_SCALE_PRICE, trxName)
-				.setParameters(productPriceId)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
+		final IQuery<I_M_ProductPrice> productPrice_SubQuery = queryBL.createQueryBuilder(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom, X_M_ProductPrice.SCALEPRICEQUANTITYFROM_Quantity)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_ProductScalePrice.class, trxName)
+				.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPriceId)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID)
+				.subQuery(productPrice_SubQuery)
+				.end()
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_M_ProductScalePrice.COLUMNNAME_Qty)
+				.create()
 				.list(I_M_ProductScalePrice.class);
 	}
 
@@ -181,45 +176,40 @@ public class ProductPA implements IProductPA
 			final boolean createNew, final String trxName)
 	{
 
-		final PreparedStatement pstmt = DB.prepareStatement(
-				SQL_SCALEPRICE_FOR_QTY, trxName);
+		final IQuery<I_M_ProductPrice> productPrice_SubQuery = queryBL.createQueryBuilder(I_M_ProductPrice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom, X_M_ProductPrice.SCALEPRICEQUANTITYFROM_Quantity)
+				.create();
 
-		ResultSet rs = null;
-		try
+		final I_M_ProductScalePrice productScalePrice = queryBL.createQueryBuilder(I_M_ProductScalePrice.class, trxName)
+				.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPriceId)
+				.addCompareFilter(I_M_ProductScalePrice.COLUMNNAME_Qty, CompareQueryFilter.Operator.LESS_OR_EQUAL, qty)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID)
+				.subQuery(productPrice_SubQuery)
+				.end()
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_M_ProductScalePrice.COLUMNNAME_Qty)
+				.create()
+				.firstOnly(I_M_ProductScalePrice.class);
+
+		if (productScalePrice != null)
 		{
 
-			pstmt.setInt(1, productPriceId);
-			pstmt.setBigDecimal(2, qty);
-			pstmt.setMaxRows(1);
-
-			rs = pstmt.executeQuery();
-
-			if (rs.next())
-			{
-
-				logger.debug("Returning existing instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
-				return new X_M_ProductScalePrice(Env.getCtx(), rs, trxName);
-			}
-			if (createNew)
-			{
-
-				logger.debug("Returning new instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
-				final I_M_ProductScalePrice newInstance = createScalePrice(trxName);
-				newInstance.setM_ProductPrice_ID(productPriceId);
-				newInstance.setQty(qty);
-				return newInstance;
-			}
-			return null;
-
+			logger.debug("Returning existing instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
+			return productScalePrice;
 		}
-		catch (final SQLException e)
+		if (createNew)
 		{
-			throw new DBException(e, SQL_SCALEPRICE_FOR_QTY);
+
+			logger.debug("Returning new instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
+			final I_M_ProductScalePrice newInstance = createScalePrice(trxName);
+			newInstance.setM_ProductPrice_ID(productPriceId);
+			newInstance.setQty(qty);
+			return newInstance;
 		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
+
+		return null;
 	}
 
 	@Override

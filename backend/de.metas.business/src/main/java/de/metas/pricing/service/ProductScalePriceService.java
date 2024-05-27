@@ -57,6 +57,13 @@ public class ProductScalePriceService
 			return ProductPriceSettings.of(productPrice);
 		}
 
+		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.ofCode(productPrice.getScalePriceQuantityFrom());
+
+		if (!scalePriceQtyFrom.scaleByQuantity())
+		{
+			return ProductPriceSettings.of(productPrice);
+		}
+
 		final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
 
 		if (!scalePriceUsage.useScalePrice())
