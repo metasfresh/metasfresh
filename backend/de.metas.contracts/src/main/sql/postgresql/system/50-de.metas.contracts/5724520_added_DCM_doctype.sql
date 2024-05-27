@@ -37,3 +37,25 @@ UPDATE AD_Ref_List_Trl SET Name='Definitive Credit Memo',Updated=TO_TIMESTAMP('2
 -- 2024-05-27T19:13:54.022Z
 UPDATE C_DocType SET DocSubType='DCM',Updated=TO_TIMESTAMP('2024-05-27 22:13:54.022','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541123
 ;
+
+-- Value: C_ModularFinalInvoice
+-- Classname: de.metas.contracts.finalinvoice.process.C_ModularFinalInvoice
+-- 2024-05-27T19:30:50.444Z
+UPDATE AD_Process SET Value='C_ModularFinalInvoice',Updated=TO_TIMESTAMP('2024-05-27 22:30:50.443','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Process_ID=585375
+;
+
+-- Value: C_ModularDefinitiveInvoice
+-- Classname: de.metas.contracts.definitive.process.C_ModularDefinitiveInvoice
+-- 2024-05-27T19:33:17.262Z
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585396,'Y','de.metas.contracts.definitive.process.C_ModularDefinitiveInvoice','N',TO_TIMESTAMP('2024-05-27 22:33:17.095','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Definitive Schlussrechnung erstellen','json','N','N','xls','Java',TO_TIMESTAMP('2024-05-27 22:33:17.095','YYYY-MM-DD HH24:MI:SS.US'),100,'C_ModularDefinitiveInvoice')
+;
+
+-- 2024-05-27T19:33:17.263Z
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585396 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- Process: C_ModularDefinitiveInvoice(de.metas.contracts.definitive.process.C_ModularDefinitiveInvoice)
+-- 2024-05-27T19:33:34.235Z
+UPDATE AD_Process_Trl SET Name='Create definitive final invoice',Updated=TO_TIMESTAMP('2024-05-27 22:33:34.235','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585396
+;
+
