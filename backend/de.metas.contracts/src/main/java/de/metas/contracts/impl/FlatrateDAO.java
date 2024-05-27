@@ -1238,9 +1238,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.filter(queryBL.createCompositeQueryFilter(I_ModCntr_Settings.class)
 					.setJoinOr()
 					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, request.getProductId())
-					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, request.getProductId())
-					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Co_Product_ID, request.getProductId()));
-
+					.addEqualsFilter(I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID, request.getProductId()));
 		}
 
 		return queryBuilder.create();
