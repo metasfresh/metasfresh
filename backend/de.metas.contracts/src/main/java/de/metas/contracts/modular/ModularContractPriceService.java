@@ -147,6 +147,15 @@ public class ModularContractPriceService
 	{
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
 
+		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
+				.taxCategoryId(pricingResult.getTaxCategoryId())
+				.uomId(pricingResult.getPriceUomId())
+				.amount(pricingResult.getPriceStdAsMoney())
+				.productId(productId)
+				.seqNo(moduleConfig.getSeqNo());
+
 		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
 		{
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
@@ -165,19 +174,7 @@ public class ModularContractPriceService
 
 			if (!scalePriceUsage.isUseScalePriceStrict())
 			{
-				modularContractPriceRepository.save(
-						ModCntrSpecificPrice.builder()
-								.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-								.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
-								.taxCategoryId(pricingResult.getTaxCategoryId())
-								.uomId(pricingResult.getPriceUomId())
-								.amount(pricingResult.getPriceStdAsMoney())
-								.productId(productId)
-								.seqNo(moduleConfig.getSeqNo())
-								.isScalePrice(false)
-								.minValue(BigDecimal.ZERO)
-								.build()
-				);
+				modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(false).minValue(BigDecimal.ZERO).build());
 			}
 
 			//
@@ -185,20 +182,10 @@ public class ModularContractPriceService
 			final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.optionalOfNullableCode(productPrice.getScalePriceQuantityFrom()).orElse(null);
 			if (scalePriceQtyFrom == null || !scalePriceQtyFrom.isQuantity())
 			{
-				final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
-						.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-						.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
-						.taxCategoryId(pricingResult.getTaxCategoryId())
-						.uomId(pricingResult.getPriceUomId())
-						.amount(pricingResult.getPriceStdAsMoney())
-						.productId(productId)
-						.seqNo(moduleConfig.getSeqNo())
-						.isScalePrice(true);
-
 				final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
 				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
 						.stream()
-						.map(scale -> specificPriceTemplate.minValue(scale.getQuantityMin()).build())
+						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin()).build())
 						.collect(ImmutableList.toImmutableList());
 
 				modularContractPriceRepository.saveAll(specificPrices);
@@ -206,18 +193,7 @@ public class ModularContractPriceService
 		}
 		else
 		{
-			modularContractPriceRepository.save(
-					ModCntrSpecificPrice.builder()
-							.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-							.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
-							.taxCategoryId(pricingResult.getTaxCategoryId())
-							.uomId(pricingResult.getPriceUomId())
-							.amount(pricingResult.getPriceStdAsMoney())
-							.isScalePrice(false)
-							.minValue(null)
-							.productId(productId)
-							.seqNo(moduleConfig.getSeqNo())
-							.build());
+			modularContractPriceRepository.save(ModCntrSpecificPrice.builder().isScalePrice(false).minValue(null).build());
 		}
 
 	}
