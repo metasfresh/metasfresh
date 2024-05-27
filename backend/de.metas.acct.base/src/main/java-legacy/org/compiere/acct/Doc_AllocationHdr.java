@@ -1033,6 +1033,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency(true);
 
+		// Disable trx lines strategy in order to tolerate cases with multiple DR and CR lines
+		// We have to do this because in case AcctSchema.isAllowMultiDebitAndCredit is false, for some cases we will get multiple DR/CR lines.
+		fact.setFactTrxLinesStrategy(null);
+
 		// Build up the description for the new line
 		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
 				+ ", Amt(InvoiceDate)=" + allocationAcctOnInvoiceDate;
