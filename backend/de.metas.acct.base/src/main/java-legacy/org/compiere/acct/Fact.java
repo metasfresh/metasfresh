@@ -56,13 +56,17 @@ import java.util.function.Consumer;
  */
 public final class Fact
 {
-	/**
-	 * Constructor
-	 *
-	 * @param document    pointer to document
-	 * @param acctSchema  Account Schema to create accounts
-	 * @param postingType the default Posting type (actual,..) for this posting
-	 */
+	// services
+	static final Logger log = LogManager.getLogger(Fact.class);
+
+	final Doc<?> m_doc;
+	private final AcctSchema acctSchema;
+	private final PostingType postingType;
+	private boolean m_converted = false;
+	private ArrayList<FactLine> m_lines = new ArrayList<>();
+
+	@Nullable private FactTrxStrategy _factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+
 	public Fact(
 			@NonNull final Doc<?> document,
 			@NonNull final AcctSchema acctSchema,
@@ -73,44 +77,23 @@ public final class Fact
 		this.postingType = postingType;
 	}
 
-	// services
-	static final transient Logger log = LogManager.getLogger(Fact.class);
-
-	/**
-	 * Document
-	 */
-	final Doc<?> m_doc;
-	/**
-	 * Accounting Schema
-	 */
-	private final AcctSchema acctSchema;
-
-	/**
-	 * Posting Type
-	 */
-	private final PostingType postingType;
-
-	/**
-	 * Is Converted
-	 */
-	private boolean m_converted = false;
-
-	/**
-	 * Lines
-	 */
-	private List<FactLine> m_lines = new ArrayList<>();
-
-	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
-
-	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
+	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
-		this.factTrxLinesStrategy = factTrxLinesStrategy;
+		this._factTrxLinesStrategy = factTrxLinesStrategy;
 		return this;
 	}
 
-	/**
-	 * Dispose
-	 */
+	@Nullable
+	private FactTrxStrategy getFactTrxLinesStrategyEffective()
+	{
+		if (acctSchema.isAllowMultiDebitAndCredit())
+		{
+			return null;
+		}
+
+		return _factTrxLinesStrategy;
+	}
+
 	public void dispose()
 	{
 		m_lines.clear();
@@ -739,8 +722,7 @@ public final class Fact
 		final List<FactLine> linesAfterDistribution = FactGLDistributor.newInstance()
 				.distribute(m_lines);
 
-		m_lines = linesAfterDistribution;
-		// TODO
+		m_lines = new ArrayList<>(linesAfterDistribution);
 	}
 
 	/**************************************************************************
@@ -751,13 +733,7 @@ public final class Fact
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("Fact[");
 		sb.append(m_doc);
-		sb.append(",").append(getAcctSchema());
-		sb.append(",PostType=").append(getPostingType());
-		sb.append("]");
-		return sb.toString();
-	}    // toString
 
 	/**
 	 * Get Lines
@@ -773,23 +749,36 @@ public final class Fact
 
 	public void save()
 	{
-		factTrxLinesStrategy
-				.createFactTrxLines(m_lines)
-				.forEach(this::save);
+		final FactTrxStrategy factTrxLinesStrategy = getFactTrxLinesStrategyEffective();
+		if (factTrxLinesStrategy != null)
+		{
+			factTrxLinesStrategy
+					.createFactTrxLines(m_lines)
+					.forEach(this::saveNew);
+		}
+		else
+		{
+			m_lines.forEach(this::saveNew);
+		}
 	}
 
-	private void save(final FactTrxLines factTrxLines)
+	private void saveNew(FactLine line)
+	{
+		InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void saveNew(final FactTrxLines factTrxLines)
 	{
 		//
 		// Case: 1 debit line, one or more credit lines
 		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
 			final FactLine drLine = factTrxLines.getDebitLine();
-			InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+			saveNew(drLine);
 
 			factTrxLines.forEachCreditLine(crLine -> {
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+				saveNew(crLine);
 			});
 
 		}
@@ -798,11 +787,11 @@ public final class Fact
 		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
 		{
 			final FactLine crLine = factTrxLines.getCreditLine();
-			InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
+			saveNew(crLine);
 
 			factTrxLines.forEachDebitLine(drLine -> {
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
+				saveNew(drLine);
 			});
 		}
 		//
@@ -818,7 +807,7 @@ public final class Fact
 
 		//
 		// also save the zero lines, if they are here
-		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, ITrx.TRXNAME_ThreadInherited));
+		factTrxLines.forEachZeroLine(this::saveNew);
 	}
 
 	public void forEach(final Consumer<FactLine> consumer)
