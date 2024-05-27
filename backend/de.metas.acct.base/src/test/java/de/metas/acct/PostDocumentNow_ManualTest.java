@@ -60,6 +60,22 @@ import java.util.Optional;
 @Disabled
 public class PostDocumentNow_ManualTest
 {
+	void run()
+	{
+		// postC_Invoice(1314888, 1322609);
+		postC_AllocationHdr(
+				1229729
+				, 1234857
+				, 1235398
+				, 1237478
+				, 1238514
+				, 1240544
+				, 1241800
+				, 1242015
+				, 1243294
+		);
+	}
+
 	private final IQueryBL queryBL;
 	private final AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
 	private final List<AcctSchema> acctSchemas;
@@ -107,12 +123,6 @@ public class PostDocumentNow_ManualTest
 						new StandardCostingMethodHandler(costingMethodHandlerUtils)
 				)
 		);
-	}
-
-	void run()
-	{
-		postC_Invoice(1314888);
-		//postC_AllocationHdr(1243774, 1230593, 1242020);
 	}
 
 	@SuppressWarnings("unused")
