@@ -62,7 +62,7 @@ public class PostDocumentNow_ManualTest
 {
 	void run()
 	{
-		// postC_Invoice(1314888, 1322609);
+		postC_Invoice(1314888, 1322609);
 		postC_AllocationHdr(
 				1229729
 				, 1234857
