@@ -52,13 +52,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -154,14 +152,14 @@ public class ModularContractPriceService
 
 			final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
 
-			if (!scalePriceUsage.useScalePrice())
+			if (!scalePriceUsage.isUseScalePrice())
 			{
 				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE)
 						.appendParametersToMessage()
 						.setParameter("M_ProductPrice_ID", productPrice.getM_ProductPrice_ID());
 			}
 
-			if (!scalePriceUsage.useScalePriceStrict())
+			if (!scalePriceUsage.isUseScalePriceStrict())
 			{
 				final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder modCntrSpecificPriceBuilder = ModCntrSpecificPrice.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))

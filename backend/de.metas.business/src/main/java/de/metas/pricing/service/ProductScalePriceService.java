@@ -30,6 +30,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_M_ProductScalePrice;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProductScalePriceService
 {
 	private final IProductPA productPA = Services.get(IProductPA.class);
@@ -65,22 +67,19 @@ public class ProductScalePriceService
 		}
 
 		final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
-
-		if (!scalePriceUsage.useScalePrice())
+		if (!scalePriceUsage.isUseScalePrice())
 		{
 			return ProductPriceSettings.of(productPrice);
 		}
 
 		final BigDecimal qtyInProductPriceUom = getQtyInProductPriceUOM(productPrice, qty);
-
 		final I_M_ProductScalePrice scalePrice = productPA.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), qtyInProductPriceUom, ITrx.TRXNAME_None);
-
 		if (scalePrice != null)
 		{
 			return ProductPriceSettings.of(scalePrice);
 
 		}
-		else if (scalePriceUsage.allowFallbackToProductPrice())
+		else if (scalePriceUsage.isAllowFallbackToProductPrice())
 		{
 			return ProductPriceSettings.of(productPrice);
 		}
@@ -92,17 +91,15 @@ public class ProductScalePriceService
 
 	public List<ScaleProductPrice> getNotQuantityProductPriceScales(@NonNull final I_M_ProductPrice productPrice)
 	{
-
 		final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
-
-		if (!scalePriceUsage.useScalePrice())
+		if (!scalePriceUsage.isUseScalePrice())
 		{
 			return Collections.emptyList();
 		}
 
 		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.ofCode(productPrice.getScalePriceQuantityFrom());
 
-		if (scalePriceQtyFrom.scaleByQuantity())
+		if (scalePriceQtyFrom.isQuantity())
 		{
 			return Collections.emptyList();
 		}
@@ -122,14 +119,9 @@ public class ProductScalePriceService
 	@Value
 	public static class ProductPriceSettings
 	{
-		@NonNull
-		BigDecimal priceStd;
-
-		@NonNull
-		BigDecimal priceLimit;
-
-		@NonNull
-		BigDecimal priceList;
+		@NonNull BigDecimal priceStd;
+		@NonNull BigDecimal priceLimit;
+		@NonNull BigDecimal priceList;
 
 		public static ProductPriceSettings of(@NonNull final I_M_ProductPrice productPrice)
 		{
