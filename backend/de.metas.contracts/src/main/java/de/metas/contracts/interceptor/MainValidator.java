@@ -22,6 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.ad_reference.ADReferenceService;
@@ -35,11 +36,13 @@ import de.metas.contracts.inoutcandidate.ShipmentScheduleFromSubscriptionOrderLi
 import de.metas.contracts.inoutcandidate.ShipmentScheduleSubscriptionProcessor;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.modular.interest.InterestComputationNotificationsProducer;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.printing.impl.FlatrateTermPrintingQueueHandler;
 import de.metas.contracts.spi.impl.FlatrateTermInvoiceCandidateListener;
 import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscriptionOrderLines;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.event.Topic;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -73,6 +76,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import java.util.List;
 import java.util.Set;
 
 public class MainValidator extends AbstractModuleInterceptor
@@ -245,6 +249,11 @@ public class MainValidator extends AbstractModuleInterceptor
 
 		// 09869
 		engine.addModelValidator(M_ShipmentSchedule.INSTANCE);
+	}
+
+	protected List<Topic> getAvailableUserNotificationsTopics()
+	{
+		return ImmutableList.of(InterestComputationNotificationsProducer.EVENTBUS_TOPIC);
 	}
 
 }
