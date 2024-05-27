@@ -39,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -96,7 +97,6 @@ public class ModularContractPriceRepository
 		record.setC_Currency_ID(from.amount().getCurrencyId().getRepoId());
 		record.setPrice(from.amount().toBigDecimal());
 		record.setMinValue(from.minValue());
-		record.setIsScalePrice(from.isScalePrice());
 		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
 		record.setC_UOM_ID(from.uomId().getRepoId());
 		record.setSeqNo(from.seqNo().toInt());
@@ -144,6 +144,30 @@ public class ModularContractPriceRepository
 		saveRecord(record);
 
 		return priceChanged;
+	}
+
+
+	public ModCntrSpecificPrice cloneById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		final I_ModCntr_Specific_Price record = getRecordById(id);
+		final ModCntrSpecificPrice templatePrice = fromRecord(record);
+
+		final ModCntrSpecificPrice newModCntrSpecificPrice = ModCntrSpecificPrice.builder()
+				.flatrateTermId(templatePrice.flatrateTermId())
+				.modularContractModuleId(templatePrice.modularContractModuleId())
+				.taxCategoryId(templatePrice.taxCategoryId())
+				.uomId(templatePrice.uomId())
+				.amount(templatePrice.amount())
+				.productId(templatePrice.productId())
+				.seqNo(templatePrice.seqNo())
+				.isScalePrice(templatePrice.isScalePrice())
+				.minValue(templatePrice.minValue())
+				.build();
+
+		final ModCntrSpecificPrice newModCntrSpecificPriceChanged = mapper.apply(newModCntrSpecificPrice);
+		save(newModCntrSpecificPriceChanged);
+
+		return newModCntrSpecificPriceChanged;
 	}
 
 }

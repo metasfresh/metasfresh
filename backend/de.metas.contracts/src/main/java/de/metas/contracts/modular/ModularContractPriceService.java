@@ -232,4 +232,9 @@ public class ModularContractPriceService
 		return modularContractPriceRepository.updateById(id, mapper);
 	}
 
+	public ModCntrSpecificPrice cloneById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		return modularContractPriceRepository.cloneById(id, mapper);
+	}
+
 }
