@@ -53,7 +53,7 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 	@Param(parameterName = "MinValue")
 	private BigDecimal p_minValue;
 
-	@Param(parameterName = "asNewPrice")
+	@Param(parameterName = "AsNewPrice")
 	private Boolean p_asNewPrice;
 
 	@Param(parameterName = "C_UOM_ID")
@@ -100,7 +100,6 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 							.build(),
 					logHandlerRegistry);
 		}
-
 
 		return MSG_OK;
 	}
