@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1160587269L;
+	private static final long serialVersionUID = 768966789L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -108,8 +108,6 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed = "ImportLog";
 	/** Receipt = Receipt */
 	public static final String MODULARCONTRACTHANDLERTYPE_Receipt = "Receipt";
-	/** ProForma = ProForma */
-	public static final String MODULARCONTRACTHANDLERTYPE_ProForma = "ProForma";
 	/** SalesOnRawProduct = SalesOnRawProduct */
 	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct = "SalesOnRawProduct";
 	/** SalesOnProcessedProduct = SalesOnProcessedProduct */
