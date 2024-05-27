@@ -43,8 +43,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -496,8 +494,6 @@ public final class Fact
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		final Money ZERO = Money.zero(acctCurrencyId);
 
-		Money diff = getAcctBalance().toMoney();        // DR-CR
-
 		Money BSamount = ZERO;
 		FactLine BSline = null;
 		Money PLamount = ZERO;
@@ -537,40 +533,15 @@ public final class Fact
 			line.setPostingType(getPostingType());
 			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
 
-			// Amount
+			// Source Amount
 			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
-			// Accounted
-			Money drAmt = ZERO;
-			Money crAmt = ZERO;
-			boolean isDR = diff.signum() < 0;
-			Money difference = diff.abs();
-			if (isDR)
-			{
-				drAmt = difference;
-			}
-			else
-			{
-				crAmt = difference;
-			}
-			// Switch sides
-			boolean switchIt = BSline != null
-					&& ((BSline.isDrSourceBalance() && isDR)
-					|| (!BSline.isDrSourceBalance() && !isDR));
-			if (switchIt)
-			{
-				drAmt = ZERO;
-				crAmt = ZERO;
-				if (isDR)
-				{
-					crAmt = difference.negate();
-				}
-				else
-				{
-					drAmt = difference.negate();
-				}
-			}
-			line.setAmtAcct(drAmt, crAmt);
+			// Accounted Amount
+			Balance diff = getAcctBalance().computeDiffToBalance();
+			
+			diff = diff.negateAndInvertIf(BSline != null && BSline.isDrSourceBalance() == diff.isDebit());
+
+			line.setAmtAcct(diff);
 
 			add(line);
 		}
@@ -587,13 +558,12 @@ public final class Fact
 			}
 			if (line == null)
 			{
-				log.error("No Line found");
+				log.error("No BS or PL Line found");
 			}
 			else
 			{
-				log.debug("Adjusting Amt={}; Line={}", diff, line);
+				final Money diff = getAcctBalance().toMoney();        // DR-CR
 				line.currencyCorrect(diff);
-				log.debug(line.toString());
 			}
 		}   // correct biggest amount
 
