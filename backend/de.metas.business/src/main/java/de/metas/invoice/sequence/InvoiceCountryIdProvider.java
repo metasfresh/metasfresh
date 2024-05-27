@@ -37,7 +37,7 @@ import java.util.Objects;
 
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
-	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
+	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC", "CUI");
 
 	@Override
 	public ProviderResult computeValueInfo(@NonNull final Evaluatee eval)

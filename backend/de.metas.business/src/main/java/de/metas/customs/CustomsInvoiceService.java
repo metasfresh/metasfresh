@@ -51,7 +51,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -65,10 +67,10 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-
 /*
  * #%L
  * de.metas.business
@@ -325,13 +327,15 @@ public class CustomsInvoiceService
 	public String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+		final I_C_Invoice invoiceModel = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 
 		final String documentNo = documentNoFactory.forDocType(docTypeId.getRepoId(), /* useDefiniteSequence */false)
+				.setEvaluationContext(InterfaceWrapperHelper.getEvaluatee(invoiceModel))
 				.setClientId(Env.getClientId())
 				.setFailOnError(true)
 				.build();
 
-		if (documentNo == null || documentNo == IDocumentNoBuilder.NO_DOCUMENTNO)
+		if (Objects.equals(documentNo, IDocumentNoBuilder.NO_DOCUMENTNO))
 		{
 			throw new AdempiereException("Cannot fetch documentNo for " + docTypeId);
 		}
