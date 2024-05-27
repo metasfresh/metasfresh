@@ -50,6 +50,12 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 	@Param(parameterName = "Price")
 	private BigDecimal p_price;
 
+	@Param(parameterName = "MinValue")
+	private BigDecimal p_minValue;
+
+	@Param(parameterName = "asNewPrice")
+	private Boolean p_asNewPrice;
+
 	@Param(parameterName = "C_UOM_ID")
 	private UomId p_C_UOM_ID;
 
@@ -74,6 +80,7 @@ public class ModCntr_Specific_Price_Update extends JavaProcess implements IProce
 		final ModCntrSpecificPrice newContractPrice = modularContractPriceService.updateById(contractPriceId, contractPrice -> contractPrice.toBuilder()
 				.amount(Money.of(p_price, p_C_Currency_ID))
 				.uomId(p_C_UOM_ID)
+				.minValue(p_minValue)
 				.build());
 
 		contractLogService.updatePriceAndAmount(ModCntrLogPriceUpdateRequest.builder()

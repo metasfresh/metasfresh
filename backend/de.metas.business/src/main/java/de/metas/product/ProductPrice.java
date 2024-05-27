@@ -51,6 +51,8 @@ public class ProductPrice
 	@NonNull ProductId productId;
 	@NonNull UomId uomId;
 	@NonNull @Getter(AccessLevel.NONE) Money money;
+	@Nullable Boolean isScalePrice;
+	@Nullable BigDecimal minValue;
 
 	public Money toMoney()
 	{

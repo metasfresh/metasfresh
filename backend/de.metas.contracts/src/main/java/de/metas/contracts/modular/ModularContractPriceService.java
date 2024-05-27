@@ -202,6 +202,8 @@ public class ModularContractPriceService
 					.taxCategoryId(pricingResult.getTaxCategoryId())
 					.uomId(pricingResult.getPriceUomId())
 					.amount(pricingResult.getPriceStdAsMoney())
+					.isScalePrice(false)
+					.minValue(null)
 					.productId(productId)
 					.seqNo(moduleConfig.getSeqNo());
 

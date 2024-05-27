@@ -95,6 +95,8 @@ public class ModularContractPriceRepository
 		record.setC_TaxCategory_ID(from.taxCategoryId().getRepoId());
 		record.setC_Currency_ID(from.amount().getCurrencyId().getRepoId());
 		record.setPrice(from.amount().toBigDecimal());
+		record.setMinValue(from.minValue());
+		record.setIsScalePrice(from.isScalePrice());
 		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
 		record.setC_UOM_ID(from.uomId().getRepoId());
 		record.setSeqNo(from.seqNo().toInt());
@@ -124,6 +126,8 @@ public class ModularContractPriceRepository
 				.flatrateTermId(FlatrateTermId.ofRepoId(modCntrSpecificPrice.getC_Flatrate_Term_ID()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(modCntrSpecificPrice.getC_TaxCategory_ID()))
 				.uomId(UomId.ofRepoId(modCntrSpecificPrice.getC_UOM_ID()))
+				.minValue(modCntrSpecificPrice.getMinValue())
+				.isScalePrice(modCntrSpecificPrice.isScalePrice())
 				.productId(ProductId.ofRepoId(modCntrSpecificPrice.getM_Product_ID()))
 				.amount(Money.of(modCntrSpecificPrice.getPrice(), CurrencyId.ofRepoId(modCntrSpecificPrice.getC_Currency_ID())))
 				.seqNo(SeqNo.ofInt(modCntrSpecificPrice.getSeqNo()))
