@@ -719,3 +719,37 @@ CREATE UNIQUE INDEX ModCntr_Specific_Price_MinValue
     ON ModCntr_Specific_Price (ModCntr_Module_ID, MinValue, IsScalePrice);
 	
 	
+	
+-- Value: ModCntr_Specific_Delete_Price
+-- Classname: de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price
+-- 2024-05-27T11:42:00.183Z
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,TechnicalNote,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585393,'Y','de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price','N',TO_TIMESTAMP('2024-05-27 14:42:00.027','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Preis löschen','json','N','N','xls','Delete  the selected ModCntr_Specific_Price record ','Java',TO_TIMESTAMP('2024-05-27 14:42:00.027','YYYY-MM-DD HH24:MI:SS.US'),100,'ModCntr_Specific_Delete_Price')
+;
+
+-- 2024-05-27T11:42:00.198Z
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Process_ID=585393 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- Process: ModCntr_Specific_Delete_Price(de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price)
+-- 2024-05-27T11:42:06.840Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-27 14:42:06.84','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585393
+;
+
+-- Process: ModCntr_Specific_Delete_Price(de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price)
+-- 2024-05-27T11:42:11.703Z
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-27 14:42:11.703','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=585393
+;
+
+-- Process: ModCntr_Specific_Delete_Price(de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price)
+-- 2024-05-27T11:42:16.439Z
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Delete price',Updated=TO_TIMESTAMP('2024-05-27 14:42:16.439','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585393
+;
+
+-- Process: ModCntr_Specific_Delete_Price(de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price)
+-- Table: ModCntr_Specific_Price
+-- EntityType: de.metas.contracts
+-- 2024-05-27T11:42:46.423Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585393,542405,541490,TO_TIMESTAMP('2024-05-27 14:42:46.301','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.contracts','Y',TO_TIMESTAMP('2024-05-27 14:42:46.301','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','N','N')
+;
+
+	

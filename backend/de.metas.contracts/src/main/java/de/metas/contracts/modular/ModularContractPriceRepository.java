@@ -39,10 +39,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -146,7 +147,6 @@ public class ModularContractPriceRepository
 		return priceChanged;
 	}
 
-
 	public ModCntrSpecificPrice cloneById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
 	{
 		final I_ModCntr_Specific_Price record = getRecordById(id);
@@ -170,4 +170,9 @@ public class ModularContractPriceRepository
 		return newModCntrSpecificPriceChanged;
 	}
 
+	public void deleteById(@NonNull final ModCntrSpecificPriceId id)
+	{
+		final I_ModCntr_Specific_Price record = load(id, I_ModCntr_Specific_Price.class);
+		deleteRecord(record);
+	}
 }
