@@ -198,7 +198,7 @@ public class ModularContractPriceService
 				final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
 				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
 						.stream()
-						.map(scale -> specificPriceTemplate.minValue(scale.getQuantity()).build())
+						.map(scale -> specificPriceTemplate.minValue(scale.getQuantityMin()).build())
 						.collect(ImmutableList.toImmutableList());
 
 				modularContractPriceRepository.saveAll(specificPrices);
