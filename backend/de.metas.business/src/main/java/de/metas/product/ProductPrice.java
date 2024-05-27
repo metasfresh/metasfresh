@@ -51,8 +51,6 @@ public class ProductPrice
 	@NonNull ProductId productId;
 	@NonNull UomId uomId;
 	@NonNull @Getter(AccessLevel.NONE) Money money;
-	@Nullable Boolean isScalePrice;
-	@Nullable BigDecimal minValue;
 
 	public Money toMoney()
 	{
@@ -138,11 +136,5 @@ public class ProductPrice
 		final BigDecimal priceConv = pricePrecision.round(rate.convert(money.toBigDecimal(), UOMPrecision.TWELVE));
 
 		return withValueAndUomId(priceConv, toUomId);
-	}
-
-	@Nullable
-	public static Money toMoneyOrNull(@Nullable final ProductPrice productPrice)
-	{
-		return productPrice == null ? null : productPrice.toMoney();
 	}
 }
