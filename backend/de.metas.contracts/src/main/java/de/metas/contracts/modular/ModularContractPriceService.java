@@ -31,6 +31,7 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -40,6 +41,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.pricing.service.ScaleProductPrice;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -49,12 +51,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -72,6 +76,8 @@ public class ModularContractPriceService
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
 
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{
@@ -140,6 +146,32 @@ public class ModularContractPriceService
 		{
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
 			final List<ScaleProductPrice> productPriceScales = productScalePriceService.getNotQuantityProductPriceScales(productPrice);
+
+			final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
+
+			if (!scalePriceUsage.useScalePrice())
+			{
+				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE)
+						.appendParametersToMessage()
+						.setParameter("M_ProductPrice_ID", productPrice.getM_ProductPrice_ID());
+			}
+
+			if (!scalePriceUsage.useScalePriceStrict())
+			{
+				final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder modCntrSpecificPriceBuilder = ModCntrSpecificPrice.builder()
+						.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
+						.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
+						.taxCategoryId(pricingResult.getTaxCategoryId())
+						.uomId(pricingResult.getPriceUomId())
+						.amount(pricingResult.getPriceStdAsMoney())
+						.productId(productId)
+						.seqNo(moduleConfig.getSeqNo())
+						.isScalePrice(false)
+						.minValue(BigDecimal.ZERO);
+
+				modularContractPriceRepository.save(modCntrSpecificPriceBuilder.build());
+			}
+
 
 			productPriceScales.forEach(
 					scale -> {

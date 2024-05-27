@@ -62,6 +62,11 @@ public enum ScalePriceUsage implements ReferenceListAwareEnum
 		return this == USE_SCALE_PRICE_STRICT || this == USE_SCALE_PRICE;
 	}
 
+	public boolean useScalePriceStrict()
+	{
+		return this == USE_SCALE_PRICE_STRICT;
+	}
+
 	public boolean allowFallbackToProductPrice()
 	{
 		return this == USE_SCALE_PRICE;
