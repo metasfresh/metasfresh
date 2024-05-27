@@ -30,6 +30,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.X_M_ProductPrice;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+
 @Getter
 @AllArgsConstructor
 public enum ScalePriceQtyFrom implements ReferenceListAwareEnum
@@ -45,6 +48,8 @@ public enum ScalePriceQtyFrom implements ReferenceListAwareEnum
 	@JsonCreator
 	@NonNull
 	public static ScalePriceQtyFrom ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	public static Optional<ScalePriceQtyFrom> optionalOfNullableCode(@Nullable final String code) {return index.optionalOfNullableCode(code);}
 
 	public boolean isQuantity()
 	{

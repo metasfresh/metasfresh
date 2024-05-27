@@ -23,7 +23,6 @@
 package de.metas.pricing.service;
 
 import de.metas.pricing.ProductPriceId;
-import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -32,36 +31,30 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.I_M_ProductScalePrice;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ProductScalePriceService
 {
-	private final IProductPA productPA = Services.get(IProductPA.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private ProductScalePriceRepository productScalePriceRepository;
+
+	public static ProductScalePriceService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductScalePriceService(new ProductScalePriceRepository());
+	}
 
 	@Nullable
 	public ProductPriceSettings getProductPriceSettings(@NonNull final I_M_ProductPrice productPrice, @Nullable final Quantity qty)
 	{
 		if (qty == null)
-		{
-			return ProductPriceSettings.of(productPrice);
-		}
-
-		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.ofCode(productPrice.getScalePriceQuantityFrom());
-
-		if (!scalePriceQtyFrom.scaleByQuantity())
 		{
 			return ProductPriceSettings.of(productPrice);
 		}
@@ -72,8 +65,21 @@ public class ProductScalePriceService
 			return ProductPriceSettings.of(productPrice);
 		}
 
-		final BigDecimal qtyInProductPriceUom = getQtyInProductPriceUOM(productPrice, qty);
-		final I_M_ProductScalePrice scalePrice = productPA.retrieveScalePrices(productPrice.getM_ProductPrice_ID(), qtyInProductPriceUom, ITrx.TRXNAME_None);
+		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.optionalOfNullableCode(productPrice.getScalePriceQuantityFrom()).orElse(null);
+		if (scalePriceQtyFrom == null || !scalePriceQtyFrom.isQuantity())
+		{
+			return ProductPriceSettings.of(productPrice);
+		}
+
+		final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
+		final ScaleProductPriceList scalePrices = getScalePrices(productPriceId);
+		if (scalePrices.isEmpty())
+		{
+			return ProductPriceSettings.of(productPrice);
+		}
+
+		final BigDecimal qtyInProductPriceUom = convertQtyToPriceUOM(qty, productPrice).toBigDecimal();
+		final ScaleProductPrice scalePrice = scalePrices.getByQuantity(qtyInProductPriceUom).orElse(null);
 		if (scalePrice != null)
 		{
 			return ProductPriceSettings.of(scalePrice);
@@ -89,31 +95,32 @@ public class ProductScalePriceService
 		}
 	}
 
-	public List<ScaleProductPrice> getNotQuantityProductPriceScales(@NonNull final I_M_ProductPrice productPrice)
+	public ScaleProductPriceList getScalePrices(final ProductPriceId productPriceId)
 	{
-		final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
-		if (!scalePriceUsage.isUseScalePrice())
-		{
-			return Collections.emptyList();
-		}
-
-		final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.ofCode(productPrice.getScalePriceQuantityFrom());
-
-		if (scalePriceQtyFrom.isQuantity())
-		{
-			return Collections.emptyList();
-		}
-
-		return productScalePriceRepository.retrieveScalePrices(ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID()));
+		return productScalePriceRepository.retrieveScalePrices(productPriceId);
 	}
 
 	@NonNull
-	private BigDecimal getQtyInProductPriceUOM(@NonNull final I_M_ProductPrice productPrice, @NonNull final Quantity quantity)
+	private Quantity convertQtyToPriceUOM(@NonNull final Quantity quantity, @NonNull final I_M_ProductPrice productPrice)
 	{
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final UomId productPriceUomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
+		return uomConversionBL.convertQuantityTo(quantity, productId, productPriceUomId);
+	}
 
-		return uomConversionBL.convertQty(productId, quantity.toBigDecimal(), quantity.getUomId(), productPriceUomId);
+	public void deleteByProductPriceId(@NonNull final ProductPriceId productPriceId)
+	{
+		productScalePriceRepository.deleteByProductPriceId(productPriceId);
+	}
+
+	public void createScalePriceIfMissing(final ProductPriceId productPriceId, final ScaleProductPrice scalePrice)
+	{
+		if (getScalePrices(productPriceId).getByQuantity(scalePrice.getQuantityMin()).isPresent())
+		{
+			return;
+		}
+
+		productScalePriceRepository.createNew(productPriceId, scalePrice);
 	}
 
 	@Value
@@ -128,7 +135,7 @@ public class ProductScalePriceService
 			return new ProductPriceSettings(productPrice.getPriceStd(), productPrice.getPriceLimit(), productPrice.getPriceList());
 		}
 
-		public static ProductPriceSettings of(@NonNull final I_M_ProductScalePrice productScalePrice)
+		public static ProductPriceSettings of(@NonNull final ScaleProductPrice productScalePrice)
 		{
 			return new ProductPriceSettings(productScalePrice.getPriceStd(), productScalePrice.getPriceLimit(), productScalePrice.getPriceList());
 		}

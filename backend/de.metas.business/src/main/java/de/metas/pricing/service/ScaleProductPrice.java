@@ -23,26 +23,23 @@
 package de.metas.pricing.service;
 
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
+@Value
 @Builder
-@Getter
 public class ScaleProductPrice
 {
-	@NonNull
-	BigDecimal priceStd;
+	@NonNull BigDecimal quantityMin;
 
-	@NonNull
-	BigDecimal priceLimit;
+	@NonNull BigDecimal priceStd;
+	@NonNull BigDecimal priceLimit;
+	@NonNull BigDecimal priceList;
 
-	@NonNull
-	BigDecimal priceList;
-
-	@Nullable
-	BigDecimal quantity;
-
+	public boolean isMatching(@NonNull final BigDecimal qty)
+	{
+		return quantityMin.compareTo(qty) <= 0;
+	}
 }

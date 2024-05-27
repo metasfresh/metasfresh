@@ -45,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
@@ -85,6 +86,11 @@ public class ModularContractPriceRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
+	}
+
+	public void saveAll(@NonNull final List<ModCntrSpecificPrice> modCntrSpecificPrices)
+	{
+		modCntrSpecificPrices.forEach(this::save);
 	}
 
 	public void save(@NonNull final ModCntrSpecificPrice modCntrSpecificPrice)

@@ -22,23 +22,20 @@
 
 package de.metas.pricing.service;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.pricing.ProductPriceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.I_M_ProductScalePrice;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class ProductScalePriceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public List<ScaleProductPrice> retrieveScalePrices(@NonNull final ProductPriceId productPriceId)
+	public ScaleProductPriceList retrieveScalePrices(@NonNull final ProductPriceId productPriceId)
 	{
 		return queryBL.createQueryBuilder(I_M_ProductScalePrice.class)
 				.addOnlyActiveRecordsFilter()
@@ -46,17 +43,40 @@ public class ProductScalePriceRepository
 				.create()
 				.stream()
 				.map(ProductScalePriceRepository::fromRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ScaleProductPriceList.collect());
 	}
 
 	private static ScaleProductPrice fromRecord(@NonNull final I_M_ProductScalePrice record)
 	{
 		return ScaleProductPrice.builder()
+				.quantityMin(record.getQty())
+				//
 				.priceStd(record.getPriceStd())
 				.priceLimit(record.getPriceLimit())
 				.priceList(record.getPriceList())
-				.quantity(record.getQty())
 				.build();
 	}
 
+	private static void updateRecord(final I_M_ProductScalePrice record, final ScaleProductPrice from)
+	{
+		record.setQty(from.getQuantityMin());
+		record.setPriceLimit(from.getPriceLimit());
+		record.setPriceList(from.getPriceList());
+		record.setPriceStd(from.getPriceStd());
+	}
+
+	public void deleteByProductPriceId(@NonNull final ProductPriceId productPriceId)
+	{
+		queryBL.createQueryBuilder(I_M_ProductScalePrice.class)
+				.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPriceId)
+				.create()
+				.delete();
+	}
+
+	public void createNew(final ProductPriceId productPriceId, final ScaleProductPrice scalePrice)
+	{
+		final I_M_ProductScalePrice record = InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class);
+		record.setM_ProductPrice_ID(productPriceId.getRepoId());
+		updateRecord(record, scalePrice);
+	}
 }

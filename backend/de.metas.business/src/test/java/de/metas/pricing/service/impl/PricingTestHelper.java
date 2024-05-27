@@ -11,6 +11,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductScalePriceRepository;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
@@ -97,7 +98,7 @@ public class PricingTestHelper
 		final IProductPA productPA = Mockito.mock(IProductPA.class);
 		Services.registerService(IProductPA.class, productPA);
 
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 
 		createPricingRules();
 

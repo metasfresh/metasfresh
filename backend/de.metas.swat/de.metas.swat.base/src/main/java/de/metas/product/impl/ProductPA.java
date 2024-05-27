@@ -34,22 +34,12 @@ import de.metas.product.IProductPA;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.adempiere.model.I_M_ProductScalePrice;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.model.X_M_ProductScalePrice;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MProductPricing;
-import org.compiere.model.X_M_ProductPrice;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Properties;
 
 public class ProductPA implements IProductPA
@@ -133,88 +123,5 @@ public class ProductPA implements IProductPA
 			pricing.throwProductNotOnPriceListException();
 		}
 		return priceStd;
-	}
-
-	@Override
-	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
-	{
-		final IQuery<I_M_ProductPrice> productPrice_SubQuery = queryBL.createQueryBuilder(I_M_ProductPrice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom, X_M_ProductPrice.SCALEPRICEQUANTITYFROM_Quantity)
-				.create();
-
-		return queryBL.createQueryBuilder(I_M_ProductScalePrice.class, trxName)
-				.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPriceId)
-				.addInSubQueryFilter()
-				.matchingColumnNames(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID)
-				.subQuery(productPrice_SubQuery)
-				.end()
-				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_M_ProductScalePrice.COLUMNNAME_Qty)
-				.create()
-				.list(I_M_ProductScalePrice.class);
-	}
-
-	/**
-	 * Invokes {@link X_M_ProductScalePrice#X_M_ProductScalePrice(java.util.Properties, int, String)} .
-	 *
-	 * @param trxName
-	 * @return
-	 */
-	private I_M_ProductScalePrice createScalePrice(final String trxName)
-	{
-		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(), trxName));
-	}
-
-	/**
-	 * Returns an existing scale price or (if <code>createNew</code> is true) creates a new one.
-	 */
-	@Nullable
-	@Override
-	public I_M_ProductScalePrice retrieveOrCreateScalePrices(
-			final int productPriceId, final BigDecimal qty,
-			final boolean createNew, final String trxName)
-	{
-
-		final IQuery<I_M_ProductPrice> productPrice_SubQuery = queryBL.createQueryBuilder(I_M_ProductPrice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_ScalePriceQuantityFrom, X_M_ProductPrice.SCALEPRICEQUANTITYFROM_Quantity)
-				.create();
-
-		final I_M_ProductScalePrice productScalePrice = queryBL.createQueryBuilder(I_M_ProductScalePrice.class, trxName)
-				.addEqualsFilter(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, productPriceId)
-				.addCompareFilter(I_M_ProductScalePrice.COLUMNNAME_Qty, CompareQueryFilter.Operator.LESS_OR_EQUAL, qty)
-				.addInSubQueryFilter()
-				.matchingColumnNames(I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID)
-				.subQuery(productPrice_SubQuery)
-				.end()
-				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_M_ProductScalePrice.COLUMNNAME_Qty)
-				.create()
-				.firstOnly(I_M_ProductScalePrice.class);
-
-		if (productScalePrice != null)
-		{
-
-			logger.debug("Returning existing instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
-			return productScalePrice;
-		}
-		if (createNew)
-		{
-
-			logger.debug("Returning new instance for M_ProductPrice " + productPriceId + " and quantity " + qty);
-			final I_M_ProductScalePrice newInstance = createScalePrice(trxName);
-			newInstance.setM_ProductPrice_ID(productPriceId);
-			newInstance.setQty(qty);
-			return newInstance;
-		}
-
-		return null;
-	}
-
-	@Override
-	public I_M_ProductScalePrice retrieveScalePrices(final int productPriceId, final BigDecimal qty, final String trxName)
-	{
-		return retrieveOrCreateScalePrices(productPriceId, qty, false, trxName);
 	}
 }
