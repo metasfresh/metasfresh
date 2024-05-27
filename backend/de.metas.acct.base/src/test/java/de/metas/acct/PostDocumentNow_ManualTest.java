@@ -40,49 +40,39 @@ import de.metas.costing.methods.AveragePOCostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.costing.methods.StandardCostingMethodHandler;
 import de.metas.currency.CurrencyRepository;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.tools.AdempiereToolsHelper;
 import org.compiere.acct.Doc_AllocationHdr;
+import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
 import org.junit.jupiter.api.Disabled;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Disabled
 public class PostDocumentNow_ManualTest
 {
-	public static void main(String[] args)
+	private final IQueryBL queryBL;
+	private final AcctDocRequiredServicesFacade acctDocRequiredServicesFacade;
+	private final List<AcctSchema> acctSchemas;
+
+	public static void main(String[] args) {new PostDocumentNow_ManualTest().run();}
+
+	PostDocumentNow_ManualTest()
 	{
 		AdempiereToolsHelper.getInstance().startupMinimal();
 
-		final List<I_C_AllocationHdr> records = Services.get(IQueryBL.class).createQueryBuilder(I_C_AllocationHdr.class)
-				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID,
-						1155459,
-						1155460,
-						1155462,
-						1197998,
-						1214777,
-						1214800,
-						1214802,
-						1214803
-				)
-				.create()
-				.list();
-
-		System.out.println("Posting: " + records);
-
-		final AcctDocContext.AcctDocContextBuilder contextTemplate = AcctDocContext.builder()
-				.services(newAcctDocRequiredServicesFacade())
-				.acctSchemas(getAcctSchemas(ClientId.METASFRESH));
-
-		for (final I_C_AllocationHdr documentModel : records)
-		{
-			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(documentModel).build());
-			doc.post(true, true);
-		}
+		this.queryBL = Services.get(IQueryBL.class);
+		this.acctDocRequiredServicesFacade = newAcctDocRequiredServicesFacade();
+		this.acctSchemas = Services.get(IAcctSchemaDAO.class).getAllByClient(ClientId.METASFRESH);
 	}
 
 	private static AcctDocRequiredServicesFacade newAcctDocRequiredServicesFacade()
@@ -119,8 +109,69 @@ public class PostDocumentNow_ManualTest
 		);
 	}
 
-	private static List<AcctSchema> getAcctSchemas(final ClientId clientId)
+	void run()
 	{
-		return Services.get(IAcctSchemaDAO.class).getAllByClient(clientId);
+		postC_Invoice(1314888);
+		//postC_AllocationHdr(1243774, 1230593, 1242020);
+	}
+
+	@SuppressWarnings("unused")
+	private void postC_Invoice(@NonNull final Integer... ids)
+	{
+		if (ids.length <= 0)
+		{
+			return;
+		}
+
+		final List<I_C_Invoice> records = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, Arrays.asList(ids))
+				.create()
+				.list();
+
+		System.out.println("Posting: " + records);
+
+		final AcctDocContext.AcctDocContextBuilder contextTemplate = AcctDocContext.builder()
+				.services(acctDocRequiredServicesFacade)
+				.acctSchemas(acctSchemas);
+
+		final OrderGroupRepository orderGroupRepository = new OrderGroupRepository(
+				new GroupCompensationLineCreateRequestFactory(),
+				Optional.empty() // advisors
+		);
+
+		for (final I_C_Invoice documentModel : records)
+		{
+			final AcctDocContext context = contextTemplate.documentModel(documentModel).build();
+			final Doc_Invoice doc = new Doc_Invoice(context, orderGroupRepository);
+			doc.post(true, true);
+			System.out.println("Posted: " + documentModel);
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private void postC_AllocationHdr(@NonNull final Integer... ids)
+	{
+		if (ids.length <= 0)
+		{
+			return;
+		}
+
+		final List<I_C_AllocationHdr> records = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, ids)
+				.create()
+				.list();
+
+		System.out.println("Posting: " + records);
+
+		final AcctDocContext.AcctDocContextBuilder contextTemplate = AcctDocContext.builder()
+				.services(acctDocRequiredServicesFacade)
+				.acctSchemas(acctSchemas);
+
+		for (final I_C_AllocationHdr documentModel : records)
+		{
+			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(documentModel).build());
+			doc.post(true, true);
+			System.out.println("Posted: " + documentModel);
+		}
 	}
 }
