@@ -55,8 +55,6 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 				.productId(productId())
 				.money(amount())
 				.uomId(uomId())
-				.isScalePrice(isScalePrice())
-				.minValue(minValue())
 				.build();
 	}
 }
