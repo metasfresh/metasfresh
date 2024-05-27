@@ -22,6 +22,7 @@
 
 package de.metas.pricing.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.pricing.ProductPriceId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,7 +46,7 @@ public class ProductScalePriceRepository
 				.create()
 				.stream()
 				.map(ProductScalePriceRepository::fromRecord)
-				.collect(Collectors.toUnmodifiableList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static ScaleProductPrice fromRecord(@NonNull final I_M_ProductScalePrice record)

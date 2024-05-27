@@ -23,15 +23,14 @@
 package de.metas.pricing.service;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.ImmutableMap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_ProductPrice;
 
+@Getter
 @AllArgsConstructor
 public enum ScalePriceQtyFrom implements ReferenceListAwareEnum
 {
@@ -39,26 +38,17 @@ public enum ScalePriceQtyFrom implements ReferenceListAwareEnum
 	UserElementNumber1(X_M_ProductPrice.SCALEPRICEQUANTITYFROM_UserElementNumber1),
 	UserElementNumber2(X_M_ProductPrice.SCALEPRICEQUANTITYFROM_UserElementNumber2);
 
-	@Getter
+	private static final ReferenceListAwareEnums.ValuesIndex<ScalePriceQtyFrom> index = ReferenceListAwareEnums.index(values());
+
 	private final String code;
 
 	@JsonCreator
 	@NonNull
-	public static ScalePriceQtyFrom ofCode(@NonNull final String code)
-	{
-		final ScalePriceQtyFrom scalePriceUsage = typesByCode.get(code);
-		if (scalePriceUsage == null)
-		{
-			throw new AdempiereException("No " + ScalePriceQtyFrom.class + " found for code: " + code);
-		}
+	public static ScalePriceQtyFrom ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-		return scalePriceUsage;
-	}
-
-	private static final ImmutableMap<String, ScalePriceQtyFrom> typesByCode = ReferenceListAwareEnums.indexByCode(values());
-
-	public boolean scaleByQuantity()
+	public boolean isQuantity()
 	{
 		return this == Quantity;
 	}
 }
+
