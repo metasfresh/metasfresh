@@ -31,9 +31,11 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -78,6 +80,15 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 		return recordRef.getIdIfTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId)
 				.map(contractProvider::streamModularPurchaseContractsForShipmentLine)
 				.orElseGet(Stream::empty);
+	}
+
+	@Override
+	public boolean isApplicableForSettings(final @NonNull TableRecordReference recordRef, final @NonNull ModularContractSettings settings)
+	{
+		final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId));
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+
+		return ProductId.equals(productId, settings.getProcessedProductId()) || ProductId.equals(productId, settings.getRawProductId());
 	}
 
 	@Override
