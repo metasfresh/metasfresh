@@ -110,6 +110,7 @@ public class ModularContractPriceRepository
 		record.setC_Currency_ID(from.amount().getCurrencyId().getRepoId());
 		record.setPrice(from.amount().toBigDecimal());
 		record.setMinValue(from.minValue());
+		record.setIsScalePrice(from.isScalePrice());
 		record.setModCntr_Module_ID(from.modularContractModuleId().getRepoId());
 		record.setC_UOM_ID(from.uomId().getRepoId());
 		record.setSeqNo(from.seqNo().toInt());

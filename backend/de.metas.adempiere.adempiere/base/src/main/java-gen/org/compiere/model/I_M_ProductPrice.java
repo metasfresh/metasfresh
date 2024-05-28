@@ -562,19 +562,19 @@ public interface I_M_ProductPrice
 	 * Set Scale price quantity from.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setScalePriceQuantityFrom (@Nullable java.lang.String ScalePriceQuantityFrom);
+	void setScalePriceQuantityFrom (java.lang.String ScalePriceQuantityFrom);
 
 	/**
 	 * Get Scale price quantity from.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getScalePriceQuantityFrom();
+	java.lang.String getScalePriceQuantityFrom();
 
 	ModelColumn<I_M_ProductPrice, Object> COLUMN_ScalePriceQuantityFrom = new ModelColumn<>(I_M_ProductPrice.class, "ScalePriceQuantityFrom", null);
 	String COLUMNNAME_ScalePriceQuantityFrom = "ScalePriceQuantityFrom";

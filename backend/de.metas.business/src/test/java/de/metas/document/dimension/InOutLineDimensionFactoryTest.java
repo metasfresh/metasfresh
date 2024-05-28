@@ -34,8 +34,6 @@ class InOutLineDimensionFactoryTest
 				.productId(ProductId.ofRepoId(9000002))
 				.userElement1Id(0)
 				.userElement2Id(0)
-				.userElementNumber1(BigDecimal.ZERO)
-				.userElementNumber2(BigDecimal.ZERO)
 				.build();
 		assertThat(dimensionFromRecord).usingRecursiveComparison().isEqualTo(dimensionFromRecordExpected);
 		assertThat(dimensionFromRecord).isEqualTo(dimensionFromRecordExpected);

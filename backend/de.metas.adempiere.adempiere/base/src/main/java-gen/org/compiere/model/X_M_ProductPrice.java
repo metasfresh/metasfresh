@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_ProductPrice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -684201262L;
+	private static final long serialVersionUID = -223919631L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (final Properties ctx, final int M_ProductPrice_ID, @Nullable final String trxName)
@@ -358,7 +358,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	/** UserElementNumber2 = UEN2 */
 	public static final String SCALEPRICEQUANTITYFROM_UserElementNumber2 = "UEN2";
 	@Override
-	public void setScalePriceQuantityFrom (final @Nullable java.lang.String ScalePriceQuantityFrom)
+	public void setScalePriceQuantityFrom (final java.lang.String ScalePriceQuantityFrom)
 	{
 		set_Value (COLUMNNAME_ScalePriceQuantityFrom, ScalePriceQuantityFrom);
 	}

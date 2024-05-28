@@ -34,6 +34,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -54,6 +55,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
@@ -147,6 +149,7 @@ public class ModularContractPriceService
 	{
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
 
+
 		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
 				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
@@ -174,7 +177,7 @@ public class ModularContractPriceService
 
 			if (!scalePriceUsage.isUseScalePriceStrict())
 			{
-				modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(false).minValue(BigDecimal.ZERO).build());
+				modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(true).minValue(BigDecimal.ZERO).build());
 			}
 
 			//
@@ -185,7 +188,9 @@ public class ModularContractPriceService
 				final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
 				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
 						.stream()
-						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin()).build())
+						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin())
+								.amount(Money.of(scale.getPriceStd(),pricingResult.getCurrencyId()))
+								.build())
 						.collect(ImmutableList.toImmutableList());
 
 				modularContractPriceRepository.saveAll(specificPrices);
