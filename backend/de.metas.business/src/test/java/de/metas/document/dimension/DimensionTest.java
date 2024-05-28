@@ -10,6 +10,8 @@ import de.metas.sectionCode.SectionCodeId;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DimensionTest
@@ -64,7 +66,8 @@ public class DimensionTest
 		void partiallyPopulated_fallbackTo_partiallyPopulated()
 		{
 			final Dimension dim1 = Dimension.builder().productId(ProductId.ofRepoId(1)).build();
-			final Dimension dim2 = Dimension.builder().sectionCodeId(SectionCodeId.ofRepoId(2)).build();
+			final Dimension dim2 = Dimension.builder().sectionCodeId(SectionCodeId.ofRepoId(2))
+					.build();
 
 			assertThat(dim1.fallbackTo(dim2))
 					.isEqualTo(Dimension.builder()

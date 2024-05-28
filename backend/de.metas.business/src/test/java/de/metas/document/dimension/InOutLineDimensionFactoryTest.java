@@ -7,6 +7,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InOutLineDimensionFactoryTest
@@ -32,6 +34,8 @@ class InOutLineDimensionFactoryTest
 				.productId(ProductId.ofRepoId(9000002))
 				.userElement1Id(0)
 				.userElement2Id(0)
+				.userElementNumber1(BigDecimal.ZERO)
+				.userElementNumber2(BigDecimal.ZERO)
 				.build();
 		assertThat(dimensionFromRecord).usingRecursiveComparison().isEqualTo(dimensionFromRecordExpected);
 		assertThat(dimensionFromRecord).isEqualTo(dimensionFromRecordExpected);
