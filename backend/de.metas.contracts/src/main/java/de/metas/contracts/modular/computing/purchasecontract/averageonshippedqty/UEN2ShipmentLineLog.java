@@ -34,7 +34,7 @@ class UEN2ShipmentLineLog extends AbstractUENShipmentLineLog
 	public UEN2ShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final StorageCostComputingMethod computingMethod)
+			@NonNull final AverageAVOnShippedQtyComputingMethod computingMethod)
 	{
 		super(modularContractService, modCntrInvoicingGroupRepository, computingMethod, ColumnOption.UserElementNumber2);
 	}

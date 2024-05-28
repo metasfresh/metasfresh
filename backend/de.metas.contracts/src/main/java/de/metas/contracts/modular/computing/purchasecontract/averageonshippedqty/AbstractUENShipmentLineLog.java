@@ -81,13 +81,13 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 	@NonNull @Getter private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.SHIPMENT;
-	@NonNull @Getter private final StorageCostComputingMethod computingMethod;
+	@NonNull @Getter private final AverageAVOnShippedQtyComputingMethod computingMethod;
 	@NonNull private final ColumnOption column;
 
 	public AbstractUENShipmentLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final StorageCostComputingMethod computingMethod,
+			@NonNull final AverageAVOnShippedQtyComputingMethod computingMethod,
 			@NonNull final ColumnOption column)
 	{
 		super(modularContractService);
