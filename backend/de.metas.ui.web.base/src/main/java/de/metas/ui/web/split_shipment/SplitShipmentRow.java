@@ -119,9 +119,7 @@ public class SplitShipmentRow implements IViewRow
 		return deliveryDate != null 
 				&& qtyToDeliver.signum() != 0 
 				&& userElementNumber1 !=null
-				&& userElementNumber1.signum() != 0
-				&& userElementNumber2 !=null
-				&& userElementNumber2.signum() != 0;
+				&& userElementNumber2 !=null;
 	}
 
 	public boolean isDeletable()
@@ -147,8 +145,8 @@ public class SplitShipmentRow implements IViewRow
 			{
 				case FIELD_DeliveryDate -> builder.deliveryDate(request.getValueAsLocalDate());
 				case FIELD_QtyToDeliver -> builder.qtyToDeliver(Quantity.of(request.getValueAsBigDecimal(BigDecimal.ZERO), this.qtyToDeliver.getUOM()));
-				case FIELD_UserElementNumber1 -> builder.userElementNumber1(request.getValueAsBigDecimal(BigDecimal.ZERO));
-				case FIELD_UserElementNumber2 -> builder.userElementNumber2(request.getValueAsBigDecimal(BigDecimal.ZERO));
+				case FIELD_UserElementNumber1 -> builder.userElementNumber1(request.getValueAsBigDecimal());
+				case FIELD_UserElementNumber2 -> builder.userElementNumber2(request.getValueAsBigDecimal());
 				default -> throw new AdempiereException("Unknown field: " + request.getPath());
 			}
 		}
