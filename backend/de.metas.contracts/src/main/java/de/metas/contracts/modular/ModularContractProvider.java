@@ -253,7 +253,7 @@ public class ModularContractProvider
 		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
 		final List<ModularContractSettings> settings = modularContractSettingsBL.getSettingsByQuery(ModularContractSettingsQuery.builder()
-																													 .processedProductId(inOutProductId)
+																													 .rawProductId(inOutProductId)
 																													 .yearAndCalendarId(yearAndCalendarId)
 																													 .soTrx(SOTrx.PURCHASE)
 																													 .checkHasCompletedModularCondition(true)
