@@ -44,7 +44,7 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   @NonNull ProductId productId,
 								   @NonNull TaxCategoryId taxCategoryId,
 								   @NonNull UomId uomId,
-								   @Nullable Boolean isScalePrice,
+								   boolean isScalePrice,
 								   @Nullable BigDecimal minValue,
 								   SeqNo seqNo)
 {
