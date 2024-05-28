@@ -19,13 +19,17 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -327,7 +331,8 @@ public class ProductPrices
 		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plvId, ProductId.ofRepoId(ppRequest.getProductId()));
 		if (pp == null)
 		{
-			pp = newInstance(I_M_ProductPrice.class, plvId);
+			final IContextAware context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+			pp = newInstance(I_M_ProductPrice.class, context);
 		}
 		// do not update the price with value 0; 0 means that no price was changed
 		else if (pp != null && price.signum() == 0)
