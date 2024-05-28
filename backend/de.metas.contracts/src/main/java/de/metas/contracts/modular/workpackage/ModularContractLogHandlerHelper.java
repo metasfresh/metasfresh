@@ -38,7 +38,7 @@ import lombok.experimental.UtilityClass;
 public class ModularContractLogHandlerHelper
 {
 	private final AdMessageKey MSG_ON_COMPLETE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.IModularContractLogHandler.CompleteLogDescription");
-	private final AdMessageKey MSG_ON_REVERSE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper.ReverseLogDescription"); //TODO add ADMsg
+	private final AdMessageKey MSG_ON_REVERSE_LOG_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper.ReverseLogDescription");
 
 	@NonNull
 	public String getOnCompleteDescription(
