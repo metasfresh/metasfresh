@@ -41,7 +41,7 @@ import org.springframework.stereotype.Component;
 public class FinalInvoiceLineLog extends AbstractModularPurchaseInvoiceLineLog
 {
 	@NonNull private final InformativeLogComputingMethod computingMethod;
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_SETTLEMENT;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_INVOICE;
 
 	public FinalInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
