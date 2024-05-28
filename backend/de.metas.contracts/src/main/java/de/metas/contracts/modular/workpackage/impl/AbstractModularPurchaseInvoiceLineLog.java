@@ -141,7 +141,7 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 
 		final ProductId rawProductId = createLogRequest.getModularContractSettings().getRawProductId();
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
-		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(rawProductId, yearAndCalendarId)
+		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 		final String productName = productBL.getProductValueAndName(productId);
 
@@ -154,7 +154,6 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 						.invoicingBPartnerId(invoiceBpartnerId)
 						.warehouseId(modularContractLogEntry.getWarehouseId())
 						.productId(productId)
-						.initialProductId(rawProductId)
 						.productName(CoalesceUtil.firstNotBlank(invoiceLineRecord.getProductName(), productName))
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
