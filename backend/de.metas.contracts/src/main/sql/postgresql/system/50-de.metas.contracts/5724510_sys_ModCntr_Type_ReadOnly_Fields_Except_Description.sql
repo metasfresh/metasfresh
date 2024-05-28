@@ -60,3 +60,11 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-05-27 21:53:10.483
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2024-05-27 21:53:11.935','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=716271
 ;
 
+
+
+-- Tab: Vertragsbaustein Typ(541710,de.metas.contracts) -> Vertragsbaustein Typ
+-- Table: ModCntr_Type
+-- 2024-05-28T06:52:49.759Z
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2024-05-28 09:52:49.759','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=547011
+;
+
