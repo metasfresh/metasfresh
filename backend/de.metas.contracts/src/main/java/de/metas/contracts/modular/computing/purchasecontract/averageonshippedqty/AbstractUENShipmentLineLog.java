@@ -57,6 +57,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
@@ -150,8 +151,8 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId)
-				.userElementNumber1(inOutLineRecord.getUserElementNumber1())
-				.userElementNumber2(inOutLineRecord.getUserElementNumber2())
+				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber1))
+				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber2))
 				.build());
 	}
 
