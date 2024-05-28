@@ -20,48 +20,52 @@
  * #L%
  */
 
-package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim;
+package de.metas.contracts.modular.computing.purchasecontract.informative;
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
-import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
-import de.metas.product.ProductPrice;
-import de.metas.util.Check;
+import de.metas.contracts.modular.workpackage.impl.AbstractModularPurchaseInvoiceLineLog;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.lang.SOTrx;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 @Component
 @Getter
-public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
+public class DefinitiveInvoiceLineLog extends AbstractModularPurchaseInvoiceLineLog
 {
-	@NonNull private final SVInterimComputingMethod computingMethod;
+	@NonNull private final InformativeLogComputingMethod computingMethod;
+	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.FINAL_SETTLEMENT;
 
-	public InterimInvoiceLineLog(
+	public DefinitiveInvoiceLineLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final ModularContractLogService modularContractLogService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
-			@NonNull final SVInterimComputingMethod computingMethod)
+			@NonNull final InformativeLogComputingMethod computingMethod)
 	{
 		super(modularContractService, contractLogDAO, modularContractLogService, modCntrInvoicingGroupRepository);
 		this.computingMethod = computingMethod;
 	}
 
-	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
+	@Override
+	public boolean applies(final @NonNull CreateLogRequest request)
 	{
-		return -1 * super.getMultiplier(createLogRequest);
-	}
+		final TableRecordReference recordRef = request.getRecordRef();
+		if (!recordRef.tableNameEqualsTo(getSupportedTableName()))
+		{
+			return false;
+		}
 
-	public @Nullable ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
-	{
-		final ProductPrice priceActual = super.getPriceActual(logEntry);
-		Check.assumeNotNull(priceActual, "PriceActual shouldn't be null");
-		return priceActual.negate();
-	}
+		final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+		final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
+
+		return soTrx.isPurchase() && invoiceBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(invoiceRecord);
+    }
 }
