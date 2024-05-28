@@ -37,6 +37,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
+import de.metas.acct.doc.POAcctDocModel;
 import de.metas.acct.doc.SqlAcctDocLockService;
 import de.metas.acct.factacct_userchanges.FactAcctUserChangesRepository;
 import de.metas.acct.factacct_userchanges.FactAcctUserChangesService;
@@ -45,7 +46,6 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.AdRefListRepositoryOverJdbc;
 import de.metas.ad_reference.AdRefTableRepositoryOverJdbc;
 import de.metas.banking.accounting.BankAccountAcctRepository;
-import de.metas.banking.api.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.cache.model.ModelCacheInvalidationService;
@@ -84,6 +84,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.tools.AdempiereToolsHelper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.acct.Doc_AllocationHdr;
 import org.compiere.acct.Doc_Invoice;
 import org.compiere.model.I_C_AllocationHdr;
@@ -237,12 +238,19 @@ public class PostDocumentNow_ManualTest
 
 		for (final I_C_Invoice documentModel : records)
 		{
-			final AcctDocContext context = contextTemplate.documentModel(documentModel).build();
+			final AcctDocContext context = contextTemplate.documentModel(toAcctDocModel(documentModel)).build();
 			final Doc_Invoice doc = new Doc_Invoice(context, orderGroupRepository);
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);
 		}
 	}
+
+	@NonNull
+	private static POAcctDocModel toAcctDocModel(final Object record)
+	{
+		return new POAcctDocModel(LegacyAdapters.convertToPO(record));
+	}
+
 
 	@SuppressWarnings("unused")
 	private void postC_AllocationHdr(@NonNull final Integer... ids)
@@ -265,7 +273,7 @@ public class PostDocumentNow_ManualTest
 
 		for (final I_C_AllocationHdr documentModel : records)
 		{
-			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(documentModel).build());
+			final Doc_AllocationHdr doc = new Doc_AllocationHdr(contextTemplate.documentModel(toAcctDocModel(documentModel)).build());
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);
 		}

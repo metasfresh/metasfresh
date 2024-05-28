@@ -21,7 +21,6 @@ import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
-import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -45,7 +44,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -1124,19 +1122,17 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		//
 		// Skip any suspense balancing booking because those are not relevant for tax correction calculation
-		final AccountId suspenseBalancingAcctId = as.getGeneralLedger().getSuspenseBalancingAcctId();
-		if (suspenseBalancingAcctId != null)
+		final Account suspenseBalancingAcct = as.getGeneralLedger().getSuspenseBalancingAcct();
+		if (suspenseBalancingAcct != null)
 		{
-			final MAccount suspenseBalancingAcct = services.getAccountById(suspenseBalancingAcctId);
-			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, suspenseBalancingAcct.getAccount_ID());
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, services.getElementValueId(suspenseBalancingAcct));
 		}
 		//
 		// Skip any currency balancing booking because those are not relevant for tax correction calculation
-		final AccountId currencyBalancingAcctId = as.getGeneralLedger().getCurrencyBalancingAcctId();
-		if (currencyBalancingAcctId != null)
+		final Account currencyBalancingAcct = as.getGeneralLedger().getCurrencyBalancingAcct();
+		if (currencyBalancingAcct != null)
 		{
-			final MAccount currencyBalancingAcct = services.getAccountById(currencyBalancingAcctId);
-			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, currencyBalancingAcct.getAccount_ID());
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, services.getElementValueId(currencyBalancingAcct));
 		}
 
 		final List<I_Fact_Acct> invoiceFactLines = invoiceFactLinesQueryBuilder

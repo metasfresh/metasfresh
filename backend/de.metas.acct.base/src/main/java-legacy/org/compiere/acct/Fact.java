@@ -495,8 +495,8 @@ public final class Fact
 			}
 			else
 			{
-				log.debug("Adjusting Amt={}; Line={}", diff, line);
 				final Money diff = getAcctBalance().toMoney();        // DR-CR
+				log.debug("Adjusting Amt={}; Line={}", diff, line);
 				line.currencyCorrect(diff);
 			}
 		}   // correct biggest amount
