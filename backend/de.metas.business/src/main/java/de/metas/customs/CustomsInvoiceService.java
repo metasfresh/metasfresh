@@ -327,10 +327,8 @@ public class CustomsInvoiceService
 	public String reserveDocumentNo(@NonNull final DocTypeId docTypeId)
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-		final I_C_Invoice invoiceModel = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 
 		final String documentNo = documentNoFactory.forDocType(docTypeId.getRepoId(), /* useDefiniteSequence */false)
-				.setEvaluationContext(InterfaceWrapperHelper.getEvaluatee(invoiceModel))
 				.setClientId(Env.getClientId())
 				.setFailOnError(true)
 				.build();

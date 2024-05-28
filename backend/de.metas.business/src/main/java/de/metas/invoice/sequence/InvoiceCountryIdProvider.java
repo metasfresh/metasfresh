@@ -47,7 +47,7 @@ public class InvoiceCountryIdProvider implements ICountryIdProvider
 	@Override
 	public ProviderResult computeValueInfo(@NonNull final Evaluatee eval)
 	{
-		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(eval)))
+		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableNameOrNull(eval)))
 		{
 			return ProviderResult.EMPTY;
 		}
