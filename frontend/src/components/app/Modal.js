@@ -5,20 +5,21 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { startProcess } from '../../api/process';
-import { processNewRecord } from '../../actions/GenericActions';
-import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import {
+  updateCommentsPanelOpenFlag
+} from '../../actions/CommentsPanelActions';
+import {
+  callAPI,
   closeModal,
   createWindow,
   fetchChangeLog,
-  callAPI,
+  fireUpdateData,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -528,11 +529,9 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
-        }
-        if (staticModalType === 'comments') {
+        } else if (staticModalType === 'comments') {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
-        }
-        if (staticModalType === 'printing') {
+        } else if (staticModalType === 'printing') {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
         }
         return (
@@ -579,11 +578,12 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
@@ -865,10 +865,10 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.any,
+  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  modalSaveStatus: PropTypes.any,
+  modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,

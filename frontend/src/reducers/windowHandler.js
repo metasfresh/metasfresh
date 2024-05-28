@@ -448,7 +448,7 @@ export default function windowHandler(state = initialState, action) {
 
     // SCOPED ACTIONS
 
-    case INIT_LAYOUT_SUCCESS:
+    case INIT_LAYOUT_SUCCESS: {
       return {
         ...state,
         [action.scope]: {
@@ -456,8 +456,8 @@ export default function windowHandler(state = initialState, action) {
           layout: action.layout,
         },
       };
-
-    case INIT_DATA_SUCCESS:
+    }
+    case INIT_DATA_SUCCESS: {
       return {
         ...state,
         [action.scope]: {
@@ -473,6 +473,7 @@ export default function windowHandler(state = initialState, action) {
           hasComments: action.hasComments,
         },
       };
+    }
     case UPDATE_MASTER_DATA:
       return {
         ...state,
