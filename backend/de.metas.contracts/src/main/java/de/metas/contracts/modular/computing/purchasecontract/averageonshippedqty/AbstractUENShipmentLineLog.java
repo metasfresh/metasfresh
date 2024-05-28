@@ -150,6 +150,8 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId)
+				.userElementNumber1(inOutLineRecord.getUserElementNumber1())
+				.userElementNumber2(inOutLineRecord.getUserElementNumber2())
 				.build());
 	}
 

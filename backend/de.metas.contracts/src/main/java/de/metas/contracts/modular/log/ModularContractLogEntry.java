@@ -47,6 +47,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * Add further properties as needed.
@@ -128,6 +129,9 @@ public class ModularContractLogEntry
 
 	@NonNull ModularContractModuleId modularContractModuleId;
 
+	@Nullable BigDecimal userElementNumber1;
+	@Nullable BigDecimal userElementNumber2;
+
 	@Builder(toBuilder = true)
 	private ModularContractLogEntry(
 			@NonNull final ModularContractLogEntryId id,
@@ -156,7 +160,10 @@ public class ModularContractLogEntry
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
 			final boolean isBillable,
-			final @NonNull ModularContractModuleId modularContractModuleId)
+			final @NonNull ModularContractModuleId modularContractModuleId,
+			final @Nullable BigDecimal userElementNumber1,
+			final @Nullable BigDecimal userElementNumber2
+			)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -195,6 +202,8 @@ public class ModularContractLogEntry
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable;
 		this.modularContractModuleId = modularContractModuleId;
+		this.userElementNumber1 = userElementNumber1;
+		this.userElementNumber2 = userElementNumber2;
 	}
 
 	@NonNull

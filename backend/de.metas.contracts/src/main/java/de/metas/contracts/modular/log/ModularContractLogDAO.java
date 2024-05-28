@@ -166,6 +166,16 @@ public class ModularContractLogDAO
 			log.setStorageDays(request.getStorageDays());
 		}
 
+		if (request.getUserElementNumber1() != null)
+		{
+			log.setUserElementNumber1(request.getUserElementNumber1());
+		}
+
+		if (request.getUserElementNumber2() != null)
+		{
+			log.setUserElementNumber1(request.getUserElementNumber2());
+		}
+
 		saveRecord(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
@@ -195,6 +205,7 @@ public class ModularContractLogDAO
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
+				.us
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
