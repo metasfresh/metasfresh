@@ -4,12 +4,8 @@ import {
   discardNewRequest,
   getTabRequest,
   getTabLayoutRequest,
-  startProcess,
-  getProcessData,
   formatParentUrl,
   deleteRequest,
-  initQuickInput,
-  completeRequest,
 } from './window';
 import {
   browseViewRequest,
@@ -65,7 +61,6 @@ export {
   advSearchRequest,
   breadcrumbRequest,
   browseViewRequest,
-  completeRequest,
   createViewRequest,
   deleteRequest,
   deleteStaticFilter,
@@ -80,7 +75,6 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
-  getProcessData,
   getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,
@@ -95,7 +89,6 @@ export {
   getViewRowsByIds,
   getZoomIntoWindow,
   headerPropertiesRequest,
-  initQuickInput,
   checkLoginRequest,
   locationConfigRequest,
   locationSearchRequest,
@@ -114,6 +107,5 @@ export {
   resetPasswordGetAvatar,
   resetPasswordRequest,
   setUserLang,
-  startProcess,
   topActionsRequest,
 };
