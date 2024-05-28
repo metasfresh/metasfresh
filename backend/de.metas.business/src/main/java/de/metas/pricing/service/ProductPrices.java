@@ -66,11 +66,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class ProductPrices
 {
-	final static private IProductDAO productDAO = Services.get(IProductDAO.class);
-	final static private IUOMConversionDAO uomConversionRepo = Services.get(IUOMConversionDAO.class);
-	final static private IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	final static private IProductBL productBL = Services.get(IProductBL.class);
-
 	private static final AdMessageKey MSG_NO_UOM_CONVERSION_AVAILABLE = AdMessageKey.of("de.metas.pricing.service.product.MissingUOMConversion");
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> MATCHERS_MainProductPrice = new CopyOnWriteArrayList<>();
@@ -86,7 +81,7 @@ public class ProductPrices
 	/**
 	 * Convenient method to check if the main product price exists.
 	 *
-	 * @param plvId       price list version or null
+	 * @param plvId     price list version or null
 	 * @param productId product (negative values are tolerated)
 	 * @return true if exists
 	 */
@@ -145,6 +140,7 @@ public class ProductPrices
 			return;
 		}
 
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final org.compiere.model.I_M_Product product = productDAO.getById(productPrice.getM_Product_ID());
 
 		if (UomId.ofRepoId(product.getC_UOM_ID()).equals(UomId.ofRepoId(productPrice.getC_UOM_ID())))
@@ -154,6 +150,7 @@ public class ProductPrices
 
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 
+		final IUOMConversionDAO uomConversionRepo = Services.get(IUOMConversionDAO.class);
 		final UOMConversionsMap conversionsMap = uomConversionRepo.getProductConversions(productId);
 
 		if (conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isEmpty())
@@ -214,6 +211,9 @@ public class ProductPrices
 
 	private static AdempiereException newDuplicateMainProductPriceException(@NonNull final I_M_ProductPrice someMainProductPrice)
 	{
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final String productName = productBL.getProductValueAndName(ProductId.ofRepoId(someMainProductPrice.getM_Product_ID()));
 
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(someMainProductPrice.getM_PriceList_Version_ID());
@@ -290,6 +290,8 @@ public class ProductPrices
 			return null;
 		}
 
+		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
 		final Set<Integer> checkedPriceListVersionIds = new HashSet<>();
 
 		I_M_PriceList_Version currentPriceListVersion = startPriceListVersion;
@@ -319,6 +321,8 @@ public class ProductPrices
 	@Deprecated
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final ProductPriceCreateRequest ppRequest, @NonNull final PriceListVersionId plvId)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final BigDecimal price = ppRequest.getPrice().setScale(2);
 		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plvId, ProductId.ofRepoId(ppRequest.getProductId()));
 		if (pp == null)
@@ -355,5 +359,4 @@ public class ProductPrices
 		final List<I_M_ProductPrice> allMainPrices = retrieveAllMainPrices(plvId, productId, taxCategoryId);
 		return getFirstOrThrowExceptionIfMoreThanOne(allMainPrices);
 	}
-
 }

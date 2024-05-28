@@ -507,7 +507,7 @@ public class OrderLineBL implements IOrderLineBL
 	}    // setM_Product_ID
 
 	@Override
-	public PriceListVersionId getPriceListVersion(final I_C_OrderLine orderLine)
+	public PriceListVersionId getPriceListVersionId(final I_C_OrderLine orderLine)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);

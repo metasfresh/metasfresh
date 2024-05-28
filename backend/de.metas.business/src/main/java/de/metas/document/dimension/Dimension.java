@@ -115,8 +115,8 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
 				.userElement1Id(CoalesceUtil.firstGreaterThanZero(this.userElement1Id, other.userElement1Id))
-				.userElementNumber1(CoalesceUtil.firstGreaterThanZero(this.userElementNumber1, other.userElementNumber1))
-				.userElementNumber2(CoalesceUtil.firstGreaterThanZero(this.userElementNumber2, other.userElementNumber2))
+				.userElementNumber1(CoalesceUtil.coalesceNotNull(this.userElementNumber1, other.userElementNumber1))
+				.userElementNumber2(CoalesceUtil.coalesceNotNull(this.userElementNumber2, other.userElementNumber2))
 				.harvestingYearAndCalendarId(CoalesceUtil.coalesce(this.harvestingYearAndCalendarId, other.harvestingYearAndCalendarId))
 				.build();
 
@@ -204,8 +204,8 @@ public class Dimension implements Comparable<Dimension>
 				.user2_ID(singleElementOrZero(user2_ID))
 				.userElement1Id(singleElementOrZero(userElement1Id))
 				.userElement2Id(singleElementOrZero(userElement2Id))
-				.userElementNumber1(CollectionUtils.singleElementOrDefault(userElementNumber1, BigDecimal.ZERO))
-				.userElementNumber2(CollectionUtils.singleElementOrDefault(userElementNumber2, BigDecimal.ZERO))
+				.userElementNumber1(CollectionUtils.singleElementOrNull(userElementNumber1))
+				.userElementNumber2(CollectionUtils.singleElementOrNull(userElementNumber2))
 				.userElementString1(CollectionUtils.singleElementOrNull(userElementString1))
 				.userElementString2(CollectionUtils.singleElementOrNull(userElementString2))
 				.userElementString3(CollectionUtils.singleElementOrNull(userElementString3))

@@ -184,12 +184,12 @@ public final class AccountDimension
 
 	public BigDecimal getUserElementNumber1()
 	{
-		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber1), BigDecimal.ZERO);
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber1));
 	}
 
 	public BigDecimal getUserElementNumber2()
 	{
-		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber2), BigDecimal.ZERO);
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber2));
 	}
 
 	public String getUserElementString1()

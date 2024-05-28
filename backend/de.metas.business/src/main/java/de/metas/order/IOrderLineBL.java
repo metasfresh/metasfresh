@@ -37,7 +37,6 @@ import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -147,7 +146,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * </ul>
 	 */
 	@Nullable
-	PriceListVersionId getPriceListVersion(I_C_OrderLine orderLine);
+	PriceListVersionId getPriceListVersionId(I_C_OrderLine orderLine);
 
 	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
