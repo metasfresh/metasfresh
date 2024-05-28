@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
@@ -34,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AllocationHdr;
@@ -1003,7 +1005,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * <p>
 	 * It is also creating a new FactLine where the currency gain/loss is booked.
 	 *
-	 * @param invoiceFactLine             invoice related booking (on Invoice date)
+	 * @param invoiceFactLine invoice related booking (on Invoice date)
 	 */
 	private void createRealizedGainLossFactLine(final DocLine_Allocation line, final Fact fact, final FactLine invoiceFactLine, final Money allocationAcctOnPaymentDate)
 	{
@@ -1030,6 +1032,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// Our source amounts won't be source balanced anymore because the Invoice/Discount/WriteOff/PaymentSelect are booked in allocation's currency
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency(true);
+
+		// Disable trx lines strategy in order to tolerate cases with multiple DR and CR lines
+		// We have to do this because in case AcctSchema.isAllowMultiDebitAndCredit is false, for some cases we will get multiple DR/CR lines.
+		fact.setFactTrxLinesStrategy(null);
 
 		// Build up the description for the new line
 		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
@@ -1144,16 +1150,33 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// * the code is assuming that it will get the Tax bookings and the invoice gross amount booking
 		// * later on org.compiere.acct.Doc_AllocationTax.createEntries(AcctSchema, Fact, DocLine_Allocation), we skip the gross amount Fact_Acct line
 		// Get Source Amounts with account
-		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> invoiceFactLinesQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, 318) // C_Invoice
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, line.getC_Invoice_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, as.getId())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, null) // header lines like tax or total
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
-				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
-				.endOrderBy()
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, 318) // C_Invoice
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, line.getC_Invoice_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, as.getId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // header lines like tax or total
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, PostingType.Actual.getCode())
+				.orderBy(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+
+		//
+		// Skip any suspense balancing booking because those are not relevant for tax correction calculation
+		final AccountId suspenseBalancingAcctId = as.getGeneralLedger().getSuspenseBalancingAcctId();
+		if (suspenseBalancingAcctId != null)
+		{
+			final MAccount suspenseBalancingAcct = services.getAccountById(suspenseBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, suspenseBalancingAcct.getAccount_ID());
+		}
+		//
+		// Skip any currency balancing booking because those are not relevant for tax correction calculation
+		final AccountId currencyBalancingAcctId = as.getGeneralLedger().getCurrencyBalancingAcctId();
+		if (currencyBalancingAcctId != null)
+		{
+			final MAccount currencyBalancingAcct = services.getAccountById(currencyBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, currencyBalancingAcct.getAccount_ID());
+		}
+
+		final List<I_Fact_Acct> invoiceFactLines = invoiceFactLinesQueryBuilder
 				.create()
 				.list(I_Fact_Acct.class);
 		// Invoice Not posted
