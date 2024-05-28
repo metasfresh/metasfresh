@@ -335,7 +335,7 @@ public class CustomsInvoiceService
 				.setFailOnError(true)
 				.build();
 
-		if (Objects.equals(documentNo, IDocumentNoBuilder.NO_DOCUMENTNO))
+		if (documentNo == null || documentNo == IDocumentNoBuilder.NO_DOCUMENTNO)
 		{
 			throw new AdempiereException("Cannot fetch documentNo for " + docTypeId);
 		}
