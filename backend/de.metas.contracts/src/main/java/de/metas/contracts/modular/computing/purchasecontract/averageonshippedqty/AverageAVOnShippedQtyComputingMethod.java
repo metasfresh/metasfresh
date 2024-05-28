@@ -35,6 +35,7 @@ import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
@@ -68,6 +69,11 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 			final I_M_InOutLine inOutLineRecord = inOutDAO.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 			final I_M_InOut inOutRecord = inOutDAO.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 
+			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+			if (orderId == null)
+			{
+				return false;
+			}
 			return inOutRecord.isSOTrx();
 		}
 		return false;
