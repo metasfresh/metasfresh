@@ -159,6 +159,7 @@ public abstract class AbstractModularPurchaseInvoiceLineLog extends AbstractModu
 						.documentType(getLogEntryDocumentType())
 						.contractType(getLogEntryContractType())
 						.soTrx(SOTrx.PURCHASE)
+						.isBillable(false)
 						.processed(false)
 						.quantity(qtyEntered)
 						.amount(amount)
