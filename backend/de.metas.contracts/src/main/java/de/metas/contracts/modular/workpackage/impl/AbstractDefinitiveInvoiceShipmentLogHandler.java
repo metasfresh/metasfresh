@@ -28,15 +28,12 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.purchasecontract.storagecost.StorageCostComputingMethod;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -61,9 +58,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 
-@Component
 public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends AbstractModularContractLogHandler
 {
 	private static final AdMessageKey MSG_INFO_SHIPMENT_COMPLETED = AdMessageKey.of("de.metas.contracts.ShipmentCompleted");
@@ -112,7 +107,6 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
-		final String productName = productBL.getProductValueAndName(productId);
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(),
@@ -142,7 +136,7 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 											.transactionDate(transactionDate)
 											.priceActual(contractSpecificPrice)
 											.year(yearAndCalendarId.yearId())
-											.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
+											//.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))//TODO add description
 											.modularContractTypeId(createLogRequest.getTypeId())
 											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 											.invoicingGroupId(invoicingGroupId)

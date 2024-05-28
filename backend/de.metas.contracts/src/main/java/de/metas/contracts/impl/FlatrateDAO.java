@@ -1290,16 +1290,30 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@NonNull
-	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
+	public ImmutableSet<FlatrateTermId> getReadyForInvoicingModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return createModularContractQuery(getFlatrateTermQueryBuilder(queryFilter))
-				.listIds(FlatrateTermId::ofRepoId);
+		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = getFlatrateTermQueryBuilder(queryFilter)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false);
+		return createModularContractQuery(queryBuilder)
+		.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	@Override
-	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
-		return createModularContractQuery(getFlatrateTermQueryBuilder(filter))
+		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, contractIds)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false)
+				.create()
+				.update(queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
+						.addSetColumnValue(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, true));
+	}
+
+	@Override
+	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	{
+		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, false))
 				.anyMatch();
 	}
 

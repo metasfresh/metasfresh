@@ -22,12 +22,17 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.ComputingRequest;
+import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -35,6 +40,10 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +67,7 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -117,4 +127,29 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		};
 	}
 
+	@Override
+	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
+	{
+		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
+		final ModularContractLogEntriesList productionLogs = logs.subsetOf(getSourceLogEntryDocumentType());
+		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
+		final ProductPrice productPrice = productionLogs.getUniqueProductPriceOrErrorNotNull();
+		final UomId uomId = productPrice.getUomId();
+
+		final Quantity producedQty = productionLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
+
+		return ComputingResponse.builder()
+				.ids(ImmutableSet.of())
+				.price(productPrice)
+				.qty(shippedQty.subtract(producedQty))
+				.build();
+	}
+
+	protected @NonNull LogEntryDocumentType getSourceLogEntryDocumentType()
+	{
+		return LogEntryDocumentType.MATERIAL_RECEIPT;
+	}
+
 }
+

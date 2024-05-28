@@ -24,7 +24,6 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.in
 
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
-import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
@@ -41,8 +40,6 @@ import javax.annotation.Nullable;
 @Getter
 public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 {
-	@NonNull private final LogEntryContractType logEntryContractType = LogEntryContractType.MODULAR_CONTRACT;
-
 	private final SVInterimComputingMethod computingMethod;
 
 	public InterimInvoiceLineLog(

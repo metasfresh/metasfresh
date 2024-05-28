@@ -22,13 +22,14 @@
 
 package de.metas.contracts.modular.settings;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.product.ProductId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Collection;
 
 @Value
 @Builder
@@ -58,7 +59,7 @@ public class ModuleConfig
 		return isMatching(computingMethodType1) || isMatching(computingMethodType2);
 	}
 
-	public boolean isMatchingAnyOf(@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes)
+	public boolean isMatchingAnyOf(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		return computingMethodTypes.stream().anyMatch(this::isMatching);
 	}

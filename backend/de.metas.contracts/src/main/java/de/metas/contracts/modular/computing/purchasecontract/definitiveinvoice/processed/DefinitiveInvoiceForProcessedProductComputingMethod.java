@@ -30,6 +30,9 @@ import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingF
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.AbstractDefinitiveInvoiceComputingMethod;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -42,14 +45,18 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod extends Abstrac
 {
 	@NonNull private final ManufacturingFacadeService manufacturingFacadeService;
 	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final ComputingMethodService computingMethodService;
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public DefinitiveInvoiceForProcessedProductComputingMethod(@NonNull final ManufacturingFacadeService manufacturingFacadeService,
 			@NonNull final ModularContractProvider contractProvider,
-			@NonNull final ComputingMethodService computingMethodService)
+			@NonNull final ComputingMethodService computingMethodService,
+			@NonNull final ComputingMethodService computingMethodService1)
 	{
 		super(contractProvider, computingMethodService);
 		this.contractProvider = contractProvider;
 		this.manufacturingFacadeService = manufacturingFacadeService;
+		this.computingMethodService = computingMethodService1;
 	}
 
 	@Override
@@ -88,6 +95,12 @@ public class DefinitiveInvoiceForProcessedProductComputingMethod extends Abstrac
 		}
 
 		return super.streamContractIds(recordRef);
+	}
+
+
+	protected @NonNull LogEntryDocumentType getSourceLogEntryDocumentType()
+	{
+		return LogEntryDocumentType.PRODUCTION;
 	}
 
 }

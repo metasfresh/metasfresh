@@ -165,6 +165,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -2400,16 +2401,16 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
 	{
-		return flatrateDAO.isExistsModularContract(selectedContractsFilter);
+		return flatrateDAO.isInvoiceableModularContractExists(selectedContractsFilter);
 	}
 
 	@Override
 	@NonNull
 	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return flatrateDAO.getModularContractIds(queryFilter);
+		return flatrateDAO.getReadyForInvoicingModularContractIds(queryFilter);
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -2611,5 +2612,11 @@ public class FlatrateBL implements IFlatrateBL
 	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return flatrateDAO.streamCompletedConditionsBy(modularContractSettingsId);
+	}
+
+	@Override
+	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
 	}
 }

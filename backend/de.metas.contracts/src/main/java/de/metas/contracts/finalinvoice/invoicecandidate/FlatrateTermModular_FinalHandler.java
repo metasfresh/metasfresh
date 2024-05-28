@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModCntrInvoiceType;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingRequest;
@@ -80,7 +81,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -88,9 +88,11 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT;
 import static java.util.Collections.emptyIterator;
 
-public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
+public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificInvoiceCandidateHandler
 {
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -131,7 +133,7 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 				.pricingSystemId(modularContractSettings.getPricingSystemId())
 				.lockOwner(lockOwner);
 
-		return modularContractSettings.getModuleConfigsWithout(ComputingMethodType.InformativeLogs)
+		return modularContractSettings.getModuleConfigs(getModCntrInvoiceType().getComputingMethodTypes())
 				.stream()
 				.map(module -> createCandidateFor(requestTemplate.moduleConfig(module).build()))
 				.collect(ImmutableList.toImmutableList());
@@ -141,7 +143,6 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	public Quantity calculateQtyEntered(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final UomId uomId = UomId.ofRepoId(invoiceCandidateRecord.getC_UOM_ID());
-
 		return Quantitys.of(invoiceCandidateRecord.getQtyEntered(), uomId);
 	}
 
@@ -176,14 +177,20 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 	@NonNull
 	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(@NotNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		final ImmutableList<I_ModCntr_Log> billableLogs = modularContractLogDAO.list(ModularContractLogQuery.builder()
-																							 .flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
-																							 .processed(false)
-																							 .billable(true)
-																							 .build());
+		if (flatrateTerm.isReadyForDefinitiveInvoice())
+		{
+			return DONT;
+		}
 
-		return Check.isEmpty(billableLogs) ? IInvoiceCandidateHandler.CandidatesAutoCreateMode.DONT
-				: IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
+		final ImmutableList<I_ModCntr_Log> billableLogs = modularContractLogDAO.list(ModularContractLogQuery.builder()
+				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
+				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+				.processed(false)
+				.billable(true)
+				.build());
+
+		return Check.isEmpty(billableLogs) ? DONT
+				: CREATE_CANDIDATES_AND_INVOICES;
 	}
 
 	@Override
@@ -193,10 +200,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		return ImmutableList.builder()
 				.add(term)
 				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
-														   .flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
-														   .processed(false)
-														   .billable(true)
-														   .build()))
+						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+						.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+						.processed(false)
+						.billable(true)
+						.build()))
 				.build();
 	}
 
@@ -238,13 +246,18 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		setPriceAndQty(invoiceCandidate, computingResponse);
 
+		afterCommit(computingResponse, invoiceCandidate);
+
+		return invoiceCandidate;
+	}
+
+	protected void afterCommit(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
+	{
 		if (!computingResponse.getIds().isEmpty())
 		{
 			trxManager.runAfterCommit(() -> modularContractLogDAO.setICProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
-																				 InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
+					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
 		}
-
-		return invoiceCandidate;
 	}
 
 	private void setPriceAndQty(
@@ -330,12 +343,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceCandidate.isSOTrx());
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
-											 .orgId(orgId)
-											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
-											 .dateOfInterest(invoiceCandidate.getDateOrdered())
-											 .soTrx(soTrx)
-											 .taxCategoryId(taxCategoryId)
-											 .build());
+				.orgId(orgId)
+				.bPartnerLocationId(bPartnerLocationAndCaptureId)
+				.dateOfInterest(invoiceCandidate.getDateOrdered())
+				.soTrx(soTrx)
+				.taxCategoryId(taxCategoryId)
+				.build());
 
 		if (tax == null)
 		{
@@ -362,12 +375,12 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		if (total.signum() >= 0)
 		{
 			queryBuilder.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-					.docSubType(X_C_DocType.DOCSUBTYPE_FinalInvoice);
+					.docSubType(getModCntrInvoiceType().getPositiveAmtDocSubType());
 		}
 		else
 		{
 			queryBuilder.docBaseType(InvoiceDocBaseType.VendorCreditMemo.getDocBaseType())
-					.docSubType(X_C_DocType.DOCSUBTYPE_FinalCreditMemo);
+					.docSubType(getModCntrInvoiceType().getNegativAmtDocSubType());
 		}
 
 		final DocTypeId docTypeId = docTypeBL.getDocTypeId(queryBuilder.build());
@@ -375,9 +388,14 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		invoiceCandidate.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 	}
 
+	protected @NonNull ModCntrInvoiceType getModCntrInvoiceType()
+	{
+		return ModCntrInvoiceType.Final;
+	}
+
 	@Value
 	@Builder
-	private static class CreateInvoiceCandidateRequest
+	protected static class CreateInvoiceCandidateRequest
 	{
 		@NonNull I_C_Flatrate_Term modularContract;
 		@NonNull ModuleConfig moduleConfig;
@@ -385,4 +403,5 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 		@NonNull PricingSystemId pricingSystemId;
 		@NonNull LockOwner lockOwner;
 	}
+
 }

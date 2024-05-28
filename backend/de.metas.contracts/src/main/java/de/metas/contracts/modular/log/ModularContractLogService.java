@@ -193,7 +193,7 @@ public class ModularContractLogService
 						.flatrateTermId(request.flatrateTermId())
 						.processed(false)
 						.contractModuleId(request.modularContractModuleId())
-								.excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
+						.excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
 						.build())
 				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
 	}
@@ -206,5 +206,29 @@ public class ModularContractLogService
 	public ModularContractLogEntryId create(@NonNull final LogEntryCreateRequest request)
 	{
 		return modularContractLogDAO.create(request);
+	}
+
+	public void processDefinitiveICLogs(final ModularContractLogQuery modularContractLogQuery, final InvoiceCandidateId invoiceCandidateId)
+	{
+		final ModularContractLogEntriesList modularContractLogEntries = getModularContractLogEntries(modularContractLogQuery);
+		final UomId uomId = modularContractLogEntries.getUniqueProductPriceOrErrorNotNull().getUomId();
+		final ModularContractLogEntriesList manufacturingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.PRODUCTION);
+		final ModularContractLogEntriesList receiptRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
+		final ModularContractLogEntriesList shippingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.SHIPMENT);
+
+		final Quantity manufacturingRecordsQtySum = manufacturingRecords.getQtySum(uomId, uomConversionBL);
+		final Quantity receiptRecordsQtySum = receiptRecords.getQtySum(uomId, uomConversionBL);
+
+		final Quantity receivedQty = manufacturingRecordsQtySum.signum() > 0 ? manufacturingRecordsQtySum : receiptRecordsQtySum;
+		final Quantity shippingRecordsQtySum = shippingRecords.getQtySum(uomId, uomConversionBL);
+
+		createICDetails(receivedQty, shippingRecordsQtySum, invoiceCandidateId);
+		setICProcessed(modularContractLogQuery, invoiceCandidateId);
+	}
+
+	private void createICDetails(final Quantity receivedQty, final Quantity shippingRecordsQtySum, final InvoiceCandidateId invoiceCandidateId)
+	{
+		//FIXME
+
 	}
 }

@@ -58,6 +58,13 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 		return GuavaCollectors.collectUsingListAccumulator(ModularContractLogEntriesList::ofCollection);
 	}
 
+	public ModularContractLogEntriesList subsetOf(@NonNull final LogEntryDocumentType documentType)
+	{
+		return ModularContractLogEntriesList.ofCollection(list.stream()
+				.filter(log -> documentType.equals(log.getDocumentType()))
+				.toList());
+	}
+
 	@NotNull
 	@Override
 	public Iterator<ModularContractLogEntry> iterator() {return list.iterator();}

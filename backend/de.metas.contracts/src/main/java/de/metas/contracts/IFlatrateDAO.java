@@ -286,8 +286,10 @@ public interface IFlatrateDAO extends ISingletonService
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 
-	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	boolean isInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+	ImmutableSet<FlatrateTermId> getReadyForInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

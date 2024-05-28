@@ -24,8 +24,8 @@ package de.metas.contracts.finalinvoice.workpackage;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.processor.IWorkPackageQueueFactory;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.user.UserId;
@@ -42,52 +42,49 @@ public class ModularContractInvoiceEnqueuer
 {
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	public void enqueueFinalInvoice(
 			@NonNull final ImmutableSet<FlatrateTermId> termIds,
 			@NonNull final UserId userId,
-			@NonNull final InvoicingParams invoicingParams
-	)
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		enqueue(termIds, userId, invoicingParams, FinalInvoiceWorkPackageProcessor.class);
+		enqueue(termIds, userId, invoicingParams);
 	}
 
 	public void enqueueDefinitiveInvoice(
 			@NonNull final ImmutableSet<FlatrateTermId> termIds,
 			@NonNull final UserId userId,
-			@NonNull final InvoicingParams invoicingParams
-	)
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		// enqueue(termIds, userId, invoicingParams, DefinitiveInvoiceWorkPackageProcessor.class);
+		flatrateBL.prepareForDefinitiveInvoice(termIds);
+		enqueue(termIds, userId, invoicingParams);
 	}
 
 	private void enqueue(
 			@NonNull final ImmutableSet<FlatrateTermId> termIds,
 			@NonNull final UserId userId,
-			@NonNull final InvoicingParams invoicingParams,
-			@NonNull final Class<FinalInvoiceWorkPackageProcessor> packageProcessorClass)
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		trxManager.runInThreadInheritedTrx(() -> termIds.forEach(id -> enqueueFinalInvoice(id, userId, invoicingParams, packageProcessorClass)));
+		trxManager.runInThreadInheritedTrx(() -> termIds.forEach(id -> enqueueFinalInvoice(id, userId, invoicingParams)));
 	}
 
 	private void enqueueFinalInvoice(
 			@NonNull final FlatrateTermId termId,
 			@NonNull final UserId userId,
-			@NonNull final InvoicingParams invoicingParams,
-			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+			@NonNull final InvoicingParams invoicingParams)
 	{
-		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(termId, userId, invoicingParams, packageProcessorClass));
+		trxManager.runInThreadInheritedTrx(() -> enqueueInTrx(termId, userId, invoicingParams));
 	}
 
 	private void enqueueInTrx(
 			@NonNull final FlatrateTermId termId,
 			@NonNull final UserId userId,
-			@NonNull final InvoicingParams invoicingParams,
-			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+			@NonNull final InvoicingParams invoicingParams)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(I_C_Flatrate_Term.Table_Name, termId);
 
-		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), packageProcessorClass)
+		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ModCntrInvoiceWorkPackageProcessor.class)
 				.newWorkPackage()
 				// ensures we are only enqueueing after this trx is committed
 				.bindToThreadInheritedTrx()

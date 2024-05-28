@@ -43,6 +43,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,7 +115,7 @@ public class ModularContractSettings
 	}
 
 	@NonNull
-	public List<ModuleConfig> getModuleConfigs(@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes)
+	public List<ModuleConfig> getModuleConfigs(@NonNull final Collection<ComputingMethodType> computingMethodTypes)
 	{
 		Check.assumeNotEmpty(computingMethodTypes, "ComputingMethodTypes shouldn't be empty");
 		return getModuleConfigs()

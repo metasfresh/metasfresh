@@ -54,8 +54,7 @@ public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessP
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean isExistsModularContract = flatrateBL.isExistsModularContract(context.getQueryFilter(I_C_Flatrate_Term.class));
-		if (!isExistsModularContract)
+		if (!flatrateBL.isInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(NO_MODULAR_CONTRACT_SELECTED));
 		}

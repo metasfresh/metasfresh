@@ -5,7 +5,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_Handler;
+import de.metas.contracts.definitive.invoicecandidate.FlatrateTermModular_DefinitiveHandler;
+import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_FinalHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.invoicecandidatehandler.FlatrateTermInterimInvoice_Handler;
 import de.metas.contracts.refund.invoicecandidatehandler.FlatrateTermRefund_Handler;
@@ -60,7 +61,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 				new FlatrateTermSubscription_Handler(),
 				new FlatrateTermRefund_Handler(),
 				new FlatrateTermInterimInvoice_Handler(),
-				new FlatrateTermModular_Handler()));
+				new FlatrateTermModular_FinalHandler(),
+				new FlatrateTermModular_DefinitiveHandler()));
 	}
 
 	public FlatrateTerm_Handler(

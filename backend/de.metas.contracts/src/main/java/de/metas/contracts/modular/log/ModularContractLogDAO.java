@@ -466,8 +466,8 @@ public class ModularContractLogDAO
 	{
 		return queryBL.createCompositeQueryFilter(I_ModCntr_Log.class)
 				.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
-									 I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
-									 toSqlQuery(query).create());
+						I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
+						toSqlQuery(query).create());
 	}
 
 	@NonNull
@@ -631,4 +631,6 @@ public class ModularContractLogDAO
 				});
 		record.setModCntr_Module_ID(from.getModularContractModuleId().getRepoId());
 	}
+
+
 }
