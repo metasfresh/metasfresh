@@ -34,6 +34,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.acct.InvoiceAcct;
@@ -44,6 +45,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.tax.api.Tax;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -60,6 +62,30 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_InvoiceTax;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.MAccount;
+import org.compiere.model.MPeriod;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -82,6 +108,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final MatchInvoiceService matchInvoiceService;
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final OrderGroupRepository orderGroupRepo;
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -102,9 +129,15 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 	private CurrencyConversionContext _invoiceCurrencyConversionCtx = null;
 
-	public Doc_Invoice(final AcctDocContext ctx)
+	public Doc_Invoice(@NonNull final AcctDocContext ctx)
+	{
+		this(ctx, SpringContextHolder.instance.getBean(OrderGroupRepository.class));
+	}
+
+	public Doc_Invoice(@NonNull final AcctDocContext ctx, @NonNull final OrderGroupRepository orderGroupRepo)
 	{
 		super(ctx);
+		this.orderGroupRepo = orderGroupRepo;
 		this.matchInvoiceService = ctx.getServices().getMatchInvoiceService();
 	}
 
@@ -193,7 +226,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				continue;
 			}
 
-			final DocLine_Invoice docLine = new DocLine_Invoice(line, this);
+			final DocLine_Invoice docLine = new DocLine_Invoice(orderGroupRepo, line, this);
 
 			//
 			// Collect included tax (if any)

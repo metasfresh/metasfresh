@@ -21,6 +21,7 @@ import de.metas.acct.Account;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -43,6 +44,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -996,6 +999,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency();
 
+		// Disable trx lines strategy in order to tolerate cases with multiple DR and CR lines
+		// We have to do this because in case AcctSchema.isAllowMultiDebitAndCredit is false, for some cases we will get multiple DR/CR lines.
+		fact.setFactTrxLinesStrategy(null);
+
 		// Build up the description for the new line
 		final String description = "Amt(PaymentDate)=" + allocationAcctOnPaymentDate
 				+ ", Amt(InvoiceDate)=" + allocationAcctOnInvoiceDate;
@@ -1106,16 +1113,33 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// * the code is assuming that it will get the Tax bookings and the invoice gross amount booking
 		// * later on org.compiere.acct.Doc_AllocationTax.createEntries(AcctSchema, Fact, DocLine_Allocation), we skip the gross amount Fact_Acct line
 		// Get Source Amounts with account
-		final List<I_Fact_Acct> invoiceFactLines = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> invoiceFactLinesQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Fact_Acct.class)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, 318) // C_Invoice
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, line.getC_Invoice_ID())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, as.getId())
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, null) // header lines like tax or total
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, PostingType.Actual.getCode())
-				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID)
-				.endOrderBy()
+				.orderBy(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+
+		//
+		// Skip any suspense balancing booking because those are not relevant for tax correction calculation
+		final AccountId suspenseBalancingAcctId = as.getGeneralLedger().getSuspenseBalancingAcctId();
+		if (suspenseBalancingAcctId != null)
+		{
+			final MAccount suspenseBalancingAcct = services.getAccountById(suspenseBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, suspenseBalancingAcct.getAccount_ID());
+		}
+		//
+		// Skip any currency balancing booking because those are not relevant for tax correction calculation
+		final AccountId currencyBalancingAcctId = as.getGeneralLedger().getCurrencyBalancingAcctId();
+		if (currencyBalancingAcctId != null)
+		{
+			final MAccount currencyBalancingAcct = services.getAccountById(currencyBalancingAcctId);
+			invoiceFactLinesQueryBuilder.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_Account_ID, currencyBalancingAcct.getAccount_ID());
+		}
+
+		final List<I_Fact_Acct> invoiceFactLines = invoiceFactLinesQueryBuilder
 				.create()
 				.list(I_Fact_Acct.class);
 		// Invoice Not posted

@@ -70,7 +70,7 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
-	private final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final OrderGroupRepository orderGroupRepo;
 
 	private BigDecimal _includedTaxAmt = BigDecimal.ZERO;
 	private Quantity _qtyInvoiced = null; // lazy
@@ -79,9 +79,13 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 
 	private static final String SYS_CONFIG_M_Product_Acct_Consider_CompensationSchema = "M_Product_Acct_Consider_CompensationSchema";
 
-	public DocLine_Invoice(final I_C_InvoiceLine invoiceLine, final Doc_Invoice doc)
+	public DocLine_Invoice(
+			@NonNull final OrderGroupRepository orderGroupRepo,
+			@NonNull final I_C_InvoiceLine invoiceLine,
+			@NonNull final Doc_Invoice doc)
 	{
 		super(InterfaceWrapperHelper.getPO(invoiceLine), doc);
+		this.orderGroupRepo = orderGroupRepo;
 		this.matchInvoiceService = doc.getServices().getMatchInvoiceService();
 
 		setIsTaxIncluded(invoiceBL.isTaxIncluded(invoiceLine));
