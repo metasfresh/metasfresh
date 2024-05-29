@@ -35,6 +35,7 @@ import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -228,19 +229,20 @@ public class ModularContractLogService
 
 		final Quantity receivedQty = manufacturingRecordsQtySum.signum() > 0 ? manufacturingRecordsQtySum : receiptRecordsQtySum;
 		final Quantity shippedQty = shippingRecords.getQtySum(uomId, uomConversionBL);
-
+		final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
 		final ImmutableList<InvoiceDetailItem> invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
 						.label(INVOICE_DETAILS_RECEIVED)
 						.qty(receivedQty)
+						.orgId(orgId)
 						.build(),
 				InvoiceDetailItem.builder()
 						.label(INVOICE_DETAILS_SHIPPED)
 						.qty(shippedQty)
+						.orgId(orgId)
 						.build());
 
 		invoiceCandidateWithDetailsRepository.save(InvoiceCandidateWithDetails.builder()
 				.invoiceCandidateId(invoiceCandidateId)
-				.orgId(modularContractLogEntries.getSingleClientAndOrgId().getOrgId())
 				.detailItems(invoiceDetailItems)
 				.build());
 

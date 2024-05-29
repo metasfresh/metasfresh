@@ -23,22 +23,23 @@
 package de.metas.invoice.detail;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class InvoiceCandidateWithDetails
 {
 	@NonNull
 	InvoiceCandidateId invoiceCandidateId;
 
-	@NonNull
-	OrgId orgId;
+	@Nullable InvoiceLineId invoiceLineId;
 
 	@Singular
 	ImmutableList<InvoiceDetailItem> detailItems;
