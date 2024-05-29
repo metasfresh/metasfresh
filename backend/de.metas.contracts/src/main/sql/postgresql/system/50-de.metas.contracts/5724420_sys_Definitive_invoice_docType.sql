@@ -28,7 +28,7 @@ UPDATE AD_Val_Rule SET Code='(''@DocBaseType@''=''ARI'' AND AD_Ref_List.ValueNam
 ;
 
 -- 2024-05-27T10:35:23.390Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541123,TO_TIMESTAMP('2024-05-27 13:35:23.379','YYYY-MM-DD HH24:MI:SS.US'),100,'APC',555719,1,'de.metas.contracts',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Definitive Schlussabrechnung Gutschrift','Definitive Schlussabrechnung Gutschrift',TO_TIMESTAMP('2024-05-27 13:35:23.379','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541123,TO_TIMESTAMP('2024-05-27 13:35:23.379','YYYY-MM-DD HH24:MI:SS.US'),100,'APC',555719,1,'de.metas.contracts',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Definitive Schlusszahlung Gutschrift','Definitive Schlusszahlung Gutschrift',TO_TIMESTAMP('2024-05-27 13:35:23.379','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-05-27T10:35:23.439Z
@@ -51,12 +51,42 @@ UPDATE C_DocType SET AD_PrintFormat_ID=1000015,Updated=TO_TIMESTAMP('2024-05-27 
 UPDATE C_DocType SET AD_PrintFormat_ID=1000012,Updated=TO_TIMESTAMP('2024-05-27 13:37:54.127','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541123
 ;
 
+-- 2024-05-29T13:33:13.978Z
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541124,TO_TIMESTAMP('2024-05-29 15:33:13.974','YYYY-MM-DD HH24:MI:SS.US'),100,'API',555719,'DS',1,'de.metas.contracts',1000006,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Definitive Schlusszahlung','Definitive Schlusszahlung',TO_TIMESTAMP('2024-05-29 15:33:13.974','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-29T13:33:13.981Z
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.C_DocType_ID=541124 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
+;
+
+-- 2024-05-29T13:33:13.982Z
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541124 AND rol.IsManual='N')
+;
+
+-- 2024-05-29T13:33:45.531Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-29 15:33:45.531','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541124
+;
+
+-- 2024-05-29T13:33:48.779Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-29 15:33:48.779','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541124
+;
+
+-- 2024-05-29T13:33:56.093Z
+UPDATE C_DocType_Trl SET Name='Definitive Invoice',Updated=TO_TIMESTAMP('2024-05-29 15:33:56.093','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541124
+;
+
+-- 2024-05-29T13:34:02.005Z
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-29 15:34:02.005','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541124
+;
+
+
+
 -- 2024-05-27T10:38:42.239Z
-INSERT INTO C_DocType_Invoicing_Pool (AD_Client_ID,AD_Org_ID,C_DocType_Invoicing_Pool_ID,Created,CreatedBy,IsActive,IsOnDistinctICTypes,IsSOTrx,Name,Negative_Amt_C_DocType_ID,Positive_Amt_C_DocType_ID,Updated,UpdatedBy) VALUES (1000000,1000000,540003,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Definitive Invoice',541123,541106,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO C_DocType_Invoicing_Pool (AD_Client_ID,AD_Org_ID,C_DocType_Invoicing_Pool_ID,Created,CreatedBy,IsActive,IsOnDistinctICTypes,IsSOTrx,Name,Negative_Amt_C_DocType_ID,Positive_Amt_C_DocType_ID,Updated,UpdatedBy) VALUES (1000000,1000000,540003,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Definitive Invoice',541123,541124,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2024-05-27T10:38:50.269Z
-UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540003,Updated=TO_TIMESTAMP('2024-05-27 13:38:50.269','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541105
+UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540003,Updated=TO_TIMESTAMP('2024-05-27 13:38:50.269','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541124
 ;
 
 -- 2024-05-27T10:38:56.179Z
