@@ -499,6 +499,7 @@ class TableRow extends PureComponent {
       viewId,
       keyProperty,
       modalVisible,
+      isModal,
       isGerman,
       isSelected,
       focusOnFieldName,
@@ -580,6 +581,7 @@ class TableRow extends PureComponent {
                   handleRightClick,
                   keyProperty,
                   modalVisible,
+                  isModal,
                   rowIndex,
                   tableId,
                   isGerman,
@@ -782,6 +784,7 @@ TableRow.propTypes = {
   updatePropertyValue: PropTypes.func,
   onFastInlineEdit: PropTypes.func,
   navigationActive: PropTypes.bool,
+  isModal: PropTypes.bool,
 };
 
 export default TableRow;

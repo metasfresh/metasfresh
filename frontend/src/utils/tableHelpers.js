@@ -384,7 +384,7 @@ export function prepareWidgetData(item, cells) {
  * @param {object} cells - row's `fieldsByName` that hold the field value/type
  * @param {object} item - widget data object
  * @param {boolean} isEditable - flag if cell is editable
- * @param {boolean} supportfieldEdit - flag if selected cell can be editable
+ * @param {boolean} supportFieldEdit - flag if selected cell can be editable
  */
 export function getCellWidgetData(cells, item, isEditable, supportFieldEdit) {
   const widgetData = item.fields.reduce((result, prop) => {

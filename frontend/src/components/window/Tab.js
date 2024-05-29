@@ -1,48 +1,55 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { fetchTab } from '../../actions/WindowActions';
 import { toOrderBysCommaSeparatedString } from '../../utils/windowHelpers';
 
-class Tab extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    const {
-      fetchTab,
-      tabId,
-      windowId,
-      onChange,
-      queryOnActivate,
-      singleRowView,
-      docId,
-      orderBy,
-    } = this.props;
-
-    if (docId && queryOnActivate) {
+const Tab = ({
+  children,
+  onChange,
+  singleRowView,
+  windowId,
+  tabId,
+  docId,
+  queryOnActivate,
+  orderBy,
+}) => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    let fetchTabRequest = null;
+    if (docId && queryOnActivate && onChange) {
       const query = toOrderBysCommaSeparatedString(orderBy);
 
+      fetchTabRequest = dispatch(fetchTab({ tabId, windowId, docId, query }));
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query }).then((res) => {
+        fetchTabRequest.then((res) => {
           if (res.length) {
-            onChange && onChange();
+            onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query }).then(() => {
-          onChange && onChange();
+        fetchTabRequest.then(() => {
+          onChange();
         });
       }
     }
-  }
 
-  render() {
-    const { children } = this.props;
+    return () => {
+      fetchTabRequest?.cancel?.();
+    };
+  }, [
+    docId,
+    queryOnActivate,
+    singleRowView,
+    windowId,
+    tabId,
+    orderBy,
+    onChange,
+  ]);
 
-    return <div className="row table-wrapper">{children}</div>;
-  }
-}
+  return <div className="row table-wrapper">{children}</div>;
+};
 
 Tab.propTypes = {
   children: PropTypes.any,
@@ -53,10 +60,6 @@ Tab.propTypes = {
   docId: PropTypes.string,
   queryOnActivate: PropTypes.bool,
   orderBy: PropTypes.array,
-  fetchTab: PropTypes.func.isRequired,
 };
 
-export { Tab };
-export default connect(null, {
-  fetchTab,
-})(Tab);
+export default Tab;
