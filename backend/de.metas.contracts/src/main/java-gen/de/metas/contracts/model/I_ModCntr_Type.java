@@ -30,31 +30,25 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Set ColumnName.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Column_ID (int AD_Column_ID);
+	void setColumnName (java.lang.String ColumnName);
 
 	/**
-	 * Get Link Column.
-	 * Link Column for Multi-Parent tables
+	 * Get ColumnName.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Column_ID();
+	java.lang.String getColumnName();
 
-	@Nullable org.compiere.model.I_AD_Column getAD_Column();
-
-	void setAD_Column(@Nullable org.compiere.model.I_AD_Column AD_Column);
-
-	ModelColumn<I_C_AcctSchema_Element, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_C_AcctSchema_Element.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
-	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
 	 * Set Organisation.

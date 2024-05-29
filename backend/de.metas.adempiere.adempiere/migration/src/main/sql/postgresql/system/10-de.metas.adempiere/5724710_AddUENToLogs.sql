@@ -189,3 +189,78 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728768,0,547012,550777,624781,'F',TO_TIMESTAMP('2024-05-28 18:15:39.528','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Protein',70,0,0,TO_TIMESTAMP('2024-05-28 18:15:39.528','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+-- Name: UserElementNumberX
+-- 2024-05-29T05:51:54.831Z
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541871,TO_TIMESTAMP('2024-05-29 08:51:54.637','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','N','UserElementNumberX ',TO_TIMESTAMP('2024-05-29 08:51:54.637','YYYY-MM-DD HH24:MI:SS.US'),100,'L')
+;
+
+-- 2024-05-29T05:51:54.836Z
+INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Reference_ID=541871 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+;
+
+-- Reference: UserElementNumberX
+-- Value: UserElementNumber1
+-- ValueName: UserElementNumber1
+-- 2024-05-29T05:52:22.303Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541871,543692,TO_TIMESTAMP('2024-05-29 08:52:22.193','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','UserElementNumber1',TO_TIMESTAMP('2024-05-29 08:52:22.193','YYYY-MM-DD HH24:MI:SS.US'),100,'UserElementNumber1','UserElementNumber1')
+;
+
+-- 2024-05-29T05:52:22.305Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543692 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Reference: UserElementNumberX
+-- Value: UserElementNumber2
+-- ValueName: UserElementNumber2
+-- 2024-05-29T05:52:34.928Z
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541871,543693,TO_TIMESTAMP('2024-05-29 08:52:34.794','YYYY-MM-DD HH24:MI:SS.US'),100,'D','Y','UserElementNumber2',TO_TIMESTAMP('2024-05-29 08:52:34.794','YYYY-MM-DD HH24:MI:SS.US'),100,'UserElementNumber2','UserElementNumber2')
+;
+
+-- 2024-05-29T05:52:34.929Z
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=543693 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- Name: UserElementNumberX
+-- 2024-05-29T05:52:39.926Z
+UPDATE AD_Reference SET Name='UserElementNumberX',Updated=TO_TIMESTAMP('2024-05-29 08:52:39.924','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Reference_ID=541871
+;
+
+-- 2024-05-29T05:52:39.929Z
+UPDATE AD_Reference_Trl trl SET Name='UserElementNumberX' WHERE AD_Reference_ID=541871 AND AD_Language='de_DE'
+;
+
+-- Column: ModCntr_Type.ColumnName
+-- 2024-05-29T05:53:27.084Z
+UPDATE AD_Column SET AD_Element_ID=228, AD_Reference_ID=17, AD_Reference_Value_ID=541871, AD_Val_Rule_ID=NULL, ColumnName='ColumnName', Description='Name der Spalte in der Datenbank', FieldLength=60, FilterOperator='E', Help='"Spaltenname" bezeichnet den Namen einer Spalte einer Tabelle wie in der Datenbank definiert.', IsExcludeFromZoomTargets='Y', IsSelectionColumn='Y', Name='Spaltenname',Updated=TO_TIMESTAMP('2024-05-29 08:53:27.084','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588285
+;
+
+-- 2024-05-29T05:53:27.086Z
+UPDATE AD_Column_Trl trl SET Name='Spaltenname' WHERE AD_Column_ID=588285 AND AD_Language='de_DE'
+;
+
+-- 2024-05-29T05:53:27.087Z
+UPDATE AD_Field SET Name='Spaltenname', Description='Name der Spalte in der Datenbank', Help='"Spaltenname" bezeichnet den Namen einer Spalte einer Tabelle wie in der Datenbank definiert.' WHERE AD_Column_ID=588285
+;
+
+-- 2024-05-29T05:53:27.544Z
+/* DDL */  select update_Column_Translation_From_AD_Element(228)
+;
+
+-- Name: UserElementNumberX
+-- 2024-05-29T05:53:36.909Z
+DELETE FROM AD_Val_Rule WHERE AD_Val_Rule_ID=540676
+;
+
+-- 2024-05-29T05:53:38.189Z
+/* DDL */ SELECT public.db_alter_table('ModCntr_Type','ALTER TABLE public.ModCntr_Type ADD COLUMN ColumnName VARCHAR(60)')
+;
+
+
+-- 2024-05-29T05:53:38.189Z
+/* DDL */ SELECT public.db_alter_table('ModCntr_Type','ALTER TABLE public.ModCntr_Type DROP COLUMN AD_COlumn_ID ')
+;
+
+
+
+
+

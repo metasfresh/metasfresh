@@ -151,7 +151,7 @@ public class ModularContractPriceRepository
 
 		final IQuery<I_ModCntr_Type> types = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_AD_Column_ID, columnName)
+				.addEqualsFilter(I_ModCntr_Type.COLUMNNAME_ColumnName, columnName)
 				.create();
 
 		final IQuery<I_ModCntr_Module> modules = queryBL.createQueryBuilder(I_ModCntr_Module.class)

@@ -172,30 +172,26 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
+
+	/**
+	 * ColumnName  AD_Reference_ID=541871
+	 * Reference name: ColumnName
+	 */
+	public static final int ColumnName_AD_Reference_ID=541871;
+	/** UserElementNumber1 = UserElementNumber1 */
+	public static final String ColumnName_UserElementNumber1 = "UserElementNumber1";
+	/** UserElementNumber2 = UserElementNumber2 */
+	public static final String ColumnName_UserElementNumber2 = "UserElementNumber2";
+
 	@Override
-	public org.compiere.model.I_AD_Column getAD_Column()
+	public void setColumnName(final java.lang.String ColumnName)
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class);
+		set_Value(COLUMNNAME_ColumnName, ColumnName);
 	}
 
 	@Override
-	public void setAD_Column(final org.compiere.model.I_AD_Column AD_Column)
+	public final java.lang.String getColumnName()
 	{
-		set_ValueFromPO(COLUMNNAME_AD_Column_ID, org.compiere.model.I_AD_Column.class, AD_Column);
-	}
-
-	@Override
-	public void setAD_Column_ID (final int AD_Column_ID)
-	{
-		if (AD_Column_ID < 1)
-			set_Value (COLUMNNAME_AD_Column_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_Column_ID, AD_Column_ID);
-	}
-
-	@Override
-	public int getAD_Column_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
+		return get_ValueAsString(COLUMNNAME_ColumnName);
 	}
 }
