@@ -1285,6 +1285,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUser2_ID(getUser2_ID())
 				.setUserElement1_ID(getUserElement1_ID())
 				.setUserElement2_ID(getUserElement2_ID())
+				.setUserElementNumber1(getUserElementNumber1())
+				.setUserElementNumber2(getUserElementNumber2())
 				.setUserElementString1(getUserElementString1())
 				.setUserElementString2(getUserElementString2())
 				.setUserElementString3(getUserElementString3())
@@ -1592,6 +1594,8 @@ public final class FactLine extends X_Fact_Acct
 		setUser2_ID(dimension.getUser2_ID());
 		setUserElement1_ID(dimension.getUserElement1Id());
 		setUserElement2_ID(dimension.getUserElement2Id());
+		setUserElementNumber1(getUserElementNumber1());
+		setUserElementNumber2(getUserElementNumber2());
 		setUserElementString1(dimension.getUserElementString1());
 		setUserElementString2(dimension.getUserElementString2());
 		setUserElementString3(dimension.getUserElementString3());
@@ -1724,6 +1728,14 @@ public final class FactLine extends X_Fact_Acct
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElement2))
 		{
 			setUserElement2_ID(dim.getUserElement2_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementNumber1))
+		{
+			setUserElementNumber1(dim.getUserElementNumber1());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementNumber2))
+		{
+			setUserElementNumber2(dim.getUserElementNumber2());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString1))
 		{

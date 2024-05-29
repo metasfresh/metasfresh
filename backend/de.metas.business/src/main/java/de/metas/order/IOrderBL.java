@@ -32,6 +32,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.product.ProductId;
@@ -85,7 +86,7 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
 	 */
-	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
+	PriceListVersionId getPriceListVersion(I_C_Order order);
 
 	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 

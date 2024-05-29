@@ -30,6 +30,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPriceListBL;
@@ -306,10 +307,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceListId, priceDate, processedPLVFiltering);
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, priceDate, processedPLVFiltering);
 
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+		return Optional.ofNullable(priceListVersionId)
+				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId))
 				.map(productTaxCategoryService::getTaxCategoryId)
 				.orElseGet(() -> {
 					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()
@@ -334,8 +335,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
-		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
-		Check.assumeNotNull(priceList, "Price list exists for id {}", order.getM_PriceList_ID());
+		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
+		Check.assumeNotNull(priceListId, "Price list exists for id {}", order.getM_PriceList_ID());
 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
@@ -344,11 +345,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, priceDate, processedPLVFiltering);
 
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+		return Optional.ofNullable(priceListVersionId)
+				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId))
 				.map(productTaxCategoryService::getTaxCategoryId)
 				.orElseGet(() -> {
 					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()

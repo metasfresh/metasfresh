@@ -166,6 +166,16 @@ public class ModularContractLogDAO
 			log.setStorageDays(request.getStorageDays());
 		}
 
+		if (request.getUserElementNumber1() != null)
+		{
+			log.setUserElementNumber1(request.getUserElementNumber1());
+		}
+
+		if (request.getUserElementNumber2() != null)
+		{
+			log.setUserElementNumber2(request.getUserElementNumber2());
+		}
+
 		saveRecord(log);
 
 		return ModularContractLogEntryId.ofRepoId(log.getModCntr_Log_ID());
@@ -195,6 +205,8 @@ public class ModularContractLogDAO
 				.amount(Money.ofOrNull(record.getAmount(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
+				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber1))
+				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber2))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
@@ -466,8 +478,8 @@ public class ModularContractLogDAO
 	{
 		return queryBL.createCompositeQueryFilter(I_ModCntr_Log.class)
 				.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
-									 I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
-									 toSqlQuery(query).create());
+						I_ModCntr_Log.COLUMNNAME_ModCntr_Log_ID,
+						toSqlQuery(query).create());
 	}
 
 	@NonNull

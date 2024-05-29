@@ -72,6 +72,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -1226,6 +1227,13 @@ public class InterfaceWrapperHelper
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 		return value;
 	}
+
+	public static BigDecimal getValueAsBigDecimalOrNull(final Object model, final String columnName)
+	{
+		 final Object valueObj = getValueOrNull(model, columnName);
+		 return NumberUtils.asBigDecimal(valueObj);
+	}
+
 
 	public static <T> Optional<T> getValue(final Object model, final String columnName)
 	{

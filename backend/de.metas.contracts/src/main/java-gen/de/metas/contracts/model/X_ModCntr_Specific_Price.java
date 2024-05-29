@@ -188,4 +188,31 @@ public class X_ModCntr_Specific_Price extends org.compiere.model.PO implements I
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
+
+	@Override
+	public void setMinValue (final BigDecimal MinValue)
+	{
+		set_Value (COLUMNNAME_MinValue, MinValue);
+	}
+
+	@Override
+	public BigDecimal getMinValue()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MinValue);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setIsScalePrice(final boolean IsScalePrice)
+	{
+		set_Value (COLUMNNAME_IsScalePrice, IsScalePrice);
+	}
+
+	@Override
+	public boolean isScalePrice()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsScalePrice);
+	}
+
+
 }

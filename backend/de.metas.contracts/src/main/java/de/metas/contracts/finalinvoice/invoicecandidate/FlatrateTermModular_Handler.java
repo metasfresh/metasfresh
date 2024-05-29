@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.ComputingRequest;
@@ -314,7 +315,10 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 		if (!moduleContractType.isMatching(ComputingMethodType.INTERIM_CONTRACT))
 		{
-			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, flatrateTermId);
+			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(ContractSpecificPriceRequest.builder()
+					.modularContractModuleId(modularContractModuleId)
+					.flatrateTermId(flatrateTermId)
+					.build());
 		}
 		else
 		{
@@ -322,7 +326,11 @@ public class FlatrateTermModular_Handler implements ConditionTypeSpecificInvoice
 
 			//interimContractId can be null, if ComputingMethodType.INTERIM_CONTRACT is present, but no interim contract was created (in this case the price will always be 0)
 			final FlatrateTermId contractToUse = interimContractId != null ? interimContractId : flatrateTermId;
-			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractModuleId, contractToUse);
+			taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(
+					ContractSpecificPriceRequest.builder()
+							.flatrateTermId(contractToUse)
+							.modularContractModuleId(modularContractModuleId)
+							.build());
 		}
 
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = invoiceCandBL.getBillLocationId(invoiceCandidate, true);
