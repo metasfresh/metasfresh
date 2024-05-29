@@ -25,7 +25,6 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice.
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
-import de.metas.contracts.modular.computing.purchasecontract.sales.processed.ProcessedSalesComputingMethod;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractManufacturingProcessedReceiptLogHandler;
@@ -40,7 +39,7 @@ public class ManufacturingOrderLog extends AbstractManufacturingProcessedReceipt
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ManufacturingFacadeService manufacturingFacadeService,
-			@NonNull final ProcessedSalesComputingMethod computingMethod)
+			@NonNull final DefinitiveInvoiceForProcessedProductComputingMethod computingMethod)
 	{
 		super(modCntrInvoicingGroupRepository, manufacturingFacadeService, modularContractService, computingMethod);
 	}
