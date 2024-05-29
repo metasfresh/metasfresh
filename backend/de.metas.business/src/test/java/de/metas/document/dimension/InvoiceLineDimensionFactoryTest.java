@@ -6,8 +6,6 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InvoiceLineDimensionFactoryTest
