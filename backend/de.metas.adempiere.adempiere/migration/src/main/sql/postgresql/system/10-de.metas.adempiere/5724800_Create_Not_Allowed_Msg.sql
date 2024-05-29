@@ -28,3 +28,10 @@ UPDATE AD_Message SET MsgText='Erstellen nicht erlaubt' WHERE AD_Message_ID=5454
 UPDATE AD_Message SET Value='de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed',Updated=TO_TIMESTAMP('2024-05-29 11:44:46.879','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545415
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- Value: de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed
+-- 2024-05-29T09:04:46.809Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-29 12:04:46.809','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545415
+;
+
