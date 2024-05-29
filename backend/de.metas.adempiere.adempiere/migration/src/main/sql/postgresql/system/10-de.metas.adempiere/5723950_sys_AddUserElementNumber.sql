@@ -715,10 +715,10 @@ UPDATE AD_Element SET PrintName='Neupreis' WHERE AD_Element_ID=583127
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583127,'de_DE')
 ;
 
+
 CREATE UNIQUE INDEX ModCntr_Specific_Price_MinValue
-    ON ModCntr_Specific_Price (ModCntr_Module_ID, MinValue, IsScalePrice);
-	
-	
+    ON ModCntr_Specific_Price (ModCntr_Module_ID, MinValue, IsScalePrice, m_product_id, c_flatrate_term_id);
+
 	
 -- Value: ModCntr_Specific_Delete_Price
 -- Classname: de.metas.contracts.modular.process.ModCntr_Specific_Delete_Price
