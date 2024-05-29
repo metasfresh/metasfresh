@@ -64,7 +64,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				.processed(false)
 				.billable(true)
 				.build());
-		if (!finalInvoiceBillableLogsExist)
+		if (finalInvoiceBillableLogsExist)
 		{
 			return DONT;
 		}
