@@ -2,7 +2,8 @@ package de.metas.contracts.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.definitive.invoicecandidate.FlatrateTermModular_DefinitiveHandler;
@@ -35,8 +36,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
 import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
@@ -50,10 +52,10 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 {
 	public final static String SYS_Config_AUTO_INVOICE = "de.metas.contracts.invoicecandidate.ALLOW_AUTO_INVOICE";
 
-	private final Map<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
+	private final Multimap<String, ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private	final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private	final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	public FlatrateTerm_Handler()
 	{
@@ -68,8 +70,8 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	public FlatrateTerm_Handler(
 			@NonNull final List<ConditionTypeSpecificInvoiceCandidateHandler> conditionTypeSpecificInvoiceCandidateHandlers)
 	{
-		this.conditionTypeSpecificInvoiceCandidateHandlers = Maps
-				.uniqueIndex(
+		this.conditionTypeSpecificInvoiceCandidateHandlers = Multimaps
+				.index(
 						conditionTypeSpecificInvoiceCandidateHandlers,
 						ConditionTypeSpecificInvoiceCandidateHandler::getConditionsType);
 	}
@@ -215,7 +217,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		final Quantity qtyInProductUOM;
 		final ProductId icProductId = ProductId.ofRepoId(ic.getM_Product_ID());
-		if(flatrateBL.isModularContract(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
+		if (flatrateBL.isModularContract(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
 				&& !ProductId.equals(icProductId, productId))
 		{
 			qtyInProductUOM = Quantitys.of(calculateQtyOrdered.toBigDecimal(), icProductId);
@@ -271,10 +273,17 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 	private ConditionTypeSpecificInvoiceCandidateHandler getSpecificHandler(@NonNull final I_C_Flatrate_Term term)
 	{
-		final ConditionTypeSpecificInvoiceCandidateHandler handlerOrNull = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions());
-		return Check.assumeNotNull(handlerOrNull,
-								   "The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
-								   term.getType_Conditions(), term);
+		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> candidates = conditionTypeSpecificInvoiceCandidateHandlers.get(term.getType_Conditions())
+				.stream()
+				.filter(handler -> handler.isHandlerFor(term))
+				.collect(Collectors.toSet());
+		Check.assumeNotEmpty(candidates,
+				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
+				term.getType_Conditions(), term);
+		Check.assume(candidates.size() == 1,
+				"Expected a single matching handler for {}, but found {} for term={}",
+				term.getType_Conditions(), candidates.size(), term);
+		return Objects.requireNonNull(candidates.stream().findFirst().get());
 	}
 
 	@Override
@@ -295,7 +304,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_Flatrate_Term modularContract = InterfaceWrapperHelper.create(model, I_C_Flatrate_Term.class);
 
-		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(modularContract); 
+		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(modularContract);
 		return handler.getRecordsToLock(modularContract);
 	}
 }

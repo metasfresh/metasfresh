@@ -22,43 +22,24 @@
 
 package de.metas.invoice.detail;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.organization.OrgId;
-import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Value
 @Builder
-public class InvoiceDetailItem
+public class InvoiceCandidateWithDetails
 {
-	Integer seqNo;
+	@NonNull
+	InvoiceCandidateId invoiceCandidateId;
 
-	String label;
-
-	String description;
-
-	@Nullable
-	LocalDate date;
-
-	@Nullable
-	BigDecimal price;
-
-	@Nullable Quantity qty;
-
-	String note;
-
+	@NonNull
 	OrgId orgId;
 
-	/**
-	 * @return true if label and description, date and price are blank/null, false otherwise.
-	 */
-	public boolean isEmpty()
-	{
-		return StringUtils.isBlank(label) && (StringUtils.isBlank(description) && price == null && date == null );
-	}
+	@Singular
+	ImmutableList<InvoiceDetailItem> detailItems;
 }

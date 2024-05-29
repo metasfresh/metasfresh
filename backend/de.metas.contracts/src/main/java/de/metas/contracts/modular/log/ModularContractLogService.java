@@ -22,12 +22,16 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.detail.InvoiceCandidateWithDetails;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
@@ -62,11 +66,14 @@ public class ModularContractLogService
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 	public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
+	public static final String INVOICE_DETAILS_RECEIVED = "Received";
+	public static final String INVOICE_DETAILS_SHIPPED = "Shipped";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
+	@NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -220,15 +227,24 @@ public class ModularContractLogService
 		final Quantity receiptRecordsQtySum = receiptRecords.getQtySum(uomId, uomConversionBL);
 
 		final Quantity receivedQty = manufacturingRecordsQtySum.signum() > 0 ? manufacturingRecordsQtySum : receiptRecordsQtySum;
-		final Quantity shippingRecordsQtySum = shippingRecords.getQtySum(uomId, uomConversionBL);
+		final Quantity shippedQty = shippingRecords.getQtySum(uomId, uomConversionBL);
 
-		createICDetails(receivedQty, shippingRecordsQtySum, invoiceCandidateId);
+		final ImmutableList<InvoiceDetailItem> invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
+						.label(INVOICE_DETAILS_RECEIVED)
+						.qty(receivedQty)
+						.build(),
+				InvoiceDetailItem.builder()
+						.label(INVOICE_DETAILS_SHIPPED)
+						.qty(shippedQty)
+						.build());
+
+		invoiceCandidateWithDetailsRepository.save(InvoiceCandidateWithDetails.builder()
+				.invoiceCandidateId(invoiceCandidateId)
+				.orgId(modularContractLogEntries.getSingleClientAndOrgId().getOrgId())
+				.detailItems(invoiceDetailItems)
+				.build());
+
 		setICProcessed(modularContractLogQuery, invoiceCandidateId);
 	}
 
-	private void createICDetails(final Quantity receivedQty, final Quantity shippingRecordsQtySum, final InvoiceCandidateId invoiceCandidateId)
-	{
-		//FIXME
-
-	}
 }

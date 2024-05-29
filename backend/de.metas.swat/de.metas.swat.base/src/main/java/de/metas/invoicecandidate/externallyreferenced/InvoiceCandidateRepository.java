@@ -379,6 +379,8 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+
 		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;

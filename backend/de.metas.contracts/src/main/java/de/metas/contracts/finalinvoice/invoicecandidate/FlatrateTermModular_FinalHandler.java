@@ -404,4 +404,9 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 		@NonNull LockOwner lockOwner;
 	}
 
+	public boolean isHandlerFor(@NonNull final I_C_Flatrate_Term term)
+	{
+		return !term.isReadyForDefinitiveInvoice();
+	}
+
 }

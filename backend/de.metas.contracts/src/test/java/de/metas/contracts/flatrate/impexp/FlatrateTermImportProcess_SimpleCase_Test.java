@@ -28,6 +28,7 @@ import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
@@ -105,13 +106,14 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
 		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
-		SpringContextHolder.registerJUnitBean(new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO())));
+		final ModularContractLogService contractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
+		SpringContextHolder.registerJUnitBean(new ComputingMethodService(contractLogService));
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()),
-																		 new ModularContractSettingsDAO(),
-																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
-																		 new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO())),
-																		 new ModularContractPriceRepository()));
+				new ModularContractSettingsDAO(),
+				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+				new ComputingMethodService(contractLogService),
+				new ModularContractPriceRepository()));
 	}
 
 	@Test

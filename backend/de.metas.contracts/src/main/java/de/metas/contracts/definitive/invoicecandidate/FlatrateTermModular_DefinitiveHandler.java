@@ -97,4 +97,9 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 	{
 		return Definitive;
 	}
+
+	public boolean isHandlerFor(@NonNull final I_C_Flatrate_Term term)
+	{
+		return term.isReadyForDefinitiveInvoice();
+	}
 }
