@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -109,46 +110,48 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(),
-																								   createLogRequest.getContractId());
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
+				.modularContractModuleId(createLogRequest.getModularContractModuleId())
+				.flatrateTermId(createLogRequest.getContractId())
+				.build());
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
-											.contractId(createLogRequest.getContractId())
-											.productId(createLogRequest.getProductId())
-											.productName(createLogRequest.getProductName())
-											.initialProductId(productId)
-											.referencedRecord(recordRef)
-											.collectionPointBPartnerId(bpartnerId)
-											.producerBPartnerId(bpartnerId)
-											.invoicingBPartnerId(bpartnerId)
-											.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
-											.documentType(getLogEntryDocumentType())
-											.contractType(getLogEntryContractType())
-											.soTrx(SOTrx.PURCHASE)
-											.processed(false)
-											.isBillable(true)
-											.quantity(quantity)
-											.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
-											.transactionDate(transactionDate)
-											.priceActual(contractSpecificPrice)
-											.year(yearAndCalendarId.yearId())
-											//.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))//TODO add description
-											.modularContractTypeId(createLogRequest.getTypeId())
-											.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-											.invoicingGroupId(invoicingGroupId)
-											.build());
+				.contractId(createLogRequest.getContractId())
+				.productId(createLogRequest.getProductId())
+				.productName(createLogRequest.getProductName())
+				.initialProductId(productId)
+				.referencedRecord(recordRef)
+				.collectionPointBPartnerId(bpartnerId)
+				.producerBPartnerId(bpartnerId)
+				.invoicingBPartnerId(bpartnerId)
+				.warehouseId(WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()))
+				.documentType(getLogEntryDocumentType())
+				.contractType(getLogEntryContractType())
+				.soTrx(SOTrx.PURCHASE)
+				.processed(false)
+				.isBillable(true)
+				.quantity(quantity)
+				.amount(contractSpecificPrice.computeAmount(quantity, uomConversionBL))
+				.transactionDate(transactionDate)
+				.priceActual(contractSpecificPrice)
+				.year(yearAndCalendarId.yearId())
+				//.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))//TODO add description
+				.modularContractTypeId(createLogRequest.getTypeId())
+				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
+				.invoicingGroupId(invoicingGroupId)
+				.build());
 	}
 
 	@NotNull
 	private LocalDateAndOrgId extractTransactionDate(final I_M_InOut inOutRecord)
 	{
 		return LocalDateAndOrgId.ofTimestamp(inOutRecord.getMovementDate(),
-											 OrgId.ofRepoId(inOutRecord.getAD_Org_ID()),
-											 orgDAO::getTimeZone);
+				OrgId.ofRepoId(inOutRecord.getAD_Org_ID()),
+				orgDAO::getTimeZone);
 	}
 
 	@Override
@@ -164,11 +167,11 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 		final String productName = productBL.getProductValueAndName(productId);
 
 		return ExplainedOptional.of(LogEntryReverseRequest.builder()
-											.referencedModel(recordRef)
-											.flatrateTermId(createLogRequest.getContractId())
-											.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs()))
-											.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
-											.contractModuleId(createLogRequest.getModularContractModuleId())
-											.build());
+				.referencedModel(recordRef)
+				.flatrateTermId(createLogRequest.getContractId())
+				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_REVERSED, productName, quantity.abs()))
+				.logEntryContractType(LogEntryContractType.MODULAR_CONTRACT)
+				.contractModuleId(createLogRequest.getModularContractModuleId())
+				.build());
 	}
 }

@@ -34,6 +34,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Builder(toBuilder = true)
 public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
@@ -43,6 +44,8 @@ public record ModCntrSpecificPrice(@Nullable ModCntrSpecificPriceId id,
 								   @NonNull ProductId productId,
 								   @NonNull TaxCategoryId taxCategoryId,
 								   @NonNull UomId uomId,
+								   boolean isScalePrice,
+								   @Nullable BigDecimal minValue,
 								   SeqNo seqNo)
 {
 

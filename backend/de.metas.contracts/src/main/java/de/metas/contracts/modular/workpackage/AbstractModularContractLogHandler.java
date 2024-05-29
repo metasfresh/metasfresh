@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.product.ProductPrice;
@@ -47,7 +48,10 @@ public abstract class AbstractModularContractLogHandler implements IModularContr
 	@NonNull
 	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
-		return modularContractService.getContractSpecificPrice(request.getModularContractModuleId(), request.getContractId())
+		return modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
+						.modularContractModuleId(request.getModularContractModuleId())
+						.flatrateTermId(request.getContractId())
+						.build())
 				.negateIf(request.isCostsType());
 	}
 }

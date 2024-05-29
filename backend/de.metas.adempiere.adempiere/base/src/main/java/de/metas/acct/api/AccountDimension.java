@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.impl.AcctSegmentType;
 import de.metas.util.NumberUtils;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -181,6 +182,16 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2),0);
 	}
 
+	public BigDecimal getUserElementNumber1()
+	{
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber1));
+	}
+
+	public BigDecimal getUserElementNumber2()
+	{
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber2));
+	}
+
 	public String getUserElementString1()
 	{
 		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString1));
@@ -255,6 +266,11 @@ public final class AccountDimension
 			{
 				final int intValue = NumberUtils.asInt(value, 0);
 				segmentValues.put(segmentType, intValue);
+			}
+			else if(value instanceof BigDecimal)
+			{
+				final BigDecimal bigDecimalValue = NumberUtils.asBigDecimal(value, BigDecimal.ZERO);
+				segmentValues.put(segmentType, bigDecimalValue);
 			}
 			else
 			{
@@ -459,6 +475,19 @@ public final class AccountDimension
 		public Builder setUserElementString7(final String userElementString7)
 		{
 			setSegmentValue(AcctSegmentType.UserElementString7, userElementString7);
+			return this;
+		}
+
+
+		public Builder setUserElementNumber1(final BigDecimal userElementNumber1)
+		{
+			setSegmentValue(AcctSegmentType.UserElementNumber1, userElementNumber1);
+			return this;
+		}
+
+		public Builder setUserElementNumber2(final BigDecimal userElementNumber2)
+		{
+			setSegmentValue(AcctSegmentType.UserElementNumber2, userElementNumber2);
 			return this;
 		}
 

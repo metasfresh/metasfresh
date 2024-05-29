@@ -167,6 +167,8 @@ public class AccountDAO implements IAccountDAO
 		vc.setUser2_ID(dimension.getUser2_ID());
 		vc.setUserElement1_ID(dimension.getUserElement1_ID());
 		vc.setUserElement2_ID(dimension.getUserElement2_ID());
+		vc.setUserElementNumber1(dimension.getUserElementNumber1());
+		vc.setUserElementNumber2(dimension.getUserElementNumber2());
 		vc.setUserElementString1(dimension.getUserElementString1());
 		vc.setUserElementString2(dimension.getUserElementString2());
 		vc.setUserElementString3(dimension.getUserElementString3());
