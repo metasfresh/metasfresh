@@ -267,7 +267,7 @@ public final class AccountDimension
 				final int intValue = NumberUtils.asInt(value, 0);
 				segmentValues.put(segmentType, intValue);
 			}
-			if(value instanceof BigDecimal)
+			else if(value instanceof BigDecimal)
 			{
 				final BigDecimal bigDecimalValue = NumberUtils.asBigDecimal(value, BigDecimal.ZERO);
 				segmentValues.put(segmentType, bigDecimalValue);
