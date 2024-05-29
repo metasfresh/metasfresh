@@ -116,18 +116,13 @@ public class InformativeLogComputingMethod
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		switch (recordRef.getTableName())
+		return switch (recordRef.getTableName())
 		{
-			case I_C_OrderLine.Table_Name ->
-			{
-				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			default -> {return Stream.empty();}
-		}
+			case I_C_OrderLine.Table_Name -> contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			default -> Stream.empty();
+		};
 	}
 
 	@Override
