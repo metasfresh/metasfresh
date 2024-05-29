@@ -1,0 +1,14 @@
+-- Run mode: SWING_CLIENT
+
+-- 2024-05-27T10:38:42.239Z
+INSERT INTO C_DocType_Invoicing_Pool (AD_Client_ID,AD_Org_ID,C_DocType_Invoicing_Pool_ID,Created,CreatedBy,IsActive,IsOnDistinctICTypes,IsSOTrx,Name,Negative_Amt_C_DocType_ID,Positive_Amt_C_DocType_ID,Updated,UpdatedBy) VALUES (1000000,1000000,540003,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','Y','N','Definitive Invoice',541123,541106,TO_TIMESTAMP('2024-05-27 13:38:42.231','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2024-05-27T10:38:50.269Z
+UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540003,Updated=TO_TIMESTAMP('2024-05-27 13:38:50.269','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541105
+;
+
+-- 2024-05-27T10:38:56.179Z
+UPDATE C_DocType SET C_DocType_Invoicing_Pool_ID=540003,Updated=TO_TIMESTAMP('2024-05-27 13:38:56.179','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE C_DocType_ID=541123
+;
+
