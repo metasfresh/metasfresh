@@ -133,7 +133,6 @@ public class ModularContractPriceRepository
 		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, contractSpecificPriceRequest.getFlatrateTermId())
 				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, contractSpecificPriceRequest.getModularContractModuleId())
-				//TODO use scalePriceDiscriminator
 				.addOnlyActiveRecordsFilter()
 				.create();
 	}

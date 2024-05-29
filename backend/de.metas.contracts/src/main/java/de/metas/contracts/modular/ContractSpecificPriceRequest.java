@@ -28,15 +28,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Value
 @Builder
 public class ContractSpecificPriceRequest
 {
-	@NonNull  ModularContractModuleId modularContractModuleId;
-	@NonNull  FlatrateTermId flatrateTermId;
-	@Nullable BigDecimal scalePriceDiscriminator;
+	@NonNull ModularContractModuleId modularContractModuleId;
+	@NonNull FlatrateTermId flatrateTermId;
 
 }
