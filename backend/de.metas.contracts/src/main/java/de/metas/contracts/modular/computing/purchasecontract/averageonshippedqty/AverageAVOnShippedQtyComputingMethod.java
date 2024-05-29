@@ -31,13 +31,19 @@ import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractSettings;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,6 +53,8 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Component
@@ -59,6 +67,8 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 	private final ModularContractProvider contractProvider;
 	@NonNull
 	private final ComputingMethodService computingMethodService;
+
+	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4);
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
@@ -100,19 +110,26 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 	@Override
 	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
 	{
+
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		if (logs.isEmpty())
 		{
 			return computingMethodService.toZeroResponse(request);
 		}
 
-		final ProductPrice price = logs.getUniqueProductPriceOrErrorNotNull();
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+
+		final Money money = computeAverageAmount(logs, request.getCurrencyId())
+				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
-				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
-				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.price(ProductPrice.builder()
+						.productId(request.getProductId())
+						.money(money.negate())
+						.uomId(stockUOMId)
+						.build())
+				.qty(money.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
 				.build();
 	}
 
@@ -120,6 +137,28 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
+	}
+
+	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs,
+												@NonNull final CurrencyId currencyId)
+	{
+		final Optional<Money> totalMoney = logs.stream()
+				.map(ModularContractLogEntry::getAmount)
+				.filter(Objects::nonNull)
+				.reduce(Money::add);
+
+		final Optional<Quantity> totalQuantity = logs.stream()
+				.map(ModularContractLogEntry::getQuantity)
+				.filter(Objects::nonNull)
+				.reduce(Quantity::add);
+
+		if (totalMoney.isEmpty() || totalQuantity.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final Money weightedAvgMoney = totalMoney.get().divide(totalQuantity.get().toBigDecimal(), precision);
+		return Optional.of(weightedAvgMoney);
 	}
 
 }
