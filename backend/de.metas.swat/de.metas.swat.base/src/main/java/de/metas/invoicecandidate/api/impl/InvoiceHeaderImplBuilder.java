@@ -13,10 +13,12 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -32,11 +34,16 @@ import java.util.Set;
  *
  * @author tsa
  */
+@ToString
 public class InvoiceHeaderImplBuilder
 {
+	private static final int REPO_ID_UNSET_VALUE = Integer.MIN_VALUE;
+
 	private DocTypeInvoicingPoolId docTypeInvoicingPoolId = null;
 
-	private boolean isTakeDocTypeFromPool = false;
+	@Setter
+	@Getter
+	private boolean takeDocTypeFromPool = false;
 
 	private DocTypeId docTypeInvoiceId = null;
 
@@ -47,6 +54,7 @@ public class InvoiceHeaderImplBuilder
 	private LocalDate _dateInvoiced;
 	private LocalDate _dateAcct;
 
+	@Getter
 	private int AD_Org_ID;
 
 	@Nullable
@@ -58,15 +66,19 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<Integer> M_PriceList_IDs = new LinkedHashSet<>();
 
+	@Getter
 	private BPartnerInfo billTo;
 
+	@Getter
 	private String paymentRule;
 
+	@Getter
 	private int Sales_BPartner_ID;
 
-	private int SalesRep_User_ID;
+	private int SalesRep_User_ID = REPO_ID_UNSET_VALUE;
 
 	// 03805: add attribute C_Currency_ID
+	@Getter
 	private int C_Currency_ID;
 
 	// 04258
@@ -91,12 +103,6 @@ public class InvoiceHeaderImplBuilder
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	public InvoiceHeaderImpl build()
@@ -224,7 +230,7 @@ public class InvoiceHeaderImplBuilder
 
 			else
 			{
-				this.isTakeDocTypeFromPool = true;
+				this.takeDocTypeFromPool = true;
 			}
 		}
 
@@ -234,6 +240,7 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
+	@Nullable
 	public String getPOReference()
 	{
 		return CollectionUtils.singleElementOrNull(POReferences);
@@ -244,7 +251,7 @@ public class InvoiceHeaderImplBuilder
 		normalizeAndAddIfNotNull(POReferences, poReference);
 	}
 
-	public String getEmail()
+	public @Nullable String getEmail()
 	{
 		return CollectionUtils.singleElementOrNull(eMails);
 	}
@@ -281,19 +288,9 @@ public class InvoiceHeaderImplBuilder
 		this.paymentRule = paymentRule;
 	}
 
-	public String getPaymentRule()
-	{
-		return paymentRule;
-	}
-
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
 		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
-	}
-
-	public int getAD_Org_ID()
-	{
-		return AD_Org_ID;
 	}
 
 	public void setAD_Org_ID(final int adOrgId)
@@ -349,16 +346,6 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
-	public BPartnerInfo getBillTo()
-	{
-		return billTo;
-	}
-
-	public int getSales_BPartner_ID()
-	{
-		return Sales_BPartner_ID;
-	}
-
 	public int get_SaleRep_ID ()
 	{
 		return SalesRep_User_ID;
@@ -373,12 +360,14 @@ public class InvoiceHeaderImplBuilder
 
 	public void setSalesRep_ID(final int salesRep_ID)
 	{
-		SalesRep_User_ID = checkOverrideID("SalesRep_ID", SalesRep_User_ID, salesRep_ID);
+		if (SalesRep_User_ID == REPO_ID_UNSET_VALUE)
+		{
+			SalesRep_User_ID = salesRep_ID;
 	}
-
-	public int getC_Currency_ID()
+		else if (salesRep_ID != SalesRep_User_ID)
 	{
-		return C_Currency_ID;
+			SalesRep_User_ID = -1;
+		}
 	}
 
 	public void setC_Currency_ID(final int currencyId)
@@ -386,6 +375,7 @@ public class InvoiceHeaderImplBuilder
 		C_Currency_ID = checkOverrideID("C_Currency_ID", C_Currency_ID, currencyId);
 	}
 
+	@Nullable
 	public InputDataSourceId getAD_InputDataSource_ID()
 	{
 		return inputDataSourceId;
@@ -436,17 +426,6 @@ public class InvoiceHeaderImplBuilder
 		this.isSOTrx = checkOverrideBoolean("IsSOTrx", this.isSOTrx, isSOTrx);
 	}
 
-
-	public boolean isTakeDocTypeFromPool()
-	{
-		return isTakeDocTypeFromPool;
-	}
-
-	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
-	{
-		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
-	}
-
 	public int getM_InOut_ID()
 	{
 		return CollectionUtils.singleElementOrDefault(M_InOut_IDs, -1);
@@ -463,7 +442,7 @@ public class InvoiceHeaderImplBuilder
 		return taxIncluded;
 	}
 
-	public void setTaxIncluded(boolean taxIncluded)
+	public void setTaxIncluded(final boolean taxIncluded)
 	{
 		this.taxIncluded = checkOverrideBoolean("IsTaxIncluded", this.taxIncluded, taxIncluded);
 	}
@@ -494,7 +473,8 @@ public class InvoiceHeaderImplBuilder
 		collection.add(id);
 	}
 
-	private static <T> T checkOverride(final String name, final T value, final T valueNew)
+	@Nullable
+	private static <T> T checkOverride(final String name, final @Nullable T value, @Nullable final T valueNew)
 	{
 		if (value == null)
 		{
@@ -538,7 +518,7 @@ public class InvoiceHeaderImplBuilder
 		}
 	}
 
-	private static <T> T checkOverrideModel(final String name, final T model, final T modelNew)
+	private static <T> @Nullable T checkOverrideModel(final String name, final T model, final T modelNew)
 	{
 		if (model == null)
 		{

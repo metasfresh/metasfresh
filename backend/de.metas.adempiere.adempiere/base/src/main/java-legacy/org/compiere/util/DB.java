@@ -92,6 +92,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * General Database Interface
@@ -1799,6 +1800,13 @@ public class DB
 		return CConnection.get().getDatabase().TO_SEQUENCE_NEXTVAL(sequenceName);
 	}
 
+	public String TO_ARRAY(@NonNull final Collection<?> values, @NonNull final List<Object> paramsOut)
+	{
+		final String sql = "ARRAY[" + values.stream().map(value -> "?").collect(Collectors.joining(",")) + "]";
+		paramsOut.addAll(values);
+		return sql;
+	}
+
 	/**
 	 * Is this a remote client connection.
 	 * <p>
@@ -2046,7 +2054,6 @@ public class DB
 	}
 
 	/**
-	 * @param comment
 	 * @return SQL multiline comment
 	 */
 	public String TO_COMMENT(final String comment)
@@ -2059,6 +2066,26 @@ public class DB
 		return "/* "
 				+ comment.replace("/*", " ").replace("*/", " ")
 				+ " */";
+	}
+
+	public String TO_ARRAY(@Nullable final Collection<?> values)
+	{
+		if (values == null)
+		{
+			return "NULL";
+		}
+
+		final StringBuilder result = new StringBuilder();
+		for (final Object value : values)
+		{
+			if (result.length() > 0)
+			{
+				result.append(",");
+			}
+			result.append(TO_SQL(value));
+		}
+
+		return TO_STRING(result.insert(0, "{").append("}").toString());
 	}
 
 	/**
