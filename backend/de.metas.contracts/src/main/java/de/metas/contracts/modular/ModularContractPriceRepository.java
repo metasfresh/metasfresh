@@ -131,14 +131,10 @@ public class ModularContractPriceRepository
 				.map(ModularContractPriceRepository::fromRecord);
 	}
 
-	@NonNull
 	public ModCntrSpecificPrice retrieveScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
 	{
 		return retrieveOptionalScalePriceForProductAndContract(contractSpecificScalePriceRequest)
-				.orElseThrow(() -> new AdempiereException("No Price found for Product and Contract !")
-						.appendParametersToMessage()
-						.setParameter("ModularContractModuleId", contractSpecificScalePriceRequest.getModularContractModuleId().getRepoId())
-						.setParameter("ContractId", contractSpecificScalePriceRequest.getFlatrateTermId().getRepoId()));
+				.orElse(null);
 	}
 
 	@NonNull
@@ -174,7 +170,7 @@ public class ModularContractPriceRepository
 				.addOnlyActiveRecordsFilter()
 				.orderByDescending(I_ModCntr_Specific_Price.COLUMNNAME_MinValue)
 				.create()
-				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
+				.firstOptional(I_ModCntr_Specific_Price.class)
 				.map(ModularContractPriceRepository::fromRecord);
 	}
 

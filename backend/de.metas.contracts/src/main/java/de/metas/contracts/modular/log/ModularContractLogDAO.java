@@ -173,7 +173,7 @@ public class ModularContractLogDAO
 
 		if (request.getUserElementNumber2() != null)
 		{
-			log.setUserElementNumber1(request.getUserElementNumber2());
+			log.setUserElementNumber2(request.getUserElementNumber2());
 		}
 
 		saveRecord(log);

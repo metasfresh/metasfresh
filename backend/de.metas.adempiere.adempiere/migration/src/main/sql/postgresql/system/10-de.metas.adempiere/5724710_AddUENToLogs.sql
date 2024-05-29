@@ -22,17 +22,6 @@ UPDATE M_ProductPrice SET ScalePriceQuantityFrom='Q' WHERE ScalePriceQuantityFro
 INSERT INTO t_alter_column values('m_productprice','ScalePriceQuantityFrom',null,'NOT NULL',null)
 ;
 
--- UI Element: Vertrag(541798,de.metas.endcustomer.is184) -> Vertragsspezifische Preise(547537,de.metas.endcustomer.is184) -> 1000028 -> 10 -> main.Staffelpreis
--- Column: ModCntr_Specific_Price.IsScalePrice
--- 2024-05-28T13:58:07.861Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728761,0,547537,551808,624778,'F',TO_TIMESTAMP('2024-05-28 16:58:07.712','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Staffelpreis',80,0,0,TO_TIMESTAMP('2024-05-28 16:58:07.712','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
-
--- UI Element: Vertrag(541798,de.metas.endcustomer.is184) -> Vertragsspezifische Preise(547537,de.metas.endcustomer.is184) -> 1000028 -> 10 -> main.Mindestwert
--- Column: ModCntr_Specific_Price.MinValue
--- 2024-05-28T13:58:16.303Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,728762,0,547537,551808,624779,'F',TO_TIMESTAMP('2024-05-28 16:58:16.167','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Mindestwert',90,0,0,TO_TIMESTAMP('2024-05-28 16:58:16.167','YYYY-MM-DD HH24:MI:SS.US'),100)
-;
 
 -- Column: M_ProductPrice.ScalePriceQuantityFrom
 -- 2024-05-28T14:05:29.078Z

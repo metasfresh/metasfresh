@@ -27,7 +27,6 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.computing.purchasecontract.storagecost.StorageCostComputingMethod;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -122,12 +121,16 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+		if (contractSpecificPrice == null)
+		{
+			return ExplainedOptional.emptyBecause("There is no contract specific price ");
+		}
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
-		return ExplainedOptional.of(LogEntryCreateRequest.builder()
+		final LogEntryCreateRequest.LogEntryCreateRequestBuilder builder = LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(createLogRequest.getProductId())
 				.productName(createLogRequest.getProductName())
@@ -150,10 +153,20 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
-				.invoicingGroupId(invoicingGroupId)
-				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber1))
-				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber2))
-				.build());
+				.invoicingGroupId(invoicingGroupId);
+
+		return switch (column)
+		{
+			case UserElementNumber1 -> ExplainedOptional.of(builder
+					.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber1))
+					.userElementNumber2(null)
+					.build());
+			case UserElementNumber2 -> ExplainedOptional.of(builder
+					.userElementNumber1(null)
+					.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(inOutLineRecord, I_M_InOutLine.COLUMNNAME_UserElementNumber2))
+					.build());
+		};
+
 	}
 
 	private BigDecimal getUserElementNumberValue(final I_M_InOutLine inOutLineRecord)

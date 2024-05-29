@@ -158,10 +158,14 @@ public class ModularContractService
 				.build();
 	}
 
-	@NonNull
 	public ProductPrice getContractSpecificScalePrice(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
 	{
 		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrieveScalePriceForProductAndContract(contractSpecificScalePriceRequest);
+
+		if (modCntrSpecificPrice == null)
+		{
+			return null;
+		}
 
 		return ProductPrice.builder()
 				.productId(modCntrSpecificPrice.productId())
