@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTabRequest, getRowsData } from '../api';
+import { getRowsData, getTabRequest } from '../api';
 import { getTab } from '../utils';
 
 import { getTableId } from '../reducers/tables';
@@ -18,12 +18,13 @@ import {
 } from '../actions/WindowActions';
 import {
   deleteTable,
-  updateTabTableData,
   updateTabRowsData,
+  updateTabTableData,
 } from '../actions/TableActions';
 
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
+import { fetchTopActions } from '../actions/Actions';
 
 /**
  * @file Class based component.
@@ -119,8 +120,13 @@ class MasterWindowContainer extends PureComponent {
 
   isActiveTab(tabId) {
     const { master } = this.props;
+    const activeTab = master.layout.activeTab;
+    if (!activeTab) {
+      console.log('No active activeTab found', { master });
+      return false;
+    }
 
-    return tabId === master.layout.activeTab;
+    return tabId === activeTab;
   }
 
   mergeDataIntoIncludedTab({ response, tabId }) {
@@ -175,6 +181,7 @@ class MasterWindowContainer extends PureComponent {
       params: { windowId, docId },
       updateTabTableData,
       updateTabLayout,
+      fetchTopActions,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -198,6 +205,8 @@ class MasterWindowContainer extends PureComponent {
         );
       })
       .catch((error) => error);
+
+    fetchTopActions({ windowId, tabId: activeTabId, docId });
   };
 
   deleteTabsTables = () => {
@@ -311,6 +320,7 @@ MasterWindowContainer.propTypes = {
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
   updateLastBackPage: PropTypes.func.isRequired,
+  fetchTopActions: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -339,4 +349,5 @@ export default connect(mapStateToProps, {
   deleteTable,
   updateTabLayout,
   updateLastBackPage,
+  fetchTopActions,
 })(MasterWindowContainer);

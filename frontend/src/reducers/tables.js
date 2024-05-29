@@ -1,10 +1,11 @@
-import { produce, original } from 'immer';
-import { get, difference, forEach } from 'lodash';
+import { original, produce } from 'immer';
+import { difference, forEach, get } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
+import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
   windowId: null,
@@ -62,6 +63,11 @@ export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
+
+export const useSelectedRowIds = ({ windowId, tabId, docId }) => {
+  const tableId = getTableId({ windowId, docId, tabId });
+  return useSelector((state) => getSelectionData(state, tableId), shallowEqual);
+};
 
 /**
  * @method getSelection
@@ -152,9 +158,7 @@ const reducer = produce((draftState, action) => {
       const { id } = action.payload;
 
       if (draftState[id]) {
-        const newLength = draftState.length - 1;
-
-        draftState.length = newLength;
+        draftState.length = draftState.length - 1;
         delete draftState[id];
       }
 
@@ -192,14 +196,12 @@ const reducer = produce((draftState, action) => {
       const keyProperty = draftState[id].keyProperty;
       let rows = original(draftState[id].rows);
 
-      const newRows = rows.map((row) => {
+      draftState[id].rows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
           return merge(row, change);
         }
         return row;
       });
-
-      draftState[id].rows = newRows;
 
       return;
     }

@@ -4,23 +4,20 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
-import { processNewRecord } from '../../actions/GenericActions';
+import { startProcess } from '../../api/process';
+import { openFile, processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
-  closeModal,
-  createProcess,
-  createWindow,
-  handleProcessResponse,
-  fetchChangeLog,
   callAPI,
+  closeModal,
+  createWindow,
+  fetchChangeLog,
+  fireUpdateData,
   patch,
   resetPrintingOptions,
-  fireUpdateData,
 } from '../../actions/WindowActions';
-import { openFile } from '../../actions/GenericActions';
 
-import { getTableId, getSelection } from '../../reducers/tables';
+import { getSelection, getTableId } from '../../reducers/tables';
 import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
@@ -36,6 +33,10 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -451,12 +452,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 
@@ -526,11 +527,9 @@ class Modal extends Component {
         let content = null;
         if (staticModalType === 'about') {
           content = <ChangeLogModal data={data} />;
-        }
-        if (staticModalType === 'comments') {
+        } else if (staticModalType === 'comments') {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
-        }
-        if (staticModalType === 'printing') {
+        } else if (staticModalType === 'printing') {
           content = <PrintingOptions windowId={windowId} docId={dataId} />;
         }
         return (
@@ -577,11 +576,12 @@ class Modal extends Component {
     const {
       modalTitle,
       modalType,
-      isDocumentNotSaved,
       layout,
-      indicator,
       staticModalType,
       printingOptions,
+      //
+      indicator,
+      isDocumentNotSaved,
     } = this.props;
 
     const { okButtonCaption: printBtnCaption } = printingOptions;
@@ -863,10 +863,10 @@ Modal.propTypes = {
   indicator: PropTypes.string,
   layout: PropTypes.shape(),
   isAdvanced: PropTypes.bool,
-  isDocumentNotSaved: PropTypes.any,
+  isDocumentNotSaved: PropTypes.bool,
   modalTitle: PropTypes.any,
   modalType: PropTypes.any,
-  modalSaveStatus: PropTypes.any,
+  modalSaveStatus: PropTypes.bool,
   modalViewDocumentIds: PropTypes.any,
   tabId: PropTypes.any,
   parentDataId: PropTypes.any,
