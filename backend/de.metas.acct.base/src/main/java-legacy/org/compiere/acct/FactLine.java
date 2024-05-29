@@ -818,6 +818,11 @@ public class FactLine
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
 
+	public void setAmtAcct(@NonNull final Balance balance)
+	{
+		setAmtAcct(balance.getDebit(), balance.getCredit());
+	}
+
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
 	 */
@@ -1004,7 +1009,7 @@ public class FactLine
 	 */
 	public boolean isDrSourceBalance()
 	{
-		return getSourceBalance().signum() >= 0;
+		return getSourceBalance().isDebit();
 	}
 
 	public Balance getAcctBalance()
