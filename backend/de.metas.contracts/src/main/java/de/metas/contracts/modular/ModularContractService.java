@@ -138,18 +138,17 @@ public class ModularContractService
 	}
 
 	@NonNull
-	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
+	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		return modularContractPriceRepository.retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
-				.map(ModCntrSpecificPrice::taxCategoryId)
+		return modularContractPriceRepository.retrieveOptionalContractSpecificTaxCategory(contractSpecificPriceRequest)
 				// don't have a contract specific price (e.g: Receipt), default to the contract's tax category.
-				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(flatrateTermId).getC_TaxCategory_ID()));
+				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(contractSpecificPriceRequest.getFlatrateTermId()).getC_TaxCategory_ID()));
 	}
 
 	@NonNull
-	public ProductPrice getContractSpecificPrice(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
+	public ProductPrice getContractSpecificPrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest);
 
 		return ProductPrice.builder()
 				.productId(modCntrSpecificPrice.productId())

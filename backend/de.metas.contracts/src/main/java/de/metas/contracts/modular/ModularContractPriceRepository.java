@@ -47,7 +47,9 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -70,13 +72,13 @@ public class ModularContractPriceRepository
 	}
 
 	@NonNull
-	public ModCntrSpecificPrice retrievePriceForProductAndContract(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
+	public ModCntrSpecificPrice retrievePriceForProductAndContract(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		return retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
+		return retrieveOptionalPriceForProductAndContract(contractSpecificPriceRequest)
 				.orElseThrow(() -> new AdempiereException("No Price found for Product and Contract !")
 						.appendParametersToMessage()
-						.setParameter("ModularContractModuleId", modularContractModuleId.getRepoId())
-						.setParameter("ContractId", flatrateTermId.getRepoId()));
+						.setParameter("ModularContractModuleId", contractSpecificPriceRequest.getModularContractModuleId().getRepoId())
+						.setParameter("ContractId", contractSpecificPriceRequest.getFlatrateTermId().getRepoId()));
 	}
 
 	public boolean isSpecificPricesExistForFlatrateTermId(@NonNull final FlatrateTermId flatrateTermId)
@@ -118,17 +120,22 @@ public class ModularContractPriceRepository
 
 	@NonNull
 	public Optional<ModCntrSpecificPrice> retrieveOptionalPriceForProductAndContract(
-			@NonNull final ModularContractModuleId modularContractModuleId,
-			@NonNull final FlatrateTermId flatrateTermId)
+			@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermId)
-				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, modularContractModuleId)
-				.addOnlyActiveRecordsFilter()
-				.create()
+		return getSpecificPriceQuery(contractSpecificPriceRequest)
 
 				.firstOnlyOptional(I_ModCntr_Specific_Price.class)
 				.map(ModularContractPriceRepository::fromRecord);
+	}
+
+	private IQuery<I_ModCntr_Specific_Price> getSpecificPriceQuery(final @NonNull ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		return queryBL.createQueryBuilder(I_ModCntr_Specific_Price.class)
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_C_Flatrate_Term_ID, contractSpecificPriceRequest.getFlatrateTermId())
+				.addEqualsFilter(I_ModCntr_Specific_Price.COLUMNNAME_ModCntr_Module_ID, contractSpecificPriceRequest.getModularContractModuleId())
+				//TODO use scalePriceDiscriminator
+				.addOnlyActiveRecordsFilter()
+				.create();
 	}
 
 	public ModCntrSpecificPrice retrieveScalePriceForProductAndContract(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
@@ -230,5 +237,15 @@ public class ModularContractPriceRepository
 	{
 		final I_ModCntr_Specific_Price record = load(id, I_ModCntr_Specific_Price.class);
 		deleteRecord(record);
+	}
+
+	public Optional<TaxCategoryId> retrieveOptionalContractSpecificTaxCategory(final ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		final Set<TaxCategoryId> distinctTaxCategories = getSpecificPriceQuery(contractSpecificPriceRequest)
+				.stream()
+				.map(I_ModCntr_Specific_Price::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId)
+				.collect(Collectors.toSet());
+		return distinctTaxCategories.size() == 1 ? distinctTaxCategories.stream().findFirst() : Optional.empty();
 	}
 }
