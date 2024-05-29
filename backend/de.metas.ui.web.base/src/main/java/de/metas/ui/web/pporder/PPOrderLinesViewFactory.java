@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -62,6 +63,8 @@ import java.util.function.Supplier;
 @ViewFactory(windowId = PPOrderConstants.AD_WINDOW_ID_IssueReceipt_String)
 public class PPOrderLinesViewFactory implements IViewFactory
 {
+	private static final AdMessageKey MANUFACTURING_ISSUE_RECEIPT_CAPTION = AdMessageKey.of("de.metas.ui.web.pporder.MANUFACTURING_ISSUE_RECEIPT_CAPTION");
+
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
@@ -147,7 +150,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
-				.setCaption("PP Order Issue/Receipt")
+				.setCaption(msgBL.getTranslatableMsgText(MANUFACTURING_ISSUE_RECEIPT_CAPTION))
 				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
 				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				//
