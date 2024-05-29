@@ -333,6 +333,24 @@ public class AttributeDAO implements IAttributeDAO
 		return retrieveAttributeValues(attribute);
 	}
 
+	public List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	{
+		if (attributeSetId.isNone())
+		{
+			return ImmutableList.of();
+		}
+		
+		final List<I_M_Attribute> attributeRecords = getAttributesByAttributeSetId(attributeSetId);
+		final ImmutableList.Builder<AttributeListValue> result = ImmutableList.builder();
+
+		for (final I_M_Attribute attributeRecord : attributeRecords)
+		{
+			final List<AttributeListValue> listValues = retrieveAttributeValues(attributeRecord);
+			result.addAll(listValues);
+		}
+		return result.build();
+	}
+
 	@Override
 	public List<AttributeListValue> retrieveAttributeValuesByIds(@NonNull final Collection<AttributeValueId> attributeValueIds)
 	{

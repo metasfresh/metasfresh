@@ -199,6 +199,9 @@ public interface IProductBL extends ISingletonService
 
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
 
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
+
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 
 	boolean isDiscontinuedAt(I_M_Product productRecord, LocalDate targetDate);

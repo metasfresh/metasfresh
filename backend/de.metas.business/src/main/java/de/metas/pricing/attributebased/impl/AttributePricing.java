@@ -16,16 +16,15 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.pricing.attributebased.ProductPriceAware;
-import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,9 +62,8 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
 	 */
-	public static void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
+	public static void registerDefaultMatcher(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
@@ -124,10 +122,6 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
-	 *
-	 * @param pricingCtx
-	 * @param result
-	 * @param productPrice
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void setResultForProductPriceAttribute(
@@ -263,7 +257,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Finds the best matching {@link I_M_ProductPrice} to be used.
-	 *
+	 * <p>
 	 * NOTE: this method can be overridden entirely by extending classes.
 	 *
 	 * @return best matching {@link I_M_ProductPrice}

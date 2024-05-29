@@ -24,13 +24,22 @@ package de.metas.ui.web.contract.flatrate.view;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRow;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRowsData;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRowsLoader;
+import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_CompleteIt;
 import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_Detail_Launcher;
+import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_ReactivateIt;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -63,12 +72,24 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 	private static final String PARAM_RecordRef = "recordRef";
 	static final String WINDOW_ID_STRING = "dataEntryDedails";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
-		
+
 	private final Cache<ViewId, DataEntryDetailsView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build();
 
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
+
+	private final FlatrateDataEntryService flatrateDataEntryService;
+
+	private final FlatrateDataEntryRepo flatrateDataEntryRepo;
+
+	public DataEntryDedailsViewFactory(
+			@NonNull final FlatrateDataEntryService flatrateDataEntryService,
+			@NonNull final FlatrateDataEntryRepo flatrateDataEntryRepo)
+	{
+		this.flatrateDataEntryService = flatrateDataEntryService;
+		this.flatrateDataEntryRepo = flatrateDataEntryRepo;
+	}
 
 	public final CreateViewRequest createViewRequest(@NonNull final TableRecordReference recordRef)
 	{
@@ -90,25 +111,49 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 		return DataEntryDetailsView.builder()
 				.windowId(getWindowId())
 				.rowsData(rowsData)
+				.processes(ImmutableList.of(
+						createProcessDescriptor(WEBUI_C_Flatrate_DataEntry_CompleteIt.class),
+						createProcessDescriptor(WEBUI_C_Flatrate_DataEntry_ReactivateIt.class)))
+				.build();
+	}
+
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	{
+		final AdProcessId processId = processDAO.retrieveProcessIdByClass(processClass);
+		
+		if (processId == null)
+		{
+			throw new AdempiereException("No processId found for " + processClass);
+		}
+
+		return RelatedProcessDescriptor.builder()
+				.processId(processId)
+				.anyTable().anyWindow()
+				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
 				.build();
 	}
 
 	private DataEntryDetailsRowsData loadRowsData(@NonNull final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = getRecordReference(request);
+		final I_C_Flatrate_DataEntry record = recordRef.getModel(I_C_Flatrate_DataEntry.class);
 
-		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(recordRef.getRecord_ID());
+		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(
+				FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()),
+				record.getC_Flatrate_DataEntry_ID());
 
 		final LookupDataSource departmentLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner_Department.Table_Name);
 		final LookupDataSource uomLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
-		
+
 		return DataEntryDetailsRowsLoader.builder()
-				.flatrateDataEntryId(flatrateDataEntryId)
 				.departmentLookup(departmentLookup)
 				.uomLookup(uomLookup)
+				.flatrateDataEntryService(flatrateDataEntryService)
+				.flatrateDataEntryRepo(flatrateDataEntryRepo)
+				.flatrateDataEntryId(flatrateDataEntryId)
 				.build()
 				.load();
-	
+
 	}
 
 	private TableRecordReference getRecordReference(final CreateViewRequest request)
@@ -134,7 +179,7 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption(caption)
-				.allowViewCloseAction(ViewCloseAction.CANCEL)
+				//.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				//
 				.setFocusOnFieldName(DataEntryDetailsRow.FIELD_Qty)
@@ -147,6 +192,7 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 						ViewColumnHelper.ClassViewColumnOverrides.ofFieldName(DataEntryDetailsRow.FIELD_UOM))
 				//
 				.setAllowOpeningRowDetails(false)
+
 				.build();
 	}
 

@@ -24,8 +24,10 @@ package de.metas.contracts.flatrate.dataEntry;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -33,17 +35,19 @@ import javax.annotation.Nullable;
 @Value
 public class FlatrateDataEntryId implements RepoIdAware
 {
+	FlatrateTermId flatrateTermId;
 	int repoId;
 
 	@JsonCreator
-	public static FlatrateDataEntryId ofRepoId(final int repoId)
+	public static FlatrateDataEntryId ofRepoId(@NonNull final FlatrateTermId flatrateTermId, final int repoId)
 	{
-		return new FlatrateDataEntryId(repoId);
+		return new FlatrateDataEntryId(flatrateTermId, repoId);
 	}
 
-	public static FlatrateDataEntryId ofRepoIdOrNull(final int repoId)
+	@Nullable
+	public static FlatrateDataEntryId ofRepoIdOrNull(@NonNull final FlatrateTermId flatrateTermId, final int repoId)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
+		return repoId > 0 ? ofRepoId(flatrateTermId, repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final FlatrateDataEntryId dataEntryId)
@@ -51,9 +55,10 @@ public class FlatrateDataEntryId implements RepoIdAware
 		return dataEntryId != null ? dataEntryId.getRepoId() : -1;
 	}
 	
-	private FlatrateDataEntryId(final int repoId)
+	private FlatrateDataEntryId(@NonNull final FlatrateTermId flatrateTermId, final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.flatrateTermId = flatrateTermId;
 	}
 
 	@Override

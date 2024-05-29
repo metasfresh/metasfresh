@@ -153,11 +153,11 @@ public class C_Flatrate_Term
 
 			final Optional<org.compiere.model.I_C_DocType> existingDocType = docTypeDAO
 					.retrieveDocType(DocTypeQuery.builder()
-							.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
-							.docSubType(docSubType)
-							.adClientId(org.getAD_Client_ID())
-							.adOrgId(org.getAD_Org_ID())
-							.build());
+											 .docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+											 .docSubType(docSubType)
+											 .adClientId(org.getAD_Client_ID())
+											 .adOrgId(org.getAD_Org_ID())
+											 .build());
 			if (existingDocType.isPresent())
 			{
 				continue;
@@ -167,16 +167,16 @@ public class C_Flatrate_Term
 			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
-					.ctx(localCtx)
-					.adOrgId(org.getAD_Org_ID())
-					.entityType(Contracts_Constants.ENTITY_TYPE)
-					.name(name)
-					.printName(name)
-					.docBaseType(I_C_DocType.DocBaseType_CustomerContract)
-					.docSubType(docSubType)
-					.isSOTrx(true)
-					.newDocNoSequenceStartNo(10000)
-					.build());
+											 .ctx(localCtx)
+											 .adOrgId(org.getAD_Org_ID())
+											 .entityType(Contracts_Constants.ENTITY_TYPE)
+											 .name(name)
+											 .printName(name)
+											 .docBaseType(I_C_DocType.DocBaseType_CustomerContract)
+											 .docSubType(docSubType)
+											 .isSOTrx(true)
+											 .newDocNoSequenceStartNo(10000)
+											 .build());
 		}
 	}
 
@@ -246,20 +246,20 @@ public class C_Flatrate_Term
 			if (periodsOfTerm.isEmpty())
 			{
 				errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P,
-						new Object[] { term.getStartDate(), term.getEndDate() }));
+										new Object[] { term.getStartDate(), term.getEndDate() }));
 			}
 			else
 			{
 				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
-							new Object[] { term.getStartDate(), invoicingCal.getName() }));
+											new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
 				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
 				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-							new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
+											new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
 				}
 			}
 		}
@@ -417,7 +417,9 @@ public class C_Flatrate_Term
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(final I_C_Flatrate_Term term)
 	{
-		if (X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
+		final boolean isFlatFee = X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions());
+		final boolean isRepordedQty = X_C_Flatrate_Term.TYPE_FLATRATE_ReportedQuantity.equals(term.getType_Flatrate());
+		if (isFlatFee && !isRepordedQty)
 		{
 			if (term.getPlannedQtyPerUnit().signum() <= 0)
 			{
@@ -458,7 +460,7 @@ public class C_Flatrate_Term
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void afterComplete(final I_C_Flatrate_Term term)
+	public void afterComplete(@NonNull final I_C_Flatrate_Term term)
 	{
 		if (X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions())
 				|| X_C_Flatrate_Term.TYPE_CONDITIONS_FlatFee.equals(term.getType_Conditions()))
@@ -636,7 +638,6 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
 	}
 
-
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID,
@@ -652,7 +653,7 @@ public class C_Flatrate_Term
 	}, ifColumnsChanged = {
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID,
 			I_C_Flatrate_Term.COLUMNNAME_DropShip_Location_ID,
-			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID},
+			I_C_Flatrate_Term.COLUMNNAME_DropShip_User_ID },
 			skipIfCopying = true)
 	public void updateDropshipAddress(final I_C_Flatrate_Term term)
 	{

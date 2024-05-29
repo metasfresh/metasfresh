@@ -115,7 +115,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceCandAggregate;
 	}
 
-	private final IInvoiceLineRW createInvoiceLineRW()
+	private IInvoiceLineRW createInvoiceLineRW()
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
@@ -537,7 +537,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceLineAttributesAggregator.aggregate();
 	}
 
-	private void addInvoiceLineAttributes(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	private void addInvoiceLineAttributes(@NonNull final Set<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
 		invoiceLineAttributesAggregator.addAll(invoiceLineAttributes);
 	}

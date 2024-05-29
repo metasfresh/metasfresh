@@ -22,14 +22,17 @@
 
 package de.metas.cucumber.stepdefs.productCategory;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product_Category;
 
@@ -102,6 +105,34 @@ public class M_Product_Category_StepDef
 
 			saveRecord(productCategory);
 			productCategoryTable.putOrReplace(productCategoryIdentifier, productCategory);
+		}
+	}
+
+	@Given("metasfresh contains M_Product_Categories:")
+	public void create_M_Product_Categories(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Category.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Category.COLUMNNAME_Value);
+
+			final I_M_Product_Category productCategoryRecord =
+					CoalesceUtil.coalesceSuppliersNotNull(
+							() -> queryBL.createQueryBuilder(I_M_Product_Category.class)
+									.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
+									.create()
+									.firstOnly(I_M_Product_Category.class),
+							() -> InterfaceWrapperHelper.newInstance(I_M_Product_Category.class)
+					);
+
+			productCategoryRecord.setIsActive(true);
+			productCategoryRecord.setName(name);
+			productCategoryRecord.setValue(value);
+			InterfaceWrapperHelper.saveRecord(productCategoryRecord);
+			
+			final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
+			productCategoryTable.putOrReplace(productCategoryIdentifier, productCategoryRecord);
 		}
 	}
 }

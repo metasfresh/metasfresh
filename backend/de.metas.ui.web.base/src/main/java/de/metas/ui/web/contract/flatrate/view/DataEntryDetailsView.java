@@ -22,11 +22,14 @@
 
 package de.metas.ui.web.contract.flatrate.view;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRow;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
+import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.view.template.IRowsData;
@@ -39,17 +42,22 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 public class DataEntryDetailsView extends AbstractCustomView<DataEntryDetailsRow> implements IEditableView
 {
+	private final ImmutableList<RelatedProcessDescriptor> processes;
+	
 	@Builder
 	protected DataEntryDetailsView(
 			@NonNull final WindowId windowId,
 			@Nullable final ITranslatableString description, 
-			@NonNull final IRowsData<DataEntryDetailsRow> rowsData)
+			@NonNull final IRowsData<DataEntryDetailsRow> rowsData, 
+			@NonNull final ImmutableList<RelatedProcessDescriptor> processes)
 	{
 		super(ViewId.random(windowId), description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
+		this.processes = processes;
 	}
 
 	public static DataEntryDetailsView cast(@NonNull final Object viewObj)
@@ -75,4 +83,21 @@ public class DataEntryDetailsView extends AbstractCustomView<DataEntryDetailsRow
 	{
 		return I_C_Flatrate_DataEntry_Detail.Table_Name;
 	}
+
+	@Override
+	public void close(@NonNull final ViewCloseAction closeAction)
+	{
+		if (closeAction.isDone())
+		{
+
+		}
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return processes;
+	}
+
+
 }

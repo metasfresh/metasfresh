@@ -207,6 +207,14 @@ public class FlatrateDAO implements IFlatrateDAO
 			}
 			fcQueryBuilder = matchingQueryBuilder
 					.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class);
+
+			if (m_Product_ID > 0)
+			{ // make sure that we don't get a problem if the FC's products are in the same product-category as all the other products
+				fcQueryBuilder
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Flatrate_ID, m_Product_ID)
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Correction_ID, m_Product_ID)
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Actual_ID, m_Product_ID);
+			}
 		}
 		else
 		{
@@ -218,7 +226,6 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
-				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee)
 				.create();
 
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
@@ -536,7 +543,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Term flatrateTerm,
 			final I_C_Period period,
 			final String dataEntryType,
-			final I_C_UOM uom)
+			@NonNull final UomId uomId)
 	{
 		final Properties ctx = getCtx(flatrateTerm);
 		final String trxName = getTrxName(flatrateTerm);
@@ -551,7 +558,7 @@ public class FlatrateDAO implements IFlatrateDAO
 						flatrateTerm.getC_Flatrate_Term_ID(),
 						period.getC_Period_ID(),
 						dataEntryType,
-						uom.getC_UOM_ID())
+						uomId.getRepoId())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
@@ -728,17 +735,15 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_UOM> retrieveUOMs(
-			final Properties ctx,
-			final I_C_Flatrate_Term flatrateTerm,
-			final String trxName)
+	public ImmutableList<UomId> retrieveUomIds(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		final List<I_C_UOM> uoms = new Query(ctx, I_C_UOM.Table_Name, I_C_UOM.COLUMNNAME_UOMType + "=?", trxName)
-				.setParameters(flatrateTerm.getUOMType())
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_UOM.COLUMNNAME_C_UOM_ID)
-				.list(I_C_UOM.class);
-		return uoms;
+		return queryBL.createQueryBuilder(I_C_UOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMType, flatrateTerm.getUOMType())
+				.orderBy(I_C_UOM.COLUMNNAME_C_UOM_ID)
+				.create()
+				.listIds().stream().map(UomId::ofRepoId).collect(ImmutableList.toImmutableList());
+
 	}
 
 	@Override

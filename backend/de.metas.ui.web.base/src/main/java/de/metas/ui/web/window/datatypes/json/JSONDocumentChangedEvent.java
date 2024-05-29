@@ -16,6 +16,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -59,12 +60,12 @@ import java.util.function.IntFunction;
 public class JSONDocumentChangedEvent
 {
 	@JsonCreator
-	public static final JSONDocumentChangedEvent of(@JsonProperty("op") final JSONOperation operation, @JsonProperty("path") final String path, @JsonProperty("value") final Object value)
+	public static JSONDocumentChangedEvent of(@JsonProperty("op") final JSONOperation operation, @JsonProperty("path") final String path, @JsonProperty("value") final Object value)
 	{
 		return new JSONDocumentChangedEvent(operation, path, value);
 	}
 
-	public static final JSONDocumentChangedEvent replace(final String fieldName, final Object valueJson)
+	public static JSONDocumentChangedEvent replace(final String fieldName, final Object valueJson)
 	{
 		return new JSONDocumentChangedEvent(JSONOperation.replace, fieldName, valueJson);
 	}
@@ -72,15 +73,15 @@ public class JSONDocumentChangedEvent
 	@ApiModel("operation")
 	public enum JSONOperation
 	{
-		replace;
+		replace
 	}
 
 	@JsonProperty("op")
-	private final JSONOperation operation;
+	JSONOperation operation;
 	@JsonProperty("path")
-	private final String path;
+	String path;
 	@JsonProperty("value")
-	private final Object value;
+	Object value;
 
 	public boolean isReplace()
 	{
@@ -150,6 +151,7 @@ public class JSONDocumentChangedEvent
 		return value != null ? toBigDecimal(value) : defaultValueIfNull;
 	}
 
+	@Nullable
 	private static BigDecimal toBigDecimal(final Object value)
 	{
 		if (value == null)
@@ -201,10 +203,6 @@ public class JSONDocumentChangedEvent
 		else if (value instanceof JSONLookupValue)
 		{
 			final JSONLookupValue json = (JSONLookupValue)value;
-			if (json == null)
-			{
-				return null;
-			}
 			return json.toIntegerLookupValue();
 		}
 		else

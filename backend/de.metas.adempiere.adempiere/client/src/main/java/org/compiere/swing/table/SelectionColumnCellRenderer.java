@@ -22,16 +22,11 @@ package org.compiere.swing.table;
  * #L%
  */
 
-
-import java.awt.Component;
-import java.awt.Insets;
-
-import javax.swing.JCheckBox;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
-
 import org.compiere.util.DisplayType;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 class SelectionColumnCellRenderer extends DefaultTableCellRenderer
 {
@@ -55,7 +50,7 @@ class SelectionColumnCellRenderer extends DefaultTableCellRenderer
 	@Override
 	protected void setValue(final Object value)
 	{
-		final boolean selected = DisplayType.toBoolean(value, false);
+		final boolean selected = DisplayType.toBooleanNonNull(value, false);
 		checkbox.setSelected(selected);
 	}   // setValue
 

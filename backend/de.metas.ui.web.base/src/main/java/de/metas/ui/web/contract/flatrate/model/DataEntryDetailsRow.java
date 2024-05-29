@@ -74,10 +74,10 @@ public class DataEntryDetailsRow implements IViewRow
 			.build();
 
 
-	@Builder
+	@Builder(toBuilder = true)
 	public DataEntryDetailsRow(
 			@NonNull final ProductASIDescription asi,
-			@NonNull final LookupValue department,
+			@Nullable final LookupValue department,
 			@NonNull final DocumentId id,
 			@Nullable final BigDecimal qty,
 			@NonNull final LookupValue uom)

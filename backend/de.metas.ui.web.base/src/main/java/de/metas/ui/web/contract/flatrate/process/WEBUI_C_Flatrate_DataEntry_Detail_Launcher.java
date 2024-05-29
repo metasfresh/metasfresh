@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.contract.flatrate.process;
 
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -35,23 +36,20 @@ import de.metas.ui.web.view.ViewId;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 
 public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess implements IProcessPrecondition
 {
-	@Autowired
-	private DataEntryDedailsViewFactory dataEntryDedailsViewFactory;
-
-	@Autowired
-	private IViewsRepository viewsRepo;
+	private final DataEntryDedailsViewFactory dataEntryDedailsViewFactory;
+	private final IViewsRepository viewsRepo;
 
 	public WEBUI_C_Flatrate_DataEntry_Detail_Launcher()
 	{
-		SpringContextHolder.instance.autowire(this);
+		dataEntryDedailsViewFactory = SpringContextHolder.instance.getBean(DataEntryDedailsViewFactory.class);
+		viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (!context.isSingleSelection())
 		{
@@ -60,11 +58,13 @@ public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess impl
 
 		return ProcessPreconditionsResolution.accept();
 	}
-	
+
 	@Override
 	protected final String doIt()
 	{
-		final TableRecordReference recordRef = TableRecordReference.of(getTableName(), getRecord_ID());
+		// TODO !! DEBUG!! we don't get the selected entry! Contacted Teo; probably FE-problem
+		final Integer flatrateDataEntryId = getSelectedIncludedRecordIds(I_C_Flatrate_DataEntry.class).iterator().next();
+		final TableRecordReference recordRef = TableRecordReference.of(I_C_Flatrate_DataEntry.Table_Name, flatrateDataEntryId);
 
 		final IView view = viewsRepo.createView(createViewRequest(recordRef));
 		final ViewId viewId = view.getViewId();
@@ -77,7 +77,6 @@ public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess impl
 		return MSG_OK;
 	}
 
-	
 	private CreateViewRequest createViewRequest(@NonNull final TableRecordReference recordRef)
 	{
 		return dataEntryDedailsViewFactory.createViewRequest(recordRef);

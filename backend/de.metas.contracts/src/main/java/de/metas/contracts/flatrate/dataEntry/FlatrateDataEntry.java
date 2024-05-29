@@ -28,9 +28,10 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
-@Builder
+@Builder(toBuilder = true)
 @Value
 public class FlatrateDataEntry
 {
@@ -39,6 +40,9 @@ public class FlatrateDataEntry
 	
 	@NonNull
 	UomId uomId;
+	
+	@NonNull
+	ZonedDateTime endDate;
 	
 	@NonNull
 	@Singular

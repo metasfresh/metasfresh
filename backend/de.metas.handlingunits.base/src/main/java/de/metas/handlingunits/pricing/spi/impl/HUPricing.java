@@ -155,8 +155,8 @@ public class HUPricing extends AttributePricing
 	 */
 	@Override
 	protected void setResultForProductPriceAttribute(
-			final IPricingContext pricingCtx,
-			final IPricingResult result,
+			final @NonNull IPricingContext pricingCtx,
+			final @NonNull IPricingResult result,
 			@NonNull final org.compiere.model.I_M_ProductPrice productPrice)
 	{
 		super.setResultForProductPriceAttribute(pricingCtx, result, productPrice);

@@ -24,12 +24,12 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
@@ -37,6 +37,9 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.PMM_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -64,8 +67,10 @@ import java.util.Map;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DocStatus;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -84,6 +89,7 @@ public class C_Flatrate_Term_StepDef
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public C_Flatrate_Term_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -126,10 +132,14 @@ public class C_Flatrate_Term_StepDef
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
-			contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-			contractRecord.setProcessed(true);
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
+
+			final DocStatus docStatus = DocStatus.ofNullableCode(tableRow.get("OPT." + COLUMNNAME_DocStatus));
+			contractRecord.setDocStatus(CoalesceUtil.coalesceNotNull(docStatus, DocStatus.Completed).getCode());
+			// TODO change to be *not* processed and completed by default
+			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_Processed, true);
+			contractRecord.setProcessed(processed);
 
 			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropshipPartnerIdentifier))
@@ -246,5 +256,13 @@ public class C_Flatrate_Term_StepDef
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
 			contractTable.put(flatrateTermIdentifier, contract);
 		}
+	}
+
+	@And("^the C_Flatrate_Term identified by (.*) is completed$")
+	public void the_C_Flatrate_Term_IsCompleted(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 }

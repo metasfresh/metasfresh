@@ -142,7 +142,6 @@ public class C_Invoice_Candidate
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-
 		// cleanup
 		for (final I_C_Invoice_Clearing_Alloc ica : flatrateDAO.retrieveAllClearingAllocs(invoiceCand))
 		{

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -11,7 +11,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNEcleanupSS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -52,6 +53,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
@@ -73,6 +75,7 @@ import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 public class M_Product_StepDef
 {
 	private final M_Product_StepDefData productTable;
+	private final M_AttributeSet_StepDefData attributeSetTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final M_Product_Category_StepDefData productCategoryTable;
 	private final AD_Org_StepDefData orgTable;
@@ -85,11 +88,13 @@ public class M_Product_StepDef
 
 	public M_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_AttributeSet_StepDefData attributeSetTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final M_Product_Category_StepDefData productCategoryTable,
 			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.productTable = productTable;
+		this.attributeSetTable = attributeSetTable;
 		this.bpartnerTable = bpartnerTable;
 		this.productCategoryTable = productCategoryTable;
 		this.orgTable = orgTable;
@@ -192,6 +197,7 @@ public class M_Product_StepDef
 			loadProduct(tableRow);
 		}
 	}
+
 	@And("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -274,6 +280,13 @@ public class M_Product_StepDef
 
 		productRecord.setIsSold(isSold);
 		productRecord.setIsPurchased(isPurchased);
+
+		final String asIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(asIdentifier))
+		{
+			final I_M_AttributeSet asRecord = attributeSetTable.get(asIdentifier);
+			productRecord.setM_AttributeSet_ID(asRecord.getM_AttributeSet_ID());
+		}
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 

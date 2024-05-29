@@ -22,11 +22,12 @@
 
 package de.metas.ui.web.contract.flatrate.model;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetailId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
-import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.uom.UomId;
@@ -55,11 +56,11 @@ public class DataEntryDetailsRowsLoaderTest
 		final LookupValue departmentLookupValue = Mockito.mock(LookupValue.class);
 
 		final LookupValue uomLookupValue = Mockito.mock(LookupValue.class);
-		final LookupDataSource uomLookup= Mockito.mock(LookupDataSource.class);
-		
-		final FlatrateDataEntryRepo entryRepo = Mockito.mock(FlatrateDataEntryRepo.class);
+		final LookupDataSource uomLookup = Mockito.mock(LookupDataSource.class);
 
-		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(10);
+		final FlatrateDataEntryService entryService = Mockito.mock(FlatrateDataEntryService.class);
+
+		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10), 10);
 		final FlatrateDataEntryDetail detail = FlatrateDataEntryDetail.builder()
 				.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, 20))
 				.asiId(AttributeSetInstanceId.NONE)
@@ -71,22 +72,22 @@ public class DataEntryDetailsRowsLoaderTest
 				.build();
 
 		//when specific methods are called on the mock objects, then return specific values
-		Mockito.when(entryRepo.getById(Mockito.any())).thenReturn(entry);
+		Mockito.when(entryService.addMissingDetails(Mockito.any())).thenReturn(entry);
 		Mockito.when(departmentLookup.findById(Mockito.any())).thenReturn(departmentLookupValue);
 		Mockito.when(uomLookup.findById(Mockito.any())).thenReturn(uomLookupValue);
-		
+
 		//Call the method to be tested
 		final DataEntryDetailsRowsLoader dataEntryDetailsRowsLoader = DataEntryDetailsRowsLoader
 				.builder()
-				.flatrateDataEntryId(FlatrateDataEntryId.ofRepoId(1))
-				.flatrateDataEntryRepo(entryRepo)
+				.flatrateDataEntryId(FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10),1))
+				.flatrateDataEntryService(entryService)
 				.uomLookup(uomLookup)
 				.departmentLookup(departmentLookup)
 				.build();
 		final DataEntryDetailsRowsData result = dataEntryDetailsRowsLoader.load();
 
 		//Verify the method calls on mock objects
-		Mockito.verify(entryRepo, Mockito.times(1)).getById(Mockito.any());
+		Mockito.verify(entryService, Mockito.times(1)).addMissingDetails(Mockito.any());
 		Mockito.verify(departmentLookup, Mockito.times(1)).findById(Mockito.any());
 		Mockito.verify(uomLookup, Mockito.times(1)).findById(Mockito.any());
 

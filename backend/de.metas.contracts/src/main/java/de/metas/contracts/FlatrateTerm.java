@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -47,23 +48,34 @@ public class FlatrateTerm
 	@NonNull OrgId orgId;
 
 	@NonNull BPartnerLocationAndCaptureId  billPartnerLocationAndCaptureId;
-	@NonNull BPartnerLocationAndCaptureId  dropshipPartnerLocationAndCaptureId;
+
+	/**
+	 * May be {@code null} for somesorts of contractslike flat-fee.
+	 */
+	@Nullable BPartnerLocationAndCaptureId  dropshipPartnerLocationAndCaptureId;
 
 	@Nullable
-	private BPartnerId shipToBPartnerId;
+	BPartnerId shipToBPartnerId;
 
 	@Nullable
-	private BPartnerLocationId shipToLocationId;
+	BPartnerLocationId shipToLocationId;
 
 	@Nullable
-	private ProductId productId;
+	ProductId productId;
 
 	@Nullable
-	private UserId userInChargeId;
+	UserId userInChargeId;
 
 	boolean isSimulation;
 
-	@NonNull ConditionsId flatrateConditionsId;
+	@NonNull 
+	ConditionsId flatrateConditionsId;
+
+	/**
+	 * Null, unless the underlying C_Flatrate_conditions have a pricingsystem set.
+	 */
+	@Nullable
+	PricingSystemId pricingSystemId;
 
 	@Nullable
 	Instant startDate;

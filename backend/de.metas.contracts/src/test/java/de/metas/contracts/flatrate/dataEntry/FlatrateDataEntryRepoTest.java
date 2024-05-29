@@ -23,6 +23,7 @@
 package de.metas.contracts.flatrate.dataEntry;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -42,7 +43,7 @@ public class FlatrateDataEntryRepoTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 	}
 
 	@Test
@@ -51,7 +52,7 @@ public class FlatrateDataEntryRepoTest
 		// Given
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 		final FlatrateDataEntryRepo flatrateDataEntryRepo = new FlatrateDataEntryRepo();
-		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(100);
+		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10), 100);
 
 		final I_C_Flatrate_Term flatrateTerm = newInstance(I_C_Flatrate_Term.class);
 		flatrateTerm.setBill_BPartner_ID(101);
@@ -69,7 +70,7 @@ public class FlatrateDataEntryRepoTest
 		dataEntryDetail1.setSeqNo(20);
 		dataEntryDetail1.setC_UOM_ID(uomEach.getC_UOM_ID());
 		saveRecord(dataEntryDetail1);
-		
+
 		final I_C_Flatrate_DataEntry_Detail dataEntryDetail2 = newInstance(I_C_Flatrate_DataEntry_Detail.class);
 		dataEntryDetail2.setC_Flatrate_DataEntry_ID(dataEntry1.getC_Flatrate_DataEntry_ID());
 		dataEntryDetail2.setC_Flatrate_DataEntry_Detail_ID(12);
@@ -84,9 +85,10 @@ public class FlatrateDataEntryRepoTest
 		assertThat(result).isNotNull();
 		assertThat(result.getId()).isEqualTo(testId);
 		assertThat(result.getDetails()).hasSize(2);
-				
+
 		assertThat(result.getDetails().get(0).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 12)); // verify that it's ordered by seqno
 		assertThat(result.getDetails().get(1).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 11));
-
 	}
+	
+	
 }

@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Invoice Line predecessor which is returned by {@link IAggregationBL#aggregate()}.
- *
+ * Invoice Line predecessor which is returned by {@link IAggregationBL#mkInvoiceLine()}.
+ * <p/>
  * One or more invoice candidates are aggregated in one instance of this class
  */
 public interface IInvoiceLineRW

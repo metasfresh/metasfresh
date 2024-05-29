@@ -49,7 +49,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -98,7 +97,7 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves the dataEntry that matches the given params and has IsSimulation=N.
 	 */
-	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, I_C_UOM uom);
+	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, @NonNull UomId uomId);
 
 	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Invoice_Candidate ic);
 
@@ -192,7 +191,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
 
-	List<I_C_UOM> retrieveUOMs(Properties ctx, I_C_Flatrate_Term flatrateTerm, String trxName);
+	List<UomId> retrieveUomIds(I_C_Flatrate_Term flatrateTerm);
 
 	/**
 	 * For the given <bold>simulated</bold> dataEntry, this method updates the ActualQty values of all other data Entries that have the same C_Flatrate_Term_ID, C_Period_ID and Type.

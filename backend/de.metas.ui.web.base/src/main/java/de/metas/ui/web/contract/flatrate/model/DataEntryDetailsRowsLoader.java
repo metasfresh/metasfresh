@@ -22,13 +22,12 @@
 
 package de.metas.ui.web.contract.flatrate.model;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.BPartnerDepartmentId;
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
-import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetailId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
 import de.metas.ui.web.order.products_proposal.model.ProductASIDescription;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -41,47 +40,69 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 
+import java.util.function.Predicate;
+
 @Builder
 @Value
 public class DataEntryDetailsRowsLoader
 {
 	IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	
+
 	@NonNull
 	LookupDataSource departmentLookup;
-	
+
 	@NonNull
 	LookupDataSource uomLookup;
 
 	@NonNull
-	FlatrateDataEntryId flatrateDataEntryId;
+	FlatrateDataEntryService flatrateDataEntryService;
 
 	@NonNull
 	FlatrateDataEntryRepo flatrateDataEntryRepo;
 
 	@NonNull
+	FlatrateDataEntryId flatrateDataEntryId;
+
+	@NonNull
 	public DataEntryDetailsRowsData load()
 	{
-		final ImmutableMap<DocumentId, DataEntryDetailsRow> rows = loadRows();
+		final ImmutableList<DataEntryDetailsRow> rows = loadRows();
 
-		return new DataEntryDetailsRowsData(rows);
+		return new DataEntryDetailsRowsData(flatrateDataEntryId, rows, flatrateDataEntryRepo, this);
 	}
 
-	private ImmutableMap<DocumentId, DataEntryDetailsRow> loadRows()
+	private ImmutableList<DataEntryDetailsRow> loadRows()
 	{
+		return loadAllRows();
+	}
+
+	private ImmutableList<DataEntryDetailsRow> loadAllRows()
+	{
+		final Predicate<FlatrateDataEntryDetail> all = detail -> true;
+
+		return loadMatchingRows(all);
+	}
+
+	public ImmutableList<DataEntryDetailsRow> loadMatchingRows(@NonNull final Predicate<FlatrateDataEntryDetail> filter)
+	{
+
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
+		final FlatrateDataEntry entryWithAllDetails = flatrateDataEntryService.addMissingDetails(entry);
 
-		final LookupValue uom = Check.assumeNotNull(uomLookup.findById(entry.getUomId()),
+		final LookupValue uom = Check.assumeNotNull(uomLookup.findById(entryWithAllDetails.getUomId()),
 													"UOM lookup may not be null for C_UOM_ID={}; C_Flatrate_DataEntry_ID={}",
-													UomId.toRepoId(entry.getUomId()),
-													FlatrateDataEntryId.toRepoId(entry.getId()));
+													UomId.toRepoId(entryWithAllDetails.getUomId()),
+													FlatrateDataEntryId.toRepoId(entryWithAllDetails.getId()));
 
-		final ImmutableMap.Builder<DocumentId, DataEntryDetailsRow> result = ImmutableMap.builder();
+		final ImmutableList.Builder<DataEntryDetailsRow> result = ImmutableList.builder();
 
-		for (final FlatrateDataEntryDetail detail : entry.getDetails())
+		for (final FlatrateDataEntryDetail detail : entryWithAllDetails.getDetails())
 		{
-			final DataEntryDetailsRow row = toRow(uom, detail);
-			result.put(row.getId(), row);
+			if (filter.test(detail))
+			{
+				final DataEntryDetailsRow row = toRow(uom, detail);
+				result.add(row);
+			}
 		}
 
 		return result.build();
@@ -92,12 +113,9 @@ public class DataEntryDetailsRowsLoader
 			@NonNull final FlatrateDataEntryDetail detail)
 	{
 		final ProductASIDescription productASIDescription = ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(detail.getAsiId()));
-		final DocumentId documentId = DocumentId.of(detail.getId());
+		final DocumentId documentId = DataEntryDetailsRowUtil.createDocumentId(detail);
 
-		final LookupValue department = Check.assumeNotNull(departmentLookup.findById(detail.getBPartnerDepartmentId()),
-														   "Department lookup may not be null for C_BPartner_Department_ID={}; C_Flatrate_DataEntry_Detail_ID={}",
-														   BPartnerDepartmentId.toRepoIdOrNull(detail.getBPartnerDepartmentId()),
-														   FlatrateDataEntryDetailId.toRepoId(detail.getId()));
+		final LookupValue department = departmentLookup.findById(detail.getBPartnerDepartmentId());
 
 		final DataEntryDetailsRow.DataEntryDetailsRowBuilder row = DataEntryDetailsRow.builder()
 				.id(documentId)

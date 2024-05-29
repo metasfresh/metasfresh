@@ -22,30 +22,43 @@
 
 package de.metas.contracts.flatrate.dataEntry;
 
-import de.metas.bpartner.BPartnerDepartmentId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.department.BPartnerDepartmentId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class FlatrateDataEntryRepo
 {
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	@NonNull
 	public FlatrateDataEntry getById(@NonNull final FlatrateDataEntryId id)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final I_C_Flatrate_DataEntry flatrateDataEntry = InterfaceWrapperHelper.load(id, I_C_Flatrate_DataEntry.class);
+		final I_C_Flatrate_DataEntry flatrateDataEntry = load(id, I_C_Flatrate_DataEntry.class);
 
 		final List<I_C_Flatrate_DataEntry_Detail> detailRecords = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry_Detail.class)
 				.addOnlyActiveRecordsFilter()
@@ -58,28 +71,89 @@ public class FlatrateDataEntryRepo
 	}
 
 	private FlatrateDataEntry fromPO(
-			@NonNull final I_C_Flatrate_DataEntry flatrateDataEntry,
+			@NonNull final I_C_Flatrate_DataEntry dataEntryRecord,
 			@NonNull final List<I_C_Flatrate_DataEntry_Detail> detailRecords)
 	{
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(dataEntryRecord.getC_Flatrate_Term().getBill_BPartner_ID());
 
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(flatrateDataEntry.getC_Flatrate_Term().getBill_BPartner_ID());
-
-		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(flatrateDataEntry.getC_Flatrate_DataEntry_ID());
+		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(
+				FlatrateTermId.ofRepoId(dataEntryRecord.getC_Flatrate_Term_ID()),
+				dataEntryRecord.getC_Flatrate_DataEntry_ID());
 
 		final FlatrateDataEntry.FlatrateDataEntryBuilder result = FlatrateDataEntry.builder();
-		result.uomId(UomId.ofRepoId(flatrateDataEntry.getC_UOM_ID()));
+		result.uomId(UomId.ofRepoId(dataEntryRecord.getC_UOM_ID()));
 		result.id(flatrateDataEntryId);
 
+		final Timestamp endDate = dataEntryRecord.getC_Period().getEndDate();
+		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(dataEntryRecord.getAD_Org_ID()));
+		result.endDate(TimeUtil.asZonedDateTime(endDate, zoneId));
+				
 		for (final I_C_Flatrate_DataEntry_Detail detailRecord : detailRecords)
 		{
 			final FlatrateDataEntryDetail entryDetail = FlatrateDataEntryDetail.builder()
 					.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, detailRecord.getC_Flatrate_DataEntry_Detail_ID()))
-					.bPartnerDepartmentId(BPartnerDepartmentId.ofRepoIdOrNull(billBPartnerId, detailRecord.getC_BPartner_Department_ID()))
+					.bPartnerDepartmentId(BPartnerDepartmentId.ofRepoIdOrNone(billBPartnerId, detailRecord.getC_BPartner_Department_ID()))
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(detailRecord.getM_AttributeSetInstance_ID()))
 					.quantity(Quantitys.create(detailRecord.getQty_Reported(), UomId.ofRepoId(detailRecord.getC_UOM_ID())))
 					.build();
 			result.detail(entryDetail);
 		}
+
+		return result.build();
+	}
+
+	public FlatrateDataEntry save(@NonNull final FlatrateDataEntry entry)
+	{
+		final I_C_Flatrate_DataEntry entryRecord = load(entry.getId(), I_C_Flatrate_DataEntry.class);
+		entryRecord.setC_UOM_ID(entry.getUomId().getRepoId());
+		entryRecord.setC_Flatrate_Term_ID(entry.getId().getFlatrateTermId().getRepoId());
+
+		final FlatrateDataEntry.FlatrateDataEntryBuilder result = entry.toBuilder().clearDetails();
+
+		int maxSeqNo = 0;
+		for (final FlatrateDataEntryDetail detail : entry.getDetails())
+		{
+			if (detail.getSeqNo() > maxSeqNo)
+			{
+				maxSeqNo = detail.getSeqNo();
+			}
+		}
+		maxSeqNo += 10;
+
+		Quantity qtySum = Quantitys.createZero(entry.getUomId());
+
+		for (final FlatrateDataEntryDetail detail : entry.getDetails())
+		{
+			final I_C_Flatrate_DataEntry_Detail detailRecord = loadOrNew(detail.getId(), I_C_Flatrate_DataEntry_Detail.class);
+			detailRecord.setC_Flatrate_DataEntry_ID(entry.getId().getRepoId());
+			detailRecord.setC_BPartner_Department_ID(BPartnerDepartmentId.toRepoId(detail.getBPartnerDepartmentId()));
+			detailRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(detail.getAsiId()));
+
+			final Quantity quantity = detail.getQuantity();
+			detailRecord.setQty_Reported(Quantitys.toBigDecimalOrNull(quantity));
+			if (quantity != null)
+			{
+				detailRecord.setC_UOM_ID(quantity.getUomId().getRepoId());
+				qtySum = qtySum.add(quantity);
+			}
+			else
+			{
+				detailRecord.setC_UOM_ID(entryRecord.getC_UOM_ID());
+			}
+			if (detailRecord.getSeqNo() <= 0)
+			{
+				detailRecord.setSeqNo(maxSeqNo);
+				maxSeqNo += 10;
+			}
+
+			saveRecord(detailRecord);
+
+			final FlatrateDataEntryDetailId detailId = FlatrateDataEntryDetailId.ofRepoId(entry.getId(), detailRecord.getC_Flatrate_DataEntry_Detail_ID());
+			result.detail(detail.withId(detailId));
+		}
+
+		entryRecord.setQty_Reported(qtySum.toBigDecimal());
+		saveRecord(entryRecord);
 
 		return result.build();
 	}

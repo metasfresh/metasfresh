@@ -22,28 +22,43 @@
 
 package de.metas.contracts.flatrate.dataEntry;
 
-import de.metas.bpartner.BPartnerDepartmentId;
+import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.With;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import javax.annotation.Nullable;
 
-@Value
+@Data
 @Builder
 public class FlatrateDataEntryDetail
 {
-	@NonNull
-	FlatrateDataEntryDetailId id;
-
+	/**
+	 * Will be {@code null} if the instance was never saved yet.
+	 */
 	@Nullable
-	BPartnerDepartmentId bPartnerDepartmentId;
+	@With
+	final FlatrateDataEntryDetailId id;
+	
+	final int seqNo;
+	
+	@NonNull
+	final BPartnerDepartmentId bPartnerDepartmentId;
 
 	@NonNull
-	AttributeSetInstanceId asiId;
+	final AttributeSetInstanceId asiId;
 
 	@Nullable
 	Quantity quantity;
+
+	@NonNull
+	public FlatrateDataEntryDetailId getIdNonNull()
+	{
+		return Check.assumeNotNull(id, "Id may not be null at this point");
+	}
+
 }

@@ -30,6 +30,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -199,7 +200,10 @@ public class C_Flatrate_DataEntry
 		{
 			return;
 		}
-
+		if(!DocStatus.ofCode(dataEntry.getDocStatus()).isCompleted())
+		{
+			return;
+		}
 		beforeReactivate(dataEntry);
 	}
 

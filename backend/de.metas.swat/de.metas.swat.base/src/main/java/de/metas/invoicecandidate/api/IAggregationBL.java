@@ -22,11 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -36,6 +31,10 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.util.IProcessor;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOutLine;
+
+import java.util.List;
 
 public interface IAggregationBL extends ISingletonService
 {
@@ -50,30 +49,21 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Make sure the {@link I_C_Invoice_Candidate_Agg#getClassname()} exists and is implementing {@link IAggregator} interface.
-	 *
-	 * @param agg
 	 */
 	void evalClassName(I_C_Invoice_Candidate_Agg agg);
 
 	/**
 	 * Creates a plain {@link IInvoiceLineRW} instance.
-	 *
-	 * @return
 	 */
 	IInvoiceLineRW mkInvoiceLine();
 
 	/**
 	 * Creates a new {@link IInvoiceLineRW}, and set every properties of that line from the given <code>template</code>.
-	 *
-	 * @param template
-	 * @return
 	 */
 	IInvoiceLineRW mkInvoiceLine(IInvoiceLineRW template);
 
 	/**
 	 * Creates a plain {@link IInvoiceCandAggregate} instance.
-	 *
-	 * @return
 	 */
 	IInvoiceCandAggregate mkInvoiceCandAggregate();
 
@@ -82,7 +72,6 @@ public interface IAggregationBL extends ISingletonService
 	/**
 	 * Build an invoice header aggregation key. In other words, all {@link I_C_Invoice_Candidate}s which will go to same invoice will have the same header aggregation key.
 	 *
-	 * @param ic
 	 * @return header aggregation key
 	 */
 	AggregationKey mkHeaderAggregationKey(I_C_Invoice_Candidate ic);
@@ -91,24 +80,19 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Gets the {@link IProcessor} used to update aggregation related informations of an {@link I_C_Invoice_Candidate}.
-	 *
+	 * <p/>
 	 * i.e.
 	 * <ul>
 	 * <li> {@link I_C_Invoice_Candidate#setC_Invoice_Candidate_Agg(I_C_Invoice_Candidate_Agg)}
 	 * <li> {@link I_C_Invoice_Candidate#setHeaderAggregationKey(String)}
 	 * <li> {@link I_C_Invoice_Candidate#setLineAggregationKey(String)}
 	 * </ul>
-	 *
-	 * @return
 	 */
 	IProcessor<I_C_Invoice_Candidate> getUpdateProcessor();
 
 	/**
 	 * Convenience method that returns <code>true</code> if the given <code>iciol</code>'s inOutLine has it's <code>InDispute</code> flag set. <br>
 	 * If iciol is <code>null</code> or if the iciol's M_InOutLine is not set, then the method return <code>false</code>.
-	 *
-	 * @param iciol
-	 * @return
 	 */
 	boolean isIolInDispute(I_C_InvoiceCandidate_InOutLine iciol);
 
@@ -133,8 +117,6 @@ public interface IAggregationBL extends ISingletonService
 	 * Builds and set Header Aggregation Keys (calculated and the actual one).
 	 *
 	 * Also set the invoicing group.
-	 *
-	 * @param ic
 	 */
 	void setHeaderAggregationKey(I_C_Invoice_Candidate ic);
 
@@ -142,8 +124,6 @@ public interface IAggregationBL extends ISingletonService
 	 * Reset Header Aggregation Keys (calculated and actual).
 	 *
 	 * Also resets the invoicing group.
-	 *
-	 * @param ic
 	 */
 	void resetHeaderAggregationKey(I_C_Invoice_Candidate ic);
 }

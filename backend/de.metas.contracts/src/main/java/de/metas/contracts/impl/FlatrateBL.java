@@ -48,6 +48,9 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryToICService;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -113,6 +116,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -174,8 +178,6 @@ public class FlatrateBL implements IFlatrateBL
 	public static final AdMessageKey MSG_HasOverlapping_Term = AdMessageKey.of("de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm");
 
 	public static final AdMessageKey MSG_INFINITE_LOOP = AdMessageKey.of("de.metas.contracts.impl.FlatrateBL.extendContract.InfinitLoopError");
-	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
@@ -353,8 +355,8 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	private List<I_C_Invoice_Candidate> createCandForFlatFeeDataEntry(
-			final I_C_Flatrate_Conditions fc,
-			final I_C_Flatrate_DataEntry dataEntry)
+			@NonNull final I_C_Flatrate_Conditions fc,
+			@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
@@ -364,7 +366,6 @@ public class FlatrateBL implements IFlatrateBL
 							 + " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
-		final String trxName = InterfaceWrapperHelper.getTrxName(fc);
 
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 
@@ -401,15 +402,23 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(productId > 0,
 						 fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
 
-			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual, trxName);
+			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual);
 			result.add(newIc);
 
 			// note: we assume that 'dataEntry' is saved somewhere outside this method!
 			dataEntry.setC_Invoice_Candidate_ID(newIc.getC_Invoice_Candidate_ID());
 		}
+		else if (fc.getType_Flatrate().equals(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))
+		{
+			final FlatrateDataEntryToICService flatrateDataEntryToICService = SpringContextHolder.instance.getBean(FlatrateDataEntryToICService.class);
+			final FlatrateDataEntryRepo flatrateDataEntryRepo = SpringContextHolder.instance.getBean(FlatrateDataEntryRepo.class);
+			
+			final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()), dataEntry.getC_Flatrate_DataEntry_ID());
+			result.addAll(flatrateDataEntryToICService.createICsFor(flatrateDataEntryRepo.getById(flatrateDataEntryId)));
+		}
 		else
 		{
-			final I_C_Invoice_Candidate newFlatrateIc = createCand(ctx, term, dataEntry, productIdCand, dataEntry.getFlatrateAmt(), trxName);
+			final I_C_Invoice_Candidate newFlatrateIc = createCand(ctx, term, dataEntry, productIdCand, dataEntry.getFlatrateAmt());
 			result.add(newFlatrateIc);
 
 			// note: we assume that 'dataEntry' is saved somewhere outside this method!
@@ -421,7 +430,7 @@ public class FlatrateBL implements IFlatrateBL
 						|| !fc.isCorrectionAmtAtClosing() && X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 
 				{
-					final I_C_Invoice_Candidate newCorrectionIc = createCand(ctx, term, dataEntry, productIdCorrCand, dataEntry.getFlatrateAmtCorr(), trxName);
+					final I_C_Invoice_Candidate newCorrectionIc = createCand(ctx, term, dataEntry, productIdCorrCand, dataEntry.getFlatrateAmtCorr());
 					result.add(newCorrectionIc);
 
 					dataEntry.setC_Invoice_Candidate_Corr_ID(newCorrectionIc.getC_Invoice_Candidate_ID());
@@ -437,10 +446,9 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Term term,
 			final I_C_Flatrate_DataEntry dataEntry,
 			final int productId,
-			final BigDecimal priceActual,
-			final String trxName)
+			final BigDecimal priceActual)
 	{
-		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
+		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
 		final OrgId orgId = OrgId.ofRepoId(dataEntry.getAD_Org_ID());
@@ -483,11 +491,20 @@ public class FlatrateBL implements IFlatrateBL
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
 
+		final Timestamp shipDate;
+		if (dataEntry.getDate_Reported() != null)
+		{
+			shipDate = dataEntry.getDate_Reported();
+		}
+		else
+		{
+			shipDate = dataEntry.getC_Period().getEndDate();
+		}
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
 				taxCategoryId,
 				productId,
-				dataEntry.getDate_Reported(),// shipDate
+				shipDate,// shipDate
 				orgId,
 				null,
 				shipToLocationId,
@@ -809,7 +826,6 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final IUOMDAO uomDAO = this.uomDAO;
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -823,9 +839,9 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			for (final I_M_Product product : products)
 			{
-				final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+				final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
 
-				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
+				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 				if (existingEntry != null)
 				{
 					continue;
@@ -839,7 +855,7 @@ public class FlatrateBL implements IFlatrateBL
 				newDataEntry.setC_Period_ID(period.getC_Period_ID());
 				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 				newDataEntry.setM_Product_DataEntry_ID(product.getM_Product_ID());
-				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
+				newDataEntry.setC_UOM_ID(uomId.getRepoId());
 
 				save(newDataEntry);
 				counter++;
@@ -864,13 +880,13 @@ public class FlatrateBL implements IFlatrateBL
 		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
-		final List<I_C_UOM> uoms = flatrateDB.retrieveUOMs(ctx, flatrateTerm, trxName);
+		final List<UomId> uoms = flatrateDB.retrieveUomIds(flatrateTerm);
 
 		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
 		for (final I_C_Period period : periods)
 		{
-			for (final I_C_UOM uom : uoms)
+			for (final UomId uom : uoms)
 			{
 				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
 				if (existingEntry != null)
@@ -885,7 +901,7 @@ public class FlatrateBL implements IFlatrateBL
 
 				newDataEntry.setC_Period_ID(period.getC_Period_ID());
 				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
-				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
+				newDataEntry.setC_UOM_ID(uom.getRepoId());
 
 				save(newDataEntry);
 				counter++;
@@ -1114,7 +1130,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			final I_C_Flatrate_Term currentTerm = currentRequest.getContract();
 			currentTerm.setAD_PInstance_EndOfTerm_ID(PInstanceId.toRepoId(currentRequest.getAD_PInstance_ID()));
-				save(currentTerm);
+			save(currentTerm);
 			if (currentTerm.getC_FlatrateTerm_Next_ID() <= 0)
 			{
 				// https://github.com/metasfresh/metasfresh/issues/4022 avoid NPE if currentTerm was actually *not* extended by extendContractIfRequired
@@ -1832,7 +1848,7 @@ public class FlatrateBL implements IFlatrateBL
 			// Only consider terms with the same org.
 			// C_Flatrate_Term has access-level=Org, so there is no term with Org=*
 			// Also note that when finding a term for an invoice-candidate, that IC's org is used as a matching criterion
-			if(term.getAD_Org_ID() != newTerm.getAD_Org_ID())
+			if (term.getAD_Org_ID() != newTerm.getAD_Org_ID())
 			{
 				continue;
 			}
@@ -1931,7 +1947,7 @@ public class FlatrateBL implements IFlatrateBL
 					}
 				}
 				// product is null. Check the product category
-				else
+				else if (newFlatrateMatching.getM_Product_Category_Matching_ID() > 0)
 				{
 					final org.compiere.model.I_M_Product_Category newFMProductCategory = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(newFlatrateMatching.getM_Product_Category_Matching_ID()));
 
@@ -2160,7 +2176,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		I_C_Flatrate_Term currentTerm = term;
 
-		final ImmutableList.Builder<I_C_Flatrate_Term> nextFTsBuilder = ImmutableList.<I_C_Flatrate_Term>builder();
+		final ImmutableList.Builder<I_C_Flatrate_Term> nextFTsBuilder = ImmutableList.builder();
 
 		while (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
