@@ -15,7 +15,7 @@ UPDATE AD_Ref_List_Trl trl SET Name='Akonto' WHERE AD_Ref_List_ID=540856 AND AD_
 -- Value: DS
 -- ValueName: Definitive Schlussabrechnung
 -- 2024-05-27T10:30:12.016Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,543690,TO_TIMESTAMP('2024-05-27 13:30:11.863','YYYY-MM-DD HH24:MI:SS.US'),100,'U','Y','Definitive Schlussabrechnung',TO_TIMESTAMP('2024-05-27 13:30:11.863','YYYY-MM-DD HH24:MI:SS.US'),100,'DS','Definitive Schlussabrechnung')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,543690,TO_TIMESTAMP('2024-05-27 13:30:11.863','YYYY-MM-DD HH24:MI:SS.US'),100,'U','Y','Definitive Schlussabrechnung',TO_TIMESTAMP('2024-05-27 13:30:11.863','YYYY-MM-DD HH24:MI:SS.US'),100,'DS','Definitive Invoice')
 ;
 
 -- 2024-05-27T10:30:12.020Z

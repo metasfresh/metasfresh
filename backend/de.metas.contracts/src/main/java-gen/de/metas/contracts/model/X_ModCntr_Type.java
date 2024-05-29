@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_Type, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2066496961L;
+	private static final long serialVersionUID = 768966789L;
 
     /** Standard Constructor */
     public X_ModCntr_Type (final Properties ctx, final int ModCntr_Type_ID, @Nullable final String trxName)
@@ -108,10 +108,6 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_ImportLog_NotUsed = "ImportLog";
 	/** Receipt = Receipt */
 	public static final String MODULARCONTRACTHANDLERTYPE_Receipt = "Receipt";
-	/** ProForma = ProForma */
-	public static final String MODULARCONTRACTHANDLERTYPE_ProForma = "ProForma";
-	/** DefinitiveInvoice = DefinitiveInvoice */
-	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoice = "DefinitiveInvoice";
 	/** SalesOnRawProduct = SalesOnRawProduct */
 	public static final String MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct = "SalesOnRawProduct";
 	/** SalesOnProcessedProduct = SalesOnProcessedProduct */
@@ -136,7 +132,12 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_SubtractValueOnInterim = "SubtractValueOnInterim";
 	/** InformativeLogs = InformativeLogs */
 	public static final String MODULARCONTRACTHANDLERTYPE_InformativeLogs = "InformativeLogs";
-	@Override
+	/** DefinitiveInvoiceRawProduct = DefinitiveInvoiceRawProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceRawProduct = "DefinitiveInvoiceRawProduct";
+	/** DefinitiveInvoiceProcessedProduct = DefinitiveInvoiceProcessedProduct */
+	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct = "DefinitiveInvoiceProcessedProduct";
+
+    @Override
 	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);
