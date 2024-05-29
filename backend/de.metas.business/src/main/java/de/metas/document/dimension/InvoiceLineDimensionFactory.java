@@ -30,6 +30,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.springframework.stereotype.Component;
 
@@ -55,8 +56,8 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
-				.userElementNumber1(record.getUserElementNumber1())
-				.userElementNumber2(record.getUserElementNumber2())
+				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_C_InvoiceLine.COLUMNNAME_UserElementNumber1))
+				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_C_InvoiceLine.COLUMNNAME_UserElementNumber2))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
