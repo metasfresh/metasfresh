@@ -22,11 +22,9 @@
 
 package de.metas.contracts.definitive.invoicecandidate;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_FinalHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModCntrInvoiceType;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
@@ -35,7 +33,6 @@ import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -61,25 +58,25 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 		{
 			return DONT;
 		}
-		final ImmutableList<I_ModCntr_Log> billableLogsForFinalInvoice = modularContractLogDAO.list(ModularContractLogQuery.builder()
+		final boolean finalInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(Final.getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
 				.build());
-		if (billableLogsForFinalInvoice.isEmpty())
+		if (!finalInvoiceBillableLogsExist)
 		{
 			return DONT;
 		}
 
-		final ImmutableList<I_ModCntr_Log> billableLogs = modularContractLogDAO.list(ModularContractLogQuery.builder()
+		final boolean definitiveInvoiceBillableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
 				.build());
 
-		return Check.isEmpty(billableLogs) ? DONT
+		return definitiveInvoiceBillableLogsExist ? DONT
 				: CREATE_CANDIDATES_AND_INVOICES;
 	}
 
