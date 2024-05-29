@@ -129,7 +129,7 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 						.money(money.negate())
 						.uomId(stockUOMId)
 						.build())
-				.qty(money.isZero() ? Quantitys.zero(stockUOMId) : Quantitys.one(stockUOMId))
+				.qty(computingMethodService.getQtySum(logs, stockUOMId))
 				.build();
 	}
 
