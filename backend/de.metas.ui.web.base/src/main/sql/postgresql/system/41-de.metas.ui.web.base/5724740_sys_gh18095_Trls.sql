@@ -1357,12 +1357,6 @@ UPDATE AD_Element SET Description='Workflow-Simulation Wartezeit', Name='Warteze
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2331,'de_DE')
 ;
 
--- Field: Produktionsauftrag(541719,EE01) -> Arbeitsablauf(547035,EE01) -> Moving Time
--- Column: PP_Order_Workflow.MovingTime
--- 2024-05-28T16:21:04.395Z
-UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2024-05-28 19:21:04.395','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=717066
-;
-
 -- Element: SetupTimeRequiered
 -- 2024-05-28T16:22:40.076Z
 UPDATE AD_Element_Trl SET Name='Erforderliche Einrichtungszeit', PrintName='Erforderliche Einrichtungszeit',Updated=TO_TIMESTAMP('2024-05-28 19:22:40.076','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=53291 AND AD_Language='it_CH'
