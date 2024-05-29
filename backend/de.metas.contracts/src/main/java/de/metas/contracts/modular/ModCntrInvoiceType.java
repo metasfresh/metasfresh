@@ -22,29 +22,23 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_C_DocType;
-
-import java.util.Collection;
 
 import static de.metas.contracts.modular.ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS;
 import static de.metas.contracts.modular.ComputingMethodType.FINAL_INVOICE_SPECIFIC_METHODS;
 
 @Getter
+@RequiredArgsConstructor
 public enum ModCntrInvoiceType
 {
 	Final(X_C_DocType.DOCSUBTYPE_FinalInvoice, X_C_DocType.DOCSUBTYPE_FinalCreditMemo, FINAL_INVOICE_SPECIFIC_METHODS),
 	Definitive(X_C_DocType.DOCSUBTYPE_DefinitiveInvoice, X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo, DEFINITIVE_INVOICE_SPECIFIC_METHODS);
 
-	final String positiveAmtDocSubType;
-	final String negativAmtDocSubType;
-	final Collection<ComputingMethodType> computingMethodTypes;
-
-	ModCntrInvoiceType(final String positiveAmtDocSubType, final String negativeAmtDocType,
-			final Collection<ComputingMethodType> computingMethodTypes)
-	{
-		this.positiveAmtDocSubType = positiveAmtDocSubType;
-		this.negativAmtDocSubType = negativeAmtDocType;
-		this.computingMethodTypes = computingMethodTypes;
-	}
+	@NonNull final String positiveAmtDocSubType;
+	@NonNull final String negativAmtDocSubType;
+	@NonNull final ImmutableList<ComputingMethodType> computingMethodTypes;
 }

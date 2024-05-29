@@ -80,6 +80,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				: CREATE_CANDIDATES_AND_INVOICES;
 	}
 
+	@Override
 	protected void afterCommit(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		if (!computingResponse.getIds().isEmpty())
