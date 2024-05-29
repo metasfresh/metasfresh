@@ -234,7 +234,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
-		return false //TODO X_C_DocType.DOCSUBTYPE_DefinitiveInvoice.equals(dt.getDocSubType())
+		return X_C_DocType.DOCSUBTYPE_DefinitiveInvoice.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
 	}
 
@@ -242,7 +242,7 @@ public class DocTypeBL implements IDocTypeBL
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
 
-		return false //TODO X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo.equals(dt.getDocSubType())
+		return X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
 	}
 
