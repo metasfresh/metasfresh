@@ -30,7 +30,6 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ContractSpecificPriceRequest;
@@ -183,14 +182,14 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			return DONT;
 		}
 
-		final ImmutableList<I_ModCntr_Log> billableLogs = modularContractLogDAO.list(ModularContractLogQuery.builder()
+		final boolean billableLogsExist = modularContractLogDAO.anyMatch(ModularContractLogQuery.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
 				.build());
 
-		return Check.isEmpty(billableLogs) ? DONT
+		return billableLogsExist ? DONT
 				: CREATE_CANDIDATES_AND_INVOICES;
 	}
 
@@ -247,12 +246,12 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 
 		setPriceAndQty(invoiceCandidate, computingResponse);
 
-		afterCommit(computingResponse, invoiceCandidate);
+		processModCntrLogs(computingResponse, invoiceCandidate);
 
 		return invoiceCandidate;
 	}
 
-	protected void afterCommit(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
+	protected void processModCntrLogs(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		if (!computingResponse.getIds().isEmpty())
 		{

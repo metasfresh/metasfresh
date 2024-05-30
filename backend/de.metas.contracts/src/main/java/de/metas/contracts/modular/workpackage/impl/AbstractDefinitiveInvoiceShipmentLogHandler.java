@@ -108,6 +108,7 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 
 		final Quantity quantity = inOutBL.getQtyEntered(inOutLineRecord);
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final String productName = productBL.getProductValueAndName(productId);
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
@@ -139,7 +140,7 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 				.transactionDate(transactionDate)
 				.priceActual(contractSpecificPrice)
 				.year(yearAndCalendarId.yearId())
-				//.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))//TODO add description
+				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
 				.configModuleId(createLogRequest.getConfigId().getModularContractModuleId())
 				.invoicingGroupId(invoicingGroupId)

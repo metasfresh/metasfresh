@@ -119,6 +119,15 @@ public final class Quantity implements Comparable<Quantity>
 		return quantity.toBigDecimal();
 	}
 
+	public static int toUomRepoId(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return -1;
+		}
+		return UomId.toRepoId(quantity.getUomId());
+	}
+
 	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
 	{
 		return UomId.getCommonUomIdOfAll(Quantity::getUomId, "quantity", quantities);

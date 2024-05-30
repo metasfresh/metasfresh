@@ -216,7 +216,7 @@ public class ModularContractLogService
 		return modularContractLogDAO.create(request);
 	}
 
-	public void processDefinitiveICLogs(final ModularContractLogQuery modularContractLogQuery, final InvoiceCandidateId invoiceCandidateId)
+	public void setDefinitiveICLogsProcessed(final ModularContractLogQuery modularContractLogQuery, final InvoiceCandidateId invoiceCandidateId)
 	{
 		final ModularContractLogEntriesList modularContractLogEntries = getModularContractLogEntries(modularContractLogQuery);
 		final UomId uomId = modularContractLogEntries.getUniqueProductPriceOrErrorNotNull().getUomId();

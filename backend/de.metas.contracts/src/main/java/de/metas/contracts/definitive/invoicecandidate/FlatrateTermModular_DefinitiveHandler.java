@@ -80,11 +80,12 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				: CREATE_CANDIDATES_AND_INVOICES;
 	}
 
-	protected void afterCommit(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
+	@Override
+	protected void processModCntrLogs(final ComputingResponse computingResponse, final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		if (!computingResponse.getIds().isEmpty())
 		{
-			trxManager.runAfterCommit(() -> modularContractLogService.processDefinitiveICLogs(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
+			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
 					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
 		}
 	}
@@ -95,6 +96,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 		return Definitive;
 	}
 
+	@Override
 	public boolean isHandlerFor(@NonNull final I_C_Flatrate_Term term)
 	{
 		return term.isReadyForDefinitiveInvoice();

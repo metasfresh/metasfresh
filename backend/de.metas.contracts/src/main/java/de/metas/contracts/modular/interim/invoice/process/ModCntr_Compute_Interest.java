@@ -177,7 +177,7 @@ public class ModCntr_Compute_Interest extends JavaProcess implements IProcessPre
 			{
 				p_BillingDate = null;
 			}
-			else
+			else if (PARAM_BILLING_DATE.equals(parameterName))
 			{
 				p_InterimDate = null;
 			}

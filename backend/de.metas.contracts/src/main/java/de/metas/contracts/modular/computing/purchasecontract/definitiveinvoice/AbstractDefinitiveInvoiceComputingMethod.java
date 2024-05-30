@@ -22,7 +22,6 @@
 
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
@@ -140,7 +139,7 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
 		return ComputingResponse.builder()
-				.ids(ImmutableSet.of())
+				.ids(logs.getIds())
 				.price(productPrice)
 				.qty(shippedQty.subtract(producedQty))
 				.build();
