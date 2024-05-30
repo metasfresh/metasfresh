@@ -22,8 +22,9 @@
 
 package de.metas.invoice.detail;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -42,6 +43,9 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 @Repository
 public class InvoiceCandidateWithDetailsRepository
 {
@@ -51,7 +55,7 @@ public class InvoiceCandidateWithDetailsRepository
 	public void save(@NonNull final InvoiceCandidateWithDetails invoiceWithDetails)
 	{
 		final List<I_C_Invoice_Detail> existingInvoiceDetails = loadByInvoiceCandidateId(invoiceWithDetails.getInvoiceCandidateId());
-		final ImmutableListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel = Multimaps.index(existingInvoiceDetails, I_C_Invoice_Detail::getLabel);
+		final ListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel = ArrayListMultimap.create(Multimaps.index(existingInvoiceDetails, I_C_Invoice_Detail::getLabel));
 
 		invoiceWithDetails.getDetailItems()
 				.forEach(invoiceDetailItem -> createOrUpdateRecord(
@@ -59,15 +63,16 @@ public class InvoiceCandidateWithDetailsRepository
 						invoiceWithDetails.getInvoiceCandidateId(),
 						invoiceWithDetails.getInvoiceLineId(),
 						existingRecordsByLabel));
+		deleteAll(existingRecordsByLabel.values());
 	}
 
 	private void createOrUpdateRecord(
 			@NonNull final InvoiceDetailItem detailItem,
 			@NonNull final InvoiceCandidateId invoiceCandidateId,
 			@Nullable final InvoiceLineId invoiceAndLineId,
-			@NonNull final ImmutableListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel)
+			@NonNull final ListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel)
 	{
-		final ImmutableList<I_C_Invoice_Detail> existingRecords = existingRecordsByLabel.get(detailItem.getLabel());
+		final List<I_C_Invoice_Detail> existingRecords = existingRecordsByLabel.removeAll(detailItem.getLabel());
 		final I_C_Invoice_Detail recordToUpdate;
 		final List<I_C_Invoice_Detail> recordsToDelete;
 		if (existingRecords.isEmpty())
@@ -89,8 +94,8 @@ public class InvoiceCandidateWithDetailsRepository
 		recordToUpdate.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(invoiceAndLineId));
 		recordToUpdate.setAD_Org_ID(orgId.getRepoId());
 
-		InterfaceWrapperHelper.save(recordToUpdate);
-		InterfaceWrapperHelper.deleteAll(recordsToDelete);
+		saveRecord(recordToUpdate);
+		deleteAll(recordsToDelete);
 	}
 
 	private static void updateRecord(
