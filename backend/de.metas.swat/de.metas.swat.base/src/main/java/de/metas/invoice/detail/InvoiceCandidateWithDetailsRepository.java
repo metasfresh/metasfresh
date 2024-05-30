@@ -22,9 +22,9 @@
 
 package de.metas.invoice.detail;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.common.util.CoalesceUtil;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.organization.IOrgDAO;
@@ -41,10 +41,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 
 @Repository
 public class InvoiceCandidateWithDetailsRepository
@@ -55,50 +51,59 @@ public class InvoiceCandidateWithDetailsRepository
 	public void save(@NonNull final InvoiceCandidateWithDetails invoiceWithDetails)
 	{
 		final List<I_C_Invoice_Detail> existingInvoiceDetails = loadByInvoiceCandidateId(invoiceWithDetails.getInvoiceCandidateId());
-		final ImmutableMap<String, I_C_Invoice_Detail> labelToExistingDetail = Maps.uniqueIndex(existingInvoiceDetails, I_C_Invoice_Detail::getLabel);
+		final ImmutableListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel = Multimaps.index(existingInvoiceDetails, I_C_Invoice_Detail::getLabel);
 
-		final Set<I_C_Invoice_Detail> detailsToPersist = invoiceWithDetails.getDetailItems()
-				.stream()
-				.map(invoiceDetailItem -> createOrUpdateDetailItem(invoiceWithDetails.getInvoiceCandidateId(), invoiceWithDetails.getInvoiceLineId(), invoiceDetailItem, labelToExistingDetail))
-				.collect(Collectors.toSet());
-		saveAll(detailsToPersist);
+		invoiceWithDetails.getDetailItems()
+				.forEach(invoiceDetailItem -> createOrUpdateRecord(
+						invoiceDetailItem,
+						invoiceWithDetails.getInvoiceCandidateId(),
+						invoiceWithDetails.getInvoiceLineId(),
+						existingRecordsByLabel));
 	}
 
-	private I_C_Invoice_Detail createOrUpdateDetailItem(
+	private void createOrUpdateRecord(
+			@NonNull final InvoiceDetailItem detailItem,
 			@NonNull final InvoiceCandidateId invoiceCandidateId,
 			@Nullable final InvoiceLineId invoiceAndLineId,
-			@NonNull final InvoiceDetailItem invoiceDetailItem,
-			@NonNull final ImmutableMap<String, I_C_Invoice_Detail> labelToExistingDetail)
+			@NonNull final ImmutableListMultimap<String, I_C_Invoice_Detail> existingRecordsByLabel)
 	{
-		final OrgId orgId = invoiceDetailItem.getOrgId();
-		final I_C_Invoice_Detail recordToSave = syncToRecord(orgId, invoiceDetailItem, labelToExistingDetail);
+		final ImmutableList<I_C_Invoice_Detail> existingRecords = existingRecordsByLabel.get(detailItem.getLabel());
+		final I_C_Invoice_Detail recordToUpdate;
+		final List<I_C_Invoice_Detail> recordsToDelete;
+		if (existingRecords.isEmpty())
+		{
+			recordToUpdate = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class);
+			recordsToDelete = ImmutableList.of();
+		}
+		else
+		{
+			recordToUpdate = existingRecords.get(0);
+			recordsToDelete = existingRecords.subList(1, existingRecords.size());
+		}
 
-		recordToSave.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
-		recordToSave.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(invoiceAndLineId));
-		recordToSave.setAD_Org_ID(orgId.getRepoId());
-		return recordToSave;
-	}
-
-	@NonNull
-	private I_C_Invoice_Detail syncToRecord(
-			@NonNull final OrgId orgId,
-			@NonNull final InvoiceDetailItem invoiceDetailItem,
-			@NonNull final ImmutableMap<String, I_C_Invoice_Detail> labelToExistingDetail)
-	{
-		final I_C_Invoice_Detail recordToUpdate = CoalesceUtil.coalesceSuppliersNotNull(() -> labelToExistingDetail.get(invoiceDetailItem.getLabel()),
-				() -> InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class));
+		final OrgId orgId = detailItem.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		recordToUpdate.setLabel(invoiceDetailItem.getLabel());
-		recordToUpdate.setDescription(invoiceDetailItem.getDescription());
-		final Quantity qty = invoiceDetailItem.getQty();
-		if (qty != null)
-		{
-			recordToUpdate.setC_UOM_ID(qty.getUomId().getRepoId());
-			recordToUpdate.setQty(qty.toBigDecimal());
-		}
-		recordToUpdate.setDate(TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone));
-		return recordToUpdate;
+		updateRecord(recordToUpdate, detailItem, timeZone);
+		recordToUpdate.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		recordToUpdate.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(invoiceAndLineId));
+		recordToUpdate.setAD_Org_ID(orgId.getRepoId());
+
+		InterfaceWrapperHelper.save(recordToUpdate);
+		InterfaceWrapperHelper.deleteAll(recordsToDelete);
+	}
+
+	private static void updateRecord(
+			@NonNull I_C_Invoice_Detail record,
+			@NonNull final InvoiceDetailItem from,
+			@NonNull final ZoneId timeZone)
+	{
+		record.setLabel(from.getLabel());
+		record.setDescription(from.getDescription());
+		final Quantity qty = from.getQty();
+		record.setC_UOM_ID(Quantity.toUomRepoId(qty));
+		record.setQty(Quantity.toBigDecimal(qty));
+		record.setDate(TimeUtil.asTimestamp(from.getDate(), timeZone));
 	}
 
 	private List<I_C_Invoice_Detail> loadByInvoiceCandidateId(final @NonNull InvoiceCandidateId invoiceCandidateId)
