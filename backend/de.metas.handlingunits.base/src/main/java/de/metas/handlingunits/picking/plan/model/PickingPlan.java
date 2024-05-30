@@ -23,7 +23,9 @@
 package de.metas.handlingunits.picking.plan.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.AlternativePickFromsList;
+import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.product.ProductId;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
@@ -31,6 +33,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Objects;
 
 /**
  * Contains a plan about how a picker can precisely pick.
@@ -49,5 +53,15 @@ public class PickingPlan
 				.map(PickingPlanLine::getProductId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Expected the plan to contain only one product")));
+	}
+
+	@NonNull
+	public ImmutableList<HuId> getSortedPickFromTopLevelHUIds()
+	{
+		return lines.stream()
+				.map(PickingPlanLine::getPickFromHU)
+				.filter(Objects::nonNull)
+				.map(PickFromHU::getTopLevelHUId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

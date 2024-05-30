@@ -25,10 +25,14 @@ package de.metas.handlingunits.shipmentschedule.api;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -60,13 +64,21 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -80,6 +92,10 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableQuery;
+import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -135,21 +151,34 @@ public class ShipmentScheduleWithHUService
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
 	@NonNull private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices;
 	@NonNull private final ShipmentScheduleSplitService shipmentScheduleSplitService;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingCandidateService pickingCandidateService;
+	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 
+		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());
 		return new ShipmentScheduleWithHUService(
 				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
 				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
 				PickingJobService.newInstanceForUnitTesting(),
-				new HUReservationService(new HUReservationRepository())
+				huReservationServiceTest,
+				new PickingCandidateService(
+						new PickingConfigRepository(),
+						new PickingCandidateRepository(),
+						new HuId2SourceHUsService(new HUTraceRepository()),
+						huReservationServiceTest,
+						Services.get(IBPartnerBL.class),
+						ADReferenceService.newMocked()),
+				new PickingConfigRepositoryV2()
 		);
 	}
 
@@ -295,18 +324,13 @@ public class ShipmentScheduleWithHUService
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
-		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
-		if (pickAvailableHUsOnTheFly)
+		if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 		{
-			final IProductBL productBL = Services.get(IProductBL.class);
-			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
-			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, factory));
-			}
-			else
-			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
-			}
+			result.addAll(pickHUsOnTheFlyIfPossible(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, factory));
+		}
+		else
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
 		}
 
 		// find out if and what the pickHUsOnTheFly() method did for us
@@ -340,23 +364,24 @@ public class ShipmentScheduleWithHUService
 		return ImmutableList.copyOf(result);
 	}
 
-	private boolean retrievePickAvailableHUsOntheFly(@NonNull final IHUContext huContext)
+	@NonNull
+	private HUsToPickOnTheFly retrievePickAvailableHUsOntheFly(@NonNull final IHUContext huContext)
 	{
 		final Properties ctx = huContext.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final boolean pickAvailableHUsOntheFly = Services.get(ISysConfigBL.class)
-				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
-						true,
+		final String pickAvailableHUsOntheFlyConfig = Services.get(ISysConfigBL.class)
+				.getValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
+						HUsToPickOnTheFly.OnlySourceHUs.getCode(),
 						adClientId,
 						adOrgId);
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
-						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFly, adClientId, adOrgId);
+						SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY, pickAvailableHUsOntheFlyConfig, adClientId, adOrgId);
 
-		return pickAvailableHUsOntheFly;
+		return HUsToPickOnTheFly.ofCode(pickAvailableHUsOntheFlyConfig);
 	}
 
 	/**
@@ -371,8 +396,14 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final Quantity qtyToDeliver,
 			final boolean pickAccordingToPackingInstruction,
-			@NonNull final ShipmentScheduleWithHUFactory factory)
+			@NonNull final ShipmentScheduleWithHUFactory factory,
+			@NonNull final HUsToPickOnTheFly hUsToPickOnTheFly)
 	{
+		if (hUsToPickOnTheFly == HUsToPickOnTheFly.None)
+		{
+			return ImmutableList.of();
+		}
+
 		final ILoggable loggableWithLogger = Loggables.withLogger(logger, Level.DEBUG);
 
 		if (qtyToDeliver.signum() <= 0)
@@ -408,7 +439,12 @@ public class ShipmentScheduleWithHUService
 		boolean firstHU = true;
 
 		// if we have HUs on stock, get them now
-		final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(scheduleRecord);
+		final List<I_M_HU> husToPick = switch (hUsToPickOnTheFly)
+				{
+					case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
+					case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
+					case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
+				};
 
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -962,5 +998,44 @@ public class ShipmentScheduleWithHUService
 		return alreadyAllocatedHUs.stream()
 				.map(ShipmentScheduleWithHU::getQtyPicked)
 				.reduce(qtyToDeliver, Quantity::subtract);
+	}
+
+	@NonNull
+	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFlyIfPossible(
+			@NonNull final I_M_ShipmentSchedule scheduleRecord,
+			@NonNull final Quantity qtyToDeliver,
+			final boolean pickAccordingToPackingInstruction,
+			@NonNull final ShipmentScheduleWithHUFactory factory)
+	{
+		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
+		return pickHUsOnTheFly(scheduleRecord,
+							   qtyToDeliver,
+							   pickAccordingToPackingInstruction,
+							   factory,
+							   hUsToPickOnTheFly);
+	}
+
+	@NonNull
+	private List<I_M_HU> retrieveAnyMatchingHUs(final @NonNull I_M_ShipmentSchedule scheduleRecord)
+	{
+		final PackageableQuery query = PackageableQuery.builder()
+				.onlyShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID())))
+				.build();
+
+		final ImmutableList<Packageable> items = packagingDAO.stream(query).collect(ImmutableList.toImmutableList());
+
+		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
+																			.packageables(items)
+																			.considerAttributes(pickingConfig.isConsiderAttributes())
+																			.build());
+
+		final ImmutableList<HuId> topLevelHuIds = plan.getSortedPickFromTopLevelHUIds();
+		if (topLevelHuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return handlingUnitsDAO.getByIds(topLevelHuIds);
 	}
 }
