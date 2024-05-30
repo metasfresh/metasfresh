@@ -159,7 +159,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		receiptSchedule.setC_BPartner_Location_ID(line.getC_BPartner_Location_ID());
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
-
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{
