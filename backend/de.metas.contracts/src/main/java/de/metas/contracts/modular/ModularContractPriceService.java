@@ -198,7 +198,7 @@ public class ModularContractPriceService
 		}
 		else
 		{
-			modularContractPriceRepository.save(ModCntrSpecificPrice.builder().isScalePrice(false).minValue(null).build());
+			modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(false).minValue(null).build());
 		}
 
 	}
