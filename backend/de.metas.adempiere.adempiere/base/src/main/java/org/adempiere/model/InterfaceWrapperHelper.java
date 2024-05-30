@@ -1210,7 +1210,6 @@ public class InterfaceWrapperHelper
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
-	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
 	public static BigDecimal getValueAsBigDecimalOrNull(final Object model, final String columnName)
 	{
 		 final Object valueObj = getValueOrNull(model, columnName);
