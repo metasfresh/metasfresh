@@ -25,6 +25,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.acct.DocLine;
 import org.compiere.util.DB;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 
@@ -40,8 +41,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		super(InterfaceWrapperHelper.getPO(cc), doc);
 
 		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
-		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
-		setQty(movementQty, false);
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
+		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty()
+				// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
+				.negateIf(costCollectorType.isCoOrByProductReceipt());
+		setQty(movementQty);
 
 		setReversalLine_ID(cc.getReversal_ID());
 	}
