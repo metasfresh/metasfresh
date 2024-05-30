@@ -31,6 +31,8 @@ import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -41,6 +43,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -54,9 +58,10 @@ import static de.metas.contracts.modular.ComputingMethodType.InformativeLogs;
 public class InformativeLogComputingMethod
 		implements IComputingMethodHandler
 {
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final ModularContractProvider contractProvider;
 
 	@Override
@@ -80,7 +85,7 @@ public class InformativeLogComputingMethod
 				final I_C_Order orderRecord = orderBL.getById(orderLineBL.getOrderIdByOrderLineId(OrderLineId.ofRepoId(recordRef.getRecord_ID())));
 				return SOTrx.ofBoolean(orderRecord.isSOTrx()).isPurchase();
 			}
-			case de.metas.contracts.model.I_C_Flatrate_Term.Table_Name ->
+			case I_C_Flatrate_Term.Table_Name ->
 			{
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isModularContractType())
@@ -97,6 +102,13 @@ public class InformativeLogComputingMethod
 				final OrderId orderId = orderLineBL.getOrderIdByOrderLineId(orderLineId);
 				return SOTrx.ofBoolean(orderBL.getById(orderId).isSOTrx()).isPurchase();
 			}
+			case I_C_InvoiceLine.Table_Name ->
+			{
+				final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+				final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
+
+				return soTrx.isPurchase() && ( invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(invoiceRecord));
+			}
 			default -> {return false;}
 		}
 	}
@@ -104,18 +116,13 @@ public class InformativeLogComputingMethod
 	@Override
 	public @NonNull Stream<FlatrateTermId> streamContractIds(@NonNull final TableRecordReference recordRef)
 	{
-		switch (recordRef.getTableName())
+		return switch (recordRef.getTableName())
 		{
-			case I_C_OrderLine.Table_Name ->
-			{
-				return contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			case I_C_Flatrate_Term.Table_Name ->
-			{
-				return Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-			}
-			default -> {return Stream.empty();}
-		}
+			case I_C_OrderLine.Table_Name -> contractProvider.streamModularPurchaseContractsForPurchaseOrderLine(OrderLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
+			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			default -> Stream.empty();
+		};
 	}
 
 	@Override

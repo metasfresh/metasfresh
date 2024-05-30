@@ -136,7 +136,7 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceRawProduct = "DefinitiveInvoiceRawProduct";
 	/** DefinitiveInvoiceProcessedProduct = DefinitiveInvoiceProcessedProduct */
 	public static final String MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct = "DefinitiveInvoiceProcessedProduct";
-	@Override
+    @Override
 	public void setModularContractHandlerType (final java.lang.String ModularContractHandlerType)
 	{
 		set_Value (COLUMNNAME_ModularContractHandlerType, ModularContractHandlerType);

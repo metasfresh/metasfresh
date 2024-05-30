@@ -37,7 +37,6 @@ import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -79,12 +78,11 @@ public class InterimComputingMethod implements IComputingMethodHandler
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
 	{
-		if (!logEntryContractType.isInterimContractType()) {return false;}
-
 		switch (recordRef.getTableName())
 		{
 			case I_M_InOutLine.Table_Name ->
 			{
+				if (!logEntryContractType.isInterimContractType()) {return false;}
 				final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
 				final I_M_InOut inOutRecord = inoutDao.getById(InOutId.ofRepoId(inOutLineRecord.getM_InOut_ID()));
 				final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
@@ -92,6 +90,7 @@ public class InterimComputingMethod implements IComputingMethodHandler
 			}
 			case I_C_Flatrate_Term.Table_Name ->
 			{
+				if (!logEntryContractType.isInterimContractType()) {return false;}
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
 				if (!TypeConditions.ofCode(flatrateTermRecord.getType_Conditions()).isInterimContractType())
 				{
@@ -109,7 +108,8 @@ public class InterimComputingMethod implements IComputingMethodHandler
 			}
 			case I_C_InvoiceLine.Table_Name ->
 			{
-				final I_C_Invoice invoiceRecord = invoiceBL.getById(InvoiceId.ofRepoId(invoiceBL.getLineById(InvoiceLineId.ofRepoId(recordRef.getRecord_ID())).getC_Invoice_ID()));
+				if (!logEntryContractType.isModularContractType()) {return false;}
+				final I_C_Invoice invoiceRecord = invoiceBL.getByLineId(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
 				final SOTrx soTrx = SOTrx.ofBoolean(invoiceRecord.isSOTrx());
 
 				return soTrx.isPurchase() && invoiceBL.isDownPayment(invoiceRecord);
