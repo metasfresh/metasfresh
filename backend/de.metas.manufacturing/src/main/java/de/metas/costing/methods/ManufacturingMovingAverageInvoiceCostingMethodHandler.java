@@ -69,11 +69,20 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		final CurrentCost currentCost;
 
 		final CostDetailCreateResult result;
-		if (costCollectorType.isMaterialReceiptOrCoProduct())
+		if (costCollectorType.isMaterialReceipt())
 		{
 			orderCosts = ppOrderCostsService.getByOrderId(orderId);
 			currentCost = utils.getCurrentCost(request);
 			result = createMainProductOrCoProductReceipt(request, currentCost, orderCosts);
+		}
+		else if (costCollectorType.isCoOrByProductReceipt())
+		{
+			// CO/BY product quantities are negative, so we are negating them here to get a positive "received" qty
+			final CostDetailCreateRequest requestEffective = request.withQty(request.getQty().negate());
+			
+			orderCosts = ppOrderCostsService.getByOrderId(orderId);
+			currentCost = utils.getCurrentCost(requestEffective);
+			result = createMainProductOrCoProductReceipt(requestEffective, currentCost, orderCosts);
 		}
 		else if (costCollectorType.isAnyComponentIssue(orderBOMLineId))
 		{
