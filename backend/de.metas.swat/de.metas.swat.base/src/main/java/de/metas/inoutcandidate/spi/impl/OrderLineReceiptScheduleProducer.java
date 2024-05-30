@@ -169,6 +169,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{

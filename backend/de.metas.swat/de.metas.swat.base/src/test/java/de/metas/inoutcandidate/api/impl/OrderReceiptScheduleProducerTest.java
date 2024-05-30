@@ -88,6 +88,11 @@ public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 		assertThat(rs.getM_Product_ID()).as("M_Product_ID do not match").isEqualTo(fromOrderLine.getM_Product_ID());
 		assertThat(rs.getC_UOM_ID()).as("C_UOM_ID do not match").isEqualTo(fromOrderLine.getC_UOM_ID());
 
+
+		assertThat("DateOrdered do not match", fromOrder.getDateOrdered(), rc.getDateOrdered());
+		assertThat("MovementDate do not match", fromOrder.getDatePromised(), rc.getMovementDate());
+		assertThat("POReference do not match", fromOrder.getPOReference(), rc.getPOReference());
+
 		assertOrderLineDimensionMatches(rs, fromOrderLine);
 	}
 

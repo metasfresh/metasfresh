@@ -550,6 +550,8 @@ public class InOutProducer implements IInOutProducer
 		InOutDAO.updateRecordFromForeignContractRef(receiptHeader, forexContractRef);
 		receiptHeader.setM_Delivery_Planning_ID(DeliveryPlanningId.toRepoId(deliveryPlanningId));
 
+		receiptHeader.setPOReference(rs.getPOReference());
+
 		//
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);
