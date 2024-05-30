@@ -160,6 +160,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void writeOffInvoice(I_C_Invoice invoice, BigDecimal openAmt, String description);
 
+	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
+
 	List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
@@ -375,6 +377,10 @@ public interface IInvoiceBL extends ISingletonService
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
 
 	boolean isDownPayment(I_C_Invoice invoiceRecord);
+
+	boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
+
+	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge

@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.I_C_AcctSchema_Element;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ModCntr_Type
  *  @author metasfresh (generated) 

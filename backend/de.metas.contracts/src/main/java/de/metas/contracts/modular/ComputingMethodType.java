@@ -58,8 +58,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	INTERIM_CONTRACT(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Interim_Contract),
 	Receipt(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_Receipt),
 	InformativeLogs(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_InformativeLogs),
-	ProForma(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_ProForma),
-	DefinitiveInvoice(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoice),
+	DefinitiveInvoiceRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceRawProduct),
+	DefinitiveInvoiceProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_DefinitiveInvoiceProcessedProduct),
 	SalesOnRawProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnRawProduct),
 	SalesOnProcessedProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_SalesOnProcessedProduct),
 	CoProduct(X_ModCntr_Type.MODULARCONTRACTHANDLERTYPE_CoProduct),
@@ -74,6 +74,8 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	AvCo("AvCo"),	// Methods not needed in this increment
 	SvCo("SvCo"),
 	SvProcessed("SvProcessed");
+
+
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 

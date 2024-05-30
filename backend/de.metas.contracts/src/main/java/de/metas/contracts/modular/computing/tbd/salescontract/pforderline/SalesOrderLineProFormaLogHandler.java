@@ -98,7 +98,7 @@ class SalesOrderLineProFormaLogHandler extends AbstractModularContractLogHandler
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(orderRecord.getC_DocType_ID());
-		final String description = ModularContractLogHandlerHelper.getDescription(docTypeId, productId, quantity);
+		final String description = ModularContractLogHandlerHelper.getOnCompleteDescription(docTypeId, productId, quantity);
 
 		final Money amount = Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
 
