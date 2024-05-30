@@ -41,7 +41,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final Quantity movementQty = costCollectorBL.getQuantities(cc).getMovementQty();
-		setQty(movementQty, false);
+		setQty(movementQty);
 
 		setReversalLine_ID(cc.getReversal_ID());
 	}
