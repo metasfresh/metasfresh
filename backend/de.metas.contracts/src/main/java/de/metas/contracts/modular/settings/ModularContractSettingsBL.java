@@ -52,6 +52,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ModularContractSettingsBL
 {
+	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private ModularContractSettingsDAO modularContractSettingsDAO;
@@ -153,7 +154,7 @@ public class ModularContractSettingsBL
 			moduleContractType = modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct);
 		}
 
-		final String moduleName = TranslatableStrings.adElementOrMessage("DefinitiveInvoice").translate(Env.getADLanguageOrBaseLanguage());
+		final String moduleName = TranslatableStrings.adElementOrMessage(AD_ELEMENT_DEFINITIVE_INVOICE).translate(Env.getADLanguageOrBaseLanguage());
 		modularContractSettingsDAO.createModule(
 				ModuleConfigCreateRequest.builder()
 						.modularContractSettingsId(modularContractSettingsId)
