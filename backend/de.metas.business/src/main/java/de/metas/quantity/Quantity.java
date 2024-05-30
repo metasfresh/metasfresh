@@ -125,7 +125,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return -1;
 		}
-		return UomId.toRepoId(quantity.getUomId());
+		return quantity.getUOM().getC_UOM_ID();
 	}
 
 	public static UomId getCommonUomIdOfAll(final Quantity... quantities)
