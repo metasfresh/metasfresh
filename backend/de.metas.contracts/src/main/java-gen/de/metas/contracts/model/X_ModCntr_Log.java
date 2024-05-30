@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1723173660L;
+	private static final long serialVersionUID = 649973142L;
 
     /** Standard Constructor */
     public X_ModCntr_Log (final Properties ctx, final int ModCntr_Log_ID, @Nullable final String trxName)
@@ -240,14 +240,14 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	@Override
 	public void setInitial_Product_ID (final int Initial_Product_ID)
 	{
-		if (Initial_Product_ID < 1)
+		if (Initial_Product_ID < 1) 
 			set_Value (COLUMNNAME_Initial_Product_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Initial_Product_ID, Initial_Product_ID);
 	}
 
 	@Override
-	public int getInitial_Product_ID()
+	public int getInitial_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Initial_Product_ID);
 	}
@@ -328,10 +328,10 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_ShipmentDisposition = "ShipmentDisposition";
 	/** Shipment = Shipment */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Shipment = "Shipment";
-	/** Final Settlement = FinalSettlement */
-	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalSettlement = "FinalSettlement";
-	/** Definitive Final Settlement = DefinitiveFinalSettlement */
-	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveFinalSettlement = "DefinitiveFinalSettlement";
+	/** FinalInvoice = FinalInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_FinalInvoice = "FinalInvoice";
+	/** DefinitiveInvoice = DefinitiveInvoice */
+	public static final String MODCNTR_LOG_DOCUMENTTYPE_DefinitiveInvoice = "DefinitiveInvoice";
 	/** Inventory = Inventory */
 	public static final String MODCNTR_LOG_DOCUMENTTYPE_Inventory = "Inventory";
 	/** Sales invoice = SalesInvoice */
@@ -588,8 +588,34 @@ public class X_ModCntr_Log extends org.compiere.model.PO implements I_ModCntr_Lo
 	}
 
 	@Override
-	public int getStorageDays()
+	public int getStorageDays() 
 	{
 		return get_ValueAsInt(COLUMNNAME_StorageDays);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

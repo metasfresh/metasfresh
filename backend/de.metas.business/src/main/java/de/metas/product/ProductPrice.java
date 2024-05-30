@@ -137,10 +137,4 @@ public class ProductPrice
 
 		return withValueAndUomId(priceConv, toUomId);
 	}
-
-	@Nullable
-	public static Money toMoneyOrNull(@Nullable final ProductPrice productPrice)
-	{
-		return productPrice == null ? null : productPrice.toMoney();
-	}
 }

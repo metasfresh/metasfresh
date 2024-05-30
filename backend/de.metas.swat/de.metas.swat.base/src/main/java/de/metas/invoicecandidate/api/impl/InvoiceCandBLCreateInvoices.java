@@ -701,6 +701,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setC_Flatrate_Term_ID(cand.getC_Flatrate_Term_ID());
 				invoiceLine.setProductName(cand.getProductName());
 				invoiceLine.setInvoicingGroup(cand.getInvoicingGroup());
+				invoiceLine.setUserElementNumber1(cand.getUserElementNumber1());
+				invoiceLine.setUserElementNumber2(cand.getUserElementNumber2());
 				//
 				// Product / Charge
 				if (ilVO.getM_Product_ID() > 0)

@@ -1,7 +1,9 @@
 package de.metas.contracts.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_C_AcctSchema_Element;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ModCntr_Type
  *  @author metasfresh (generated) 
@@ -27,6 +29,27 @@ public interface I_ModCntr_Type
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set ColumnName.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setColumnName (java.lang.String ColumnName);
+
+	/**
+	 * Get ColumnName.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getColumnName();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
 	 * Set Organisation.

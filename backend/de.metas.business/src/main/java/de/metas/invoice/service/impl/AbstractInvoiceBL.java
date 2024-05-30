@@ -228,7 +228,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
 	}
-	
+
 	@Override
 	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
 	{
@@ -573,8 +573,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				return false;
 			}
 
-			final boolean isFullyAllocated = invoiceOpenResult.isFullyAllocated();
-			change = isFullyAllocated != invoice.isPaid();
+			final boolean test = total.compareTo(alloc) == 0;
+			change = test != invoice.isPaid();
 			if (change)
 			{
 				invoice.setIsPaid(isFullyAllocated);
@@ -1596,8 +1596,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isDownPayment(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
-		final DocTypeId docTypeId = assumeNotNull(getDocTypeIdEffectiveOrNull(invoiceRecord), "The given C_Invoice={} needs to have a C_DocType", invoiceRecord);
-		return docTypeBL.isDownPayment(docTypeId);
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isDownPayment(docTypeId);
+	}
+
+	@Override
+	public final boolean isFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId);
+	}
+
+	@Override
+	public final boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId);
 	}
 
 	@Override

@@ -36,6 +36,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -190,6 +191,16 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserElement2), 0);
 	}
 
+	public BigDecimal getUserElementNumber1()
+	{
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber1));
+	}
+
+	public BigDecimal getUserElementNumber2()
+	{
+		return NumberUtils.asBigDecimal(getSegmentValue(AcctSegmentType.UserElementNumber2));
+	}
+
 	public String getUserElementString1()
 	{
 		return String.valueOf(getSegmentValue(AcctSegmentType.UserElementString1));
@@ -290,6 +301,11 @@ public final class AccountDimension
 			{
 				Optional.ofNullable(TimeUtil.asInstant(value))
 						.ifPresent(instantValue -> segmentValues.put(segmentType, instantValue));
+			}
+			else if(value instanceof BigDecimal)
+			{
+				final BigDecimal bigDecimalValue = NumberUtils.asBigDecimal(value, BigDecimal.ZERO);
+				segmentValues.put(segmentType, bigDecimalValue);
 			}
 			else
 			{
@@ -512,6 +528,19 @@ public final class AccountDimension
 		public Builder setUserElementDate2(final Instant userElementDate2)
 		{
 			setSegmentValue(AcctSegmentType.UserElementDate2, userElementDate2);
+			return this;
+		}
+
+
+		public Builder setUserElementNumber1(final BigDecimal userElementNumber1)
+		{
+			setSegmentValue(AcctSegmentType.UserElementNumber1, userElementNumber1);
+			return this;
+		}
+
+		public Builder setUserElementNumber2(final BigDecimal userElementNumber2)
+		{
+			setSegmentValue(AcctSegmentType.UserElementNumber2, userElementNumber2);
 			return this;
 		}
 

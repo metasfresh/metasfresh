@@ -9,6 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class InvoiceCandidateDimensionFactoryTest
 {
@@ -34,6 +37,8 @@ class InvoiceCandidateDimensionFactoryTest
 				.user2_ID(0)
 				.userElement1Id(0)
 				.userElement2Id(0)
+				.userElementNumber1(BigDecimal.ZERO)
+				.userElementNumber2(BigDecimal.ZERO)
 				.build();
 		assertThat(dimensionFromRecord).usingRecursiveComparison().isEqualTo(dimensionFromRecordExpected);
 		assertThat(dimensionFromRecord).isEqualTo(dimensionFromRecordExpected);

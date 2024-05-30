@@ -294,6 +294,15 @@ public final class NumberUtils
 				.orElse(null);
 	}
 
+	public static boolean isZeroOrNull(@Nullable final BigDecimal value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+		 else return value.compareTo(BigDecimal.ZERO) == 0;
+	}
+
 	@NonNull
 	public static String toStringWithCustomDecimalSeparator(@NonNull final BigDecimal value, final char separator)
 	{

@@ -162,7 +162,7 @@ public interface IInvoiceBL extends ISingletonService {
 	Optional<I_C_Invoice> getByIdIfExists(@NonNull InvoiceId invoiceId);
 
     List<? extends I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
-	
+
 	List<? extends I_C_Invoice> getByOrderId(@NonNull OrderId orderId);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
@@ -387,6 +387,14 @@ public interface IInvoiceBL extends ISingletonService {
      * Decide if the given invoice is an Adjustment Charge
      */
     boolean isAdjustmentCharge(I_C_Invoice invoice);
+	boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
+
+	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);
+
+	/**
+	 * Decide if the given invoice is an Adjustment Charge
+	 */
+	boolean isAdjustmentCharge(I_C_Invoice invoice);
 
     /**
      * Decide if the given doctype is of an Adjustment Charge

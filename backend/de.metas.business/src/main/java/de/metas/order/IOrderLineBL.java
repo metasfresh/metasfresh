@@ -26,6 +26,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.product.ProductId;
@@ -36,7 +37,6 @@ import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -146,7 +146,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * </ul>
 	 */
 	@Nullable
-	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
+	PriceListVersionId getPriceListVersionId(I_C_OrderLine orderLine);
 
 	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 

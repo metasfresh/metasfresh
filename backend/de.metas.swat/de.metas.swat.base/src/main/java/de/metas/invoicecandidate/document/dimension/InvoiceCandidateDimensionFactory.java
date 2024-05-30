@@ -32,7 +32,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -56,6 +55,8 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
+				.userElementNumber1(record.getUserElementNumber1())
+				.userElementNumber2(record.getUserElementNumber2())
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -85,6 +86,8 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 	@Override
 	public void updateRecordUserElements(final @NonNull I_C_Invoice_Candidate record, final @NonNull Dimension from)
 	{
+		record.setUserElementNumber1(from.getUserElementNumber1());
+		record.setUserElementNumber2(from.getUserElementNumber2());
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

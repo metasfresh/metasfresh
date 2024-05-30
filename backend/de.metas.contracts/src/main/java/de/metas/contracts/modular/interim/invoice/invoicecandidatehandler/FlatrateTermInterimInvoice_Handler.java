@@ -31,6 +31,7 @@ import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
@@ -177,7 +178,10 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID());
 
-		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractLogEntry.getModularContractModuleId(), flatrateTermId);
+		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(ContractSpecificPriceRequest.builder()
+				.modularContractModuleId(modularContractLogEntry.getModularContractModuleId())
+				.flatrateTermId(flatrateTermId)
+				.build());
 
 		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
 

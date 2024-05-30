@@ -253,9 +253,9 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 		//
 		// Get/Create Product Price record
-		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionByIdInTrx(PriceListVersionId.ofRepoId(priceListVersionId));
+		final PriceListVersionId plvId = PriceListVersionId.ofRepoId(priceListVersionId);
 		final I_M_ProductPrice pp = Optional
-				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId, TaxCategoryId.ofRepoIdOrNull(taxCategoryId)))
+				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plvId, productId, TaxCategoryId.ofRepoIdOrNull(taxCategoryId)))
 				.orElseGet(() -> newInstance(I_M_ProductPrice.class));
 
 		pp.setM_PriceList_Version_ID(priceListVersionId);    // FK

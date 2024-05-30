@@ -43,6 +43,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Value
@@ -100,6 +101,12 @@ public class LogEntryCreateRequest
 
 	@Nullable
 	Integer storageDays;
+
+	@Nullable
+	BigDecimal userElementNumber1;
+
+	@Nullable
+	BigDecimal userElementNumber2;
 
 	@Nullable
 	InvoiceCandidateId invoiceCandidateId;
@@ -182,7 +189,9 @@ public class LogEntryCreateRequest
 			@NonNull final ModularContractModuleId configModuleId,
 			@Nullable final ProductPrice priceActual,
 			@Nullable final InvoicingGroupId invoicingGroupId,
-			@Nullable final Boolean isBillable)
+			@Nullable final Boolean isBillable,
+			@Nullable BigDecimal userElementNumber1,
+			@Nullable BigDecimal userElementNumber2)
 	{
 		if (amount != null && priceActual != null)
 		{
@@ -220,6 +229,8 @@ public class LogEntryCreateRequest
 		this.priceActual = priceActual;
 		this.invoicingGroupId = invoicingGroupId;
 		this.isBillable = isBillable != null ? isBillable : true;
+		this.userElementNumber1 = userElementNumber1;
+		this.userElementNumber2 = userElementNumber2;
 	}
 
 	@NonNull

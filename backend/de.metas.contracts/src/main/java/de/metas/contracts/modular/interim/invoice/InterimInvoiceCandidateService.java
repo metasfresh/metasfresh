@@ -32,8 +32,8 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
-import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -95,7 +95,6 @@ public class InterimInvoiceCandidateService
 	@NonNull private final ManualCandidateService manualCandidateService = SpringContextHolder.instance.getBean(ManualCandidateService.class);
 	@NonNull private final InvoiceCandidateRepository invoiceCandidateRepository = SpringContextHolder.instance.getBean(InvoiceCandidateRepository.class);
 	@NonNull private final ModularContractLogService modularContractLogService = SpringContextHolder.instance.getBean(ModularContractLogService.class);
-	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository = SpringContextHolder.instance.getBean(ModCntrInvoicingGroupRepository.class);
 
 	@NonNull private final ModularContractService modularContractService;
 
@@ -165,7 +164,10 @@ public class InterimInvoiceCandidateService
 																			 uomConversionBL
 		);
 
-		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(modularContractLogEntry.getModularContractModuleId(), flatrateTermId);
+		final TaxCategoryId taxCategoryId = modularContractService.getContractSpecificTaxCategoryId(ContractSpecificPriceRequest.builder()
+						.modularContractModuleId(modularContractLogEntry.getModularContractModuleId())
+						.flatrateTermId(flatrateTermId)
+				.build());
 
 		final PricingSystemId pricingSystemId = modularContractService.getPricingSystemId(flatrateTermId);
 
