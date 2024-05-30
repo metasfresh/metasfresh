@@ -54,6 +54,9 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -78,6 +81,7 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -92,6 +96,7 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
@@ -111,9 +116,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -160,6 +168,7 @@ public class ShipmentScheduleWithHUService
 	@NonNull private final HUReservationService huReservationService;
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
+	@NonNull private final InventoryService inventoryService;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
@@ -178,7 +187,8 @@ public class ShipmentScheduleWithHUService
 						huReservationServiceTest,
 						Services.get(IBPartnerBL.class),
 						ADReferenceService.newMocked()),
-				new PickingConfigRepositoryV2()
+				new PickingConfigRepositoryV2(),
+				new InventoryService(new InventoryRepository(), new SourceHUsService())
 		);
 	}
 
@@ -502,6 +512,27 @@ public class ShipmentScheduleWithHUService
 			{
 				break; // we are done here
 			}
+		}
+
+		if (remainingQtyToAllocate.signum() > 0 && hUsToPickOnTheFly == HUsToPickOnTheFly.AnyHu)
+		{
+			final I_M_HU huForRemainingQty = createHUForRemainingQty(scheduleRecord, remainingQtyToAllocate);
+
+			final Quantity catchQtyOverride = firstHU
+					? shipmentScheduleBL.getCatchQtyOverride(scheduleRecord).orElse(null)
+					: null;
+
+			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.createConvert(
+					remainingQtyToAllocate,
+					ProductId.ofRepoId(scheduleRecord.getM_Product_ID()),
+					catchQtyOverride);
+
+			result.add(huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+					scheduleRecord,
+					qtys,
+					huForRemainingQty,
+					factory,
+					true));
 		}
 
 		return result.build();
@@ -1037,5 +1068,25 @@ public class ShipmentScheduleWithHUService
 		}
 
 		return handlingUnitsDAO.getByIds(topLevelHuIds);
+	}
+
+	@NonNull
+	private I_M_HU createHUForRemainingQty(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final Quantity remainingQtyToAllocate)
+	{
+		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
+				.clientId(ClientId.ofRepoId(schedule.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoId(schedule.getM_Warehouse_ID()))
+				.productId(ProductId.ofRepoId(schedule.getM_Product_ID()))
+				.qty(remainingQtyToAllocate)
+				.movementDate(SystemTime.asZonedDateTime())
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
+				.build();
+
+		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
+
+		return handlingUnitsDAO.getById(createdHuId);
 	}
 }
