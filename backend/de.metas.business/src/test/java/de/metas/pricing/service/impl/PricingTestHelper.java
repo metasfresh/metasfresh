@@ -97,7 +97,7 @@ public class PricingTestHelper
 		final IProductPA productPA = Mockito.mock(IProductPA.class);
 		Services.registerService(IProductPA.class, productPA);
 
-		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 
 		createPricingRules();
 

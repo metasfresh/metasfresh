@@ -40,6 +40,7 @@ import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import de.metas.pricing.PriceListVersionId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -572,8 +573,7 @@ public class VAttributeGrid extends CPanel
 		String formatted = "";
 		if (m_M_PriceList_Version_ID > 0)
 		{
-			final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(Env.getCtx(), m_M_PriceList_Version_ID, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
-			final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, M_Product_ID);
+			final I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(PriceListVersionId.ofRepoId(m_M_PriceList_Version_ID), M_Product_ID);
 			if (pp != null)
 			{
 				BigDecimal price = pp.getPriceStd();

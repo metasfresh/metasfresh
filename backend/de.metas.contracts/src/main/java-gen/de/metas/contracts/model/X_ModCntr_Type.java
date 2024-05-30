@@ -172,4 +172,27 @@ public class X_ModCntr_Type extends org.compiere.model.PO implements I_ModCntr_T
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+
+	/**
+	 * ColumnName  AD_Reference_ID=541871
+	 * Reference name: ColumnName
+	 */
+	public static final int ColumnName_AD_Reference_ID=541871;
+	/** UserElementNumber1 = UserElementNumber1 */
+	public static final String ColumnName_UserElementNumber1 = "UserElementNumber1";
+	/** UserElementNumber2 = UserElementNumber2 */
+	public static final String ColumnName_UserElementNumber2 = "UserElementNumber2";
+
+	@Override
+	public void setColumnName(final java.lang.String ColumnName)
+	{
+		set_Value(COLUMNNAME_ColumnName, ColumnName);
+	}
+
+	@Override
+	public final java.lang.String getColumnName()
+	{
+		return get_ValueAsString(COLUMNNAME_ColumnName);
+	}
 }

@@ -85,7 +85,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		}
 
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
-				ctxPriceListVersion);
+				PriceListVersionId.ofRepoId(ctxPriceListVersion.getM_PriceList_Version_ID()));
 
 		if (productPrice == null)
 		{
@@ -148,9 +148,9 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 
 	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
-			final I_M_PriceList_Version ctxPriceListVersion)
+			final PriceListVersionId priceListVersionId)
 	{
-		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
+		return ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(

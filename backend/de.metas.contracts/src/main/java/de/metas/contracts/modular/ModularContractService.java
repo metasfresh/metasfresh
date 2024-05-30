@@ -31,6 +31,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -137,18 +138,33 @@ public class ModularContractService
 	}
 
 	@NonNull
-	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
+	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		return modularContractPriceRepository.retrieveOptionalPriceForProductAndContract(modularContractModuleId, flatrateTermId)
-				.map(ModCntrSpecificPrice::taxCategoryId)
+		return modularContractPriceRepository.retrieveOptionalContractSpecificTaxCategory(contractSpecificPriceRequest)
 				// don't have a contract specific price (e.g: Receipt), default to the contract's tax category.
-				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(flatrateTermId).getC_TaxCategory_ID()));
+				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateDAO.getById(contractSpecificPriceRequest.getFlatrateTermId()).getC_TaxCategory_ID()));
 	}
 
 	@NonNull
-	public ProductPrice getContractSpecificPrice(@NonNull final ModularContractModuleId modularContractModuleId, @NonNull final FlatrateTermId flatrateTermId)
+	public ProductPrice getContractSpecificPrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
 	{
-		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(modularContractModuleId, flatrateTermId);
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest);
+
+		return ProductPrice.builder()
+				.productId(modCntrSpecificPrice.productId())
+				.money(modCntrSpecificPrice.amount())
+				.uomId(modCntrSpecificPrice.uomId())
+				.build();
+	}
+
+	public ProductPrice getContractSpecificScalePrice(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
+	{
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrieveScalePriceForProductAndContract(contractSpecificScalePriceRequest);
+
+		if (modCntrSpecificPrice == null)
+		{
+			return null;
+		}
 
 		return ProductPrice.builder()
 				.productId(modCntrSpecificPrice.productId())

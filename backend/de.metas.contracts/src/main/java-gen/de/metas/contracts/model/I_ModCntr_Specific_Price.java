@@ -190,6 +190,37 @@ public interface I_ModCntr_Specific_Price
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Scale Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsScalePrice (boolean IsScalePrice);
+
+	/**
+	 * Get Scale Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isScalePrice();
+
+	ModelColumn<I_ModCntr_Specific_Price, Object> COLUMN_IsScalePrice = new ModelColumn<>(I_ModCntr_Specific_Price.class, "IsScalePrice", null);
+	String COLUMNNAME_IsScalePrice = "IsScalePrice";
+
+
+	/** Column name MinValue */
+	public static final String COLUMNNAME_MinValue = "MinValue";
+
+	/** Set Min Value	  */
+	public void setMinValue (BigDecimal MinValue);
+
+	/** Get Min Value	  */
+	public BigDecimal getMinValue();
+
+	/**
 	 * Set Modules.
 	 *
 	 * <br>Type: TableDir

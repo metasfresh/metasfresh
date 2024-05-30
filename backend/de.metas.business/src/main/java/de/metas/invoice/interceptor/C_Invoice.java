@@ -30,6 +30,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
@@ -43,7 +44,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -165,8 +165,8 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		@SuppressWarnings("ConstantConditions") final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
+		@SuppressWarnings("ConstantConditions") final PriceListVersionId priceListVersionId = priceListDAO
+				.retrievePriceListVersionIdOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
@@ -174,7 +174,7 @@ public class C_Invoice // 03771
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
 			final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
-			if (!ProductPrices.hasMainProductPrice(priceListVersion, productId))
+			if (!ProductPrices.hasMainProductPrice(priceListVersionId, productId))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}

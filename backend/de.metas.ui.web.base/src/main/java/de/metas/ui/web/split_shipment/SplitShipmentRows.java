@@ -235,8 +235,8 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 		split.setDeliveryDate(from.getDeliveryDateNotNull());
 		split.setQtyToDeliver(from.getQtyToDeliver());
 		split.setDimension(split.getDimension().toBuilder()
-				.userElementString1(from.getUserElementString1())
-				.userElementString2(from.getUserElementString2())
+				.userElementNumber1(from.getUserElementNumber1())
+				.userElementNumber2(from.getUserElementNumber2())
 				.build());
 	}
 
@@ -248,8 +248,8 @@ public class SplitShipmentRows implements IEditableRowsData<SplitShipmentRow>
 				//
 				.deliveryDate(from.getDeliveryDate())
 				.qtyToDeliver(from.getQtyToDeliver())
-				.userElementString1(from.getDimension().getUserElementString1())
-				.userElementString2(from.getDimension().getUserElementString2())
+				.userElementNumber1(from.getDimension().getUserElementNumber1())
+				.userElementNumber2(from.getDimension().getUserElementNumber2())
 				//
 				.build();
 
