@@ -25,6 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.ra
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
+import de.metas.product.ProductPrice;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -39,4 +40,9 @@ public class SVRawMaterialReceiptLineLog extends AbstractMaterialReceiptLogHandl
 		super(modCntrInvoicingGroupRepository, modularContractService, computingMethod);
 	}
 
+	@Override
+	protected @NonNull ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	{
+		return super.getPriceActual(request).negate();
+	}
 }
