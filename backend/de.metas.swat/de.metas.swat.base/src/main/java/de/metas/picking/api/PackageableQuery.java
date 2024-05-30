@@ -64,6 +64,7 @@ public class PackageableQuery
 	boolean includeNotLocked = true;
 
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
+	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 
 	@Builder.Default
 	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);
