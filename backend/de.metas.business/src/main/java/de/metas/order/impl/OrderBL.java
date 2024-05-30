@@ -71,6 +71,7 @@ import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
@@ -547,7 +548,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public I_M_PriceList_Version getPriceListVersion(final I_C_Order order)
+	public PriceListVersionId getPriceListVersion(final I_C_Order order)
 	{
 		if (order == null)
 		{
@@ -565,8 +566,8 @@ public class OrderBL implements IOrderBL
 
 		final PriceListId priceListId = PriceListId.ofRepoId(order.getM_PriceList_ID());
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-		final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceListId, orderDate, processedPLVFiltering);
-		return plv;
+		final PriceListVersionId plvId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, orderDate, processedPLVFiltering);
+		return plvId;
 	}
 
 	@Override

@@ -2697,6 +2697,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	@Override
 	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{

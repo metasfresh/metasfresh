@@ -381,6 +381,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@NonNull
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)

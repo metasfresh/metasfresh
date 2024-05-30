@@ -9,7 +9,6 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,15 +79,15 @@ public class ShipmentScheduleSplitRepository
 	private static Dimension extractDimension(@NonNull final I_M_ShipmentSchedule_Split record)
 	{
 		return Dimension.builder()
-				.userElementString1(StringUtils.trimBlankToNull(record.getUserElementString1()))
-				.userElementString2(StringUtils.trimBlankToNull(record.getUserElementString2()))
+				.userElementNumber1(record.getUserElementNumber1())
+				.userElementNumber2(record.getUserElementNumber2())
 				.build();
 	}
 
 	private static void updateRecordFromDimension(@NonNull final I_M_ShipmentSchedule_Split record, @NonNull final Dimension from)
 	{
-		record.setUserElementString1(StringUtils.trimBlankToNull(from.getUserElementString1()));
-		record.setUserElementString2(StringUtils.trimBlankToNull(from.getUserElementString2()));
+		record.setUserElementNumber1(from.getUserElementNumber1());
+		record.setUserElementNumber2(from.getUserElementNumber2());
 	}
 
 	public ShipmentScheduleSplit changeById(

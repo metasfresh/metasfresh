@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -110,8 +111,10 @@ class ShipmentLineLog extends AbstractModularContractLogHandler
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 		final int storageDays = computeStorageDays(createLogRequest, transactionDate);
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(createLogRequest.getModularContractModuleId(),
-																								   createLogRequest.getContractId());
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
+				.modularContractModuleId(createLogRequest.getModularContractModuleId())
+				.flatrateTermId(createLogRequest.getContractId())
+				.build());
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)

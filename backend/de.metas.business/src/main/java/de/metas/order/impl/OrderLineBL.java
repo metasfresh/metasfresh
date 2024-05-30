@@ -507,14 +507,14 @@ public class OrderLineBL implements IOrderLineBL
 	}    // setM_Product_ID
 
 	@Override
-	public I_M_PriceList_Version getPriceListVersion(final I_C_OrderLine orderLine)
+	public PriceListVersionId getPriceListVersionId(final I_C_OrderLine orderLine)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
 		if (orderLine.getM_PriceList_Version_ID() > 0)
 		{
-			return InterfaceWrapperHelper.create(ctx, orderLine.getM_PriceList_Version_ID(), I_M_PriceList_Version.class, trxName);
+			return PriceListVersionId.ofRepoId(orderLine.getM_PriceList_Version_ID());
 		}
 		else
 		{
@@ -522,8 +522,8 @@ public class OrderLineBL implements IOrderLineBL
 			final I_C_Order order = orderLine.getC_Order();
 
 			final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-			return priceListDAO.retrievePriceListVersionOrNull(
-					priceListDAO.getById(order.getM_PriceList_ID()),
+			return priceListDAO.retrievePriceListVersionIdOrNull(
+					PriceListId.ofRepoId(order.getM_PriceList_ID()),
 					getPriceDate(orderLine, order),
 					processedPLVFiltering);
 		}

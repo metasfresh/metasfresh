@@ -71,6 +71,8 @@ public class FactAcctBL implements IFactAcctBL
 				.setUser2_ID(fa.getUser2_ID())
 				.setUserElement1_ID(fa.getUserElement1_ID())
 				.setUserElement2_ID(fa.getUserElement2_ID())
+				.setUserElementNumber1(fa.getUserElementNumber1())
+				.setUserElementNumber2(fa.getUserElementNumber2())
 				.setUserElementString1(fa.getUserElementString1())
 				.setUserElementString2(fa.getUserElementString2())
 				.setUserElementString3(fa.getUserElementString3())

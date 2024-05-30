@@ -1,6 +1,7 @@
 package de.metas.contracts.model;
 
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -811,4 +812,47 @@ public interface I_ModCntr_Log
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(org.compiere.model.I_M_InOutLine.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<org.compiere.model.I_M_InOutLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+
 }

@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_M_InOutLine;
 
 /** Generated Interface for M_ShipmentSchedule_Split
  *  @author metasfresh (generated) 
@@ -310,44 +311,44 @@ public interface I_M_ShipmentSchedule_Split
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set UserElementString1.
+	 * Set UserElementNumber1.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
 
 	/**
-	 * Get UserElementString1.
+	 * Get UserElementNumber1.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString1();
+	BigDecimal getUserElementNumber1();
 
-	ModelColumn<I_M_ShipmentSchedule_Split, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_M_ShipmentSchedule_Split.class, "UserElementString1", null);
-	String COLUMNNAME_UserElementString1 = "UserElementString1";
+	ModelColumn<I_M_InOutLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
 
 	/**
-	 * Set UserElementString2.
+	 * Set UserElementNumber2.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
 
 	/**
-	 * Get UserElementString2.
+	 * Get UserElementNumber2.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getUserElementString2();
+	BigDecimal getUserElementNumber2();
 
-	ModelColumn<I_M_ShipmentSchedule_Split, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_M_ShipmentSchedule_Split.class, "UserElementString2", null);
-	String COLUMNNAME_UserElementString2 = "UserElementString2";
+	ModelColumn<I_M_InOutLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_M_InOutLine.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
 }
