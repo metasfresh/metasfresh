@@ -248,7 +248,13 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
+		final OrderId orderId = OrderId.ofRepoId(inOutLineRecord.getC_Order_ID());
+		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
+	}
+
+	private @NonNull Stream<FlatrateTermId> streamModularPurchaseContractBySalesOrderWithProductId(final OrderId orderId, final ProductId productId)
+	{
+		final I_C_Order order = orderBL.getById(orderId);
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and warehouseBL.getBPartnerId demands NonNull
 
@@ -261,17 +267,16 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
-		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
 		final List<ModularContractSettings> settings = modularContractSettingsBL.getSettingsByQuery(ModularContractSettingsQuery.builder()
-																													 .processedProductId(inOutProductId)
+																													 .processedProductId(productId)
 																													 .yearAndCalendarId(yearAndCalendarId)
 																													 .soTrx(SOTrx.PURCHASE)
 																													 .checkHasCompletedModularCondition(true)
 																													 .build());
 
 		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
-		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, inOutProductId);
+		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, productId);
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))

@@ -165,6 +165,7 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 
 		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository()));

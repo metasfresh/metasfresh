@@ -30,6 +30,9 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -94,6 +97,7 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitRepository;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -175,6 +179,7 @@ public class ShipmentScheduleWithHUService
 		Adempiere.assertUnitTestMode();
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());
+		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 		return new ShipmentScheduleWithHUService(
 				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
 				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
@@ -188,7 +193,7 @@ public class ShipmentScheduleWithHUService
 						Services.get(IBPartnerBL.class),
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService())
+				new InventoryService(new InventoryRepository(), new SourceHUsService(), modularContractProvider)
 		);
 	}
 
@@ -450,11 +455,11 @@ public class ShipmentScheduleWithHUService
 
 		// if we have HUs on stock, get them now
 		final List<I_M_HU> husToPick = switch (hUsToPickOnTheFly)
-				{
-					case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
-					case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
-					case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
-				};
+		{
+			case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
+			case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
+			case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
+		};
 
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -1040,10 +1045,10 @@ public class ShipmentScheduleWithHUService
 	{
 		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
 		return pickHUsOnTheFly(scheduleRecord,
-							   qtyToDeliver,
-							   pickAccordingToPackingInstruction,
-							   factory,
-							   hUsToPickOnTheFly);
+				qtyToDeliver,
+				pickAccordingToPackingInstruction,
+				factory,
+				hUsToPickOnTheFly);
 	}
 
 	@NonNull
@@ -1057,9 +1062,9 @@ public class ShipmentScheduleWithHUService
 
 		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(items)
-																			.considerAttributes(pickingConfig.isConsiderAttributes())
-																			.build());
+				.packageables(items)
+				.considerAttributes(pickingConfig.isConsiderAttributes())
+				.build());
 
 		final ImmutableList<HuId> topLevelHuIds = plan.getSortedPickFromTopLevelHUIds();
 		if (topLevelHuIds.isEmpty())
@@ -1083,6 +1088,7 @@ public class ShipmentScheduleWithHUService
 				.qty(remainingQtyToAllocate)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
+				.orderAndLineId(OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID()))
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);

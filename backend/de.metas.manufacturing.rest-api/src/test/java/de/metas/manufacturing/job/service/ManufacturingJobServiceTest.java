@@ -1,5 +1,8 @@
 package de.metas.manufacturing.job.service;
 
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
@@ -37,10 +40,10 @@ class ManufacturingJobServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService())
+				new InventoryService(new InventoryRepository(), new SourceHUsService(), modularContractProvider)
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
