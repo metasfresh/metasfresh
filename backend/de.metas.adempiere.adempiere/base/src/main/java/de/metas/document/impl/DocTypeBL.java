@@ -210,7 +210,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isFinalInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_FinalInvoice.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
@@ -218,7 +218,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isFinalCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_FinalCreditMemo.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APCreditMemo.equals(dt.getDocBaseType());
@@ -232,7 +232,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isDefinitiveInvoice(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_DefinitiveInvoice.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType());
@@ -240,7 +240,7 @@ public class DocTypeBL implements IDocTypeBL
 
 	private boolean isDefinitiveCreditMemo(@NonNull final DocTypeId docTypeId)
 	{
-		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		final I_C_DocType dt = docTypesRepo.getRecordById(docTypeId);
 
 		return X_C_DocType.DOCSUBTYPE_DefinitiveCreditMemo.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_APCreditMemo.equals(dt.getDocBaseType());
