@@ -218,6 +218,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public org.compiere.model.I_C_Invoice getByLineId(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return getById(InvoiceId.ofRepoId(getLineById(invoiceLineId).getC_Invoice_ID()));
+	}
+
+	@Override
 	public Optional<org.compiere.model.I_C_Invoice> getByIdIfExists(@NonNull final InvoiceId invoiceId)
 	{
 		return Optional.ofNullable(invoiceDAO.getByIdInTrxIfExists(invoiceId));

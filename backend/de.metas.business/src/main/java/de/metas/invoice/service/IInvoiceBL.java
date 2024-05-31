@@ -167,6 +167,8 @@ public interface IInvoiceBL extends ISingletonService {
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
 
+	I_C_Invoice getByLineId(@NonNull InvoiceLineId invoiceLineId);
+
 	I_C_InvoiceLine getLineById(@NonNull InvoiceAndLineId invoiceAndLineId);
 
     I_C_InvoiceLine getLineById(@NonNull InvoiceLineId invoiceLineId);
