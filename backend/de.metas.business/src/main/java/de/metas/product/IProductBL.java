@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
@@ -178,6 +181,7 @@ public interface IProductBL extends ISingletonService
 
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
+	@NonNull
 	String getProductValueAndName(@Nullable ProductId productId);
 
 	@Deprecated

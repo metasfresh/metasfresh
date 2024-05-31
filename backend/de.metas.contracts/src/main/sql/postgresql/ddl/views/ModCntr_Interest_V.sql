@@ -79,7 +79,7 @@ FROM modcntr_interest mi
          LEFT JOIN c_invoice_candidate finalIC ON l.c_invoice_candidate_id = finalIC.c_invoice_candidate_id
          LEFT JOIN C_Invoice_Line_Alloc finalILA ON finalIC.c_invoice_candidate_id = finalILA.c_invoice_candidate_id
          LEFT JOIN c_invoiceline finalIL ON finalIL.c_invoiceline_id = finalILA.c_invoiceline_id
-         INNER JOIN c_invoice finalI ON finalI.c_invoice_id = finalIL.c_invoice_id AND finalI.docstatus IN ('CO', 'CL')
+         LEFT JOIN c_invoice finalI ON finalI.c_invoice_id = finalIL.c_invoice_id AND finalI.docstatus IN ('CO', 'CL')
          INNER JOIN m_product p ON l.initial_product_id = p.m_product_id
          INNER JOIN C_UOM uom ON l.c_uom_id = uom.c_uom_id
 WHERE mi.finalinterest != 0

@@ -3,6 +3,8 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for C_DocType
  *  @author metasfresh (generated) 
  */
@@ -99,31 +101,6 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
-	 * Set Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
-
-	/**
-	 * Get Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Doc_Approval_Strategy_ID();
-
-	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
-
-	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
-
-	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
-	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
-
-	/**
 	 * Set Difference Document.
 	 * Document type for generating in dispute Shipments
 	 *
@@ -146,6 +123,7 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
+	 * Set Document Approval Strategy.
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -189,6 +167,33 @@ public interface I_C_DocType
 	int getC_DocTypeInvoice_ID();
 
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
+
+	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
+
 
 	/**
 	 * Set Invoicing Pool.

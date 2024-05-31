@@ -1,8 +1,9 @@
 package de.metas.contracts.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Term
  *  @author metasfresh (generated) 
@@ -571,29 +572,6 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_RfQResponseLine_ID (int C_RfQResponseLine_ID);
-
-	/**
-	 * Get RfQ Response Line.
-	 * Request for Quotation Response Line
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_RfQResponseLine_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_C_RfQResponseLine_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "C_RfQResponseLine_ID", null);
-	String COLUMNNAME_C_RfQResponseLine_ID = "C_RfQResponseLine_ID";
-
-	/**
 	 * Set Tax Category.
 	 * Tax Category
 	 *
@@ -1039,6 +1017,27 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
+	 * Set Is ready for the definitive final invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadyForDefinitiveInvoice (boolean IsReadyForDefinitiveInvoice);
+
+	/**
+	 * Get Is ready for the definitive final invoice.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadyForDefinitiveInvoice();
+
+	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsReadyForDefinitiveInvoice = new ModelColumn<>(I_C_Flatrate_Term.class, "IsReadyForDefinitiveInvoice", null);
+	String COLUMNNAME_IsReadyForDefinitiveInvoice = "IsReadyForDefinitiveInvoice";
+
+	/**
 	 * Set Simulation.
 	 *
 	 * <br>Type: YesNo
@@ -1225,7 +1224,7 @@ public interface I_C_Flatrate_Term
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1235,7 +1234,7 @@ public interface I_C_Flatrate_Term
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1307,27 +1306,6 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PlannedQtyPerUnit = new ModelColumn<>(I_C_Flatrate_Term.class, "PlannedQtyPerUnit", null);
 	String COLUMNNAME_PlannedQtyPerUnit = "PlannedQtyPerUnit";
-
-	/**
-	 * Set Supply Product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPMM_Product_ID (int PMM_Product_ID);
-
-	/**
-	 * Get Supply Product.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPMM_Product_ID();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_PMM_Product_ID = new ModelColumn<>(I_C_Flatrate_Term.class, "PMM_Product_ID", null);
-	String COLUMNNAME_PMM_Product_ID = "PMM_Product_ID";
 
 	/**
 	 * Set Prepare Closing.
@@ -1412,27 +1390,6 @@ public interface I_C_Flatrate_Term
 
 	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_Term.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
-
-	/**
-	 * Set Qty Next Year.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPlanned_NextYear (BigDecimal QtyPlanned_NextYear);
-
-	/**
-	 * Get Qty Next Year.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPlanned_NextYear();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_QtyPlanned_NextYear = new ModelColumn<>(I_C_Flatrate_Term.class, "QtyPlanned_NextYear", null);
-	String COLUMNNAME_QtyPlanned_NextYear = "QtyPlanned_NextYear";
 
 	/**
 	 * Set Start Date.

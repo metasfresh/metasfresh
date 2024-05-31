@@ -78,6 +78,10 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isDownPayment(DocTypeId docTypeId);
 
+	boolean isFinalInvoiceOrFinalCreditMemo(@NonNull DocTypeId docTypeId);
+
+	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(@NonNull DocTypeId docTypeId);
+
 	void save(I_C_DocType dt);
 
 	boolean isModularManufacturingOrder(@NonNull DocTypeId docTypeId);

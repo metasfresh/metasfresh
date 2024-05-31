@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -31,13 +32,20 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.pricing.service.ScalePriceQtyFrom;
+import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -46,7 +54,10 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -60,6 +71,7 @@ public class ModularContractPriceService
 	private final ModularContractPriceRepository modularContractPriceRepository;
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ProductScalePriceService productScalePriceService;
 
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -67,9 +79,16 @@ public class ModularContractPriceService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
+	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
+
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{
 		return modularContractPriceRepository.getById(id);
+	}
+
+	public void deleteById(@NonNull final ModCntrSpecificPriceId id)
+	{
+		modularContractPriceRepository.deleteById(id);
 	}
 
 	public void createModularContractSpecificPricesFor(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
@@ -130,7 +149,8 @@ public class ModularContractPriceService
 	{
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
 
-		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder modCntrSpecificPriceBuilder = ModCntrSpecificPrice.builder()
+
+		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
 				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
@@ -139,7 +159,48 @@ public class ModularContractPriceService
 				.productId(productId)
 				.seqNo(moduleConfig.getSeqNo());
 
-		modularContractPriceRepository.save(modCntrSpecificPriceBuilder.build());
+		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
+		{
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
+			if (productPrice == null)
+			{
+				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE);
+			}
+
+			final ScalePriceUsage scalePriceUsage = ScalePriceUsage.ofCode(productPrice.getUseScalePrice());
+			if (!scalePriceUsage.isUseScalePrice())
+			{
+				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE)
+						.appendParametersToMessage()
+						.setParameter("M_ProductPrice_ID", productPrice.getM_ProductPrice_ID());
+			}
+
+			if (!scalePriceUsage.isUseScalePriceStrict())
+			{
+				modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(true).minValue(BigDecimal.ZERO).build());
+			}
+
+			//
+			//
+			final ScalePriceQtyFrom scalePriceQtyFrom = ScalePriceQtyFrom.optionalOfNullableCode(productPrice.getScalePriceQuantityFrom()).orElse(null);
+			if (scalePriceQtyFrom == null || !scalePriceQtyFrom.isQuantity())
+			{
+				final ProductPriceId productPriceId = ProductPriceId.ofRepoId(productPrice.getM_ProductPrice_ID());
+				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
+						.stream()
+						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin())
+								.amount(Money.of(scale.getPriceStd(),pricingResult.getCurrencyId()))
+								.build())
+						.collect(ImmutableList.toImmutableList());
+
+				modularContractPriceRepository.saveAll(specificPrices);
+			}
+		}
+		else
+		{
+			modularContractPriceRepository.save(specificPriceTemplate.isScalePrice(false).minValue(null).build());
+		}
+
 	}
 
 	private IEditablePricingContext createPricingContextTemplate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractSettings settings)
@@ -160,6 +221,11 @@ public class ModularContractPriceService
 	public ModCntrSpecificPrice updateById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
 	{
 		return modularContractPriceRepository.updateById(id, mapper);
+	}
+
+	public ModCntrSpecificPrice cloneById(@NonNull final ModCntrSpecificPriceId id, @NonNull final UnaryOperator<ModCntrSpecificPrice> mapper)
+	{
+		return modularContractPriceRepository.cloneById(id, mapper);
 	}
 
 }

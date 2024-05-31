@@ -3979,6 +3979,48 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_UserElementDate2 = "UserElementDate2";
 
 	/**
+	 * Set UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber1 (@Nullable BigDecimal UserElementNumber1);
+
+	/**
+	 * Get UserElementNumber1.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber1();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber1", null);
+	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
+
+	/**
+	 * Set UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementNumber2 (@Nullable BigDecimal UserElementNumber2);
+
+	/**
+	 * Get UserElementNumber2.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getUserElementNumber2();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber2", null);
+	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
+
+	/**
 	 * Set UserElementString1.
 	 *
 	 * <br>Type: String

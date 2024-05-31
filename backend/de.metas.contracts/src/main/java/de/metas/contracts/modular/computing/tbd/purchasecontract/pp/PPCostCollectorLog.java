@@ -57,6 +57,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
@@ -129,8 +130,8 @@ public class PPCostCollectorLog extends AbstractModularContractLogHandler
 		final Quantity modCntrLogQty;
 		final String description;
 
-		if (ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt)
-				|| ppCostCollector.getCostCollectorType().equals(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance))
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(ppCostCollector.getCostCollectorType());
+		if (costCollectorType.isMaterialReceiptOrCoProduct())
 		{
 			modCntrLogQty = collectorMovementQty.abs();
 			description = msgBL.getBaseLanguageMsg(MSG_DESCRIPTION_RECEIPT, modCntrLogQty.abs().toString(), product.getName());

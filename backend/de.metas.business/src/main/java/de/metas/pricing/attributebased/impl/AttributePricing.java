@@ -273,14 +273,14 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
-		if (ctxPriceListVersion == null)
+		final PriceListVersionId ctxPriceListVersionId = pricingCtx.getPriceListVersionId();
+		if (ctxPriceListVersionId == null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersion)
+		final I_M_ProductPrice productPrice = ProductPrices.newQuery(ctxPriceListVersionId)
 				.setProductId(pricingCtx.getProductId())
 				.onlyValidPrices(true)
 				.matching(_defaultMatchers)

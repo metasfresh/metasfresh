@@ -189,6 +189,12 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
 
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+		}
+
+		//
 		return queryBuilder.create();
 	}
 

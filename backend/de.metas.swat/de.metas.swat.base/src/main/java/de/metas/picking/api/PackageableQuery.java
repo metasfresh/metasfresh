@@ -78,6 +78,7 @@ public class PackageableQuery
 	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
 
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
+	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 
 	@Builder.Default
 	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);

@@ -184,26 +184,28 @@ public class X_M_ShipmentSchedule_Split extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
 	{
-		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
 	}
 
 	@Override
-	public java.lang.String getUserElementString1() 
+	public BigDecimal getUserElementNumber1()
 	{
-		return get_ValueAsString(COLUMNNAME_UserElementString1);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
 	{
-		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
 	}
 
 	@Override
-	public java.lang.String getUserElementString2() 
+	public BigDecimal getUserElementNumber2()
 	{
-		return get_ValueAsString(COLUMNNAME_UserElementString2);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

@@ -218,6 +218,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public org.compiere.model.I_C_Invoice getByLineId(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		return getById(InvoiceId.ofRepoId(getLineById(invoiceLineId).getC_Invoice_ID()));
+	}
+
+	@Override
 	public Optional<org.compiere.model.I_C_Invoice> getByIdIfExists(@NonNull final InvoiceId invoiceId)
 	{
 		return Optional.ofNullable(invoiceDAO.getByIdInTrxIfExists(invoiceId));
@@ -228,7 +234,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds);
 	}
-	
+
 	@Override
 	public List<? extends I_C_Invoice> getByOrderId(@NonNull final OrderId orderId)
 	{
@@ -1596,8 +1602,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isDownPayment(final org.compiere.model.I_C_Invoice invoiceRecord)
 	{
-		final DocTypeId docTypeId = assumeNotNull(getDocTypeIdEffectiveOrNull(invoiceRecord), "The given C_Invoice={} needs to have a C_DocType", invoiceRecord);
-		return docTypeBL.isDownPayment(docTypeId);
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isDownPayment(docTypeId);
+	}
+
+	@Override
+	public final boolean isFinalInvoiceOrFinalCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId);
+	}
+
+	@Override
+	public final boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final org.compiere.model.I_C_Invoice invoiceRecord)
+	{
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(invoiceRecord);
+		return docTypeId != null && docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId);
 	}
 
 	@Override

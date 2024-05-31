@@ -58,6 +58,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
@@ -73,13 +74,14 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 	private static final AdMessageKey MSG_ON_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceCompleteLogDescription");
 	private static final AdMessageKey MSG_ON_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimInvoiceReverseLogDescription");
 
-	@NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
+	@Getter @NonNull private final String supportedTableName = I_C_InvoiceLine.Table_Name;
+	@Getter @NonNull private final LogEntryDocumentType logEntryDocumentType = LogEntryDocumentType.INTERIM_INVOICE;
 
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModularContractLogDAO contractLogDAO;
 	@NonNull private final ModularContractLogService modularContractLogService;
@@ -94,19 +96,6 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 		this.contractLogDAO = contractLogDAO;
 		this.modularContractLogService = modularContractLogService;
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-	}
-
-	@Override
-	public @NonNull String getSupportedTableName()
-	{
-		return I_C_InvoiceLine.Table_Name;
-	}
-
-	@NonNull
-	@Override
-	public LogEntryDocumentType getLogEntryDocumentType()
-	{
-		return logEntryDocumentType;
 	}
 
 	@Override
@@ -200,7 +189,7 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		final TableRecordReference invoiceLineRef = createLogRequest.getRecordRef();
-		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(I_C_InvoiceLine.Table_Name)));
+		final I_C_InvoiceLine invoiceLineRecord = invoiceBL.getLineById(InvoiceLineId.ofRepoId(invoiceLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
 
 		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(
 				ModularContractLogQuery.builder()
