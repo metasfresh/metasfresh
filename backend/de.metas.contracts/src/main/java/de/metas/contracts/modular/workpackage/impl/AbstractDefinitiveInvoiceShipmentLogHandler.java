@@ -40,6 +40,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
@@ -66,6 +67,7 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 	private static final AdMessageKey MSG_INFO_SHIPMENT_REVERSED = AdMessageKey.of("de.metas.contracts.ShipmentReversed");
 
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -89,6 +91,19 @@ public abstract class AbstractDefinitiveInvoiceShipmentLogHandler extends Abstra
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
 		this.modularContractService = modularContractService;
 		this.computingMethod = computingMethod;
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		final TableRecordReference tableRef = request.getRecordRef();
+		if (!tableRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
+		{
+			return false;
+		}
+		final I_M_InOut inOut = inOutDAO.getByLineIdInTrx(InOutLineId.ofRepoId(tableRef.getRecord_ID()));
+
+		return inOut.isSOTrx();
 	}
 
 	private static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)

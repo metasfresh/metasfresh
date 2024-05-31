@@ -189,8 +189,8 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 				.billable(true)
 				.build());
 
-		return billableLogsExist ? DONT
-				: CREATE_CANDIDATES_AND_INVOICES;
+		return billableLogsExist ? CREATE_CANDIDATES_AND_INVOICES
+				: DONT;
 	}
 
 	@Override

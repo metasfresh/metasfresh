@@ -248,6 +248,9 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
 
+	@NonNull
+	ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+
 	/**
 	 * Extend the ModCntr Settings to the new year
 	 * @param settings
@@ -285,8 +288,10 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isInterimContract(@NonNull FlatrateTermId flatrateTermId);
 
-	boolean isInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+	boolean isFinalInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+
+	boolean isDefinitiveInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+	ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

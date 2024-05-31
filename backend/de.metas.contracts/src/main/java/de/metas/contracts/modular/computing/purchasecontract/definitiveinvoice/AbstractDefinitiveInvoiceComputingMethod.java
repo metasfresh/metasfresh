@@ -23,7 +23,6 @@
 package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
@@ -32,13 +31,13 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.lang.SOTrx;
+import de.metas.order.OrderId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -48,8 +47,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
@@ -64,7 +61,7 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 	@NonNull private final ModularContractProvider contractProvider;
 	@NonNull private final ComputingMethodService computingMethodService;
 
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
@@ -77,10 +74,9 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		}
 		if (recordRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
 		{
-			final I_M_InOut inOut = getInOut(recordRef)
-					.orElseThrow(() -> new AdempiereException("No M_InOut found for line=" + recordRef));
-
-			return !inOutBL.isReversal(inOut) && inOut.isSOTrx();
+			final I_M_InOutLine inOutLineRecord = inoutDao.getLineByIdInTrx(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
+			final OrderId orderId = OrderId.ofRepoIdOrNull(inOutLineRecord.getC_Order_ID());
+			return !(inOutLineRecord.getMovementQty().signum() < 0) && orderId != null;
 		}
 		if (recordRef.tableNameEqualsTo(I_M_InventoryLine.Table_Name))
 		{
@@ -92,16 +88,6 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 
 		return false;
 
-	}
-
-	private @NonNull Optional<I_M_InOut> getInOut(final @NonNull TableRecordReference recordRef)
-	{
-		return Optional.of(recordRef)
-				.map(lineRef -> lineRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId))
-				.map(inOutBL::getLineByIdInTrx)
-				.map(I_M_InOutLine::getM_InOut_ID)
-				.map(InOutId::ofRepoId)
-				.map(inOutBL::getById);
 	}
 
 	private @NonNull Optional<I_M_Inventory> getInventory(final @NonNull TableRecordReference recordRef)
@@ -119,11 +105,24 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 	{
 		return switch (recordRef.getTableName())
 		{
-			case I_M_InOutLine.Table_Name -> contractProvider.streamInterimPurchaseContractsForReceiptLine(InOutLineId.ofRepoId(recordRef.getRecord_ID()));
-			case I_C_Flatrate_Term.Table_Name -> Stream.of(FlatrateTermId.ofRepoId(recordRef.getRecord_ID()));
-			case I_C_InvoiceLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInvoiceLine(InvoiceLineId.ofRepoId(recordRef.getRecord_ID()));
+			case I_M_InOutLine.Table_Name -> getContractStreamForInOut(recordRef);
+			case I_M_InventoryLine.Table_Name -> contractProvider.streamModularPurchaseContractsForInventory(InventoryLineId.ofRepoId(recordRef.getRecord_ID()));
 			default -> Stream.empty();
 		};
+	}
+
+	private @NonNull Stream<FlatrateTermId> getContractStreamForInOut(final @NonNull TableRecordReference recordRef)
+	{
+		final InOutLineId inoutLineId = InOutLineId.ofRepoId(recordRef.getRecord_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(inoutDao.getByLineIdInTrx(inoutLineId).isSOTrx());
+		if (soTrx.isSales())
+		{
+			return contractProvider.streamModularPurchaseContractsForShipmentLine(inoutLineId);
+		}
+		else
+		{
+			return contractProvider.streamModularPurchaseContractsForReceiptLine(inoutLineId);
+		}
 	}
 
 	@Override
@@ -132,16 +131,25 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		final ModularContractLogEntriesList logs = computingMethodService.retrieveLogsForCalculation(request);
 		final ModularContractLogEntriesList productionLogs = logs.subsetOf(getSourceLogEntryDocumentType());
 		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
-		final ProductPrice productPrice = productionLogs.getUniqueProductPriceOrErrorNotNull();
+		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
 		final UomId uomId = productPrice.getUomId();
 
 		final Quantity producedQty = productionLogs.getQtySum(uomId, uomConversionBL);
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
+		final Quantity qtyDifference = shippedQty.subtract(producedQty);
+		if (qtyDifference.isZero())
+		{
+			return ComputingResponse.builder()
+					.ids(logs.getIds())
+					.price(productPrice.toZero())
+					.qty(qtyDifference.toOne())
+					.build();
+		}
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
 				.price(productPrice)
-				.qty(shippedQty.subtract(producedQty))
+				.qty(qtyDifference)
 				.build();
 	}
 

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.definitive.invoicecandidate;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.finalinvoice.invoicecandidate.FlatrateTermModular_FinalHandler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -74,10 +75,11 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
+				.isComputingMethodTypeActive(false)
 				.build());
 
-		return definitiveInvoiceBillableLogsExist ? DONT
-				: CREATE_CANDIDATES_AND_INVOICES;
+		return definitiveInvoiceBillableLogsExist ? CREATE_CANDIDATES_AND_INVOICES
+				: DONT;
 	}
 
 	@Override
@@ -88,6 +90,22 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 			trxManager.runAfterCommit(() -> modularContractLogService.setDefinitiveICLogsProcessed(ModularContractLogQuery.ofEntryIds(computingResponse.getIds()),
 					InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID())));
 		}
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<Object> getRecordsToLock(@NonNull final I_C_Flatrate_Term term)
+	{
+		return ImmutableList.builder()
+				.add(term)
+				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
+						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
+						.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
+						.isComputingMethodTypeActive(false)
+						.processed(false)
+						.billable(true)
+						.build()))
+				.build();
 	}
 
 	@Override

@@ -36,6 +36,8 @@ import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -58,6 +60,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -86,6 +89,7 @@ public class ModularContractProvider
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@NonNull
@@ -146,6 +150,13 @@ public class ModularContractProvider
 				.filter(contract -> MODULAR_CONTRACT.equalsByCode(contract.getType_Conditions()))
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularPurchaseContractsForInventory(final InventoryLineId inventoryId)
+	{
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(inventoryId);
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
 	}
 
 	@NonNull

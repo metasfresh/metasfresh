@@ -53,7 +53,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		if (!flatrateBL.isInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
+		if (!flatrateBL.isFinalInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(NO_MODULAR_CONTRACT_SELECTED));
 		}
@@ -66,7 +66,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	{
 		final UserId userInChargeId = getUserId();
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
-				.getModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
+				.getReadyForFinalInvoicingModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
 
 		modularContractInvoiceEnqueuer.enqueueFinalInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
 

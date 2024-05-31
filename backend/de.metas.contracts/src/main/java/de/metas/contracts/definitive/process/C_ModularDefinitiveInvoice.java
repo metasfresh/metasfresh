@@ -38,10 +38,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
+import java.util.Collections;
+
 public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessPrecondition
 {
-	private final static AdMessageKey NO_MODULAR_CONTRACT_SELECTED = AdMessageKey.of("de.metas.contracts.finalinvoice.process.NoModularContract");
-
+	private final static AdMessageKey ERROR_NOT_ALL_QTY_HAS_BEEN_SHIPPED = AdMessageKey.of("de.metas.contracts.definitiveinvoice.process.NotAllQtyShipped");
 	private final ModularContractInvoiceEnqueuer modularContractInvoiceEnqueuer = SpringContextHolder.instance.getBean(ModularContractInvoiceEnqueuer.class);
 
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -54,9 +55,9 @@ public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessP
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!flatrateBL.isInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
+		if (!flatrateBL.isDefinitiveInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(NO_MODULAR_CONTRACT_SELECTED));
+			return ProcessPreconditionsResolution.reject();
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -67,8 +68,11 @@ public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessP
 	{
 		final UserId userInChargeId = getUserId();
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
-				.getModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
-
+				.getReadyForDefinitiveInvoicingModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
+		if (!selectedModularContractIds.isEmpty())
+		{
+			return msgBL.getMsg(ERROR_NOT_ALL_QTY_HAS_BEEN_SHIPPED, Collections.emptyList());
+		}
 		modularContractInvoiceEnqueuer.enqueueDefinitiveInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
