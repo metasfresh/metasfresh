@@ -28,8 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
-import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
@@ -58,7 +56,6 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -80,20 +77,18 @@ import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingS
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
-import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
-import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -107,12 +102,12 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
-import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -175,7 +170,6 @@ public class ShipmentScheduleWithHUService
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
 	@NonNull private final ShipmentScheduleWithHUSupportingServices shipmentScheduleWithHUSupportingServices;
@@ -208,23 +202,25 @@ public class ShipmentScheduleWithHUService
 		);
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());
+		final InventoryService inventoryServiceTest = InventoryService.newInstanceForUnitTesting();
+		final PickingCandidateService pickingCandidateServiceTest = new PickingCandidateService(
+				new PickingConfigRepository(),
+				new PickingCandidateRepository(),
+				new HuId2SourceHUsService(new HUTraceRepository()),
+				huReservationServiceTest,
+				Services.get(IBPartnerBL.class),
+				ADReferenceService.newMocked(),
+				inventoryServiceTest);
+
 		return new ShipmentScheduleWithHUService(
 				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
 				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
-				PickingJobService.newInstanceForUnitTesting(),
-				huReservationServiceTest,
-				new PickingCandidateService(
-						new PickingConfigRepository(),
-						new PickingCandidateRepository(),
-						new HuId2SourceHUsService(new HUTraceRepository()),
-						huReservationServiceTest,
-						Services.get(IBPartnerBL.class),
-						ADReferenceService.newMocked()),
-				new PickingConfigRepositoryV2(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService())
 				pickingJobRepository,
 				defaultPickingJobLoaderSupportingServicesFactory,
-				new HUReservationService(new HUReservationRepository())
+				huReservationServiceTest,
+				pickingCandidateServiceTest,
+				new PickingConfigRepositoryV2(),
+				inventoryServiceTest
 		);
 	}
 
@@ -376,17 +372,6 @@ public class ShipmentScheduleWithHUService
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
-		final boolean pickAvailableHUsOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
-		if (pickAvailableHUsOnTheFly)
-		{
-			if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
-			{
-				result.addAll(pickHUsOnTheFly(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, factory));
-			}
-			else
-			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("ProductId={} is not stocked; skip picking it on the fly", scheduleRecord.getM_Product_ID());
-			}
 		if (productBL.isStocked(ProductId.ofRepoId(scheduleRecord.getM_Product_ID())))
 		{
 			result.addAll(pickHUsOnTheFlyIfPossible(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, factory));
@@ -434,9 +419,6 @@ public class ShipmentScheduleWithHUService
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final boolean pickAvailableHUsOntheFly = sysConfigBL
-				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
-						true,
 		final String pickAvailableHUsOntheFlyConfig = Services.get(ISysConfigBL.class)
 				.getValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
 						HUsToPickOnTheFly.OnlySourceHUs.getCode(),
@@ -1132,7 +1114,7 @@ public class ShipmentScheduleWithHUService
 				.onlyShipmentScheduleIds(ImmutableSet.of(ShipmentScheduleId.ofRepoId(scheduleRecord.getM_ShipmentSchedule_ID())))
 				.build();
 
-		final ImmutableList<Packageable> items = packagingDAO.stream(query).collect(ImmutableList.toImmutableList());
+		final PackageableList items = packagingDAO.stream(query).collect(PackageableList.collect());
 
 		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
