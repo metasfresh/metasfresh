@@ -112,7 +112,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: DeliveryDays
 		if (!query.getDeliveryDays().isEmpty())
 		{
-			final ICompositeQueryFilter<I_M_Packageable_V> deliveryDaysFilter = queryBuilder.addCompositeQueryFilter()
+			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
 
@@ -189,6 +189,12 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
 
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+		}
+
+		//
 		return queryBuilder.create();
 	}
 

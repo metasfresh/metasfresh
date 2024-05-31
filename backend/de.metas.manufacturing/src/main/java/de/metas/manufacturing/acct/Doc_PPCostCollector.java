@@ -233,6 +233,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final CostAmount costsReceived = costs.divide(qtyTotal, CurrencyPrecision.ofInt(12))
 					.multiply(qtyReceived)
@@ -284,6 +289,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
 			if (fact != null)
@@ -359,6 +369,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+			
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
 			if (fact != null)
