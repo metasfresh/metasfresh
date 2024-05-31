@@ -632,39 +632,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
 	}
 
-	/** 
-	 * is184_AccountingGroup AD_Reference_ID=541738
-	 * Reference name: C_InvoiceLine_AccountingGroup
-	 */
-	public static final int IS184_ACCOUNTINGGROUP_AD_Reference_ID=541738;
-	/** Leistung = Leistung */
-	public static final String IS184_ACCOUNTINGGROUP_Leistung = "Leistung";
-	/** Kosten = Kosten */
-	public static final String IS184_ACCOUNTINGGROUP_Kosten = "Kosten";
-	@Override
-	public void setis184_AccountingGroup (final @Nullable java.lang.String is184_AccountingGroup)
-	{
-		set_Value (COLUMNNAME_is184_AccountingGroup, is184_AccountingGroup);
-	}
-
-	@Override
-	public java.lang.String getis184_AccountingGroup() 
-	{
-		return get_ValueAsString(COLUMNNAME_is184_AccountingGroup);
-	}
-
-	@Override
-	public void setis184_PrintText (final @Nullable java.lang.String is184_PrintText)
-	{
-		set_Value (COLUMNNAME_is184_PrintText, is184_PrintText);
-	}
-
-	@Override
-	public java.lang.String getis184_PrintText() 
-	{
-		return get_ValueAsString(COLUMNNAME_is184_PrintText);
-	}
-
 	@Override
 	public void setIsDescription (final boolean IsDescription)
 	{
