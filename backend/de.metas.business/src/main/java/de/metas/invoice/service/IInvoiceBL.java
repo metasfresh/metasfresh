@@ -383,10 +383,6 @@ public interface IInvoiceBL extends ISingletonService {
 
 	boolean isDownPayment(I_C_Invoice invoiceRecord);
 
-    /**
-     * Decide if the given invoice is an Adjustment Charge
-     */
-    boolean isAdjustmentCharge(I_C_Invoice invoice);
 	boolean isFinalInvoiceOrFinalCreditMemo(final I_C_Invoice invoiceRecord);
 
 	boolean isDefinitiveInvoiceOrDefinitiveCreditMemo(final I_C_Invoice invoiceRecord);

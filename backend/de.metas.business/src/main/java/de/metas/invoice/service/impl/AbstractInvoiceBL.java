@@ -573,8 +573,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				return false;
 			}
 
-			final boolean test = total.compareTo(alloc) == 0;
-			change = test != invoice.isPaid();
+			final boolean isFullyAllocated = invoiceOpenResult.isFullyAllocated();
+			change = isFullyAllocated != invoice.isPaid();
 			if (change)
 			{
 				invoice.setIsPaid(isFullyAllocated);
