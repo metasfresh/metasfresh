@@ -37,6 +37,7 @@ public class ModularContractType
 	@NonNull ComputingMethodType computingMethodType;
 	@Nullable String value;
 	@Nullable String name;
+	@Nullable String columnName;
 
 	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
 	{

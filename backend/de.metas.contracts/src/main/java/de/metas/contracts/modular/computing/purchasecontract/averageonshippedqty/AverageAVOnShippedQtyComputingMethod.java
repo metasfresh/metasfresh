@@ -126,7 +126,7 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 				.ids(logs.getIds())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
-						.money(money.negate())
+						.money(money)
 						.uomId(stockUOMId)
 						.build())
 				.qty(computingMethodService.getQtySum(logs, stockUOMId))

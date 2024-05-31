@@ -32,8 +32,8 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
 @Component
