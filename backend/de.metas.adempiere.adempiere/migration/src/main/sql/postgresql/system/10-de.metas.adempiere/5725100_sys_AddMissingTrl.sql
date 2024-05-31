@@ -94,7 +94,7 @@ UPDATE AD_Index_Table SET ErrorMsg='There should be unique minimum value per pro
 ;
 
 -- 2024-05-31T09:01:05.892Z
-UPDATE AD_Index_Table_Trl trl SET ErrorMsg='Der Minimalwert sollte für jedes Produkt einzigartig sein.' WHERE AD_Index_Table_ID=540793 AND AD_Language='de_DE'
+UPDATE AD_Index_Table_Trl trl SET ErrorMsg='Der Minimalwert sollte für jedes Produkt einzigartig sein.' WHERE AD_Index_Table_ID=540793 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
 
