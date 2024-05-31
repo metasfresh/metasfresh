@@ -25,6 +25,7 @@ package de.metas.contracts.flatrate.dataEntry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.contracts.FlatrateTerm;
@@ -83,13 +84,13 @@ public class FlatrateDataEntryService
 		final AttributeSetId attributeSetId = productBL.getMasterDataSchemaAttributeSetId(productId);
 		final List<AttributeListValue> attributeListValues = attributeDAO.retrieveAttributeValuesByAttributeSetId(attributeSetId);
 
-		final List<BPartnerDepartmentId> departmentIds = retrieveBPartnerDepartmentIds(bpartnerId);
+		final List<BPartnerDepartment> departments = retrieveBPartnerDepartments(bpartnerId);
 
 		final ImmutableSet<FlatrateDataEntryDetailKey> existingCombinations = extractExistingDetailKeys(entry);
 
 		final List<FlatrateDataEntryDetail> additionalDetails = createAllCombinations(
 				attributeListValues,
-				departmentIds,
+				departments,
 				existingCombinations);
 
 		final FlatrateDataEntry entryWithAllDetails = entry.toBuilder().details(additionalDetails).build();
@@ -103,26 +104,26 @@ public class FlatrateDataEntryService
 	 */
 	private List<FlatrateDataEntryDetail> createAllCombinations(
 			@NonNull final List<AttributeListValue> attributeListValues,
-			@NonNull final List<BPartnerDepartmentId> departmentIds,
+			@NonNull final List<BPartnerDepartment> departments,
 			@NonNull final ImmutableSet<FlatrateDataEntryDetailKey> existingCombinations)
 	{
 		final List<ImmutableAttributeSet> attributeSets = CreateAllAttributeSetsCommand.withValues(attributeListValues)
 				.run();
 
 		final ImmutableList.Builder<FlatrateDataEntryDetail> result = ImmutableList.builder();
-		for (final BPartnerDepartmentId departmentId : departmentIds)
+		for (final BPartnerDepartment department : departments)
 		{
 			final List<AttributeSetInstanceId> asiIds = createAllASIs(attributeSets);
 			for (final AttributeSetInstanceId asiId : asiIds)
 			{
 				final AttributesKey attributesKey = createAttributesKey(asiId);
 
-				final FlatrateDataEntryDetailKey detailKey = new FlatrateDataEntryDetailKey(departmentId, attributesKey);
+				final FlatrateDataEntryDetailKey detailKey = new FlatrateDataEntryDetailKey(department.getId(), attributesKey);
 				if (!existingCombinations.contains(detailKey))
 				{
 					final FlatrateDataEntryDetail newEntryDetail = FlatrateDataEntryDetail.builder()
 							.asiId(asiId)
-							.bPartnerDepartmentId(departmentId).build();
+							.bPartnerDepartment(department).build();
 					result.add(newEntryDetail);
 				}
 			}
@@ -148,7 +149,7 @@ public class FlatrateDataEntryService
 				.getDetails()
 				.stream()
 				.map(detail -> new FlatrateDataEntryDetailKey(
-						detail.getBPartnerDepartmentId(),
+						detail.getBPartnerDepartment().getId(),
 						createAttributesKey(detail.getAsiId()))
 				)
 				.collect(ImmutableSet.toImmutableSet());
@@ -161,14 +162,14 @@ public class FlatrateDataEntryService
 				.orElse(AttributesKey.NONE);
 	}
 
-	private List<BPartnerDepartmentId> retrieveBPartnerDepartmentIds(@NonNull final BPartnerId bPartnerId)
+	private List<BPartnerDepartment> retrieveBPartnerDepartments(@NonNull final BPartnerId bPartnerId)
 	{
-		final List<BPartnerDepartmentId> idsForBPartnerId = bPartnerDepartmentRepo.getIdsForBPartnerId(bPartnerId);
-		if (idsForBPartnerId.isEmpty())
+		final List<BPartnerDepartment> departments = bPartnerDepartmentRepo.getByBPartnerId(bPartnerId);
+		if (departments.isEmpty())
 		{
-			return ImmutableList.of(BPartnerDepartmentId.none(bPartnerId));
+			return ImmutableList.of(BPartnerDepartment.none(bPartnerId));
 		}
-		return idsForBPartnerId;
+		return departments;
 	}
 
 	@Value

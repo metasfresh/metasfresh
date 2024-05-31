@@ -22,11 +22,14 @@
 
 package de.metas.ui.web.contract.flatrate.model;
 
+import de.metas.bpartner.department.BPartnerDepartment;
+import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetailId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -36,6 +39,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -59,22 +64,40 @@ public class DataEntryDetailsRowsLoaderTest
 		final LookupDataSource uomLookup = Mockito.mock(LookupDataSource.class);
 
 		final FlatrateDataEntryService entryService = Mockito.mock(FlatrateDataEntryService.class);
+		final FlatrateDataEntryRepo entryRepo = Mockito.mock(FlatrateDataEntryRepo.class);
 
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10), 10);
+		
+		final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoId(10, 10);
+		final BPartnerDepartment bPartnerDepartment = BPartnerDepartment.builder()
+				.id(bPartnerDepartmentId)
+				.searchKey("value")
+				.name("name")
+				.build();
+		
 		final FlatrateDataEntryDetail detail = FlatrateDataEntryDetail.builder()
 				.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, 20))
 				.asiId(AttributeSetInstanceId.NONE)
+				.bPartnerDepartment(bPartnerDepartment)
 				.build();
 		final FlatrateDataEntry entry = FlatrateDataEntry.builder()
 				.id(flatrateDataEntryId)
 				.uomId(UomId.ofRepoId(30))
 				.detail(detail)
+				.endDate(ZonedDateTime.now())
 				.build();
 
 		//when specific methods are called on the mock objects, then return specific values
 		Mockito.when(entryService.addMissingDetails(Mockito.any())).thenReturn(entry);
 		Mockito.when(departmentLookup.findById(Mockito.any())).thenReturn(departmentLookupValue);
 		Mockito.when(uomLookup.findById(Mockito.any())).thenReturn(uomLookupValue);
+
+		// final BPartnerDepartmentRepo bPartnerDepartmentRepo = new BPartnerDepartmentRepo();
+		// final FlatrateDataEntryRepo flatrateDataEntryRepo = new FlatrateDataEntryRepo(bPartnerDepartmentRepo);
+		// final FlatrateDataEntryService flatrateDataEntryService = new FlatrateDataEntryService(
+		// 		flatrateDataEntryRepo,
+		// 		new FlatrateTermRepo(),
+		// 		bPartnerDepartmentRepo);
 
 		//Call the method to be tested
 		final DataEntryDetailsRowsLoader dataEntryDetailsRowsLoader = DataEntryDetailsRowsLoader
@@ -83,6 +106,7 @@ public class DataEntryDetailsRowsLoaderTest
 				.flatrateDataEntryService(entryService)
 				.uomLookup(uomLookup)
 				.departmentLookup(departmentLookup)
+				.flatrateDataEntryRepo(entryRepo)
 				.build();
 		final DataEntryDetailsRowsData result = dataEntryDetailsRowsLoader.load();
 

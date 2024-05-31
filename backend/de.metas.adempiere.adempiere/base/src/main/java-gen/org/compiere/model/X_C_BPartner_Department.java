@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Department extends org.compiere.model.PO implements I_C_BPartner_Department, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1723894872L;
+	private static final long serialVersionUID = -1284889818L;
 
     /** Standard Constructor */
     public X_C_BPartner_Department (final Properties ctx, final int C_BPartner_Department_ID, @Nullable final String trxName)
@@ -77,7 +77,7 @@ public class X_C_BPartner_Department extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setName (final @Nullable java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -89,7 +89,7 @@ public class X_C_BPartner_Department extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setValue (final @Nullable java.lang.String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}

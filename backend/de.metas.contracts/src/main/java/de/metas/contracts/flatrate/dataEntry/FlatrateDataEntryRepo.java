@@ -23,7 +23,10 @@
 package de.metas.contracts.flatrate.dataEntry;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
+import de.metas.bpartner.department.BPartnerDepartmentRepo;
+import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
@@ -50,8 +53,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class FlatrateDataEntryRepo
 {
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo;
+
+	public FlatrateDataEntryRepo(@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo)
+	{
+		this.bPartnerDepartmentRepo = bPartnerDepartmentRepo;
+	}
 
 	@NonNull
 	public FlatrateDataEntry getById(@NonNull final FlatrateDataEntryId id)
@@ -81,7 +90,10 @@ public class FlatrateDataEntryRepo
 				dataEntryRecord.getC_Flatrate_DataEntry_ID());
 
 		final FlatrateDataEntry.FlatrateDataEntryBuilder result = FlatrateDataEntry.builder();
+		
+		Check.errorIf(dataEntryRecord.getC_UOM_ID() <= 0, "C_Flatrate_DataEntry_ID={} needs to have a C_UOM_ID", dataEntryRecord.getC_Flatrate_DataEntry_ID());
 		result.uomId(UomId.ofRepoId(dataEntryRecord.getC_UOM_ID()));
+		
 		result.id(flatrateDataEntryId);
 
 		final Timestamp endDate = dataEntryRecord.getC_Period().getEndDate();
@@ -90,9 +102,12 @@ public class FlatrateDataEntryRepo
 				
 		for (final I_C_Flatrate_DataEntry_Detail detailRecord : detailRecords)
 		{
+			final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoIdOrNone(billBPartnerId, detailRecord.getC_BPartner_Department_ID());
+			final BPartnerDepartment bPartnerDepartment = bPartnerDepartmentRepo.getById(bPartnerDepartmentId);
+
 			final FlatrateDataEntryDetail entryDetail = FlatrateDataEntryDetail.builder()
 					.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, detailRecord.getC_Flatrate_DataEntry_Detail_ID()))
-					.bPartnerDepartmentId(BPartnerDepartmentId.ofRepoIdOrNone(billBPartnerId, detailRecord.getC_BPartner_Department_ID()))
+					.bPartnerDepartment(bPartnerDepartment)
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(detailRecord.getM_AttributeSetInstance_ID()))
 					.quantity(Quantitys.create(detailRecord.getQty_Reported(), UomId.ofRepoId(detailRecord.getC_UOM_ID())))
 					.build();
@@ -126,7 +141,7 @@ public class FlatrateDataEntryRepo
 		{
 			final I_C_Flatrate_DataEntry_Detail detailRecord = loadOrNew(detail.getId(), I_C_Flatrate_DataEntry_Detail.class);
 			detailRecord.setC_Flatrate_DataEntry_ID(entry.getId().getRepoId());
-			detailRecord.setC_BPartner_Department_ID(BPartnerDepartmentId.toRepoId(detail.getBPartnerDepartmentId()));
+			detailRecord.setC_BPartner_Department_ID(BPartnerDepartmentId.toRepoId(detail.getBPartnerDepartment().getId()));
 			detailRecord.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(detail.getAsiId()));
 
 			final Quantity quantity = detail.getQuantity();

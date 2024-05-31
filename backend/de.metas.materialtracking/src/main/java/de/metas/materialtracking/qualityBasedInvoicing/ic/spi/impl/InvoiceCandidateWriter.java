@@ -242,13 +242,13 @@ public class InvoiceCandidateWriter
 	/**
 	 * @return vendor invoicing info; never return null
 	 */
-	private final IVendorInvoicingInfo getVendorInvoicingInfo()
+	private IVendorInvoicingInfo getVendorInvoicingInfo()
 	{
 		Check.assumeNotNull(_vendorInvoicingInfo, "_vendorInvoicingInfo not null");
 		return _vendorInvoicingInfo;
 	}
 
-	private final IContextAware getContext()
+	private IContextAware getContext()
 	{
 		return _context;
 	}
@@ -340,7 +340,6 @@ public class InvoiceCandidateWriter
 	/**
 	 * Creates invoice candidate
 	 *
-	 * @param qualityInvoiceLineGroup
 	 * @return invoice candidate; never returns <code>null</code>
 	 */
 	private I_C_Invoice_Candidate createInvoiceCandidate(@NonNull final IQualityInvoiceLineGroup qualityInvoiceLineGroup)

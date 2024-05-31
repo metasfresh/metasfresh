@@ -24,6 +24,7 @@ package de.metas.bpartner.department;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,16 +38,36 @@ public class BPartnerDepartmentRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public List<BPartnerDepartmentId> getIdsForBPartnerId(@NonNull final BPartnerId bPartnerId)
+	private final CCache<BPartnerId, List<BPartnerDepartment>> bPartnerDepartmentCache = CCache.newLRUCache(I_C_BPartner_Department.Table_Name + "#by#C_BPartner_ID", 200, 60);
+
+	public BPartnerDepartment getById(@NonNull final BPartnerDepartmentId id)
+	{
+		return getByBPartnerId(id.getBpartnerId())
+				.stream()
+				.filter(dpt -> id.equals(dpt.getId()))
+				.findFirst().orElse(null);
+	}
+
+	public List<BPartnerDepartment> getByBPartnerId(@NonNull final BPartnerId bPartnerId)
+	{
+		return bPartnerDepartmentCache.getOrLoad(bPartnerId, this::getByBPartnerId0);
+	}
+
+	public List<BPartnerDepartment> getByBPartnerId0(@NonNull final BPartnerId bPartnerId)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner_Department.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Department.COLUMNNAME_C_BPartner_ID, bPartnerId)
 				.orderBy(I_C_BPartner_Department.COLUMNNAME_Value)
 				.create()
-				.list()
 				.stream()
-				.map(record -> BPartnerDepartmentId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Department_ID()))
+				.map(this::fromPO)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private BPartnerDepartment fromPO(@NonNull final I_C_BPartner_Department po)
+	{
+		final BPartnerDepartmentId id = BPartnerDepartmentId.ofRepoId(po.getC_BPartner_ID(), po.getC_BPartner_Department_ID());
+		return new BPartnerDepartment(id, po.getValue(), po.getName(), po.getDescription());
 	}
 }

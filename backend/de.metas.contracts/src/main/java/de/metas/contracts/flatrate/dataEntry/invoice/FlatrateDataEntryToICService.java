@@ -24,6 +24,7 @@ package de.metas.contracts.flatrate.dataEntry.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.FlatrateTerm;
@@ -36,6 +37,7 @@ import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.material.event.commons.AttributesKey;
@@ -88,12 +90,14 @@ public class FlatrateDataEntryToICService
 		this.flatrateDataEntryRepo = flatrateDataEntryRepo;
 	}
 
-	/*package */ List<I_C_Invoice_Candidate> createICsFor(@NonNull final I_C_Flatrate_DataEntry entryRecord)
+	/*package */ List<I_C_Invoice_Candidate> createICsFor(
+			@NonNull final I_C_Flatrate_DataEntry entryRecord,
+			@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(entryRecord.getC_Flatrate_Term_ID());
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(flatrateTermId, entryRecord.getC_Flatrate_DataEntry_ID());
 
-		final ExecutionContext context = createExecutionContext(flatrateTermId);
+		final CreateICsContext context = createExecutionContext(flatrateTermId, flatrateDataEntryHandler);
 
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
 
@@ -101,25 +105,28 @@ public class FlatrateDataEntryToICService
 		final ImmutableMap<AttributeSetInstanceId, Quantity> priceRelevantASIs = createPriceRelevantASIs(entry, context);
 		for (final AttributeSetInstanceId asiId : priceRelevantASIs.keySet())
 		{
-			final I_C_Invoice_Candidate newRecord = createCandidateRecord(entry, asiId, priceRelevantASIs.get(asiId), context);
-						
+			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(entry, asiId, priceRelevantASIs.get(asiId), context);
+			createAndSaveDetailRecords(newRecord, entry);
+			
 			result.add(newRecord);
 		}
 		return result.build();
 	}
 
-	private ExecutionContext createExecutionContext(@NonNull final FlatrateTermId flatrateTermId)
+	private CreateICsContext createExecutionContext(
+			@NonNull final FlatrateTermId flatrateTermId,
+			@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler)
 	{
 		final FlatrateTerm flatrateTerm = flatrateTermRepo.getById(flatrateTermId);
 		final CountryId countryId = bPartnerDAO.getCountryId(flatrateTerm.getBillPartnerLocationAndCaptureId().getBpartnerLocationId());
 
-		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
+		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliersNotNull(
 				flatrateTerm::getPricingSystemId,
 				() -> bPartnerDAO.retrievePricingSystemIdOrNull(flatrateTerm.getBillPartnerLocationAndCaptureId().getBpartnerId(), SOTrx.SALES));
 
 		final ProductId productId = Check.assumeNotNull(flatrateTerm.getProductId(), "C_FlatrateTerm_ID={} needs to have an M_Product", flatrateTermId.getRepoId());
 
-		return new ExecutionContext(flatrateTerm, countryId, pricingSystemId, productId);
+		return new CreateICsContext(flatrateTerm, countryId, pricingSystemId, productId, flatrateDataEntryHandler);
 	}
 
 	/**
@@ -129,7 +136,7 @@ public class FlatrateDataEntryToICService
 	 */
 	private ImmutableMap<AttributeSetInstanceId, Quantity> createPriceRelevantASIs(
 			@NonNull final FlatrateDataEntry entry,
-			@NonNull final ExecutionContext context)
+			@NonNull final FlatrateDataEntryToICService.CreateICsContext context)
 	{
 		final I_M_PriceList_Version priceListVersion = Check.assumeNotNull(priceListBL.getCurrentPriceListVersionOrNull(
 				context.getPricingSystemId(),
@@ -195,11 +202,11 @@ public class FlatrateDataEntryToICService
 		return result.build();
 	}
 
-	private I_C_Invoice_Candidate createCandidateRecord(
+	private I_C_Invoice_Candidate createAndSaveCandidateRecord(
 			@NonNull final FlatrateDataEntry entry,
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final Quantity quantity,
-			@NonNull final ExecutionContext context)
+			@NonNull final FlatrateDataEntryToICService.CreateICsContext context)
 	{
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 
@@ -234,19 +241,60 @@ public class FlatrateDataEntryToICService
 				.setFrom(flatrateTerm.getBillLocation());
 
 		newCand.setDateOrdered(TimeUtil.asTimestamp(entry.getEndDate()));
+
+		// needed already here, because we need its ID to be referenced by the invoice-details
+		newCand.setC_ILCandHandler(context.getFlatrateDataEntryHandler().getHandlerRecord());
+		InterfaceWrapperHelper.saveRecord(newCand); 
 		
 		return newCand;
 	}
-
+	
 	@Data
-	private static class ExecutionContext
+	private static class CreateICsContext
 	{
-		final FlatrateTerm flatrateTerm;
-		final CountryId countryId;
-		final PricingSystemId pricingSystemId;
-		final ProductId productId;
-
+		@NonNull final FlatrateTerm flatrateTerm;
+		@NonNull final CountryId countryId;
+		@NonNull final PricingSystemId pricingSystemId;
+		@NonNull final ProductId productId;
+		@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler;
+				
 		PriceListVersionId priceListVersionId;
 	}
 
+	
+	private void createAndSaveDetailRecords(
+			@NonNull final I_C_Invoice_Candidate newInvoiceCandidate,
+			@NonNull final FlatrateDataEntry entry)
+	{
+		for(final FlatrateDataEntryDetail detail : entry.getDetails())
+		{
+			final I_C_Invoice_Detail newDetailRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class);
+			newDetailRecord.setC_Invoice_Candidate_ID(newInvoiceCandidate.getC_Invoice_Candidate_ID());
+			
+			newDetailRecord.setSeqNo(detail.getSeqNo());
+			newDetailRecord.setIsPrinted(true);
+			newDetailRecord.setIsPrintBefore(false);
+
+			final Quantity detailQuantity = detail.getQuantity();
+			if(detailQuantity != null)
+			{
+				newDetailRecord.setQty(detailQuantity.toBigDecimal());
+				newDetailRecord.setC_UOM_ID(detailQuantity.getUomId().getRepoId());
+			}
+			else 
+			{
+				newDetailRecord.setQty(null);
+				newDetailRecord.setC_UOM_ID(entry.getUomId().getRepoId());
+			}
+			
+			newDetailRecord.setM_Product_ID(newInvoiceCandidate.getM_Product_ID());
+			newDetailRecord.setM_AttributeSetInstance_ID(detail.getAsiId().getRepoId());
+
+			final BPartnerDepartment bPartnerDepartment = detail.getBPartnerDepartment();
+			newDetailRecord.setLabel(bPartnerDepartment.getSearchKey());
+			newDetailRecord.setDescription(bPartnerDepartment.getName());
+			
+			InterfaceWrapperHelper.saveRecord(newDetailRecord);
+		}
+	}
 }

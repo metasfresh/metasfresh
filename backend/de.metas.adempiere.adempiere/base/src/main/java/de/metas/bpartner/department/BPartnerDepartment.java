@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,45 +20,31 @@
  * #L%
  */
 
-package de.metas.contracts.flatrate.dataEntry;
+package de.metas.bpartner.department;
 
-import de.metas.bpartner.department.BPartnerDepartment;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.With;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 @Builder
-public class FlatrateDataEntryDetail
+public class BPartnerDepartment
 {
-	/**
-	 * Will be {@code null} if the instance was never saved yet.
-	 */
-	@Nullable
-	@With
-	final FlatrateDataEntryDetailId id;
-	
-	final int seqNo;
-	
-	@NonNull
-	final BPartnerDepartment bPartnerDepartment;
-
-	@NonNull
-	final AttributeSetInstanceId asiId;
-
-	@Nullable
-	Quantity quantity;
-
-	@NonNull
-	public FlatrateDataEntryDetailId getIdNonNull()
+	public static BPartnerDepartment none(@NonNull final BPartnerId bpartnerId)
 	{
-		return Check.assumeNotNull(id, "Id may not be null at this point");
+		return new BPartnerDepartment(BPartnerDepartmentId.none(bpartnerId),"<NONE>", "<NONE>", null);
 	}
-
+	
+	@NonNull BPartnerDepartmentId id;
+	@NonNull String searchKey;
+	@NonNull String name;
+	@Nullable String description;
+	
+	public boolean isNone()
+	{
+		return id.isNone();
+	}
 }

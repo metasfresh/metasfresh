@@ -22,12 +22,16 @@
 
 package de.metas.contracts.flatrate.dataEntry;
 
+import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Department;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,36 +43,52 @@ import static org.assertj.core.api.Assertions.*;
 public class FlatrateDataEntryRepoTest
 {
 
+	private FlatrateDataEntryRepo flatrateDataEntryRepo;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		flatrateDataEntryRepo = new FlatrateDataEntryRepo(new BPartnerDepartmentRepo());
 	}
 
 	@Test
 	public void getByIdTest()
 	{
 		// Given
+		final int bpartnerRepoId = 101;
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
-		final FlatrateDataEntryRepo flatrateDataEntryRepo = new FlatrateDataEntryRepo();
-		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10), 100);
 
 		final I_C_Flatrate_Term flatrateTerm = newInstance(I_C_Flatrate_Term.class);
-		flatrateTerm.setBill_BPartner_ID(101);
+		flatrateTerm.setBill_BPartner_ID(bpartnerRepoId);
 		saveRecord(flatrateTerm);
+		
+		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), 100);
+
+		final I_C_Period period = newInstance(I_C_Period.class);
+		period.setEndDate(SystemTime.asTimestamp());
+		saveRecord(period);
 
 		final I_C_Flatrate_DataEntry dataEntry1 = newInstance(I_C_Flatrate_DataEntry.class);
 		dataEntry1.setC_Flatrate_DataEntry_ID(testId.getRepoId());
 		dataEntry1.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
-
+		dataEntry1.setC_UOM_ID(uomEach.getC_UOM_ID()); // generally not mandatory, but for this flatrate-type always set
+		dataEntry1.setC_Period_ID(period.getC_Period_ID());
 		saveRecord(dataEntry1);
+
+		final I_C_BPartner_Department department = newInstance(I_C_BPartner_Department.class);
+		department.setC_BPartner_ID(bpartnerRepoId);
+		department.setValue("department");
+		department.setName("department");
+		saveRecord(department);
 
 		final I_C_Flatrate_DataEntry_Detail dataEntryDetail1 = newInstance(I_C_Flatrate_DataEntry_Detail.class);
 		dataEntryDetail1.setC_Flatrate_DataEntry_ID(dataEntry1.getC_Flatrate_DataEntry_ID());
 		dataEntryDetail1.setC_Flatrate_DataEntry_Detail_ID(11);
 		dataEntryDetail1.setSeqNo(20);
 		dataEntryDetail1.setC_UOM_ID(uomEach.getC_UOM_ID());
+		dataEntryDetail1.setC_BPartner_Department_ID(department.getC_BPartner_Department_ID());
 		saveRecord(dataEntryDetail1);
 
 		final I_C_Flatrate_DataEntry_Detail dataEntryDetail2 = newInstance(I_C_Flatrate_DataEntry_Detail.class);
@@ -76,6 +96,7 @@ public class FlatrateDataEntryRepoTest
 		dataEntryDetail2.setC_Flatrate_DataEntry_Detail_ID(12);
 		dataEntryDetail2.setSeqNo(10);
 		dataEntryDetail2.setC_UOM_ID(uomEach.getC_UOM_ID());
+		dataEntryDetail2.setC_BPartner_Department_ID(department.getC_BPartner_Department_ID());
 		saveRecord(dataEntryDetail2);
 
 		// When

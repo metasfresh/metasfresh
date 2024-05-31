@@ -52,7 +52,7 @@ public interface I_C_BPartner_Department
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set BPartner-Department.
+	 * Set Department.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -61,7 +61,7 @@ public interface I_C_BPartner_Department
 	void setC_BPartner_Department_ID (int C_BPartner_Department_ID);
 
 	/**
-	 * Get BPartner-Department.
+	 * Get Department.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -165,19 +165,19 @@ public interface I_C_BPartner_Department
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (@Nullable java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_C_BPartner_Department, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Department.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -212,20 +212,20 @@ public interface I_C_BPartner_Department
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (@Nullable java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getValue();
+	java.lang.String getValue();
 
 	ModelColumn<I_C_BPartner_Department, Object> COLUMN_Value = new ModelColumn<>(I_C_BPartner_Department.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

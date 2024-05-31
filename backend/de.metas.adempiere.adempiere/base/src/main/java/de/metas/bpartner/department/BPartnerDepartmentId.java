@@ -80,7 +80,7 @@ public class BPartnerDepartmentId implements RepoIdAware
 		return bpartnerDepartmentId != null && !bpartnerDepartmentId.isNone() ? bpartnerDepartmentId.getRepoId() : -1;
 	}
 
-	private boolean isNone()
+	public boolean isNone()
 	{
 		return repoId <= 0;
 	}

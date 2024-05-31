@@ -112,7 +112,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 		final FlatrateDataEntryToICService flatrateDataEntryToICService = SpringContextHolder.instance.getBean(FlatrateDataEntryToICService.class);
 		final I_C_Flatrate_DataEntry flatrateEntryRecord = request.getModel(I_C_Flatrate_DataEntry.class);
 
-		final List<I_C_Invoice_Candidate> createdICs = flatrateDataEntryToICService.createICsFor(flatrateEntryRecord);
+		final List<I_C_Invoice_Candidate> createdICs = flatrateDataEntryToICService.createICsFor(flatrateEntryRecord, this);
 		return InvoiceCandidateGenerateResult.of(this, createdICs);
 	}
 

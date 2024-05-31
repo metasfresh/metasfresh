@@ -23,6 +23,7 @@
 package de.metas.ui.web.contract.flatrate.model;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
@@ -115,7 +116,17 @@ public class DataEntryDetailsRowsLoader
 		final ProductASIDescription productASIDescription = ProductASIDescription.ofString(attributeSetInstanceBL.getASIDescriptionById(detail.getAsiId()));
 		final DocumentId documentId = DataEntryDetailsRowUtil.createDocumentId(detail);
 
-		final LookupValue department = departmentLookup.findById(detail.getBPartnerDepartmentId());
+		final BPartnerDepartment bPartnerDepartment = detail.getBPartnerDepartment();
+
+		final LookupValue department;
+		if (bPartnerDepartment.isNone())
+		{
+			department = null;
+		}
+		else
+		{
+			department = departmentLookup.findById(bPartnerDepartment.getId());
+		}
 
 		final DataEntryDetailsRow.DataEntryDetailsRowBuilder row = DataEntryDetailsRow.builder()
 				.id(documentId)
