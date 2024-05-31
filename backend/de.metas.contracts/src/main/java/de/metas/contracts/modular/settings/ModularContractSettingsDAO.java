@@ -159,6 +159,7 @@ public class ModularContractSettingsDAO
 				.value(record.getValue())
 				.name(record.getName())
 				.computingMethodType(ComputingMethodType.ofCode(record.getModularContractHandlerType()))
+				.columnName(record.getColumnName())
 				.build();
 	}
 

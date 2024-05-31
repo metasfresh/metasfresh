@@ -233,6 +233,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final CostAmount costsReceived = costs.divide(qtyTotal, CurrencyPrecision.ofInt(12))
 					.multiply(qtyReceived)
@@ -284,6 +289,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs, qtyIssued);
 			if (fact != null)
@@ -307,7 +317,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if(costResult == null)
+		if (costResult == null)
 		{
 			// NOTE: there is no need to fail if no cost details were created
 			// because it might be that there are no cost elements defined for resource, which is acceptable
@@ -345,7 +355,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	{
 		final DocLine_CostCollector docLine = getLine();
 		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
-		if(costResult == null)
+		if (costResult == null)
 		{
 			// NOTE: there is no need to fail if no cost details were created
 			// because it might be that there are no cost elements defined for resource, which is acceptable
@@ -359,6 +369,11 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
 		{
+			if (!element.isAccountable(as.getCosting()))
+			{
+				continue;
+			}
+			
 			final CostAmount costs = costResult.getCostAmountForCostElement(element).getMainAmt();
 			final Fact fact = createFactLines(as, element, debit, credit, costs.negate(), qty.negate());
 			if (fact != null)

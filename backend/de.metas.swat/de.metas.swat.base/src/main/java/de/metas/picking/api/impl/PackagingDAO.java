@@ -146,6 +146,11 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
 		}
 
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+		}
+
 		//
 		return queryBuilder.create();
 	}

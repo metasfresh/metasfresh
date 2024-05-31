@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,29 @@
  * #L%
  */
 
-package de.metas.contracts.modular.settings;
+package de.metas.handlingunits.shipmentschedule.api;
 
-import de.metas.contracts.modular.ComputingMethodType;
-import lombok.Builder;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ModularContractType
+@AllArgsConstructor
+@Getter
+public enum HUsToPickOnTheFly implements ReferenceListAwareEnum
 {
-	@NonNull ModularContractTypeId id;
-	@NonNull ComputingMethodType computingMethodType;
-	@Nullable String value;
-	@Nullable String name;
-	@Nullable String columnName;
+	None("N"),
+	OnlySourceHUs("Y"),
+	AnyHu("A");
 
-	public boolean isMatching(@NonNull final ComputingMethodType computingMethodType)
+	private final String code;
+
+	private static final ReferenceListAwareEnums.ValuesIndex<HUsToPickOnTheFly> index = ReferenceListAwareEnums.index(values());
+
+	@NonNull
+	public static HUsToPickOnTheFly ofCode(@NonNull final String code)
 	{
-		return this.computingMethodType == computingMethodType;
+		return index.ofCode(code);
 	}
 }

@@ -34,6 +34,7 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -227,5 +228,12 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	protected static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		final ModularContractType type = request.getModuleConfig().getModularContractType();
+		return column.getColumnName().equals(type.getColumnName());
 	}
 }

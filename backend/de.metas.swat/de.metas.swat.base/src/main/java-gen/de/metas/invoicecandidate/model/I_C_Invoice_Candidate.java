@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.model;
 
 import org.adempiere.model.ModelColumn;
-import org.compiere.model.I_C_InvoiceLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -3930,7 +3929,7 @@ public interface I_C_Invoice_Candidate
 	 */
 	BigDecimal getUserElementNumber1();
 
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementNumber1", null);
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber1 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber1", null);
 	String COLUMNNAME_UserElementNumber1 = "UserElementNumber1";
 
 	/**
@@ -3951,7 +3950,7 @@ public interface I_C_Invoice_Candidate
 	 */
 	BigDecimal getUserElementNumber2();
 
-	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementNumber2", null);
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementNumber2 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementNumber2", null);
 	String COLUMNNAME_UserElementNumber2 = "UserElementNumber2";
 
 	/**
