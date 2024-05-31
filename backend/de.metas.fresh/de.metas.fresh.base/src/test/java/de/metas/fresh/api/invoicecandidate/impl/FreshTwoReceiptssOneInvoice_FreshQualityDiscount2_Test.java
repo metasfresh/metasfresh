@@ -22,6 +22,26 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
+import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.api.IInvoiceHeader;
+import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.impl.aggregationEngine.TwoReceiptsOneInvoice_QualityDiscount2_Tests;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.money.MoneyService;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.comparesEqualTo;
@@ -30,29 +50,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.StartupListener;
-import de.metas.currency.CurrencyRepository;
-import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceHeader;
-import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.impl.aggregationEngine.TestTwoReceiptsOneInvoice_QualityDiscount2;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
-import de.metas.money.MoneyService;
-import de.metas.util.collections.CollectionUtils;
-
 /**
- * Similar to its super class {@link TestTwoReceiptsOneInvoice_QualityDiscount2}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
+ * Similar to its super class {@link TwoReceiptsOneInvoice_QualityDiscount2_Tests}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
  * The setup is the same, but the expectations are different:
  * <ul>
  * <li>Return three invoice lines, the second one is dedicated to the in-dispute-iol
@@ -62,13 +61,13 @@ import de.metas.util.collections.CollectionUtils;
  * <ul>
  * Note that it's three lines as opposed to two because the iols of inOut1 have a different ASI than those of inOut2.
  *
- * @task 08507
+ * task 08507
  *
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestTwoReceiptsOneInvoice_QualityDiscount2
+public class FreshTwoReceiptssOneInvoice_FreshQualityDiscount2_Test extends TwoReceiptsOneInvoice_QualityDiscount2_Tests
 {
 	private I_C_Invoice_Candidate_Agg freshAgg;
 
@@ -79,7 +78,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> ignored)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 

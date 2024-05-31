@@ -8,7 +8,6 @@ import de.metas.util.lang.Percent;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Invoice Line predecessor which is returned by {@link IAggregationBL#mkInvoiceLine()}.
@@ -90,10 +89,10 @@ public interface IInvoiceLineRW
 
 	void setLineNo(int lineNo);
 
-	void setInvoiceLineAttributes(Set<IInvoiceLineAttribute> invoiceLineAttributes);
+	void setInvoiceLineAttributes(List<IInvoiceLineAttribute> invoiceLineAttributes);
 
 	/** @return product attributes */
-	Set<IInvoiceLineAttribute> getInvoiceLineAttributes();
+	List<IInvoiceLineAttribute> getInvoiceLineAttributes();
 
 	List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate();
 

@@ -31,9 +31,11 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.util.IProcessor;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public interface IAggregationBL extends ISingletonService
@@ -98,31 +100,33 @@ public interface IAggregationBL extends ISingletonService
 
 	/**
 	 * Extract invoice line relevant product attributes from {@link I_M_InOutLine}.
-	 *
+	 * <p>
 	 * Relevant attributes from inout line are those that:
 	 * <ul>
 	 * <li>are inside the inout line's ASI
 	 * <li>have {@link I_M_Attribute#isAttrDocumentRelevant()} set.
 	 * </ul>
 	 *
-	 * @param inOutLine
 	 * @return invoice line product attributes
 	 *
-	 * @task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
-	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
+	 * task 08451- this task was the one that initially demanded to aggregate invoice lines per ASI relevant attributes
 	 */
-	List<IInvoiceLineAttribute> extractInvoiceLineAttributes(final I_M_InOutLine inOutLine);
+	@NonNull
+	List<IInvoiceLineAttribute> extractInvoiceLineAttributes(@Nullable final I_M_InOutLine inOutLine);
+
+	@NonNull
+	List<IInvoiceLineAttribute> extractInvoiceLineAttributes(@NonNull I_C_Invoice_Candidate icRecord);
 
 	/**
 	 * Builds and set Header Aggregation Keys (calculated and the actual one).
-	 *
+	 * <p>
 	 * Also set the invoicing group.
 	 */
 	void setHeaderAggregationKey(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Reset Header Aggregation Keys (calculated and actual).
-	 *
+	 * <p>
 	 * Also resets the invoicing group.
 	 */
 	void resetHeaderAggregationKey(I_C_Invoice_Candidate ic);

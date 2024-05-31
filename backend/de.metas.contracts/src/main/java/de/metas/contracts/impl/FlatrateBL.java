@@ -48,11 +48,8 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
-import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
-import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
-import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryToICService;
+import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
-import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -116,7 +113,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -410,11 +406,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else if (fc.getType_Flatrate().equals(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))
 		{
-			final FlatrateDataEntryToICService flatrateDataEntryToICService = SpringContextHolder.instance.getBean(FlatrateDataEntryToICService.class);
-			final FlatrateDataEntryRepo flatrateDataEntryRepo = SpringContextHolder.instance.getBean(FlatrateDataEntryRepo.class);
-			
-			final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()), dataEntry.getC_Flatrate_DataEntry_ID());
-			result.addAll(flatrateDataEntryToICService.createICsFor(flatrateDataEntryRepo.getById(flatrateDataEntryId)));
+			// these ICs are not created here, but by FlatrateDataEntryHandler 
 		}
 		else
 		{
@@ -456,7 +448,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
-
+		newCand.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 		newCand.setM_Product_ID(productId);
 		newCand.setQtyOrdered(BigDecimal.ONE);
 
@@ -560,6 +552,7 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setAD_Org_ID(dataEntry.getAD_Org_ID());
 
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
+		newCand.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 
 		final int productIdForIc;
 		final BigDecimal priceActual;

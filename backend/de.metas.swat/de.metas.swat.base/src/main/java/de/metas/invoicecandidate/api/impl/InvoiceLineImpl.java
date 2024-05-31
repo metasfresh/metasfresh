@@ -22,7 +22,7 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
@@ -39,9 +39,7 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -88,8 +86,8 @@ import java.util.TreeSet;
 	private Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
-	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private List<IInvoiceLineAttribute> invoiceLineAttributes = ImmutableList.of();
+	private final List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
@@ -223,13 +221,13 @@ import java.util.TreeSet;
 	}
 
 	@Override
-	public void setInvoiceLineAttributes(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	public void setInvoiceLineAttributes(@NonNull final List<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
-		this.invoiceLineAttributes = ImmutableSet.copyOf(invoiceLineAttributes);
+		this.invoiceLineAttributes = ImmutableList.copyOf(invoiceLineAttributes);
 	}
 
 	@Override
-	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
+	public List<IInvoiceLineAttribute> getInvoiceLineAttributes()
 	{
 		return invoiceLineAttributes;
 	}

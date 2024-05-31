@@ -71,6 +71,7 @@ public class C_Invoice_Candidate
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
+		
 		this.attachmentEntryService = attachmentEntryService;
 		this.documentLocationBL = documentLocationBL;
 	}
@@ -81,7 +82,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
-	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
+	public void updateInvoiceCandidateDirectly(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 		{

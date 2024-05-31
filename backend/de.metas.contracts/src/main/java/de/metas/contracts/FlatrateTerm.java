@@ -25,8 +25,10 @@ package de.metas.contracts;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -43,7 +45,7 @@ import java.time.Instant;
 @Builder
 public class FlatrateTerm
 {
-	@NonNull FlatrateTermId flatrateTermId;
+	@NonNull FlatrateTermId id;
 
 	@NonNull OrgId orgId;
 
@@ -100,4 +102,9 @@ public class FlatrateTerm
 	@Nullable
 	DeliveryViaRule deliveryViaRule;
 
+	@NonNull
+	InvoiceRule invoiceRule;
+
+	@NonNull
+	DocumentLocation billLocation;
 }

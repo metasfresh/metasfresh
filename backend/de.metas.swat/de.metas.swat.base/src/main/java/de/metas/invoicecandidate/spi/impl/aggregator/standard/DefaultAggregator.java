@@ -22,17 +22,6 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -50,6 +39,16 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_InOutLine;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Default aggregator implementation. It is used if a given {@link I_C_Invoice_Candidate} record has no {@link I_C_Invoice_Candidate#COLUMNNAME_C_Invoice_Candidate_Agg_ID} or if it has one without an
@@ -137,7 +136,7 @@ public class DefaultAggregator implements IAggregator
 				final AggregationKeyEvaluationContext evalCtx = AggregationKeyEvaluationContext.builder()
 						.invoiceCandidate(request.getC_Invoice_Candidate())
 						.inoutLine(inoutLine)
-						.invoiceLineAttributes(request.getInvoiceLineAttributes())
+						.invoiceLineAttributes(request.getAttributesFromInoutLines())
 						.build();
 				final AggregationKey lineAggregationKey = lineAggregationKeyUnparsed.parse(evalCtx);
 				aggregationKeyToUse.append(lineAggregationKey.getAggregationKeyString());

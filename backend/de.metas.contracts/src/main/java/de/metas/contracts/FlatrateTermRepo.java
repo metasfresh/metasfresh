@@ -27,8 +27,10 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.location.DocumentLocation;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
@@ -61,12 +63,15 @@ public class FlatrateTermRepo
 		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesceNotNull(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
 
 		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
+		final DocumentLocation billLocation = ContractLocationHelper.extractBillLocation(term);
+		
 		final BPartnerLocationAndCaptureId dropshipLPartnerLocationAndCaptureId = ContractLocationHelper.extractDropshipLocationId(term);
 
 		return FlatrateTerm.builder()
-				.flatrateTermId(id)
+				.id(id)
 				.orgId(orgId)
 				.billPartnerLocationAndCaptureId(billPartnerLocationAndCaptureId)
+				.billLocation(billLocation)
 				.dropshipPartnerLocationAndCaptureId(dropshipLPartnerLocationAndCaptureId)
 				.productId(productId)
 				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
@@ -81,6 +86,7 @@ public class FlatrateTermRepo
 				.plannedQtyPerUnit(Quantity.of(term.getPlannedQtyPerUnit(), termUom))
 				.deliveryRule(DeliveryRule.ofNullableCode(term.getDeliveryRule()))
 				.deliveryViaRule(DeliveryViaRule.ofNullableCode(term.getDeliveryViaRule()))
+				.invoiceRule(InvoiceRule.ofCode(flatrateConditionsRecord.getInvoiceRule()))
 				.build();
 	}
 }
