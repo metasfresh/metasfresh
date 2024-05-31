@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.document.engine.DocStatus;
@@ -66,6 +67,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
@@ -131,6 +133,8 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get(), modularContractProvider);
 
