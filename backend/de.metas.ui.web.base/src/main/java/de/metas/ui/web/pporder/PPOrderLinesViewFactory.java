@@ -25,11 +25,9 @@ package de.metas.ui.web.pporder;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
-import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.order.OrderLineId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -71,9 +69,6 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private static final AdMessageKey MANUFACTURING_ISSUE_RECEIPT_CAPTION = AdMessageKey.of("de.metas.ui.web.pporder.MANUFACTURING_ISSUE_RECEIPT_CAPTION");
 
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final ASIRepository asiRepository;
 	@NonNull private final DefaultHUEditorViewFactory huEditorViewFactory;
@@ -89,6 +84,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
 		final boolean hasSerialNumberSequence = ppOrderBL.hasSerialNumberSequence(ppOrderId);
+		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
 				.builder()
