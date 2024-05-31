@@ -112,7 +112,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: DeliveryDays
 		if (!query.getDeliveryDays().isEmpty())
 		{
-			queryBuilder.addCompositeQueryFilter()
+			final ICompositeQueryFilter<I_M_Packageable_V> deliveryDaysFilter = queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
 					.addEqualsFilter(I_M_Packageable_V.COLUMN_DeliveryDate, null);
 

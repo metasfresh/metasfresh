@@ -154,6 +154,8 @@ public class FactLine
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate1;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate2;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal userElementNumber1;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal userElementNumber2;
 	@Getter @Setter(AccessLevel.PRIVATE) private YearAndCalendarId yearAndCalendarId;
 
 	@Getter @Nullable private FAOpenItemTrxInfo openItemTrxInfo;
@@ -1237,8 +1239,8 @@ public class FactLine
 				.setUser2_ID(this.User2_ID)
 				.setUserElement1_ID(this.userElement1_ID)
 				.setUserElement2_ID(this.userElement2_ID)
-				.setUserElementNumber1(getUserElementNumber1())
-				.setUserElementNumber2(getUserElementNumber2())
+				.setUserElementNumber1(this.userElementNumber1)
+				.setUserElementNumber2(this.userElementNumber2)
 				.setUserElementString1(this.userElementString1)
 				.setUserElementString2(this.userElementString2)
 				.setUserElementString3(this.userElementString3)
