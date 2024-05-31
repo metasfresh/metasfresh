@@ -24,8 +24,15 @@ package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqt
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_ModCntr_Module;
+import de.metas.contracts.model.I_ModCntr_Specific_Price;
+import de.metas.contracts.model.I_ModCntr_Type;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.ModCntrSpecificPrice;
+import de.metas.contracts.modular.ModularContractPriceRepository;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -34,6 +41,8 @@ import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
+import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -56,14 +65,17 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public abstract class AbstractUENShipmentLineLog extends AbstractModularContractLogHandler
 {
@@ -97,6 +109,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 		this.computingMethod = computingMethod;
 		this.column = column;
 	}
+
 
 	@Override
 	public @NonNull ExplainedOptional<LogEntryCreateRequest> createLogEntryCreateRequest(@NonNull final CreateLogRequest createLogRequest)
@@ -227,5 +240,12 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	protected static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		final ModularContractType type =  request.getModuleConfig().getModularContractType();
+		return column.getColumnName().equals(type.getColumnName());
 	}
 }
