@@ -85,4 +85,16 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2024-05-31 11:2
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542237,'de_DE')
 ;
 
+----
+
+
+
+-- 2024-05-31T09:01:05.891Z
+UPDATE AD_Index_Table SET ErrorMsg='There should be unique minimum value per product.',Updated=TO_TIMESTAMP('2024-05-31 12:01:05.889','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540793
+;
+
+-- 2024-05-31T09:01:05.892Z
+UPDATE AD_Index_Table_Trl trl SET ErrorMsg='Der Minimalwert sollte für jedes Produkt einzigartig sein.' WHERE AD_Index_Table_ID=540793 AND AD_Language='de_DE'
+;
+
 
