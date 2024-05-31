@@ -2,7 +2,7 @@
 
 DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v;
 CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
-SELECT sum(il.qtyEntered)                                                        AS QtyInvoiced,
+SELECT SUM(il.qtyEntered)                                                                                                            AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
                                   ELSE u.x12de355
@@ -12,20 +12,20 @@ SELECT sum(il.qtyEntered)                                                       
                                                      ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
        END                                                                   AS QtyInvoicedInOrderedUOM,
        u_ordered.x12de355                                                        AS eancom_ordered_uom, /* leaving out that CASE-mumbo-jumbo from the other uoms; IDK if it's needed (anymore) */
-       min(il.c_invoiceline_id)                                                  AS edi_cctop_invoic_500_v_id,
-       sum(il.linenetamt)                                                        AS linenetamt,
-       min(il.line)                                                              AS line,
+       MIN(il.c_invoiceline_id)                                                                                                      AS edi_cctop_invoic_500_v_id,
+       SUM(il.linenetamt)                                                                                                            AS linenetamt,
+       MIN(il.line)                                                                                                                  AS line,
        il.c_invoice_id,
        il.c_invoice_id                                                           AS edi_cctop_invoic_v_id,
        il.priceactual,
        il.pricelist,
        ol.invoicableqtybasedon,
        REGEXP_REPLACE(pp.UPC, '\s+$', '')                                        AS UPC_CU,
-       REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU,
+       REGEXP_REPLACE(pp.EAN_CU, '\s+$', '')                                     AS EAN_CU, -- Deprecated: superseded by buyer_ean_cu
        REGEXP_REPLACE(p.value, '\s+$', '')                                       AS Value,
        REGEXP_REPLACE(pp.productno, '\s+$', '')                                  AS CustomerProductNo,
-       substr(p.name, 1, 35)                                                     AS name,
-       substr(p.name, 36, 70)                                                    AS name2,
+       SUBSTR(p.name, 1, 35)                                                     AS name,
+       SUBSTR(p.name, 36, 70)                                                    AS name2,
        t.rate,
        CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
            WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
@@ -38,10 +38,10 @@ SELECT sum(il.qtyEntered)                                                       
        c.iso_code,
        il.ad_client_id,
        il.ad_org_id,
-       min(il.created)                                                           AS created,
-       min(il.createdby)::numeric(10, 0)                                         AS createdby,
-       max(il.updated)                                                           AS updated,
-       max(il.updatedby)::numeric(10, 0)                                         AS updatedby,
+       MIN(il.created)                                                                                                               AS created,
+       MIN(il.createdby)::numeric(10, 0)                                                                                             AS createdby,
+       MAX(il.updated)                                                                                                               AS updated,
+       MAX(il.updatedby)::numeric(10, 0)                                                                                             AS updatedby,
        il.isactive,
        CASE pc.value
            WHEN 'Leergut' THEN 'P'
@@ -52,10 +52,14 @@ SELECT sum(il.qtyEntered)                                                       
        COALESCE(ol.line, il.line)                                                AS orderline,
        COALESCE(NULLIF(o.poreference, ''), i.poreference)::character varying(40) AS orderporeference,
        il.c_orderline_id,
-       sum(il.taxamtinfo)                                                        AS taxamtinfo,
-       REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS GTIN,
+       SUM(il.taxamtinfo)                                                        AS taxamtinfo,
+       REGEXP_REPLACE(pip.GTIN, '\s+$', '')                                      AS GTIN, -- Deprecated: superseded by buyer_gtin_tu
        REGEXP_REPLACE(pip.EAN_TU, '\s+$', '')                                    AS EAN_TU,
        REGEXP_REPLACE(pip.UPC, '\s+$', '')                                       AS UPC_TU,
+       REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
+       REGEXP_REPLACE(pp.GTIN::text, '\s+$'::text, ''::text)                     AS Buyer_GTIN_CU,
+       REGEXP_REPLACE(pp.EAN_CU::text, '\s+$'::text, ''::text)                   AS Buyer_EAN_CU,
+       REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)                      AS Supplier_GTIN_CU,
        il.QtyEnteredInBPartnerUOM                                                as qtyEnteredInBPartnerUOM,
        il.C_UOM_BPartner_ID                                                      as C_UOM_BPartner_ID,
        ol.externalseqno                                                          as externalSeqNo
@@ -73,7 +77,7 @@ FROM c_invoiceline il
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
-WHERE true
+WHERE TRUE
   AND il.m_product_id IS NOT NULL
   AND il.isactive = 'Y'
   AND il.qtyentered <> 0
@@ -85,8 +89,8 @@ GROUP BY il.c_invoice_id,
          pp.EAN_CU,
          p.value,
          pp.productno,
-         (substr(p.name, 1, 35)),
-         (substr(p.name, 36, 70)),
+         (SUBSTR(p.name, 1, 35)),
+         (SUBSTR(p.name, 36, 70)),
          t.rate,
          (CASE
               WHEN u.x12de355 = 'TU' THEN 'PCE'
@@ -117,7 +121,7 @@ GROUP BY il.c_invoice_id,
          (COALESCE(NULLIF(o.poreference, ''), i.poreference)),
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
-         pip.UPC, pip.GTIN, pip.EAN_TU,
+         pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
          il.QtyEnteredInBPartnerUOM, il.C_UOM_BPartner_ID, ol.externalseqno
 ORDER BY COALESCE(ol.line, il.line);
 
