@@ -64,4 +64,10 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 		Check.assumeNotNull(priceActual, "PriceActual shouldn't be null");
 		return priceActual.negate();
 	}
+
+	@Override
+	protected @NonNull ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	{
+		return super.getPriceActual(request).negate();
+	}
 }

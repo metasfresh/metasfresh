@@ -25,6 +25,7 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.in
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
@@ -33,6 +34,9 @@ import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Component
 @Getter
@@ -64,5 +68,14 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	{
 		return super.getPriceActual(request)
 				.negate();
+	}
+
+	@Nullable
+	@Override
+	public ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
+	{
+		return Optional.ofNullable(super.getPriceActual(logEntry))
+				.map(ProductPrice::negate)
+				.orElse(null);
 	}
 }
