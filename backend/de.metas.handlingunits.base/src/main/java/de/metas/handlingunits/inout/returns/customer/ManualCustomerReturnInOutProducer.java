@@ -116,7 +116,7 @@ public class ManualCustomerReturnInOutProducer
 				// The return inout lines will be created based on the origin inoutlines (from receipts)
 				final ArrayKey customerReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId);
 				customerReturnProducers.computeIfAbsent(customerReturnProducerKey, k -> createCustomerReturnInOutProducer(bpartnerId, warehouseId))
-						.addHUToReturn(hu, customerReturnLine.getM_InOutLine_ID());
+						.addHUToReturn(hu, InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()));
 
 				Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
 
