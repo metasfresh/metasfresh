@@ -170,7 +170,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * Does nothing.
 	 */
 	@Override
-	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
 	}

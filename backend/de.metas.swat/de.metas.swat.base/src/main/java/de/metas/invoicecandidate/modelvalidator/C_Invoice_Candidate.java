@@ -224,8 +224,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
-	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
@@ -355,11 +353,9 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void scheduleRecreate(final I_C_Invoice_Candidate ic)
+	public void scheduleRecreate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		//
 		// Skip recreation scheduling if we were asked to avoid that

@@ -35,6 +35,7 @@ import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -59,6 +60,8 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -66,6 +69,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +98,12 @@ public class FlatrateDataEntryToICService
 			@NonNull final I_C_Flatrate_DataEntry entryRecord,
 			@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler)
 	{
+		final DocStatus docStatus = DocStatus.ofCode(entryRecord.getDocStatus());
+		if (!docStatus.isCompleted())
+		{
+			return ImmutableList.of(); // nothing to do
+		}
+
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(entryRecord.getC_Flatrate_Term_ID());
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(flatrateTermId, entryRecord.getC_Flatrate_DataEntry_ID());
 
@@ -102,12 +112,13 @@ public class FlatrateDataEntryToICService
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> result = ImmutableList.builder();
-		final ImmutableMap<AttributeSetInstanceId, Quantity> priceRelevantASIs = createPriceRelevantASIs(entry, context);
+		final ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> priceRelevantASIs = createPriceRelevantASIs(entry, context);
 		for (final AttributeSetInstanceId asiId : priceRelevantASIs.keySet())
 		{
-			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(entry, asiId, priceRelevantASIs.get(asiId), context);
-			createAndSaveDetailRecords(newRecord, entry);
-			
+			final IPair<Quantity, List<FlatrateDataEntryDetail>> quantityListIPair = priceRelevantASIs.get(asiId);
+			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(entry, asiId, quantityListIPair.getLeft(), context);
+			createAndSaveDetailRecords(newRecord, entry, quantityListIPair.getRight());
+
 			result.add(newRecord);
 		}
 		return result.build();
@@ -131,10 +142,8 @@ public class FlatrateDataEntryToICService
 
 	/**
 	 * Iterates the {@link AttributeSetInstanceId}s of the given entry's details and checks which ASI-IDs have product-prices.
-	 *
-	 * @return {@link AttributeSetInstanceId}
 	 */
-	private ImmutableMap<AttributeSetInstanceId, Quantity> createPriceRelevantASIs(
+	private ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> createPriceRelevantASIs(
 			@NonNull final FlatrateDataEntry entry,
 			@NonNull final FlatrateDataEntryToICService.CreateICsContext context)
 	{
@@ -147,27 +156,38 @@ public class FlatrateDataEntryToICService
 
 		// needed later thwn we create the IC
 		context.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
-		
+
 		// Make sure that between our various departments, we don't have multiple equal ASIs
 		// Also sum up the details' quantites, grouped per attribute-keys
-		final Map<AttributesKey, AttributeSetInstanceId> dataEntryKey2AsiIds = new HashMap<>();
+		final Map<AttributesKey, List<FlatrateDataEntryDetail>> dataEntryKey2Details = new HashMap<>();
 		final Map<AttributesKey, BigDecimal> dataEntryKey2Qtys = new HashMap<>();
 		for (final FlatrateDataEntryDetail detail : entry.getDetails())
 		{
 			final AttributesKey dataEntryKey = AttributesKeys.createAttributesKeyFromASIAllAttributes(detail.getAsiId()).orElse(AttributesKey.NONE);
-			dataEntryKey2AsiIds.put(dataEntryKey, detail.getAsiId());
+			final List<FlatrateDataEntryDetail> detailsForKey;
+			if (dataEntryKey2Details.containsKey(dataEntryKey))
+			{
+				detailsForKey = dataEntryKey2Details.get(dataEntryKey);
+			}
+			else
+			{
+				detailsForKey = new ArrayList<>();
+				dataEntryKey2Details.put(dataEntryKey,detailsForKey);
+			}
+			detailsForKey.add(detail);
 
 			final BigDecimal qty = Quantitys.toBigDecimalOrZero(detail.getQuantity());
 			dataEntryKey2Qtys.compute(dataEntryKey, (key, oldValue) -> oldValue == null ? qty : oldValue.add(qty));
 		}
 
 		// Now find a product-price for each detail's attribute-key and re-aggregate the quantities, this time grouped by the product-prices' attribute-keys
-		final Map<AttributesKey, AttributeSetInstanceId> ppKey2AsiIds = new HashMap<>();
+		final Map<AttributesKey, IPair<AttributeSetInstanceId, List<FlatrateDataEntryDetail>>> ppKey2AsiIdsWithDetails = new HashMap<>();
 		final Map<AttributesKey, BigDecimal> ppKey2Qtys = new HashMap<>();
 
-		for (final Map.Entry<AttributesKey, AttributeSetInstanceId> dataEntryKey2AsiId : dataEntryKey2AsiIds.entrySet())
+		for (final Map.Entry<AttributesKey, List<FlatrateDataEntryDetail>> dataEntryKey2Detail : dataEntryKey2Details.entrySet())
 		{
-			final AttributeSetInstanceId asiId = dataEntryKey2AsiId.getValue();
+			final List<FlatrateDataEntryDetail> details = dataEntryKey2Detail.getValue(); //
+			final AttributeSetInstanceId asiId = details.get(0).getAsiId(); // all detail's ASI-IDs are equal for our purpose.
 
 			final I_M_AttributeSetInstance attributeSetInstanceRecord = attributeDAO.getAttributeSetInstanceById(asiId);
 			final I_M_ProductPrice productPriceRecord = ProductPrices.newQuery(priceListVersion)
@@ -183,20 +203,32 @@ public class FlatrateDataEntryToICService
 
 			final AttributeSetInstanceId ppAsiId = AttributeSetInstanceId.ofRepoId(productPriceRecord.getM_AttributeSetInstance_ID());
 			final AttributesKey ppKey = AttributesKeys.createAttributesKeyFromASIAllAttributes(ppAsiId).orElse(AttributesKey.NONE);
-			if (!ppKey2AsiIds.containsKey(ppKey))
+			final List<FlatrateDataEntryDetail> detailsForPpKey;
+			if (ppKey2AsiIdsWithDetails.containsKey(ppKey))
 			{
-				ppKey2AsiIds.put(ppKey, ppAsiId);
+				detailsForPpKey = ppKey2AsiIdsWithDetails.get(ppKey).getRight();
 			}
-			final AttributesKey dataEntryKey = dataEntryKey2AsiId.getKey();
+			else
+			{
+				detailsForPpKey = new ArrayList<>();
+				ppKey2AsiIdsWithDetails.put(ppKey, ImmutablePair.of(ppAsiId, detailsForPpKey));
+			}
+			detailsForPpKey.addAll(details);
+
+			final AttributesKey dataEntryKey = dataEntryKey2Detail.getKey();
 			ppKey2Qtys.compute(ppKey, (key, oldValue) -> oldValue == null ? dataEntryKey2Qtys.get(dataEntryKey) : oldValue.add(dataEntryKey2Qtys.get(dataEntryKey)));
 		}
 
 		// finally create out result which consists of copies of the product-price ASI-IDs and the aggregated quantites from the entry's details.
-		final ImmutableMap.Builder<AttributeSetInstanceId, Quantity> result = ImmutableMap.builder();
-		for (final AttributesKey ppKey : ppKey2AsiIds.keySet())
+		final ImmutableMap.Builder<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> result = ImmutableMap.builder();
+		for (final AttributesKey ppKey : ppKey2AsiIdsWithDetails.keySet())
 		{
 			final BigDecimal qty = ppKey2Qtys.get(ppKey);
-			result.put(ppKey2AsiIds.get(ppKey), Quantitys.create(qty, entry.getUomId()));
+			final IPair<AttributeSetInstanceId, List<FlatrateDataEntryDetail>> asiIdWithDetails = ppKey2AsiIdsWithDetails.get(ppKey);
+			
+			final AttributeSetInstanceId resultKey = asiIdWithDetails.getLeft();
+			final ImmutablePair<Quantity, List<FlatrateDataEntryDetail>> resultValue = ImmutablePair.of(Quantitys.create(qty, entry.getUomId()), asiIdWithDetails.getRight());
+			result.put(resultKey, resultValue);
 		}
 
 		return result.build();
@@ -211,24 +243,25 @@ public class FlatrateDataEntryToICService
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 
 		final FlatrateTerm flatrateTerm = context.getFlatrateTerm();
-		
+
 		newCand.setAD_Org_ID(flatrateTerm.getOrgId().getRepoId());
-		
+
 		newCand.setM_PricingSystem_ID(context.getPricingSystemId().getRepoId());
 		newCand.setM_PriceList_Version_ID(context.getPriceListVersionId().getRepoId());
-		
+
 		newCand.setC_Flatrate_Term_ID(flatrateTerm.getId().getRepoId());
-				
+
 		newCand.setM_Product_ID(context.getProductId().getRepoId());
 		newCand.setM_AttributeSetInstance_ID(asiId.getRepoId());
-		
+
 		newCand.setQtyOrdered(quantity.toBigDecimal());
 		newCand.setQtyEntered(quantity.toBigDecimal());
 		newCand.setC_UOM_ID(UomId.toRepoId(quantity.getUomId()));
-		
+		newCand.setDateOrdered(TimeUtil.asTimestamp(entry.getEndDate()));
+
 		newCand.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		newCand.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND); // to be computed
-		
+
 		// pricing-data to be computed by the ILCandHandler
 
 		newCand.setInvoiceRule(flatrateTerm.getInvoiceRule().getCode());
@@ -240,60 +273,64 @@ public class FlatrateDataEntryToICService
 				.billLocationAdapter(newCand)
 				.setFrom(flatrateTerm.getBillLocation());
 
-		newCand.setDateOrdered(TimeUtil.asTimestamp(entry.getEndDate()));
-
 		// needed already here, because we need its ID to be referenced by the invoice-details
 		newCand.setC_ILCandHandler(context.getFlatrateDataEntryHandler().getHandlerRecord());
-		InterfaceWrapperHelper.saveRecord(newCand); 
-		
+		InterfaceWrapperHelper.saveRecord(newCand);
+
 		return newCand;
 	}
-	
+
 	@Data
 	private static class CreateICsContext
 	{
-		@NonNull final FlatrateTerm flatrateTerm;
-		@NonNull final CountryId countryId;
-		@NonNull final PricingSystemId pricingSystemId;
-		@NonNull final ProductId productId;
-		@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler;
-				
+		@NonNull
+		final FlatrateTerm flatrateTerm;
+		@NonNull
+		final CountryId countryId;
+		@NonNull
+		final PricingSystemId pricingSystemId;
+		@NonNull
+		final ProductId productId;
+		@NonNull
+		final FlatrateDataEntryHandler flatrateDataEntryHandler;
+
 		PriceListVersionId priceListVersionId;
 	}
 
-	
 	private void createAndSaveDetailRecords(
 			@NonNull final I_C_Invoice_Candidate newInvoiceCandidate,
-			@NonNull final FlatrateDataEntry entry)
+			@NonNull final FlatrateDataEntry entry,
+			@NonNull final List<FlatrateDataEntryDetail> matchingDetails)
 	{
-		for(final FlatrateDataEntryDetail detail : entry.getDetails())
+
+		for (final FlatrateDataEntryDetail detail : matchingDetails)
 		{
 			final I_C_Invoice_Detail newDetailRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class);
 			newDetailRecord.setC_Invoice_Candidate_ID(newInvoiceCandidate.getC_Invoice_Candidate_ID());
-			
+
 			newDetailRecord.setSeqNo(detail.getSeqNo());
 			newDetailRecord.setIsPrinted(true);
 			newDetailRecord.setIsPrintBefore(false);
 
 			final Quantity detailQuantity = detail.getQuantity();
-			if(detailQuantity != null)
+			if (detailQuantity != null)
 			{
 				newDetailRecord.setQty(detailQuantity.toBigDecimal());
 				newDetailRecord.setC_UOM_ID(detailQuantity.getUomId().getRepoId());
 			}
-			else 
+			else
 			{
 				newDetailRecord.setQty(null);
 				newDetailRecord.setC_UOM_ID(entry.getUomId().getRepoId());
 			}
-			
+
 			newDetailRecord.setM_Product_ID(newInvoiceCandidate.getM_Product_ID());
 			newDetailRecord.setM_AttributeSetInstance_ID(detail.getAsiId().getRepoId());
 
 			final BPartnerDepartment bPartnerDepartment = detail.getBPartnerDepartment();
 			newDetailRecord.setLabel(bPartnerDepartment.getSearchKey());
 			newDetailRecord.setDescription(bPartnerDepartment.getName());
-			
+
 			InterfaceWrapperHelper.saveRecord(newDetailRecord);
 		}
 	}
