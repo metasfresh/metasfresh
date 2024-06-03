@@ -27,6 +27,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
@@ -64,6 +65,7 @@ import java.util.stream.Stream;
  */
 
 @Service
+@RequiredArgsConstructor
 public class InventoryService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -75,18 +77,15 @@ public class InventoryService
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
-	public InventoryService(@NonNull final InventoryRepository inventoryRepository, @NonNull final SourceHUsService sourceHUsService)
-	{
-		this.inventoryRepository = inventoryRepository;
-		this.sourceHUsService = sourceHUsService;
-	}
-
 	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		return inventoryRepository.toInventory(inventoryRecord);
+	}
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
@@ -96,7 +95,7 @@ public class InventoryService
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
 		final DocTypeId inventoryDocTypeId = DocTypeId.ofRepoIdOrNull(inventory.getC_DocType_ID());
-		if(inventoryDocTypeId == null)
+		if (inventoryDocTypeId == null)
 		{
 			return false;
 		}
@@ -130,11 +129,11 @@ public class InventoryService
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(docBaseAndSubType.getDocBaseType())
-											   .docSubType(docBaseAndSubType.getDocSubType())
-											   .adClientId(Env.getAD_Client_ID())
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(Env.getAD_Client_ID())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 
 	private static HUAggregationType computeHUAggregationType(
@@ -267,6 +266,7 @@ public class InventoryService
 				.qtyCount(req.getQty())
 				.attributeSetId(req.getAttributeSetInstanceId())
 				.locatorId(locatorId)
+				.modularContractId(req.getModularContractId())
 				.build();
 
 		createInventoryLine(createLineRequest);
@@ -300,4 +300,5 @@ public class InventoryService
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
 	}
+
 }

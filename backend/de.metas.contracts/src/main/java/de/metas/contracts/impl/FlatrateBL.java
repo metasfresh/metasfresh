@@ -70,6 +70,11 @@ import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
@@ -110,10 +115,12 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -165,6 +172,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -225,7 +233,10 @@ public class FlatrateBL implements IFlatrateBL
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
+
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 
 	@Override
@@ -2400,16 +2411,54 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean isExistsModularContract(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	public boolean isFinalInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
 	{
-		return flatrateDAO.isExistsModularContract(selectedContractsFilter);
+		return flatrateDAO.isInvoiceableModularContractExists(selectedContractsFilter);
+	}
+
+	@Override
+	public boolean isDefinitiveInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter)
+	{
+		return flatrateDAO.isDefinitiveInvoiceableModularContractExists(selectedContractsFilter);
 	}
 
 	@Override
 	@NonNull
-	public ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
+	public ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
 	{
-		return flatrateDAO.getModularContractIds(queryFilter);
+		return flatrateDAO.getReadyForFinalInvoicingModularContractIds(queryFilter);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull final IQueryFilter<I_C_Flatrate_Term> queryFilter)
+	{
+		return flatrateDAO.getReadyForDefinitiveInvoicingModularContractIds(queryFilter)
+				.stream()
+				.filter(this::isModularContractFullyShipped)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private boolean isModularContractFullyShipped(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final ModularContractLogEntriesList logs = modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery
+				.builder()
+				.flatrateTermId(flatrateTermId)
+				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
+				.isComputingMethodTypeActive(false)
+				.billable(true)
+				.processed(false)
+				.build());
+		final ModularContractLogEntriesList productionLogs = logs.subsetOf(LogEntryDocumentType.PRODUCTION);
+		final ModularContractLogEntriesList receiptLogs = logs.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
+		final ModularContractLogEntriesList shipmentLogs = logs.subsetOf(LogEntryDocumentType.SHIPMENT);
+		final ModularContractLogEntriesList inventory = logs.subsetOf(LogEntryDocumentType.INVENTORY);
+		final ProductPrice productPrice = logs.getUniqueProductPriceOrErrorNotNull();
+		final UomId uomId = productPrice.getUomId();
+		final Quantity sourceQty = productionLogs.isEmpty() ? receiptLogs.getQtySum(uomId, uomConversionBL) : productionLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
+		final Quantity inventoryQty = inventory.getQtySum(uomId, uomConversionBL);
+		return sourceQty.add(inventoryQty).compareTo(shippedQty) <= 0;
 	}
 
 	private void setPricingSystemTaxCategAndIsTaxIncluded(@NonNull final I_C_OrderLine ol, @NonNull final I_C_Flatrate_Term newTerm)
@@ -2611,5 +2660,11 @@ public class FlatrateBL implements IFlatrateBL
 	public Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull final ModularContractSettingsId modularContractSettingsId)
 	{
 		return flatrateDAO.streamCompletedConditionsBy(modularContractSettingsId);
+	}
+
+	@Override
+	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
 	}
 }

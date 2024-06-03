@@ -2,6 +2,7 @@ package de.metas.procurement.base.contracts;
 
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.procurement.base.PMMContractBuilder;
 import lombok.Getter;
@@ -51,6 +52,7 @@ public class ProcurementFlatrateHandlerTests
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		procurementFlatrateHandler = new ProcurementFlatrateHandler()
 		{
 			@Override

@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.model.X_ModCntr_Type;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -31,6 +32,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+@Getter
 @AllArgsConstructor
 public enum ComputingMethodType implements ReferenceListAwareEnum
 {
@@ -75,11 +77,31 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	SvCo("SvCo"),
 	SvProcessed("SvProcessed");
 
+	public static final ImmutableList<ComputingMethodType> DEFINITIVE_INVOICE_SPECIFIC_METHODS = ImmutableList.of(DefinitiveInvoiceRawProduct,
+			DefinitiveInvoiceProcessedProduct);
+	public static final ImmutableList<ComputingMethodType> FINAL_INVOICE_SPECIFIC_METHODS = ImmutableList.of(INTERIM_CONTRACT,
+			Receipt,
+			SalesOnRawProduct,
+			SalesOnProcessedProduct,
+			CoProduct,
+			AddValueOnRawProduct,
+			AddValueOnProcessedProduct,
+			SubtractValueOnRawProduct,
+			ReductionCalibration,
+			StorageCost,
+			AverageAddedValueOnShippedQuantity,
+			AddValueOnInterim,
+			SubtractValueOnInterim,
+			AvCo,
+			SvCo,
+			SvProcessed);
+
+	public static final ImmutableList<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableList.of(AddValueOnInterim,
+			SubtractValueOnInterim);
 
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 
-	@Getter
 	@NonNull
 	private final String code;
 

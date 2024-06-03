@@ -32,7 +32,6 @@ import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,7 +57,6 @@ public class ModCntr_Settings
 {
 	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	private static final AdMessageKey ERROR_CO_PRODUCT_SET_WITHOUT_PROCESSED_PRODUCT_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.CoProductSetWithoutProcessedProductSet");
@@ -91,6 +89,27 @@ public class ModCntr_Settings
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
 		modularContractSettingsBL.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
+
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_M_Raw_Product_ID, I_ModCntr_Settings.COLUMNNAME_M_Processed_Product_ID },
+			ifUIAction = true)
+	public void upsertDefinitiveInvoiceModule(@NonNull final I_ModCntr_Settings record)
+	{
+		final ProductId rawProductId = ProductId.ofRepoIdOrNull(record.getM_Raw_Product_ID());
+
+		if (rawProductId == null)
+		{
+			// nothing to do
+			return;
+		}
+		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
+
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
+
+		modularContractSettingsBL.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
 
 	}
 
@@ -131,7 +150,7 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_SETTING_LINES_DEPEND_ON_PRODUCT);
 		}
 
-		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModuleProduct(moduleConfig, productId));
+		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModule(moduleConfig, null, productId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -186,11 +205,7 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT);
 		}
 		final ProductId bomCoProductId = bom.getCoProducts().get(0).getProductId();
-		if (coProductId == null)
-		{
-			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
-		}
-		if (!ProductId.equals(bomCoProductId, coProductId))
+		if (coProductId != null && !ProductId.equals(bomCoProductId, coProductId))
 		{
 			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
 		}

@@ -357,13 +357,15 @@ public class ModularContractLogDAO
 
 		if (!query.getComputingMethodTypes().isEmpty())
 		{
-			final IQuery<I_ModCntr_Type> moduleTypeFilter = queryBL.createQueryBuilder(I_ModCntr_Type.class)
-					.addOnlyActiveRecordsFilter()
-					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes())
-					.create();
+			final IQueryBuilder<I_ModCntr_Type> modCntrTypeBuilder = queryBL.createQueryBuilder(I_ModCntr_Type.class)
+					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes());
+			if (query.isComputingMethodTypeActive())
+			{
+				modCntrTypeBuilder.addOnlyActiveRecordsFilter();
+			}
 			final IQuery<I_ModCntr_Module> moduleFilter = queryBL.createQueryBuilder(I_ModCntr_Module.class)
 					.addOnlyActiveRecordsFilter()
-					.addInSubQueryFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID, moduleTypeFilter)
+					.addInSubQueryFilter(I_ModCntr_Module.COLUMNNAME_ModCntr_Type_ID, I_ModCntr_Type.COLUMNNAME_ModCntr_Type_ID, modCntrTypeBuilder.create())
 					.create();
 
 			sqlQueryBuilder.addInSubQueryFilter(I_ModCntr_Log.COLUMNNAME_ModCntr_Module_ID, I_ModCntr_Module.COLUMNNAME_ModCntr_Module_ID, moduleFilter);
@@ -643,4 +645,5 @@ public class ModularContractLogDAO
 				});
 		record.setModCntr_Module_ID(from.getModularContractModuleId().getRepoId());
 	}
+
 }

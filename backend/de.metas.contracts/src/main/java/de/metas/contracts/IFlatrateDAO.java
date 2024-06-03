@@ -174,6 +174,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	boolean isExistsModularOrInterimContract(@NonNull IQueryFilter<I_C_Flatrate_Term> flatrateTermFilter);
 
+	boolean isDefinitiveInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@Value
 	@Builder
@@ -286,8 +287,12 @@ public interface IFlatrateDAO extends ISingletonService
 	@NonNull
 	Stream<I_C_Flatrate_Conditions> streamCompletedConditionsBy(@NonNull ModularContractSettingsId modularContractSettingsId);
 
-	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
+	ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+
+	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
+	boolean isInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+	ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

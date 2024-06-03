@@ -1,5 +1,7 @@
 package de.metas.manufacturing.job.service;
 
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
@@ -24,6 +26,7 @@ import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,7 +40,8 @@ class ManufacturingJobServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService())
