@@ -27,7 +27,6 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,8 +37,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -219,18 +216,7 @@ import java.util.stream.Collectors;
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentSchedule.getM_AttributeSetInstance_ID());
 
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
-		final FlatrateTermId contractId;
-		if (orderAndLineId != null)
-		{
-			final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
-					.collect(Collectors.toSet());
-			Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
-			contractId = contractIds.stream().findFirst().orElse(null);
-		}
-		else
-		{
-			contractId = null;
-		}
+		final FlatrateTermId contractId = modularContractProvider.getSinglePurchaseContractsForSalesOrderLineOrNull(orderAndLineId);
 
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(clientId)

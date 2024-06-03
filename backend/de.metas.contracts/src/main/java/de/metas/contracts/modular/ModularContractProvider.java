@@ -69,9 +69,12 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.flatrate.TypeConditions.MODULAR_CONTRACT;
@@ -104,6 +107,19 @@ public class ModularContractProvider
 		return flatrateBL.getByOrderLineId(orderAndLineId.getOrderLineId(), MODULAR_CONTRACT)
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
+	}
+
+	@Nullable
+	public FlatrateTermId getSinglePurchaseContractsForSalesOrderLineOrNull(@Nullable final OrderAndLineId orderAndLineId)
+	{
+		if (orderAndLineId == null)
+		{
+			return null;
+		}
+		final Set<FlatrateTermId> contractIds = streamPurchaseContractsForSalesOrderLine(orderAndLineId)
+				.collect(Collectors.toSet());
+		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+		return contractIds.stream().findFirst().orElse(null);
 	}
 
 	@NonNull
@@ -269,11 +285,11 @@ public class ModularContractProvider
 
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
 		final List<ModularContractSettings> settings = modularContractSettingsBL.getSettingsByQuery(ModularContractSettingsQuery.builder()
-																													 .processedProductId(productId)
-																													 .yearAndCalendarId(yearAndCalendarId)
-																													 .soTrx(SOTrx.PURCHASE)
-																													 .checkHasCompletedModularCondition(true)
-																													 .build());
+				.processedProductId(productId)
+				.yearAndCalendarId(yearAndCalendarId)
+				.soTrx(SOTrx.PURCHASE)
+				.checkHasCompletedModularCondition(true)
+				.build());
 
 		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
 		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, productId);

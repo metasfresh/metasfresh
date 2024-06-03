@@ -143,8 +143,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -1086,17 +1084,7 @@ public class ShipmentScheduleWithHUService
 	{
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID());
 
-		final FlatrateTermId contractId;
-		if (orderAndLineId != null)
-		{
-			final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
-					.collect(Collectors.toSet());
-			Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
-			contractId = contractIds.stream().findFirst().orElse(null);
-		}
-		else {
-			contractId = null;
-		}
+		final FlatrateTermId contractId = modularContractProvider.getSinglePurchaseContractsForSalesOrderLineOrNull(orderAndLineId);
 
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(ClientId.ofRepoId(schedule.getAD_Client_ID()))
