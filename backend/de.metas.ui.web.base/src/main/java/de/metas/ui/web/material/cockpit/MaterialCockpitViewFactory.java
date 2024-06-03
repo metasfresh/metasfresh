@@ -24,6 +24,7 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.material.cockpit.stock.HUStockService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -62,10 +63,12 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	 * Please keep its prefix in sync with {@link MaterialCockpitRow#SYSCFG_PREFIX}
 	 */
 	public static final String SYSCFG_DisplayIncludedRows = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.DisplayIncludedRows";
+	public static final String SYSCFG_RefreshDataOnLoad = "de.metas.ui.web.material.cockpit.MaterialCockpitViewFactory.RefreshDataOnLoad";
 
 	private final MaterialCockpitRowsLoader materialCockpitRowsLoader;
 	private final MaterialCockpitFilters materialCockpitFilters;
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	private final HUStockService huStockService;
 
 	private final IADProcessDAO processDAO = Services.get(IADProcessDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -74,11 +77,13 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@NonNull final MaterialCockpitRowsLoader materialCockpitRowsLoader,
 			@NonNull final MaterialCockpitFilters materialCockpitFilters,
 			@NonNull final DefaultDocumentDescriptorFactory defaultDocumentDescriptorFactory,
-			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory)
+			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final HUStockService huStockService)
 	{
 		this.materialCockpitRowsLoader = materialCockpitRowsLoader;
 		this.materialCockpitFilters = materialCockpitFilters;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
+		this.huStockService = huStockService;
 
 		defaultDocumentDescriptorFactory.addUnsupportedWindowId(MaterialCockpitUtil.WINDOWID_MaterialCockpitView);
 	}
@@ -127,9 +132,19 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, ImmutableList.of());
 		}
 
+		if (isRefreshDataOnLoad())
+		{
+			huStockService.createAndHandleDataUpdateRequests();
+		}
+
 		final List<MaterialCockpitRow> rows = materialCockpitRowsLoader.getMaterialCockpitRows(filters, date, detailsRowAggregation);
 
 		return new MaterialCockpitRowsData(detailsRowAggregation, materialCockpitRowFactory, rows);
+	}
+
+	private boolean isRefreshDataOnLoad()
+	{
+		return sysConfigBL.getBooleanValue(SYSCFG_RefreshDataOnLoad, true);
 	}
 
 	@Override

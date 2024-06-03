@@ -26,6 +26,7 @@ import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.OrgId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -46,12 +47,19 @@ public class HUStockService
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
 
 	public HUStockService(@NonNull final StockDataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
+	}
+
+	public void createAndHandleDataUpdateRequests()
+	{
+		final PInstanceId pinstanceId = adPInstanceDAO.createSelectionId();
+		createAndHandleDataUpdateRequests(pinstanceId);
 	}
 
 	public void createAndHandleDataUpdateRequests(@NonNull final PInstanceId pinstanceId)
