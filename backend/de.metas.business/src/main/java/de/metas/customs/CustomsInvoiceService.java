@@ -92,9 +92,8 @@ import java.util.function.Function;
  */
 
 @Service
-public class CustomsInvoiceService
-{
-	public static final AdMessageKey ERR_NoValidLines = AdMessageKey.of("M_InOut_Create_CustomsInvoice_NoValidLines");
+public class CustomsInvoiceService {
+    public static final AdMessageKey ERR_NoValidLines = AdMessageKey.of("M_InOut_Create_CustomsInvoice_NoValidLines");
 
 	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
