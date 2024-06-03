@@ -67,7 +67,6 @@ import java.util.stream.Collectors;
  * contains common code of the two fine picking process classes that we have.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
@@ -220,9 +219,18 @@ import java.util.stream.Collectors;
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentSchedule.getM_AttributeSetInstance_ID());
 
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
-		final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
-				.collect(Collectors.toSet());
-		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+		final FlatrateTermId contractId;
+		if (orderAndLineId != null)
+		{
+			final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
+					.collect(Collectors.toSet());
+			Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+			contractId = contractIds.stream().findFirst().orElse(null);
+		}
+		else
+		{
+			contractId = null;
+		}
 
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(clientId)
@@ -232,6 +240,7 @@ import java.util.stream.Collectors;
 				.qty(qtyToBeAdded)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(attributeSetInstanceId)
+				.modularContractId(contractId)
 				.build();
 
 		return inventoryService.createInventoryForMissingQty(req);

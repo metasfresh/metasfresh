@@ -1085,9 +1085,18 @@ public class ShipmentScheduleWithHUService
 			@NonNull final Quantity remainingQtyToAllocate)
 	{
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID());
-		final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
-				.collect(Collectors.toSet());
-		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+
+		final FlatrateTermId contractId;
+		if (orderAndLineId != null)
+		{
+			final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
+					.collect(Collectors.toSet());
+			Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+			contractId = contractIds.stream().findFirst().orElse(null);
+		}
+		else {
+			contractId = null;
+		}
 
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(ClientId.ofRepoId(schedule.getAD_Client_ID()))
@@ -1097,7 +1106,7 @@ public class ShipmentScheduleWithHUService
 				.qty(remainingQtyToAllocate)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
-				.modularContractId(contractIds.stream().findFirst().orElse(null))
+				.modularContractId(contractId)
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
