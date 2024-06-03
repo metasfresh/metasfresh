@@ -74,7 +74,7 @@ public class CopyHUsCommand
 	private CopyHUsResponse buildResponse()
 	{
 		final CopyHUsResponse.CopyHUsResponseBuilder response = CopyHUsResponse.builder();
-		for (final HuId oldHUId : old2new_HU.keySet())
+		for (final HuId oldHUId : huIdsToCopy)
 		{
 			response.item(CopyHUsResponse.CopyHUsResponseItem.builder()
 					.oldHUId(oldHUId)
@@ -98,30 +98,30 @@ public class CopyHUsCommand
 			}
 
 			final ImmutableSet<HuId> oldHUIds = extractHUIds(oldHUs);
-			final List<I_M_HU_Item> oldHUItems = handlingUnitsDAO.retrieveItemsNoCache(oldHUIds);
+			final List<I_M_HU_Item> oldHUItems = handlingUnitsDAO.retrieveAllItemsNoCache(oldHUIds);
 			for (final I_M_HU_Item oldHUItem : oldHUItems)
 			{
 				copyHUItem(oldHUItem);
 			}
 
 			final ImmutableSet<HuItemId> oldHUItemIds = extractHUItemIds(oldHUItems);
-			oldHUs = handlingUnitsDAO.retrieveIncludedHUsNoCache(oldHUItemIds);
+			oldHUs = handlingUnitsDAO.retrieveAllIncludedHUsNoCache(oldHUItemIds);
 
 			allOldHUIds.addAll(oldHUIds);
 			allOldHUItemIds.addAll(oldHUItemIds);
 		}
 
-		for (final I_M_HU_Item_Storage oldHUItemStorage : handlingUnitsDAO.retrieveItemStoragesNoCache(allOldHUItemIds))
+		for (final I_M_HU_Item_Storage oldHUItemStorage : handlingUnitsDAO.retrieveAllItemStoragesNoCache(allOldHUItemIds))
 		{
 			copyHUItemStorage(oldHUItemStorage);
 		}
 
-		for (final I_M_HU_Storage oldHUStorage : handlingUnitsDAO.retrieveStoragesNoCache(allOldHUIds))
+		for (final I_M_HU_Storage oldHUStorage : handlingUnitsDAO.retrieveAllStoragesNoCache(allOldHUIds))
 		{
 			copyHUStorage(oldHUStorage);
 		}
 
-		for (final I_M_HU_Attribute oldHUAttribute : huAttributesDAO.retrieveAttributesNoCache(allOldHUIds))
+		for (final I_M_HU_Attribute oldHUAttribute : huAttributesDAO.retrieveAllAttributesNoCache(allOldHUIds))
 		{
 			copyHUAttribute(oldHUAttribute);
 		}
