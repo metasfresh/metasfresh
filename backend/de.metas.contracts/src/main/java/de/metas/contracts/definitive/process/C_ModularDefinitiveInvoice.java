@@ -25,6 +25,7 @@ package de.metas.contracts.definitive.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.definitive.notification.DefinitiveInvoiceUserNotificationsProducer;
 import de.metas.contracts.finalinvoice.workpackage.ModularContractInvoiceEnqueuer;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
@@ -36,14 +37,18 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
+import java.util.Collection;
 import java.util.Collections;
 
 public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessPrecondition
 {
 	private final static AdMessageKey ERROR_NOT_ALL_QTY_HAS_BEEN_SHIPPED = AdMessageKey.of("de.metas.contracts.definitiveinvoice.process.NotAllQtyShipped");
 	private final ModularContractInvoiceEnqueuer modularContractInvoiceEnqueuer = SpringContextHolder.instance.getBean(ModularContractInvoiceEnqueuer.class);
+	private final DefinitiveInvoiceUserNotificationsProducer userNotificationsProducer = DefinitiveInvoiceUserNotificationsProducer.newInstance();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -67,15 +72,31 @@ public class C_ModularDefinitiveInvoice extends JavaProcess implements IProcessP
 	protected String doIt() throws Exception
 	{
 		final UserId userInChargeId = getUserId();
-		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
+		final Collection<FlatrateTermId> selectedContracts = getSelectedContracts();
+		final boolean isSingleSelection = selectedContracts.size() == 1;
+
+		final ImmutableSet<FlatrateTermId> contractsReadyForDefinitiveInvoice = flatrateBL
 				.getReadyForDefinitiveInvoicingModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
-		if (!selectedModularContractIds.isEmpty())
+
+		if (contractsReadyForDefinitiveInvoice.isEmpty() && isSingleSelection)
 		{
-			return msgBL.getMsg(ERROR_NOT_ALL_QTY_HAS_BEEN_SHIPPED, Collections.emptyList());
+			return msgBL.getMsg(ERROR_NOT_ALL_QTY_HAS_BEEN_SHIPPED, Collections.singletonList(getProcessInfo().getRecord(I_C_Flatrate_Term.class).getDocumentNo()));
 		}
-		modularContractInvoiceEnqueuer.enqueueDefinitiveInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
+
+		selectedContracts.stream()
+				.filter(contract -> !contractsReadyForDefinitiveInvoice.contains(contract))
+				.forEach(contract -> userNotificationsProducer.notifyCannotBeGenerated(contract, userInChargeId));
+		modularContractInvoiceEnqueuer.enqueueDefinitiveInvoice(contractsReadyForDefinitiveInvoice, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
+	}
+
+	private Collection<FlatrateTermId> getSelectedContracts()
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addFilter(getProcessInfo().getQueryFilterOrElseFalse())
+				.create()
+				.listIds(FlatrateTermId::ofRepoId);
 	}
 
 	@NonNull
