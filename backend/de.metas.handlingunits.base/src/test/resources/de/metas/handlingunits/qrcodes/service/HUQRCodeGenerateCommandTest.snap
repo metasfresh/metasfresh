@@ -1,0 +1,67 @@
+de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateCommandTest.standardTest=[ [ {
+  "attributes" : [ {
+    "code" : "A1",
+    "displayName" : "Attribute 1",
+    "value" : "valueString",
+    "valueRendered" : "valueString"
+  }, {
+    "code" : "A2",
+    "displayName" : "Attribute 2",
+    "value" : "12.3456",
+    "valueRendered" : "12.3456"
+  }, {
+    "code" : "A3",
+    "displayName" : "Attribute 3",
+    "value" : "2021-11-12",
+    "valueRendered" : "2021-11-12"
+  }, {
+    "code" : "A4",
+    "displayName" : "Attribute 4",
+    "value" : "60002",
+    "valueRendered" : "A4_Item1"
+  } ],
+  "id" : "53c5f90464aea357fefc2c0d76b2-20442",
+  "packingInfo" : {
+    "caption" : "Some TU",
+    "huUnitType" : "TU",
+    "packingInstructionsId" : 70003
+  },
+  "product" : {
+    "code" : "P1",
+    "id" : 60001,
+    "name" : "Product 1"
+  }
+}, {
+  "attributes" : [ {
+    "code" : "A1",
+    "displayName" : "Attribute 1",
+    "value" : "valueString",
+    "valueRendered" : "valueString"
+  }, {
+    "code" : "A2",
+    "displayName" : "Attribute 2",
+    "value" : "12.3456",
+    "valueRendered" : "12.3456"
+  }, {
+    "code" : "A3",
+    "displayName" : "Attribute 3",
+    "value" : "2021-11-12",
+    "valueRendered" : "2021-11-12"
+  }, {
+    "code" : "A4",
+    "displayName" : "Attribute 4",
+    "value" : "60002",
+    "valueRendered" : "A4_Item1"
+  } ],
+  "id" : "64ad677d94478e65f4648d747319-24414",
+  "packingInfo" : {
+    "caption" : "Some TU",
+    "huUnitType" : "TU",
+    "packingInstructionsId" : 70003
+  },
+  "product" : {
+    "code" : "P1",
+    "id" : 60001,
+    "name" : "Product 1"
+  }
+} ] ]

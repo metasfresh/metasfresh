@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1867505291L;
+	private static final long serialVersionUID = -1808118019L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -309,6 +309,48 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public java.lang.String getCopyFrom() 
 	{
 		return get_ValueAsString(COLUMNNAME_CopyFrom);
+	}
+
+	@Override
+	public void setCurrent_Receiving_LU_HU_ID (final int Current_Receiving_LU_HU_ID)
+	{
+		if (Current_Receiving_LU_HU_ID < 1) 
+			set_Value (COLUMNNAME_Current_Receiving_LU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_Receiving_LU_HU_ID, Current_Receiving_LU_HU_ID);
+	}
+
+	@Override
+	public int getCurrent_Receiving_LU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_Receiving_LU_HU_ID);
+	}
+
+	@Override
+	public void setCurrent_Receiving_TU_PI_Item_Product_ID (final int Current_Receiving_TU_PI_Item_Product_ID)
+	{
+		if (Current_Receiving_TU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID, Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getCurrent_Receiving_TU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public void setCurrentScaleDeviceId (final @Nullable java.lang.String CurrentScaleDeviceId)
+	{
+		set_Value (COLUMNNAME_CurrentScaleDeviceId, CurrentScaleDeviceId);
+	}
+
+	@Override
+	public java.lang.String getCurrentScaleDeviceId() 
+	{
+		return get_ValueAsString(COLUMNNAME_CurrentScaleDeviceId);
 	}
 
 	@Override
@@ -818,6 +860,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public int getM_ShipmentSchedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override

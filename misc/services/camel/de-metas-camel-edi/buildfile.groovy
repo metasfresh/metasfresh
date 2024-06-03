@@ -45,7 +45,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
     // build and install
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
     // maven.test.failure.ignore=true: see metasfresh stage
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
+    sh "mvn -e -X --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${env.MF_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean install"
 
     final DockerConf dockerConf = new DockerConf(
             'de-metas-edi-esb-camel', // artifactName

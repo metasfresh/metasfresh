@@ -22,24 +22,22 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
 
-@ToString(exclude= {"_ctx", "invoiceCandDAO"})
-/*package*/class InvoiceCandRecomputeTagger implements IInvoiceCandRecomputeTagger
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+
+@ToString(exclude = { "_ctx", "invoiceCandDAO" })
+		/*package*/class InvoiceCandRecomputeTagger implements IInvoiceCandRecomputeTagger
 {
 	// services
 	private final transient InvoiceCandDAO invoiceCandDAO;
@@ -50,18 +48,18 @@ import lombok.ToString;
 	private String _trxName;
 	private InvoiceCandRecomputeTag _recomputeTagToUseForTagging;
 	private ILock _lockedBy = null;
+
+	@Nullable
 	private InvoiceCandRecomputeTag _taggedWith = null;
 	private int _limit = -1;
-	private Set<Integer> onlyC_Invoice_Candidate_IDs = null;
+	private InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = null;
 
 	//
 	// State
 	private InvoiceCandRecomputeTag _recomputeTag;
 
-	public InvoiceCandRecomputeTagger(final InvoiceCandDAO invoiceCandDAO)
+	public InvoiceCandRecomputeTagger(@NonNull final InvoiceCandDAO invoiceCandDAO)
 	{
-		super();
-		Check.assumeNotNull(invoiceCandDAO, "invoiceCandDAO not null");
 		this.invoiceCandDAO = invoiceCandDAO;
 	}
 
@@ -84,8 +82,7 @@ import lombok.ToString;
 	@Override
 	public void deleteAllTaggedAndInvalidateCache()
 	{
-		final Collection<Integer> onlyInvoiceCandidateIds = null; // i.e. ALL
-		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, onlyInvoiceCandidateIds);
+		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, null /*null means "ALL"*/);
 	}
 
 	@Override
@@ -110,8 +107,7 @@ import lombok.ToString;
 		final Properties ctx = getCtx();
 		final String trxName = getTrxName();
 		final InvoiceCandRecomputeTag recomputeTag = getRecomputeTag();
-		final Iterator<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.fetchInvalidInvoiceCandidates(ctx, recomputeTag, trxName);
-		return invoiceCandidates;
+		return invoiceCandDAO.fetchInvalidInvoiceCandidates(ctx, recomputeTag, trxName);
 	}
 
 	@Override
@@ -141,7 +137,7 @@ import lombok.ToString;
 		return this;
 	}
 
-	private final void generateRecomputeTagIfNotSet()
+	private void generateRecomputeTagIfNotSet()
 	{
 		// Do nothing if the recompute tag was already generated
 		if (!InvoiceCandRecomputeTag.isNull(_recomputeTag))
@@ -160,7 +156,9 @@ import lombok.ToString;
 		_recomputeTag = invoiceCandDAO.generateNewRecomputeTag();
 	}
 
-	/** @return recompute tag; never returns null */
+	/**
+	 * @return recompute tag; never returns null
+	 */
 	final InvoiceCandRecomputeTag getRecomputeTag()
 	{
 		Check.assumeNotNull(_recomputeTag, "_recomputeTag not null");
@@ -168,7 +166,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setLockedBy(ILock lockedBy)
+	public InvoiceCandRecomputeTagger setLockedBy(final ILock lockedBy)
 	{
 		this._lockedBy = lockedBy;
 		return this;
@@ -180,7 +178,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setTaggedWith(final InvoiceCandRecomputeTag tag)
+	public InvoiceCandRecomputeTagger setTaggedWith(@Nullable final InvoiceCandRecomputeTag tag)
 	{
 		_taggedWith = tag;
 		return this;
@@ -198,14 +196,15 @@ import lombok.ToString;
 		return setTaggedWith(null);
 	}
 
-
-	/* package */InvoiceCandRecomputeTag getTaggedWith()
+	/* package */
+	@Nullable
+	InvoiceCandRecomputeTag getTaggedWith()
 	{
 		return _taggedWith;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setLimit(int limit)
+	public InvoiceCandRecomputeTagger setLimit(final int limit)
 	{
 		this._limit = limit;
 		return this;
@@ -217,40 +216,15 @@ import lombok.ToString;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(@NonNull final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public void setOnlyInvoiceCandidateIds(@NonNull final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
-		final Set<Integer> invoiceCandidateIds = new HashSet<>();
-		while (invoiceCandidates.hasNext())
-		{
-			final I_C_Invoice_Candidate ic = invoiceCandidates.next();
-			final int invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
-			if (invoiceCandidateId <= 0)
-			{
-				continue;
-			}
-
-			invoiceCandidateIds.add(invoiceCandidateId);
-		}
-
-		this.onlyC_Invoice_Candidate_IDs = ImmutableSet.copyOf(invoiceCandidateIds);
-
-		return this;
+		this.onlyInvoiceCandidateIds = onlyInvoiceCandidateIds;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(@NonNull final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	@Nullable
+	public final InvoiceCandidateIdsSelection getOnlyInvoiceCandidateIds()
 	{
-		return setOnlyC_Invoice_Candidates(invoiceCandidates.iterator());
-	}
-
-	@Override
-	public boolean isOnlyC_Invoice_Candidate_IDs()
-	{
-		return onlyC_Invoice_Candidate_IDs != null;
-	}
-
-	final Set<Integer> getOnlyC_Invoice_Candidate_IDs()
-	{
-		return onlyC_Invoice_Candidate_IDs;
+		return onlyInvoiceCandidateIds;
 	}
 }

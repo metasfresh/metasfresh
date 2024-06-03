@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -66,10 +67,19 @@ public class PickingJobCreateRepoRequest
 		@NonNull Quantity qtyToPick;
 		//
 		// From where?
-		@NonNull LocatorId pickFromLocatorId;
-		@NonNull HuId pickFromHUId;
+		@NonNull StepPickFrom mainPickFrom;
 
 		@Builder.Default
-		@NonNull ImmutableSet<HuId> pickFromHUIdsAlternatives = ImmutableSet.of();
+		@NonNull ImmutableSet<StepPickFrom> pickFromAlternatives = ImmutableSet.of();
+
+		@NonNull PackToSpec packToSpec;
+	}
+
+	@Value
+	@Builder
+	public static class StepPickFrom
+	{
+		@NonNull LocatorId pickFromLocatorId;
+		@NonNull HuId pickFromHUId;
 	}
 }

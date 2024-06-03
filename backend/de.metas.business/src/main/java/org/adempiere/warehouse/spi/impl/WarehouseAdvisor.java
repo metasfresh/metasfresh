@@ -1,15 +1,5 @@
 package org.adempiere.warehouse.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.order.OrderLineId;
@@ -17,7 +7,16 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * Default implementation of {@link IWarehouseAdvisor}.
@@ -67,10 +66,12 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
+		final boolean isSOTrx = order.isSOTrx();
 		// task 07014: for a dropship purchase order, we take the org info's dropship warehouse. our vendor will send the good directly to our customer and it will never enter any of our physical
 		// warehouses, but none the less we own it for a certain time. That'S what the dropship warehouse is for.
 		// For a sales order, "dropship" means that the order's receiver is someone other than the partner who ordered. For this scenario, we don't need a particular dropship warehouse.
-		if (order.isDropShip() && !order.isSOTrx())
+
+		if (order.isDropShip() && !isSOTrx)
 		{
 			final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
 			if (dropShipWarehouseId == null)
@@ -89,7 +90,9 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return pickingWarehouseId;
 		}
 
-		return orgsRepo.getOrgWarehouseId(adOrgId);
+		final WarehouseId orgPOWarehouseId = orgsRepo.getOrgPOWarehouseId(adOrgId);
+
+		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgsRepo.getOrgWarehouseId(adOrgId);
 	}
 
 	/**

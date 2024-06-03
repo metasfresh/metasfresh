@@ -1,0 +1,31 @@
+
+{{ if .Values.ingress.pgadmin.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pgadmin-ingress
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  {{ if .Values.ingress.tls.enabled }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.pgadmin.url }}
+    secretName: pgadmin-tls
+  {{ end }}
+  rules:
+  - host: {{ .Values.ingress.pgadmin.url }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: metasfresh-pgadmin
+            port:
+              number: {{ .Values.pgadmin.port.pgadmin }}
+{{ end }}
+
+  

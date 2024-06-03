@@ -262,9 +262,12 @@ public class BPartnerCompositeRepository
 		return loader.retrieveByIds(bpartnerIds);
 	}
 
-	public void save(@NonNull final BPartnerComposite bpartnerComposite)
+	/**
+	 * @param validatePermissions Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
+	 */
+	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
-		saver.save(bpartnerComposite);
+		saver.save(bpartnerComposite, validatePermissions );
 	}
 }

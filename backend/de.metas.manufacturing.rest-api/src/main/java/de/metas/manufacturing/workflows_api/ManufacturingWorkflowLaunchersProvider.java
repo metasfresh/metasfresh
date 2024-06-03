@@ -4,15 +4,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-
-import java.time.Duration;
-import java.util.ArrayList;
 
 public class ManufacturingWorkflowLaunchersProvider
 {
@@ -24,75 +22,55 @@ public class ManufacturingWorkflowLaunchersProvider
 		this.manufacturingRestService = manufacturingRestService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		return computeLaunchers(userId, suggestedLimit);
-	}
+	public WorkflowLaunchersList provideLaunchers(@NonNull final UserId userId, @NonNull final QueryLimit suggestedLimit) {return computeLaunchers(userId, suggestedLimit);}
 
 	private WorkflowLaunchersList computeLaunchers(
 			final @NonNull UserId userId,
 			final @NonNull QueryLimit limit)
 	{
-		final ArrayList<WorkflowLauncher> currentResult = new ArrayList<>();
-
-		//
-		// Already started launchers
-		final ImmutableList<PPOrderReference> existingPPOrders = manufacturingRestService.streamActiveReferencesAssignedTo(userId)
+		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(userId, limit)
+				.map(this::toWorkflowLauncher)
 				.collect(ImmutableList.toImmutableList());
-		existingPPOrders.stream()
-				.map(this::toExistingWorkflowLauncher)
-				.forEach(currentResult::add);
-
-		//
-		// New launchers
-		if (!limit.isLimitHitOrExceeded(currentResult))
-		{
-			manufacturingRestService.streamActiveReferencesNotAssigned()
-					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
-					.map(this::toNewWorkflowLauncher)
-					.forEach(currentResult::add);
-		}
 
 		return WorkflowLaunchersList.builder()
-				.launchers(ImmutableList.copyOf(currentResult))
+				.launchers(launchers)
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
 
-	private WorkflowLauncher toExistingWorkflowLauncher(final PPOrderReference ppOrderReference)
+	private WorkflowLauncher toWorkflowLauncher(final ManufacturingJobReference manufacturingJobReference)
 	{
-		return WorkflowLauncher.builder()
-				.applicationId(ManufacturingMobileApplication.HANDLER_ID)
-				.caption(computeCaption(ppOrderReference))
-				.startedWFProcessId(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, ppOrderReference.getPpOrderId()))
-				.build();
+		if (manufacturingJobReference.isJobStarted())
+		{
+			return WorkflowLauncher.builder()
+					.applicationId(ManufacturingMobileApplication.HANDLER_ID)
+					.caption(computeCaption(manufacturingJobReference))
+					.startedWFProcessId(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, manufacturingJobReference.getPpOrderId()))
+					.build();
+		}
+		else
+		{
+			return WorkflowLauncher.builder()
+					.applicationId(ManufacturingMobileApplication.HANDLER_ID)
+					.caption(computeCaption(manufacturingJobReference))
+					.wfParameters(ManufacturingWFProcessStartParams.builder()
+							.ppOrderId(manufacturingJobReference.getPpOrderId())
+							.build()
+							.toParams())
+					.build();
+		}
 	}
 
-	private WorkflowLauncher toNewWorkflowLauncher(@NonNull final PPOrderReference ppOrderReference)
-	{
-		return WorkflowLauncher.builder()
-				.applicationId(ManufacturingMobileApplication.HANDLER_ID)
-				.caption(computeCaption(ppOrderReference))
-				.wfParameters(ManufacturingWFProcessStartParams.builder()
-						.ppOrderId(ppOrderReference.getPpOrderId())
-						.build()
-						.toParams())
-				.build();
-	}
-
-	private ITranslatableString computeCaption(@NonNull final PPOrderReference ppOrderReference)
+	private ITranslatableString computeCaption(@NonNull final ManufacturingJobReference manufacturingJobReference)
 	{
 		return TranslatableStrings.builder()
-				.append(ppOrderReference.getDocumentNo())
+				.append(manufacturingJobReference.getDocumentNo())
 				.append(" | ")
-				.append(ppOrderReference.getProductName())
+				.append(manufacturingJobReference.getProductName())
 				.append(" | ")
-				.appendQty(ppOrderReference.getQtyRequiredToProduce().toBigDecimal(), ppOrderReference.getQtyRequiredToProduce().getUOMSymbol())
+				.appendQty(manufacturingJobReference.getQtyRequiredToProduce().toBigDecimal(), manufacturingJobReference.getQtyRequiredToProduce().getUOMSymbol())
 				.append(" | ")
-				.appendDateTime(ppOrderReference.getDatePromised())
+				.appendDateTime(manufacturingJobReference.getDatePromised())
 				.build();
 	}
 }

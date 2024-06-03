@@ -1,8 +1,8 @@
 package de.metas.attachments;
 
 import com.google.common.base.Preconditions;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.CreatedUpdatedInfo;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -29,14 +29,9 @@ import java.util.Set;
 @ToString
 public class AttachmentEntry
 {
-	public enum Type
-	{
-		Data, URL
-	}
-
 	AttachmentEntryId id;
 	String name;
-	Type type;
+	AttachmentEntryType type;
 	String filename;
 	String mimeType;
 	URI url;
@@ -55,7 +50,7 @@ public class AttachmentEntry
 	private AttachmentEntry(
 			@Nullable final AttachmentEntryId id,
 			@Nullable final String name,
-			@NonNull final Type type,
+			@NonNull final AttachmentEntryType type,
 			@Nullable final String filename,
 			@Nullable final String mimeType,
 			@Nullable final URI url,
@@ -76,19 +71,22 @@ public class AttachmentEntry
 		
 		this.createdUpdatedInfo=createdUpdatedInfo;
 
-		if (type == Type.Data)
+		switch (type)
 		{
-			this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
-			this.url = null;
-		}
-		else if (type == Type.URL)
-		{
-			this.mimeType = null;
-			this.url = Preconditions.checkNotNull(url, "url");
-		}
-		else
-		{
-			throw new AdempiereException("Attachment entry type not supported: " + type);
+			case Data:
+				this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
+				this.url = null;
+				break;
+			case URL:
+				this.mimeType = null;
+				this.url = Preconditions.checkNotNull(url, "url");
+				break;
+			case LocalFileURL:
+				this.mimeType = mimeType != null ? mimeType : MimeType.getMimeType(this.name);
+				this.url = Preconditions.checkNotNull(url, "url");
+				break;
+			default:
+				throw new AdempiereException("Attachment entry type not supported: " + type);
 		}
 	}
 

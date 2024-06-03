@@ -40,7 +40,7 @@ public class InvoiceCandidateLockingUtil
 	private static final String LOCK_OWNER_PREFIX = "ICEnqueuer";
 
 	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	public static final ILock lockInvoiceCandidatesForSelection(@NonNull final PInstanceId pinstanceId)
+	public static ILock lockInvoiceCandidatesForSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final ILockManager lockManager = Services.get(ILockManager.class);
 
@@ -56,7 +56,7 @@ public class InvoiceCandidateLockingUtil
 				.acquire();
 	}
 
-	public static final ILock lockInvoiceCandidates(
+	public static ILock lockInvoiceCandidates(
 			@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidateRecords,
 			@NonNull final String uniqueLockOwnerSuffix)
 	{

@@ -1,6 +1,7 @@
 package org.eevolution.api.impl;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
@@ -16,11 +17,13 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
 import javax.annotation.Nullable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -163,8 +166,8 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public void changeOrderScheduling(
 			@NonNull final PPOrderId orderId,
-			@NonNull final LocalDateTime scheduledStartDate,
-			@NonNull final LocalDateTime scheduledFinishDate)
+			@NonNull final Instant scheduledStartDate,
+			@NonNull final Instant scheduledFinishDate)
 	{
 		final I_PP_Order order = getById(orderId);
 		order.setDateStartSchedule(TimeUtil.asTimestamp(scheduledStartDate));
@@ -222,5 +225,28 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addNotEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, X_PP_Order.DOCSTATUS_Closed)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getPPOrderAllocations(@NonNull final PPOrderId ppOrderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId.getRepoId())
+				.create()
+				.listImmutable(I_PP_OrderCandidate_PP_Order.class);
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_Order> getByProductBOMId(@NonNull final ProductBOMId productBOMId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMId.getRepoId())
+				.create()
+				.listImmutable(I_PP_Order.class);
 	}
 }

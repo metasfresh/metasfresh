@@ -24,11 +24,15 @@ package de.metas.common.rest_api.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.common.util.Check;
+import de.metas.common.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Value
 public class JsonMetasfreshId
@@ -36,9 +40,16 @@ public class JsonMetasfreshId
 	int value;
 
 	@JsonCreator
-	public static JsonMetasfreshId of(@NonNull final Integer value)
+	public static JsonMetasfreshId of(@NonNull final Object value)
 	{
-		return new JsonMetasfreshId(value);
+		try
+		{
+			return new JsonMetasfreshId(NumberUtils.asInt(value));
+		}
+		catch (Exception ex)
+		{
+			throw Check.mkEx("Invalid " + JsonMetasfreshId.class.getSimpleName() + ": `" + value + "` (" + value.getClass() + ")", ex);
+		}
 	}
 
 	@Nullable
@@ -100,6 +111,28 @@ public class JsonMetasfreshId
 		if (externalId == null)
 		{
 			return "-1";
+		}
+		return String.valueOf(externalId.getValue());
+	}
+
+	@NonNull
+	public static Optional<Integer> toValueOptional(@Nullable final JsonMetasfreshId externalId)
+	{
+		return Optional.ofNullable(toValue(externalId));
+	}
+
+	@Nullable
+	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper)
+	{
+		return toValueOptional(externalId).map(mapper).orElse(null);
+	}
+
+	@Nullable
+	public static String toValueStrOrNull(@Nullable final JsonMetasfreshId externalId)
+	{
+		if (externalId == null)
+		{
+			return null;
 		}
 		return String.valueOf(externalId.getValue());
 	}

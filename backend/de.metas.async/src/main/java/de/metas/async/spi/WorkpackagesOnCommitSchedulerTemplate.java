@@ -3,10 +3,8 @@ package de.metas.async.spi;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -88,8 +86,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return new ModelsScheduler<>(workpackageProcessorClass, modelType, collectModels);
 	}
 
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-
 	private final Class<? extends IWorkpackageProcessor> workpackageProcessorClass;
 	private final String trxPropertyName;
 	private final AtomicBoolean createOneWorkpackagePerModel = new AtomicBoolean(false);
@@ -109,9 +105,9 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Schedule given item to be enqueued in a transaction level workpackage which will be submitted when the transaction is committed.
-	 *
+	 * <p>
 	 * The transaction is extracted from item, using {@link #extractTrxNameFromItem(Object)}.
-	 *
+	 * <p>
 	 * If item has no transaction, a workpackage with given item will be automatically created and enqueued to be processed.
 	 */
 	public final void schedule(@NonNull final ItemType item)
@@ -150,7 +146,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Checks if given item is eligible for scheduling.
-	 *
+	 * <p>
 	 * To be implemented by extending classes in order to avoid some items to be scheduled. By default this method accepts any item.
 	 *
 	 * @return true if given item shall be scheduled
@@ -175,7 +171,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 
 	/**
 	 * Extract and return the context to be used from given item.
-	 *
+	 * <p>
 	 * The context is used to create the internal {@link IWorkPackageBuilder}.
 	 *
 	 * @return ctx; shall never be <code>null</code>
@@ -194,6 +190,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 *
 	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
 	 */
+	@Nullable
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);
 
 	public Optional<AsyncBatchId> extractAsyncBatchFromItem(final Collector collector, final ItemType item)
@@ -209,6 +206,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 		return false;
 	}
 
+	@Nullable
 	protected UserId extractUserInChargeOrNull(final ItemType item)
 	{
 		return null;
@@ -371,52 +369,42 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 				return;
 			}
 
-			final IWorkPackageBlockBuilder blockBuilder = Services.get(IWorkPackageQueueFactory.class)
-					.getQueueForEnqueuing(ctx, workpackageProcessorClass)
-					.newBlock()
-					.setContext(ctx);
+			final IWorkPackageQueue workPackageQueue = Services.get(IWorkPackageQueueFactory.class)
+					.getQueueForEnqueuing(ctx, workpackageProcessorClass);
 
 			if (isCreateOneWorkpackagePerModel())
 			{
 				for (final Object model : models)
 				{
-					createAndSubmitWorkpackage(blockBuilder, ImmutableList.of(model), null);
+					createAndSubmitWorkpackage(workPackageQueue, ImmutableList.of(model), null);
 				}
 			}
 			else if (isCreateOneWorkpackagePerAsyncBatch())
 			{
-				createAndSubmitWorkpackagesByAsyncBatch(blockBuilder);
+				createAndSubmitWorkpackagesByAsyncBatch(workPackageQueue);
 			}
 			else
 			{
-				createAndSubmitWorkpackage(blockBuilder, models, null);
+				createAndSubmitWorkpackage(workPackageQueue, models, null);
 			}
 		}
 
 		private void createAndSubmitWorkpackage(
-				@NonNull final IWorkPackageBlockBuilder blockBuilder,
+				@NonNull final IWorkPackageQueue workPackageQueue,
 				@NonNull final Collection<Object> modelsToEnqueue,
 				@Nullable final AsyncBatchId asyncBatchId)
 		{
-			final IWorkPackageBuilder builder = blockBuilder.newWorkpackage()
+			workPackageQueue.newWorkPackage()
 					.setUserInChargeId(userIdInCharge)
 					.parameters(parameters)
-					.addElements(modelsToEnqueue);
-
-			if (asyncBatchId != null)
-			{
-				final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
-				builder.setC_Async_Batch(asyncBatch);
-			}
-
-			builder.build();
+					.addElements(modelsToEnqueue)
+					.setC_Async_Batch_ID(asyncBatchId)
+					.buildAndEnqueue();
 		}
 
-		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageBlockBuilder blockBuilder)
+		private void createAndSubmitWorkpackagesByAsyncBatch(@NonNull final IWorkPackageQueue workPackageQueue)
 		{
-			batchId2Models.forEach((key, models) -> {
-				createAndSubmitWorkpackage(blockBuilder, models, AsyncBatchId.toAsyncBatchIdOrNull(key));
-			});
+			batchId2Models.forEach((key, models) -> createAndSubmitWorkpackage(workPackageQueue, models, AsyncBatchId.toAsyncBatchIdOrNull(key)));
 		}
 
 		private boolean hasNoModels()
@@ -459,6 +447,7 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 			return InterfaceWrapperHelper.getTrxName(item);
 		}
 
+		@Nullable
 		@Override
 		protected Object extractModelToEnqueueFromItem(final Collector collector, final ModelType item)
 		{

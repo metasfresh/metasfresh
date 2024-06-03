@@ -36,8 +36,9 @@ import de.metas.ui.web.payment_allocation.process.InvoicesView_MarkPreparedForAl
 import de.metas.ui.web.payment_allocation.process.InvoicesView_UnMarkPreparedForAllocation;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_AddAdditionalPayment;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_Allocate;
-import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndDiscount;
-import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndWriteOff;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceDiscount;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_InvoiceWriteOff;
+import de.metas.ui.web.payment_allocation.process.PaymentsView_PaymentWriteOff;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.DefaultViewsRepositoryStorage;
 import de.metas.ui.web.view.IView;
@@ -97,9 +98,10 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				.setIncludedViewLayout(IncludedViewLayout.builder()
-											   .openOnSelect(true)
-											   .blurWhenOpen(false)
-											   .build())
+						.openOnSelect(true)
+						.blurWhenOpen(false)
+						.closeOnDeselect(false)
+						.build())
 				.addElementsFromViewRowClass(PaymentRow.class, viewDataType)
 				.build();
 	}
@@ -157,9 +159,10 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	{
 		return ImmutableList.of(
 				createProcessDescriptor(10, PaymentsView_Allocate.class),
-				createProcessDescriptor(20, PaymentsView_AllocateAndDiscount.class),
-				createProcessDescriptor(30, PaymentsView_AllocateAndWriteOff.class),
-				createProcessDescriptor(40, PaymentsView_AddAdditionalPayment.class));
+				createProcessDescriptor(20, PaymentsView_InvoiceDiscount.class),
+				createProcessDescriptor(30, PaymentsView_InvoiceWriteOff.class),
+				createProcessDescriptor(40, PaymentsView_PaymentWriteOff.class),
+				createProcessDescriptor(90, PaymentsView_AddAdditionalPayment.class));
 	}
 
 	private List<RelatedProcessDescriptor> getInvoiceRelatedProcessDescriptors()

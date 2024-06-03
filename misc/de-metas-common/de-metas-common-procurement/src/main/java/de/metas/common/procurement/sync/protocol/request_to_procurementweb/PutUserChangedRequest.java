@@ -29,17 +29,18 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.UUID;
 
 @Value
 @EqualsAndHashCode(callSuper = false)
 @Builder
-@JsonDeserialize(builder = PutUserChangedRequest.PutUserChangedRequestBuilder.class)
+@Jacksonized
 public class PutUserChangedRequest extends RequestToMetasfresh
 {
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class PutUserChangedRequestBuilder
-	{
-	}
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
 
 	@NonNull String userUUID;
 

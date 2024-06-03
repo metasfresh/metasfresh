@@ -33,6 +33,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.scheduler.SchedulerAction;
+import de.metas.scheduler.SchedulerSearchKey;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.SchedulerEventBusService;
 import de.metas.util.Check;
@@ -95,10 +97,10 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + type.getExternalSystemProcessClassName());
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
-													 .adProcessId(targetProcessId)
+													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.DISABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .schedulerAction(SchedulerAction.DISABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.DISABLE)
 													 .build());
 		return MSG_OK;
 	}

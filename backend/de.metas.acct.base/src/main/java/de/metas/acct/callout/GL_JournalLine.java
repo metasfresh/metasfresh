@@ -101,8 +101,6 @@ public class GL_JournalLine
 				adOrgId)
 				.map(CurrencyRate::getConversionRate)
 				.orElse(BigDecimal.ZERO);
-
-		//
 		glJournalLine.setCurrencyRate(currencyRate);
 	}
 
@@ -112,15 +110,21 @@ public class GL_JournalLine
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(journalLine.getGL_Journal().getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final CurrencyPrecision precision = acctSchema.getStandardPrecision();
+
 		final BigDecimal currencyRate = journalLine.getCurrencyRate();
+		final BigDecimal parentCurrencyRate = journalLine.getGL_Journal().getCurrencyRate();
+		if(currencyRate.signum() == 0 && parentCurrencyRate.signum() != 0)
+		{
+			journalLine.setCurrencyRate(parentCurrencyRate);
+		}
 
 		// AmtAcct = AmtSource * CurrencyRate ==> Precision
 		final BigDecimal amtSourceDr = journalLine.getAmtSourceDr();
-		final BigDecimal amtAcctDr = amtSourceDr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
+		final BigDecimal amtAcctDr = amtSourceDr.multiply(journalLine.getCurrencyRate()).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctDr(amtAcctDr);
 
 		final BigDecimal amtSourceCr = journalLine.getAmtSourceCr();
-		final BigDecimal amtAcctCr = amtSourceCr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
+		final BigDecimal amtAcctCr = amtSourceCr.multiply(journalLine.getCurrencyRate()).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctCr(amtAcctCr);
 	}
 

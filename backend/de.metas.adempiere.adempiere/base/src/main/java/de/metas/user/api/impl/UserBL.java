@@ -340,27 +340,6 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
-	{
-		final StringBuilder contactName = new StringBuilder();
-		if (lastName != null && !Check.isBlank(lastName))
-		{
-			contactName.append(lastName.trim());
-		}
-
-		if (firstName != null && !Check.isBlank(firstName))
-		{
-			if (contactName.length() > 0)
-			{
-				contactName.append(", ");
-			}
-			contactName.append(firstName.trim());
-		}
-
-		return contactName.toString();
-	}
-
-	@Override
 	public boolean isEMailValid(final I_AD_User user)
 	{
 		// NOTE: even though AD_User.EMail is supposed to contain only one EMail and not ";" separated emails,

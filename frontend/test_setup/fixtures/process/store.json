@@ -157,7 +157,8 @@
             ],
             "includedView": {
               "openOnSelect": false,
-              "blurWhenOpen": true
+              "blurWhenOpen": true,
+              "closeOnDeselect": true
             },
             "supportIncludedView": true,
             "supportIncludedViewOnSelect": null,
@@ -673,7 +674,8 @@
             ],
             "includedView": {
               "openOnSelect": true,
-              "blurWhenOpen": true
+              "blurWhenOpen": true,
+              "closeOnDeselect": true
             },
             "supportIncludedView": true,
             "supportIncludedViewOnSelect": true,

@@ -10,6 +10,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableListMultimap;
@@ -148,6 +150,7 @@ public class Amount implements Comparable<Amount>
 	{
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 
+		//noinspection ConstantConditions
 		final Iterator<Amount> moneysIterator = Stream.of(amounts)
 				.filter(Objects::nonNull)
 				.iterator();
@@ -264,5 +267,10 @@ public class Amount implements Comparable<Amount>
 		return value.signum() < 0
 				? new Amount(value.abs(), currencyCode)
 				: this;
+	}
+
+	public Money toMoney(@NonNull final Function<CurrencyCode, CurrencyId> currencyIdMapper)
+	{
+		return Money.of(value, currencyIdMapper.apply(currencyCode));
 	}
 }

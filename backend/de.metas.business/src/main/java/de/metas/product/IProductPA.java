@@ -22,16 +22,15 @@ package de.metas.product;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Properties;
-
-import org.adempiere.model.I_M_ProductScalePrice;
-import org.compiere.model.MAttributeSetInstance;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.util.ISingletonService;
+import org.adempiere.model.I_M_ProductScalePrice;
+import org.compiere.model.MAttributeSetInstance;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Properties;
 
 public interface IProductPA extends ISingletonService
 {
@@ -56,4 +55,6 @@ public interface IProductPA extends ISingletonService
 	Collection<I_M_ProductScalePrice> retrieveScalePrices(int productPriceId, String trxName);
 
 	I_M_ProductScalePrice retrieveOrCreateScalePrices(int productPriceId, BigDecimal qty, boolean createNew, String trxName);
+
+	I_M_ProductScalePrice retrieveScalePrices(int productPriceId, BigDecimal qty, String trxName);
 }

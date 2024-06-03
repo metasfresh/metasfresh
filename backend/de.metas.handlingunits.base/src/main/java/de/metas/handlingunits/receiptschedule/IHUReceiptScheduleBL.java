@@ -9,6 +9,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.storage.IProductStorage;
@@ -77,7 +78,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	@Value
 	@Builder
-	public class CreateReceiptsParameters
+	class CreateReceiptsParameters
 	{
 		@NonNull
 		Properties ctx;
@@ -135,6 +136,8 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_ReceiptSchedule receiptSchedule);
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_ReceiptSchedule> receiptSchedules);
+
+	void adjustLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfig, I_M_ReceiptSchedule fromReceiptSchedule);
 
 	/**
 	 * Destroy the handling units from allocations in a huContext

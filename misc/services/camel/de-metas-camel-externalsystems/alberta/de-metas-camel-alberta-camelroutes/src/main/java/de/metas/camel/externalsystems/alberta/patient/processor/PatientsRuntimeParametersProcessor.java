@@ -23,9 +23,9 @@
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import org.apache.camel.Exchange;

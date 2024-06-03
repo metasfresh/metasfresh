@@ -1,14 +1,14 @@
 package org.adempiere.ad.migration.logger;
 
-import java.nio.file.Path;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.compiere.util.Ini;
 
-import de.metas.util.Services;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.util.Set;
 
 /*
  * #%L
@@ -40,15 +40,9 @@ public class MigrationScriptFileLoggerHolder
 
 	public static void logMigrationScript(@Nullable final String sql)
 	{
-		if (sql == null)
-		{
-			return;
-		}
-
-		// Check AdempiereSys
-		// check property Log migration script
-		final boolean logMigrationScript = Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
-		if (!logMigrationScript)
+		if (sql == null
+				|| isDisabled()
+				|| Check.isBlank(sql))
 		{
 			return;
 		}
@@ -58,20 +52,38 @@ public class MigrationScriptFileLoggerHolder
 			return;
 		}
 
-		pgMigrationScriptWriter.appendSqlStatement(sql);
+		pgMigrationScriptWriter.appendSqlStatement(Sql.ofSql(sql));
 	}
 
+	public static void logComment(@Nullable final String comment)
+	{
+		if (comment == null
+				|| isDisabled()
+				|| Check.isBlank(comment))
+		{
+			return;
+		}
+
+		pgMigrationScriptWriter.appendSqlStatement(Sql.ofComment(comment));
+	}
+
+	public static boolean isDisabled()
+	{
+		return !Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT);
+	}
+
+	@Nullable
 	public static Path getCurrentScriptPathOrNull()
 	{
 		return pgMigrationScriptWriter.getFilePathOrNull();
 	}
 
-	public static final void closeMigrationScriptFiles()
+	public static void closeMigrationScriptFiles()
 	{
 		pgMigrationScriptWriter.close();
 	}
 
-	private static boolean dontLog(String statement)
+	private static boolean dontLog(@NonNull final String statement)
 	{
 		// Always log DDL (flagged) commands
 		if (statement.startsWith(DDL_PREFIX))
@@ -79,7 +91,6 @@ public class MigrationScriptFileLoggerHolder
 			return false;
 		}
 
-		// metas: teo_sarca: end
 		final String uppStmt = statement.toUpperCase().trim();
 
 		//

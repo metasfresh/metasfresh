@@ -31,6 +31,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Value
@@ -89,6 +90,7 @@ public class CustomerTradeMargin
 			@NonNull final MappingCriteria mappingCriteria)
 	{
 		return lines.stream()
+				.sorted(Comparator.comparingInt(CustomerTradeMarginLine::getSeqNo))
 				.filter(line -> line.appliesTo(mappingCriteria))
 				.findFirst();
  	}

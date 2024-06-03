@@ -61,12 +61,12 @@ delete from ad_field where ad_column_id=55323;
 
 -- 2021-09-19T13:30:56.648Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=55323
+DELETE FROM AD_Column_Trl WHERE AD_Column_ID=55323
 ;
 
 
---custom ad_field in a legacy DB - safe to delete
-delete from  ad_field where ad_field_id=581745;
+--custom ad_fields in legacy DBs - safe to delete because we now have an m:n join table and an AD_Relation_Type for this
+delete from  ad_field where AD_Column_ID=55323;
 
 
 -- 2021-09-19T13:30:56.648Z

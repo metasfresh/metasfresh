@@ -1,9 +1,12 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -27,8 +30,14 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 public class JsonCheckInvoiceCandidatesStatusResponse
 {
-	private List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates;
+	List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates;
+
+	@Builder
+	@JsonCreator
+	public JsonCheckInvoiceCandidatesStatusResponse(@JsonProperty("invoiceCandidates") @NonNull final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates)
+	{
+		this.invoiceCandidates = invoiceCandidates;
+	}
 }

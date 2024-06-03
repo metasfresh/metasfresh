@@ -1,7 +1,7 @@
-DROP VIEW IF EXISTS M_Packageable_V
+DROP VIEW IF EXISTS m_packageable_v$new
 ;
 
-CREATE OR REPLACE VIEW M_Packageable_V AS
+CREATE OR REPLACE VIEW m_packageable_v$new AS
 SELECT p.*
 
      -- note: keep in sync with de.metas.picking.api.Packageable.getQtyPickedOrDelivered()
@@ -108,6 +108,10 @@ FROM (
              -- Picking/Manufacturing
              s.PickFrom_Order_ID,
 
+            --
+            -- Packing
+            coalesce(s.M_HU_PI_Item_Product_Override_ID, s.M_HU_PI_Item_Product_ID) AS PackTo_HU_PI_Item_Product_ID,
+
              --
              -- Locking
              -- NOTE: assume there is only one M_ShipmentSchedule_Lock record per each M_ShipmentSchedule_ID
@@ -144,3 +148,13 @@ FROM (
 ;
 
 
+SELECT db_alter_view(
+               'm_packageable_v',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE views.table_name = 'm_packageable_v$new')
+           )
+;
+
+DROP VIEW IF EXISTS m_packageable_v$new
+;

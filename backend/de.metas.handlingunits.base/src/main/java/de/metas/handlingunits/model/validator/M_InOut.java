@@ -146,7 +146,7 @@ public class M_InOut
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
-		if(!shipment.isSOTrx())
+		if (!shipment.isSOTrx())
 		{
 			return;
 		}
@@ -289,7 +289,7 @@ public class M_InOut
 
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
@@ -330,11 +330,11 @@ public class M_InOut
 			return; // nothing to do
 		}
 
-		if(returnsServiceFacade.isEmptiesReturn(customerReturn))
+		if (returnsServiceFacade.isEmptiesReturn(customerReturn))
 		{
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
-		
+
 		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
 
 		// the handling units are already created
@@ -390,4 +390,17 @@ public class M_InOut
 				.restoreFromSnapshot();
 
 	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateAttributesOnShipmentCompletion(final I_M_InOut shipment)
+	{
+		if (!shipment.isSOTrx())
+		{
+			// nothing to do
+			return;
+		}
+
+		huInOutBL.validateMandatoryOnShipmentAttributes(shipment);
+	}
+
 }

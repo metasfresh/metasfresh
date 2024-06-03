@@ -93,5 +93,7 @@ public interface IInvoiceLineBL extends ISingletonService
 
 	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
 
+	Quantity getQtyEnteredInStockUOM(I_C_InvoiceLine invoiceLine);
+
 	Quantity getQtyInvoicedStockUOM(I_C_InvoiceLine invoiceLine);
 }

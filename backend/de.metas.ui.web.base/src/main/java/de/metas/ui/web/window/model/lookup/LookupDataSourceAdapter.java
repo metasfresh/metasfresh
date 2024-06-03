@@ -50,7 +50,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 
 	private final LookupDataSourceFetcher fetcher;
 
-	protected LookupDataSourceAdapter(@NonNull final LookupDataSourceFetcher fetcher)
+	private LookupDataSourceAdapter(@NonNull final LookupDataSourceFetcher fetcher)
 	{
 		this.fetcher = fetcher;
 	}
@@ -81,7 +81,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	public final LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		final String filterEffective;
-		if (Check.isEmpty(filter, true))
+		if (Check.isBlank(filter))
 		{
 			filterEffective = LookupDataSourceContext.FILTER_Any;
 		}

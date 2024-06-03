@@ -1,12 +1,13 @@
 package de.metas.marketing.base.model;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -33,65 +34,58 @@ import lombok.Value;
 @Value
 public class EmailAddress implements ContactAddress
 {
+	@NonNull String value;
+
+	@NonNull DeactivatedOnRemotePlatform deactivatedOnRemotePlatform;
+
 	public static Optional<EmailAddress> cast(@Nullable final ContactAddress contactAddress)
 	{
-		if (contactAddress != null && contactAddress instanceof EmailAddress)
-		{
-			return Optional.of((EmailAddress)contactAddress);
-		}
-		return Optional.empty();
+		return contactAddress instanceof EmailAddress
+				? Optional.of((EmailAddress)contactAddress)
+				: Optional.empty();
 	}
 
-	public static String getEmailAddessStringOrNull(@Nullable final ContactAddress contactAddress)
+	public static String getEmailAddressStringOrNull(@Nullable final ContactAddress contactAddress)
 	{
-		final Optional<String> stringIfPresent = EmailAddress
-				.cast(contactAddress)
-				.map(EmailAddress::getValue)
-				.filter(s -> !Check.isEmpty(s, true));
-
-		return stringIfPresent.orElse(null);
+		return cast(contactAddress).map(EmailAddress::getValue).orElse(null);
 	}
 
-	public static Boolean getActiveOnRemotePlatformOrNull(@Nullable final ContactAddress contactAddress)
+	public static DeactivatedOnRemotePlatform getDeactivatedOnRemotePlatform(@Nullable final ContactAddress contactAddress)
 	{
-		final Optional<Boolean> boolIfPresent = EmailAddress
-				.cast(contactAddress)
-				.map(EmailAddress::getDeactivatedOnRemotePlatform);
-
-		return boolIfPresent.orElse(null);
+		final EmailAddress emailAddress = cast(contactAddress).orElse(null);
+		return emailAddress != null ? emailAddress.getDeactivatedOnRemotePlatform() : DeactivatedOnRemotePlatform.UNKNOWN;
 	}
 
 	public static EmailAddress ofString(@NonNull final String emailAddress)
 	{
-		return new EmailAddress(emailAddress, null);
+		return new EmailAddress(emailAddress, DeactivatedOnRemotePlatform.UNKNOWN);
 	}
 
 	public static EmailAddress ofStringOrNull(@Nullable final String emailAddress)
 	{
-		if (Check.isEmpty(emailAddress, true))
-		{
-			return null;
-		}
-		return new EmailAddress(emailAddress, null);
+		return emailAddress != null && !Check.isBlank(emailAddress)
+				? ofString(emailAddress)
+				: null;
 	}
 
 	public static EmailAddress of(
 			@NonNull final String emailAddress,
-			final Boolean deactivatedOnRemotePlatform)
+			@NonNull final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform)
 	{
 		return new EmailAddress(emailAddress, deactivatedOnRemotePlatform);
 	}
 
-	String value;
-
-	/** null means "unknown" */
-	Boolean deactivatedOnRemotePlatform;
-
-	public EmailAddress(
+	private EmailAddress(
 			@NonNull final String value,
-			@Nullable final Boolean deactivatedOnRemotePlatform)
+			@NonNull final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform)
 	{
-		this.value = Check.assumeNotEmpty(value, "The given value may not be empty");
+		final String valueNorm = StringUtils.trimBlankToNull(value);
+		if (valueNorm == null)
+		{
+			throw new AdempiereException("blank email address is not allowed");
+		}
+
+		this.value = valueNorm;
 		this.deactivatedOnRemotePlatform = deactivatedOnRemotePlatform;
 	}
 

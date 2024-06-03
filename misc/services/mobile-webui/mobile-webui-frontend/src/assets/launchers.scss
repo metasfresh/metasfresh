@@ -4,27 +4,3 @@
   padding-left: 1.5rem;
   padding-right: 1.5rem;
 }
-
-.launcher {
-  cursor: pointer;
-  margin-top: 0.4rem;
-  border: 1px solid $base-mf-green;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px 0px $grey-light;
-  transition: ".2s transform linear, .2s box-shadow linear !important";
-
-  .no-p {
-    padding: 0px;
-  }
-  .green-check {
-    color: $base-elements;
-  }
-  .box {
-    min-height: 5em;
-  }
-}
- 
-.launcher:hover {
-  background: $base-elements;
-  box-shadow: 0 4px 8px 0px $base-elements;
-}

@@ -93,7 +93,7 @@ public class MarginCommissionConfigFactoryTest
 		final ProductId transactionProductId = BusinessTestHelper.createProduct("salesProduct", uomPCE, categoryId);
 		final ProductId commissionProductId = BusinessTestHelper.createProduct("comissionProduct", uomPCE, categoryId);
 
-		final I_C_Flatrate_Term mediatedContract = contractAndComplementaryRecordsBuilder()
+		final I_C_Flatrate_Term marginContract = contractAndComplementaryRecordsBuilder()
 				.commissionProductId(commissionProductId)
 				.salesRepId(salesRepId)
 				.orgId(orgId)
@@ -109,7 +109,7 @@ public class MarginCommissionConfigFactoryTest
 				.commissionTriggerType(CommissionTriggerType.InvoiceCandidate)
 				.build();
 
-		Mockito.doReturn(ImmutableList.of(mediatedContract))
+		Mockito.doReturn(ImmutableList.of(marginContract))
 				.when(marginCommissionConfigFactorySpy)
 				.retrieveContracts(salesRepId, orgId, commissionDate);
 		//when
@@ -144,7 +144,7 @@ public class MarginCommissionConfigFactoryTest
 
 		return TestCommissionContractBuilder.commissionContractBuilder()
 				.commissionProductId(commissionProductId)
-				.vendorId(salesRepId)
+				.contractBPartnerId(salesRepId)
 				.orgId(orgId)
 				.marginConfigId(CustomerTradeMarginId.ofRepoId(margin.getC_Customer_Trade_Margin_ID()))
 				.typeConditions(TypeConditions.MARGIN_COMMISSION)

@@ -34,7 +34,7 @@ import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
 import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.rest_api.v1.shipping.ShipmentService;
 import de.metas.rest_api.v1.shipping.ShippedCandidateKey;
 import de.metas.shipping.IShipperDAO;

@@ -172,7 +172,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				pickupFromLocation,
 				pickupDate,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
+				//deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
@@ -192,7 +192,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
 			@NonNull final I_C_BPartner deliverToBPartner,
-			final int deliverToBPartnerLocationId,
+			//final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlShipperProduct serviceType,
@@ -262,7 +262,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		if (packingMaterial == null)
 		{
-			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
+			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
 		}
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);

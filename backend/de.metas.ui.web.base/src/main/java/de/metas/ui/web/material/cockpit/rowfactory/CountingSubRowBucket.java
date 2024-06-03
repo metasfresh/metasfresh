@@ -5,7 +5,6 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -53,6 +52,9 @@ import static de.metas.util.Check.assumeNotNull;
 @ToString
 public class CountingSubRowBucket
 {
+
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	public static CountingSubRowBucket create(final int plantId)
 	{
 		return new CountingSubRowBucket(plantId);
@@ -86,8 +88,6 @@ public class CountingSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
 		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
@@ -103,9 +103,7 @@ public class CountingSubRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(stockRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 

@@ -85,6 +85,8 @@ public class UpdateMainDataRequest
 	Instant qtyInventoryTime = Instant.ofEpochSecond(0);
 
 	@Nullable
+	Integer qtyStockEstimateSeqNo;
+	@Nullable
 	BigDecimal qtyStockEstimateCount;
 	@Nullable
 	Instant qtyStockEstimateTime;

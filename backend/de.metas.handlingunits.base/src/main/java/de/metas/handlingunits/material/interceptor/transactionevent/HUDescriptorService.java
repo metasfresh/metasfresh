@@ -53,6 +53,12 @@ public class HUDescriptorService
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
+	@NonNull
+	public ImmutableList<HUDescriptor> createHuDescriptors(@NonNull final I_M_HU huRecord)
+	{
+		return createHuDescriptors(huRecord, false);
+	}
+
 	public ImmutableList<HUDescriptor> createHuDescriptors(
 			@NonNull final I_M_HU huRecord,
 			final boolean deleted)

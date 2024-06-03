@@ -1,204 +1,173 @@
 package de.metas.material.cockpit.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_AvailableForSales_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_MD_AvailableForSales_Config 
 {
 
-    /** TableName=MD_AvailableForSales_Config */
-    public static final String Table_Name = "MD_AvailableForSales_Config";
+	String Table_Name = "MD_AvailableForSales_Config";
 
-    /** AD_Table_ID=541343 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541343 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Client>(I_MD_AvailableForSales_Config.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Org>(I_MD_AvailableForSales_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Max. Wartezeit auf asynchrone Antwort (ms).
-	 * Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	 * Set Async timeout (ms).
+	 * Maximum time in milli seconds to wait for an asynchronour result, before the request is aborted with an error message.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAsyncTimeoutMillis (int AsyncTimeoutMillis);
+	void setAsyncTimeoutMillis (int AsyncTimeoutMillis);
 
 	/**
-	 * Get Max. Wartezeit auf asynchrone Antwort (ms).
-	 * Maximale Zeit in Millisekunden, die bei einer asynchronen Abfrage gewartet wird, bevor ein mit einer Fehlermeldung abgebrochen wird.
+	 * Get Async timeout (ms).
+	 * Maximum time in milli seconds to wait for an asynchronour result, before the request is aborted with an error message.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAsyncTimeoutMillis();
+	int getAsyncTimeoutMillis();
 
-    /** Column definition for AsyncTimeoutMillis */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_AsyncTimeoutMillis = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "AsyncTimeoutMillis", null);
-    /** Column name AsyncTimeoutMillis */
-    public static final String COLUMNNAME_AsyncTimeoutMillis = "AsyncTimeoutMillis";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_AsyncTimeoutMillis = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "AsyncTimeoutMillis", null);
+	String COLUMNNAME_AsyncTimeoutMillis = "AsyncTimeoutMillis";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Created = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_User>(I_MD_AvailableForSales_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Description = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Farbe für kurzfr. Verfügbarkeitsproblem.
-	 * Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
+	 * Set Color for short-term availability problem.
+	 * Color to use when flagging sale order lines where the current stock minus foreseeable shipments is not sufficient to fulfill the ordered quantity.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInsufficientQtyAvailableForSalesColor_ID (int InsufficientQtyAvailableForSalesColor_ID);
+	void setInsufficientQtyAvailableForSalesColor_ID (int InsufficientQtyAvailableForSalesColor_ID);
 
 	/**
-	 * Get Farbe für kurzfr. Verfügbarkeitsproblem.
-	 * Farbe, mit der Auftragszeilen markiert werden, wenn der derzeitige Lagerbestand abzüglich absehbarer Lieferungen nicht ausreicht, um die jeweilige Auftragsposition zu bedienen.
+	 * Get Color for short-term availability problem.
+	 * Color to use when flagging sale order lines where the current stock minus foreseeable shipments is not sufficient to fulfill the ordered quantity.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getInsufficientQtyAvailableForSalesColor_ID();
+	int getInsufficientQtyAvailableForSalesColor_ID();
 
-	public org.compiere.model.I_AD_Color getInsufficientQtyAvailableForSalesColor();
+	org.compiere.model.I_AD_Color getInsufficientQtyAvailableForSalesColor();
 
-	public void setInsufficientQtyAvailableForSalesColor(org.compiere.model.I_AD_Color InsufficientQtyAvailableForSalesColor);
+	void setInsufficientQtyAvailableForSalesColor(org.compiere.model.I_AD_Color InsufficientQtyAvailableForSalesColor);
 
-    /** Column definition for InsufficientQtyAvailableForSalesColor_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Color> COLUMN_InsufficientQtyAvailableForSalesColor_ID = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Color>(I_MD_AvailableForSales_Config.class, "InsufficientQtyAvailableForSalesColor_ID", org.compiere.model.I_AD_Color.class);
-    /** Column name InsufficientQtyAvailableForSalesColor_ID */
-    public static final String COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID = "InsufficientQtyAvailableForSalesColor_ID";
+	ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_Color> COLUMN_InsufficientQtyAvailableForSalesColor_ID = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "InsufficientQtyAvailableForSalesColor_ID", org.compiere.model.I_AD_Color.class);
+	String COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID = "InsufficientQtyAvailableForSalesColor_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Async.
@@ -207,7 +176,7 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAsync (boolean IsAsync);
+	void setIsAsync (boolean IsAsync);
 
 	/**
 	 * Get Async.
@@ -216,35 +185,31 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAsync();
+	boolean isAsync();
 
-    /** Column definition for IsAsync */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsAsync = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "IsAsync", null);
-    /** Column name IsAsync */
-    public static final String COLUMNNAME_IsAsync = "IsAsync";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsAsync = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "IsAsync", null);
+	String COLUMNNAME_IsAsync = "IsAsync";
 
 	/**
-	 * Set Feature aktivtiert.
+	 * Set Feature activated.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsFeatureActivated (boolean IsFeatureActivated);
+	void setIsFeatureActivated (boolean IsFeatureActivated);
 
 	/**
-	 * Get Feature aktivtiert.
+	 * Get Feature activated.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isFeatureActivated();
+	boolean isFeatureActivated();
 
-    /** Column definition for IsFeatureActivated */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsFeatureActivated = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "IsFeatureActivated", null);
-    /** Column name IsFeatureActivated */
-    public static final String COLUMNNAME_IsFeatureActivated = "IsFeatureActivated";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsFeatureActivated = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "IsFeatureActivated", null);
+	String COLUMNNAME_IsFeatureActivated = "IsFeatureActivated";
 
 	/**
 	 * Set MD_AvailableForSales_Config.
@@ -253,7 +218,7 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMD_AvailableForSales_Config_ID (int MD_AvailableForSales_Config_ID);
+	void setMD_AvailableForSales_Config_ID (int MD_AvailableForSales_Config_ID);
 
 	/**
 	 * Get MD_AvailableForSales_Config.
@@ -262,90 +227,79 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getMD_AvailableForSales_Config_ID();
+	int getMD_AvailableForSales_Config_ID();
 
-    /** Column definition for MD_AvailableForSales_Config_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_MD_AvailableForSales_Config_ID = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "MD_AvailableForSales_Config_ID", null);
-    /** Column name MD_AvailableForSales_Config_ID */
-    public static final String COLUMNNAME_MD_AvailableForSales_Config_ID = "MD_AvailableForSales_Config_ID";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_MD_AvailableForSales_Config_ID = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "MD_AvailableForSales_Config_ID", null);
+	String COLUMNNAME_MD_AvailableForSales_Config_ID = "MD_AvailableForSales_Config_ID";
 
 	/**
-	 * Set Rückschauinterval Auftragspositionen in Bearb. (Std).
-	 * Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+	 * Set Lookbehind interval for uncompleted sales order lines (hr).
+	 * The value contains the number of hours to look back when searching for uncompleted sales order lines to compute the quantity available for sales.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesOrderLookBehindHours (int SalesOrderLookBehindHours);
+	void setSalesOrderLookBehindHours (int SalesOrderLookBehindHours);
 
 	/**
-	 * Get Rückschauinterval Auftragspositionen in Bearb. (Std).
-	 * Interval in Stunden bis zum aktuellen Zeitpunkt, innerhalb dessen andere noch nicht fertig gestellte Auftragspositionen berücksichtigt werden sollen. Sollte abhängig von der üblichen Auftragsbearbeitungsdauer gesetzt werden.
+	 * Get Lookbehind interval for uncompleted sales order lines (hr).
+	 * The value contains the number of hours to look back when searching for uncompleted sales order lines to compute the quantity available for sales.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSalesOrderLookBehindHours();
+	int getSalesOrderLookBehindHours();
 
-    /** Column definition for SalesOrderLookBehindHours */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_SalesOrderLookBehindHours = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "SalesOrderLookBehindHours", null);
-    /** Column name SalesOrderLookBehindHours */
-    public static final String COLUMNNAME_SalesOrderLookBehindHours = "SalesOrderLookBehindHours";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_SalesOrderLookBehindHours = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "SalesOrderLookBehindHours", null);
+	String COLUMNNAME_SalesOrderLookBehindHours = "SalesOrderLookBehindHours";
 
 	/**
-	 * Set Vorausschauinterval zu gepl. Lieferungen (Std).
-	 * Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+	 * Set Lookahead interval for planned shipments (hr).
+	 * The value contains the number of hours to look ahead when searching for foreseeable shipments to compute the quantity available for sales.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setShipmentDateLookAheadHours (int ShipmentDateLookAheadHours);
+	void setShipmentDateLookAheadHours (int ShipmentDateLookAheadHours);
 
 	/**
-	 * Get Vorausschauinterval zu gepl. Lieferungen (Std).
-	 * Interval in Stunden ab Bereitstellungsdatum des aktuellen Auftrags, innerhalb dessen geplante Lieferungen berücktsichtigt werden sollen. Sollte abhängig vom üblichen Zulaufinterval gesetzt werden.
+	 * Get Lookahead interval for planned shipments (hr).
+	 * The value contains the number of hours to look ahead when searching for foreseeable shipments to compute the quantity available for sales.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getShipmentDateLookAheadHours();
+	int getShipmentDateLookAheadHours();
 
-    /** Column definition for ShipmentDateLookAheadHours */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_ShipmentDateLookAheadHours = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "ShipmentDateLookAheadHours", null);
-    /** Column name ShipmentDateLookAheadHours */
-    public static final String COLUMNNAME_ShipmentDateLookAheadHours = "ShipmentDateLookAheadHours";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_ShipmentDateLookAheadHours = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "ShipmentDateLookAheadHours", null);
+	String COLUMNNAME_ShipmentDateLookAheadHours = "ShipmentDateLookAheadHours";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, Object>(I_MD_AvailableForSales_Config.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Updated = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_MD_AvailableForSales_Config, org.compiere.model.I_AD_User>(I_MD_AvailableForSales_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

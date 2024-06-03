@@ -1,8 +1,7 @@
 package de.metas.material.cockpit.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MD_Cockpit_DDOrder_Detail
  *  @author metasfresh (generated) 
@@ -77,6 +76,27 @@ public interface I_MD_Cockpit_DDOrder_Detail
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set DDOrderDetailType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDDOrderDetailType (java.lang.String DDOrderDetailType);
+
+	/**
+	 * Get DDOrderDetailType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDDOrderDetailType();
+
+	ModelColumn<I_MD_Cockpit_DDOrder_Detail, Object> COLUMN_DDOrderDetailType = new ModelColumn<>(I_MD_Cockpit_DDOrder_Detail.class, "DDOrderDetailType", null);
+	String COLUMNNAME_DDOrderDetailType = "DDOrderDetailType";
+
+	/**
 	 * Set Distribution Order Line.
 	 *
 	 * <br>Type: TableDir
@@ -102,27 +122,6 @@ public interface I_MD_Cockpit_DDOrder_Detail
 	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
 
 	/**
-	 * Set DDOrderDetailType.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDDOrderDetailType (String DDOrderDetailType);
-
-	/**
-	 * Get DDOrderDetailType.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getDDOrderDetailType();
-
-	ModelColumn<I_MD_Cockpit_DDOrder_Detail, Object> COLUMN_DDOrderDetailType = new ModelColumn<>(I_MD_Cockpit_DDOrder_Detail.class, "DDOrderDetailType", null);
-	String COLUMNNAME_DDOrderDetailType = "DDOrderDetailType";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -144,28 +143,6 @@ public interface I_MD_Cockpit_DDOrder_Detail
 
 	ModelColumn<I_MD_Cockpit_DDOrder_Detail, Object> COLUMN_IsActive = new ModelColumn<>(I_MD_Cockpit_DDOrder_Detail.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Cockpit DDOrder detail.
@@ -206,12 +183,34 @@ public interface I_MD_Cockpit_DDOrder_Detail
 	 */
 	int getMD_Cockpit_ID();
 
-	I_MD_Cockpit getMD_Cockpit();
+	de.metas.material.cockpit.model.I_MD_Cockpit getMD_Cockpit();
 
-	void setMD_Cockpit(I_MD_Cockpit MD_Cockpit);
+	void setMD_Cockpit(de.metas.material.cockpit.model.I_MD_Cockpit MD_Cockpit);
 
-	ModelColumn<I_MD_Cockpit_DDOrder_Detail, I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit_DDOrder_Detail.class, "MD_Cockpit_ID", I_MD_Cockpit.class);
+	ModelColumn<I_MD_Cockpit_DDOrder_Detail, de.metas.material.cockpit.model.I_MD_Cockpit> COLUMN_MD_Cockpit_ID = new ModelColumn<>(I_MD_Cockpit_DDOrder_Detail.class, "MD_Cockpit_ID", de.metas.material.cockpit.model.I_MD_Cockpit.class);
 	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Pending quantity.

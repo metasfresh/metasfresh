@@ -341,7 +341,7 @@ public class TotalQtyCUBreakdownCalculator
 	{
 		public static final LUQtys NULL = new LUQtys();
 
-		public static final LUQtysBuilder builder()
+		public static LUQtysBuilder builder()
 		{
 			return new LUQtysBuilder();
 		}
@@ -352,7 +352,6 @@ public class TotalQtyCUBreakdownCalculator
 
 		public LUQtys(final LUQtysBuilder builder)
 		{
-			super();
 			qtyTUsPerLU = builder.getQtyTUsPerLU();
 			qtyCUsPerTU = builder.getQtyCUsPerTU();
 			qtyCUsPerLU = builder.getQtyCUsPerLU();
@@ -361,7 +360,6 @@ public class TotalQtyCUBreakdownCalculator
 		/** Null constructor */
 		private LUQtys()
 		{
-			super();
 			qtyTUsPerLU = BigDecimal.ZERO;
 			qtyCUsPerTU = BigDecimal.ZERO;
 			qtyCUsPerLU = BigDecimal.ZERO;

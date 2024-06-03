@@ -34,10 +34,14 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * About the source and dest warehouse: those are taken from the orderlines' network lines
+ * One DDOrder might end up being the source of multiple DD_Order records.
+ */
 @Value
 public class DDOrder
 {
-
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
@@ -53,7 +57,7 @@ public class DDOrder
 	Instant datePromised;
 
 	int shipperId;
-
+	
 	@Singular
 	List<DDOrderLine> lines;
 
@@ -68,6 +72,8 @@ public class DDOrder
 	 */
 	MaterialDispoGroupId materialDispoGroupId;
 
+	boolean simulated;
+
 	@JsonCreator
 	@Builder
 	private DDOrder(
@@ -79,7 +85,8 @@ public class DDOrder
 			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.orgId = orgId;
 
@@ -93,5 +100,6 @@ public class DDOrder
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.simulated = simulated;
 	}
 }

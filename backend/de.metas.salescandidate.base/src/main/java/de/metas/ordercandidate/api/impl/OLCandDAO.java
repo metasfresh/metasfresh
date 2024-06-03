@@ -111,6 +111,19 @@ public class OLCandDAO implements IOLCandDAO
 				.list(clazz);
 	}
 
+	public <T extends I_C_OLCand> List<T> retrieveOLCands(final OrderLineId orderLineId, final Class<T> clazz)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OrderLine_ID, orderLineId)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.orderBy(I_C_OLCand.COLUMN_C_OLCand_ID)
+				.create()
+				.list(clazz);
+	}
+
 	@Override
 	public List<I_C_Order_Line_Alloc> retrieveAllOlas(final I_C_OrderLine ol)
 	{
@@ -204,6 +217,12 @@ public class OLCandDAO implements IOLCandDAO
 						olCand -> OLCandId.ofRepoId(olCand.getC_OLCand_ID()),
 						Function.identity())
 				);
+	}
+
+	@Override
+	public I_C_OLCand retrieveByIds(@NonNull final OLCandId olCandId)
+	{
+		return InterfaceWrapperHelper.load(olCandId, I_C_OLCand.class);
 	}
 
 	@NonNull

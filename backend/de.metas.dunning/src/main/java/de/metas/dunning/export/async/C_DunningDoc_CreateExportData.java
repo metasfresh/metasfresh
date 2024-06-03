@@ -20,6 +20,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 {
 	private static final Logger logger = LogManager.getLogger(C_DunningDoc_CreateExportData.class);
@@ -29,7 +31,7 @@ public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 			.newModelScheduler(C_DunningDoc_CreateExportData.class, I_C_DunningDoc.class)
 			.setCreateOneWorkpackagePerModel(true);
 
-	public static final void scheduleOnTrxCommit(final I_C_DunningDoc dunningDocRecord)
+	public static void scheduleOnTrxCommit(final I_C_DunningDoc dunningDocRecord)
 	{
 		SCHEDULER.schedule(dunningDocRecord);
 	}
@@ -41,9 +43,9 @@ public class C_DunningDoc_CreateExportData implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(
 			@NonNull final I_C_Queue_WorkPackage workpackage,
-			@NonNull final String localTrxName)
+			@Nullable final String localTrxName)
 	{
-		final List<I_C_DunningDoc> dunningDocRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_DunningDoc.class, localTrxName);
+		final List<I_C_DunningDoc> dunningDocRecords = queueDAO.retrieveAllItemsSkipMissing(workpackage, I_C_DunningDoc.class);
 		for (final I_C_DunningDoc dunningDocRecord : dunningDocRecords)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for dunningDocRecord={}", dunningDocRecord);

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.commission.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Commission_Share
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_Commission_Share, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1014716616L;
+	private static final long serialVersionUID = -66198516L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (final Properties ctx, final int C_Commission_Share_ID, @Nullable final String trxName)
@@ -93,6 +93,21 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	}
 
 	@Override
+	public void setC_Commission_Share_ID (final int C_Commission_Share_ID)
+	{
+		if (C_Commission_Share_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, C_Commission_Share_ID);
+	}
+
+	@Override
+	public int getC_Commission_Share_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Share_ID);
+	}
+
+	@Override
 	public de.metas.contracts.commission.model.I_C_CommissionSettingsLine getC_CommissionSettingsLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
@@ -117,21 +132,6 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	public int getC_CommissionSettingsLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_CommissionSettingsLine_ID);
-	}
-
-	@Override
-	public void setC_Commission_Share_ID (final int C_Commission_Share_ID)
-	{
-		if (C_Commission_Share_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, C_Commission_Share_ID);
-	}
-
-	@Override
-	public int getC_Commission_Share_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Commission_Share_ID);
 	}
 
 	@Override
@@ -174,6 +174,33 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	public int getC_Flatrate_Term_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine getC_LicenseFeeSettingsLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_LicenseFeeSettingsLine_ID, de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine.class);
+	}
+
+	@Override
+	public void setC_LicenseFeeSettingsLine(final de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine C_LicenseFeeSettingsLine)
+	{
+		set_ValueFromPO(COLUMNNAME_C_LicenseFeeSettingsLine_ID, de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine.class, C_LicenseFeeSettingsLine);
+	}
+
+	@Override
+	public void setC_LicenseFeeSettingsLine_ID (final int C_LicenseFeeSettingsLine_ID)
+	{
+		if (C_LicenseFeeSettingsLine_ID < 1) 
+			set_Value (COLUMNNAME_C_LicenseFeeSettingsLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_LicenseFeeSettingsLine_ID, C_LicenseFeeSettingsLine_ID);
+	}
+
+	@Override
+	public int getC_LicenseFeeSettingsLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_LicenseFeeSettingsLine_ID);
 	}
 
 	@Override

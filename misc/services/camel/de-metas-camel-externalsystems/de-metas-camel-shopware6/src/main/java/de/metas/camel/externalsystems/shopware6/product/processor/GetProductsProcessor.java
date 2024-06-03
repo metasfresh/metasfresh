@@ -24,25 +24,18 @@ package de.metas.camel.externalsystems.shopware6.product.processor;
 
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
-import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.api.model.QueryHelper.buildUpdatedAfterFilterQueryRequest;
 
 public class GetProductsProcessor implements Processor
 {
@@ -53,7 +46,7 @@ public class GetProductsProcessor implements Processor
 
 		final ShopwareClient shopwareClient = context.getShopwareClient();
 
-		final MultiQueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
+		final MultiQueryRequest getProductsRequest = buildUpdatedAfterFilterQueryRequest(context.getNextImportStartingTimestamp().toString());
 
 		final Optional<JsonProducts> jsonProductsOptional = shopwareClient.getProducts(getProductsRequest);
 
@@ -66,28 +59,5 @@ public class GetProductsProcessor implements Processor
 		final List<JsonProduct> products = jsonProductsOptional.get().getProductList();
 
 		exchange.getIn().setBody(products);
-	}
-
-	@NonNull
-	private MultiQueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
-	{
-		final HashMap<String, String> parameters = new HashMap<>();
-		parameters.put(PARAMETERS_DATE_GTE, updatedAfter.toString());
-
-		return MultiQueryRequest.builder()
-				.filter(MultiJsonFilter.builder()
-								.operatorType(MultiJsonFilter.OperatorType.OR)
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_UPDATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.jsonQuery(JsonQuery.builder()
-												   .field(FIELD_CREATED_AT)
-												   .queryType(JsonQuery.QueryType.RANGE)
-												   .parameters(parameters)
-												   .build())
-								.build())
-				.build();
 	}
 }

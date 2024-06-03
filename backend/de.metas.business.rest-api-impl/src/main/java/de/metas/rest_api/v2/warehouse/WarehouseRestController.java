@@ -39,7 +39,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/warehouses" })
+import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+
+@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/warehouses" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class WarehouseRestController

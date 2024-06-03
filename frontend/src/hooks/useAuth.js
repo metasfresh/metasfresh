@@ -78,7 +78,7 @@ function useProvideAuth() {
           return Promise.resolve(resp.data);
         })
         .catch((error) => {
-          if (error.response.status !== 500) {
+          if (error.response && error.response.status !== 500) {
             Promise.reject(error);
           }
         });
@@ -98,7 +98,9 @@ function useProvideAuth() {
       setAuthRequestPending(true);
 
       return loginWithToken(token)
-        .then(async () => await login())
+        .then(
+          async () => await login().then(() => setAuthRequestPending(false))
+        )
         .catch((error) => {
           // user already logged in error
           if (

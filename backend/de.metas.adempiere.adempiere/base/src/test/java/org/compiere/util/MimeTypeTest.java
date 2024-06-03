@@ -1,7 +1,9 @@
 package org.compiere.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -13,12 +15,12 @@ import org.junit.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,31 +30,38 @@ import org.junit.Test;
 public class MimeTypeTest
 {
 	@Test
-	public void test_getMimeType()
+	public void getMimeType()
 	{
-		test_getMimeType(MimeType.TYPE_PDF, "report.pdf");
-		test_getMimeType(MimeType.TYPE_TextPlain, "report.txt");
-		test_getMimeType(MimeType.TYPE_BINARY, "report.unknown-extension");
-	}
-
-	private static final void test_getMimeType(final String expectedMimeType, final String fileName)
-	{
-		final String actualMimeType = MimeType.getMimeType(fileName);
-		Assert.assertEquals("Invalid result for fileName=" + fileName, expectedMimeType, actualMimeType);
+		assertThat(MimeType.getMimeType("report.pdf")).isEqualTo(MimeType.TYPE_PDF);
+		assertThat(MimeType.getMimeType("report.txt")).isEqualTo(MimeType.TYPE_TextPlain);
+		assertThat(MimeType.getMimeType("report.unknown-extension")).isEqualTo(MimeType.TYPE_BINARY);
+		assertThat(MimeType.getMimeType("report")).isEqualTo(MimeType.TYPE_BINARY);
 	}
 
 	@Test
-	public void test_getExtensionByMimeType()
+	public void getMediaType()
 	{
-		test_getExtensionByMimeType(".pdf", MimeType.TYPE_PDF);
-		test_getExtensionByMimeType(".txt", MimeType.TYPE_TextPlain);
-		test_getExtensionByMimeType(".jpg", "image/jpeg");
+		assertThat(MimeType.getMediaType("report.pdf")).isEqualTo(MediaType.APPLICATION_PDF);
+		assertThat(MimeType.getMediaType("report.txt")).isEqualTo(MediaType.TEXT_PLAIN);
+		assertThat(MimeType.getMediaType("report.unknown-extension")).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+		assertThat(MimeType.getMediaType("report")).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
 	}
 
-	private void test_getExtensionByMimeType(final String expectedExt, final String mimeType)
+	@Test
+	public void getExtensionByMimeType()
 	{
-		String actualExt = MimeType.getExtensionByType(mimeType);
-		Assert.assertEquals("Invalid result for mimeType=" + mimeType, expectedExt, actualExt);
+		assertThat(MimeType.getExtensionByType(MimeType.TYPE_PDF)).isEqualTo(".pdf");
+		assertThat(MimeType.getExtensionByType(MimeType.TYPE_TextPlain)).isEqualTo(".txt");
+		assertThat(MimeType.getExtensionByType(MimeType.TYPE_IMAGE_JPEG)).isEqualTo(".jpg");
+		assertThat(MimeType.getExtensionByType("some unknown MIME type")).isEmpty();
 	}
 
+	@Test
+	public void getExtensionByTypeWithoutDot()
+	{
+		assertThat(MimeType.getExtensionByTypeWithoutDot(MimeType.TYPE_PDF)).isEqualTo("pdf");
+		assertThat(MimeType.getExtensionByTypeWithoutDot(MimeType.TYPE_TextPlain)).isEqualTo("txt");
+		assertThat(MimeType.getExtensionByTypeWithoutDot(MimeType.TYPE_IMAGE_JPEG)).isEqualTo("jpg");
+		assertThat(MimeType.getExtensionByTypeWithoutDot("some unknown MIME type")).isEmpty();
+	}
 }

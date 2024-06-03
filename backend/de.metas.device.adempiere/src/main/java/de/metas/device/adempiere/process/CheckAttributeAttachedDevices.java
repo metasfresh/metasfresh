@@ -1,33 +1,32 @@
 package de.metas.device.adempiere.process;
 
-import java.net.UnknownHostException;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.net.IHostIdentifier;
-import org.adempiere.util.net.NetUtils;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.base.Stopwatch;
-
-import de.metas.device.adempiere.AttributeDeviceAccessor;
-import de.metas.device.adempiere.AttributesDevicesHub;
-import de.metas.device.adempiere.IDevicesHubFactory;
+import de.metas.device.accessor.DeviceAccessor;
+import de.metas.device.accessor.DeviceAccessorsHub;
+import de.metas.device.accessor.DeviceAccessorsHubFactory;
+import de.metas.device.accessor.DeviceAccessorsList;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.net.IHostIdentifier;
+import org.adempiere.util.net.NetUtils;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.net.UnknownHostException;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -55,14 +54,13 @@ import de.metas.util.Services;
  * Checks all attribute attached devices.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CheckAttributeAttachedDevices extends JavaProcess
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(CheckAttributeAttachedDevices.class);
-	private final transient IDevicesHubFactory devicesHubFactory = Services.get(IDevicesHubFactory.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory = SpringContextHolder.instance.getBean(DeviceAccessorsHubFactory.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	//
 	// parameters
@@ -93,13 +91,13 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		final int accessTimesPerDevice = p_AccessTimes > 0 ? p_AccessTimes : DEFAULT_AccessTimes;
 		addLog("Access times per device: " + p_AccessTimes);
 
-		final AttributesDevicesHub devicesHub = devicesHubFactory.getAttributesDevicesHub(host, adClientId, adOrgId);
+		final DeviceAccessorsHub devicesHub = deviceAccessorsHubFactory.getDeviceAccessorsHub(host, adClientId, adOrgId);
 		addLog("Using devices hub: " + devicesHub);
 
 		streamAllAttributeCodes()
-				.map(attributeCode -> devicesHub.getAttributeDeviceAccessors(attributeCode))
+				.map(devicesHub::getDeviceAccessors)
 				.peek(deviceAccessorsList -> deviceAccessorsList.consumeWarningMessageIfAny(warningMessage -> addLog("WARNING: " + warningMessage)))
-				.flatMap(deviceAccessorsList -> deviceAccessorsList.stream())
+				.flatMap(DeviceAccessorsList::stream)
 				.forEach(deviceAccessor -> accessDeviceNTimes(deviceAccessor, accessTimesPerDevice));
 
 		if (countDevicesChecked <= 0)
@@ -110,22 +108,16 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 		return MSG_OK;
 	}
 
-	private final IHostIdentifier getHost() throws UnknownHostException
+	private IHostIdentifier getHost() throws UnknownHostException
 	{
-		if (Check.isEmpty(p_Host, true))
-		{
-			return NetUtils.getLocalHost();
-		}
-		else
-		{
-			return NetUtils.of(p_Host);
-		}
+		final String host = StringUtils.trimBlankToNull(p_Host);
+		return host == null ? NetUtils.getLocalHost() : NetUtils.of(host);
 	}
 
-	private final Stream<AttributeCode> streamAllAttributeCodes()
+	private Stream<AttributeCode> streamAllAttributeCodes()
 	{
 		final IQueryBuilder<I_M_Attribute> queryBuilder = queryBL
-				.createQueryBuilder(I_M_Attribute.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_M_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.orderBy(I_M_Attribute.COLUMN_M_Attribute_ID);
@@ -141,13 +133,13 @@ public class CheckAttributeAttachedDevices extends JavaProcess
 				.map(attribute -> AttributeCode.ofString(attribute.getValue()));
 	}
 
-	private void accessDeviceNTimes(final AttributeDeviceAccessor deviceAccessor, final int times)
+	private void accessDeviceNTimes(final DeviceAccessor deviceAccessor, final int times)
 	{
 		IntStream.rangeClosed(1, times)
 				.forEach(time -> accessDevice(deviceAccessor, time));
 	}
 
-	private void accessDevice(final AttributeDeviceAccessor deviceAccessor, final int time)
+	private void accessDevice(final DeviceAccessor deviceAccessor, final int time)
 	{
 		logger.info("Accessing({}) {}", time, deviceAccessor);
 

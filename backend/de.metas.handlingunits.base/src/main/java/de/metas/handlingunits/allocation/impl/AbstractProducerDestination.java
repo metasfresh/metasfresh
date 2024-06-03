@@ -1,29 +1,9 @@
 package de.metas.handlingunits.allocation.impl;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -47,6 +27,24 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
@@ -74,6 +72,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// Parameters
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
+	private ClearanceStatusInfo _huClearanceStatusInfo = null;
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
@@ -122,8 +121,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	/**
 	 * Allocate the given <code>request</code> to the given <code>hu</code>.
 	 *
-	 * @param hu
-	 * @param request
 	 * @return allocation result
 	 */
 	protected abstract IAllocationResult loadHU(final I_M_HU hu, final IAllocationRequest request);
@@ -134,10 +131,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * <li>If there is no current HU and we are allowed to create a new one, a new one will be created and returned.
 	 * <li>If we are not allowed to create a new one then <code>null</code> will be returned
 	 *
-	 * @param currentHUCursor
 	 * @return current HU cursor having the current positioned or <code>null</code> if no more HU are allowed to be created/used
 	 */
-	private final HUListCursor getCreateCurrentHU(final IAllocationRequest request)
+	private HUListCursor getCreateCurrentHU(final IAllocationRequest request)
 	{
 		final HUListCursor currentHUCursor = getCurrentHUCursor(request);
 
@@ -178,7 +174,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return currentHUCursor;
 	}
 
-	private final HUListCursor getCurrentHUCursor(final IAllocationRequest request)
+	private HUListCursor getCurrentHUCursor(final IAllocationRequest request)
 	{
 		final ArrayKey currentHUKey = extractCurrentHUKey(request);
 		return currentHUs.computeIfAbsent(currentHUKey, k -> new HUListCursor());
@@ -189,7 +185,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return ArrayKey.of(request.getProductId());
 	}
 
-	private final void prepareToLoad(final IHUContext huContext, final I_M_HU hu)
+	private void prepareToLoad(final IHUContext huContext, final I_M_HU hu)
 	{
 		// TODO: why not setting TrxName inherited?
 		final String currentHUTrxName = InterfaceWrapperHelper.getTrxName(hu);
@@ -205,10 +201,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 *
 	 * The newly created HU will be also added to created HUs list.
 	 *
-	 * @param request
 	 * @return created handling unit; never return null
 	 */
-	private final I_M_HU createNewHU(final IAllocationRequest request)
+	private I_M_HU createNewHU(final IAllocationRequest request)
 	{
 		//
 		// Create HU Builder
@@ -236,10 +231,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	/**
 	 * Creates {@link IHUBuilder} instance which will be used for creating a new HU.
 	 *
-	 * @param request
 	 * @return {@link IHUBuilder} instance to use
 	 */
-	private final IHUBuilder createHUBuilder(final IAllocationRequest request)
+	private IHUBuilder createHUBuilder(final IAllocationRequest request)
 	{
 		//
 		// Get parent item (if any) on which we shall include this new HU
@@ -272,6 +266,8 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		huBuilder.setM_HU_LUTU_Configuration(getM_HU_LUTU_Configuration());
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
+
+		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
 
 		return huBuilder;
 	}
@@ -348,7 +344,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	/**
 	 * Add given HU to our internal list of created HUs only if {@link #isAllowCreateNewHU()} return true.
 	 *
-	 * @param hu
 	 * @return true if it was added; false if maximum capacity was reached and no other HUs are allowed
 	 */
 	protected final boolean addToCreatedHUsIfAllowCreateNewHU(final I_M_HU hu)
@@ -362,7 +357,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return true;
 	}
 
-	private final boolean addToCreateHUs0(final I_M_HU hu)
+	private boolean addToCreateHUs0(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final boolean added = _createdHUs.add(hu);
@@ -394,8 +389,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * Method called after an HU was added to HU created list.
 	 *
 	 * To be implemented by extending classes.
-	 *
-	 * @param hu
 	 */
 	protected void afterHUAddedToCreatedList(final I_M_HU hu)
 	{
@@ -404,8 +397,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 	/**
 	 * Add given HUs to our internal list of created HUs
-	 *
-	 * @param hus
 	 */
 	protected final void addToCreatedHUs(final Collection<I_M_HU> hus)
 	{
@@ -437,8 +428,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * Method called after an HU was removed from HU created list.
 	 *
 	 * To be implemented by extending classes.
-	 *
-	 * @param hu
 	 */
 	protected void afterHURemovedFromCreatedList(final I_M_HU hu)
 	{
@@ -472,7 +461,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		}
 		else
 		{
-			throw new AdempiereException("Expected only one created HU but found more: " + this);
+			throw new AdempiereException("Expected only one created HU but found more")
+					.appendParametersToMessage()
+					.setParameter("createdHUs", _createdHUs)
+					.setParameter("producer", this);
 		}
 	}
 
@@ -552,7 +544,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 					}
 
 					// throw a nice user friendly error
-					throw new AdempiereException(MSG_QTY_LOAD_ERROR, new Object[] { currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "" });
+					throw new AdempiereException(MSG_QTY_LOAD_ERROR, currentHU_PI_Version != null ? currentHU_PI_Version.getName() : "");
 				}
 				// destroyCurrentHU(currentHUCursor);
 				// currentHU = null;
@@ -629,8 +621,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * Called by {@link #load(IAllocationRequest)} right before actual load is starting.
 	 *
 	 * In this method, implementators can do further configurations and loadings if needed.
-	 *
-	 * @param result current result (that will be also returned by {@link #load(IAllocationRequest)} method)
 	 */
 	protected void loadStarting(final IAllocationRequest request)
 	{
@@ -728,5 +718,18 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			throw new HUException("This producer is not configurable anymore: " + this);
 		}
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setHUClearanceStatusInfo(final ClearanceStatusInfo huClearanceStatusInfo)
+	{
+		assertConfigurable();
+		_huClearanceStatusInfo = huClearanceStatusInfo;
+		return this;
+	}
+
+	public final ClearanceStatusInfo getHUClearanceStatusInfo()
+	{
+		return _huClearanceStatusInfo;
 	}
 }

@@ -37,12 +37,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
-import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.core.CoreConstants.AUTHORIZATION;
 import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
 
 public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 {
@@ -71,8 +70,6 @@ public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_BPARTNER_IDENTIFIER, EXPECTED_BP_IDENTIFIER);
 		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_PINSTANCE_ID, EXPECTED_PINSTANCE_ID);
 		bPartnerMockEndpoint.expectedHeaderReceived(HEADER_EXTERNALSYSTEM_CONFIG_ID, EXPECTED_EXTERNALSYSTEM_CONFIG_ID);
-		bPartnerMockEndpoint.expectedHeaderReceived(AUTHORIZATION, "<secret>");
-
 		//fire the route
 		template.sendBody("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}", retrieveBPartnerRequest);
 

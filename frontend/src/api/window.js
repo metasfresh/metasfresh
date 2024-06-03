@@ -4,16 +4,6 @@ import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { formatSortingQuery } from '../utils';
 
-/**
- * @param attributeType 'pattribute' or 'address'
- */
-export function getAttributesInstance(attributeType, templateId, source) {
-  return post(`${config.API_URL}/${attributeType}`, {
-    templateId: templateId,
-    source: source,
-  });
-}
-
 export function topActionsRequest(windowId, documentId, tabId) {
   return get(`
     ${config.API_URL}/window/${windowId}/${documentId}/${tabId}/topActions

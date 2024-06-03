@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -280,7 +280,7 @@ public class MLookupFactory
 		// do we have basic info?
 		if (info == null)
 		{
-			s_log.error("No SQL - {}", ctxColumnName);
+			s_log.warn("No SQL for `{}`. Returning null MLookupInfo.", ctxColumnName);
 			return null;
 		}
 
@@ -541,7 +541,7 @@ public class MLookupFactory
 		// Do we have columns ?
 		if (displayColumns.isEmpty())
 		{
-			s_log.error("No Identifier records found for tableRefInfo={}", tableRefInfo);
+			s_log.warn("No display columns defined for the identifier of tableRefInfo={}. Returning null", tableRefInfo);
 			return null;
 		}
 
@@ -657,14 +657,14 @@ public class MLookupFactory
 							+ "\n Those have very bad performances and are not optimized well."
 							+ "\n Consider using dynamic validation rules for that purpose."
 							+ "\n See https://github.com/metasfresh/metasfresh/issues/384 "
-							+ "\n tableRefInfo=" + tableRefInfo);
+							+ "\n tableRefInfo={}", tableRefInfo);
 				}
 			}
 			else
 			{
 				if (whereClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
+					s_log.warn("getLookupInfo: whereClause of tableRefInfo {} should be fully qualified\n where={};\n tableRefInfo={}",
 							tableRefInfo.getIdentifier(), whereClause, tableRefInfo);
 				}
 				sqlWhereClauseStatic = whereClause;
@@ -700,7 +700,7 @@ public class MLookupFactory
 				sqlOrderBy = OrderByClause;
 				if (OrderByClause.indexOf('.') == -1)
 				{
-					s_log.error("getLookup_Table - " + tableName + ": ORDER BY must fully qualified: " + OrderByClause);
+					s_log.warn("ORDER BY must fully qualified: {}", tableRefInfo);
 				}
 			}
 			else

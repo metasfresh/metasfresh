@@ -51,16 +51,11 @@ import javax.annotation.Nullable;
 @Service
 public class AttachmentEntryFactory
 {
-	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type>builder()
-			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntry.Type.Data)
-			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
-			.build();
-	
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public AttachmentEntry createAndSaveEntry(@NonNull final AttachmentEntryCreateRequest request)
 	{
-		final AttachmentEntry.Type type = request.getType();
+		final AttachmentEntryType type = request.getType();
 		final String filename = request.getFilename();
 		final String contentType = request.getContentType();
 		final byte[] data = request.getData();
@@ -73,23 +68,27 @@ public class AttachmentEntryFactory
 
 		//
 		attachmentEntryRecord.setFileName(filename);
+		attachmentEntryRecord.setType(type.getCode());
 
-		if (type == AttachmentEntry.Type.Data)
+		switch (type)
 		{
-			attachmentEntryRecord.setType(X_AD_AttachmentEntry.TYPE_Data);
-			attachmentEntryRecord.setBinaryData(data);
-			attachmentEntryRecord.setContentType(contentType);
+			case Data:
+				attachmentEntryRecord.setBinaryData(data);
+				attachmentEntryRecord.setContentType(contentType);
+				break;
+			case URL:
+				Check.assumeNotNull(url, "Parameter url is not null");
+				attachmentEntryRecord.setURL(url.toString());
+				break;
+			case LocalFileURL:
+				Check.assumeNotNull(url, "Parameter url is not null");
+				attachmentEntryRecord.setContentType(contentType);
+				attachmentEntryRecord.setURL(url.toString());
+				break;
+			default:
+				throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
 		}
-		else if (type == AttachmentEntry.Type.URL)
-		{
-			attachmentEntryRecord.setType(X_AD_AttachmentEntry.TYPE_URL);
-			Check.assumeNotNull(url, "Parameter url is not null");
-			attachmentEntryRecord.setURL(url.toString());
-		}
-		else
-		{
-			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
-		}
+
 		if (request.getTags() != null)
 		{
 			attachmentEntryRecord.setTags(request.getTags().getTagsAsString());
@@ -112,7 +111,7 @@ public class AttachmentEntryFactory
 		return AttachmentEntry.builder()
 				.id(AttachmentEntryId.ofRepoIdOrNull(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
-				.type(toAttachmentEntryTypeFromADRefListValue(entryRecord.getType()))
+				.type(AttachmentEntryType.ofCode(entryRecord.getType()))
 				.filename(entryRecord.getFileName())
 				.mimeType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
@@ -143,26 +142,12 @@ public class AttachmentEntryFactory
 		}
 	}
 
-	private static AttachmentEntry.Type toAttachmentEntryTypeFromADRefListValue(@NonNull final String adRefListValue)
-	{
-		final AttachmentEntry.Type type = AD_RefList_Value2attachmentEntryType.get(adRefListValue);
-		if (type == null)
-		{
-			throw new IllegalArgumentException("No " + AttachmentEntry.Type.class + " found for " + adRefListValue);
-		}
-		return type;
-	}
-
 	public void syncToRecord(
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final I_AD_AttachmentEntry attachmentEntryRecord)
 	{
 		attachmentEntryRecord.setFileName(attachmentEntry.getFilename());
-
-		final String recordType = AD_RefList_Value2attachmentEntryType
-				.inverse()
-				.get(attachmentEntry.getType());
-		attachmentEntryRecord.setType(recordType);
+		attachmentEntryRecord.setType(attachmentEntry.getType().getCode());
 		attachmentEntryRecord.setFileName(attachmentEntry.getFilename());
 
 		if (attachmentEntry.getUrl() != null)

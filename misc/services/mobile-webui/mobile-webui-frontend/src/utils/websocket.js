@@ -5,18 +5,24 @@ import { stompUrl } from '../constants';
 
 const DEBUG = true;
 
-export const connectAndSubscribe = ({ topic, onWebsocketMessage }) => {
-  const client = new StompJs.Client({
-    debug: DEBUG ? (msg) => console.log('STOMP DEBUG: ' + msg) : null,
+export const connectAndSubscribe = ({ topic, onWebsocketMessage, debug = DEBUG }) => {
+  const config = {
     reconnectDelay: 5000,
     heartbeatIncoming: 4000,
     heartbeatOutgoing: 4000,
-  });
+  };
+
+  if (debug) {
+    config.debug = (msg) => console.log('STOMP DEBUG: ' + msg);
+  }
+
+  const client = new StompJs.Client(config);
 
   client.webSocketFactory = () => new SockJS(stompUrl);
 
   client.onConnect = (frame) => {
-    console.log('websocket connected: ', frame);
+    if (debug) console.log('websocket connected: ', frame);
+
     client.subscribe(topic, onWebsocketMessage);
   };
 

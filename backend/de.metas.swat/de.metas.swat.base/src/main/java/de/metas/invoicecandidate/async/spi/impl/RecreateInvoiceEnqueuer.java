@@ -50,11 +50,10 @@ public class RecreateInvoiceEnqueuer
 				.build();
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), RecreateInvoiceWorkpackageProcessor.class);
-		queue.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+		queue
+				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch)
 				.parameter(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, pInstanceId)
-				.build();
+				.buildAndEnqueue();
 	}
 }

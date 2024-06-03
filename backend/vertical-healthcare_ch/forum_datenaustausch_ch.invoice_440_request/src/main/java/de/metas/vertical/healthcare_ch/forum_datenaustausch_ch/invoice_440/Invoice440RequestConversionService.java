@@ -1,13 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.xml.bind.JAXBElement;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
@@ -15,6 +8,12 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import javax.xml.bind.JAXBElement;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /*
  * #%L
@@ -44,6 +43,8 @@ public class Invoice440RequestConversionService implements CrossVersionRequestCo
 {
 	public static final String INVOICE_440_REQUEST_XSD = "http://www.forum-datenaustausch.ch/invoice generalInvoiceRequest_440.xsd";
 
+	private boolean usePrettyPrint = false;
+
 	@Override
 	public void fromCrossVersionRequest(@NonNull final XmlRequest xRequest, @NonNull final OutputStream outputStream)
 	{
@@ -53,7 +54,8 @@ public class Invoice440RequestConversionService implements CrossVersionRequestCo
 				jaxbType,
 				RequestType.class,
 				INVOICE_440_REQUEST_XSD,
-				outputStream);
+				outputStream,
+				usePrettyPrint);
 	}
 
 	@Override
@@ -74,5 +76,11 @@ public class Invoice440RequestConversionService implements CrossVersionRequestCo
 	public XmlVersion getVersion()
 	{
 		return XmlVersion.v440;
+	}
+
+	@VisibleForTesting
+	public void setUsePrettyPrint(final boolean usePrettyPrint)
+	{
+		this.usePrettyPrint = usePrettyPrint;
 	}
 }

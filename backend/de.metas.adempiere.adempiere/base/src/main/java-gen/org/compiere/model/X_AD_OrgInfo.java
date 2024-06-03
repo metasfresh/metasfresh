@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1546156104L;
+	private static final long serialVersionUID = 1622689770L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (final Properties ctx, final int AD_OrgInfo_ID, @Nullable final String trxName)
@@ -185,6 +185,18 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	public int getDropShip_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DropShip_Warehouse_ID);
+	}
+
+	@Override
+	public void setIsAutoInvoiceFlatrateTerm (final boolean IsAutoInvoiceFlatrateTerm)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoiceFlatrateTerm, IsAutoInvoiceFlatrateTerm);
+	}
+
+	@Override
+	public boolean isAutoInvoiceFlatrateTerm() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoInvoiceFlatrateTerm);
 	}
 
 	@Override

@@ -1,89 +1,44 @@
-/*
- * #%L
- * de-metas-common-manufacturing
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.common.handlingunits;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableSet;
-import lombok.Data;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-@Data
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@Value
+@Builder
+@Jacksonized
 public class JsonHUAttributes
 {
-	@JsonIgnore
-	private final LinkedHashMap<String, Object> attributes = new LinkedHashMap<>();
+	@NonNull List<JsonHUAttribute> list;
 
-	@JsonAnyGetter
-	public Map<String, Object> getAttributes()
+	public JsonHUAttributeCodeAndValues toJsonHUAttributeCodeAndValues()
 	{
-		return attributes;
+		final JsonHUAttributeCodeAndValues result = new JsonHUAttributeCodeAndValues();
+		for (final JsonHUAttribute attribute : list)
+		{
+			result.putAttribute(attribute.getCode(), attribute.getValue());
+		}
+		return result;
 	}
 
-	@JsonAnySetter
-	public void putAttribute(final String name, final Object value)
+	public static JsonHUAttributes ofJsonHUAttributeCodeAndValues(@NonNull JsonHUAttributeCodeAndValues attributeCodeAndValues)
 	{
-		attributes.put(name, convertValueToJson(value));
+		final ArrayList<JsonHUAttribute> list = new ArrayList<>();
+		for (final Map.Entry<String, Object> attributeCodeAndValue : attributeCodeAndValues.getAttributes().entrySet())
+		{
+			list.add(JsonHUAttribute.builder()
+					.code(attributeCodeAndValue.getKey())
+					.caption(attributeCodeAndValue.getKey())
+					.value(attributeCodeAndValue.getValue())
+					.build());
+		}
+
+		return JsonHUAttributes.builder().list(list).build();
 	}
 
-	@Nullable
-	private static Object convertValueToJson(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof String)
-		{
-			return value;
-		}
-		else if (value instanceof Integer)
-		{
-			return value;
-		}
-		else if (value instanceof BigDecimal)
-		{
-			return value.toString();
-		}
-		else if (value instanceof Boolean)
-		{
-			return value;
-		}
-		else
-		{
-			return value.toString();
-		}
-	}
-
-	public ImmutableSet<String> getAttributeNames()
-	{
-		return ImmutableSet.copyOf(attributes.keySet());
-	}
 }

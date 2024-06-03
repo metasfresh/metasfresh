@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
-import de.metas.util.lang.RepoIdAwaresTest.DummyRepoIdAware;
+import de.metas.util.lang.RepoIdAwaresTest.DummyId;
 import lombok.Getter;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -106,50 +106,50 @@ public class ParamsTest
 		public void fromNegativeInt()
 		{
 			final Params params = singleParam("param", -1);
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+			assertThat(params.getParameterAsId("param", DummyId.class)).isNull();
 		}
 
 		@Test
 		public void fromPositiveInt()
 		{
 			final Params params = singleParam("param", 1234);
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isEqualTo(DummyRepoIdAware.ofRepoId(1234));
+			assertThat(params.getParameterAsId("param", DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
 		}
 
 		@Test
 		public void fromMissingValue()
 		{
 			final Params params = Params.EMPTY;
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+			assertThat(params.getParameterAsId("param", DummyId.class)).isNull();
 		}
 
 		@Test
 		public void fromRepoIdAware()
 		{
-			final DummyRepoIdAware id = DummyRepoIdAware.ofRepoId(111);
+			final DummyId id = DummyId.ofRepoId(111);
 			final Params params = singleParam("param", id);
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isSameAs(id);
+			assertThat(params.getParameterAsId("param", DummyId.class)).isSameAs(id);
 		}
 
 		@Test
 		public void fromPositiveString()
 		{
 			final Params params = singleParam("param", "1234");
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isEqualTo(DummyRepoIdAware.ofRepoId(1234));
+			assertThat(params.getParameterAsId("param", DummyId.class)).isEqualTo(DummyId.ofRepoId(1234));
 		}
 
 		@Test
 		public void fromNegativeString()
 		{
 			final Params params = singleParam("param", "-1234");
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+			assertThat(params.getParameterAsId("param", DummyId.class)).isNull();
 		}
 
 		@Test
 		public void fromInvalidString()
 		{
 			final Params params = singleParam("param", "invalid_number");
-			assertThat(params.getParameterAsId("param", DummyRepoIdAware.class)).isNull();
+			assertThat(params.getParameterAsId("param", DummyId.class)).isNull();
 		}
 
 	}

@@ -1,50 +1,9 @@
 package de.metas.async.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.async
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkpackageParamDAO;
-import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.cache.CCache;
@@ -58,6 +17,21 @@ import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.IParams;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class WorkpackageParamDAO implements IWorkpackageParamDAO
 {
@@ -264,7 +238,8 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 		workpackageParam.setP_Date(null);
 	}
 
-	private static final PInstanceId extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
+	@Nullable
+	private static PInstanceId extractAD_PInstance_ID(final I_C_Queue_WorkPackage workpackage)
 	{
 		//
 		// Get the AD_PInstance_ID from Workpackage
@@ -274,13 +249,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			return PInstanceId.ofRepoId(workpackageADPInstanceId);
 		}
 
-		//
-		// Get the AD_PInstance_ID from Workpackage Block (if any)
-		// NOTE: even if now, the C_Queue_Block_ID is mandatory, in future it could be made optional.
-		// Also, JUnit tests are not setting this all the time, so, for now we can tollerate it.
-		final I_C_Queue_Block queueBlock = workpackage.getC_Queue_Block();
-		final int blockAD_PInstance_ID = queueBlock == null ? -1 : queueBlock.getAD_PInstance_Creator_ID();
-		return blockAD_PInstance_ID > 0 ? PInstanceId.ofRepoId(blockAD_PInstance_ID) : null;
+		return null;
 	}
 
 	@Override

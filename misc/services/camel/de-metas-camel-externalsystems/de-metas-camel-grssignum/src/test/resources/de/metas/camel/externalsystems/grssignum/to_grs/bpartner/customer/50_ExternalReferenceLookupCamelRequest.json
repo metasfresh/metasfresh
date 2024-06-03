@@ -1,0 +1,14 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "jsonExternalReferenceLookupRequest": {
+    "systemName": "GRSSignum",
+    "items": [
+      {
+        "metasfreshId": 1,
+        "type": "Product"
+      }
+    ]
+  }
+}

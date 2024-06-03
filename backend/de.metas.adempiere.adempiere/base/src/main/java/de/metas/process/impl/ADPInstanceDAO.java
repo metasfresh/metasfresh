@@ -14,6 +14,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.RoleId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -130,8 +131,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			}
 		}
 		//
-		final ProcessInfoParameter param = new ProcessInfoParameter(ParameterName, Parameter, Parameter_To, Info, Info_To);
-		return param;
+		return new ProcessInfoParameter(ParameterName, Parameter, Parameter_To, Info, Info_To);
 	}
 
 	@Override
@@ -314,8 +314,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}
 
@@ -339,7 +337,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		if (Adempiere.isUnitTestMode())
 		{
 			// don't try this is we aren't actually connected
-			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
+			logsToSave.forEach(ProcessInfoLog::markAsSavedInDB);
 			return;
 		}
 
@@ -366,7 +364,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 			pstmt.executeBatch();
 
-			logsToSave.stream().forEach(log -> log.markAsSavedInDB());
+			logsToSave.forEach(ProcessInfoLog::markAsSavedInDB);
 		}
 		catch (final SQLException e)
 		{
@@ -376,7 +374,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		finally
 		{
 			DB.close(pstmt);
-			pstmt = null;
 		}
 	}
 
@@ -443,7 +440,6 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			logger.error(sql, e);
 			result.markAsError(e);
-			return;
 		}
 		finally
 		{
@@ -527,6 +523,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setWhereClause(pi.getWhereClause());
 		adPInstance.setAD_Process_ID(pi.getAdProcessId().getRepoId());
 		adPInstance.setAD_Window_ID(pi.getAD_Window_ID());
+		adPInstance.setAD_Scheduler_ID(AdSchedulerId.toRepoId(pi.getInvokedBySchedulerId()));
 
 		final Language reportingLanguage = pi.getReportLanguage();
 		final String adLanguage = reportingLanguage == null ? null : reportingLanguage.getAD_Language();
@@ -553,7 +550,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
 		adPInstance.setAD_Process_ID(adProcessId.getRepoId());
 
-		adPInstance.setAD_Table(null);
+		adPInstance.setAD_Table_ID(-1);
 		adPInstance.setRecord_ID(0); // mandatory
 
 		final Properties ctx = Env.getCtx();
@@ -691,7 +688,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	private static final String SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords = "DELETE FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
 			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?";
 
-	private final void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
+	private void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
 		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}

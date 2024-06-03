@@ -73,8 +73,8 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		SCHEDULER.schedule(request);
 	}
 
-	private static final IShipmentSchedulesUpdateScheduler //
-			SCHEDULER = new UpdateInvalidShipmentSchedulesWorkpackageProcessorScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
+	private static final UpdateInvalidShipmentSchedulesScheduler //
+			SCHEDULER = new UpdateInvalidShipmentSchedulesScheduler(true /*createOneWorkpackagePerAsyncBatch*/);
 
 	// services
 	private final transient IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
@@ -87,7 +87,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		loggable.addLog("Using revalidation ID: {}", selectionId);
 
-		try (final MDCCloseable mdcRestorer = ShipmentSchedulesMDC.putRevalidationId(selectionId))
+		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
 					.ctx(InterfaceWrapperHelper.getCtx(workpackage))

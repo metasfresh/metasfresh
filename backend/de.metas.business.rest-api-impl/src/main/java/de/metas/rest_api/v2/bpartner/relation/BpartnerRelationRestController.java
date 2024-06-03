@@ -104,7 +104,7 @@ public class BpartnerRelationRestController
 		final ExternalIdentifier locationIdentifier = ExternalIdentifier.ofOrNull(bpartnerUpsertRequest.getLocationIdentifier());
 		bpRelationsService.createOrUpdateRelations(orgId, bpartnerIdentifier, locationIdentifier, bpartnerUpsertRequest.getRelatesTo());
 
-		return new ResponseEntity<>("Ok", HttpStatus.CREATED);
+		return new ResponseEntity<>(null, HttpStatus.CREATED);
 	}
 
 	private static ResponseEntity<JsonResponseBPRelationComposite> okOrNotFound(final JsonResponseBPRelationComposite optionalResult)

@@ -1,29 +1,9 @@
 package de.metas.banking.payment.impl;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.X_C_BP_BankAccount;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
@@ -43,8 +23,27 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.X_C_BP_BankAccount;
+import org.compiere.util.TimeUtil;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringJoiner;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -151,6 +150,10 @@ public class PaySelectionBL implements IPaySelectionBL
 				psl.setC_BP_BankAccount_ID(secondaryAcct);
 			}
 		}
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		{
+			psl.setReference(invoice.getPOReference());
+		}
 	}
 
 	@Override
@@ -203,7 +206,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 			return payment;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed creating payment from " + line, e);
 		}
@@ -391,7 +394,7 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		if (linesWithoutBankAccount.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount, new Object[] { linesWithoutBankAccount.toString() });
+			throw new AdempiereException(MSG_PaySelectionLines_No_BankAccount, linesWithoutBankAccount.toString());
 		}
 	}
 
@@ -409,10 +412,8 @@ public class PaySelectionBL implements IPaySelectionBL
 				final String bankStatementDocumentNo = bankStatementBL.getDocumentNo(bankStatementId);
 				throw new AdempiereException(
 						MSG_CannotReactivate_PaySelectionLineInBankStatement_2P,
-						new Object[] {
-								paySelectionLine.getLine(),
-								bankStatementDocumentNo
-						});
+						paySelectionLine.getLine(),
+						bankStatementDocumentNo);
 			}
 		}
 

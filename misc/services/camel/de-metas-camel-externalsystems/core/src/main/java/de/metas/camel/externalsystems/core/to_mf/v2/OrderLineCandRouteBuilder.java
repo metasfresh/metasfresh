@@ -24,9 +24,8 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -58,29 +57,27 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOLCandCreateBulkRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.olcands.v2.api.uri}}/bulk")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
-		from(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
-				.routeId(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+		from(direct(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID))
+				.routeId(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
 				.streamCaching()
 				.log("Route invoked! request: ${body}")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
-					if (!(request instanceof JsonOLCandClearRequest))
+					if (!(request instanceof JsonOLCandProcessRequest))
 					{
-						throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID + " requires the body to be instanceof JsonOLCandClearRequest. "
+						throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID + " requires the body to be instanceof JsonOLCandProcessRequest. "
 																+ "However, it is " + (request == null ? "null" : request.getClass().getName()));
 					}
 				})
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOLCandClearRequest.class))
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOLCandProcessRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{metasfresh.olcands.v2.api.uri}}/clearToProcess")
+				.toD("{{metasfresh.olcands.v2.api.uri}}/process")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 	}

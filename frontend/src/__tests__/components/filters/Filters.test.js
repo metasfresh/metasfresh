@@ -201,6 +201,8 @@ describe('Filters tests', () => {
 
     wrapper.find('.filter-active').simulate('click');
     expect(wrapper.find('.filter-widget .filter-default').length).toBe(1);
+
+    expect(wrapper.find('.form-field-C_BPartner_ID .focused').length).toBe(1);
   });
 
   //@TODO: I expect this to be replaced by a combination of small unit and e2e tests, but

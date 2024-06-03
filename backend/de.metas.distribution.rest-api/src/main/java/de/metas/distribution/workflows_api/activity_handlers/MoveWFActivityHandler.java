@@ -57,6 +57,7 @@ public class MoveWFActivityHandler implements WFActivityHandler
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.NOT_STARTED; // TODO
+		final DistributionJob job = wfProcess.getDocumentAs(DistributionJob.class);
+		return job.getStatus();
 	}
 }

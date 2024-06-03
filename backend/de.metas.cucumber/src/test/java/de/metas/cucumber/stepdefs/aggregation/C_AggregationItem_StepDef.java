@@ -38,9 +38,9 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 
 public class C_AggregationItem_StepDef
 {
-	private final StepDefData<I_C_AggregationItem> aggregationItemTable;
+	private final C_AggregationItem_StepDefData aggregationItemTable;
 
-	public C_AggregationItem_StepDef(@NonNull final StepDefData<I_C_AggregationItem> aggregationItemTable)
+	public C_AggregationItem_StepDef(@NonNull final C_AggregationItem_StepDefData aggregationItemTable)
 	{
 		this.aggregationItemTable = aggregationItemTable;
 	}

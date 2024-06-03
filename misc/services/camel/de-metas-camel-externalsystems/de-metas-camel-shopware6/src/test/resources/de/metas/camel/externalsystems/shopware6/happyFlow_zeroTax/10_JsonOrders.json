@@ -11,7 +11,12 @@
         "firstName": "firstName",
         "lastName": "lastName",
         "customerNumber": "customerNumber",
-        "email": "someEamil@web.de"
+        "email": "orderCustomerEmail@example.com",
+        "customFields": {
+          "externalReference": "customerId1",
+          "userId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
       },
       "currencyId": "currencyId",
       "orderNumber": "poReference",

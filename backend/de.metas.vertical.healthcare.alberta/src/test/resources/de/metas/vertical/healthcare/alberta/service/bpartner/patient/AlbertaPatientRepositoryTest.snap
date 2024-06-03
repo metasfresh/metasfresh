@@ -35,6 +35,8 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
       "leapYear" : false
     },
     "deactivationComment" : "deactivationComment",
+    "classification" : "classification",
+    "careDegree" : 2.2,
     "createdAt" : {
       "seconds" : 1574726400,
       "nanos" : 0
@@ -57,6 +59,7 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
     "bPartnerId" : 1,
     "isTransferPatient" : false,
     "isIVTherapy" : false,
+    "careDegree" : 0,
     "transferPatient" : false,
     "ivtherapy" : false
   }

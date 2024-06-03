@@ -31,7 +31,7 @@ import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -46,7 +46,6 @@ import org.springframework.stereotype.Component;
 import javax.xml.namespace.QName;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
-import java.util.Comparator;
 
 @Component
 @PropertySources(value = {
@@ -104,7 +103,7 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 				.process(exchange -> {
 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 					// make sure that our lines are sorted by line number
-					xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
+					sortLinesByLineNumber(xmlDesadv);
 
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
@@ -132,5 +131,16 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+	}
+
+	private void sortLinesByLineNumber(@NonNull final EDIExpDesadvType xmlDesadv)
+	{
+		xmlDesadv.getEDIExpDesadvPack()
+				.sort((pack1, pack2) -> {
+					final EDIExpDesadvPackItemType packItem1 = pack1.getEDIExpDesadvPackItem().get(0);
+					final EDIExpDesadvPackItemType packItem2 = pack2.getEDIExpDesadvPackItem().get(0);
+
+					return packItem1.getEDIDesadvLineID().getLine().compareTo(packItem2.getEDIDesadvLineID().getLine());
+				});
 	}
 }

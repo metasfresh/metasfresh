@@ -1,8 +1,3 @@
-export function getBaseUrl() {
-  let getUrl = window.location;
-  return getUrl.protocol + '//' + getUrl.host + '/' + getUrl.pathname.split('/')[1];
-}
-
 export const unboxAxiosResponse = (axiosResponse) => {
   //
   // Case: server is using API Audit feature

@@ -23,14 +23,17 @@
 package de.metas.common.procurement.sync.protocol.request_to_metasfresh;
 
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
+import lombok.Builder;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.UUID;
 
 @Value
+@Builder
+@Jacksonized
 public class GetInfoMessageRequest extends RequestToMetasfresh
 {
-	public static final GetInfoMessageRequest INSTANCE = new GetInfoMessageRequest();
-
-	private GetInfoMessageRequest()
-	{
-	}
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
 }

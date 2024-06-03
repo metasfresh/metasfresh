@@ -1,0 +1,10 @@
+-- 2022-01-04T09:55:51.661Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Abo-Rabatt anw.',Updated=TO_TIMESTAMP('2022-01-04 11:55:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542871
+;
+
+-- 2022-01-04T09:55:55.746Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Anderen anw.',Updated=TO_TIMESTAMP('2022-01-04 11:55:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542870
+;
+

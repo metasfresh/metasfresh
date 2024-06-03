@@ -193,7 +193,7 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 	@NonNull
 	private I_C_Flatrate_Term getContractToEnforce(@NonNull final List<I_C_Flatrate_Term> mediatedCommissionContracts)
 	{
-		//dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term.ensureOneMediatedContract
+		//dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term.ensureOneContract
 		Check.assume(mediatedCommissionContracts.size() == 1, "There should always be only one mediated contract at this point!");
 
 		return mediatedCommissionContracts.get(0);

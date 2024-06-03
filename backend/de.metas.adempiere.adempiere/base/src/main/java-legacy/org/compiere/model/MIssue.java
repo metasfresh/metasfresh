@@ -16,19 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.util.Check;
-import de.metas.util.Services;
-import org.adempiere.ad.service.ADSystemInfo;
-import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.util.net.NetUtils;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.error.AdIssueFactory;
+
 /**
- * Issue Report Model
+ * TODO remove this whole class. Move the required code to {@link de.metas.error.AdIssueFactory}. Or {@link de.metas.error.impl.ErrorManager}.
  */
 @SuppressWarnings("serial")
 public class MIssue extends X_AD_Issue
@@ -59,20 +53,7 @@ public class MIssue extends X_AD_Issue
 
 	private void init(final Properties ctx)
 	{
-		final ISystemBL systemBL = Services.get(ISystemBL.class);
-		final ADSystemInfo system = systemBL.get();
-
-		setName("-");
-		setUserName("?");
-		setDBAddress("-");
-		setSystemStatus(X_AD_Issue.SYSTEMSTATUS_Implementation);
-		setReleaseNo("-");
-		setVersion(system.getDbVersion());
-		setDatabaseInfo(DB.getDatabaseInfo());
-		setOperatingSystemInfo(Adempiere.getOSInfo());
-		setJavaInfo(Adempiere.getJavaInfo());
-		setReleaseTag(Adempiere.getImplementationVersion());
-		setLocal_Host(NetUtils.getLocalHost().toString());
+		AdIssueFactory.prepareNewIssueRecord(ctx, this);
 	}
 
 	@Override

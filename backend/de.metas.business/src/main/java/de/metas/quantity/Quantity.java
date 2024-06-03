@@ -648,6 +648,20 @@ public final class Quantity implements Comparable<Quantity>
 				this.sourceUom);
 	}
 
+	public Quantity subtract(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		return new Quantity(
+				percent.subtractFromBase(this.qty, this.uom.getStdPrecision()),
+				this.uom,
+				percent.subtractFromBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				this.sourceUom);
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
 		if (qtyToSubtract.isZero())

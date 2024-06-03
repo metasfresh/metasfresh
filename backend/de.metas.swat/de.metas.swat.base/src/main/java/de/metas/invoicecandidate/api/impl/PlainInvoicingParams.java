@@ -22,39 +22,31 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @ToString
 public class PlainInvoicingParams implements IInvoicingParams
 {
+	private final IInvoicingParams defaults;
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
 	private Boolean supplementMissingPaymentTermIds = null;
-
 	private Boolean storeInvoicesInResult = null;
 	private Boolean assumeOneInvoice = null;
-
 	private LocalDate dateInvoiced;
 	private boolean dateInvoicedSet = false;
-
 	private LocalDate dateAcct;
 	private boolean dateAcctSet = false;
-
 	private String poReference;
 	private boolean poReferenceSet = false;
-
 	private BigDecimal check_NetAmtToInvoice = null;
-
 	private boolean updateLocationAndContactForInvoice = false;
-
-	private final IInvoicingParams defaults;
 
 	public PlainInvoicingParams()
 	{
@@ -63,7 +55,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 
 	/**
 	 * @param defaults defaults to fallback in case a parameter is not set on this
-	 *            level
+	 *                 level
 	 */
 	public PlainInvoicingParams(@Nullable final IInvoicingParams defaults)
 	{
@@ -205,11 +197,6 @@ public class PlainInvoicingParams implements IInvoicingParams
 		poReferenceSet = true;
 	}
 
-	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
-	{
-		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
-	}
-
 	@Override
 	public boolean isSupplementMissingPaymentTermIds()
 	{
@@ -224,9 +211,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return false;
 	}
 
-	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
+	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
 	{
-		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
+		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
 	}
 
 	@Override
@@ -244,10 +231,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return null;
 	}
 
-	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult)
+	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
 	{
-		this.storeInvoicesInResult = storeInvoicesInResult;
-		return this;
+		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 	}
 
 	@Override
@@ -267,9 +253,9 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
+	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult)
 	{
-		this.assumeOneInvoice = assumeOneInvoice;
+		this.storeInvoicesInResult = storeInvoicesInResult;
 		return this;
 	}
 
@@ -288,6 +274,12 @@ public class PlainInvoicingParams implements IInvoicingParams
 		{
 			return false;
 		}
+	}
+
+	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
+	{
+		this.assumeOneInvoice = assumeOneInvoice;
+		return this;
 	}
 
 	public boolean isUpdateLocationAndContactForInvoice()

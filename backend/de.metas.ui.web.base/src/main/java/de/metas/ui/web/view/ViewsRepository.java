@@ -6,6 +6,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -16,13 +19,13 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
-import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.websocket.WebsocketTopicName;
+import de.metas.websocket.producers.WebsocketActiveSubscriptionsIndex;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,6 +39,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
@@ -73,6 +77,9 @@ import java.util.stream.Stream;
 public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
+	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
 
 	private final ImmutableMap<ViewFactoryKey, IViewFactory> factories;
 	private final SqlViewFactory defaultFactory;
@@ -105,7 +112,8 @@ public class ViewsRepository implements IViewsRepository
 		this.menuTreeRepo = menuTreeRepo;
 		this.websocketActiveSubscriptionsIndex = websocketActiveSubscriptionsIndex;
 
-		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue("de.metas.ui.web.view.ViewExpirationTimeoutInMinutes", 60));
+		final Duration viewExpirationTimeout = Duration.ofMinutes(Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ViewExpirationTimeoutInMinutes, 60));
+		logger.info("viewExpirationTimeout: {} (see `{}` sysconfig)", viewExpirationTimeout, SYSCONFIG_ViewExpirationTimeoutInMinutes);
 		defaultViewsIndexStorage = new DefaultViewsRepositoryStorage(viewExpirationTimeout);
 
 		async = createAsyncExecutor();
@@ -253,17 +261,30 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId,
+			@Nullable final UserRolePermissionsKey permissionsKey)
 	{
-		final String viewId = null; // N/A
-		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
+		if (permissionsKey != null)
+		{
+			final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(permissionsKey);
+			DocumentPermissionsHelper.assertViewAccess(windowId, null, permissions);
+		}
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		return factory.getViewLayout(windowId, viewDataType, profileId)
-				// Enable AllowNew if we have a menu node to create new records
-				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
-						.getNewRecordNodeForWindowId(windowId)
-						.map(MenuNode::getCaption));
+		ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType, profileId);
+
+		// Enable AllowNew if we have a menu node to create new records.
+		if (permissionsKey != null)
+		{
+			viewLayout = viewLayout.withAllowNewRecordIfPresent(menuTreeRepo.getMenuTree(permissionsKey)
+					.getNewRecordNodeForWindowId(windowId)
+					.map(MenuNode::getCaption));
+		}
+
+		return viewLayout;
 	}
 
 	@Override
