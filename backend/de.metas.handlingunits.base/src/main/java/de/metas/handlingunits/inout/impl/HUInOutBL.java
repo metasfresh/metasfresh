@@ -110,15 +110,21 @@ public class HUInOutBL implements IHUInOutBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
-	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
-		return inOutDAO.getById(inoutId);
+		return inOutDAO.getById(inoutId, de.metas.handlingunits.model.I_M_InOut.class);
 	}
 
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> type)
 	{
 		return inOutDAO.getById(inoutId, type);
+	}
+
+	@Override
+	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	{
+		return inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
@@ -377,8 +383,8 @@ public class HUInOutBL implements IHUInOutBL
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
-						  "copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
-						  lineRecord.getM_InOutLine_ID(), inOutRecord);
+					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+					lineRecord.getM_InOutLine_ID(), inOutRecord);
 
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
