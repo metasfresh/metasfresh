@@ -22,7 +22,7 @@
 
 package de.metas.handlingunits.inventory;
 
-import de.metas.order.OrderAndLineId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -58,7 +58,7 @@ public class CreateVirtualInventoryWithQtyReq
 	@NonNull
 	ZonedDateTime movementDate;
 
-	OrderAndLineId orderAndLineId;
+	@Nullable FlatrateTermId modularContractId;
 
 	@Nullable
 	AttributeSetInstanceId attributeSetInstanceId;

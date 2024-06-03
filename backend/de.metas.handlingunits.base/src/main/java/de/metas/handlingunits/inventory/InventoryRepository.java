@@ -696,7 +696,7 @@ public class InventoryRepository
 		inventoryLineRecord.setQtyCount(request.getQtyCount().toBigDecimal());
 		inventoryLineRecord.setC_UOM_ID(uomId.getRepoId());
 		inventoryLineRecord.setIsCounted(true);
-		inventoryLineRecord.setModular_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getModularFlatrateTermId()));
+		inventoryLineRecord.setModular_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getModularContractId()));
 
 		inventoryLineRecord.setM_Locator_ID(request.getLocatorId().getRepoId());
 

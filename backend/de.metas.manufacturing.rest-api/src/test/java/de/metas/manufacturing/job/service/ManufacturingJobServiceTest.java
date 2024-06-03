@@ -1,8 +1,6 @@
 package de.metas.manufacturing.job.service;
 
-import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.config.DeviceConfigPoolFactory;
@@ -44,10 +42,9 @@ class ManufacturingJobServiceTest
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
-		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
 				new PPOrderIssueScheduleRepository(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService(), modularContractProvider)
+				new InventoryService(new InventoryRepository(), new SourceHUsService())
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(

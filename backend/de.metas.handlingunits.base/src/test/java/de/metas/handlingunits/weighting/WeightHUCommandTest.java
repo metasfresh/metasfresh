@@ -2,9 +2,7 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
@@ -104,8 +102,7 @@ public class WeightHUCommandTest
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		final InventoryRepository inventoryRepo = new InventoryRepository();
-		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
-		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get(), modularContractProvider);
+		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}

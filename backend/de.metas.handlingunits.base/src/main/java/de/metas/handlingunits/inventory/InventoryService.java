@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -25,11 +23,11 @@ import de.metas.product.ProductId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
@@ -42,8 +40,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /*
@@ -69,6 +65,7 @@ import java.util.stream.Stream;
  */
 
 @Service
+@RequiredArgsConstructor
 public class InventoryService
 {
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -77,26 +74,18 @@ public class InventoryService
 	@Getter
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
-	private final ModularContractProvider modularContractProvider;
-
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
-
-	public InventoryService(@NonNull final InventoryRepository inventoryRepository,
-			@NonNull final SourceHUsService sourceHUsService,
-			final ModularContractProvider modularContractProvider)
-	{
-		this.inventoryRepository = inventoryRepository;
-		this.sourceHUsService = sourceHUsService;
-		this.modularContractProvider = modularContractProvider;
-	}
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		return inventoryRepository.toInventory(inventoryRecord);
+	}
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
@@ -106,7 +95,7 @@ public class InventoryService
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
 		final DocTypeId inventoryDocTypeId = DocTypeId.ofRepoIdOrNull(inventory.getC_DocType_ID());
-		if(inventoryDocTypeId == null)
+		if (inventoryDocTypeId == null)
 		{
 			return false;
 		}
@@ -140,11 +129,11 @@ public class InventoryService
 		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
 
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-											   .docBaseType(docBaseAndSubType.getDocBaseType())
-											   .docSubType(docBaseAndSubType.getDocSubType())
-											   .adClientId(Env.getAD_Client_ID())
-											   .adOrgId(orgId.getRepoId())
-											   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(Env.getAD_Client_ID())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 
 	private static HUAggregationType computeHUAggregationType(
@@ -269,9 +258,6 @@ public class InventoryService
 
 		final InventoryId inventoryId = createInventoryHeader(createHeaderRequest).getId();
 
-		final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(req.getOrderAndLineId())
-				.collect(Collectors.toSet());
-		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
 		final InventoryLineCreateRequest createLineRequest = InventoryLineCreateRequest
 				.builder()
 				.inventoryId(inventoryId)
@@ -280,7 +266,7 @@ public class InventoryService
 				.qtyCount(req.getQty())
 				.attributeSetId(req.getAttributeSetInstanceId())
 				.locatorId(locatorId)
-				.modularFlatrateTermId(contractIds.stream().findFirst().orElse(null))
+				.modularContractId(req.getModularContractId())
 				.build();
 
 		createInventoryLine(createLineRequest);

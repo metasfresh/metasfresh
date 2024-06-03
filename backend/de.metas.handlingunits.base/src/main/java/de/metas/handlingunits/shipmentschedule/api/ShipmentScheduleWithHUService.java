@@ -30,6 +30,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -142,6 +143,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -173,13 +176,13 @@ public class ShipmentScheduleWithHUService
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final ModularContractProvider modularContractProvider;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 
 		final HUReservationService huReservationServiceTest = new HUReservationService(new HUReservationRepository());
-		final ModularContractProvider modularContractProvider = new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 		return new ShipmentScheduleWithHUService(
 				ShipmentScheduleWithHUSupportingServices.newInstanceForUnitTesting(),
 				new ShipmentScheduleSplitService(new ShipmentScheduleSplitRepository()),
@@ -193,7 +196,8 @@ public class ShipmentScheduleWithHUService
 						Services.get(IBPartnerBL.class),
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
-				new InventoryService(new InventoryRepository(), new SourceHUsService(), modularContractProvider)
+				new InventoryService(new InventoryRepository(), new SourceHUsService()),
+				new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()))
 		);
 	}
 
@@ -1080,6 +1084,11 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final Quantity remainingQtyToAllocate)
 	{
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID());
+		final Set<FlatrateTermId> contractIds = modularContractProvider.streamPurchaseContractsForSalesOrderLine(orderAndLineId)
+				.collect(Collectors.toSet());
+		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(ClientId.ofRepoId(schedule.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
@@ -1088,7 +1097,7 @@ public class ShipmentScheduleWithHUService
 				.qty(remainingQtyToAllocate)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
-				.orderAndLineId(OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID()))
+				.modularContractId(contractIds.stream().findFirst().orElse(null))
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
