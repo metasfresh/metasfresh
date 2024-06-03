@@ -36,8 +36,6 @@ class InvoiceCandidateDimensionFactoryTest
 				.user2_ID(0)
 				.userElement1Id(0)
 				.userElement2Id(0)
-				.userElementNumber1(BigDecimal.ZERO)
-				.userElementNumber2(BigDecimal.ZERO)
 				.build();
 		assertThat(dimensionFromRecord).usingRecursiveComparison().isEqualTo(dimensionFromRecordExpected);
 		assertThat(dimensionFromRecord).isEqualTo(dimensionFromRecordExpected);

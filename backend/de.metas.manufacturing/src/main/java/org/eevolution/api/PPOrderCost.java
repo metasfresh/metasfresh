@@ -165,7 +165,7 @@ public class PPOrderCost
 
 		final boolean amtIsPositiveOrZero = amt.signum() >= 0;
 		final boolean qtyIsPositiveOrZero = qty.signum() >= 0;
-		if (amtIsPositiveOrZero != qtyIsPositiveOrZero)
+		if (amt.signum() != 0 && (amtIsPositiveOrZero != qtyIsPositiveOrZero))
 		{
 			throw new AdempiereException("Amount and Quantity shall have the same sign: " + amt + ", " + qty);
 		}
@@ -185,16 +185,6 @@ public class PPOrderCost
 			@NonNull final QuantityUOMConverter uomConverter)
 	{
 		return addingAccumulatedAmountAndQty(amt.negate(), qty.negate(), uomConverter);
-	}
-
-	public PPOrderCost withPrice(@NonNull final CostPrice newPrice)
-	{
-		if (this.getPrice().equals(newPrice))
-		{
-			return this;
-		}
-
-		return toBuilder().price(newPrice).build();
 	}
 
 	/* package */void setPostCalculationAmount(@NonNull final CostAmount postCalculationAmount)
