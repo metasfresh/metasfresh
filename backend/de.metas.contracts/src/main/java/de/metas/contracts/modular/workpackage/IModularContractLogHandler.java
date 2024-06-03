@@ -28,6 +28,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim.ProductPriceWithFlags;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryDeleteRequest;
@@ -101,7 +102,7 @@ public interface IModularContractLogHandler
 				.build();
 	}
 	@Nullable
-	ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry);
+	ProductPriceWithFlags getPriceActual(final @NonNull ModularContractLogEntry logEntry);
 
 	@Value
 	@Builder

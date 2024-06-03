@@ -28,8 +28,6 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.workpackage.impl.AbstractInterimInvoiceLineLog;
-import de.metas.product.ProductPrice;
-import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -58,10 +56,8 @@ public class InterimInvoiceLineLog extends AbstractInterimInvoiceLineLog
 		return -1 * super.getMultiplier(createLogRequest);
 	}
 
-	public @Nullable ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
+	public @Nullable ProductPriceWithFlags getPriceActual(final @NonNull ModularContractLogEntry logEntry)
 	{
-		final ProductPrice priceActual = super.getPriceActual(logEntry);
-		Check.assumeNotNull(priceActual, "PriceActual shouldn't be null");
-		return priceActual.negate();
+		return super.getPriceActual(logEntry).withSubtractedValue(true);
 	}
 }

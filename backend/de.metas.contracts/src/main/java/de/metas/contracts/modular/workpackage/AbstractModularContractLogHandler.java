@@ -24,6 +24,7 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.interim.ProductPriceWithFlags;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.product.ProductPrice;
 import de.metas.util.Check;
@@ -38,11 +39,11 @@ public abstract class AbstractModularContractLogHandler implements IModularContr
 	@NonNull private final ModularContractService modularContractService;
 
 	@Nullable
-	public ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
+	public ProductPriceWithFlags getPriceActual(final @NonNull ModularContractLogEntry logEntry)
 	{
 		Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
 		final boolean isCostsType = modularContractService.getByModuleId(logEntry.getModularContractModuleId()).isCostsType();
-		return logEntry.getPriceActual().negateIf(isCostsType);
+		return ProductPriceWithFlags.of(logEntry.getPriceActual()).withCost(isCostsType);
 	}
 
 	@NonNull
