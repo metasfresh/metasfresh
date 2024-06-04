@@ -61,6 +61,11 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 {
 	String getConditionsType();
 
+	default boolean isHandlerFor(@NonNull final I_C_Flatrate_Term term)
+	{
+		return true;
+	}
+
 	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull QueryLimit limit);
 
 	default void setSpecificInvoiceCandidateValues(final I_C_Invoice_Candidate ic, final I_C_Flatrate_Term term)

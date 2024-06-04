@@ -29,6 +29,7 @@ import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -69,7 +70,7 @@ import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -86,17 +87,18 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	protected void init()
 	{
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
-		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO()));
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
+		final ModularContractLogService modularContractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
+		SpringContextHolder.registerJUnitBean(modularContractLogService);
 		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
 		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
-		SpringContextHolder.registerJUnitBean(new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO())));
+		SpringContextHolder.registerJUnitBean(new ComputingMethodService(modularContractLogService));
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
 																		 new ModularContractSettingsDAO(),
 																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
-																		 new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO())),
+																		 new ComputingMethodService(modularContractLogService),
 																		 new ModularContractPriceRepository()));
 	}
 

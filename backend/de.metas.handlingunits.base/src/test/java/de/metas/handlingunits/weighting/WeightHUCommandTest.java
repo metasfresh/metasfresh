@@ -2,6 +2,8 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -45,6 +47,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.ObjectAssert;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -74,12 +77,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,7 +99,8 @@ public class WeightHUCommandTest
 	public void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
-
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		final InventoryRepository inventoryRepo = new InventoryRepository();
 		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
 

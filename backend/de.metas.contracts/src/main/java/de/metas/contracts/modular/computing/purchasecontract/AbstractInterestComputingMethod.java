@@ -150,6 +150,7 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 				})
 				.map(ModularLogInterest::getFinalInterest)
 				.filter(Objects::nonNull)
+				.filter(amt -> !amt.isZero())
 				.reduce(Money.zero(request.getCurrencyId()), Money::add);
 
 		final I_C_UOM stockUOM = productBL.getStockUOM(request.getProductId());
