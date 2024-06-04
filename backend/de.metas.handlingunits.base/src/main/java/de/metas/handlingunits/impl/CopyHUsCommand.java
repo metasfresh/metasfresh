@@ -159,6 +159,7 @@ public class CopyHUsCommand
 		newHU.setM_HU_Item_Parent_ID(HuItemId.toRepoId(newParentItemId));
 		newHU.setHUStatus(huStatus);
 		newHU.setIsActive(true);
+		newHU.setClonedFrom_HU_ID(oldHU.getM_HU_ID());
 		InterfaceWrapperHelper.saveRecord(newHU);
 
 		final HuId oldHUId = HuId.ofRepoId(oldHU.getM_HU_ID());
