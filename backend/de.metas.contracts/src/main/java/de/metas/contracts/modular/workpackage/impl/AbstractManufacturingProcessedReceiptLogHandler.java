@@ -105,7 +105,7 @@ public abstract class AbstractManufacturingProcessedReceiptLogHandler extends Ab
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
 		final BPartnerId invoicingBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID());
 		final BPartnerId collectionPointBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID());
-		final ProductPrice price = getPriceActual(request);
+		final ProductPrice price = getContractSpecificPriceWithFlags(request).toProductPrice();
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(contractId)

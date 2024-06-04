@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingProcessedReceipt;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -74,7 +75,7 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 
 	@NonNull
 	@Override
-	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPriceWithFlags getContractSpecificPriceWithFlags(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
@@ -85,10 +86,12 @@ public class CalibrationManufacturingProcessedReceiptLog extends AbstractManufac
 				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
 						.appendParametersToMessage()
 						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
-		return ProductPrice.builder()
+		final ProductPrice productPrice =  ProductPrice.builder()
 				.productId(productId)
 				.uomId(stockUOMId)
 				.money(Money.zero(currencyId))
 				.build();
+
+		return ProductPriceWithFlags.ofZero(productPrice);
 	}
 }

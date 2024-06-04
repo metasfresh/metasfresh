@@ -28,7 +28,6 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.tbd.inventory.InventoryLineModularContractHandler;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -129,7 +128,7 @@ public abstract class AbstractDefinitiveInvoiceInventoryLogHandler  extends Abst
 				.map(BPartnerId::ofRepoId)
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
+		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(createLogRequest.getContractId())

@@ -23,6 +23,7 @@
 package de.metas.contracts.modular;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.model.X_ModCntr_Type;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -99,6 +100,11 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static final ImmutableList<ComputingMethodType> INTEREST_SPECIFIC_METHODS = ImmutableList.of(AddValueOnInterim,
 			SubtractValueOnInterim);
 
+	private static final ImmutableSet<ComputingMethodType> SUBTRACTED_VALUE_METHODS = ImmutableSet.of(
+			SubtractValueOnRawProduct,
+			SubtractValueOnInterim,
+			SvCo,
+			SvProcessed);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ComputingMethodType> index = ReferenceListAwareEnums.index(values());
 
@@ -115,5 +121,10 @@ public enum ComputingMethodType implements ReferenceListAwareEnum
 	public static ComputingMethodType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
+	}
+
+	public boolean isSubtractedValue()
+	{
+		return SUBTRACTED_VALUE_METHODS.contains(this);
 	}
 }
