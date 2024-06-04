@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult.CustomerHUReturnsResult;
@@ -55,7 +56,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -84,7 +84,7 @@ public class MultiCustomerHUReturnsInOutProducer
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final AdMessageKey MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION = AdMessageKey.of("MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION");
@@ -93,7 +93,7 @@ public class MultiCustomerHUReturnsInOutProducer
 	// Parameters
 	private Timestamp _movementDate;
 	private final ImmutableList<I_M_HU> shippedHUsToReturn;
-
+	private final WarehouseId returnToWarehouseId;
 	private final AdTableId inOutLineTableId;
 
 	@Builder
@@ -101,6 +101,7 @@ public class MultiCustomerHUReturnsInOutProducer
 			@NonNull final Collection<I_M_HU> shippedHUsToReturn)
 	{
 		this.shippedHUsToReturn = ImmutableList.copyOf(shippedHUsToReturn);
+		this.returnToWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 		this.inOutLineTableId = InterfaceWrapperHelper.getAdTableId(I_M_InOutLine.class);
 	}
 
@@ -119,8 +120,11 @@ public class MultiCustomerHUReturnsInOutProducer
 
 			final Set<InOutLineId> originalShipmentLineIds = getOriginalShipmentLineIds(shippedHU);
 
-			final I_M_HU returnedHU = handlingUnitsBL.copyAsPlannedHU(HuId.ofRepoId(shippedHU.getM_HU_ID()));
-			final WarehouseId huWarehouseId = IHandlingUnitsBL.extractWarehouseId(returnedHU);
+			final I_M_HU returnedHU = handlingUnitsBL.copyAsPlannedHUs()
+					.huIdToCopy(HuId.ofRepoId(shippedHU.getM_HU_ID()))
+					.targetWarehouseId(returnToWarehouseId)
+					.execute()
+					.getSingleNewHU();
 
 			//
 			// Get the HU and the original vendor receipt M_InOutLine_ID and add it to the right producer
@@ -138,7 +142,7 @@ public class MultiCustomerHUReturnsInOutProducer
 				customerReturnProducers.computeIfAbsent(
 								CustomerReturnsProducerKey.builder()
 										.bpartnerId(BPartnerId.ofRepoId(originalShipment.getC_BPartner_ID()))
-										.warehouseId(huWarehouseId)
+										.warehouseId(returnToWarehouseId)
 										.originOrderId(OrderId.ofRepoIdOrNull(originalShipment.getC_Order_ID()))
 										.build(),
 								this::createCustomerReturnInOutProducer
@@ -154,8 +158,6 @@ public class MultiCustomerHUReturnsInOutProducer
 		{
 			final I_M_InOut customerReturn = customerReturnProducer.create();
 			final List<I_M_HU> husReturned = customerReturnProducer.getHUsReturned();
-
-			huInOutBL.moveHUsToQualityReturnWarehouse(husReturned);
 
 			resultBuilder.item(CustomerHUReturnsResult.builder()
 					.customerReturn(customerReturn)
@@ -248,7 +250,7 @@ public class MultiCustomerHUReturnsInOutProducer
 
 		final I_C_BPartner partner = bpartnerDAO.getById(bpartnerId);
 		final I_C_BPartner_Location shipFromLocation = retrieveShipFromLocation(bpartnerId);
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final I_M_Warehouse warehouse = huWarehouseDAO.getById(warehouseId);
 
 		final CustomerReturnsInOutProducer producer = CustomerReturnsInOutProducer.newInstance();
 		producer.setC_BPartner(partner);

@@ -50,6 +50,9 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	private static final AdMessageKey MSG_NoQualityWarehouse = AdMessageKey.of("NoQualityWarehouse");
 
 	@Override
+	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId) {return warehouseDAO.getById(warehouseId);}
+
+	@Override
 	public List<I_M_Warehouse> retrievePickingWarehouses()
 	{
 		// 06902: We only take warehouses that have at least one *active* after picking locator.
