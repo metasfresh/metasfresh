@@ -291,7 +291,7 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29
+	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
