@@ -40,7 +40,6 @@ public interface IHUWarehouseDAO extends ISingletonService
 
 	/**
 	 * Suggests an after-picking locator in the same warehouse as given <code>locator</code>.
-	 *
 	 * If given locator is after-picking then it will be returned.
 	 *
 	 * @return after-picking locator or null

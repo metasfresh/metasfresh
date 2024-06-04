@@ -134,9 +134,9 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUs(@NonNull final HUMovementGenerateRequest request)
+	public void moveHUs(@NonNull final HUMovementGenerateRequest request)
 	{
-		return new HUMovementGenerator(request).createMovement();
+		new HUMovementGenerator(request).createMovement();
 	}
 
 	@Override
@@ -237,7 +237,7 @@ public class HUMovementBL implements IHUMovementBL
 		final SourceHUsService sourceHuService = SourceHUsService.get();
 
 		//
-		// Make sure hu's current locator is the locator from which we need to move
+		// Make sure HU's current locator is the locator from which we need to move
 		// final int huLocatorIdOld = hu.getM_Locator_ID();
 		final LocatorId locatorFromId = IHandlingUnitsBL.extractLocatorId(hu);
 

@@ -60,7 +60,7 @@ public interface IHUMovementBL extends ISingletonService
 	 */
 	HUMovementGeneratorResult moveHUsToWarehouse(Collection<I_M_HU> hus, WarehouseId warehouseToId);
 
-	HUMovementGeneratorResult moveHUs(@NonNull HUMovementGenerateRequest request);
+	void moveHUs(@NonNull HUMovementGenerateRequest request);
 
 	HUMovementGeneratorResult moveHUsToLocator(Collection<I_M_HU> hus, LocatorId locatorToId);
 
