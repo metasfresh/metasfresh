@@ -23,7 +23,6 @@
 package de.metas.handlingunits.movement.api.impl;
 
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimaps;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
@@ -66,6 +65,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -127,7 +127,7 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
+	public HUMovementGeneratorResult moveHUsToWarehouse(@NonNull final Collection<I_M_HU> hus, @NonNull final WarehouseId warehouseToId)
 	{
 		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
 		return moveHUsToLocator(hus, locatorToId);
@@ -140,7 +140,7 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public HUMovementGeneratorResult moveHUsToLocator(@NonNull final List<I_M_HU> hus, @NonNull final LocatorId toLocatorId)
+	public HUMovementGeneratorResult moveHUsToLocator(@NonNull final Collection<I_M_HU> hus, @NonNull final LocatorId toLocatorId)
 	{
 		if (hus.isEmpty())
 		{
@@ -153,9 +153,14 @@ public class HUMovementBL implements IHUMovementBL
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						IHandlingUnitsBL::extractLocatorId,
 						hu -> HuId.ofRepoId(hu.getM_HU_ID())));
-		Multimaps.index(hus, IHandlingUnitsBL::extractLocatorId);
 		for (final LocatorId fromLocatorId : huIdsByLocatorId.keySet())
 		{
+			// Skip HUs that are already at target locator
+			if (LocatorId.equals(fromLocatorId, toLocatorId))
+			{
+				continue;
+			}
+
 			final HUMovementGenerateRequest request = HUMovementGenerateRequest.builder()
 					.fromLocatorId(fromLocatorId)
 					.toLocatorId(toLocatorId)

@@ -22,15 +22,17 @@
 
 package de.metas.handlingunits.inout.returns.customer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult.CustomerHUReturnsResult;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult.MultiCustomerHUReturnsResultBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -41,7 +43,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -64,7 +65,6 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -78,45 +78,42 @@ import java.util.Set;
  */
 public class MultiCustomerHUReturnsInOutProducer
 {
-	private static final AdMessageKey MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION = AdMessageKey.of("MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION");
-
-	public static MultiCustomerHUReturnsInOutProducer newInstance()
-	{
-		return new MultiCustomerHUReturnsInOutProducer();
-	}
-
 	// services
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	private static final AdMessageKey MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION = AdMessageKey.of("MSG_ERR_NO_BUSINESS_PARTNER_SHIP_TO_LOCATION");
+
 	//
 	// Parameters
 	private Timestamp _movementDate;
-	private final ArrayList<I_M_HU> _husToReturn = new ArrayList<>();
+	private final ImmutableList<I_M_HU> shippedHUsToReturn;
 
 	private final AdTableId inOutLineTableId;
 
-	private MultiCustomerHUReturnsInOutProducer()
+	@Builder
+	private MultiCustomerHUReturnsInOutProducer(
+			@NonNull final Collection<I_M_HU> shippedHUsToReturn)
 	{
+		this.shippedHUsToReturn = ImmutableList.copyOf(shippedHUsToReturn);
 		this.inOutLineTableId = InterfaceWrapperHelper.getAdTableId(I_M_InOutLine.class);
 	}
 
-	public List<I_M_InOut> create()
+	public MultiCustomerHUReturnsResult create()
 	{
 		return trxManager.call(ITrx.TRXNAME_ThreadInherited, this::createInTrx);
 	}
 
-	private List<I_M_InOut> createInTrx()
+	private MultiCustomerHUReturnsResult createInTrx()
 	{
 		final HashMap<CustomerReturnsProducerKey, CustomerReturnsInOutProducer> customerReturnProducers = new HashMap<>();
 
-		for (final I_M_HU shippedHU : getHUsToReturn())
+		for (final I_M_HU shippedHU : shippedHUsToReturn)
 		{
 			InterfaceWrapperHelper.setTrxName(shippedHU, ITrx.TRXNAME_ThreadInherited);
 
@@ -152,21 +149,25 @@ public class MultiCustomerHUReturnsInOutProducer
 
 		//
 		// Iterate all customer return producers and actually create the customer returns
-		final List<I_M_InOut> customerReturns = customerReturnProducers.values().stream()
-				.map(CustomerReturnsInOutProducer::create)
-				.collect(GuavaCollectors.toImmutableList());
-
-		if (!customerReturns.isEmpty())
+		final MultiCustomerHUReturnsResultBuilder resultBuilder = MultiCustomerHUReturnsResult.builder();
+		for (final CustomerReturnsInOutProducer customerReturnProducer : customerReturnProducers.values())
 		{
-			ReturnInOutUserNotificationsProducer.newInstance().notify(customerReturns);
+			final I_M_InOut customerReturn = customerReturnProducer.create();
+			final List<I_M_HU> husReturned = customerReturnProducer.getHUsReturned();
 
-			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			huInOutBL.moveHUsToQualityReturnWarehouse(getHUsToReturn());
-			huStatusBL.setHUStatusActive(_husToReturn);
+			huInOutBL.moveHUsToQualityReturnWarehouse(husReturned);
+
+			resultBuilder.item(CustomerHUReturnsResult.builder()
+					.customerReturn(customerReturn)
+					.returnedHUs(husReturned)
+					.build());
 		}
 
-		// return the created customer returns
-		return customerReturns;
+		final MultiCustomerHUReturnsResult result = resultBuilder.build();
+
+		ReturnInOutUserNotificationsProducer.newInstance().notify(result.getCustomerReturns());
+
+		return result;
 	}
 
 	@Nullable
@@ -280,17 +281,6 @@ public class MultiCustomerHUReturnsInOutProducer
 			_movementDate = Env.getDate(); // use login date by default
 		}
 		return _movementDate;
-	}
-
-	private final List<I_M_HU> getHUsToReturn()
-	{
-		return _husToReturn;
-	}
-
-	public MultiCustomerHUReturnsInOutProducer addHUsToReturn(final Collection<I_M_HU> hus)
-	{
-		_husToReturn.addAll(hus);
-		return this;
 	}
 
 	@NonNull

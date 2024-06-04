@@ -31,6 +31,7 @@ import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerat
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.handlingunits.inout.returns.customer.ManualCustomerReturnInOutProducer;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult;
 import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -76,11 +77,12 @@ public class ReturnsServiceFacade
 	{
 		return huInOutBL.isEmptiesReturn(inout);
 	}
-	
-	public void createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
+
+	public MultiCustomerHUReturnsResult createCustomerReturnInOutForHUs(final Collection<I_M_HU> shippedHUsToReturn)
 	{
-		MultiCustomerHUReturnsInOutProducer.newInstance()
-				.addHUsToReturn(hus)
+		return MultiCustomerHUReturnsInOutProducer.builder()
+				.shippedHUsToReturn(shippedHUsToReturn)
+				.build()
 				.create();
 	}
 
@@ -110,13 +112,6 @@ public class ReturnsServiceFacade
 				.husByLineId(husByLineId)
 				.build()
 				.create();
-	}
-
-	public List<I_M_HU> createHUsForCustomerReturnLine(@NonNull final I_M_InOutLine customerReturnLine)
-	{
-		final List<I_M_HU> hus = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
-		assignHandlingUnitsToHeaderAndLine(customerReturnLine, hus);
-		return hus;
 	}
 
 	public void createVendorReturnInOutForHUs(final List<I_M_HU> hus, final Timestamp movementDate)

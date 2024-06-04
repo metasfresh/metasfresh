@@ -62,8 +62,9 @@ import java.util.TreeMap;
 public class ManualCustomerReturnInOutProducer
 {
 	// services
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -95,19 +96,19 @@ public class ManualCustomerReturnInOutProducer
 		// and create one customer returns producer for each group.
 		final TreeMap<ArrayKey, CustomerReturnsInOutProducer> customerReturnProducers = new TreeMap<>();
 
-		for (final InOutLineId originInOutLineId : husByLineId.keySet())
+		for (final InOutLineId customerReturnLineId : husByLineId.keySet())
 		{
-			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.loadOutOfTrx(originInOutLineId, I_M_InOutLine.class);
+			final I_M_InOutLine customerReturnLine = huInOutBL.getLineById(customerReturnLineId);
 
-			for (final I_M_HU hu : husByLineId.get(originInOutLineId))
+			for (final I_M_HU returnedHU : husByLineId.get(customerReturnLineId))
 			{
-				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
+				InterfaceWrapperHelper.setTrxName(returnedHU, ITrx.TRXNAME_ThreadInherited);
 
-				final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
+				final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(returnedHU);
 
 				//
 				// If the HU is not a top level one, extract it first
-				huTrxBL.extractHUFromParentIfNeeded(hu);
+				huTrxBL.extractHUFromParentIfNeeded(returnedHU);
 
 				final BPartnerId bpartnerId = BPartnerId.ofRepoId(manualCustomerReturn.getC_BPartner_ID());
 
@@ -116,9 +117,9 @@ public class ManualCustomerReturnInOutProducer
 				// The return inout lines will be created based on the origin inoutlines (from receipts)
 				final ArrayKey customerReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId);
 				customerReturnProducers.computeIfAbsent(customerReturnProducerKey, k -> createCustomerReturnInOutProducer(bpartnerId, warehouseId))
-						.addHUToReturn(hu, InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()));
+						.addHUToReturn(returnedHU, InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()));
 
-				Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
+				Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, returnedHU, ITrx.TRXNAME_ThreadInherited);
 
 			}
 		}
@@ -134,11 +135,9 @@ public class ManualCustomerReturnInOutProducer
 		// Send notifications
 		if (!returnInOuts.isEmpty())
 		{
-			ReturnInOutUserNotificationsProducer.newInstance()
-					.notify(returnInOuts);
+			ReturnInOutUserNotificationsProducer.newInstance().notify(returnInOuts);
 
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 			huInOutBL.moveHUsToQualityReturnWarehouse(getHUsToReturn());
 		}
 	}

@@ -22,15 +22,14 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface IHUWarehouseDAO extends ISingletonService
 {
@@ -48,14 +47,6 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 */
 	Optional<LocatorId> suggestAfterPickingLocatorId(int locatorRepoId);
 
-	/**
-	 * Retrieve the warehouses where the quality returns will be kept.
-	 * These warehouses must have the field <code>de.metas.handlingunits.model.I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse</code> set on true.
-	 * See task #1056.
-	 * 
-	 * This method fails if no Warehouses were found.
-	 */
-	List<de.metas.handlingunits.model.I_M_Warehouse> retrieveQualityReturnWarehouses();
-
-	Set<WarehouseId> retrieveQualityReturnWarehouseIds();
+	@NonNull
+	WarehouseId retrieveFirstQualityReturnWarehouseId();
 }

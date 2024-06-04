@@ -252,7 +252,7 @@ class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return _husToReturn;
 	}
 
-	private List<I_M_HU> getHUsReturned()
+	public List<I_M_HU> getHUsReturned()
 	{
 		return _husToReturn.stream()
 				.map(HUToReturn::getHu)

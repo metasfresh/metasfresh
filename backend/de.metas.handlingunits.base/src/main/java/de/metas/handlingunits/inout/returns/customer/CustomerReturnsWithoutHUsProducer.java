@@ -347,7 +347,7 @@ public class CustomerReturnsWithoutHUsProducer
 				targetWarehouseId = warehousesRepo.retrieveQuarantineWarehouseId();
 				break;
 			case QUALITY_ISSUE:
-				targetWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIds().iterator().next();
+				targetWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 				break;
 			default:
 				throw new AdempiereException("The given ReturnedGoodsWarehouseType is not supported!")

@@ -51,7 +51,6 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -62,7 +61,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,7 +68,6 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -105,9 +102,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -350,11 +345,14 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
+	public void moveHUsToQualityReturnWarehouse(final Collection<I_M_HU> husToReturn)
 	{
-		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
+		if (husToReturn.isEmpty())
+		{
+			return;
+		}
 
+		final WarehouseId qualityReturnWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
 		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
