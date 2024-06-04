@@ -341,7 +341,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_Item> retrieveItemsNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Item> retrieveAllItemsNoCache(final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -350,13 +350,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item.class)
 				.addInArrayFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU> retrieveIncludedHUsNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU> retrieveAllIncludedHUsNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -365,13 +365,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU.class)
 				.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(final Set<HuItemId> huItemIds)
+	public List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(final Set<HuItemId> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{
@@ -380,13 +380,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Item_Storage.class)
 				.addInArrayFilter(I_M_HU_Item_Storage.COLUMNNAME_M_HU_Item_ID, huItemIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}
 
 	@Override
-	public List<I_M_HU_Storage> retrieveStoragesNoCache(final Set<HuId> huIds)
+	public List<I_M_HU_Storage> retrieveAllStoragesNoCache(final Set<HuId> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -395,7 +395,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return queryBL.createQueryBuilder(I_M_HU_Storage.class)
 				.addInArrayFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huIds)
-				.addOnlyActiveRecordsFilter()
+				//.addOnlyActiveRecordsFilter() // all, including not active
 				.create()
 				.list();
 	}

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1836855192L;
+	private static final long serialVersionUID = 330714452L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -111,6 +111,33 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public java.lang.String getClearanceStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceStatus);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getClonedFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setClonedFrom_HU(final de.metas.handlingunits.model.I_M_HU ClonedFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, ClonedFrom_HU);
+	}
+
+	@Override
+	public void setClonedFrom_HU_ID (final int ClonedFrom_HU_ID)
+	{
+		if (ClonedFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, ClonedFrom_HU_ID);
+	}
+
+	@Override
+	public int getClonedFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ClonedFrom_HU_ID);
 	}
 
 	@Override
