@@ -198,6 +198,38 @@ public class C_InvoiceLine_StepDef
 		}
 	}
 
+	@And("validate created modular invoice lines")
+	public void validate_created_modular_invoice_lines(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> dataTable = table.asMaps();
+		for (final Map<String, String> row : dataTable)
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final int expectedProductId = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, I_C_InvoiceLine.COLUMNNAME_QtyInvoiced);
+
+			final String productName = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_ProductName);
+
+			//dev-note: we assume the tests are not using the same product, qty and product name on different lines
+			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, expectedProductId)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_ProductName, productName)
+					.create()
+					.firstOnlyNotNull(I_C_InvoiceLine.class);
+
+			validateInvoiceLine(invoiceLineRecord, row);
+		}
+	}
+
 	private void validateInvoiceLine(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final Map<String, String> row)
 	{
 		final SoftAssertions softly = new SoftAssertions();
