@@ -62,7 +62,6 @@ public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess impl
 	@Override
 	protected final String doIt()
 	{
-		// TODO !! DEBUG!! we don't get the selected entry! Contacted Teo; probably FE-problem
 		final Integer flatrateDataEntryId = getSelectedIncludedRecordIds(I_C_Flatrate_DataEntry.class).iterator().next();
 		final TableRecordReference recordRef = TableRecordReference.of(I_C_Flatrate_DataEntry.Table_Name, flatrateDataEntryId);
 

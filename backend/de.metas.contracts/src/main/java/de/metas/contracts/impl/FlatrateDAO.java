@@ -270,36 +270,30 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_DataEntry dataEntry)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = getCtx(dataEntry);
-		final String trxName = getTrxName(dataEntry);
-
-		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + "=?";
-
-		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
-				.setParameters(dataEntry.getC_Flatrate_DataEntry_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
-				.list(I_C_Invoice_Clearing_Alloc.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID, dataEntry.getC_Flatrate_DataEntry_ID())
+				.orderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
+				.create().list();
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
 		final boolean retrieveAll = true;
 		return retrieveClearingAllocs(invoiceCand, retrieveAll);
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
 		final boolean retrieveAll = false;
 		return retrieveClearingAllocs(invoiceCand, retrieveAll);
 	}
 
-	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
+	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
 	{
 		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
 				.setJoinOr()
@@ -320,19 +314,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_Term term)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = getCtx(term);
-		final String trxName = getTrxName(term);
-
-		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=?";
-
-		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
-				.list(I_C_Invoice_Clearing_Alloc.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
+				.create()
+				.list();
 	}
 
 	@Override

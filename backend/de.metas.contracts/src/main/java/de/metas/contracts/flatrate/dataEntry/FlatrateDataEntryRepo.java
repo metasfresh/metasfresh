@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.bpartner.department.BPartnerDepartmentRepo;
+import de.metas.cache.CCache;
 import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -54,8 +55,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class FlatrateDataEntryRepo
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo;
+	@NonNull
+	private final BPartnerDepartmentRepo bPartnerDepartmentRepo;
+
+	private final CCache<FlatrateDataEntryId, FlatrateDataEntry> id2entry = CCache.newLRUCache(I_C_Flatrate_DataEntry.Table_Name + "#by#C_Flatrate_DataEntry_ID", 100, 60);
 
 	public FlatrateDataEntryRepo(@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo)
 	{
@@ -65,8 +70,11 @@ public class FlatrateDataEntryRepo
 	@NonNull
 	public FlatrateDataEntry getById(@NonNull final FlatrateDataEntryId id)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return id2entry.getOrLoad(id, this::getById0);
+	}
 
+	private FlatrateDataEntry getById0(@NonNull final FlatrateDataEntryId id)
+	{
 		final I_C_Flatrate_DataEntry flatrateDataEntry = load(id, I_C_Flatrate_DataEntry.class);
 
 		final List<I_C_Flatrate_DataEntry_Detail> detailRecords = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry_Detail.class)
@@ -90,16 +98,16 @@ public class FlatrateDataEntryRepo
 				dataEntryRecord.getC_Flatrate_DataEntry_ID());
 
 		final FlatrateDataEntry.FlatrateDataEntryBuilder result = FlatrateDataEntry.builder();
-		
+
 		Check.errorIf(dataEntryRecord.getC_UOM_ID() <= 0, "C_Flatrate_DataEntry_ID={} needs to have a C_UOM_ID", dataEntryRecord.getC_Flatrate_DataEntry_ID());
 		result.uomId(UomId.ofRepoId(dataEntryRecord.getC_UOM_ID()));
-		
+
 		result.id(flatrateDataEntryId);
 
 		final Timestamp endDate = dataEntryRecord.getC_Period().getEndDate();
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(dataEntryRecord.getAD_Org_ID()));
 		result.endDate(TimeUtil.asZonedDateTime(endDate, zoneId));
-				
+
 		for (final I_C_Flatrate_DataEntry_Detail detailRecord : detailRecords)
 		{
 			final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoIdOrNone(billBPartnerId, detailRecord.getC_BPartner_Department_ID());

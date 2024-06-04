@@ -22,8 +22,11 @@
 
 package de.metas.ui.web.contract.flatrate.process;
 
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
+import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
@@ -32,6 +35,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 public class WEBUI_C_Flatrate_DataEntry_CompleteIt extends JavaProcess implements IProcessPrecondition
 {
@@ -40,27 +44,35 @@ public class WEBUI_C_Flatrate_DataEntry_CompleteIt extends JavaProcess implement
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		// final I_C_Flatrate_DataEntry entryRecord = getFlatrateDataEntryRecord();
-		// if (entryRecord.isProcessed())
-		// {
-		// 	return ProcessPreconditionsResolution.rejectWithInternalReason("C_Flatrate_DataEntry is already processed");
-		// }
+		final I_C_Flatrate_DataEntry entryRecord = ProcessUtil.extractEntryOrNull(context);
+		if (entryRecord == null)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		if (entryRecord.isProcessed())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("C_Flatrate_DataEntry is already processed");
+		}
+
+		final FlatrateDataEntryRepo flatrateDataEntryRepo = SpringContextHolder.instance.getBean(FlatrateDataEntryRepo.class);
+		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(entryRecord.getC_Flatrate_Term_ID()), entryRecord.getC_Flatrate_DataEntry_ID());
+		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
+		if (entry.getDetails().isEmpty())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("C_Flatrate_DataEntry has no details");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected final String doIt()
 	{
-		final I_C_Flatrate_DataEntry entryRecord = getFlatrateDataEntryRecord();
+		final I_C_Flatrate_DataEntry entryRecord = ProcessUtil.extractEntry(getProcessInfo());
 
 		documentBL.processEx(entryRecord, X_C_Flatrate_DataEntry.DOCACTION_Complete, X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
-		
-		return MSG_OK;
-	}
 
-	private I_C_Flatrate_DataEntry getFlatrateDataEntryRecord()
-	{
-		final I_C_Flatrate_DataEntry_Detail entryDetailRecord = getProcessInfo().getRecord(I_C_Flatrate_DataEntry_Detail.class);
-		return entryDetailRecord.getC_Flatrate_DataEntry();
+		return MSG_OK;
 	}
 }

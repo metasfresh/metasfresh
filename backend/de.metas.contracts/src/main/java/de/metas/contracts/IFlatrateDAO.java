@@ -64,19 +64,19 @@ public interface IFlatrateDAO extends ISingletonService
 {
 	I_C_Flatrate_Term getById(final int flatrateTermId);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_DataEntry dataEntry);
 
 	/**
 	 * Retrieves I_C_Invoice_Clearing_Alloc records that have the given invoiceCand as their <code>C_Invoice_Candidate_ID</code> OR <code>C_Invoice_Cand_ToClear_ID</code>.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
 	/**
 	 * Like {@link #retrieveClearingAllocs(I_C_Invoice_Candidate)}, but also returns inactive records.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_Term term);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_Term term);
 
 	List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(I_C_Flatrate_Conditions conditions);
 

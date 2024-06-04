@@ -31,15 +31,11 @@ import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.i18n.ITranslatableString;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRow;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRowsData;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRowsLoader;
-import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_CompleteIt;
 import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_Detail_Launcher;
-import de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_ReactivateIt;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -111,25 +107,7 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 		return DataEntryDetailsView.builder()
 				.windowId(getWindowId())
 				.rowsData(rowsData)
-				.processes(ImmutableList.of(
-						createProcessDescriptor(WEBUI_C_Flatrate_DataEntry_CompleteIt.class),
-						createProcessDescriptor(WEBUI_C_Flatrate_DataEntry_ReactivateIt.class)))
-				.build();
-	}
-
-	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
-	{
-		final AdProcessId processId = processDAO.retrieveProcessIdByClass(processClass);
-		
-		if (processId == null)
-		{
-			throw new AdempiereException("No processId found for " + processClass);
-		}
-
-		return RelatedProcessDescriptor.builder()
-				.processId(processId)
-				.anyTable().anyWindow()
-				.displayPlace(RelatedProcessDescriptor.DisplayPlace.ViewQuickActions)
+				.processes(ImmutableList.of())
 				.build();
 	}
 

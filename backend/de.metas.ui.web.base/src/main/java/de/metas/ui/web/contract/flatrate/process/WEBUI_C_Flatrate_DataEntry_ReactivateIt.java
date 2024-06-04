@@ -23,8 +23,8 @@
 package de.metas.ui.web.contract.flatrate.process;
 
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -41,28 +41,26 @@ public class WEBUI_C_Flatrate_DataEntry_ReactivateIt extends JavaProcess impleme
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		//context.getQueryFilter(I_C_Flatrate_DataEntry_Detail.class);
-		//final I_C_Flatrate_DataEntry entryRecord = getFlatrateDataEntryRecord();
-		// if (!DocStatus.ofCode(entryRecord.getDocStatus()).isCompleted())
-		// {
-		// 	return ProcessPreconditionsResolution.rejectWithInternalReason("C_Flatrate_DataEntry not completed");
-		// }
+		final I_C_Flatrate_DataEntry entryRecord = ProcessUtil.extractEntryOrNull(context);
+		if (entryRecord == null)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+		
+		if (!DocStatus.ofCode(entryRecord.getDocStatus()).isCompleted())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("C_Flatrate_DataEntry not completed");
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected final String doIt()
 	{
-		final I_C_Flatrate_DataEntry entryRecord = getFlatrateDataEntryRecord();
+		final I_C_Flatrate_DataEntry entryRecord = ProcessUtil.extractEntry(getProcessInfo());
 
 		documentBL.processEx(entryRecord, X_C_Flatrate_DataEntry.DOCACTION_Re_Activate, X_C_Flatrate_DataEntry.DOCSTATUS_InProgress);
 
 		return MSG_OK;
-	}
-
-	private I_C_Flatrate_DataEntry getFlatrateDataEntryRecord()
-	{
-		final I_C_Flatrate_DataEntry_Detail entryDetailRecord = getProcessInfo().getRecord(I_C_Flatrate_DataEntry_Detail.class);
-		return entryDetailRecord.getC_Flatrate_DataEntry();
 	}
 }
