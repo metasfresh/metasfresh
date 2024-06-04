@@ -22,15 +22,20 @@
 
 package de.metas.contracts.modular.log;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.detail.InvoiceCandidateWithDetails;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
+import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -62,11 +67,14 @@ public class ModularContractLogService
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 	public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
+	public static final String INVOICE_DETAILS_RECEIVED = "IN";
+	public static final String INVOICE_DETAILS_SHIPPED = "OUT";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	@NonNull private final ModularContractLogDAO modularContractLogDAO;
+	@NonNull private final InvoiceCandidateWithDetailsRepository invoiceCandidateWithDetailsRepository;
 
 	public void throwErrorIfLogExistsForDocumentLine(@NonNull final TableRecordReference tableRecordReference)
 	{
@@ -193,7 +201,7 @@ public class ModularContractLogService
 						.flatrateTermId(request.flatrateTermId())
 						.processed(false)
 						.contractModuleId(request.modularContractModuleId())
-								.excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
+						.excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
 						.build())
 				.withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
 	}
@@ -207,4 +215,38 @@ public class ModularContractLogService
 	{
 		return modularContractLogDAO.create(request);
 	}
+
+	public void setDefinitiveICLogsProcessed(final ModularContractLogQuery modularContractLogQuery, final InvoiceCandidateId invoiceCandidateId)
+	{
+		final ModularContractLogEntriesList modularContractLogEntries = getModularContractLogEntries(modularContractLogQuery);
+		final UomId uomId = modularContractLogEntries.getUniqueProductPriceOrErrorNotNull().getUomId();
+		final ModularContractLogEntriesList manufacturingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.PRODUCTION);
+		final ModularContractLogEntriesList receiptRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.MATERIAL_RECEIPT);
+		final ModularContractLogEntriesList shippingRecords = modularContractLogEntries.subsetOf(LogEntryDocumentType.SHIPMENT);
+
+		final Quantity manufacturingRecordsQtySum = manufacturingRecords.getQtySum(uomId, uomConversionBL);
+		final Quantity receiptRecordsQtySum = receiptRecords.getQtySum(uomId, uomConversionBL);
+
+		final Quantity receivedQty = manufacturingRecordsQtySum.signum() > 0 ? manufacturingRecordsQtySum : receiptRecordsQtySum;
+		final Quantity shippedQty = shippingRecords.getQtySum(uomId, uomConversionBL);
+		final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
+		final ImmutableList<InvoiceDetailItem> invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
+						.label(INVOICE_DETAILS_RECEIVED)
+						.qty(receivedQty.negate())
+						.orgId(orgId)
+						.build(),
+				InvoiceDetailItem.builder()
+						.label(INVOICE_DETAILS_SHIPPED)
+						.qty(shippedQty)
+						.orgId(orgId)
+						.build());
+
+		invoiceCandidateWithDetailsRepository.save(InvoiceCandidateWithDetails.builder()
+				.invoiceCandidateId(invoiceCandidateId)
+				.detailItems(invoiceDetailItems)
+				.build());
+
+		setICProcessed(modularContractLogQuery, invoiceCandidateId);
+	}
+
 }

@@ -34,7 +34,7 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.util.List;
 
-public class FinalInvoiceWorkPackageProcessor extends WorkpackageProcessorAdapter
+public class ModCntrInvoiceWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final CreateInvoiceForModelService createInvoiceForModelService = SpringContextHolder.instance.getBean(CreateInvoiceForModelService.class);
 

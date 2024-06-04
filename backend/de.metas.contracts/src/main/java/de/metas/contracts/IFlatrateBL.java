@@ -58,6 +58,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -117,6 +118,8 @@ public interface IFlatrateBL extends ISingletonService
 	@NonNull Stream<FlatrateTermId> streamModularFlatrateTermIdsByQuery(@NonNull ModularFlatrateTermQuery query);
 
 	@Nullable FlatrateTermId getInterimContractIdByModularContractIdAndDate(@NonNull FlatrateTermId modularFlatrateTermId, @NonNull Instant date);
+
+	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
 	/**
 	 * term to extend
@@ -241,6 +244,9 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isModularContract(@NonNull FlatrateTermId flatrateTermId);
 
+	@NonNull
+	ImmutableSet<FlatrateTermId> getReadyForDefinitiveInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+
 	/**
 	 * Extend the C_Flatrate_Conditions to the new year
 	 */
@@ -265,8 +271,10 @@ public interface IFlatrateBL extends ISingletonService
 
 	boolean isInterimContract(@NonNull FlatrateTermId flatrateTermId);
 
-	boolean isExistsModularContract(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+	boolean isFinalInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
+
+	boolean isDefinitiveInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> selectedContractsFilter);
 
 	@NonNull
-	ImmutableSet<FlatrateTermId> getModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
+	ImmutableSet<FlatrateTermId> getReadyForFinalInvoicingModularContractIds(@NonNull IQueryFilter<I_C_Flatrate_Term> queryFilter);
 }

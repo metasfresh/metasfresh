@@ -379,6 +379,9 @@ public class InvoiceCandidateRepository
 		invoiceDetailEntity.setLabel(invoiceDetailItem.getLabel());
 		invoiceDetailEntity.setNote(invoiceDetailItem.getNote());
 		invoiceDetailEntity.setPriceActual(invoiceDetailItem.getPrice());
+		invoiceDetailEntity.setQty(Quantity.toBigDecimal(invoiceDetailItem.getQty()));
+		invoiceDetailEntity.setC_UOM_ID(Quantity.toUomRepoId(invoiceDetailItem.getQty()));
+
 		invoiceDetailEntity.setDate(getDateOrNull(invoiceDetailItem));
 
 		return invoiceDetailEntity;

@@ -27,6 +27,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingFacadeService;
 import de.metas.contracts.modular.computing.facades.manufacturing.ManufacturingRawIssued;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
@@ -111,7 +112,7 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
 		final BPartnerId invoicingBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getBill_BPartner_ID());
 		final BPartnerId collectionPointBPartnerId = BPartnerId.ofRepoIdOrNull(modularContractRecord.getDropShip_BPartner_ID());
-		final ProductPrice price = getPriceActual(request);
+		final ProductPrice price = getContractSpecificPriceWithFlags(request).toProductPrice();
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(contractId)
@@ -161,7 +162,7 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 	}
 
 	@NonNull
-	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPriceWithFlags getContractSpecificPriceWithFlags(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateDAO.getById(flatrateTermId);
@@ -172,10 +173,12 @@ public class CalibrationManufacturingRawIssuedLog extends AbstractModularContrac
 				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
 						.appendParametersToMessage()
 						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
-		return ProductPrice.builder()
+		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
 				.uomId(stockUOMId)
 				.money(Money.zero(currencyId))
 				.build();
+
+		return ProductPriceWithFlags.ofZero(productPrice);
 	}
 }

@@ -25,6 +25,8 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
 import ch.qos.logback.classic.Level;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -96,7 +98,7 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * HU Shipment Process:
@@ -223,6 +225,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
 		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
 
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
 

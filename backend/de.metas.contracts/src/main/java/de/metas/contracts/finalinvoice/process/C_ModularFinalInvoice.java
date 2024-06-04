@@ -25,7 +25,7 @@ package de.metas.contracts.finalinvoice.process;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.finalinvoice.workpackage.FinalInvoiceEnqueuer;
+import de.metas.contracts.finalinvoice.workpackage.ModularContractInvoiceEnqueuer;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
@@ -42,7 +42,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 {
 	private final static AdMessageKey NO_MODULAR_CONTRACT_SELECTED = AdMessageKey.of("de.metas.contracts.finalinvoice.process.NoModularContract");
 
-	private final FinalInvoiceEnqueuer finalInvoiceEnqueuer = SpringContextHolder.instance.getBean(FinalInvoiceEnqueuer.class);
+	private final ModularContractInvoiceEnqueuer modularContractInvoiceEnqueuer = SpringContextHolder.instance.getBean(ModularContractInvoiceEnqueuer.class);
 
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
@@ -53,9 +53,7 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
-		final boolean isExistsModularContract = flatrateBL.isExistsModularContract(context.getQueryFilter(I_C_Flatrate_Term.class));
-		if (!isExistsModularContract)
+		if (!flatrateBL.isFinalInvoiceableModularContractExists(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(NO_MODULAR_CONTRACT_SELECTED));
 		}
@@ -68,9 +66,9 @@ public class C_ModularFinalInvoice extends JavaProcess implements IProcessPrecon
 	{
 		final UserId userInChargeId = getUserId();
 		final ImmutableSet<FlatrateTermId> selectedModularContractIds = flatrateBL
-				.getModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
+				.getReadyForFinalInvoicingModularContractIds(getProcessInfo().getQueryFilterOrElseFalse());
 
-		finalInvoiceEnqueuer.enqueueNow(selectedModularContractIds, userInChargeId, getInvoicingParams());
+		modularContractInvoiceEnqueuer.enqueueFinalInvoice(selectedModularContractIds, userInChargeId, getInvoicingParams());
 
 		return MSG_OK;
 	}

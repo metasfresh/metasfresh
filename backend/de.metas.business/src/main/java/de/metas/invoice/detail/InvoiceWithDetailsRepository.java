@@ -27,6 +27,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -136,6 +137,12 @@ public class InvoiceWithDetailsRepository
 		recordToUpdate.setAD_Org_ID(orgId.getRepoId());
 		recordToUpdate.setLabel(invoiceDetailItem.getLabel());
 		recordToUpdate.setDescription(invoiceDetailItem.getDescription());
+		final Quantity qty = invoiceDetailItem.getQty();
+		if (qty != null)
+		{
+			recordToUpdate.setC_UOM_ID(qty.getUomId().getRepoId());
+			recordToUpdate.setQty(qty.toBigDecimal());
+		}
 		recordToUpdate.setDate(TimeUtil.asTimestamp(invoiceDetailItem.getDate(), timeZone));
 		return recordToUpdate;
 	}

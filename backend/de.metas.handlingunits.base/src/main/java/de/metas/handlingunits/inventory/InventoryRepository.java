@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
@@ -718,6 +719,7 @@ public class InventoryRepository
 		inventoryLineRecord.setQtyCount(request.getQtyCount().toBigDecimal());
 		inventoryLineRecord.setC_UOM_ID(uomId.getRepoId());
 		inventoryLineRecord.setIsCounted(true);
+		inventoryLineRecord.setModular_Flatrate_Term_ID(FlatrateTermId.toRepoId(request.getModularContractId()));
 
 		inventoryLineRecord.setM_Locator_ID(request.getLocatorId().getRepoId());
 

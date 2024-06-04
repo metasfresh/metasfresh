@@ -31,6 +31,10 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -100,6 +104,7 @@ import de.metas.inoutcandidate.split.ShipmentScheduleSplit;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitRepository;
 import de.metas.inoutcandidate.split.ShipmentScheduleSplitService;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -180,6 +185,7 @@ public class ShipmentScheduleWithHUService
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final ModularContractProvider modularContractProvider;
 
 	public static ShipmentScheduleWithHUService newInstanceForUnitTesting()
 	{
@@ -220,7 +226,8 @@ public class ShipmentScheduleWithHUService
 				huReservationServiceTest,
 				pickingCandidateServiceTest,
 				new PickingConfigRepositoryV2(),
-				inventoryServiceTest
+				inventoryServiceTest,
+				new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()))
 		);
 	}
 
@@ -487,11 +494,11 @@ public class ShipmentScheduleWithHUService
 
 		// if we have HUs on stock, get them now
 		final List<I_M_HU> husToPick = switch (hUsToPickOnTheFly)
-				{
-					case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
-					case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
-					case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
-				};
+		{
+			case None -> throw new AdempiereException("Trying to pick on the fly when hUsToPickOnTheFly=None");
+			case OnlySourceHUs -> retrievePickOnTheFlySourceHUs(scheduleRecord);
+			case AnyHu -> retrieveAnyMatchingHUs(scheduleRecord);
+		};
 
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
@@ -1101,10 +1108,10 @@ public class ShipmentScheduleWithHUService
 	{
 		final HUsToPickOnTheFly hUsToPickOnTheFly = retrievePickAvailableHUsOntheFly(factory.getHuContext());
 		return pickHUsOnTheFly(scheduleRecord,
-							   qtyToDeliver,
-							   pickAccordingToPackingInstruction,
-							   factory,
-							   hUsToPickOnTheFly);
+				qtyToDeliver,
+				pickAccordingToPackingInstruction,
+				factory,
+				hUsToPickOnTheFly);
 	}
 
 	@NonNull
@@ -1118,9 +1125,9 @@ public class ShipmentScheduleWithHUService
 
 		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-																			.packageables(items)
-																			.considerAttributes(pickingConfig.isConsiderAttributes())
-																			.build());
+				.packageables(items)
+				.considerAttributes(pickingConfig.isConsiderAttributes())
+				.build());
 
 		final ImmutableList<HuId> topLevelHuIds = plan.getSortedPickFromTopLevelHUIds();
 		if (topLevelHuIds.isEmpty())
@@ -1136,6 +1143,10 @@ public class ShipmentScheduleWithHUService
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final Quantity remainingQtyToAllocate)
 	{
+		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIdsOrNull(schedule.getC_Order_ID(), schedule.getC_OrderLine_ID());
+
+		final FlatrateTermId contractId = modularContractProvider.getSinglePurchaseContractsForSalesOrderLineOrNull(orderAndLineId);
+
 		final CreateVirtualInventoryWithQtyReq req = CreateVirtualInventoryWithQtyReq.builder()
 				.clientId(ClientId.ofRepoId(schedule.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(schedule.getAD_Org_ID()))
@@ -1144,6 +1155,7 @@ public class ShipmentScheduleWithHUService
 				.qty(remainingQtyToAllocate)
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
+				.modularContractId(contractId)
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);

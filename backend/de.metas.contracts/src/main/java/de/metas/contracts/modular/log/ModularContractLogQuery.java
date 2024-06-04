@@ -63,6 +63,8 @@ public class ModularContractLogQuery
 	@NonNull @Singular ImmutableSet<ModularContractLogEntryId> entryIds;
 	@NonNull @Singular ImmutableList<OrderBy> orderBys;
 	@NonNull @Singular ImmutableSet<ComputingMethodType> computingMethodTypes;
+	@Builder.Default
+	boolean isComputingMethodTypeActive = true;
 	@NonNull @Singular ImmutableSet<AdTableId> excludedReferencedTableIds;
 	
 	@NonNull

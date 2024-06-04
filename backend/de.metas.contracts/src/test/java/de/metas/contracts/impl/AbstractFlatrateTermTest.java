@@ -38,6 +38,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
+import de.metas.invoice.detail.InvoiceCandidateWithDetailsRepository;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -166,14 +167,15 @@ public abstract class AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(ProductScalePriceService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsBL(new ModularContractSettingsDAO()));
 
-		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO()));
+		SpringContextHolder.registerJUnitBean(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository()));
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(Collections.emptyList()),
-																		 new ModularContractSettingsDAO(),
-																		 new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
-																		 new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO())),
-																		 new ModularContractPriceRepository()));
+				new ModularContractSettingsDAO(),
+				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
+				new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())),
+				new ModularContractPriceRepository()));
 
 		contractChangeBL = Services.get(IContractChangeBL.class);
 
@@ -412,8 +414,8 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpLocation.getC_BPartner_ID(),
-																											bpLocation.getC_BPartner_Location_ID(),
-																											bpLocation.getC_Location_ID());
+				bpLocation.getC_BPartner_Location_ID(),
+				bpLocation.getC_Location_ID());
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoIdOrNull(user.getC_BPartner_ID(), user.getAD_User_ID());
 
