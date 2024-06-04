@@ -15,7 +15,6 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -112,8 +111,6 @@ public interface IHUInOutBL extends ISingletonService
 	 * @return true if the given inOut is an empties return (e.g. of just pallets or boxes), false otherwise.
 	 */
 	boolean isEmptiesReturn(I_M_InOut inout);
-	
-	void moveHUsToQualityReturnWarehouse(Collection<I_M_HU> husToReturn);
 
 	void setAssignedHandlingUnits(I_M_InOut inout, List<I_M_HU> hus);
 

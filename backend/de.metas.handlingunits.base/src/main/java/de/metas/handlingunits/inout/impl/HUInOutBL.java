@@ -35,7 +35,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -52,7 +51,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -72,7 +70,6 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -95,8 +92,6 @@ public class HUInOutBL implements IHUInOutBL
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -342,18 +337,6 @@ public class HUInOutBL implements IHUInOutBL
 				.docSubType(DocTypeQuery.DOCSUBTYPE_NONE) // in the case of returns the docSubType is null
 				.adClientId(inOut.getAD_Client_ID())
 				.adOrgId(inOut.getAD_Org_ID());
-	}
-
-	@Override
-	public void moveHUsToQualityReturnWarehouse(final Collection<I_M_HU> husToReturn)
-	{
-		if (husToReturn.isEmpty())
-		{
-			return;
-		}
-
-		final WarehouseId qualityReturnWarehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override
