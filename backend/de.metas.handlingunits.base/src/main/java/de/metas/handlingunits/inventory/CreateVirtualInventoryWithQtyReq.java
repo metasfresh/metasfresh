@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inventory;
 
+import de.metas.contracts.FlatrateTermId;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -48,4 +49,5 @@ public class CreateVirtualInventoryWithQtyReq
 	@NonNull ZonedDateTime movementDate;
 	@Nullable AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable PickingJobId pickingJobId;
+	@Nullable FlatrateTermId modularContractId;
 }

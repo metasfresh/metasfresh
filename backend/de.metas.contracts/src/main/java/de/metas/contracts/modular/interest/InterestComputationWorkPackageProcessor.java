@@ -26,7 +26,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.contracts.model.I_ModCntr_Log;
-import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.lock.api.ILock;
@@ -40,6 +39,8 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Optional;
+
+import static de.metas.contracts.modular.ComputingMethodType.INTEREST_SPECIFIC_METHODS;
 
 public class InterestComputationWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -73,8 +74,7 @@ public class InterestComputationWorkPackageProcessor extends WorkpackageProcesso
 				.orElseThrow(() -> new AdempiereException("Missing mandatory ENQUEUED_REQUEST_PARAM!"));
 
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.computingMethodType(ComputingMethodType.AddValueOnInterim)
-				.computingMethodType(ComputingMethodType.SubtractValueOnInterim)
+				.computingMethodTypes(INTEREST_SPECIFIC_METHODS)
 				.processed(false)
 				.billable(true)
 				.invoicingGroupId(enqueueRequest.getInvoicingGroupId())

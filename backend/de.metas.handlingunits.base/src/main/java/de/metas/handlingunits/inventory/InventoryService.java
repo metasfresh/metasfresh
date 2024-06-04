@@ -103,7 +103,7 @@ public class InventoryService
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) {return inventoryRepository.toInventory(inventoryRecord);}
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
 
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
@@ -286,6 +286,7 @@ public class InventoryService
 				.qtyCount(req.getQty())
 				.attributeSetId(req.getAttributeSetInstanceId())
 				.locatorId(locatorId)
+				.modularContractId(req.getModularContractId())
 				.build();
 
 		createInventoryLine(createLineRequest);

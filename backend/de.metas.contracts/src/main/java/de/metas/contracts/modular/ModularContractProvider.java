@@ -36,6 +36,8 @@ import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryLineId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -58,6 +60,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
@@ -66,9 +69,12 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.flatrate.TypeConditions.MODULAR_CONTRACT;
@@ -86,6 +92,7 @@ public class ModularContractProvider
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	@NonNull private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@NonNull
@@ -100,6 +107,19 @@ public class ModularContractProvider
 		return flatrateBL.getByOrderLineId(orderAndLineId.getOrderLineId(), MODULAR_CONTRACT)
 				.map(flatrateTerm -> FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.stream();
+	}
+
+	@Nullable
+	public FlatrateTermId getSinglePurchaseContractsForSalesOrderLineOrNull(@Nullable final OrderAndLineId orderAndLineId)
+	{
+		if (orderAndLineId == null)
+		{
+			return null;
+		}
+		final Set<FlatrateTermId> contractIds = streamPurchaseContractsForSalesOrderLine(orderAndLineId)
+				.collect(Collectors.toSet());
+		Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+		return contractIds.stream().findFirst().orElse(null);
 	}
 
 	@NonNull
@@ -146,6 +166,13 @@ public class ModularContractProvider
 				.filter(contract -> MODULAR_CONTRACT.equalsByCode(contract.getType_Conditions()))
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId);
+	}
+
+	@NonNull
+	public Stream<FlatrateTermId> streamModularPurchaseContractsForInventory(final InventoryLineId inventoryId)
+	{
+		final I_M_InventoryLine inventoryLine = inventoryBL.getLineById(inventoryId);
+		return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(inventoryLine.getModular_Flatrate_Term_ID()));
 	}
 
 	@NonNull
@@ -237,7 +264,13 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
-		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(inOutLineRecord.getC_Order_ID()));
+		final OrderId orderId = OrderId.ofRepoId(inOutLineRecord.getC_Order_ID());
+		return streamModularPurchaseContractBySalesOrderWithProductId(orderId, ProductId.ofRepoId(inOutLineRecord.getM_Product_ID()));
+	}
+
+	private @NonNull Stream<FlatrateTermId> streamModularPurchaseContractBySalesOrderWithProductId(final OrderId orderId, final ProductId productId)
+	{
+		final I_C_Order order = orderBL.getById(orderId);
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID()); // C_Order.M_Warehouse_ID is mandatory and warehouseBL.getBPartnerId demands NonNull
 
@@ -250,17 +283,16 @@ public class ModularContractProvider
 			return Stream.empty();
 		}
 
-		final ProductId inOutProductId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(harvestingYearId, harvestingCalendarId);
 		final List<ModularContractSettings> settings = modularContractSettingsBL.getSettingsByQuery(ModularContractSettingsQuery.builder()
-																													 .processedProductId(inOutProductId)
-																													 .yearAndCalendarId(yearAndCalendarId)
-																													 .soTrx(SOTrx.PURCHASE)
-																													 .checkHasCompletedModularCondition(true)
-																													 .build());
+				.processedProductId(productId)
+				.yearAndCalendarId(yearAndCalendarId)
+				.soTrx(SOTrx.PURCHASE)
+				.checkHasCompletedModularCondition(true)
+				.build());
 
 		final ProductId settingsProductId = CollectionUtils.extractSingleElementOrDefault(settings, ModularContractSettings::getRawProductId, null);
-		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, inOutProductId);
+		final ProductId productIdToUse = CoalesceUtil.coalesceNotNull(settingsProductId, productId);
 
 		final ModularFlatrateTermQuery query = ModularFlatrateTermQuery.builder()
 				.bPartnerId(warehouseBL.getBPartnerId(warehouseId))

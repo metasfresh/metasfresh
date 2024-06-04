@@ -2,9 +2,9 @@ package de.metas.contracts.modular.log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -56,6 +56,13 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public static Collector<ModularContractLogEntry, ?, ModularContractLogEntriesList> collect()
 	{
 		return GuavaCollectors.collectUsingListAccumulator(ModularContractLogEntriesList::ofCollection);
+	}
+
+	public ModularContractLogEntriesList subsetOf(@NonNull final LogEntryDocumentType documentType)
+	{
+		return ModularContractLogEntriesList.ofCollection(list.stream()
+				.filter(log -> documentType.equals(log.getDocumentType()))
+				.toList());
 	}
 
 	@NotNull
@@ -181,8 +188,9 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 				.collect(collect());
 	}
 
-	public InvoicingGroupId getSingleInvoicingGroup()
+	@NonNull
+	public ClientAndOrgId getSingleClientAndOrgId()
 	{
-		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getInvoicingGroupId);
+		return CollectionUtils.extractSingleElement(list, ModularContractLogEntry::getClientAndOrgId);
 	}
 }

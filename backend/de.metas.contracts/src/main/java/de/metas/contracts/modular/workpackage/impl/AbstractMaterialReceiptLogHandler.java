@@ -39,6 +39,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
@@ -67,10 +68,10 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-	@NonNull protected final ModularContractService modularContractService;
 
 	@NonNull @Getter private final String supportedTableName = I_M_InOutLine.Table_Name;
 
@@ -84,8 +85,20 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
-		this.modularContractService = modularContractService;
 		this.computingMethod = computingMethod;
+	}
+
+	@Override
+	public boolean applies(@NonNull final CreateLogRequest request)
+	{
+		final TableRecordReference tableRef = request.getRecordRef();
+		if (!tableRef.tableNameEqualsTo(I_M_InOutLine.Table_Name))
+		{
+			return false;
+		}
+		final I_M_InOut inOut = inOutDAO.getByLineIdInTrx(InOutLineId.ofRepoId(tableRef.getRecord_ID()));
+
+		return !inOut.isSOTrx();
 	}
 
 	@Override
@@ -177,6 +190,6 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 			@NonNull final IModularContractLogHandler.CreateLogRequest request,
 			@NonNull final I_M_InOutLine receiptLineRecord)
 	{
-		return request.getProductId();	
+		return request.getProductId();
 	}
 }

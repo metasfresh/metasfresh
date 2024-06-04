@@ -2,6 +2,8 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -24,6 +26,7 @@ import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -44,6 +47,7 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.ObjectAssert;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -95,6 +99,8 @@ public class WeightHUCommandTest
 	public void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		this.huQtyService = new HUQtyService(inventoryService);
@@ -261,7 +267,7 @@ public class WeightHUCommandTest
 						.create());
 	}
 
-	private void weight(final HuId huId, PlainWeightable targetWeight)
+	private void weight(final HuId huId, final PlainWeightable targetWeight)
 	{
 		WeightHUCommand.builder()
 				.huQtyService(huQtyService)

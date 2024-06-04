@@ -137,4 +137,11 @@ public class ProductPrice
 
 		return withValueAndUomId(priceConv, toUomId);
 	}
+
+	public ProductPrice toZero()
+	{
+		return toBuilder()
+				.money(money.toZero())
+				.build();
+	}
 }
