@@ -67,8 +67,8 @@ public class ModularContractLogService
 	private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
 	public static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
-	public static final String INVOICE_DETAILS_RECEIVED = "Received";
-	public static final String INVOICE_DETAILS_SHIPPED = "Shipped";
+	public static final String INVOICE_DETAILS_RECEIVED = "IN";
+	public static final String INVOICE_DETAILS_SHIPPED = "OUT";
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -232,7 +232,7 @@ public class ModularContractLogService
 		final OrgId orgId = modularContractLogEntries.getSingleClientAndOrgId().getOrgId();
 		final ImmutableList<InvoiceDetailItem> invoiceDetailItems = ImmutableList.of(InvoiceDetailItem.builder()
 						.label(INVOICE_DETAILS_RECEIVED)
-						.qty(receivedQty)
+						.qty(receivedQty.negate())
 						.orgId(orgId)
 						.build(),
 				InvoiceDetailItem.builder()
