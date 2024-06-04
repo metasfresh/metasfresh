@@ -149,41 +149,41 @@ public class M_ReceiptSchedule_StepDef
 			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
-			assertThat(bPartnerLocationID).isNotNull();
+			softly.assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			assertThat(productID).isNotNull();
+			softly.assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
-			assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-			assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
-			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
-			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
-			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
+			softly.assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+			softly.assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+			softly.assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+			softly.assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
+			softly.assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
+			softly.assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
+			softly.assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
 
 			final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
 			if (qtyMoved != null)
 			{
-				assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
+				softly.assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
 			}
 
 			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
-			assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
+			softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
 			final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
 			if (qtyOrderedTU != null)
 			{
 				final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
-				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
+				softly.assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
 			}
 
 			final String flatrateTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ModCntr_Log.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -192,6 +192,8 @@ public class M_ReceiptSchedule_StepDef
 				final I_C_Flatrate_Term flatrateTermRecord = flatrateTermTable.get(flatrateTermIdentifier);
 				softly.assertThat(receiptSchedule.getC_Flatrate_Term_ID()).as(I_M_ReceiptSchedule.COLUMNNAME_C_Flatrate_Term_ID).isEqualTo(flatrateTermRecord.getC_Flatrate_Term_ID());
 			}
+
+			softly.assertAll();
 
 			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
 		}
