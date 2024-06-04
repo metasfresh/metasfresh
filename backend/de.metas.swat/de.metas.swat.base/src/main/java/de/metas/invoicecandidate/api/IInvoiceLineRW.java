@@ -6,6 +6,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.util.lang.Percent;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,9 +52,9 @@ public interface IInvoiceLineRW
 	void setDiscount(Percent discount);
 
 	// 03439 add description
-	String getDescription();
+	@Nullable String getDescription();
 
-	void setDescription(String description);
+	void setDescription(@Nullable String description);
 
 	// end of 03439 add description
 

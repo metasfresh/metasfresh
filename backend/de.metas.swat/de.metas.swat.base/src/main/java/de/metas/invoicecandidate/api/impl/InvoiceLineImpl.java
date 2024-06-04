@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -145,6 +146,7 @@ import java.util.TreeSet;
 	}
 
 
+	@Nullable
 	@Override
 	public String getDescription()
 	{
@@ -152,7 +154,7 @@ import java.util.TreeSet;
 	}
 
 	@Override
-	public void setDescription(final String description)
+	public void setDescription(@Nullable final String description)
 	{
 		this.description = description;
 	}

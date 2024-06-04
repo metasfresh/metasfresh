@@ -27,8 +27,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InventoryLine;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
