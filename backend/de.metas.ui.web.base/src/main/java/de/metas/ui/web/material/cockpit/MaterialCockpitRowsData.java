@@ -226,7 +226,6 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		final Set<ProductId> productIds = rows.stream()
 				.map(MaterialCockpitRow::getProductId)
-				.map(ProductId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 

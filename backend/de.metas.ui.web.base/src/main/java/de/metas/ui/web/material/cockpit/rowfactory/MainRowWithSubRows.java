@@ -260,10 +260,10 @@ public class MainRowWithSubRows
 		boolean addedToAtLeastOneBucket = false;
 
 		int ppPlantId = 0;
-		if (qtyDemandQtySupply.getWarehouseId() != null)
+		final WarehouseId warehouseId = qtyDemandQtySupply.getWarehouseId();
+		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = warehouseDAO.getById(qtyDemandQtySupply.getWarehouseId());
-			ppPlantId = warehouse.getPP_Plant_ID();
+			ppPlantId = getPlantId(warehouseId);
 		}
 
 		if (ppPlantId > 0)
@@ -278,7 +278,7 @@ public class MainRowWithSubRows
 
 			}
 		}
-		if(warehouseId!=null)
+		if (warehouseId != null)
 		{
 			if (detailsRowAggregation.isWarehouse())
 			{
@@ -286,7 +286,7 @@ public class MainRowWithSubRows
 						.aggregationId(WarehouseId.toRepoId(warehouseId))
 						.build();
 
-				addQuantitiesRecordToCounting(quantitiesRecord, rowAggregationIdentifier);
+				addQuantitiesRecordToCounting(qtyDemandQtySupply, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
 			}
 		}
@@ -306,7 +306,7 @@ public class MainRowWithSubRows
 	}
 
 	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,
-			final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
+										  final @NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 
 		if (detailsRowAggregation.isNone())
@@ -315,8 +315,7 @@ public class MainRowWithSubRows
 			return;
 		}
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID());
-		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
-		final int plantId = warehouseRecord.getPP_Plant_ID();
+		final int plantId = getPlantId(warehouseId);
 
 		if (detailsRowAggregation.isPlant())
 		{
@@ -336,6 +335,12 @@ public class MainRowWithSubRows
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
 			countingSubRow.addStockRecord(stockRecord);
 		}
+	}
+
+	private int getPlantId(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
+		return warehouseRecord.getPP_Plant_ID();
 	}
 
 	/**
