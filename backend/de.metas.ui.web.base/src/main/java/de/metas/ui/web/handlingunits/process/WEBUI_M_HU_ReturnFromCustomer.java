@@ -1,19 +1,24 @@
 package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import java.util.HashSet;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -50,6 +55,8 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	private ImmutableList<I_M_HU> _selectedHUsToReturn = null;
 	private MultiCustomerHUReturnsResult result;
 
+	private static final HUEditorRowFilter ELIGIBLE_ROWS_FILTER = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyHUStatus(X_M_HU.HUSTATUS_Shipped).build();
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -58,9 +65,9 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamEligibleSelectedRows().findAny().isPresent())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
+			return ProcessPreconditionsResolution.reject(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU);
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -80,12 +87,21 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 		return MSG_OK;
 	}
 
+	private Stream<HUEditorRow> streamEligibleSelectedRows()
+	{
+		return streamSelectedRows(ELIGIBLE_ROWS_FILTER);
+	}
+
 	private ImmutableList<I_M_HU> getSelectedHUsToReturn()
 	{
 		ImmutableList<I_M_HU> selectedHUsToReturn = this._selectedHUsToReturn;
 		if (selectedHUsToReturn == null)
 		{
-			selectedHUsToReturn = this._selectedHUsToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+			final ImmutableSet<HuId> huIds = streamEligibleSelectedRows()
+					.map(HUEditorRow::getHuId)
+					.distinct()
+					.collect(ImmutableSet.toImmutableSet());
+			selectedHUsToReturn = this._selectedHUsToReturn = ImmutableList.copyOf(handlingUnitsRepo.getByIds(huIds));
 		}
 		return selectedHUsToReturn;
 	}
