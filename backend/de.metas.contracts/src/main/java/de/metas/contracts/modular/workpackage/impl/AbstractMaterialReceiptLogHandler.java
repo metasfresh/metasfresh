@@ -112,7 +112,7 @@ public abstract class AbstractMaterialReceiptLogHandler extends AbstractModularC
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = getPriceActual(request);
+		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(request).toProductPrice();
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 				.contractId(request.getContractId())
