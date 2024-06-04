@@ -239,9 +239,9 @@ Feature: Modular contract log from purchase order for raw product
       | invoiceLine_1_1             | invoice_1               | rawProduct              | receipt_05272024_1                   | 300         | true      | 0                | 0               | 0              | PCE                   | PCE                       |
       | invoiceLine_1_2             | invoice_1               | rawProduct              | salesOnRawProduct_05272024_1         | 300         | true      | 10               | 10              | 3000           | PCE                   | PCE                       |
       | invoiceLine_1_3             | invoice_1               | addValueOnRaw_PO        | addValueOnRawProduct_05272024_1      | 300         | true      | 8                | 8               | 2400           | PCE                   | PCE                       |
-      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO   | subtractValueOnRawProduct_05272024_1 | 300         | true      | -7               | -7              | -2100          | PCE                   | PCE                       |
-      | invoiceLine_1_5             | invoice_1               | addValueOnRaw_PO_2      | addValueOnRawProduct_06032024_1      | 300         | true      | -6               | -6              | -1800          | PCE                   | PCE                       |
-      | invoiceLine_1_6             | invoice_1               | subtractValueOnRaw_PO_2 | subtractValueOnRawProduct_06032024_1 | 300         | true      | 9                | 9               | 2700           | PCE                   | PCE                       |
+      | invoiceLine_1_4             | invoice_1               | subtractValueOnRaw_PO_2 | subtractValueOnRawProduct_06032024_1 | 300         | true      | 9                | 9               | 2700           | PCE                   | PCE                       |
+      | invoiceLine_1_5             | invoice_1               | subtractValueOnRaw_PO   | subtractValueOnRawProduct_05272024_1 | 300         | true      | -7               | -7              | -2100          | PCE                   | PCE                       |
+      | invoiceLine_1_6             | invoice_1               | addValueOnRaw_PO_2      | addValueOnRawProduct_06032024_1      | 300         | true      | -6               | -6              | -1800          | PCE                   | PCE                       |
 
     And update AD_Ref_Lists:
       | AD_Ref_List_ID.Identifier | IsActive |
