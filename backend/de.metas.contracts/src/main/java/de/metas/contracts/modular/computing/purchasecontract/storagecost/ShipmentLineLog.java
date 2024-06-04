@@ -26,8 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -111,10 +111,7 @@ class ShipmentLineLog extends AbstractModularContractLogHandler
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 		final int storageDays = computeStorageDays(createLogRequest, transactionDate);
 
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
-				.modularContractModuleId(createLogRequest.getModularContractModuleId())
-				.flatrateTermId(createLogRequest.getContractId())
-				.build());
+		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
 
 		final YearAndCalendarId yearAndCalendarId = createLogRequest.getModularContractSettings().getYearAndCalendarId();
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
@@ -185,12 +182,16 @@ class ShipmentLineLog extends AbstractModularContractLogHandler
 	}
 
 	@Override
-	public @NonNull ModularContractLogEntry calculateAmount(final @NonNull ModularContractLogEntry logEntry, final @NonNull QuantityUOMConverter uomConverter)
+	public @NonNull ModularContractLogEntry calculateAmountWithNewPrice(
+			final @NonNull ModularContractLogEntry logEntry,
+			final @NonNull ProductPriceWithFlags newPrice,
+			final @NonNull QuantityUOMConverter uomConverter)
 	{
 		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
-		final ProductPrice price = Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
 		final int storageDays = Check.assumeNotNull(logEntry.getStorageDays(), "StorageDays shouldn't be null");
+		final ProductPrice price = newPrice.toProductPrice();
 		return logEntry.toBuilder()
+				.priceActual(price)
 				.amount(calculateAmount(qty, price, storageDays, uomConverter))
 				.build();
 	}

@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.workpackage.impl.AbstractMaterialReceiptLogHandler;
 import de.metas.money.CurrencyId;
@@ -55,7 +56,7 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 
 	@Override
 	@NonNull
-	public ProductPrice getPriceActual(final @NonNull CreateLogRequest request)
+	public ProductPriceWithFlags getContractSpecificPriceWithFlags(final @NonNull CreateLogRequest request)
 	{
 		final FlatrateTermId flatrateTermId = request.getContractId();
 		final I_C_Flatrate_Term modularContract = flatrateBL.getById(flatrateTermId);
@@ -66,10 +67,12 @@ class MaterialReceiptLineLog extends AbstractMaterialReceiptLogHandler
 				.orElseThrow(() -> new AdempiereException("Currency must be set on the Modular Contract !")
 						.appendParametersToMessage()
 						.setParameter("ModularContractId", flatrateTermId.getRepoId()));
-		return ProductPrice.builder()
+		final ProductPrice productPrice = ProductPrice.builder()
 				.productId(productId)
 				.uomId(stockUOMId)
 				.money(Money.zero(currencyId))
 				.build();
+
+		return ProductPriceWithFlags.ofZero(productPrice);
 	}
 }
