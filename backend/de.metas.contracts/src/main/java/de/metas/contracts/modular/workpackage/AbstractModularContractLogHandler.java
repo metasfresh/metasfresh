@@ -24,34 +24,46 @@ package de.metas.contracts.modular.workpackage;
 
 import de.metas.contracts.modular.ContractSpecificPriceRequest;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.product.ProductPrice;
-import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
 public abstract class AbstractModularContractLogHandler implements IModularContractLogHandler
 {
-	@NonNull private final ModularContractService modularContractService;
+	@NonNull
+	private final ModularContractService modularContractService;
 
-	@Nullable
-	public ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry)
+	@NonNull
+	public final ProductPriceWithFlags getPriceActualWithFlags(
+			final @NonNull ProductPrice productPrice,
+			final @NonNull ModularContractLogEntry logEntry)
 	{
-		Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
-		final boolean isCostsType = modularContractService.getByModuleId(logEntry.getModularContractModuleId()).isCostsType();
-		return logEntry.getPriceActual().negateIf(isCostsType);
+		return ProductPriceWithFlags.builder()
+				.price(productPrice)
+				.isCost(modularContractService.getByModuleId(logEntry.getModularContractModuleId()).isCostsType())
+				.isSubtractedValue(getComputingMethod().getComputingMethodType().isSubtractedValue())
+				.build();
 	}
 
 	@NonNull
-	protected ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	protected ProductPriceWithFlags getContractSpecificPriceWithFlags(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	{
+		return ProductPriceWithFlags.builder()
+				.price(getContractSpecificPrice(request))
+				.isCost(request.isCostsType())
+				.isSubtractedValue(getComputingMethod().getComputingMethodType().isSubtractedValue())
+				.build();
+	}
+
+	@NonNull
+	private ProductPrice getContractSpecificPrice(@NonNull final IModularContractLogHandler.CreateLogRequest request)
 	{
 		return modularContractService.getContractSpecificPrice(ContractSpecificPriceRequest.builder()
-						.modularContractModuleId(request.getModularContractModuleId())
-						.flatrateTermId(request.getContractId())
-						.build())
-				.negateIf(request.isCostsType());
+																	   .modularContractModuleId(request.getModularContractModuleId())
+																	   .flatrateTermId(request.getContractId())
+																	   .build());
 	}
 }

@@ -101,7 +101,7 @@ public class PPCoManufacturingOrderLog extends AbstractModularContractLogHandler
 
 		final FlatrateTermId contractId = request.getContractId();
 		final I_C_Flatrate_Term modularContractRecord = flatrateDAO.getById(contractId);
-		final ProductPrice price = getPriceActual(request);
+		final ProductPrice price = getContractSpecificPriceWithFlags(request).toProductPrice();
 
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()
 											.contractId(contractId)
