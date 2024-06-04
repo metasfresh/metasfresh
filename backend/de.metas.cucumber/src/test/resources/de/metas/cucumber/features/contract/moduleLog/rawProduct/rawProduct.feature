@@ -48,6 +48,20 @@ Feature: Modular contract log from purchase order for raw product
       | M_Locator_ID.Identifier | Value              | M_Warehouse_ID.Identifier |
       | locator                 | locator_05272024_1 | warehouse_05272024_1      |
 
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+
+    And load M_Shipper:
+      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
+      | shipper_1               | 540006           |
+    And load DD_NetworkDistribution:
+      | DD_NetworkDistribution_ID.Identifier | Value   |
+      | ddNetwork_isHUDestroyed              | Gebinde |
+    And metasfresh contains DD_NetworkDistributionLine
+      | DD_NetworkDistributionLine_ID.Identifier | DD_NetworkDistribution_ID.Identifier | M_Warehouse_ID.Identifier | M_WarehouseSource_ID.Identifier | M_Shipper_ID.Identifier |
+      | ddNetworkLine_1                          | ddNetwork_isHUDestroyed              | warehouseStd              | warehouse_05272024_1            | shipper_1               |
+
     And metasfresh contains C_Calendar
       | C_Calendar_ID.Identifier | Name            |
       | calendar_1               | test_05272024_1 |
