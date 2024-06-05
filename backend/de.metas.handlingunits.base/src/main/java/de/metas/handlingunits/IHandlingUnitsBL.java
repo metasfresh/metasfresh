@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -266,6 +267,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
 
 	CopyHUsResponse copyAsPlannedHUs(@NonNull Collection<HuId> huIdsToCopy);
+
+	CopyHUsCommandBuilder copyAsPlannedHUs();
 
 	I_M_HU copyAsPlannedHU(@NonNull HuId huId);
 

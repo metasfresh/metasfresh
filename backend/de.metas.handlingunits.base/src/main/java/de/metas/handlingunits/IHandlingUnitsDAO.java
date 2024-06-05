@@ -272,13 +272,13 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	IHUQueryBuilder createHUQueryBuilder();
 
-	List<I_M_HU_Item> retrieveItemsNoCache(Collection<HuId> huIds);
+	List<I_M_HU_Item> retrieveAllItemsNoCache(Collection<HuId> huIds);
 
-	List<I_M_HU> retrieveIncludedHUsNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU> retrieveAllIncludedHUsNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Item_Storage> retrieveItemStoragesNoCache(Set<HuItemId> huItemIds);
+	List<I_M_HU_Item_Storage> retrieveAllItemStoragesNoCache(Set<HuItemId> huItemIds);
 
-	List<I_M_HU_Storage> retrieveStoragesNoCache(Set<HuId> huIds);
+	List<I_M_HU_Storage> retrieveAllStoragesNoCache(Set<HuId> huIds);
 
 	/**
 	 * Retrieve the packing materials of the given {@code hu}.<br>
