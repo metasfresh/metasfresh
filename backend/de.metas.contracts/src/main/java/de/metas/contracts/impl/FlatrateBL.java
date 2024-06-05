@@ -178,7 +178,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-	
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -958,20 +958,24 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			actualQtyPerUnit = actualQtyOfProducts.divide(actualQtyOfUnits, scale, RoundingMode.HALF_UP);
 		}
-
-		if (actualQtyOfUnits.signum() == 0)
-		{
-			pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);
-
-			flatrateAmt = auxEntry ? null : BigDecimal.ZERO;
+		if (X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity.equals(conditions.getType_Flatrate()))
+		{ // we currently don't keep this number up2date on the entry level. Note that the ICs will get their proper prices
+			pricePerUnit = BigDecimal.ZERO;
+			flatrateAmt = BigDecimal.ZERO;
 		}
 		else
 		{
-			pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, actualQtyOfUnits, dataEntry);
-
-			flatrateAmt = auxEntry ? null : actualQtyOfUnits.multiply(pricePerUnit).setScale(scale, RoundingMode.HALF_UP);
+			if (actualQtyOfUnits.signum() == 0)
+			{
+				pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);
+				flatrateAmt = auxEntry ? null : BigDecimal.ZERO;
+			}
+			else
+			{
+				pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, actualQtyOfUnits, dataEntry);
+				flatrateAmt = auxEntry ? null : actualQtyOfUnits.multiply(pricePerUnit).setScale(scale, RoundingMode.HALF_UP);
+			}
 		}
-
 		actualDiffPerUnit = auxEntry || correctionWithoutActualQty ? null : actualQtyPerUnit.subtract(plannedQtyPerUnit).setScale(scale, RoundingMode.HALF_UP);
 
 		if (auxEntry || correctionWithoutActualQty)
@@ -1063,19 +1067,6 @@ public class FlatrateBL implements IFlatrateBL
 					amtCorrection = flatrateAmt
 							.multiply(effectiveDiffPercent.divide(Env.ONEHUNDRED, scale * 2, RoundingMode.HALF_UP))
 							.setScale(scale, RoundingMode.HALF_UP);
-					// }
-					// else if
-					// (X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Produktpreis.equals(conditions.getClearingAmtBaseOn()))
-					// {
-					// throw new NotImplementedException();
-					// }
-					// else
-					// {
-					// throw new IllegalStateException(
-					// "Expected '" + conditions + "' to have ClearingAmtBaseOn either'"
-					// + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis
-					// + "' or '" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Produktpreis + "'");
-					// }
 				}
 				else
 				{
