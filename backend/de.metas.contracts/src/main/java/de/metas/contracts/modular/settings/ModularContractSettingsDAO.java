@@ -475,22 +475,31 @@ public class ModularContractSettingsDAO
 	}
 
 	public void updateModule(@NonNull final ModularContractModuleId modularContractModuleId,
-			@Nullable ModularContractTypeId modularContractTypeId,
-			@NonNull final ProductId rawProductId)
+			@NonNull final ModularContractModuleUpdateRequest request)
 	{
 		final I_ModCntr_Module record = load(ModularContractModuleId.toRepoId(modularContractModuleId), I_ModCntr_Module.class);
-		updateModule(record, modularContractTypeId, rawProductId);
+		updateModule(record, request);
 	}
 
 	public void updateModule(@NonNull final I_ModCntr_Module existingModuleConfig,
-			@Nullable ModularContractTypeId modularContractTypeId,
-			@NonNull final ProductId productId)
+			@NonNull final ModularContractModuleUpdateRequest request)
 	{
-		existingModuleConfig.setM_Product_ID(productId.getRepoId());
+		final ProductId productId = request.getProductId();
+		if (productId != null)
+		{
+			existingModuleConfig.setM_Product_ID(productId.getRepoId());
+		}
 
+		final ModularContractTypeId modularContractTypeId = request.getModularContractTypeId();
 		if(modularContractTypeId != null)
 		{
 			existingModuleConfig.setModCntr_Type_ID(modularContractTypeId.getRepoId());
+		}
+
+		final String moduleName = request.getModuleName();
+		if(moduleName != null)
+		{
+			existingModuleConfig.setName(moduleName);
 		}
 		saveRecord(existingModuleConfig);
 	}
