@@ -23,6 +23,7 @@
 package de.metas.contracts;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -51,8 +52,15 @@ public class FlatrateTermRepo
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-		
+	
+	private final CCache<FlatrateTermId, FlatrateTerm> cache = CCache.newLRUCache(I_C_Flatrate_Term.Table_Name+"#by#C_Flatrate_Term_ID", 100, 60);
+
 	public FlatrateTerm getById(@NonNull final FlatrateTermId id)
+	{
+		return cache.getOrLoad(id, this::getById0);
+	}
+	
+	private FlatrateTerm getById0(@NonNull final FlatrateTermId id)
 	{
 		final I_C_Flatrate_Term term = flatrateDAO.getById(id);
 

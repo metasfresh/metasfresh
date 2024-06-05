@@ -194,7 +194,7 @@ public class FlatrateDataEntryToICService
 					.setProductId(context.getProductId())
 					.onlyValidPrices(true)
 					.matching(ImmutableList.of())
-					.strictlyMatchingAttributes(attributeSetInstanceRecord)
+					.notStrictlyMatchingAttributes(attributeSetInstanceRecord)
 					.firstMatching();
 			if (productPriceRecord == null)
 			{
@@ -216,7 +216,8 @@ public class FlatrateDataEntryToICService
 			detailsForPpKey.addAll(details);
 
 			final AttributesKey dataEntryKey = dataEntryKey2Detail.getKey();
-			ppKey2Qtys.compute(ppKey, (key, oldValue) -> oldValue == null ? dataEntryKey2Qtys.get(dataEntryKey) : oldValue.add(dataEntryKey2Qtys.get(dataEntryKey)));
+			final BigDecimal ppQty = dataEntryKey2Qtys.get(dataEntryKey);
+			ppKey2Qtys.compute(ppKey, (key, oldValue) -> oldValue == null ? ppQty : oldValue.add(ppQty));
 		}
 
 		// finally create out result which consists of copies of the product-price ASI-IDs and the aggregated quantites from the entry's details.

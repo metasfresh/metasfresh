@@ -62,8 +62,13 @@ public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess impl
 	@Override
 	protected final String doIt()
 	{
-		final Integer flatrateDataEntryId = getSelectedIncludedRecordIds(I_C_Flatrate_DataEntry.class).iterator().next();
-		final TableRecordReference recordRef = TableRecordReference.of(I_C_Flatrate_DataEntry.Table_Name, flatrateDataEntryId);
+		final I_C_Flatrate_DataEntry entryRecord = ProcessUtil.extractEntryOrNull(getProcessInfo());
+		if (entryRecord == null)
+		{
+			addLog("Currently there is no C_Flatrate_DataEntry selected; nothing to do");
+			return MSG_OK;
+		}
+		final TableRecordReference recordRef = TableRecordReference.of(entryRecord);
 
 		final IView view = viewsRepo.createView(createViewRequest(recordRef));
 		final ViewId viewId = view.getViewId();

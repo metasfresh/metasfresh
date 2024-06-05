@@ -28,7 +28,9 @@ import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.cache.CCache;
 import de.metas.common.util.Check;
+import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.organization.IOrgDAO;
@@ -59,12 +61,16 @@ public class FlatrateDataEntryRepo
 
 	@NonNull
 	private final BPartnerDepartmentRepo bPartnerDepartmentRepo;
+	private final FlatrateTermRepo flatrateTermRepo;
 
 	private final CCache<FlatrateDataEntryId, FlatrateDataEntry> id2entry = CCache.newLRUCache(I_C_Flatrate_DataEntry.Table_Name + "#by#C_Flatrate_DataEntry_ID", 100, 60);
 
-	public FlatrateDataEntryRepo(@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo)
+	public FlatrateDataEntryRepo(
+			@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo,
+			@NonNull final FlatrateTermRepo flatrateTermRepo)
 	{
 		this.bPartnerDepartmentRepo = bPartnerDepartmentRepo;
+		this.flatrateTermRepo = flatrateTermRepo;
 	}
 
 	@NonNull
@@ -91,8 +97,9 @@ public class FlatrateDataEntryRepo
 			@NonNull final I_C_Flatrate_DataEntry dataEntryRecord,
 			@NonNull final List<I_C_Flatrate_DataEntry_Detail> detailRecords)
 	{
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoId(dataEntryRecord.getC_Flatrate_Term().getBill_BPartner_ID());
-
+		final FlatrateTerm flatrateTerm = flatrateTermRepo.getById(FlatrateTermId.ofRepoId(dataEntryRecord.getC_Flatrate_Term_ID()));
+		final BPartnerId bPartnerId = flatrateTerm.getShipOrBillPartnerId();
+		
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(
 				FlatrateTermId.ofRepoId(dataEntryRecord.getC_Flatrate_Term_ID()),
 				dataEntryRecord.getC_Flatrate_DataEntry_ID());
@@ -110,8 +117,17 @@ public class FlatrateDataEntryRepo
 
 		for (final I_C_Flatrate_DataEntry_Detail detailRecord : detailRecords)
 		{
-			final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoIdOrNone(billBPartnerId, detailRecord.getC_BPartner_Department_ID());
-			final BPartnerDepartment bPartnerDepartment = bPartnerDepartmentRepo.getById(bPartnerDepartmentId);
+			final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoIdOrNone(bPartnerId, detailRecord.getC_BPartner_Department_ID());
+			final BPartnerDepartment bPartnerDepartment;
+
+			if (bPartnerDepartmentId.isNone())
+			{
+				bPartnerDepartment = BPartnerDepartment.none(bPartnerId);
+			}
+			else
+			{
+				bPartnerDepartment = bPartnerDepartmentRepo.getById(bPartnerDepartmentId);
+			}
 
 			final FlatrateDataEntryDetail entryDetail = FlatrateDataEntryDetail.builder()
 					.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, detailRecord.getC_Flatrate_DataEntry_Detail_ID()))

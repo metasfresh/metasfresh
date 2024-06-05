@@ -79,7 +79,8 @@ public class FlatrateDataEntryService
 		final FlatrateTerm flatrateTerm = flatrateTermRepo.getById(entry.getId().getFlatrateTermId());
 
 		final ProductId productId = Check.assumeNotNull(flatrateTerm.getProductId(), "C_FlatrateTerm_ID={} needs to have an M_Product", entry.getId().getFlatrateTermId().getRepoId());
-		final BPartnerId bpartnerId = flatrateTerm.getBillPartnerLocationAndCaptureId().getBpartnerId();
+
+		final BPartnerId bpartnerId = flatrateTerm.getShipOrBillPartnerId();
 
 		final AttributeSetId attributeSetId = productBL.getMasterDataSchemaAttributeSetId(productId);
 		final List<AttributeListValue> attributeListValues = attributeDAO.retrieveAttributeValuesByAttributeSetId(attributeSetId);
@@ -180,6 +181,5 @@ public class FlatrateDataEntryService
 		@NonNull
 		AttributesKey attributesKey;
 	}
-
 
 }

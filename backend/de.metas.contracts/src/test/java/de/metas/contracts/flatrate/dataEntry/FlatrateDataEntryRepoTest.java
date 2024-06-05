@@ -26,6 +26,7 @@ import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.FlatrateTermRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -50,7 +51,7 @@ public class FlatrateDataEntryRepoTest
 	{
 		AdempiereTestHelper.get().init();
 
-		flatrateDataEntryRepo = new FlatrateDataEntryRepo(new BPartnerDepartmentRepo());
+		flatrateDataEntryRepo = new FlatrateDataEntryRepo(new BPartnerDepartmentRepo(), new FlatrateTermRepo());
 	}
 
 	@Test

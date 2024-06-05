@@ -270,4 +270,26 @@ public class C_Flatrate_Term_StepDef
 		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
 		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
+
+	@And("^the C_Flatrate_Term identified by (.*) has (.*) C_Flatrate_DataEntries.$")
+	public void the_C_Flatrate_Term_has_DataEntries(@NonNull final String identifier, final String countStr)
+	{
+		final int count = NumberUtils.asInt(countStr);
+		
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord)
+				.as("Missing C_Flatrate_Term record for identifier=%s", identifier)
+				.isNotNull();
+
+		final List<I_C_Flatrate_DataEntry> list = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
+				.create()
+				.list();
+
+		assertThat(list)
+				.as("Number of C_Flatrate_DataEntry record for C_Flatrate_Term_ID=%s - identifier=%s", flatrateTermRecord.getC_Flatrate_Term_ID(), identifier)
+				.hasSize(count);
+	}
+
 }

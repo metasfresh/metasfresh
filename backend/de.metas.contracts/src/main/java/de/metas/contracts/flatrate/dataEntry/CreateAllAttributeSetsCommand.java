@@ -52,7 +52,7 @@ public class CreateAllAttributeSetsCommand
 	public List<ImmutableAttributeSet> run()
 	{
 		if (attributeListValues.isEmpty())
-		{ // get this cornercase out of the way first
+		{ // get this corner-case out of the way first
 			return ImmutableList.of();
 		}
 
