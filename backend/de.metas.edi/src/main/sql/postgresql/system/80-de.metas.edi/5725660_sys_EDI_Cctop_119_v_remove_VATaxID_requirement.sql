@@ -1,3 +1,4 @@
+
 -- View: EDI_Cctop_119_v
 
 DROP VIEW IF EXISTS EDI_Cctop_119_v;
@@ -23,8 +24,8 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
            WHEN 'cust'::TEXT THEN 'BY'::TEXT
            WHEN 'vend'::TEXT THEN 'SU'::TEXT
            WHEN 'snum'::TEXT THEN 'SN'::TEXT
-                             ELSE 'Error EANCOM_Type'::TEXT
-       END                       AS eancom_locationtype,
+           ELSE 'Error EANCOM_Type'::TEXT
+           END                       AS eancom_locationtype,
        l.Address1,
        l.Address2,
        l.Postal,
@@ -58,10 +59,10 @@ FROM (
                                                                     (CASE
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
+                                                                         ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
                                                                              i.C_BPartner_Location_ID
-                                                                     END)
-                       --
+                                                                        END)
+                  --
                   UNION
                   --
                   SELECT 2::INTEGER         AS SeqNo,
@@ -77,7 +78,7 @@ FROM (
                            JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
                            JOIN C_BPartner_Location pl_vend ON pl_vend.C_BPartner_ID = p_vend.C_BPartner_ID AND pl_vend.isremitto = 'Y'
-                       --
+                  --
                   UNION
                   --
                   SELECT DISTINCT 3::INTEGER   AS SeqNo,
@@ -94,7 +95,7 @@ FROM (
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
                            LEFT JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
                            LEFT JOIN M_InOutline sl ON ( -- try to join directly from C_InvoiceLine
-                                                                   sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
+                                                           sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
                       -- fallback and try to join from C_OrderLine if (and only if) it's missing in C_InvoiceLine
                       OR (sl.C_OrderLine_ID = il.C_OrderLine_ID AND (il.M_InOutLine_ID IS NULL OR il.M_InOutLine_ID = 0))
                            LEFT JOIN M_InOut s ON s.M_InOut_ID = sl.M_InOut_ID
@@ -109,10 +110,10 @@ FROM (
                                                                              THEN o.DropShip_Location_ID
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
+                                                                         ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
                                                                              i.C_BPartner_Location_ID
-                                                                     END)
-                       --
+                                                                        END)
+                  --
                   UNION
                   --
                   SELECT 4::INTEGER   AS SeqNo,
@@ -126,7 +127,7 @@ FROM (
                          i.CreatedBy
                   FROM C_Invoice i
                            LEFT JOIN C_BPartner_Location pl_bill ON pl_bill.C_BPartner_Location_ID = i.C_BPartner_Location_ID
-                       --
+                  --
                   UNION
                   --
                   SELECT DISTINCT 5::INTEGER   AS SeqNo,
@@ -143,7 +144,7 @@ FROM (
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
                            LEFT JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
                            LEFT JOIN M_InOutline sl ON ( -- try to join directly from C_InvoiceLine
-                                                                   sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
+                                                           sl.M_InOutLine_ID = il.M_InOutLine_ID AND il.M_InOutLine_ID IS NOT NULL AND il.M_InOutLine_ID != 0)
                       -- fallback and try to join from C_OrderLine if (and only if) it's missing in C_InvoiceLine
                       OR (sl.C_OrderLine_ID = il.C_OrderLine_ID AND (il.M_InOutLine_ID IS NULL OR il.M_InOutLine_ID = 0))
                            LEFT JOIN M_InOut s ON s.M_InOut_ID = sl.M_InOut_ID
@@ -155,9 +156,9 @@ FROM (
                                                                              THEN o.DropShip_Location_ID
                                                                          WHEN o.C_BPartner_Location_ID IS NOT NULL AND o.C_BPartner_Location_ID != 0::INTEGER
                                                                              THEN o.C_BPartner_Location_ID
-                                                                             ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
+                                                                         ELSE -- Fallback if the C_Invoice is Hand Solo :) (I mean no C_Order)
                                                                              i.C_BPartner_Location_ID
-                                                                     END)
+                                                                        END)
               ) union_lookup
          ORDER BY union_lookup.SeqNo, union_lookup.Type_V, union_lookup.C_BPartner_Location_ID, C_Invoice_ID, M_InOut_ID
      ) lookup
@@ -177,5 +178,5 @@ ORDER BY (
               WHEN 'cust'::TEXT THEN 'BY'::TEXT
               WHEN 'vend'::TEXT THEN 'SU'::TEXT
               WHEN 'snum'::TEXT THEN 'SN'::TEXT
-                                ELSE 'Error EANCOM_Type'::TEXT
-          END);
+              ELSE 'Error EANCOM_Type'::TEXT
+              END);
