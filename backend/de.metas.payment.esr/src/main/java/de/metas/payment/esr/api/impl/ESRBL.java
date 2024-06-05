@@ -74,13 +74,10 @@ public class ESRBL implements IESRBL
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 
-		return isInvoiceOfInterest(invoice);
+		return isEligibleInvoice(invoice);
 	}
 
-	private boolean isInvoiceOfInterest(I_C_Invoice invoice)
-	{
-		return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));
-	}
+	private boolean isEligibleInvoice(I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
 
 	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
 	{
