@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModelAction;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
@@ -51,8 +52,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
-
-import javax.annotation.Nullable;
 
 public interface IModularContractLogHandler
 {
@@ -89,19 +88,22 @@ public interface IModularContractLogHandler
 	}
 
 	@NonNull
-	default ModularContractLogEntry calculateAmount(@NonNull final ModularContractLogEntry logEntry, @NonNull final QuantityUOMConverter uomConverter)
+	default ModularContractLogEntry calculateAmountWithNewPrice(
+			@NonNull final ModularContractLogEntry logEntry,
+			@NonNull final ProductPriceWithFlags newPrice,
+			@NonNull final QuantityUOMConverter uomConverter)
 	{
-		final ProductPrice priceActual = getPriceActual(logEntry);
+		final ProductPrice priceActual = newPrice.toProductPrice();
 		final Quantity logEntryQuantity = logEntry.getQuantity();
 		Check.assumeNotNull(logEntryQuantity, "Quantity shouldn't be null");
-		return priceActual == null ? logEntry :
-				logEntry.toBuilder()
+		return logEntry.toBuilder()
 				.amount(priceActual.computeAmount(logEntryQuantity, uomConverter))
 				.priceActual(priceActual)
 				.build();
 	}
-	@Nullable
-	ProductPrice getPriceActual(final @NonNull ModularContractLogEntry logEntry);
+
+	@NonNull
+	ProductPriceWithFlags getPriceActualWithFlags(final @NonNull ProductPrice productPrice, final @NonNull ModularContractLogEntry logEntry);
 
 	@Value
 	@Builder

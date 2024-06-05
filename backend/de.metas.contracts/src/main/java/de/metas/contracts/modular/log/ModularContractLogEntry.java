@@ -25,9 +25,11 @@ package de.metas.contracts.modular.log;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
@@ -219,6 +221,9 @@ public class ModularContractLogEntry
 			@NonNull final QuantityUOMConverter uomConverter,
 			@NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	{
-		return logHandlerRegistry.getApplicableHandlerForOrError(this).calculateAmount(this.toBuilder().priceActual(price).build(), uomConverter);
+		final IModularContractLogHandler handler = logHandlerRegistry.getApplicableHandlerForOrError(this);
+		final ProductPriceWithFlags productPriceWithFlags = handler.getPriceActualWithFlags(price, this);
+
+		return handler.calculateAmountWithNewPrice(this, productPriceWithFlags, uomConverter);
 	}
 }

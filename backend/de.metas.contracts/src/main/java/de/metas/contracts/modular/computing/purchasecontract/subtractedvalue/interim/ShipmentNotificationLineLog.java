@@ -25,10 +25,8 @@ package de.metas.contracts.modular.computing.purchasecontract.subtractedvalue.in
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.contracts.modular.workpackage.impl.AbstractShippingNotificationLogHandler;
 import de.metas.lang.SOTrx;
-import de.metas.product.ProductPrice;
 import de.metas.shippingnotification.ShippingNotificationService;
 import lombok.Getter;
 import lombok.NonNull;
@@ -56,13 +54,5 @@ class ShipmentNotificationLineLog extends AbstractShippingNotificationLogHandler
 	public SOTrx getSOTrx()
 	{
 		return SOTrx.PURCHASE;
-	}
-
-	@NonNull
-	@Override
-	public ProductPrice getPriceActual(@NonNull final IModularContractLogHandler.CreateLogRequest request)
-	{
-		return super.getPriceActual(request)
-				.negate();
 	}
 }
