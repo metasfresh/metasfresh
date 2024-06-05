@@ -22,26 +22,20 @@
 
 package de.metas.handlingunits.inout.returns;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineCandidate;
-import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerator;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
-import de.metas.handlingunits.inout.returns.customer.ManualCustomerReturnInOutProducer;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsResult;
 import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -83,42 +77,10 @@ public class ReturnsServiceFacade
 		return huInOutBL.isEmptiesReturn(inout);
 	}
 
-	public void createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
+	public MultiCustomerHUReturnsResult createCustomerReturnInOutForHUs(final Collection<I_M_HU> shippedHUsToReturn)
 	{
-		MultiCustomerHUReturnsInOutProducer.newInstance()
-				.addHUsToReturn(hus)
-				.create();
-	}
-
-	/**
-	 * Create HUs for manual customer return.
-	 */
-	public void createHUsForCustomerReturn(@NonNull final I_M_InOut customerReturn)
-	{
-		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
-
-		final List<I_M_InOutLine> customerReturnLines = huInOutBL.retrieveLines(customerReturn, I_M_InOutLine.class);
-		if (customerReturnLines.isEmpty())
-		{
-			throw new AdempiereException("No customer return lines found");
-		}
-
-		final ArrayListMultimap<InOutLineId, I_M_HU> husByLineId = ArrayListMultimap.create();
-
-		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
-		{
-			final List<I_M_HU> currentHUs = CustomerReturnLineHUGenerator.generateForReturnLine(customerReturnLine);
-			if (isServiceRepair(customerReturn))
-			{
-				currentHUs.forEach(hu -> hu.setIsExternalProperty(true));
-				InterfaceWrapperHelper.saveAll(currentHUs);
-			}
-			husByLineId.putAll(InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()), currentHUs);
-		}
-
-		ManualCustomerReturnInOutProducer.builder()
-				.manualCustomerReturn(customerReturn)
-				.husByLineId(husByLineId)
+		return MultiCustomerHUReturnsInOutProducer.builder()
+				.shippedHUsToReturn(shippedHUsToReturn)
 				.build()
 				.create();
 	}
