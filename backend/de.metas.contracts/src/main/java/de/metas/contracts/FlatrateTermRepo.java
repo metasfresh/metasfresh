@@ -67,7 +67,8 @@ public class FlatrateTermRepo
 		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
 		final I_C_Flatrate_Conditions flatrateConditionsRecord = term.getC_Flatrate_Conditions();
-		final ProductId productId = ProductId.ofRepoId(flatrateConditionsRecord.getM_Product_Flatrate_ID());
+		
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesceNotNull(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
 
 		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
@@ -83,7 +84,7 @@ public class FlatrateTermRepo
 				.dropshipPartnerLocationAndCaptureId(dropshipLPartnerLocationAndCaptureId)
 				.productId(productId)
 				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
-				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(flatrateConditionsRecord.getM_PricingSystem_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(term.getM_PricingSystem_ID()))
 				.isSimulation(term.isSimulation())
 				.status(FlatrateTermStatus.ofNullableCode(term.getContractStatus()))
 				.userInChargeId(UserId.ofRepoIdOrNull(term.getAD_User_InCharge_ID()))

@@ -27,13 +27,18 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRepo;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Department;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -58,11 +63,21 @@ public class FlatrateDataEntryRepoTest
 	public void getByIdTest()
 	{
 		// Given
-		final int bpartnerRepoId = 101;
 		final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
+		final I_M_Product productRecord = BusinessTestHelper.createProduct("flatrateTermProduct", uomEach);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("flatrateTerm");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+
+		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate);
+		saveRecord(conditionsRecord);
 
 		final I_C_Flatrate_Term flatrateTerm = newInstance(I_C_Flatrate_Term.class);
-		flatrateTerm.setBill_BPartner_ID(bpartnerRepoId);
+		flatrateTerm.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+		flatrateTerm.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+		flatrateTerm.setM_Product_ID(productRecord.getM_Product_ID());
+		flatrateTerm.setC_Flatrate_Conditions_ID(conditionsRecord.getC_Flatrate_Conditions_ID());
+		
 		saveRecord(flatrateTerm);
 		
 		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), 100);
@@ -79,7 +94,7 @@ public class FlatrateDataEntryRepoTest
 		saveRecord(dataEntry1);
 
 		final I_C_BPartner_Department department = newInstance(I_C_BPartner_Department.class);
-		department.setC_BPartner_ID(bpartnerRepoId);
+		department.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 		department.setValue("department");
 		department.setName("department");
 		saveRecord(department);
