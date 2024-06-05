@@ -28,7 +28,6 @@ import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
-import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
 import de.metas.contracts.modular.settings.ModularContractModuleUpdateRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
@@ -87,12 +86,6 @@ public class ModCntr_Module
 	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
-
-	@Init
-	public void init(final IModelValidationEngine engine)
-	{
-		CopyRecordFactory.registerCopyRecordSupport(I_ModCntr_Module.Table_Name, ModCntr_Module_POCopyRecordSupport.class);
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateModule(@NonNull final I_ModCntr_Module moduleRecord)
