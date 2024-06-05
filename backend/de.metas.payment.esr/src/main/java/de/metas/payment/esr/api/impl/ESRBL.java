@@ -65,32 +65,39 @@ import lombok.NonNull;
 public class ESRBL implements IESRBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public boolean appliesForESRDocumentRefId(final Object sourceModel)
 	{
-		final String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
+		String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
 		Check.assume(I_C_Invoice.Table_Name.equals(sourceTableName), "Document " + sourceModel + " not supported");
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 
-		if (!invoice.isSOTrx())
+		if(isPurchaseInvoice(invoice) || isReversal(invoice) || isSalesCreditMemo(invoice))
 		{
-			logger.debug("Skip generating because invoice is purchase invoice: {}", invoice);
 			return false;
 		}
-		if (invoice.getReversal_ID() > 0)
-		{
-			logger.debug("Skip generating because invoice is a reversal: {}", invoice);
-			return false;
-		}
-		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
-		{
-			logger.debug("Skip generating because invoice is a credit memo: {}", invoice);
-			return false;
-		}
+
 		return true;
 	}
+
+	private boolean isPurchaseInvoice(I_C_Invoice invoice)
+	{
+		return !invoice.isSOTrx();
+	}
+
+	private boolean isReversal(I_C_Invoice invoice)
+	{
+		return invoice.getReversal_ID() > 0;
+	}
+
+	private boolean isSalesCreditMemo(I_C_Invoice invoice)
+	{
+		return invoice.isSOTrx() && invoiceBL.isCreditMemo(invoice);
+	}
+
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
