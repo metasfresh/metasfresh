@@ -164,6 +164,10 @@ public class C_Flatrate_Term_StepDef
 			{
 				final I_M_Product product = productTable.get(productIdentifier);
 				contractRecord.setM_Product_ID(product.getM_Product_ID());
+			} 
+			else 
+			{
+				contractRecord.setM_Product_ID(conditions.getM_Product_Flatrate_ID());
 			}
 
 			final String pmmProductIdentifier = tableRow.get("OPT." + COLUMNNAME_PMM_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
