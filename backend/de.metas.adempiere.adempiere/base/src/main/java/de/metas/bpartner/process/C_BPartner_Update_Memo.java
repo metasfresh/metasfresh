@@ -23,15 +23,14 @@
 package de.metas.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.Services;
-import org.compiere.model.I_C_BPartner;
 
 public class C_BPartner_Update_Memo extends JavaProcess
 {
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Param(parameterName = "Memo")
 	private String p_Memo;
@@ -39,9 +38,7 @@ public class C_BPartner_Update_Memo extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_BPartner bPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(getRecord_ID()));
-		bPartner.setMemo(p_Memo);
-		bpartnerDAO.save(bPartner);
+		bpartnerBL.updateMemo(BPartnerId.ofRepoId(getRecord_ID()),p_Memo);
 		return "@Success@";
 	}
 }
