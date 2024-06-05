@@ -176,7 +176,9 @@ public class ModularContractSettingsBL
 		}
 		else if (!ProductId.ofRepoId(existingModuleConfig.getM_Product_ID()).equals(rawProductId))
 		{
-			modularContractSettingsDAO.updateModule(existingModuleConfig, null, rawProductId);
+			modularContractSettingsDAO.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
+					.productId(rawProductId)
+					.build());
 		}
 	}
 
@@ -189,24 +191,28 @@ public class ModularContractSettingsBL
 		{
 			createDefinitiveInvoiceModule(modularContractSettingsId);
 		}
-		else if(processedProductId != null)
+		else if (processedProductId != null)
 		{
-
-			modularContractSettingsDAO.updateModule(existingModuleConfig,
-													ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct,
-													processedProductId);
+			modularContractSettingsDAO.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
+					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
+					.productId(processedProductId)
+					.build());
 		}
 		else
 		{
-			modularContractSettingsDAO.updateModule(existingModuleConfig,
-													ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct,
-													rawProductId);
+			modularContractSettingsDAO.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
+					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct)
+					.productId(rawProductId)
+					.build());
 		}
 	}
 
 	public void updateModule(@NonNull final ModuleConfig moduleConfig, @Nullable final ModularContractTypeId modularContractTypeId, @NonNull final ProductId productId)
 	{
-		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), modularContractTypeId, productId);
+		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+				.modularContractTypeId(modularContractTypeId)
+				.productId(productId)
+				.build());
 	}
 
 	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
