@@ -24,6 +24,7 @@ package de.metas.contracts.flatrate.dataEntry.invoice;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -116,9 +117,17 @@ public class FlatrateDataEntryToICService
 		for (final AttributeSetInstanceId asiId : priceRelevantASIs.keySet())
 		{
 			final IPair<Quantity, List<FlatrateDataEntryDetail>> quantityListIPair = priceRelevantASIs.get(asiId);
-			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(entry, asiId, quantityListIPair.getLeft(), context);
-			createAndSaveDetailRecords(newRecord, entry, quantityListIPair.getRight());
-
+			
+			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(
+					entry, 
+					asiId, 
+					quantityListIPair.getLeft(), 
+					context);
+			
+			createAndSaveDetailRecords(newRecord,
+									   entry,
+									   quantityListIPair.getRight(),
+									   context);
 			result.add(newRecord);
 		}
 		return result.build();
@@ -172,7 +181,7 @@ public class FlatrateDataEntryToICService
 			else
 			{
 				detailsForKey = new ArrayList<>();
-				dataEntryKey2Details.put(dataEntryKey,detailsForKey);
+				dataEntryKey2Details.put(dataEntryKey, detailsForKey);
 			}
 			detailsForKey.add(detail);
 
@@ -226,7 +235,7 @@ public class FlatrateDataEntryToICService
 		{
 			final BigDecimal qty = ppKey2Qtys.get(ppKey);
 			final IPair<AttributeSetInstanceId, List<FlatrateDataEntryDetail>> asiIdWithDetails = ppKey2AsiIdsWithDetails.get(ppKey);
-			
+
 			final AttributeSetInstanceId resultKey = asiIdWithDetails.getLeft();
 			final ImmutablePair<Quantity, List<FlatrateDataEntryDetail>> resultValue = ImmutablePair.of(Quantitys.create(qty, entry.getUomId()), asiIdWithDetails.getRight());
 			result.put(resultKey, resultValue);
@@ -301,7 +310,8 @@ public class FlatrateDataEntryToICService
 	private void createAndSaveDetailRecords(
 			@NonNull final I_C_Invoice_Candidate newInvoiceCandidate,
 			@NonNull final FlatrateDataEntry entry,
-			@NonNull final List<FlatrateDataEntryDetail> matchingDetails)
+			@NonNull final List<FlatrateDataEntryDetail> matchingDetails,
+			@NonNull final CreateICsContext context)
 	{
 
 		for (final FlatrateDataEntryDetail detail : matchingDetails)
@@ -330,8 +340,15 @@ public class FlatrateDataEntryToICService
 
 			final BPartnerDepartment bPartnerDepartment = detail.getBPartnerDepartment();
 			newDetailRecord.setLabel(bPartnerDepartment.getSearchKey());
-			newDetailRecord.setDescription(bPartnerDepartment.getName());
+			newDetailRecord.setDescription(bPartnerDepartment.getSearchKey() + " - " + bPartnerDepartment.getName());
 
+			final FlatrateTerm flatrateTerm = context.getFlatrateTerm();
+			final BPartnerLocationAndCaptureId dropShipLocation = flatrateTerm.getDropshipPartnerLocationAndCaptureId();
+			if (dropShipLocation != null)
+			{
+				newDetailRecord.setDropShip_Location_ID(dropShipLocation.getBpartnerLocationId().getRepoId());
+				newDetailRecord.setDropShip_BPartner_ID(dropShipLocation.getBpartnerId().getRepoId());
+			}
 			InterfaceWrapperHelper.saveRecord(newDetailRecord);
 		}
 	}
