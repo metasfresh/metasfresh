@@ -111,7 +111,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
-		return inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
+		return inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override

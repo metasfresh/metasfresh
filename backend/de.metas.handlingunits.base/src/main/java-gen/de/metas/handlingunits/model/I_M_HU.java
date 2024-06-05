@@ -154,28 +154,6 @@ public interface I_M_HU
 	String COLUMNNAME_ClearanceStatus = "ClearanceStatus";
 
 	/**
-	 * Set Project.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Project_ID (int C_Project_ID);
-
-	/**
-	 * Get Project.
-	 * Financial Project
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Project_ID();
-
-	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
 	 * Set Cloned From.
 	 *
 	 * <br>Type: Search
@@ -199,6 +177,28 @@ public interface I_M_HU
 
 	ModelColumn<I_M_HU, de.metas.handlingunits.model.I_M_HU> COLUMN_ClonedFrom_HU_ID = new ModelColumn<>(I_M_HU.class, "ClonedFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
 	String COLUMNNAME_ClonedFrom_HU_ID = "ClonedFrom_HU_ID";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Get Created.
