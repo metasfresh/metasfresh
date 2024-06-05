@@ -1,22 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.currency.Amount;
-import de.metas.invoice.InvoiceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MOrg;
-import org.compiere.util.Env;
 
 /*
  * #%L
@@ -40,18 +23,18 @@ import org.compiere.util.Env;
  * #L%
  */
 
-import org.slf4j.Logger;
-
 import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.currency.Amount;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRBL;
+import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.InvoiceReferenceNo;
@@ -61,6 +44,22 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.MOrg;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ESRBL implements IESRBL
 {
@@ -80,26 +79,19 @@ public class ESRBL implements IESRBL
 
 	private boolean isInvoiceOfInterest(I_C_Invoice invoice)
 	{
-		return (isPurchaseInvoice(invoice) && isCreditMemo(invoice)) // purchase credit memo
-				|| !isReversal(invoice) 
-				|| (!isPurchaseInvoice(invoice) && !isCreditMemo(invoice));  // sales invoice (not sales credit memo)
+		return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));
 	}
 
-	private boolean isPurchaseInvoice(I_C_Invoice invoice)
+	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
 	{
-		return !invoice.isSOTrx();
+		return !invoice.isSOTrx() && isCreditMemo(invoice);
 	}
 
-	private boolean isReversal(I_C_Invoice invoice)
-	{
-		return invoice.getReversal_ID() > 0;
-	}
+	private boolean isSalesInvoice(I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
 
-	private boolean isCreditMemo(I_C_Invoice invoice)
-	{
-		return invoiceBL.isCreditMemo(invoice);
-	}
+	private boolean isCreditMemo(I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
 
+	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
