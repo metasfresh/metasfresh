@@ -228,8 +228,8 @@ Feature: Modular contract log from purchase order for raw product
       | candidate_6                       | 0            | 300            | 300              | I               | 9               | 0                   | 2700               | Y             |
 
     Then after not more than 60s, C_Invoice are found:
-      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
-      | candidate_1                       | invoice_1               | CO            |
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
+      | candidate_1                       | invoice_1               | CO            | 4200           |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal |
