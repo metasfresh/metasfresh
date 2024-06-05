@@ -59,6 +59,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -208,11 +209,15 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	@Override
 	public @NonNull ModularContractLogEntry calculateAmountWithNewPrice(
 			final @NonNull ModularContractLogEntry logEntry,
-			final @NonNull ProductPriceWithFlags newPrice,
+			final @NonNull ProductPriceWithFlags ignored,
 			final @NonNull QuantityUOMConverter uomConverter)
 	{
+		// dev-note ignoring the just updated price as because of scaling the system can't know if it's actually the price to be used
+		final ProductPriceWithFlags scalePriceWithFlags = getContractSpecificScalePrice(logEntry)
+				.orElseThrow(() -> new AdempiereException("No ContractSpecificScalePrice found for id=" + logEntry.getId()));
+
 		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
-		final ProductPrice price = newPrice.toProductPrice();
+		final ProductPrice price = scalePriceWithFlags.toProductPrice();
 
 		return logEntry.toBuilder()
 				.priceActual(price)
@@ -245,7 +250,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.modularContractModuleId(request.getModularContractModuleId())
 				.flatrateTermId(request.getContractId())
 				.column(column)
-				.value(getUserElementNumberValue(getInOutLineRecord(request)))
+				.value(getUserElementNumberValue(getInOutLineRecord(request.getRecordRef())))
 				.build();
 
 		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
@@ -258,9 +263,32 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	}
 
 	@NonNull
-	private I_M_InOutLine getInOutLineRecord(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	private I_M_InOutLine getInOutLineRecord(@NonNull final TableRecordReference recordRef)
 	{
-		final TableRecordReference recordRef = request.getRecordRef();
 		return inOutBL.getLineByIdInTrx(getInOutLineId(recordRef));
+	}
+
+	@NonNull
+	private Optional<ProductPriceWithFlags> getContractSpecificScalePrice(@NonNull final ModularContractLogEntry logEntry)
+	{
+		if (logEntry.getContractId() == null || !logEntry.getReferencedRecord().getTableName().equals(I_M_InOutLine.Table_Name))
+		{
+			return Optional.empty();
+		}
+
+		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
+				.modularContractModuleId(logEntry.getModularContractModuleId())
+				.flatrateTermId(logEntry.getContractId())
+				.column(column)
+				.value(getUserElementNumberValue(getInOutLineRecord(logEntry.getReferencedRecord())))
+				.build();
+
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+		return Optional.ofNullable(contractSpecificPrice)
+				.map(price -> ProductPriceWithFlags.builder()
+						.price(price)
+						.isCost(modularContractService.getByModuleId(logEntry.getModularContractModuleId()).isCostsType())
+						.isSubtractedValue(getComputingMethod().getComputingMethodType().isSubtractedValue())
+						.build());
 	}
 }
