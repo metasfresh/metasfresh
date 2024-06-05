@@ -75,12 +75,14 @@ public class ESRBL implements IESRBL
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
 
-		if(isPurchaseInvoice(invoice) || isReversal(invoice) || isSalesCreditMemo(invoice))
-		{
-			return false;
-		}
+		return isInvoiceOfInterest(invoice);
+	}
 
-		return true;
+	private boolean isInvoiceOfInterest(I_C_Invoice invoice)
+	{
+		return (isPurchaseInvoice(invoice) && isCreditMemo(invoice)) // purchase credit memo
+				|| isReversal(invoice) //reversal
+				|| (!isPurchaseInvoice(invoice) && !isCreditMemo(invoice));  // sales invoice (not sales credit memo)
 	}
 
 	private boolean isPurchaseInvoice(I_C_Invoice invoice)
@@ -93,9 +95,9 @@ public class ESRBL implements IESRBL
 		return invoice.getReversal_ID() > 0;
 	}
 
-	private boolean isSalesCreditMemo(I_C_Invoice invoice)
+	private boolean isCreditMemo(I_C_Invoice invoice)
 	{
-		return invoice.isSOTrx() && invoiceBL.isCreditMemo(invoice);
+		return invoiceBL.isCreditMemo(invoice);
 	}
 
 
