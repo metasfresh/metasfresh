@@ -56,12 +56,10 @@ public class C_Flatrate_Term_Change_Product extends JavaProcess implements IProc
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
 		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
 		if(ProcessUtil.isFlatFeeContract(context))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Not supported for FlatFee contracts");

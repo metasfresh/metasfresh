@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner_Department;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Repository
@@ -40,6 +41,7 @@ public class BPartnerDepartmentRepo
 
 	private final CCache<BPartnerId, List<BPartnerDepartment>> bPartnerDepartmentCache = CCache.newLRUCache(I_C_BPartner_Department.Table_Name + "#by#C_BPartner_ID", 200, 60);
 
+	@Nullable
 	public BPartnerDepartment getById(@NonNull final BPartnerDepartmentId id)
 	{
 		return getByBPartnerId(id.getBpartnerId())
@@ -48,12 +50,13 @@ public class BPartnerDepartmentRepo
 				.findFirst().orElse(null);
 	}
 
+	@NonNull
 	public List<BPartnerDepartment> getByBPartnerId(@NonNull final BPartnerId bPartnerId)
 	{
 		return bPartnerDepartmentCache.getOrLoad(bPartnerId, this::getByBPartnerId0);
 	}
 
-	public List<BPartnerDepartment> getByBPartnerId0(@NonNull final BPartnerId bPartnerId)
+	private List<BPartnerDepartment> getByBPartnerId0(@NonNull final BPartnerId bPartnerId)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner_Department.class)
 				.addOnlyActiveRecordsFilter()

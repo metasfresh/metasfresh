@@ -108,32 +108,16 @@ public class FlatrateDataEntryToICService
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(entryRecord.getC_Flatrate_Term_ID());
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(flatrateTermId, entryRecord.getC_Flatrate_DataEntry_ID());
 
-		final CreateICsContext context = createExecutionContext(flatrateTermId, flatrateDataEntryHandler);
+		final ICsCreationContext context = createExecutionContext(flatrateTermId, flatrateDataEntryHandler);
 
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
-
-		final ImmutableList.Builder<I_C_Invoice_Candidate> result = ImmutableList.builder();
+		
 		final ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> priceRelevantASIs = createPriceRelevantASIs(entry, context);
-		for (final AttributeSetInstanceId asiId : priceRelevantASIs.keySet())
-		{
-			final IPair<Quantity, List<FlatrateDataEntryDetail>> quantityListIPair = priceRelevantASIs.get(asiId);
-			
-			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(
-					entry, 
-					asiId, 
-					quantityListIPair.getLeft(), 
-					context);
-			
-			createAndSaveDetailRecords(newRecord,
-									   entry,
-									   quantityListIPair.getRight(),
-									   context);
-			result.add(newRecord);
-		}
-		return result.build();
+
+		return createInvoiceCandidates(priceRelevantASIs, entry, context);
 	}
 
-	private CreateICsContext createExecutionContext(
+	private ICsCreationContext createExecutionContext(
 			@NonNull final FlatrateTermId flatrateTermId,
 			@NonNull final FlatrateDataEntryHandler flatrateDataEntryHandler)
 	{
@@ -146,7 +130,7 @@ public class FlatrateDataEntryToICService
 
 		final ProductId productId = Check.assumeNotNull(flatrateTerm.getProductId(), "C_FlatrateTerm_ID={} needs to have an M_Product", flatrateTermId.getRepoId());
 
-		return new CreateICsContext(flatrateTerm, countryId, pricingSystemId, productId, flatrateDataEntryHandler);
+		return new ICsCreationContext(flatrateTerm, countryId, pricingSystemId, productId, flatrateDataEntryHandler);
 	}
 
 	/**
@@ -154,7 +138,7 @@ public class FlatrateDataEntryToICService
 	 */
 	private ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> createPriceRelevantASIs(
 			@NonNull final FlatrateDataEntry entry,
-			@NonNull final FlatrateDataEntryToICService.CreateICsContext context)
+			@NonNull final ICsCreationContext context)
 	{
 		final I_M_PriceList_Version priceListVersion = Check.assumeNotNull(priceListBL.getCurrentPriceListVersionOrNull(
 				context.getPricingSystemId(),
@@ -244,11 +228,37 @@ public class FlatrateDataEntryToICService
 		return result.build();
 	}
 
+	private ImmutableList<I_C_Invoice_Candidate> createInvoiceCandidates(
+			@NonNull final ImmutableMap<AttributeSetInstanceId, IPair<Quantity, List<FlatrateDataEntryDetail>>> priceRelevantASIs,
+			@NonNull final FlatrateDataEntry entry,
+			@NonNull final ICsCreationContext context)
+	{
+		final ImmutableList.Builder<I_C_Invoice_Candidate> result = ImmutableList.builder();
+
+		for (final AttributeSetInstanceId asiId : priceRelevantASIs.keySet())
+		{
+			final IPair<Quantity, List<FlatrateDataEntryDetail>> quantityListIPair = priceRelevantASIs.get(asiId);
+
+			final I_C_Invoice_Candidate newRecord = createAndSaveCandidateRecord(
+					entry,
+					asiId,
+					quantityListIPair.getLeft(),
+					context);
+
+			createAndSaveDetailRecords(newRecord,
+									   entry,
+									   quantityListIPair.getRight(),
+									   context);
+			result.add(newRecord);
+		}
+		return result.build();
+	}
+	
 	private I_C_Invoice_Candidate createAndSaveCandidateRecord(
 			@NonNull final FlatrateDataEntry entry,
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final Quantity quantity,
-			@NonNull final FlatrateDataEntryToICService.CreateICsContext context)
+			@NonNull final ICsCreationContext context)
 	{
 		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 
@@ -290,28 +300,11 @@ public class FlatrateDataEntryToICService
 		return newCand;
 	}
 
-	@Data
-	private static class CreateICsContext
-	{
-		@NonNull
-		final FlatrateTerm flatrateTerm;
-		@NonNull
-		final CountryId countryId;
-		@NonNull
-		final PricingSystemId pricingSystemId;
-		@NonNull
-		final ProductId productId;
-		@NonNull
-		final FlatrateDataEntryHandler flatrateDataEntryHandler;
-
-		PriceListVersionId priceListVersionId;
-	}
-
 	private void createAndSaveDetailRecords(
 			@NonNull final I_C_Invoice_Candidate newInvoiceCandidate,
 			@NonNull final FlatrateDataEntry entry,
 			@NonNull final List<FlatrateDataEntryDetail> matchingDetails,
-			@NonNull final CreateICsContext context)
+			@NonNull final ICsCreationContext context)
 	{
 
 		for (final FlatrateDataEntryDetail detail : matchingDetails)
@@ -351,5 +344,22 @@ public class FlatrateDataEntryToICService
 			}
 			InterfaceWrapperHelper.saveRecord(newDetailRecord);
 		}
+	}
+
+	@Data
+	private static class ICsCreationContext
+	{
+		@NonNull
+		final FlatrateTerm flatrateTerm;
+		@NonNull
+		final CountryId countryId;
+		@NonNull
+		final PricingSystemId pricingSystemId;
+		@NonNull
+		final ProductId productId;
+		@NonNull
+		final FlatrateDataEntryHandler flatrateDataEntryHandler;
+
+		PriceListVersionId priceListVersionId;
 	}
 }

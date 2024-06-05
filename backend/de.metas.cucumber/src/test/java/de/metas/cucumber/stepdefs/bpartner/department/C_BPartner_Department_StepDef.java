@@ -61,7 +61,6 @@ public class C_BPartner_Department_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-
 			final String name = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Department.COLUMNNAME_Name);
 			final String value = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Department.COLUMNNAME_Value);
 			final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner_Department.COLUMNNAME_Description);

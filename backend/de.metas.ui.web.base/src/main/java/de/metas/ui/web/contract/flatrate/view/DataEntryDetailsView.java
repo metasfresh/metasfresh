@@ -29,7 +29,6 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.contract.flatrate.model.DataEntryDetailsRow;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
-import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.view.template.IRowsData;
@@ -85,19 +84,8 @@ public class DataEntryDetailsView extends AbstractCustomView<DataEntryDetailsRow
 	}
 
 	@Override
-	public void close(@NonNull final ViewCloseAction closeAction)
-	{
-		if (closeAction.isDone())
-		{
-
-		}
-	}
-
-	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return processes;
 	}
-
-
 }
