@@ -121,7 +121,7 @@ public class StorageCostComputingMethod implements IComputingMethodHandler
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 		final ProductPrice priceWithStockUOM = ProductPrice.builder()
 				.productId(request.getProductId())
-				.money(storageCosts.negateIf(request.isCostInvoicingGroup()))
+				.money(storageCosts)
 				.uomId(stockUOMId)
 				.build();
 
