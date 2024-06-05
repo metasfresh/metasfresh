@@ -63,32 +63,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ESRBL implements IESRBL
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(ESRBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
-	@Override
-	public boolean appliesForESRDocumentRefId(final Object sourceModel)
-	{
-		String sourceTableName = InterfaceWrapperHelper.getModelTableName(sourceModel);
-		Check.assume(I_C_Invoice.Table_Name.equals(sourceTableName), "Document " + sourceModel + " not supported");
-
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(sourceModel, I_C_Invoice.class);
-
-		return isEligibleInvoice(invoice);
-	}
-
-	private boolean isEligibleInvoice(I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
-
-	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
-	{
-		return !invoice.isSOTrx() && isCreditMemo(invoice);
-	}
-
-	private boolean isSalesInvoice(I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
-
-	private boolean isCreditMemo(I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
-
-	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
@@ -101,9 +77,9 @@ public class ESRBL implements IESRBL
 			return;
 		}
 
-		if (!appliesForESRDocumentRefId(invoiceRecord))
+		if (!isEligibleForESRPaymentRequestCreation(invoiceRecord))
 		{
-			logger.debug("Skip generating because source does not apply: " + invoiceRecord);
+			logger.debug("Skip generating because source does not apply: {}", invoiceRecord);
 			return;
 		}
 
@@ -127,6 +103,20 @@ public class ESRBL implements IESRBL
 
 		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
 	}
+
+	private boolean isEligibleForESRPaymentRequestCreation(I_C_Invoice invoice) {return !isReversal(invoice) && (isPurchaseCreditMemo(invoice) || isSalesInvoice(invoice));}
+
+	private boolean isPurchaseCreditMemo(I_C_Invoice invoice)
+	{
+		return !invoice.isSOTrx() && isCreditMemo(invoice);
+	}
+
+	private boolean isSalesInvoice(I_C_Invoice invoice) {return invoice.isSOTrx() && !isCreditMemo(invoice);}
+
+	private boolean isCreditMemo(I_C_Invoice invoice) {return invoiceBL.isCreditMemo(invoice);}
+
+	private boolean isReversal(I_C_Invoice invoice) {return invoice.getReversal_ID() > 0;}
+
 
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
 	{
