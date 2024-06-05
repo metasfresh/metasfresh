@@ -800,7 +800,7 @@ public class C_Invoice_StepDef
 						.filter(invoice -> invoice.getTotalLines().equals(totalLines))
 						.isEmpty())
 				{
-					return ProviderResult.resultWasNotFound("Found no *completed* C_Invoice with GrandTotal={0} for C_Invoice_Candidate_ID.IDENTIFIER={1} (C_Invoice_Candidate_ID={2}). Checked invoices={3}", totalLines, invoiceCandIdentifier, invoiceCandidate.getC_Invoice_Candidate_ID(), invoices);
+					return ProviderResult.resultWasNotFound("Found no *completed* C_Invoice with TotalLines={0} for C_Invoice_Candidate_ID.IDENTIFIER={1} (C_Invoice_Candidate_ID={2}). Checked invoices={3}", totalLines, invoiceCandIdentifier, invoiceCandidate.getC_Invoice_Candidate_ID(), invoices);
 				}
 			}
 			
