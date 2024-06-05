@@ -191,8 +191,6 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
 
-	List<UomId> retrieveUomIds(I_C_Flatrate_Term flatrateTerm);
-
 	/**
 	 * For the given <bold>simulated</bold> dataEntry, this method updates the ActualQty values of all other data Entries that have the same C_Flatrate_Term_ID, C_Period_ID and Type.
 	 */

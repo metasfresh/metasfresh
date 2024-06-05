@@ -24,7 +24,7 @@ package de.metas.contracts;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.DocumentLocation;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -52,15 +52,9 @@ public class FlatrateTerm
 	@NonNull BPartnerLocationAndCaptureId  billPartnerLocationAndCaptureId;
 
 	/**
-	 * May be {@code null} for somesorts of contractslike flat-fee.
+	 * May be {@code null} for somesorts of contracts
 	 */
 	@Nullable BPartnerLocationAndCaptureId  dropshipPartnerLocationAndCaptureId;
-
-	@Nullable
-	BPartnerId shipToBPartnerId;
-
-	@Nullable
-	BPartnerLocationId shipToLocationId;
 
 	@Nullable
 	ProductId productId;
@@ -107,4 +101,13 @@ public class FlatrateTerm
 
 	@NonNull
 	DocumentLocation billLocation;
+
+	public BPartnerId getShipOrBillPartnerId()
+	{
+		// if the billto and shipto partners differ, then the shipto-partner is generally the one with the departments to which stuff is shipped
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> getDropshipPartnerLocationAndCaptureId() != null ? getDropshipPartnerLocationAndCaptureId().getBpartnerId() : null,
+				() -> getBillLocation().getBpartnerId());
+	}
+
 }

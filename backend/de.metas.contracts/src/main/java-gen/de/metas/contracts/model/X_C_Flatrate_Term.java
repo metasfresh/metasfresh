@@ -1176,24 +1176,4 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
 	}
-
-	/** 
-	 * UOMType AD_Reference_ID=540262
-	 * Reference name: UOM Type Flatrate
-	 */
-	public static final int UOMTYPE_AD_Reference_ID=540262;
-	/** Gesundheitswesen = HC */
-	public static final String UOMTYPE_Gesundheitswesen = "HC";
-	/** Abrechnungsgenauigkeit = TD */
-	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
-	@Override
-	public void setUOMType (final @Nullable java.lang.String UOMType)
-	{
-		throw new IllegalArgumentException ("UOMType is virtual column");	}
-
-	@Override
-	public java.lang.String getUOMType() 
-	{
-		return get_ValueAsString(COLUMNNAME_UOMType);
-	}
 }

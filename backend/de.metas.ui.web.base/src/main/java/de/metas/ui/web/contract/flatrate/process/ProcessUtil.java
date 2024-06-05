@@ -43,6 +43,13 @@ class ProcessUtil
 		return extractDataEntryOrNull(includedRecords);
 	}
 
+	@Nullable
+	I_C_Flatrate_DataEntry extractEntryOrNull(@NonNull final ProcessInfo pi)
+	{
+		final Set<TableRecordReference> includedRecords = pi.getSelectedIncludedRecords();
+		return extractDataEntryOrNull(includedRecords);
+	}
+
 	@NonNull
 	I_C_Flatrate_DataEntry extractEntry(@NonNull final ProcessInfo pi)
 	{
@@ -50,7 +57,7 @@ class ProcessUtil
 		final I_C_Flatrate_DataEntry result = extractDataEntryOrNull(includedRecords);
 
 		// we can assume this because otherwise the processes' checkPreconditionsApplicable whould not have been passed
-		return Check.assumeNotNull(result, "There shoul be one selected included C_Flatrate_DataEntry. ProcessInfo={}", pi);
+		return Check.assumeNotNull(result, "There should be one selected included C_Flatrate_DataEntry. ProcessInfo={}", pi);
 	}
 
 	private static I_C_Flatrate_DataEntry extractDataEntryOrNull(@Nullable final Set<TableRecordReference> includedRecords)

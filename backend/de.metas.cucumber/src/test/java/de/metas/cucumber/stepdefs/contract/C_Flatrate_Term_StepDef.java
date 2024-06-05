@@ -29,6 +29,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -45,6 +46,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -130,7 +132,10 @@ public class C_Flatrate_Term_StepDef
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+			
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+			contractRecord.setC_UOM_ID(conditions.getC_UOM_ID());
+			
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());

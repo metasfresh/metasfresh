@@ -1424,31 +1424,6 @@ public interface I_C_Flatrate_Term
 	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
 
 	/**
-	 * Set UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setUOMType (@Nullable java.lang.String UOMType);
-
-	/**
-	 * Get UOM Type.
-	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getUOMType();
-
-	ModelColumn<I_C_Flatrate_Term, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Term.class, "UOMType", null);
-	String COLUMNNAME_UOMType = "UOMType";
-
-	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

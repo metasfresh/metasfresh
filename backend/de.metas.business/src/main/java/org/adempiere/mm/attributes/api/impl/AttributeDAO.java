@@ -618,7 +618,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final List<AttributeListValue> list = queryBuilder
-				.orderBy(I_M_AttributeValue.COLUMNNAME_Name) // task 06897: order attributes by name
+				.orderBy(I_M_AttributeValue.COLUMNNAME_Value) // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
 				.create()
 				.stream()
 				.map(AttributeDAO::toAttributeListValue)

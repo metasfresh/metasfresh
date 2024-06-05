@@ -187,10 +187,6 @@ public class C_Flatrate_Conditions_StepDef
 				final I_C_UOM uomRecord = uomTable.get(uomIdentifier);
 				assertThat(uomRecord).as("Missing C_UOM for Identifier=%s", uomIdentifier).isNotNull();
 				flatrateConditions.setC_UOM_ID(uomRecord.getC_UOM_ID());
-				if (EmptyUtil.isNotBlank(uomRecord.getUOMType()))
-				{
-					flatrateConditions.setUOMType(uomRecord.getUOMType());
-				}
 			}
 
 			flatrateConditions.setName(name);

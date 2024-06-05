@@ -69,7 +69,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
-
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);

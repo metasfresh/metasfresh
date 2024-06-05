@@ -56,7 +56,6 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -721,18 +720,6 @@ public class FlatrateDAO implements IFlatrateDAO
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public ImmutableList<UomId> retrieveUomIds(@NonNull final I_C_Flatrate_Term flatrateTerm)
-	{
-		return queryBL.createQueryBuilder(I_C_UOM.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMType, flatrateTerm.getUOMType())
-				.orderBy(I_C_UOM.COLUMNNAME_C_UOM_ID)
-				.create()
-				.listIds().stream().map(UomId::ofRepoId).collect(ImmutableList.toImmutableList());
-
 	}
 
 	@Override

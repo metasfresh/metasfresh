@@ -22,7 +22,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
-import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -431,22 +430,6 @@ public class C_Invoice_Candidate
 		invoiceCandDAO.invalidateCand(ic);
 	}
 
-
-	/**
-	 * In case the correct tax was not found for the invoice candidate and it was set to the Tax_Not_Found placeholder instead, mark the candidate as Error.
-	 * <p>
-	 * Task 07814
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)
-	{
-		final Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
-
-		if (taxEffective.isTaxNotFound())
-		{
-			candidate.setIsError(true);
-		}
-	}
 
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //

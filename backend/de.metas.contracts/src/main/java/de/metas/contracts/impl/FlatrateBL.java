@@ -125,8 +125,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.Lookup;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -158,7 +156,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
 
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = AdMessageKey.of("DataEntry_Create_FlatFee");
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P = AdMessageKey.of("DataEntry_Create_FlatFee");
 
 	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
 
@@ -178,7 +176,9 @@ public class FlatrateBL implements IFlatrateBL
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+	
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -870,46 +870,36 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		int counter = 0;
 
-		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
-		final List<UomId> uoms = flatrateDB.retrieveUomIds(flatrateTerm);
+		final UomId uomId = UomId.ofRepoId(flatrateTerm.getC_UOM_ID());
 
 		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
 		for (final I_C_Period period : periods)
 		{
-			for (final UomId uom : uoms)
+			final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
+			if (existingEntry != null)
 			{
-				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
-				if (existingEntry != null)
-				{
-					continue;
-				}
-
-				final I_C_Flatrate_DataEntry newDataEntry = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_DataEntry.class, trxName);
-				newDataEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
-
-				newDataEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
-
-				newDataEntry.setC_Period_ID(period.getC_Period_ID());
-				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
-				newDataEntry.setC_UOM_ID(uom.getRepoId());
-
-				save(newDataEntry);
-				counter++;
+				continue;
 			}
+
+			final I_C_Flatrate_DataEntry newDataEntry = InterfaceWrapperHelper.create(ctx, I_C_Flatrate_DataEntry.class, trxName);
+			newDataEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
+
+			newDataEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
+
+			newDataEntry.setC_Period_ID(period.getC_Period_ID());
+			newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
+			newDataEntry.setC_UOM_ID(uomId.getRepoId());
+
+			save(newDataEntry);
+			counter++;
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
-		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
-
-		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
+		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P,
 										new Object[] {
 												counter,
 												flatrateTerm.getStartDate(),
-												flatrateTerm.getEndDate(),
-												columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+												flatrateTerm.getEndDate() });
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
@@ -988,8 +978,8 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			diffPercent = null;
 		}
-		else if (actualQtyOfUnits.signum() == 0)
-		{
+		else if (actualQtyOfUnits.signum() == 0 || plannedQtyPerUnit.signum() == 0)
+		{ // note that plannedQtyPerUnit is zero when we have Type_Flatrate=RPTD
 			diffPercent = BigDecimal.ZERO;
 		}
 		else
