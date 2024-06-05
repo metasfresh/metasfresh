@@ -81,7 +81,7 @@ public class ESRBL implements IESRBL
 	private boolean isInvoiceOfInterest(I_C_Invoice invoice)
 	{
 		return (isPurchaseInvoice(invoice) && isCreditMemo(invoice)) // purchase credit memo
-				|| isReversal(invoice) //reversal
+				|| !isReversal(invoice) 
 				|| (!isPurchaseInvoice(invoice) && !isCreditMemo(invoice));  // sales invoice (not sales credit memo)
 	}
 
