@@ -23,6 +23,7 @@
 package de.metas.ui.web.contract.flatrate.process;
 
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -34,6 +35,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 
@@ -68,6 +70,12 @@ public class WEBUI_C_Flatrate_DataEntry_Detail_Launcher extends JavaProcess impl
 			addLog("Currently there is no C_Flatrate_DataEntry selected; nothing to do");
 			return MSG_OK;
 		}
+		if (entryRecord.isProcessed())
+		{
+			// it would be nice to open the modal real-only and somehow indicate to the user why it is red-only
+			throw new AdempiereException(AdMessageKey.of("de.metas.ui.web.contract.flatrate.process.WEBUI_C_Flatrate_DataEntry_Detail_Launcher.EntryAlreadyProcessed")).markAsUserValidationError();
+		}
+
 		final TableRecordReference recordRef = TableRecordReference.of(entryRecord);
 
 		final IView view = viewsRepo.createView(createViewRequest(recordRef));

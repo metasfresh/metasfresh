@@ -35,6 +35,8 @@ import java.util.List;
 @Value
 public class FlatrateDataEntry
 {
+	boolean processed;
+	
 	@NonNull
 	FlatrateDataEntryId id;
 	

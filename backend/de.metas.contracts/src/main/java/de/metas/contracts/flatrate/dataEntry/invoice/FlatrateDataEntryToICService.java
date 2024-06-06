@@ -224,7 +224,6 @@ public class FlatrateDataEntryToICService
 			final ImmutablePair<Quantity, List<FlatrateDataEntryDetail>> resultValue = ImmutablePair.of(Quantitys.create(qty, entry.getUomId()), asiIdWithDetails.getRight());
 			result.put(resultKey, resultValue);
 		}
-
 		return result.build();
 	}
 

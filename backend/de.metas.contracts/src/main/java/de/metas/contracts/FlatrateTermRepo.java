@@ -52,14 +52,14 @@ public class FlatrateTermRepo
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	
-	private final CCache<FlatrateTermId, FlatrateTerm> cache = CCache.newLRUCache(I_C_Flatrate_Term.Table_Name+"#by#C_Flatrate_Term_ID", 100, 60);
+
+	private final CCache<FlatrateTermId, FlatrateTerm> cache = CCache.newLRUCache(I_C_Flatrate_Term.Table_Name + "#by#C_Flatrate_Term_ID", 100, 60);
 
 	public FlatrateTerm getById(@NonNull final FlatrateTermId id)
 	{
 		return cache.getOrLoad(id, this::getById0);
 	}
-	
+
 	private FlatrateTerm getById0(@NonNull final FlatrateTermId id)
 	{
 		final I_C_Flatrate_Term term = flatrateDAO.getById(id);
@@ -67,13 +67,15 @@ public class FlatrateTermRepo
 		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
 		final I_C_Flatrate_Conditions flatrateConditionsRecord = term.getC_Flatrate_Conditions();
-		
+
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesceNotNull(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
+		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesceSuppliersNotNull(
+				() -> UomId.ofRepoIdOrNull(term.getC_UOM_ID()),
+				() -> productBL.getStockUOMId(productId)));
 
 		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
 		final DocumentLocation billLocation = ContractLocationHelper.extractBillLocation(term);
-		
+
 		final BPartnerLocationAndCaptureId dropshipLPartnerLocationAndCaptureId = ContractLocationHelper.extractDropshipLocationId(term);
 
 		return FlatrateTerm.builder()

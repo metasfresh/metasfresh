@@ -56,6 +56,7 @@ public class DataEntryDetailsRow implements IViewRow
 	@Getter
 	private final ProductASIDescription asi;
 
+	/** I don't know how to make the field read-only if the entry is processed */
 	public static final String FIELD_Qty = I_C_Flatrate_DataEntry_Detail.COLUMNNAME_Qty_Reported;
 	@ViewColumn(seqNo = 30, fieldName = FIELD_Qty, captionKey = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
@@ -68,7 +69,10 @@ public class DataEntryDetailsRow implements IViewRow
 	@Getter
 	private final DocumentId id;
 
+	private final boolean processed;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<DataEntryDetailsRow> values;
+
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
 			.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS)			
 			.build();
@@ -76,12 +80,14 @@ public class DataEntryDetailsRow implements IViewRow
 
 	@Builder(toBuilder = true)
 	public DataEntryDetailsRow(
+			final boolean processed,
 			@NonNull final ProductASIDescription asi,
 			@Nullable final LookupValue department,
 			@NonNull final DocumentId id,
 			@Nullable final BigDecimal qty,
 			@NonNull final LookupValue uom)
 	{
+		this.processed = processed;
 		this.asi = asi;
 		this.department = department;
 		this.id = id;
@@ -96,7 +102,7 @@ public class DataEntryDetailsRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return false;
+		return processed;
 	}
 
 	@Nullable

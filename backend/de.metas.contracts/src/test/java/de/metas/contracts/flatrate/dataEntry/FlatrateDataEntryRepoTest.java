@@ -32,6 +32,7 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.document.engine.DocStatus;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Department;
@@ -91,6 +92,7 @@ public class FlatrateDataEntryRepoTest
 		dataEntry1.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
 		dataEntry1.setC_UOM_ID(uomEach.getC_UOM_ID()); // generally not mandatory, but for this flatrate-type always set
 		dataEntry1.setC_Period_ID(period.getC_Period_ID());
+		dataEntry1.setDocStatus(DocStatus.Completed.getCode());
 		saveRecord(dataEntry1);
 
 		final I_C_BPartner_Department department = newInstance(I_C_BPartner_Department.class);
@@ -126,6 +128,4 @@ public class FlatrateDataEntryRepoTest
 		assertThat(result.getDetails().get(0).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 12)); // verify that it's ordered by seqno
 		assertThat(result.getDetails().get(1).getId()).isEqualTo(FlatrateDataEntryDetailId.ofRepoId(testId, 11));
 	}
-	
-	
 }

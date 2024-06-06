@@ -88,7 +88,15 @@ public class DataEntryDetailsRowsLoader
 	{
 
 		final FlatrateDataEntry entry = flatrateDataEntryRepo.getById(flatrateDataEntryId);
-		final FlatrateDataEntry entryWithAllDetails = flatrateDataEntryService.addMissingDetails(entry);
+		final FlatrateDataEntry entryWithAllDetails;
+		if (!entry.isProcessed())
+		{
+			entryWithAllDetails = flatrateDataEntryService.addMissingDetails(entry);
+		}
+		else
+		{
+			entryWithAllDetails = entry;
+		}
 
 		final LookupValue uom = Check.assumeNotNull(uomLookup.findById(entryWithAllDetails.getUomId()),
 													"UOM lookup may not be null for C_UOM_ID={}; C_Flatrate_DataEntry_ID={}",
@@ -101,7 +109,7 @@ public class DataEntryDetailsRowsLoader
 		{
 			if (filter.test(detail))
 			{
-				final DataEntryDetailsRow row = toRow(uom, detail);
+				final DataEntryDetailsRow row = toRow(entryWithAllDetails.isProcessed(), uom, detail);
 				result.add(row);
 			}
 		}
@@ -110,6 +118,7 @@ public class DataEntryDetailsRowsLoader
 	}
 
 	private DataEntryDetailsRow toRow(
+			final boolean processed,
 			@NonNull final LookupValue uom,
 			@NonNull final FlatrateDataEntryDetail detail)
 	{
@@ -129,6 +138,7 @@ public class DataEntryDetailsRowsLoader
 		}
 
 		final DataEntryDetailsRow.DataEntryDetailsRowBuilder row = DataEntryDetailsRow.builder()
+				.processed(processed)
 				.id(documentId)
 				.asi(productASIDescription)
 				.department(department)

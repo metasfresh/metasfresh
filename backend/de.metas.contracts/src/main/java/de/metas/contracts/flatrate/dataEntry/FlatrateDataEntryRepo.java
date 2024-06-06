@@ -33,6 +33,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
+import de.metas.document.engine.DocStatus;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -106,6 +107,9 @@ public class FlatrateDataEntryRepo
 
 		final FlatrateDataEntry.FlatrateDataEntryBuilder result = FlatrateDataEntry.builder();
 
+		final DocStatus docStatus = DocStatus.ofCode(dataEntryRecord.getDocStatus());
+		result.processed(docStatus.isCompletedOrClosed());
+		
 		Check.errorIf(dataEntryRecord.getC_UOM_ID() <= 0, "C_Flatrate_DataEntry_ID={} needs to have a C_UOM_ID", dataEntryRecord.getC_Flatrate_DataEntry_ID());
 		result.uomId(UomId.ofRepoId(dataEntryRecord.getC_UOM_ID()));
 

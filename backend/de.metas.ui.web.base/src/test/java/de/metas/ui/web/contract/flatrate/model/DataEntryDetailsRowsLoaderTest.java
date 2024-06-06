@@ -81,6 +81,7 @@ public class DataEntryDetailsRowsLoaderTest
 				.bPartnerDepartment(bPartnerDepartment)
 				.build();
 		final FlatrateDataEntry entry = FlatrateDataEntry.builder()
+				.processed(false)
 				.id(flatrateDataEntryId)
 				.uomId(UomId.ofRepoId(30))
 				.detail(detail)
@@ -88,21 +89,15 @@ public class DataEntryDetailsRowsLoaderTest
 				.build();
 
 		//when specific methods are called on the mock objects, then return specific values
-		Mockito.when(entryService.addMissingDetails(Mockito.any())).thenReturn(entry);
+		Mockito.when(entryRepo.getById(flatrateDataEntryId)).thenReturn(entry);
+		Mockito.when(entryService.addMissingDetails(entry)).thenReturn(entry);
 		Mockito.when(departmentLookup.findById(Mockito.any())).thenReturn(departmentLookupValue);
 		Mockito.when(uomLookup.findById(Mockito.any())).thenReturn(uomLookupValue);
-
-		// final BPartnerDepartmentRepo bPartnerDepartmentRepo = new BPartnerDepartmentRepo();
-		// final FlatrateDataEntryRepo flatrateDataEntryRepo = new FlatrateDataEntryRepo(bPartnerDepartmentRepo);
-		// final FlatrateDataEntryService flatrateDataEntryService = new FlatrateDataEntryService(
-		// 		flatrateDataEntryRepo,
-		// 		new FlatrateTermRepo(),
-		// 		bPartnerDepartmentRepo);
 
 		//Call the method to be tested
 		final DataEntryDetailsRowsLoader dataEntryDetailsRowsLoader = DataEntryDetailsRowsLoader
 				.builder()
-				.flatrateDataEntryId(FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10),1))
+				.flatrateDataEntryId(flatrateDataEntryId)
 				.flatrateDataEntryService(entryService)
 				.uomLookup(uomLookup)
 				.departmentLookup(departmentLookup)
@@ -111,6 +106,7 @@ public class DataEntryDetailsRowsLoaderTest
 		final DataEntryDetailsRowsData result = dataEntryDetailsRowsLoader.load();
 
 		//Verify the method calls on mock objects
+		Mockito.verify(entryRepo, Mockito.times(1)).getById(flatrateDataEntryId);
 		Mockito.verify(entryService, Mockito.times(1)).addMissingDetails(Mockito.any());
 		Mockito.verify(departmentLookup, Mockito.times(1)).findById(Mockito.any());
 		Mockito.verify(uomLookup, Mockito.times(1)).findById(Mockito.any());
