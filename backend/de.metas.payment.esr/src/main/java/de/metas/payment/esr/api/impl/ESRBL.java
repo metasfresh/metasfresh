@@ -88,7 +88,7 @@ public class ESRBL implements IESRBL
 		final InvoiceReferenceNo invoiceReferenceString = InvoiceReferenceNos.createFor(invoiceRecord, bankAccountRecord);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final Amount openInvoiceAmount = invoiceDAO.retrieveOpenAmt(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()));
+		final Amount openInvoiceAmount = invoiceDAO.retrieveOpenAmt(invoiceRecord, false);
 
 		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount.toBigDecimal(), bankAccountRecord);
 
