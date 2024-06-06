@@ -29,6 +29,7 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.settings.InvoicingGroupType;
 import de.metas.contracts.modular.settings.ModCntr_Module_POCopyRecordSupport;
+import de.metas.contracts.modular.settings.ModularContractModuleUpdateRequest;
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
@@ -184,6 +185,8 @@ public class ModCntr_Module
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresRawProduct);
 				}
+				settings.getSingleModuleConfig(ComputingMethodType.DefinitiveInvoiceRawProduct)
+						.ifPresent(definitiveInvoiceMethodType -> updateDefinitiveModuleName(definitiveInvoiceMethodType, module.getName()));
 			}
 
 			case SalesOnProcessedProduct ->
@@ -192,11 +195,13 @@ public class ModCntr_Module
 				{
 					throw new AdempiereException(ERROR_SALES_PROCESSED_PRODUCT_REQUIRED_INV_GROUP, InvoicingGroupType.SERVICES.getDisplayName());
 				}
-				
+
 				if (!ProductId.equals(settings.getProcessedProductId(), productId))
 				{
 					throw new AdempiereException(ERROR_ComputingMethodRequiresProcessedProduct);
 				}
+				settings.getSingleModuleConfig(ComputingMethodType.DefinitiveInvoiceProcessedProduct)
+						.ifPresent(definitiveInvoiceMethodType -> updateDefinitiveModuleName(definitiveInvoiceMethodType, module.getName()));
 			}
 			case CoProduct ->
 			{
@@ -220,6 +225,13 @@ public class ModCntr_Module
 		}
 	}
 
+	private void updateDefinitiveModuleName(@NonNull final ModuleConfig moduleConfig, @NonNull final String productName)
+	{
+		modularContractSettingsDAO.updateModule(moduleConfig.getId().getModularContractModuleId(), ModularContractModuleUpdateRequest.builder()
+				.moduleName(productName)
+				.build());
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void validateProductsUOM(@NonNull final I_ModCntr_Module record)
 	{
@@ -234,7 +246,7 @@ public class ModCntr_Module
 			throw new AdempiereException(ERROR_PRODUCT_NEEDS_SAME_STOCK_UOM_AS_RAW);
 		}
 
-		if(settings.getProcessedProductId() == null)
+		if (settings.getProcessedProductId() == null)
 		{
 			return;
 		}
