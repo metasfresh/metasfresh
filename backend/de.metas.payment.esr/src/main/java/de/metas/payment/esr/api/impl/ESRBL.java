@@ -65,9 +65,7 @@ public class ESRBL implements IESRBL
 	private static final Logger logger = LogManager.getLogger(ESRBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IESRBPBankAccountBL bankAccountBL = Services.get(IESRBPBankAccountBL.class);
     private	final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
-	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 
 	@Override
@@ -154,6 +152,8 @@ public class ESRBL implements IESRBL
 		// 01 is the code for Invoice document type. For the moment it's the only document type handled by the program
 		renderedCodeStr.append("01");
 
+		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+
 		// Open amount of the invoice multiplied by 100
 		String amountStr = openInvoiceAmount
 				.multiply(Env.ONEHUNDRED)
@@ -170,6 +170,9 @@ public class ESRBL implements IESRBL
 
 		renderedCodeStr.append(invoiceReferenceString.asString());
 		renderedCodeStr.append("+ ");
+
+
+		final IESRBPBankAccountBL bankAccountBL = Services.get(IESRBPBankAccountBL.class);
 		renderedCodeStr.append(bankAccountBL.retrieveESRAccountNo(bankAccount));
 		renderedCodeStr.append(">");
 
