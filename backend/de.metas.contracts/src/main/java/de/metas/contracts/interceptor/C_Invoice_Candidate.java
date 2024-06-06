@@ -22,17 +22,6 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -43,8 +32,20 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -53,6 +54,8 @@ public class C_Invoice_Candidate
 	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted_Text");
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void closeDirectly(final I_C_Invoice_Candidate invoiceCand)
@@ -80,7 +83,7 @@ public class C_Invoice_Candidate
 	public void updateIsToClear(final I_C_Invoice_Candidate invoiceCand)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-		if(invoiceCandBL.extractProcessedOverride(invoiceCand).isTrue())
+		if (invoiceCandBL.extractProcessedOverride(invoiceCand).isTrue())
 		{
 			return; // #183 FRESH-511: nothing to check or update
 		}
@@ -108,6 +111,40 @@ public class C_Invoice_Candidate
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Invoice_Candidate.COLUMNNAME_Processed)
+	public void processRelatedCandidates(@NonNull final I_C_Invoice_Candidate invoiceCand)
+	{
+		if (invoiceCand.isToClear())
+		{
+			return; // nothing to do
+		}
+		if (!invoiceCand.isProcessed())
+		{
+			return; // nothing to do
+		}
+
+		final TableRecordReference tableRecordReference = TableRecordReference.ofReferenced(invoiceCand);
+		if (I_C_Flatrate_DataEntry.Table_Name.equals(tableRecordReference.getTableName()))
+		{
+			final I_C_Flatrate_DataEntry entryRecord = tableRecordReference.getModel(I_C_Flatrate_DataEntry.class);
+			closeCandsToClear(flatrateDAO.retrieveClearingAllocs(entryRecord));
+		}
+		else if (I_C_Flatrate_Term.Table_Name.equals(tableRecordReference.getTableName()))
+		{
+			final I_C_Flatrate_Term termRecord = tableRecordReference.getModel(I_C_Flatrate_Term.class);
+			closeCandsToClear(flatrateDAO.retrieveClearingAllocs(termRecord));
+		}
+	}
+
+	private void closeCandsToClear(@NonNull final List<I_C_Invoice_Clearing_Alloc> clearingAllocs)
+	{
+		for (final I_C_Invoice_Clearing_Alloc clearingAlloc : clearingAllocs)
+		{
+			final I_C_Invoice_Candidate invoiceCandToClear = clearingAlloc.getC_Invoice_Cand_ToClear();
+			invoiceCandBL.closeInvoiceCandidate(invoiceCandToClear);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createIca(final I_C_Invoice_Candidate invoiceCand)
 	{
@@ -119,8 +156,7 @@ public class C_Invoice_Candidate
 		// create an invoice candidate allocation record for 'invoiceCand'
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-		final I_C_Flatrate_Term term = flatrateDAO.retrieveNonSimTermOrNull(invoiceCand);
-		Check.assume(term != null, "There is a term for " + invoiceCand);
+		final I_C_Flatrate_Term term = Check.assumeNotNull(flatrateDAO.retrieveNonSimTermOrNull(invoiceCand), "There is a term for " + invoiceCand);
 
 		final I_C_Invoice_Clearing_Alloc ica = InterfaceWrapperHelper.newInstance(I_C_Invoice_Clearing_Alloc.class, invoiceCand);
 
@@ -137,13 +173,11 @@ public class C_Invoice_Candidate
 
 	/**
 	 * Deletes {@link I_C_Invoice_Clearing_Alloc}s and udpates {@link I_C_Flatrate_DataEntry}s.
-	 * @param invoiceCand
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void cleanup(final I_C_Invoice_Candidate invoiceCand)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-
 
 		// cleanup
 		for (final I_C_Invoice_Clearing_Alloc ica : flatrateDAO.retrieveAllClearingAllocs(invoiceCand))
@@ -199,7 +233,7 @@ public class C_Invoice_Candidate
 				}
 
 				final I_C_Flatrate_DataEntry dataEntry = ica.getC_Flatrate_DataEntry();
-				if (dataEntry.getC_Flatrate_Term().isClosingWithActualSum())
+				if (dataEntry.getC_Flatrate_Term().isClosingWithActualSum()) // TODO: don't use a virtual column!
 				{
 					if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 					{
@@ -221,22 +255,18 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 *
-	 * @param dataEntry
-	 * @param po
-	 * @param colName
 	 * @param isToClearChanged if <code>true</code>, then we assume that IsToClean has been change to 'Y'. In that case, we don't add the difference between old and new value, but just the new value
 	 */
 	private void updateActualQty(
 			final I_C_Flatrate_DataEntry dataEntry,
 			final I_C_Invoice_Candidate invoiceCand,
 			final String colName,
-			final boolean isToClearClanged)
+			final boolean isToClearChanged)
 	{
 		final PO po = InterfaceWrapperHelper.getPO(invoiceCand);
 
 		BigDecimal oldValue = (BigDecimal)po.get_ValueOld(colName);
-		if (isToClearClanged || oldValue == null)
+		if (isToClearChanged || oldValue == null)
 		{
 			oldValue = BigDecimal.ZERO;
 		}

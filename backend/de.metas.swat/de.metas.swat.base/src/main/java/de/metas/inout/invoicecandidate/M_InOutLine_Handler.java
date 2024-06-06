@@ -354,7 +354,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Pricing Informations
 		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
 
 		//
 		// Description
@@ -945,7 +945,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Tax from Product (07442)
 		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
-		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
 
 		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
@@ -992,7 +991,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+	public static PriceAndTax calculatePriceAndTaxAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{

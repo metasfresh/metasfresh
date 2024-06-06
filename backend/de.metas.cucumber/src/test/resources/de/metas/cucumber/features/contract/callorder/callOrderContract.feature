@@ -37,8 +37,8 @@ Feature: Call order contract
       | bpartnerLocation_1 | 1234312345487 | bpartner_1               | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
-      | callOrderConditions                 | CallOrderTest_so | CallOrder       | callOrderPricingSystem            | Ca                       |
+      | Identifier          | Name             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
+      | callOrderConditions | CallOrderTest_so | CallOrder       | callOrderPricingSystem            | Ca                       |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DocSubType | OPT.C_BPartner_Location_ID.Identifier |
@@ -317,8 +317,8 @@ Feature: Call order contract
       | bp_callOrderPO_Location | 5802098505483 | bp_callOrderPO           | true                | true                |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
-      | callOrderConditions_PO              | callOrderConditions_po | CallOrder       | callOrderPricingSystem            | Ca                       |
+      | Identifier             | Name                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend |
+      | callOrderConditions_PO | callOrderConditions_po | CallOrder       | callOrderPricingSystem            | Ca                       |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference         |

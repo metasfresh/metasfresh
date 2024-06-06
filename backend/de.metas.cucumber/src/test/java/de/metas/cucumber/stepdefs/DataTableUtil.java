@@ -369,6 +369,7 @@ public class DataTableUtil
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 
+	@Nullable
 	public static Boolean extractBooleanForColumnNameOrNull(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)

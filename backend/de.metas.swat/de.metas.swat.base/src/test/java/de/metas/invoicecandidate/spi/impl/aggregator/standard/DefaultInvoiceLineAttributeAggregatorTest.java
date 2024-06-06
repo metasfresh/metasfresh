@@ -22,39 +22,40 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.invoicecandidate.api.impl.InvoiceLineAttribute;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
-import de.metas.invoicecandidate.api.impl.InvoiceLineAttribute;
-import de.metas.util.collections.CollectionUtils;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.*;
 
 /**
- * Tests {@link CommonInvoiceLineAttributeAggregator}.
- *
- * @author tsa
- *
+ * Tests {@link DefaultInvoiceLineAttributeAggregator}.
  */
-public class CommonInvoiceLineAttributeAggregatorTest
+
+public class DefaultInvoiceLineAttributeAggregatorTest
 {
-	private CommonInvoiceLineAttributeAggregator aggregator;
+	private DefaultInvoiceLineAttributeAggregator aggregator;
 	private Properties ctx;
 	private I_M_Attribute attribute1;
 	private I_M_Attribute attribute2;
 	private I_M_Attribute attribute3;
+	private I_M_Attribute attribute4;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -63,50 +64,55 @@ public class CommonInvoiceLineAttributeAggregatorTest
 		attribute1 = createM_Attribute("attribute1");
 		attribute2 = createM_Attribute("attribute2");
 		attribute3 = createM_Attribute("attribute3");
+		attribute4 = createM_Attribute("attribute4");
 
-		aggregator = new CommonInvoiceLineAttributeAggregator();
+		aggregator = new DefaultInvoiceLineAttributeAggregator();
 	}
 
 	@Test
 	public void test_NothingAdded()
 	{
-		Assert.assertEquals(Collections.emptySet(), aggregator.aggregate());
+		assertThat(aggregator.aggregate()).isEmpty();
 	}
 
 	@Test
 	public void test_OneCommonAttribute()
 	{
-		aggregator.addAll(CollectionUtils.<IInvoiceLineAttribute> asSet(
+		aggregator.addToIntersection(ImmutableSet.of(
 				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute2, "2")));
 
-		aggregator.addAll(CollectionUtils.asSet(
+		aggregator.addToIntersection(ImmutableSet.of(
 				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute3, "3")));
 
-		final Set<IInvoiceLineAttribute> expectedResult = CollectionUtils.asSet(
+		aggregator.addToUnion(ImmutableList.of(createInvoiceLineAttribute(attribute4, "4")));
+		
+		final List<IInvoiceLineAttribute> expectedResult = ImmutableList.of(
+				createInvoiceLineAttribute(attribute4, "4"),
 				createInvoiceLineAttribute(attribute1, "1"));
-		Assert.assertEquals(expectedResult, aggregator.aggregate());
+		
+		assertThat(aggregator.aggregate()).containsExactlyElementsOf(expectedResult);
 
 		// Check: adding "attribute1"="1" several times shall not affect our result
 		for (int i = 1; i <= 10; i++)
 		{
-			aggregator.addAll(CollectionUtils.asSet(
+			aggregator.addToIntersection(CollectionUtils.asSet(
 					createInvoiceLineAttribute(attribute1, "1")));
-			Assert.assertEquals(expectedResult, aggregator.aggregate());
+
+			assertThat(aggregator.aggregate()).containsExactlyElementsOf(expectedResult);
 		}
 	}
 
 	@Test
 	public void test_DifferentAttributes()
 	{
-		aggregator.addAll(CollectionUtils.asSet(
+		aggregator.addToIntersection(CollectionUtils.asSet(
 				createInvoiceLineAttribute(attribute1, "1_1"), createInvoiceLineAttribute(attribute2, "2")));
 
-		aggregator.addAll(CollectionUtils.asSet(
+		aggregator.addToIntersection(CollectionUtils.asSet(
 				createInvoiceLineAttribute(attribute1, "1_2"), createInvoiceLineAttribute(attribute3, "3")));
 
 		final Set<IInvoiceLineAttribute> expectedResult = CollectionUtils.asSet();
-		Assert.assertEquals(expectedResult, aggregator.aggregate());
-
+		assertThat(aggregator.aggregate()).containsExactlyElementsOf(expectedResult);
 	}
 
 	@Test
@@ -114,12 +120,12 @@ public class CommonInvoiceLineAttributeAggregatorTest
 	{
 		final Set<IInvoiceLineAttribute> set1 = CollectionUtils.asSet(
 				createInvoiceLineAttribute(attribute1, "1"), createInvoiceLineAttribute(attribute2, "2"));
-		aggregator.addAll(set1);
-		Assert.assertEquals(set1, aggregator.aggregate());
+		aggregator.addToIntersection(set1);
+		assertThat(aggregator.aggregate()).containsExactlyElementsOf(set1);
 
 		// add empty set
-		aggregator.addAll(Collections.<IInvoiceLineAttribute> emptySet());
-		Assert.assertEquals(Collections.<IInvoiceLineAttribute> emptySet(), aggregator.aggregate());
+		aggregator.addToIntersection(ImmutableSet.of());
+		assertThat(aggregator.aggregate()).isEmpty();
 	}
 
 	private I_M_Attribute createM_Attribute(final String name)

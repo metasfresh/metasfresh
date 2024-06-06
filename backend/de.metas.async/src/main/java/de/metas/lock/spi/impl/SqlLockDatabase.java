@@ -626,7 +626,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final boolean autoCleanup = DisplayType.toBoolean(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup), false);
+				final boolean autoCleanup = DisplayType.toBooleanNonNull(rs.getString(I_T_Lock.COLUMNNAME_IsAutoCleanup), false);
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 

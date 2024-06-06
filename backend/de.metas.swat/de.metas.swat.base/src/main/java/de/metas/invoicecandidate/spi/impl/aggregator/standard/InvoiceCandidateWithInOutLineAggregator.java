@@ -28,6 +28,7 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InventoryLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,7 +78,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	private int _orderLineId = -1; // -1 means "didn't yet try to set", -2 means "cannot set"
 	private boolean _printed = false;
 	private int _invoiceLineNo = 0;
-	private final IInvoiceLineAttributeAggregator invoiceLineAttributesAggregator = new CommonInvoiceLineAttributeAggregator();
+	private final IInvoiceLineAttributeAggregator invoiceLineAttributesAggregator = new DefaultInvoiceLineAttributeAggregator();
 
 	//
 	private boolean _hasAtLeastOneValidICS = false;
@@ -115,7 +116,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return invoiceCandAggregate;
 	}
 
-	private final IInvoiceLineRW createInvoiceLineRW()
+	private IInvoiceLineRW createInvoiceLineRW()
 	{
 		//
 		// We will skip any IInvoiceLineRW creation if there is no valid ICS found on this key
@@ -366,7 +367,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 		//
 		// Collect invoice line product attributes
-		addInvoiceLineAttributes(ics.getInvoiceLineAttributes());
+		addInvoiceLineAttributes(ics);
 
 		//
 		// Add QtyToInvoice and LineNetAmount from this candidate
@@ -517,29 +518,33 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		Check.assume(_invoiceLineNo == candInvoiceLineNo, "All invoice candidates shall have the same InvoiceLineNo={}", _invoiceLineNo);
 	}
 
-	private final int getInvoiceLineNo()
+	private int getInvoiceLineNo()
 	{
 		return _invoiceLineNo;
 	}
 
-	private final int getM_Product_ID()
+	private int getM_Product_ID()
 	{
 		return _productId;
 	}
 
-	private final int getC_Charge_ID()
+	private int getC_Charge_ID()
 	{
 		return _chargeId;
 	}
 
-	private Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
+	private List<IInvoiceLineAttribute> getInvoiceLineAttributes()
 	{
 		return invoiceLineAttributesAggregator.aggregate();
 	}
 
-	private void addInvoiceLineAttributes(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	private void addInvoiceLineAttributes(@NonNull final InvoiceCandidateWithInOutLine ics)
 	{
-		invoiceLineAttributesAggregator.addAll(invoiceLineAttributes);
+		final Set<IInvoiceLineAttribute> attributesFromInoutLines = ics.getAttributesFromInoutLines();
+		invoiceLineAttributesAggregator.addToIntersection(attributesFromInoutLines);
+
+		final List<IInvoiceLineAttribute> attributesFromIC = aggregationBL.extractInvoiceLineAttributes(ics.getC_Invoice_Candidate());
+		invoiceLineAttributesAggregator.addToUnion(attributesFromIC);
 	}
 
 	private StockQtyAndUOMQty getQtysToInvoice()
@@ -548,27 +553,26 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	}
 
 	/** @return line net amount to invoice */
-	private final Money getLineNetAmt()
+	private Money getLineNetAmt()
 	{
 		return _netLineAmt;
 	}
 
-	private final String getDescription()
+	private @Nullable String getDescription()
 	{
 		return getFirstInvoiceCandidate().getDescription();
 	}
 
-	private final int getC_Activity_ID()
+	private int getC_Activity_ID()
 	{
 		return getFirstInvoiceCandidate().getC_Activity_ID();
 	}
 
 	private int getC_PaymentTerm_ID()
 	{
-		final int paymentTermId = firstGreaterThanZero(
+		return firstGreaterThanZero(
 				getFirstInvoiceCandidate().getC_PaymentTerm_Override_ID(),
 				getFirstInvoiceCandidate().getC_PaymentTerm_ID());
-		return paymentTermId;
 
 	}
 

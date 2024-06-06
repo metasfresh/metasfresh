@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -56,9 +55,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
@@ -83,7 +80,6 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -210,6 +206,14 @@ public class FlatrateDAO implements IFlatrateDAO
 			}
 			fcQueryBuilder = matchingQueryBuilder
 					.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class);
+
+			if (m_Product_ID > 0)
+			{ // make sure that we don't get a problem if the FC's products are in the same product-category as all the other products
+				fcQueryBuilder
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Flatrate_ID, m_Product_ID)
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Correction_ID, m_Product_ID)
+						.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_M_Product_Actual_ID, m_Product_ID);
+			}
 		}
 		else
 		{
@@ -265,36 +269,30 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_DataEntry dataEntry)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final Properties ctx = getCtx(dataEntry);
-		final String trxName = getTrxName(dataEntry);
-
-		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID + "=?";
-
-		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
-				.setParameters(dataEntry.getC_Flatrate_DataEntry_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
-				.list(I_C_Invoice_Clearing_Alloc.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_DataEntry_ID, dataEntry.getC_Flatrate_DataEntry_ID())
+				.orderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
+				.create().list();
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
 		final boolean retrieveAll = true;
 		return retrieveClearingAllocs(invoiceCand, retrieveAll);
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand)
 	{
 		final boolean retrieveAll = false;
 		return retrieveClearingAllocs(invoiceCand, retrieveAll);
 	}
 
-	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
+	private List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Invoice_Candidate invoiceCand, final boolean retrieveAll)
 	{
 		final ICompositeQueryFilter<I_C_Invoice_Clearing_Alloc> orFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Clearing_Alloc.class)
 				.setJoinOr()
@@ -315,19 +313,14 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(final I_C_Flatrate_Term term)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull final I_C_Flatrate_Term term)
 	{
-		final Properties ctx = getCtx(term);
-		final String trxName = getTrxName(term);
-
-		final String wc = I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID + "=?";
-
-		return new Query(ctx, I_C_Invoice_Clearing_Alloc.Table_Name, wc, trxName)
-				.setParameters(term.getC_Flatrate_Term_ID())
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
-				.list(I_C_Invoice_Clearing_Alloc.class);
+		return queryBL.createQueryBuilder(I_C_Invoice_Clearing_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
+				.orderBy(I_C_Invoice_Clearing_Alloc.COLUMNNAME_C_Invoice_Clearing_Alloc_ID)
+				.create()
+				.list();
 	}
 
 	@Override
@@ -538,7 +531,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Term flatrateTerm,
 			final I_C_Period period,
 			final String dataEntryType,
-			final I_C_UOM uom)
+			@NonNull final UomId uomId)
 	{
 		final Properties ctx = getCtx(flatrateTerm);
 		final String trxName = getTrxName(flatrateTerm);
@@ -553,7 +546,7 @@ public class FlatrateDAO implements IFlatrateDAO
 						flatrateTerm.getC_Flatrate_Term_ID(),
 						period.getC_Period_ID(),
 						dataEntryType,
-						uom.getC_UOM_ID())
+						uomId.getRepoId())
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
@@ -727,20 +720,6 @@ public class FlatrateDAO implements IFlatrateDAO
 			}
 		}
 		return result;
-	}
-
-	@Override
-	public List<I_C_UOM> retrieveUOMs(
-			final Properties ctx,
-			final I_C_Flatrate_Term flatrateTerm,
-			final String trxName)
-	{
-		final List<I_C_UOM> uoms = new Query(ctx, I_C_UOM.Table_Name, I_C_UOM.COLUMNNAME_UOMType + "=?", trxName)
-				.setParameters(flatrateTerm.getUOMType())
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_UOM.COLUMNNAME_C_UOM_ID)
-				.list(I_C_UOM.class);
-		return uoms;
 	}
 
 	@Override

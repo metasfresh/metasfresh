@@ -85,7 +85,7 @@ public class FlatrateTermCreator
 
 		for (final I_C_BPartner partner : bPartners)
 		{
-			try (MDCCloseable partnerMDC = TableRecordMDC.putTableRecordReference(partner))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(partner))
 			{
 				// create each term in its own transaction
 				trxManager.runInNewTrx(new TrxRunnableAdapter()
@@ -102,7 +102,7 @@ public class FlatrateTermCreator
 					// Please consult with mark or torby if we want to swallow or throw.
 					// Please remember that this can be run for 10000 Partners when proposing this idea.
 					@Override
-					public boolean doCatch(Throwable ex)
+					public boolean doCatch(final Throwable ex)
 					{
 						Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
 						logger.debug("Failed creating contract for {}", partner, ex);

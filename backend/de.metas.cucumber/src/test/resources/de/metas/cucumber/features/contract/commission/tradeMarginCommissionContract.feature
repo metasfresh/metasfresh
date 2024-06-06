@@ -49,8 +49,8 @@ Feature: Trade margin commission contract
       | C_Customer_Trade_Margin_Line_ID.Identifier | C_Customer_Trade_Margin_ID.Identifier | SeqNo | Margin |
       | marginSettingsLine_1                       | marginSettings_1                      | 10    | 50     |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name        | Type_Conditions  | OPT.C_Customer_Trade_Margin_ID.Identifier |
-      | marginConditions_1                  | margin-test | MarginCommission | marginSettings_1                          |
+      | Identifier         | Name        | Type_Conditions  | OPT.C_Customer_Trade_Margin_ID.Identifier |
+      | marginConditions_1 | margin-test | MarginCommission | marginSettings_1                          |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier       | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | marginContract_1 | marginConditions_1                  | margin_salesRep             | 2021-11-01 | 2022-11-01 | commission_product          |

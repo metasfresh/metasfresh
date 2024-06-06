@@ -43,7 +43,6 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
@@ -178,7 +177,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
@@ -229,7 +228,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
-	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
@@ -314,7 +312,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */
