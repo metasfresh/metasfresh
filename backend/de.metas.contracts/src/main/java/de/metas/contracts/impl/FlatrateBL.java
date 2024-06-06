@@ -54,8 +54,8 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
 import de.metas.contracts.flatrate.TypeConditions;
+import de.metas.contracts.flatrate.dataEntry.invoice.FlatrateDataEntryHandler;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
-import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -203,7 +203,7 @@ public class FlatrateBL implements IFlatrateBL
 
 	private static final AdMessageKey MSG_FLATRATEBL_INVOICE_CANDIDATE_QTY_TO_INVOICE_1P = AdMessageKey.of("FlatrateBL_InvoicingCand_QtyToInvoice");
 
-	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P = AdMessageKey.of("DataEntry_Create_FlatFee");
+	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P = AdMessageKey.of("DataEntry_Create_FlatFee");
 
 	private static final AdMessageKey MSG_DATA_ENTRY_CREATE_HOLDING_FEE_3P = AdMessageKey.of("DataEntry_Create_HoldingFee");
 
@@ -227,6 +227,8 @@ public class FlatrateBL implements IFlatrateBL
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -427,8 +429,8 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	private List<I_C_Invoice_Candidate> createCandForFlatFeeDataEntry(
-			final I_C_Flatrate_Conditions fc,
-			final I_C_Flatrate_DataEntry dataEntry)
+			@NonNull final I_C_Flatrate_Conditions fc,
+			@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		Check.assume(!dataEntry.isSimulation(), dataEntry + " has IsSimulation='N'");
 
@@ -437,8 +439,7 @@ public class FlatrateBL implements IFlatrateBL
 				fc + " has Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee
 						+ " or " + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable);
 
-		final Properties ctx = getCtx(fc);
-		final String trxName = getTrxName(fc);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(fc);
 
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 
@@ -475,15 +476,19 @@ public class FlatrateBL implements IFlatrateBL
 			Check.assume(productId > 0,
 					fc + " with Type_Conditions=" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee + " has no M_Product_Flatrate");
 
-			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual, trxName);
+			final I_C_Invoice_Candidate newIc = createCand(ctx, term, dataEntry, productId, priceActual);
 			result.add(newIc);
 
 			// note: we assume that 'dataEntry' is saved somewhere outside this method!
 			dataEntry.setC_Invoice_Candidate_ID(newIc.getC_Invoice_Candidate_ID());
 		}
+		else if (fc.getType_Flatrate().equals(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))
+		{
+			// these ICs are not created here, but by FlatrateDataEntryHandler 
+		}
 		else
 		{
-			final I_C_Invoice_Candidate newFlatrateIc = createCand(ctx, term, dataEntry, productIdCand, dataEntry.getFlatrateAmt(), trxName);
+			final I_C_Invoice_Candidate newFlatrateIc = createCand(ctx, term, dataEntry, productIdCand, dataEntry.getFlatrateAmt());
 			result.add(newFlatrateIc);
 
 			// note: we assume that 'dataEntry' is saved somewhere outside this method!
@@ -495,7 +500,7 @@ public class FlatrateBL implements IFlatrateBL
 						|| !fc.isCorrectionAmtAtClosing() && X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 
 				{
-					final I_C_Invoice_Candidate newCorrectionIc = createCand(ctx, term, dataEntry, productIdCorrCand, dataEntry.getFlatrateAmtCorr(), trxName);
+					final I_C_Invoice_Candidate newCorrectionIc = createCand(ctx, term, dataEntry, productIdCorrCand, dataEntry.getFlatrateAmtCorr());
 					result.add(newCorrectionIc);
 
 					dataEntry.setC_Invoice_Candidate_Corr_ID(newCorrectionIc.getC_Invoice_Candidate_ID());
@@ -511,10 +516,9 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Term term,
 			final I_C_Flatrate_DataEntry dataEntry,
 			final int productId,
-			final BigDecimal priceActual,
-			final String trxName)
+			final BigDecimal priceActual)
 	{
-		final I_C_Invoice_Candidate newCand = create(ctx, I_C_Invoice_Candidate.class, trxName);
+		final I_C_Invoice_Candidate newCand = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 		Check.assume(newCand.getAD_Client_ID() == dataEntry.getAD_Client_ID(), "ctx contains the correct AD_Client_ID");
 
 		final OrgId orgId = OrgId.ofRepoId(dataEntry.getAD_Org_ID());
@@ -522,7 +526,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
-
+		newCand.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 		newCand.setM_Product_ID(productId);
 		newCand.setQtyOrdered(BigDecimal.ONE);
 
@@ -558,11 +562,20 @@ public class FlatrateBL implements IFlatrateBL
 				() -> ContractLocationHelper.extractBillToLocationId(term));
 		final VatCodeId vatCodeId = null;
 
+		final Timestamp shipDate;
+		if (dataEntry.getDate_Reported() != null)
+		{
+			shipDate = dataEntry.getDate_Reported();
+		}
+		else
+		{
+			shipDate = dataEntry.getC_Period().getEndDate();
+		}
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
 				taxCategoryId,
 				productId,
-				dataEntry.getDate_Reported(),// shipDate
+				shipDate,// shipDate
 				orgId,
 				null,
 				shipToLocationId,
@@ -619,6 +632,7 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setAD_Org_ID(dataEntry.getAD_Org_ID());
 
 		newCand.setM_PricingSystem_ID(fc.getM_PricingSystem_ID());
+		newCand.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 
 		final int productIdForIc;
 		final BigDecimal priceActual;
@@ -899,9 +913,9 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			for (final I_M_Product product : products)
 			{
-				final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+				final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
 
-				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
+				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 				if (existingEntry != null)
 				{
 					continue;
@@ -915,7 +929,7 @@ public class FlatrateBL implements IFlatrateBL
 				newDataEntry.setC_Period_ID(period.getC_Period_ID());
 				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
 				newDataEntry.setM_Product_DataEntry_ID(product.getM_Product_ID());
-				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
+				newDataEntry.setC_UOM_ID(uomId.getRepoId());
 
 				InterfaceWrapperHelper.saveRecord(newDataEntry);
 				counter++;
@@ -948,45 +962,35 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		int counter = 0;
 
-		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
-		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-
-		final List<I_C_UOM> uoms = flatrateDB.retrieveUOMs(ctx, flatrateTerm, trxName);
+		final UomId uomId = UomId.ofRepoId(flatrateTerm.getC_UOM_ID());
 
 		final List<I_C_Period> periods = getPeriodList(ctx, flatrateTerm, trxName, calendarDAO);
 		for (final I_C_Period period : periods)
 		{
-			for (final I_C_UOM uom : uoms)
+			final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
+			if (existingEntry != null)
 			{
-				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
-				if (existingEntry != null)
-				{
-					continue;
-				}
+				continue;
+			}
 
 				final I_C_Flatrate_DataEntry newDataEntry = create(ctx, I_C_Flatrate_DataEntry.class, trxName);
-				newDataEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
+			newDataEntry.setAD_Org_ID(flatrateTerm.getAD_Org_ID());
 
-				newDataEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
+			newDataEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
 
-				newDataEntry.setC_Period_ID(period.getC_Period_ID());
-				newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
-				newDataEntry.setC_UOM_ID(uom.getC_UOM_ID());
+			newDataEntry.setC_Period_ID(period.getC_Period_ID());
+			newDataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
+			newDataEntry.setC_UOM_ID(uomId.getRepoId());
 
 				InterfaceWrapperHelper.saveRecord(newDataEntry);
-				counter++;
-			}
+			counter++;
 		}
 
-		final ADReferenceService adReferenceService = ADReferenceService.get();
-		final String uomTypeTrl = adReferenceService.retrieveListNameTrl(ctx, ReferenceId.ofRepoId(X_C_Flatrate_Term.UOMTYPE_AD_Reference_ID), flatrateTerm.getUOMType());
-
-		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
+		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_3P,
 				new Object[] {
 						counter,
 						flatrateTerm.getStartDate(),
-						flatrateTerm.getEndDate(),
-						uomTypeTrl });
+						flatrateTerm.getEndDate() });
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
@@ -1045,28 +1049,32 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			actualQtyPerUnit = actualQtyOfProducts.divide(actualQtyOfUnits, scale, RoundingMode.HALF_UP);
 		}
-
-		if (actualQtyOfUnits.signum() == 0)
-		{
-			pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);
-
-			flatrateAmt = auxEntry ? null : BigDecimal.ZERO;
+		if (X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity.equals(conditions.getType_Flatrate()))
+		{ // we currently don't keep this number up2date on the entry level. Note that the ICs will get their proper prices
+			pricePerUnit = BigDecimal.ZERO;
+			flatrateAmt = BigDecimal.ZERO;
 		}
 		else
 		{
-			pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, actualQtyOfUnits, dataEntry);
-
-			flatrateAmt = auxEntry ? null : actualQtyOfUnits.multiply(pricePerUnit).setScale(scale, RoundingMode.HALF_UP);
+			if (actualQtyOfUnits.signum() == 0)
+			{
+				pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, BigDecimal.ONE, dataEntry);
+				flatrateAmt = auxEntry ? null : BigDecimal.ZERO;
+			}
+			else
+			{
+				pricePerUnit = auxEntry ? null : getFlatFeePricePerUnit(term, actualQtyOfUnits, dataEntry);
+				flatrateAmt = auxEntry ? null : actualQtyOfUnits.multiply(pricePerUnit).setScale(scale, RoundingMode.HALF_UP);
+			}
 		}
-
 		actualDiffPerUnit = auxEntry || correctionWithoutActualQty ? null : actualQtyPerUnit.subtract(plannedQtyPerUnit).setScale(scale, RoundingMode.HALF_UP);
 
 		if (auxEntry || correctionWithoutActualQty)
 		{
 			diffPercent = null;
 		}
-		else if (actualQtyOfUnits.signum() == 0)
-		{
+		else if (actualQtyOfUnits.signum() == 0 || plannedQtyPerUnit.signum() == 0)
+		{ // note that plannedQtyPerUnit is zero when we have Type_Flatrate=RPTD
 			diffPercent = BigDecimal.ZERO;
 		}
 		else
@@ -1150,19 +1158,6 @@ public class FlatrateBL implements IFlatrateBL
 					amtCorrection = flatrateAmt
 							.multiply(effectiveDiffPercent.divide(Env.ONEHUNDRED, scale * 2, RoundingMode.HALF_UP))
 							.setScale(scale, RoundingMode.HALF_UP);
-					// }
-					// else if
-					// (X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Produktpreis.equals(conditions.getClearingAmtBaseOn()))
-					// {
-					// throw new NotImplementedException();
-					// }
-					// else
-					// {
-					// throw new IllegalStateException(
-					// "Expected '" + conditions + "' to have ClearingAmtBaseOn either'"
-					// + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Pauschalenpreis
-					// + "' or '" + X_C_Flatrate_Conditions.CLEARINGAMTBASEON_Produktpreis + "'");
-					// }
 				}
 				else
 				{
@@ -2033,7 +2028,7 @@ public class FlatrateBL implements IFlatrateBL
 					}
 				}
 				// product is null. Check the product category
-				else
+				else if (newFlatrateMatching.getM_Product_Category_Matching_ID() > 0)
 				{
 					final org.compiere.model.I_M_Product_Category newFMProductCategory = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(newFlatrateMatching.getM_Product_Category_Matching_ID()));
 
@@ -2291,7 +2286,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		I_C_Flatrate_Term currentTerm = term;
 
-		final ImmutableList.Builder<I_C_Flatrate_Term> nextFTsBuilder = ImmutableList.<I_C_Flatrate_Term>builder();
+		final ImmutableList.Builder<I_C_Flatrate_Term> nextFTsBuilder = ImmutableList.builder();
 
 		while (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{

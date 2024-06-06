@@ -1242,6 +1242,10 @@ public class TimeUtil
 		{
 			return Timestamp.valueOf((LocalDateTime)obj);
 		}
+		else if (obj instanceof ZonedDateTime)
+		{
+			return Timestamp.from(((ZonedDateTime)obj).toInstant());
+		}
 		else
 		{
 			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());

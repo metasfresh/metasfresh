@@ -42,8 +42,8 @@ Feature: Mediated commission
       | C_MediatedCommissionSettingsLine_ID.Identifier | C_MediatedCommissionSettings_ID.Identifier | SeqNo | PercentOfBasePoints |
       | mediatedSettingsLine_1                         | mediatedSettings_1                         | 10    | 50                  |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name          | Type_Conditions    | OPT.C_MediatedCommissionSettings_ID.Identifier |
-      | mediatedConditions_1                | mediated-test | MediatedCommission | mediatedSettings_1                             |
+      | Identifier           | Name          | Type_Conditions    | OPT.C_MediatedCommissionSettings_ID.Identifier |
+      | mediatedConditions_1 | mediated-test | MediatedCommission | mediatedSettings_1                             |
     And metasfresh contains C_Flatrate_Terms:
       | Identifier         | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NrOfDaysFromNow |
       | mediatedContract_1 | mediatedConditions_1                | mediated_vendor             | commission_product          | 365                 |

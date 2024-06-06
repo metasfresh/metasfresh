@@ -556,13 +556,25 @@ public final class ImmutableAttributeSet implements IAttributeSet
 	{
 		private IAttributeDAO _attributesRepo; // lazy
 
-		private final LinkedHashMap<AttributeId, I_M_Attribute> attributesById = new LinkedHashMap<>();
-		private final LinkedHashMap<AttributeCode, I_M_Attribute> attributesByCode = new LinkedHashMap<>();
-		private final LinkedHashMap<AttributeCode, Object> valuesByAttributeCode = new LinkedHashMap<>();
-		private final LinkedHashMap<AttributeCode, AttributeValueId> valueIdsByAttributeCode = new LinkedHashMap<>();
+		private final LinkedHashMap<AttributeId, I_M_Attribute> attributesById;
+		private final LinkedHashMap<AttributeCode, I_M_Attribute> attributesByCode;
+		private final LinkedHashMap<AttributeCode, Object> valuesByAttributeCode;
+		private final LinkedHashMap<AttributeCode, AttributeValueId> valueIdsByAttributeCode;
 
 		private Builder()
 		{
+			attributesById = new LinkedHashMap<>();
+			attributesByCode = new LinkedHashMap<>();
+			valuesByAttributeCode = new LinkedHashMap<>();
+			valueIdsByAttributeCode = new LinkedHashMap<>();
+		}
+
+		public Builder(@NonNull final Builder other)
+		{
+			this.attributesById = new LinkedHashMap<>(other.attributesById);
+			this.attributesByCode = new LinkedHashMap<>(other.attributesByCode);
+			this.valuesByAttributeCode = new LinkedHashMap<>(other.valuesByAttributeCode);
+			this.valueIdsByAttributeCode = new LinkedHashMap<>(other.valueIdsByAttributeCode);
 		}
 
 		public ImmutableAttributeSet build()
@@ -670,5 +682,9 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return this;
 		}
 
+		public Builder createCopy()
+		{
+			return new Builder(this);
+		}
 	}
 }

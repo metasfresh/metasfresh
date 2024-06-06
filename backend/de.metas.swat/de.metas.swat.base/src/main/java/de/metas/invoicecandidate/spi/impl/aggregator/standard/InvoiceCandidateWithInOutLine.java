@@ -20,6 +20,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -34,7 +35,20 @@ public final class InvoiceCandidateWithInOutLine
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
-	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+	
+	@Getter
+	private final Set<IInvoiceLineAttribute> attributesFromInoutLines;
+	
+	/**
+	 *  Specifies if, when the aggregation is done and if 
+	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
+	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
+	 *  <p>
+	 *  Note that in each aggregation, we assume that there is exactly one request with 
+	 *  = <code>true</code>, in order to make sure that the invoice candidate's
+	 *  qtyToInvoice is actually invoiced.
+	 */
+	@Getter
 	private final boolean allocateRemainingQty;
 
 	@Getter
@@ -58,7 +72,7 @@ public final class InvoiceCandidateWithInOutLine
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
-		this.invoiceLineAttributes = ImmutableSet.copyOf(request.getInvoiceLineAttributes());
+		this.attributesFromInoutLines = ImmutableSet.copyOf(request.getAttributesFromInoutLines());
 
 		this.invoicecandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
 		this.productId = ProductId.ofRepoId(ic.getM_Product_ID());
@@ -79,6 +93,7 @@ public final class InvoiceCandidateWithInOutLine
 	}
 
 	/** @return shipment/receipt line; could be <code>null</code> */
+	@Nullable
 	public I_M_InOutLine getM_InOutLine()
 	{
 		if (iciol == null)
@@ -162,20 +177,4 @@ public final class InvoiceCandidateWithInOutLine
 		return iciol;
 	}
 
-	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
-	{
-		return invoiceLineAttributes;
-	}
-
-	/**
-	 * Specify if, when the aggregation is done and if {@link #getC_InvoiceCandidate_InOutLine()} is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
-	 * be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
-	 * <p>
-	 * Note that in each aggregation, we assume that there is exactly one request with {@link #isAllocateRemainingQty()} = <code>true</code>, in order to make sure that the invoice candidate's
-	 * qtyToInvoice is actually invoiced.
-	 */
-	public boolean isAllocateRemainingQty()
-	{
-		return allocateRemainingQty;
-	}
 }

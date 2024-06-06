@@ -187,7 +187,7 @@ public interface IFlatrateBL extends ISingletonService
 	 * @return the newly created and completed term; never returns <code>null</code>
 	 * @throws AdempiereException in case of any error
 	 */
-	I_C_Flatrate_Term createTerm(CreateFlatrateTermRequest createFlatrateTermRequest);
+	I_C_Flatrate_Term createTerm(@NonNull CreateFlatrateTermRequest createFlatrateTermRequest);
 
 	/**
 	 * Complete given contract.

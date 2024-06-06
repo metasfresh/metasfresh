@@ -48,9 +48,9 @@ Feature: Hierarchy commission and license fee commission combined
       | hierarchySettingsLine_1                | hierarchySettings_1                         | 10    | 10                  |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name            | Type_Conditions | OPT.C_HierarchyCommissionSettings_ID.Identifier | OPT.C_LicenseFeeSettings_ID.Identifier |
-      | hierarchyConditions_1               | hierarchy-test  | Commission      | hierarchySettings_1                             |                                        |
-      | licenseFeeConditions_1              | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
+      | Identifier             | Name            | Type_Conditions | OPT.C_HierarchyCommissionSettings_ID.Identifier | OPT.C_LicenseFeeSettings_ID.Identifier |
+      | hierarchyConditions_1  | hierarchy-test  | Commission      | hierarchySettings_1                             |                                        |
+      | licenseFeeConditions_1 | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
       | Identifier     | OPT.C_BPartner_Location_ID.Identifier | Name           | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName    | OPT.GLN       |
@@ -230,9 +230,9 @@ Feature: Hierarchy commission and license fee commission combined
       | C_CommissionSettingsLine_ID.Identifier | C_HierarchyCommissionSettings_ID.Identifier | SeqNo | PercentOfBasePoints |
       | hierarchySettingsLine_own_rev_1        | hierarchySettings_own_rev_1                 | 10    | 10                  |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name            | Type_Conditions | OPT.C_HierarchyCommissionSettings_ID.Identifier | OPT.C_LicenseFeeSettings_ID.Identifier |
-      | hierarchyConditions_own_rev_1       | hierarchy-test  | Commission      | hierarchySettings_own_rev_1                     |                                        |
-      | licenseFeeConditions_1              | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
+      | Identifier                    | Name            | Type_Conditions | OPT.C_HierarchyCommissionSettings_ID.Identifier | OPT.C_LicenseFeeSettings_ID.Identifier |
+      | hierarchyConditions_own_rev_1 | hierarchy-test  | Commission      | hierarchySettings_own_rev_1                     |                                        |
+      | licenseFeeConditions_1        | licenseFee-test | LicenseFee      |                                                 | licenseFeeSettings_1                   |
 
     And metasfresh contains C_BPartners:
       | Identifier          | OPT.C_BPartner_Location_ID.Identifier | Name                | M_PricingSystem_ID.Identifier | OPT.IsVendor | OPT.IsCustomer | OPT.IsSalesRep | OPT.C_PaymentTerm_ID | OPT.C_BPartner_SalesRep_ID.Identifier | OPT.CompanyName         | OPT.GLN       |

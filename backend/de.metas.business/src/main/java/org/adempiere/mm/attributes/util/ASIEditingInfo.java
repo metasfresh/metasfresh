@@ -98,7 +98,10 @@ public final class ASIEditingInfo
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
 	private ImmutableList<I_M_Attribute> _availableAttributes;
-	private I_M_AttributeSetInstance _attributeSetInstance;
+	
+	@Nullable
+	private final I_M_AttributeSetInstance _attributeSetInstance;
+	
 	private final boolean _allowSelectExistingASI;
 
 	@Builder
@@ -135,7 +138,7 @@ public final class ASIEditingInfo
 
 	}
 
-	private static WindowType extractType(String callerTableName, final int callerColumnId)
+	private static WindowType extractType(final String callerTableName, final int callerColumnId)
 	{
 		if (I_M_Product.Table_Name.equals(callerTableName)) // FIXME HARDCODED: M_Product.M_AttributeSetInstance_ID's AD_Column_ID = 8418
 		{
@@ -175,6 +178,7 @@ public final class ASIEditingInfo
 		return _attributeSetInstanceId;
 	}
 
+	@Nullable
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return _attributeSetInstance;
@@ -280,6 +284,7 @@ public final class ASIEditingInfo
 		return attributeSet;
 	}
 
+	@Nullable
 	private I_M_AttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
 	{
 		if (asi == null)
@@ -291,6 +296,7 @@ public final class ASIEditingInfo
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
+	@Nullable
 	private I_M_AttributeSet retrieveProductAttributeSetOrNull()
 	{
 		final ProductId productId = getProductId();
@@ -303,6 +309,7 @@ public final class ASIEditingInfo
 	}
 
 
+	@Nullable
 	private I_M_AttributeSet retrieveProductMasterDataSchema()
 	{
 		final ProductId productId = getProductId();
@@ -412,7 +419,7 @@ public final class ASIEditingInfo
 						.stream()
 						.sorted(Comparator.comparing(I_M_Attribute::getName)
 								.thenComparing(I_M_Attribute::getM_Attribute_ID))
-						.filter(attribute -> isPricingRelevantAttribute(attribute));
+						.filter(this::isPricingRelevantAttribute);
 				break;
 			}
 			case StrictASIAttributes:
@@ -439,9 +446,6 @@ public final class ASIEditingInfo
 	}
 
 	/**
-	 * 
-	 * @param attributeSetId
-	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
 	private List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
