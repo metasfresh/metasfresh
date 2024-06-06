@@ -28,7 +28,6 @@ import de.metas.currency.Amount;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -65,6 +64,11 @@ public class ESRBL implements IESRBL
 {
 	private static final Logger logger = LogManager.getLogger(ESRBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IESRBPBankAccountBL bankAccountBL = Services.get(IESRBPBankAccountBL.class);
+    private	final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+	private final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 
 	@Override
 	public void createESRPaymentRequest(@NonNull final I_C_Invoice invoiceRecord)
@@ -87,7 +91,6 @@ public class ESRBL implements IESRBL
 
 		final InvoiceReferenceNo invoiceReferenceString = InvoiceReferenceNos.createFor(invoiceRecord, bankAccountRecord);
 
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final Amount openInvoiceAmount = invoiceDAO.retrieveOpenAmt(invoiceRecord, false);
 
 		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount.toBigDecimal(), bankAccountRecord);
@@ -124,7 +127,6 @@ public class ESRBL implements IESRBL
 		final int orgID = invoiceRecord.getAD_Org_ID();
 		final I_AD_Org org = MOrg.get(Env.getCtx(), orgID);
 
-		final IESRBPBankAccountDAO esrBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
 		final List<I_C_BP_BankAccount> bankAccounts = esrBankAccountDAO.fetchOrgEsrAccounts(org);
 
 		Check.assume(!bankAccounts.isEmpty(), "No ESR bank account found.");
@@ -161,12 +163,10 @@ public class ESRBL implements IESRBL
 
 		renderedCodeStr.append(amountStr);
 
-		final int checkDigit = Services.get(IESRImportBL.class).calculateESRCheckDigit(renderedCodeStr.toString());
+		final int checkDigit = esrImportBL.calculateESRCheckDigit(renderedCodeStr.toString());
 		renderedCodeStr.append(checkDigit);
 
 		renderedCodeStr.append(">");
-
-		final IESRBPBankAccountBL bankAccountBL = Services.get(IESRBPBankAccountBL.class);
 
 		renderedCodeStr.append(invoiceReferenceString.asString());
 		renderedCodeStr.append("+ ");
@@ -183,7 +183,6 @@ public class ESRBL implements IESRBL
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(invoiceRecord);
 
-		final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
 		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
 		final I_C_ReferenceNo invoiceReferenceNo = referenceNoDAO.getCreateReferenceNo(invoiceReferenceNoType, invoiceReferenceString.asString(), contextAware);
 		referenceNoDAO.getCreateReferenceNoDoc(invoiceReferenceNo, TableRecordReference.of(invoiceRecord));
