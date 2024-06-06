@@ -110,11 +110,11 @@ public class FlatrateDataEntryService
 	{
 		final List<ImmutableAttributeSet> attributeSets = CreateAllAttributeSetsCommand.withValues(attributeListValues)
 				.run();
+		final List<AttributeSetInstanceId> asiIds = createAllASIs(attributeSets);
 
 		final ImmutableList.Builder<FlatrateDataEntryDetail> result = ImmutableList.builder();
 		for (final BPartnerDepartment department : departments)
 		{
-			final List<AttributeSetInstanceId> asiIds = createAllASIs(attributeSets);
 			for (final AttributeSetInstanceId asiId : asiIds)
 			{
 				final AttributesKey attributesKey = createAttributesKey(asiId);
@@ -129,7 +129,6 @@ public class FlatrateDataEntryService
 				}
 			}
 		}
-
 		return result.build();
 	}
 
