@@ -88,7 +88,7 @@ public class AllocationDAO implements IAllocationDAO
 			openAmt = invoice.getGrandTotal();
 		}
 
-		if (creditMemoAdjusted && invoiceBL.isARCreditMemo(invoice))
+		if (creditMemoAdjusted && invoiceBL.isCreditMemo(invoice))
 		{
 			return Money.of(openAmt.negate(), invoiceCurrencyId);
 		}
