@@ -110,6 +110,17 @@ UPDATE AD_Menu SET AD_Element_ID=574261, Description=NULL, Name='Vertrags-Überg
 ;
 
 -- 2024-06-06T06:16:26.636Z
-UPDATE AD_Menu SET InternalName='C_Flatrate_Transition',Updated=TO_TIMESTAMP('2024-06-06 08:16:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540294
+UPDATE AD_Menu SET InternalName='C_Flatrate_Transition_SwingUI',Updated=TO_TIMESTAMP('2024-06-06 08:16:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540294
 ;
 
+
+UPDATE AD_Menu SET AD_Element_ID=574261, Description=NULL, Name='Vertrags-Übergang', WEBUI_NameBrowse=NULL, WEBUI_NameNew=NULL, WEBUI_NameNewBreadcrumb=NULL,Updated=TO_TIMESTAMP('2024-06-06 08:16:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540884
+;
+
+-- 2024-06-06T06:16:19.023Z
+/* DDL */  select update_menu_translation_from_ad_element(574261)
+;
+
+-- 2024-06-06T06:16:26.636Z
+UPDATE AD_Menu SET InternalName='C_Flatrate_Transition',Updated=TO_TIMESTAMP('2024-06-06 08:16:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540884
+;
