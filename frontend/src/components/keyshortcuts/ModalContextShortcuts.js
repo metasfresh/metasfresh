@@ -11,33 +11,25 @@ const blurActiveElement = () => {
   }
 };
 
-const ModalContextShortcuts = ({ done, cancel, isBindPrintActionAsDone }) => {
+const ModalContextShortcuts = ({ done, cancel }) => {
   const doneAction = (event) => {
     event.preventDefault();
     blurActiveElement();
-
-    // noinspection UnnecessaryLocalVariableJS
-    const stopPropagation = done && done();
-    return stopPropagation;
+    done && done();
   };
 
   const cancelAction = (event) => {
     event.preventDefault();
-
-    // noinspection UnnecessaryLocalVariableJS
-    const stopPropagation = cancel && cancel();
-    return stopPropagation;
+    cancel && cancel();
   };
 
   return (
     <>
-      {isBindPrintActionAsDone && (
-        <Shortcut
-          key="OPEN_PRINT_RAPORT"
-          name="OPEN_PRINT_RAPORT"
-          handler={doneAction}
-        />
-      )}
+      <Shortcut
+        key="OPEN_PRINT_RAPORT"
+        name="OPEN_PRINT_RAPORT"
+        handler={doneAction}
+      />
       <Shortcut key="DONE" name="DONE" handler={doneAction} />
       <Shortcut key="CANCEL" name="CANCEL" handler={cancelAction} />
     </>
@@ -47,7 +39,6 @@ const ModalContextShortcuts = ({ done, cancel, isBindPrintActionAsDone }) => {
 ModalContextShortcuts.propTypes = {
   done: PropTypes.func,
   cancel: PropTypes.func,
-  isBindPrintActionAsDone: PropTypes.bool,
 };
 
 export default ModalContextShortcuts;

@@ -109,9 +109,9 @@ class ShortcutProvider extends Component {
   fireHandlers = (event, handlers) => {
     for (let i = 0; i < handlers.length; i += 1) {
       const handler = handlers[i];
-      const stopPropagation = handler(event);
+      const result = handler(event);
 
-      if (stopPropagation) {
+      if (result) {
         break;
       }
     }
