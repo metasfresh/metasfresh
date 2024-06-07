@@ -15,7 +15,10 @@ const ModalContextShortcuts = ({ done, cancel }) => {
   const doneAction = (event) => {
     event.preventDefault();
     blurActiveElement();
-    done && done();
+
+    // noinspection UnnecessaryLocalVariableJS
+    const stopPropagation = done && done();
+    return stopPropagation;
   };
 
   const cancelAction = (event) => {
