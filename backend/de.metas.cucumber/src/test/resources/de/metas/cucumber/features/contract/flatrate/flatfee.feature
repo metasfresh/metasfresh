@@ -75,9 +75,9 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | plv_so_S0433_1 | pl_so_S0433_1             | salesOrder-PLV_S0433_1 | 2022-05-15 |
     And metasfresh contains M_ProductPrices
       | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.SeqNo | OPT.IsAttributeDependant | OPT.M_AttributeSetInstance_ID.Identifier | OPT.UseScalePrice |
-      | pp_11_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 2.0      | MEAL              | Normal                        | 30        | Y                        | ASI_Special_S0433_1                      | N                 |
+      | pp_11_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 2.0      | MEAL              | Normal                        | 10        | Y                        | ASI_Special_S0433_1                      | N                 |
       | pp_12_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 3.0      | MEAL              | Normal                        | 20        | Y                        | ASI_Standard_S0433_1                     | N                 |
-      | pp_13_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 1.0      | MEAL              | Normal                        | 10        | N                        |                                          | N                 |
+      | pp_13_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 1.0      | MEAL              | Normal                        | 30        | N                        |                                          | N                 |
       | pp_2_S0433_1  | plv_so_S0433_1                    | transaction_product_S0433_1 | 10.0     | PCE               | Normal                        | 10        | N                        |                                          | N                 |
 
     And metasfresh contains C_Flatrate_Conditions:
