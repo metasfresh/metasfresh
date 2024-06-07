@@ -82,6 +82,8 @@ public interface IInvoiceDAO extends ISingletonService
 
 	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
 
+	Amount retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted);
+
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
 
 	IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(org.compiere.model.I_C_Invoice invoice);

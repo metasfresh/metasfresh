@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.ProductPriceWithFlags;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -36,6 +37,7 @@ import de.metas.contracts.modular.log.LogEntryReverseRequest;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -57,6 +59,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -65,6 +68,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public abstract class AbstractUENShipmentLineLog extends AbstractModularContractLogHandler
 {
@@ -114,15 +118,8 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 		final String productName = productBL.getProductValueAndName(productId);
 		final LocalDateAndOrgId transactionDate = extractTransactionDate(inOutRecord);
 
-		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
-				.modularContractModuleId(createLogRequest.getModularContractModuleId())
-				.flatrateTermId(createLogRequest.getContractId())
-				.column(column)
-				.value(getUserElementNumberValue(inOutLineRecord))
-				.build();
-
-		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
-		if (contractSpecificPrice == null)
+		final ProductPriceWithFlags contractSpecificScalePrice = getContractSpecificScalePrice(createLogRequest).orElse(null);
+		if (contractSpecificScalePrice == null)
 		{
 			return ExplainedOptional.emptyBecause("There is no contract specific price ");
 		}
@@ -131,6 +128,7 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(productId, yearAndCalendarId)
 				.orElse(null);
 
+		final ProductPrice productPrice = contractSpecificScalePrice.toProductPrice();
 		final LogEntryCreateRequest.LogEntryCreateRequestBuilder builder = LogEntryCreateRequest.builder()
 				.contractId(createLogRequest.getContractId())
 				.productId(createLogRequest.getProductId())
@@ -147,9 +145,9 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 				.processed(false)
 				.isBillable(true)
 				.quantity(quantity)
-				.amount(calculateAmount(quantity, contractSpecificPrice, uomConversionBL))
+				.amount(calculateAmount(quantity, productPrice, uomConversionBL))
 				.transactionDate(transactionDate)
-				.priceActual(contractSpecificPrice)
+				.priceActual(productPrice)
 				.year(yearAndCalendarId.yearId())
 				.description(msgBL.getBaseLanguageMsg(MSG_INFO_SHIPMENT_COMPLETED, productName, quantity.abs()))
 				.modularContractTypeId(createLogRequest.getTypeId())
@@ -209,23 +207,31 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	}
 
 	@Override
-	public @NonNull ModularContractLogEntry calculateAmount(final @NonNull ModularContractLogEntry logEntry, final @NonNull QuantityUOMConverter uomConverter)
+	public @NonNull ModularContractLogEntry calculateAmountWithNewPrice(
+			final @NonNull ModularContractLogEntry logEntry,
+			final @NonNull ProductPriceWithFlags ignored,
+			final @NonNull QuantityUOMConverter uomConverter)
 	{
+		// dev-note ignoring the just updated price as because of scaling the system can't know if it's actually the price to be used
+		final ProductPriceWithFlags scalePriceWithFlags = getContractSpecificScalePrice(logEntry)
+				.orElseThrow(() -> new AdempiereException("No ContractSpecificScalePrice found for id=" + logEntry.getId()));
+
 		final Quantity qty = Check.assumeNotNull(logEntry.getQuantity(), "Quantity shouldn't be null");
-		final ProductPrice price = Check.assumeNotNull(logEntry.getPriceActual(), "PriceActual shouldn't be null");
+		final ProductPrice price = scalePriceWithFlags.toProductPrice();
 
 		return logEntry.toBuilder()
+				.priceActual(price)
 				.amount(calculateAmount(qty, price, uomConverter))
 				.build();
 	}
 
 	@NonNull
-	protected Money calculateAmount(@NonNull final Quantity qty, @NonNull final ProductPrice price, final @NonNull QuantityUOMConverter uomConverter)
+	private Money calculateAmount(@NonNull final Quantity qty, @NonNull final ProductPrice price, final @NonNull QuantityUOMConverter uomConverter)
 	{
 		return price.computeAmount(qty, uomConverter);
 	}
 
-	protected static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)
+	private static InOutLineId getInOutLineId(@NonNull final TableRecordReference recordRef)
 	{
 		return recordRef.getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId);
 	}
@@ -235,5 +241,54 @@ public abstract class AbstractUENShipmentLineLog extends AbstractModularContract
 	{
 		final ModularContractType type = request.getModuleConfig().getModularContractType();
 		return column.getColumnName().equals(type.getColumnName());
+	}
+
+	@NonNull
+	private Optional<ProductPriceWithFlags> getContractSpecificScalePrice(@NonNull final IModularContractLogHandler.CreateLogRequest request)
+	{
+		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
+				.modularContractModuleId(request.getModularContractModuleId())
+				.flatrateTermId(request.getContractId())
+				.column(column)
+				.value(getUserElementNumberValue(getInOutLineRecord(request.getRecordRef())))
+				.build();
+
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+		return Optional.ofNullable(contractSpecificPrice)
+				.map(price -> ProductPriceWithFlags.builder()
+						.price(price)
+						.isCost(request.isCostsType())
+						.isSubtractedValue(getComputingMethod().getComputingMethodType().isSubtractedValue())
+						.build());
+	}
+
+	@NonNull
+	private I_M_InOutLine getInOutLineRecord(@NonNull final TableRecordReference recordRef)
+	{
+		return inOutBL.getLineByIdInTrx(getInOutLineId(recordRef));
+	}
+
+	@NonNull
+	private Optional<ProductPriceWithFlags> getContractSpecificScalePrice(@NonNull final ModularContractLogEntry logEntry)
+	{
+		if (logEntry.getContractId() == null || !logEntry.getReferencedRecord().getTableName().equals(I_M_InOutLine.Table_Name))
+		{
+			return Optional.empty();
+		}
+
+		final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest = ContractSpecificScalePriceRequest.builder()
+				.modularContractModuleId(logEntry.getModularContractModuleId())
+				.flatrateTermId(logEntry.getContractId())
+				.column(column)
+				.value(getUserElementNumberValue(getInOutLineRecord(logEntry.getReferencedRecord())))
+				.build();
+
+		final ProductPrice contractSpecificPrice = modularContractService.getContractSpecificScalePrice(contractSpecificScalePriceRequest);
+		return Optional.ofNullable(contractSpecificPrice)
+				.map(price -> ProductPriceWithFlags.builder()
+						.price(price)
+						.isCost(modularContractService.getByModuleId(logEntry.getModularContractModuleId()).isCostsType())
+						.isSubtractedValue(getComputingMethod().getComputingMethodType().isSubtractedValue())
+						.build());
 	}
 }

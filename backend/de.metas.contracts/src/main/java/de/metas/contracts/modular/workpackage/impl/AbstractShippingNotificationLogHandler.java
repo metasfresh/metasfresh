@@ -117,7 +117,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 		final InvoicingGroupId invoicingGroupId = modCntrInvoicingGroupRepository.getInvoicingGroupIdFor(createLogRequest.getModularContractSettings().getRawProductId(), yearAndCalendarId)
 				.orElse(null);
 
-		final ProductPrice contractSpecificPrice = getPriceActual(createLogRequest);
+		final ProductPrice contractSpecificPrice = getContractSpecificPriceWithFlags(createLogRequest).toProductPrice();
 
 		final BPartnerId warehouseBPartnerId = wrapper.getWarehouseBPartnerId(warehouseDAO);
 		return ExplainedOptional.of(LogEntryCreateRequest.builder()

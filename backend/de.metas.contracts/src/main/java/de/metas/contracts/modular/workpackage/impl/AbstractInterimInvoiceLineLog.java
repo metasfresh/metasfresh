@@ -27,6 +27,7 @@ import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -112,7 +113,9 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		final int multiplier = getMultiplier(createLogRequest);
-		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId).multiply(multiplier);
+		final Money amount = Money.of(invoiceLineRecord.getLineNetAmt(), currencyId)
+				.multiply(multiplier);
+
 		final Money priceActual = Money.of(invoiceLineRecord.getPriceActual(), currencyId).multiply(multiplier);
 		final ProductId productId = createLogRequest.getProductId();
 		final ProductPrice productPrice = ProductPrice.builder()
@@ -180,9 +183,15 @@ public abstract class AbstractInterimInvoiceLineLog extends AbstractModularContr
 	/**
 	 * @return -1 if the interim amount & price actual should be negated in logs, 1 if not.
 	 */
-	protected int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
+	private int getMultiplier(final @NonNull CreateLogRequest createLogRequest)
 	{
-		return createLogRequest.isCostsType() ? -1 : 1;
+		final int invoicingGroupBasedMultiplier = createLogRequest.isCostsType() ? -1 : 1;
+
+		final ComputingMethodType computingMethodType = getComputingMethod().getComputingMethodType();
+		final int computingMethodBasedMultiplier =
+				computingMethodType == ComputingMethodType.SubtractValueOnInterim ? -1 : 1;
+
+		return invoicingGroupBasedMultiplier * computingMethodBasedMultiplier;
 	}
 
 	@Override

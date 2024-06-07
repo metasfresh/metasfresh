@@ -1,5 +1,4 @@
--- DROP VIEW IF EXISTS ModCntr_Interest_V
--- ;
+DROP VIEW IF EXISTS ModCntr_Interest_V ;
 
 CREATE OR REPLACE VIEW ModCntr_Interest_V AS
 WITH interimAmts AS (SELECT SUM(amount

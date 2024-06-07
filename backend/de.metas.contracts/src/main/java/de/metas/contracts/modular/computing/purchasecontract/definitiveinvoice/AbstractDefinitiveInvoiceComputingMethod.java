@@ -146,11 +146,24 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 					.qty(qtyDifference.toOne())
 					.build();
 		}
-		return ComputingResponse.builder()
-				.ids(logs.getIds())
-				.price(productPrice)
-				.qty(qtyDifference)
-				.build();
+		if (!qtyDifference.isPositive())
+		{
+			// always ensure the qty is positive and unit price is negative
+			// because the price and amt will later be negated in de.metas.invoicecandidate.api.impl.InvoiceLineImpl.negateAmounts
+			return ComputingResponse.builder()
+					.ids(logs.getIds())
+					.price(productPrice.negate())
+					.qty(qtyDifference.negate())
+					.build();
+		}
+		else
+		{
+			return ComputingResponse.builder()
+					.ids(logs.getIds())
+					.price(productPrice)
+					.qty(qtyDifference)
+					.build();
+		}
 	}
 
 	protected @NonNull LogEntryDocumentType getSourceLogEntryDocumentType()

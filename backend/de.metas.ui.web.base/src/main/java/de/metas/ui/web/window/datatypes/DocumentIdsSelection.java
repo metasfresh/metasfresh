@@ -1,5 +1,14 @@
 package de.metas.ui.web.window.datatypes;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.SelectionSize;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+
+import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -12,17 +21,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.process.SelectionSize;
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -48,11 +46,10 @@ import lombok.ToString;
 
 /**
  * {@link DocumentId}s selection.
- *
+ * <p>
  * Basically consists of a set of {@link DocumentId}s but it all has the {@link #isAll()} flag.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 @ToString
@@ -109,7 +106,7 @@ public final class DocumentIdsSelection
 
 		final ImmutableSet<DocumentId> documentIds = intDocumentIds
 				.stream()
-				.map(idInt -> DocumentId.of(idInt))
+				.map(DocumentId::of)
 				.collect(ImmutableSet.toImmutableSet());
 		return new DocumentIdsSelection(false, documentIds);
 	}
@@ -192,33 +189,6 @@ public final class DocumentIdsSelection
 			throw new IllegalStateException("Not a single documentId selection: " + this);
 		}
 		return documentIds.iterator().next();
-	}
-
-	public DocumentIdsSelection toDocumentIdsSelectionWithOnlyIntegerDocumentIds()
-	{
-		if (all)
-		{
-			return this;
-		}
-		else if (documentIds.isEmpty())
-		{
-			return this;
-		}
-		else
-		{
-			final ImmutableSet<DocumentId> intDocumentIds = documentIds.stream()
-					.filter(documentId -> documentId != null && documentId.isInt())
-					.collect(ImmutableSet.toImmutableSet());
-
-			if (documentIds.size() == intDocumentIds.size())
-			{
-				return this;
-			}
-			else
-			{
-				return new DocumentIdsSelection(false, intDocumentIds);
-			}
-		}
 	}
 
 	public boolean isEmpty()
@@ -305,5 +275,42 @@ public final class DocumentIdsSelection
 			return SelectionSize.ofAll();
 		}
 		return SelectionSize.ofSize(size());
+	}
+
+	public DocumentIdsSelection addAll(@NonNull final DocumentIdsSelection documentIdsSelection)
+	{
+		if (this.isEmpty())
+		{
+			return documentIdsSelection;
+		}
+		else if (documentIdsSelection.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.all)
+		{
+			return this;
+		}
+		else if (documentIdsSelection.all)
+		{
+			return documentIdsSelection;
+		}
+
+		final ImmutableSet<DocumentId> combinedIds = Stream.concat(this.stream(), documentIdsSelection.stream()).collect(ImmutableSet.toImmutableSet());
+		final DocumentIdsSelection result = DocumentIdsSelection.of(combinedIds);
+
+		if (this.equals(result))
+		{
+			return this;
+		}
+		else if (documentIdsSelection.equals(result))
+		{
+			return documentIdsSelection;
+		}
+		else
+		{
+			return result;
+		}
 	}
 }
