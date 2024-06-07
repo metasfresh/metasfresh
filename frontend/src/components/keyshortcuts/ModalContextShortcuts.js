@@ -23,7 +23,10 @@ const ModalContextShortcuts = ({ done, cancel }) => {
 
   const cancelAction = (event) => {
     event.preventDefault();
-    cancel && cancel();
+
+    // noinspection UnnecessaryLocalVariableJS
+    const stopPropagation = cancel && cancel();
+    return stopPropagation;
   };
 
   return (
