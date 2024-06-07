@@ -90,7 +90,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	void updateAllAddresses(I_C_BPartner bpartner);
 
-	void updateMemo(@NonNull final BPartnerId bpartnerId, @NonNull String memo);
+	void updateMemo(@NonNull final BPartnerId bpartnerId, String memo);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 

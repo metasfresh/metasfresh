@@ -377,7 +377,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public void updateMemo(final @NonNull BPartnerId bpartnerId, @NonNull final String memo)
+	public void updateMemo(final @NonNull BPartnerId bpartnerId, final String memo)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
 		bpartner.setMemo(memo);
