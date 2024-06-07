@@ -1,6 +1,37 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
+import { useEffect, useState } from 'react';
+
+export const usePickTargets = ({ wfProcessId }) => {
+  const [loading, setLoading] = useState(false);
+  const [targets, setTargets] = useState([]);
+
+  useEffect(() => {
+    setLoading(true);
+    getPickTargets({ wfProcessId })
+      .then(setTargets)
+      .finally(() => setLoading(false));
+  }, [wfProcessId]);
+
+  return {
+    isTargetsLoading: loading,
+    targets,
+  };
+};
+
+const getPickTargets = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/target/available`)
+    .then((response) => unboxAxiosResponse(response))
+    .then((data) => data.targets);
+};
+
+export const setPickTarget = ({ wfProcessId, target }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/target`, target)
+    .then((response) => unboxAxiosResponse(response));
+};
 
 export const postStepPicked = ({
   wfProcessId,

@@ -432,6 +432,7 @@ class PickingJobLoaderAndSaver
 				.id(pickingJobId)
 				.header(toPickingJobHeader(record))
 				.pickingSlot(pickingSlot)
+				.pickTarget(null) // TODO
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
@@ -480,6 +481,7 @@ class PickingJobLoaderAndSaver
 	{
 		record.setPicking_User_ID(UserId.toRepoId(from.getLockedBy()));
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
+		// TODO from.getCurrentTarget()
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
 	}
