@@ -2,10 +2,8 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -34,7 +32,7 @@ import lombok.Value;
 public class CalendarId implements RepoIdAware
 {
 	int repoId;
-
+	
 	@JsonCreator
 	public static CalendarId ofRepoId(final int repoId)
 	{

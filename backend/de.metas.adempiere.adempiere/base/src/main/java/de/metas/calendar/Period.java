@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,33 +20,26 @@
  * #L%
  */
 
-package de.metas.contracts.flatrate.dataEntry;
+package de.metas.calendar;
 
-import de.metas.calendar.Period;
-import de.metas.uom.UomId;
-import lombok.Builder;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
+import java.time.ZonedDateTime;
 
-@Builder(toBuilder = true)
 @Value
-public class FlatrateDataEntry
+public class Period
 {
-	boolean processed;
+	@NonNull
+	PeriodId id;
 	
 	@NonNull
-	FlatrateDataEntryId id;
+	OrgId orgId;
 	
 	@NonNull
-	UomId uomId;
+	ZonedDateTime startDate;
 	
 	@NonNull
-	Period period;
-	
-	@NonNull
-	@Singular
-	List<FlatrateDataEntryDetail> details;
+	ZonedDateTime endDate;
 }

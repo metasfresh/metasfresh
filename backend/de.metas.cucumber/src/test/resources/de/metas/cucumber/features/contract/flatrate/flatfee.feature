@@ -10,7 +10,7 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
   @from:cucumber
   @topic:flatFeeContractsWithReporterdQty
   @Id:S0433_1
-  Scenario: Flatfee contract with reported quantities
+  Scenario: Create Flatfee contract with reported quantities and make sure, a normal sales order is identified with the contract.
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains C_UOMs:
       | Identifier          | X12DE355 | Name         | UOMSymbol | StdPrecision | CostingPrecision |
@@ -75,9 +75,9 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | plv_so_S0433_1 | pl_so_S0433_1             | salesOrder-PLV_S0433_1 | 2022-05-15 |
     And metasfresh contains M_ProductPrices
       | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | OPT.SeqNo | OPT.IsAttributeDependant | OPT.M_AttributeSetInstance_ID.Identifier | OPT.UseScalePrice |
-      | pp_11_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 2.0      | MEAL              | Normal                        | 30        | Y                        | ASI_Special_S0433_1                      | N                 |
+      | pp_11_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 2.0      | MEAL              | Normal                        | 10        | Y                        | ASI_Special_S0433_1                      | N                 |
       | pp_12_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 3.0      | MEAL              | Normal                        | 20        | Y                        | ASI_Standard_S0433_1                     | N                 |
-      | pp_13_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 1.0      | MEAL              | Normal                        | 10        | N                        |                                          | N                 |
+      | pp_13_S0433_1 | plv_so_S0433_1                    | flatfee_product_S0433_1     | 1.0      | MEAL              | Normal                        | 30        | N                        |                                          | N                 |
       | pp_2_S0433_1  | plv_so_S0433_1                    | transaction_product_S0433_1 | 10.0     | PCE               | Normal                        | 10        | N                        |                                          | N                 |
 
     And metasfresh contains C_Flatrate_Conditions:

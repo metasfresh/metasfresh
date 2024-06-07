@@ -22,25 +22,18 @@ package de.metas.calendar;
  * #L%
  */
 
+import de.metas.util.ISingletonService;
+import org.adempiere.exceptions.PeriodClosedException;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_PeriodControl;
 
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
-import org.adempiere.exceptions.PeriodClosedException;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_PeriodControl;
-
-import de.metas.util.ISingletonService;
-
 public interface IPeriodBL extends ISingletonService
 {
 	/**
-	 * 
-	 * @param ctx
-	 * @param dateAcct
-	 * @param docBaseType
-	 * @param AD_Org_ID
 	 * @throws PeriodClosedException if the given period is closed
 	 */
 	void testPeriodOpen(Properties ctx, Timestamp dateAcct, String docBaseType, int AD_Org_ID) throws PeriodClosedException;
@@ -50,24 +43,20 @@ public interface IPeriodBL extends ISingletonService
 	/**
 	 * Suggests which shall be the PeriodStatus for given period action
 	 * 
-	 * @param periodAction
 	 * @return period status; never returns null
 	 */
 	String getPeriodStatusForAction(String periodAction);
 
 	/**
 	 * Create all {@link I_C_PeriodControl}s for given period.
-	 * 
+	 * <p>
 	 * NOTE: this method assumes there are no {@link I_C_PeriodControl}s already created for given period.
-	 * 
-	 * @param period
 	 */
 	void createPeriodControls(I_C_Period period);
 
 	/**
 	 * Checks if given date is in period.
-	 * 
-	 * @param period
+	 *
 	 * @param date date
 	 * @return true if in period
 	 */
