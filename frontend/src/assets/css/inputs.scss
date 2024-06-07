@@ -991,7 +991,7 @@ table {
   z-index: 1001;
   box-sizing: border-box;
 }
- 
+
 .lookup-widget-wrapper > div > .input-mandatory {
   border: 2px solid $brand-mandatory-color;
   border-radius: 3px;
@@ -1004,9 +1004,4 @@ table {
 
 .input-qr-scanner-wrapper {
   padding: 20px 30px 20px 28px;
-}
-
-
-input:disabled, textarea:disabled {
-  color: black !important;
 }
