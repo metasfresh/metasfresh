@@ -11,7 +11,6 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
@@ -26,7 +25,7 @@ import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -184,18 +183,24 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public Amount retrieveOpenAmt(final InvoiceId invoiceId)
 	{
 		final org.compiere.model.I_C_Invoice invoice = getByIdInTrx(invoiceId);
-		final BigDecimal openAmt = retrieveOpenAmt(invoice);
-
-		final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
-		final CurrencyCode currencyCode = currencyRepository.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		return Amount.of(openAmt, currencyCode);
+		return retrieveOpenAmt(invoice, true);
 	}
 
 	@Override
-	@Deprecated
 	public BigDecimal retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+		return allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
+	}
+
+	@Override
+	public Amount retrieveOpenAmt(final org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted)
+	{
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+		final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+
+		final Money openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, creditMemoAdjusted);
+		return openAmt.toAmount(currencyRepository::getCurrencyCodeById);
 	}
 
 	@Override
