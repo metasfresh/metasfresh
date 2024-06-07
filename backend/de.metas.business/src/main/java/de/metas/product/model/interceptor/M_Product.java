@@ -2,7 +2,7 @@ package de.metas.product.model.interceptor;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
@@ -61,7 +61,7 @@ public class M_Product
 
 	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
 
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 
 
@@ -146,7 +146,7 @@ public class M_Product
 
 	private Optional<AdMessageKey> isProductUsed(@NonNull final ProductId productId)
 	{
-		if (productDAO.isProductUsed(productId))
+		if (productBL.isProductUsed(productId))
 		{
 			return Optional.of(MSG_PRODUCT_ALREADY_USED);
 		}
