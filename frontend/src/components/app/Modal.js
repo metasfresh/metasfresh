@@ -402,7 +402,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType, dispatch } = this.props;
+    const { modalSaveStatus, modalType } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -411,7 +411,6 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
-    dispatch(resetPrintingOptions());
   };
 
   /**
@@ -482,11 +481,23 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
+<<<<<<< HEAD
     const { windowId, modalViewDocumentIds, dataId, printingOptions } =
       this.props;
     const docNo = modalViewDocumentIds[0];
     const docId = dataId;
     const { options } = printingOptions;
+=======
+    const {
+      windowId,
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+      dispatch,
+    } = this.props;
+    const documentId = dataId;
+    const documentNo = modalViewDocumentIds[0] ?? documentId;
+>>>>>>> 3bf8ff535e0 (webui frontend: when pressing ALT-P and printing dialog is already open then it shall just do the printing and close the dialog (#18182))
 
     let extraParams = '';
     options.map((item) => {
@@ -494,6 +505,7 @@ class Modal extends Component {
     });
     extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
 
+<<<<<<< HEAD
     openFile(
       'window',
       windowId,
@@ -503,6 +515,12 @@ class Modal extends Component {
       extraParams
     );
     this.handleClose();
+=======
+    this.closeModal(true);
+    dispatch(resetPrintingOptions());
+
+    return true; // stopPropagation to avoid calling the global alt-P handler
+>>>>>>> 3bf8ff535e0 (webui frontend: when pressing ALT-P and printing dialog is already open then it shall just do the printing and close the dialog (#18182))
   };
 
   /**
@@ -729,7 +747,11 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
+            <ModalContextShortcuts
+              done={applyHandler}
+              cancel={cancelHandler}
+              isBindPrintActionAsDone={staticModalType === 'printing'}
+            />
           )}
         </div>
       </div>
