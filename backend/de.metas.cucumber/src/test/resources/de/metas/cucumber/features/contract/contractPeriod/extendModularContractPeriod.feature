@@ -61,8 +61,8 @@ Feature: Extend Modular Contract Period
       | modCntr_settings_1             | settings_23072023_1 | module_log_product          | harvesting_calendar      | y2022                | modularCntrPricingSystem          |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularCntrConditions_1             | modularCntrConditions_23072023_1 | ModularContract | modularCntrPricingSystem          | Ex                       | modCntr_settings_1                 |
+      | Identifier              | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularCntrConditions_1 | modularCntrConditions_23072023_1 | ModularContract | modularCntrPricingSystem          | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
@@ -118,8 +118,8 @@ Feature: Extend Modular Contract Period
       | billBPUser_1          | BillBPartnerContact_1 | bp_abo_customer_1            | bp_abo_customer_location_1            | Y                           | Y                           |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.InvoiceRule
-      | abo_test_23072023_1                 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ca                       | D
+      | Identifier          | Name                | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.InvoiceRule
+      | abo_test_23072023_1 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ca                       | D
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |

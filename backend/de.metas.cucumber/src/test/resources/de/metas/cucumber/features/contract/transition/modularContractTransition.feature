@@ -49,8 +49,8 @@ Feature: Calculation of Modular Contract Transition
       | modCntr_module_1             | 10    | moduleTest_10242024_1 | contract_module_product | Kosten         | modCntr_settings_1             | modCntr_Types_1            |
 
     When metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_10242023_1 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022 | modularContractTerm_10242023_1 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
 
     And the C_Flatrate_Conditions identified by modularContractTerm_2022 is completed
 
@@ -113,8 +113,8 @@ Feature: Calculation of Modular Contract Transition
       | modCntr_module_1             | 10    | moduleTest_10242024_2 | contract_module_product | Kosten         | modCntr_settings_1             | modCntr_Types_1            |
 
     When metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2021            | modularContractTerm_10242023_2 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2021 | modularContractTerm_10242023_2 | ModularContract | Ex                       | modCntr_settings_1                 | DR            |
 
     And the C_Flatrate_Conditions identified by modularContractTerm_2021 is completed
 
