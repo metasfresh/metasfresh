@@ -191,33 +191,6 @@ public final class DocumentIdsSelection
 		return documentIds.iterator().next();
 	}
 
-	public DocumentIdsSelection toDocumentIdsSelectionWithOnlyIntegerDocumentIds()
-	{
-		if (all)
-		{
-			return this;
-		}
-		else if (documentIds.isEmpty())
-		{
-			return this;
-		}
-		else
-		{
-			final ImmutableSet<DocumentId> intDocumentIds = documentIds.stream()
-					.filter(documentId -> documentId != null && documentId.isInt())
-					.collect(ImmutableSet.toImmutableSet());
-
-			if (documentIds.size() == intDocumentIds.size())
-			{
-				return this;
-			}
-			else
-			{
-				return new DocumentIdsSelection(false, intDocumentIds);
-			}
-		}
-	}
-
 	public boolean isEmpty()
 	{
 		return this == EMPTY;

@@ -338,6 +338,7 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	@NonNull
 	public ZoneId getTimeZone(@NonNull final OrgId orgId)
 	{
 		if (!orgId.isRegular())
@@ -387,6 +388,7 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	@NonNull
 	public String getOrgCode(@NonNull final OrgId orgId)
 	{
 		return getById(orgId).getValue();
