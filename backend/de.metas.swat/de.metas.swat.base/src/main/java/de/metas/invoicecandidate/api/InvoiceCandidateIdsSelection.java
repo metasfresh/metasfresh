@@ -74,9 +74,9 @@ public final class InvoiceCandidateIdsSelection
 	{
 		void empty();
 
-		void fixedSet(ImmutableSet<InvoiceCandidateId> ids);
+		void fixedSet(@NonNull ImmutableSet<InvoiceCandidateId> ids);
 
-		void selectionId(PInstanceId selectionId);
+		void selectionId(@NonNull PInstanceId selectionId);
 	}
 
 	public void apply(@NonNull final CaseMapper mapper)
