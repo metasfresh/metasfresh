@@ -60,6 +60,15 @@ input {
     white-space: normal;
   }
 
+  &.input-zoom {
+    display: flex;
+    align-items: center;
+
+    @media (min-width: $breakpoint-md) {
+      /*margin: 0 15px;*/
+    }
+  }
+
   &.zoom-into:hover, .zoom-into:hover {
     text-decoration: underline;
     cursor: pointer;
@@ -235,7 +244,7 @@ input {
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
   pointer-events: none;
-  background: #ccc;
+  background: #76b727a6;
   border: 0;
 }
 
@@ -991,7 +1000,7 @@ table {
   z-index: 1001;
   box-sizing: border-box;
 }
-
+ 
 .lookup-widget-wrapper > div > .input-mandatory {
   border: 2px solid $brand-mandatory-color;
   border-radius: 3px;
@@ -1004,4 +1013,9 @@ table {
 
 .input-qr-scanner-wrapper {
   padding: 20px 30px 20px 28px;
+}
+
+
+input:disabled, textarea:disabled {
+  color: black !important;
 }
