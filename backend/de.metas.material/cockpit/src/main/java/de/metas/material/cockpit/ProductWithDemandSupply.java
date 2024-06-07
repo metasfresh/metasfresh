@@ -35,7 +35,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class QtyDemandQtySupply
+public class ProductWithDemandSupply
 {
 	@NonNull AttributesKey attributesKey;
 	@NonNull UomId uomId;

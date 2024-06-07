@@ -3,7 +3,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import com.google.common.collect.ImmutableList;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
@@ -146,7 +146,7 @@ public class MainRowWithSubRows
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
-	private void addQuantitiesRecordToCounting(@NonNull final QtyDemandQtySupply quantitiesRecord, @NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
+	private void addQuantitiesRecordToCounting(@NonNull final ProductWithDemandSupply quantitiesRecord, @NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
 		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(detailsRowAggregationIdentifier, this::newCountingSubRowBucket);
 		countingSubRow.addQuantitiesRecord(quantitiesRecord);
@@ -171,7 +171,7 @@ public class MainRowWithSubRows
 	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given quantitiesRecord could be added.
 	 */
 	private boolean addQuantitiesRecordToDimensionGroups(
-			@NonNull final QtyDemandQtySupply quantitiesRecord,
+			@NonNull final ProductWithDemandSupply quantitiesRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(quantitiesRecord.getAttributesKey(), dimensionSpec);
@@ -253,14 +253,14 @@ public class MainRowWithSubRows
 	}
 
 	public void addQuantitiesRecord(
-			@NonNull final QtyDemandQtySupply qtyDemandQtySupply,
+			@NonNull final ProductWithDemandSupply productWithDemandSupply,
 			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 	{
 		boolean addedToAtLeastOneBucket = false;
 
 		int ppPlantId = 0;
-		final WarehouseId warehouseId = qtyDemandQtySupply.getWarehouseId();
+		final WarehouseId warehouseId = productWithDemandSupply.getWarehouseId();
 		if (warehouseId != null)
 		{
 			ppPlantId = getPlantId(warehouseId);
@@ -273,7 +273,7 @@ public class MainRowWithSubRows
 				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 						.aggregationId(ppPlantId)
 						.build();
-				addQuantitiesRecordToCounting(qtyDemandQtySupply, rowAggregationIdentifier);
+				addQuantitiesRecordToCounting(productWithDemandSupply, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
 
 			}
@@ -286,23 +286,23 @@ public class MainRowWithSubRows
 						.aggregationId(WarehouseId.toRepoId(warehouseId))
 						.build();
 
-				addQuantitiesRecordToCounting(qtyDemandQtySupply, rowAggregationIdentifier);
+				addQuantitiesRecordToCounting(productWithDemandSupply, rowAggregationIdentifier);
 				addedToAtLeastOneBucket = true;
 			}
 		}
 
 		if (!addedToAtLeastOneBucket)
 		{
-			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(qtyDemandQtySupply, dimensionSpec);
+			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(productWithDemandSupply, dimensionSpec);
 		}
 
 		if (!addedToAtLeastOneBucket)
 		{
 			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, this::newSubRowBucket);
-			fallbackBucket.addQuantitiesRecord(qtyDemandQtySupply);
+			fallbackBucket.addQuantitiesRecord(productWithDemandSupply);
 		}
 
-		mainRow.addQuantitiesRecord(qtyDemandQtySupply);
+		mainRow.addQuantitiesRecord(productWithDemandSupply);
 	}
 
 	private void addStockRecordToCounting(final @NonNull I_MD_Stock stockRecord,

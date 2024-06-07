@@ -24,7 +24,7 @@ package de.metas.ui.web.material.cockpit;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -133,7 +133,7 @@ public class MaterialCockpitRowsLoader
 	}
 
 	@NonNull
-	private List<QtyDemandQtySupply> getQtyRecords(
+	private List<ProductWithDemandSupply> getQtyRecords(
 			@NonNull final List<I_MD_Cockpit> cockpitRecords,
 			@NonNull final List<I_MD_Stock> stockRecords)
 	{
