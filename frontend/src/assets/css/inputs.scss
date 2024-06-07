@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 @import './variables.scss';
 @import './buttons.scss';
-=======
-@import './variables.css';
-@import './buttons.css';
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
 @import './attributes.scss';
 
 /*
@@ -55,10 +50,7 @@ input {
 .form-control-label {
   padding-top: .3rem;
   padding-bottom: .3125rem;
-<<<<<<< HEAD
   padding-right: 0;
-=======
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
@@ -68,18 +60,6 @@ input {
     white-space: normal;
   }
 
-<<<<<<< HEAD
-=======
-  &.input-zoom {
-    display: flex;
-    align-items: center;
-
-    @media (min-width: $breakpoint-md) {
-      /*margin: 0 15px;*/
-    }
-  }
-
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
   &.zoom-into:hover, .zoom-into:hover {
     text-decoration: underline;
     cursor: pointer;
@@ -255,11 +235,7 @@ input {
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
   pointer-events: none;
-<<<<<<< HEAD
   background: #ccc;
-=======
-  background: #76b727a6;
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
   border: 0;
 }
 
@@ -1015,11 +991,7 @@ table {
   z-index: 1001;
   box-sizing: border-box;
 }
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
 .lookup-widget-wrapper > div > .input-mandatory {
   border: 2px solid $brand-mandatory-color;
   border-radius: 3px;
@@ -1033,11 +1005,3 @@ table {
 .input-qr-scanner-wrapper {
   padding: 20px 30px 20px 28px;
 }
-<<<<<<< HEAD
-=======
-
-
-input:disabled, textarea:disabled {
-  color: black !important;
-}
->>>>>>> 322be8d51a3 (webui: Change disabled checkbox background to light green (#18188))
