@@ -34,6 +34,7 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
@@ -1298,4 +1299,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		handlingUnitsRepo.saveHU(hu);
 	}
 
+	@Override
+	public Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull final ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveParentLUPIs(tuPIItemIds, bpartnerId);
+	}
 }

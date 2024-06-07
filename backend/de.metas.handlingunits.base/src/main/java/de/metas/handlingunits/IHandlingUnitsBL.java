@@ -289,6 +289,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	void reactivateDestroyedHU(@NonNull I_M_HU hu, @NonNull IContextAware contextProvider);
 
+	Set<HuPackingInstructionsIdAndCaption> getLUPIs(
+			@NonNull ImmutableSet<HuPackingInstructionsItemId> tuPIItemIds,
+			@Nullable BPartnerId bpartnerId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

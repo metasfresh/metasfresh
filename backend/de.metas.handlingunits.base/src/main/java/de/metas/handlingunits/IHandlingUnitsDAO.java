@@ -23,6 +23,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
@@ -317,6 +318,10 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
 
 	void setReservedByHUIds(final Set<HuId> huIds, boolean reserved);
+
+	ImmutableSet<HuPackingInstructionsIdAndCaption> retrieveParentLUPIs(
+			@NonNull Set<HuPackingInstructionsItemId> piItemIds,
+			@Nullable BPartnerId bpartnerId);
 
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
