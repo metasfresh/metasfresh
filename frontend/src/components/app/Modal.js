@@ -749,7 +749,11 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
+            <ModalContextShortcuts
+              done={applyHandler}
+              cancel={cancelHandler}
+              isBindPrintActionAsDone={staticModalType === 'printing'}
+            />
           )}
         </div>
       </div>
