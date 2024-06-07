@@ -98,7 +98,7 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
     ##
     When metasfresh contains C_Flatrate_Terms:
       | Identifier                | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | flatFeeContract_1_S0433_1 | flatFeeConditions_1_S0433_1         | shipToPartner_1_S0433_1     | 2022-05-01 | 2023-04-31 | DR            | false         |
+      | flatFeeContract_1_S0433_1 | flatFeeConditions_1_S0433_1         | shipToPartner_1_S0433_1     | 2022-05-01 | 2023-04-30 | DR            | false         |
     And the C_Flatrate_Term identified by flatFeeContract_1_S0433_1 is completed
     Then the C_Flatrate_Term identified by flatFeeContract_1_S0433_1 has 12 C_Flatrate_DataEntries.
 
@@ -111,9 +111,10 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | ol_1_S0433_1 | o_1_S0433_1           | transaction_product_S0433_1 | 10         |
     And the order identified by o_1_S0433_1 is completed
 
-    Then after not more than 60s locate invoice candidates by order id:
-      | C_Invoice_Candidate_ID.Identifier | C_Order_ID.Identifier |
-      | invoice_candidate_1_S0433_1       | o_1_S0433_1           |
+    Then after not more than 60s locate invoice candidates of order identified by o_1_S0433_1
+      | C_Invoice_Candidate_ID.Identifier | M_Product_ID                |
+      | invoice_candidate_1_S0433_1       | transaction_product_S0433_1 |
+
     And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1_S0433_1       |
