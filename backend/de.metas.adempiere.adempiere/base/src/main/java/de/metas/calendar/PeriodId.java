@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2024 metas GmbH
  * %%
@@ -20,33 +20,42 @@
  * #L%
  */
 
-package de.metas.contracts.flatrate.dataEntry;
+package de.metas.calendar;
 
-import de.metas.calendar.Period;
-import de.metas.uom.UomId;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-@Builder(toBuilder = true)
 @Value
-public class FlatrateDataEntry
+public class PeriodId implements RepoIdAware
 {
-	boolean processed;
-	
-	@NonNull
-	FlatrateDataEntryId id;
-	
-	@NonNull
-	UomId uomId;
-	
-	@NonNull
-	Period period;
-	
-	@NonNull
-	@Singular
-	List<FlatrateDataEntryDetail> details;
+	int repoId;
+
+	@Getter
+	YearId yearId;
+
+	@JsonCreator
+	public static PeriodId ofRepoId(@NonNull final YearId calendarId, final int repoId)
+	{
+		return new PeriodId(calendarId, repoId);
+	}
+
+	private PeriodId(@Nullable final YearId calendarId, final int repoId)
+	{
+		this.yearId = calendarId;
+		this.repoId = Check.assumeGreaterThanZero(repoId, "periodId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

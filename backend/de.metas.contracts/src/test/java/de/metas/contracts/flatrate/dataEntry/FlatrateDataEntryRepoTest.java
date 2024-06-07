@@ -24,6 +24,7 @@ package de.metas.contracts.flatrate.dataEntry;
 
 import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.business.BusinessTestHelper;
+import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRepo;
@@ -39,6 +40,7 @@ import org.compiere.model.I_C_BPartner_Department;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +59,7 @@ public class FlatrateDataEntryRepoTest
 	{
 		AdempiereTestHelper.get().init();
 
-		flatrateDataEntryRepo = new FlatrateDataEntryRepo(new BPartnerDepartmentRepo(), new FlatrateTermRepo());
+		flatrateDataEntryRepo = new FlatrateDataEntryRepo(new BPartnerDepartmentRepo(), new FlatrateTermRepo(), new PeriodRepo());
 	}
 
 	@Test
@@ -78,12 +80,18 @@ public class FlatrateDataEntryRepoTest
 		flatrateTerm.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		flatrateTerm.setM_Product_ID(productRecord.getM_Product_ID());
 		flatrateTerm.setC_Flatrate_Conditions_ID(conditionsRecord.getC_Flatrate_Conditions_ID());
-		
+
 		saveRecord(flatrateTerm);
-		
+
 		final FlatrateDataEntryId testId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()), 100);
 
+		final I_C_Year yearRecord = newInstance(I_C_Year.class);
+		yearRecord.setC_Calendar_ID(10);
+		saveRecord(yearRecord);
+		
 		final I_C_Period period = newInstance(I_C_Period.class);
+		period.setC_Year_ID(yearRecord.getC_Year_ID());
+		period.setStartDate(SystemTime.asTimestamp());
 		period.setEndDate(SystemTime.asTimestamp());
 		saveRecord(period);
 

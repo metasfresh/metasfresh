@@ -149,6 +149,33 @@ public interface I_C_Invoice_Detail
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
+	 * Set Period.
+	 * Period of the Calendar
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Period_ID (int C_Period_ID);
+
+	/**
+	 * Get Period.
+	 * Period of the Calendar
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Period_ID();
+
+	@Nullable org.compiere.model.I_C_Period getC_Period();
+
+	void setC_Period(@Nullable org.compiere.model.I_C_Period C_Period);
+
+	ModelColumn<I_C_Invoice_Detail, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_C_Invoice_Detail.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	String COLUMNNAME_C_Period_ID = "C_Period_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
