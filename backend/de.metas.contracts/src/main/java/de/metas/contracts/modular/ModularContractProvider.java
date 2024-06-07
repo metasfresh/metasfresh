@@ -214,6 +214,11 @@ public class ModularContractProvider
 		{
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveIcForIl(invoiceLineRecord);
 
+			if (invoiceCandidates.isEmpty())
+			{
+				return Stream.empty();
+			}
+
 			flatrateTermId = CollectionUtils.extractSingleElement(invoiceCandidates, this::extractFlatrateTermId).orElse(null);
 
 		}
