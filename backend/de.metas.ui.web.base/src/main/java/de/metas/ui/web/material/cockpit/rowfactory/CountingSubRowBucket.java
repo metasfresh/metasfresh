@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
@@ -11,7 +11,6 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +54,7 @@ import static de.metas.util.Check.assumeNotNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@EqualsAndHashCode(of = "plantId")
+
 @ToString
 @RequiredArgsConstructor
 public class CountingSubRowBucket
@@ -115,7 +114,7 @@ public class CountingSubRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final QtyDemandQtySupply quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
 		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 

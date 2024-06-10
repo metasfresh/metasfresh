@@ -1,7 +1,7 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
@@ -122,7 +122,7 @@ public class DimensionGroupSubRowBucket
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final QtyDemandQtySupply quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
 		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 

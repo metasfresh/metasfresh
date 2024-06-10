@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.money.Money;
@@ -148,7 +148,7 @@ public class MainRowBucket
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
-		
+
 		// Take the minimum QtyStockEstimateSeqNo_AtDate of all MD_Cockpit records. But take 0 is equivalent to null
 		final Integer seqNoToUse = (cockpitRecord.getQtyStockEstimateSeqNo_AtDate() <= 0) ? null : cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
 		if (qtyStockEstimateSeqNoAtDate != null && seqNoToUse != null)
@@ -190,7 +190,7 @@ public class MainRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final QtyDemandQtySupply quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
 		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 
