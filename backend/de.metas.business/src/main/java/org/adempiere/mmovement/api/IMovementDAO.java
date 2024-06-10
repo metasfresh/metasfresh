@@ -31,6 +31,7 @@ import org.adempiere.mmovement.MovementLineId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IMovementDAO extends ISingletonService
@@ -62,6 +63,8 @@ public interface IMovementDAO extends ISingletonService
 	void save(final I_M_MovementLine movementLine);
 
 	List<I_M_Movement> retrieveMovementsForDDOrder(int ddOrderId);
+
+	BigDecimal retrieveMovementQtyForDDOrderLine(int ddOrderLineId);
 
 	@NonNull
 	I_M_Movement getById(@NonNull MovementId movementId);

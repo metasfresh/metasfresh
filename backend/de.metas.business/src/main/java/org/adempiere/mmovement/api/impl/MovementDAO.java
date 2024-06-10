@@ -13,6 +13,7 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -66,6 +67,18 @@ public class MovementDAO implements IMovementDAO
 				.list();
 	}
 
+	@Override
+	public BigDecimal retrieveMovementQtyForDDOrderLine(final int ddOrderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_MovementLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
+				.stream()
+				.map(I_M_MovementLine::getMovementQty)
+				.reduce(BigDecimal::add)
+				.orElse(BigDecimal.ZERO);
+	}
+	
 	@Override
 	public void save(@NonNull final I_M_Movement movement)
 	{
