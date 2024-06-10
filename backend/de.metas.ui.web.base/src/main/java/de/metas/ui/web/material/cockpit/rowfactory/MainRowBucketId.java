@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
@@ -65,7 +65,7 @@ public class MainRowBucketId
 
 	@NonNull
 	public static MainRowBucketId createInstanceForQuantitiesRecord(
-			@NonNull final QtyDemandQtySupply qtyRecord,
+			@NonNull final ProductWithDemandSupply qtyRecord,
 			@NonNull final LocalDate date)
 	{
 		return new MainRowBucketId(qtyRecord.getProductId(), date);

@@ -33,7 +33,7 @@ import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.CurrencyRepository;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.cockpit.QtyDemandQtySupply;
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.money.Money;
@@ -104,7 +104,7 @@ public class MaterialCockpitRowFactory
 		@NonNull @Singular("productIdToListEvenIfEmpty") ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
 		@NonNull @Singular List<I_MD_Cockpit> cockpitRecords;
 		@NonNull @Singular List<I_MD_Stock> stockRecords;
-		@NonNull @Singular List<QtyDemandQtySupply> quantitiesRecords;
+		@NonNull @Singular List<ProductWithDemandSupply> quantitiesRecords;
 		@NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	}
 
@@ -266,7 +266,7 @@ public class MaterialCockpitRowFactory
 				@NonNull final DimensionSpec dimensionSpec,
 				@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 		{
-			for (final QtyDemandQtySupply qtyRecord : request.getQuantitiesRecords())
+			for (final ProductWithDemandSupply qtyRecord : request.getQuantitiesRecords())
 			{
 				final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 

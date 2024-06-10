@@ -34,19 +34,19 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Value(staticConstructor = "of")
-public class ProductsWithDemandSupply
+public class ProductWithDemandSupplyCollection
 {
 	@NonNull
-	Map<ProductId, List<QtyDemandQtySupply>> productId2QtyList;
+	Map<ProductId, List<ProductWithDemandSupply>> productId2QtyList;
 
 	@NonNull
-	public List<QtyDemandQtySupply> getByProductId(@NonNull final ProductId productId)
+	public List<ProductWithDemandSupply> getByProductId(@NonNull final ProductId productId)
 	{
 		return CoalesceUtil.coalesceNotNull(productId2QtyList.get(productId), ImmutableList.of());
 	}
 
 	@NonNull
-	public List<QtyDemandQtySupply> getAll()
+	public List<ProductWithDemandSupply> getAll()
 	{
 		return productId2QtyList.values()
 				.stream()
@@ -54,9 +54,9 @@ public class ProductsWithDemandSupply
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static Collector<QtyDemandQtySupply, ?, ProductsWithDemandSupply> toProductsWithDemandSupply()
+	public static Collector<ProductWithDemandSupply, ?, ProductWithDemandSupplyCollection> toProductsWithDemandSupply()
 	{
-		return Collectors.collectingAndThen(Collectors.groupingBy(QtyDemandQtySupply::getProductId),
-											ProductsWithDemandSupply::of);
+		return Collectors.collectingAndThen(Collectors.groupingBy(ProductWithDemandSupply::getProductId),
+											ProductWithDemandSupplyCollection::of);
 	}
 }

@@ -229,4 +229,9 @@ public interface IProductBL extends ISingletonService
 	@NonNull ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 
 	Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull ProductId productId);
+
+	/**
+	 * @return true if product is used in orders, invoices or shipments
+	 */
+    boolean isProductUsed(@NonNull ProductId productId);
 }
