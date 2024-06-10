@@ -28,6 +28,7 @@ import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Department;
 import org.springframework.stereotype.Repository;
 
@@ -48,6 +49,15 @@ public class BPartnerDepartmentRepo
 				.stream()
 				.filter(dpt -> id.equals(dpt.getId()))
 				.findFirst().orElse(null);
+	}
+
+	@NonNull
+	public BPartnerDepartment getByIdNotNull(@NonNull final BPartnerDepartmentId id)
+	{
+		return getByBPartnerId(id.getBpartnerId())
+				.stream()
+				.filter(dpt -> id.equals(dpt.getId()))
+				.findFirst().orElseThrow(() -> new AdempiereException("Missing BPartnerDepartment for id=" + id));
 	}
 
 	@NonNull

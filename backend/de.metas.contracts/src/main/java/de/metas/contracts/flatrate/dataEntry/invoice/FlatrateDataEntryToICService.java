@@ -143,7 +143,7 @@ public class FlatrateDataEntryToICService
 		final I_M_PriceList_Version priceListVersion = Check.assumeNotNull(priceListBL.getCurrentPriceListVersionOrNull(
 				context.getPricingSystemId(),
 				context.getCountryId(),
-				entry.getEndDate(),
+				entry.getPeriod().getEndDate(),
 				SOTrx.SALES,
 				null), "Missing M_PriceList_Version for C_Flatrate_DataEntry_ID={}", entry.getId().getRepoId());
 
@@ -276,7 +276,7 @@ public class FlatrateDataEntryToICService
 		newCand.setQtyOrdered(quantity.toBigDecimal());
 		newCand.setQtyEntered(quantity.toBigDecimal());
 		newCand.setC_UOM_ID(UomId.toRepoId(quantity.getUomId()));
-		newCand.setDateOrdered(TimeUtil.asTimestamp(entry.getEndDate()));
+		newCand.setDateOrdered(TimeUtil.asTimestamp(entry.getPeriod().getEndDate()));
 
 		newCand.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		newCand.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND); // to be computed
@@ -310,7 +310,7 @@ public class FlatrateDataEntryToICService
 		{
 			final I_C_Invoice_Detail newDetailRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class);
 			newDetailRecord.setC_Invoice_Candidate_ID(newInvoiceCandidate.getC_Invoice_Candidate_ID());
-
+			newDetailRecord.setC_Period_ID(entry.getPeriod().getId().getRepoId());
 			newDetailRecord.setSeqNo(detail.getSeqNo());
 			newDetailRecord.setIsPrinted(true);
 			newDetailRecord.setIsPrintBefore(false);

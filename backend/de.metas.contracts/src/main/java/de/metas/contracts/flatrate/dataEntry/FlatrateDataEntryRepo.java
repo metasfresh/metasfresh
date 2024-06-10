@@ -27,6 +27,9 @@ import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.bpartner.department.BPartnerDepartmentRepo;
 import de.metas.cache.CCache;
+import de.metas.calendar.Period;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.PeriodRepo;
 import de.metas.common.util.Check;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
@@ -34,8 +37,6 @@ import de.metas.contracts.FlatrateTermRepo;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry_Detail;
 import de.metas.document.engine.DocStatus;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -43,11 +44,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -57,21 +55,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class FlatrateDataEntryRepo
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@NonNull
+	
 	private final BPartnerDepartmentRepo bPartnerDepartmentRepo;
 	private final FlatrateTermRepo flatrateTermRepo;
+	private final PeriodRepo periodRepo;
 
 	private final CCache<FlatrateDataEntryId, FlatrateDataEntry> id2entry = CCache.newLRUCache(I_C_Flatrate_DataEntry.Table_Name + "#by#C_Flatrate_DataEntry_ID", 100, 60);
 
 	public FlatrateDataEntryRepo(
 			@NonNull final BPartnerDepartmentRepo bPartnerDepartmentRepo,
-			@NonNull final FlatrateTermRepo flatrateTermRepo)
+			@NonNull final FlatrateTermRepo flatrateTermRepo,
+			@NonNull final PeriodRepo periodRepo)
 	{
 		this.bPartnerDepartmentRepo = bPartnerDepartmentRepo;
 		this.flatrateTermRepo = flatrateTermRepo;
+		this.periodRepo = periodRepo;
 	}
 
 	@NonNull
@@ -104,7 +103,7 @@ public class FlatrateDataEntryRepo
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(
 				FlatrateTermId.ofRepoId(dataEntryRecord.getC_Flatrate_Term_ID()),
 				dataEntryRecord.getC_Flatrate_DataEntry_ID());
-
+		
 		final FlatrateDataEntry.FlatrateDataEntryBuilder result = FlatrateDataEntry.builder();
 
 		final DocStatus docStatus = DocStatus.ofCode(dataEntryRecord.getDocStatus());
@@ -115,9 +114,9 @@ public class FlatrateDataEntryRepo
 
 		result.id(flatrateDataEntryId);
 
-		final Timestamp endDate = dataEntryRecord.getC_Period().getEndDate();
-		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(dataEntryRecord.getAD_Org_ID()));
-		result.endDate(TimeUtil.asZonedDateTime(endDate, zoneId));
+		final PeriodId periodId = periodRepo.getPeriodId(dataEntryRecord.getC_Period_ID());
+		final Period period = periodRepo.getById(periodId);
+		result.period(period);
 
 		for (final I_C_Flatrate_DataEntry_Detail detailRecord : detailRecords)
 		{
@@ -130,7 +129,7 @@ public class FlatrateDataEntryRepo
 			}
 			else
 			{
-				bPartnerDepartment = bPartnerDepartmentRepo.getById(bPartnerDepartmentId);
+				bPartnerDepartment = bPartnerDepartmentRepo.getByIdNotNull(bPartnerDepartmentId);
 			}
 
 			final FlatrateDataEntryDetail entryDetail = FlatrateDataEntryDetail.builder()

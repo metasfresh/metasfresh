@@ -24,6 +24,10 @@ package de.metas.ui.web.contract.flatrate.model;
 
 import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
+import de.metas.calendar.Period;
+import de.metas.calendar.PeriodId;
+import de.metas.calendar.YearId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
@@ -31,6 +35,7 @@ import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetailId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryRepo;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryService;
+import de.metas.organization.OrgId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.uom.UomId;
@@ -67,14 +72,20 @@ public class DataEntryDetailsRowsLoaderTest
 		final FlatrateDataEntryRepo entryRepo = Mockito.mock(FlatrateDataEntryRepo.class);
 
 		final FlatrateDataEntryId flatrateDataEntryId = FlatrateDataEntryId.ofRepoId(FlatrateTermId.ofRepoId(10), 10);
-		
+
 		final BPartnerDepartmentId bPartnerDepartmentId = BPartnerDepartmentId.ofRepoId(10, 10);
 		final BPartnerDepartment bPartnerDepartment = BPartnerDepartment.builder()
 				.id(bPartnerDepartmentId)
 				.searchKey("value")
 				.name("name")
 				.build();
-		
+
+		final Period period = new Period(
+				PeriodId.ofRepoId(YearId.ofRepoId(CalendarId.ofRepoId(1), 2), 3),
+				OrgId.ofRepoId(10),
+				ZonedDateTime.now(),
+				ZonedDateTime.now());
+
 		final FlatrateDataEntryDetail detail = FlatrateDataEntryDetail.builder()
 				.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, 20))
 				.asiId(AttributeSetInstanceId.NONE)
@@ -85,7 +96,7 @@ public class DataEntryDetailsRowsLoaderTest
 				.id(flatrateDataEntryId)
 				.uomId(UomId.ofRepoId(30))
 				.detail(detail)
-				.endDate(ZonedDateTime.now())
+				.period(period)
 				.build();
 
 		//when specific methods are called on the mock objects, then return specific values

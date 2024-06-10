@@ -11,7 +11,7 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
   @from:cucumber
   @topic:flatFeeContractsWithReporterdQty
   @Id:S0433_1
-  Scenario: Flatfee contract with reported quantities
+  Scenario: Create Flatfee contract with reported quantities and make sure, a normal sales order is identified with the contract.
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains C_UOMs:
       | Identifier          | X12DE355 | Name         | UOMSymbol | StdPrecision | CostingPrecision |
