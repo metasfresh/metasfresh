@@ -6,7 +6,6 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -54,7 +53,6 @@ public class C_Invoice_Candidate
 
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
 	private final AttachmentEntryService attachmentEntryService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
@@ -241,8 +239,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * For new invoice candidates, this method sets the <code>C_Order_ID</code>, if the referenced record is either a <code>C_OrderLine_ID</code> or a <code>M_InOutLine_ID</code>.
-	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/07242_Error_creating_invoice_from_InOutLine-IC_%28104224060697%29">task</a>
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void updateOrderId(final I_C_Invoice_Candidate ic)
@@ -372,8 +368,6 @@ public class C_Invoice_Candidate
 
 	/**
 	 * After an invoice candidate was deleted, schedule the recreation of it.
-	 * <p>
-	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09531_C_Invoice_candidate%3A_deleted_ICs_are_not_coming_back_%28107964479343%29">task</a>
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void scheduleRecreate(@NonNull final I_C_Invoice_Candidate ic)
@@ -443,11 +437,13 @@ public class C_Invoice_Candidate
 			return; // nothing to do
 		}
 
-		if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
-		{
-			aggregationBL.setHeaderAggregationKey(ic);
-			return;
-		}
+		// This shall be done later by IInvoiceCandInvalidUpdater. 
+		// Otherwise we might have concurrent access to I_C_Invoice_Candidate_HeaderAggregation and DBUniqueConstraintExceptions
+		// if (InterfaceWrapperHelper.isNew(ic) || ic.getC_Invoice_Candidate_ID() <= 0)
+		// {
+		// 	aggregationBL.setHeaderAggregationKey(ic);
+		// 	return;
+		// }
 
 		invoiceCandDAO.invalidateCand(ic);
 	}

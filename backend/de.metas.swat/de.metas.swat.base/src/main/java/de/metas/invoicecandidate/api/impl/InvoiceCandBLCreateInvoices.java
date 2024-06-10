@@ -1085,7 +1085,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
-				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
 				candsOfUserId.add(ic);
 			}
 
