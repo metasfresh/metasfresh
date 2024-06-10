@@ -85,6 +85,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.apache.commons.lang3.BooleanUtils;
 import org.compiere.model.IQuery;
@@ -1025,18 +1026,33 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return query.first(I_C_BP_Relation.class);
 	}
-	
-	@Nullable
+
+	private final CCache<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location> billToLocationCache = CCache.<ImmutablePair<BPartnerId, Boolean>, I_C_BPartner_Location>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(60)
+			.tableName(I_C_BPartner_Location.Table_Name)
+			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
+			.build();
+
 	@Override
-	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
 	public I_C_BPartner_Location retrieveBillToLocation(
-			@CacheCtx final Properties ctx,
+			final Properties ctx,
 			final int bPartnerId,
 			final boolean alsoTryBilltoRelation,
-			@CacheTrx final String trxName)
+			final String trxName)
+	{
+		final ImmutablePair<BPartnerId, Boolean> key = ImmutablePair.of(BPartnerId.ofRepoId(bPartnerId), alsoTryBilltoRelation);
+		return billToLocationCache.getOrLoad(key, k -> retrieveBillToLocation0(k.getLeft(), k.getRight()));
+	}
+
+	@Nullable
+	private I_C_BPartner_Location retrieveBillToLocation0(
+			final BPartnerId bPartnerId,
+			final boolean alsoTryBilltoRelation)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL
-				.createQueryBuilder(I_C_BPartner_Location.class, ctx, trxName);
+				.createQueryBuilder(I_C_BPartner_Location.class);
 
 		final ICompositeQueryFilter<I_C_BPartner_Location> filters = queryBuilder.getCompositeFilter();
 		filters.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerId);
@@ -1057,7 +1073,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		final IQueryBuilder<I_C_BP_Relation> bpRelationQueryBuilder = queryBL
-				.createQueryBuilder(I_C_BP_Relation.class, ctx, trxName)
+				.createQueryBuilder(I_C_BP_Relation.class)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_C_BPartner_ID, bPartnerId)
 				.addEqualsFilter(I_C_BP_Relation.COLUMNNAME_IsBillTo, true)
 				.addOnlyActiveRecordsFilter();
@@ -1170,7 +1186,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return ImmutableMap.copyOf(bPartnerId2DiscountId);
 	}
 
-	private static final String getBPartnerDiscountSchemaColumnNameOrNull(final BPartnerType bpartnerType)
+	private static String getBPartnerDiscountSchemaColumnNameOrNull(final BPartnerType bpartnerType)
 	{
 		switch (bpartnerType)
 		{
@@ -1224,7 +1240,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
-						bpartner -> bpartner.getName()));
+						I_C_BPartner::getName));
 
 		return bpartnerIds.stream()
 				.map(bpartnerId -> {
@@ -1295,9 +1311,9 @@ public class BPartnerDAO implements IBPartnerDAO
 		final Optional<BPartnerLocationId> relBPLocationId = bpRelationQueryBuilder
 				.create()
 				.stream()
-				.map(bpRelationRecord -> ofRelationRecord(bpRelationRecord))
+				.map(this::ofRelationRecord)
 				.findFirst()
-				.map(bpRelation -> bpRelation.getTargetBPLocationId());
+				.map(BPRelation::getTargetBPLocationId);
 
 		if (relBPLocationId.isPresent())
 		{
@@ -1928,7 +1944,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit)
+	public List<I_C_BPartner> retrieveVendors(@NonNull final QueryLimit limit)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_IsVendor, true)
