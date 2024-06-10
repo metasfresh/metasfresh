@@ -23,7 +23,7 @@
 package de.metas.calendar;
 
 import de.metas.cache.CCache;
-import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -31,7 +31,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_Year;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -44,8 +43,6 @@ public class PeriodRepo
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final CCache<Integer, I_C_Period> periodCache = CCache.newLRUCache(I_C_Period.Table_Name + "#by#C_Period_ID", 100, 60);
-
-	private final CCache<Integer, YearId> yearIdCache = CCache.newLRUCache(I_C_Year.Table_Name + "#by#C_Year_ID", 100, 60);
 
 	@NonNull
 	public Period getById(@NonNull final PeriodId periodId)
@@ -82,7 +79,7 @@ public class PeriodRepo
 
 	private PeriodId createPeriodId(final I_C_Period record)
 	{
-		final YearId yearId = getYearId(record.getC_Year_ID());
+		final YearId yearId = YearId.ofRepoId(record.getC_Year_ID());
 		return PeriodId.ofRepoId(yearId, record.getC_Period_ID());
 	}
 
@@ -91,17 +88,5 @@ public class PeriodRepo
 	{
 		final I_C_Period periodRecord = periodCache.getOrLoad(periodRepoId, id -> InterfaceWrapperHelper.load(id, I_C_Period.class));
 		return Check.assumeNotNull(periodRecord, "Missing C_Period record for C_Period_ID={}", periodRepoId);
-	}
-
-	private YearId getYearId(final int yearRepoId)
-	{
-		return yearIdCache
-				.getOrLoad(yearRepoId,
-						   id -> {
-							   final I_C_Year yearRecord = InterfaceWrapperHelper.load(id, I_C_Year.class);
-							   final CalendarId calendarId = CalendarId.ofRepoId(yearRecord.getC_Calendar_ID());
-							   return YearId.ofRepoId(calendarId, yearRecord.getC_Year_ID());
-						   });
-
 	}
 }

@@ -71,7 +71,6 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.department.BPartnerDepartmentId.class)
 			//
 			.skip(de.metas.calendar.PeriodId.class)
-			.skip(de.metas.calendar.YearId.class)
 			//
 			.skip(de.metas.contracts.commission.licensefee.model.LicenseFeeSettingsLineId.class)
 			.skip(de.metas.contracts.commission.mediated.model.MediatedCommissionSettingsLineId.class)

@@ -24,6 +24,7 @@ package de.metas.calendar;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.calendar.standard.YearId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
@@ -41,14 +42,14 @@ public class PeriodId implements RepoIdAware
 	YearId yearId;
 
 	@JsonCreator
-	public static PeriodId ofRepoId(@NonNull final YearId calendarId, final int repoId)
+	public static PeriodId ofRepoId(@NonNull final YearId yearId, final int repoId)
 	{
-		return new PeriodId(calendarId, repoId);
+		return new PeriodId(yearId, repoId);
 	}
 
-	private PeriodId(@Nullable final YearId calendarId, final int repoId)
+	private PeriodId(@Nullable final YearId yearAndCalendarId, final int repoId)
 	{
-		this.yearId = calendarId;
+		this.yearId = yearAndCalendarId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, "periodId");
 	}
 

@@ -26,8 +26,7 @@ import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.department.BPartnerDepartmentId;
 import de.metas.calendar.Period;
 import de.metas.calendar.PeriodId;
-import de.metas.calendar.YearId;
-import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntry;
 import de.metas.contracts.flatrate.dataEntry.FlatrateDataEntryDetail;
@@ -81,7 +80,7 @@ public class DataEntryDetailsRowsLoaderTest
 				.build();
 
 		final Period period = new Period(
-				PeriodId.ofRepoId(YearId.ofRepoId(CalendarId.ofRepoId(1), 2), 3),
+				PeriodId.ofRepoId(YearId.ofRepoId(2), 3),
 				OrgId.ofRepoId(10),
 				ZonedDateTime.now(),
 				ZonedDateTime.now());

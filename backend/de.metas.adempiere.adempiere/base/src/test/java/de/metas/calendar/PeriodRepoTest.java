@@ -66,7 +66,6 @@ class PeriodRepoTest
 		// then
 		assertThat(periodId.getRepoId()).isEqualTo(periodRecord.getC_Period_ID());
 		assertThat(periodId.getYearId().getRepoId()).isEqualTo(yearRecord.getC_Year_ID());
-		assertThat(periodId.getYearId().getCalendarId().getRepoId()).isEqualTo(10);
 	}
 
 	@Test
