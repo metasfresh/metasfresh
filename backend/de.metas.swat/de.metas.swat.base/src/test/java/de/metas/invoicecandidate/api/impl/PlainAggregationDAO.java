@@ -22,13 +22,12 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+
+import java.util.List;
 
 public class PlainAggregationDAO extends AggregationDAO
 {
@@ -37,7 +36,7 @@ public class PlainAggregationDAO extends AggregationDAO
 	private I_C_Invoice_Candidate_Agg defaultAgg = null;
 
 	@Override
-	public I_C_Invoice_Candidate_Agg retrieveAggregate(I_C_Invoice_Candidate ic)
+	public I_C_Invoice_Candidate_Agg retrieveAggregate(@NonNull I_C_Invoice_Candidate ic)
 	{
 		if (defaultAgg != null)
 		{

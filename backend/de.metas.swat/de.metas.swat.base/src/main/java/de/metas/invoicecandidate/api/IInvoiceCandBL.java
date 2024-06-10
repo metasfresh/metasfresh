@@ -326,7 +326,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
+<<<<<<< HEAD
 	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">...</a>).
+=======
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
+>>>>>>> 389c9c4bc08 (Prevend DBuniqueConstraintException when updating invoice candidates (#18192))
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -426,6 +430,12 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
 	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
+
+	/**
+	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
+	 *
+	 */
+	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);

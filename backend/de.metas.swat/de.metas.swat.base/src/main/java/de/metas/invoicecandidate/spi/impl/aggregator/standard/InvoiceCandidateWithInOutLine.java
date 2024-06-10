@@ -1,8 +1,13 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import com.google.common.collect.ImmutableSet;
+<<<<<<< HEAD
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+=======
+import de.metas.inout.IInOutBL;
+import de.metas.invoice.service.IMatchInvDAO;
+>>>>>>> 389c9c4bc08 (Prevend DBuniqueConstraintException when updating invoice candidates (#18192))
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
@@ -20,6 +25,10 @@ import lombok.NonNull;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
 
+<<<<<<< HEAD
+=======
+import javax.annotation.Nullable;
+>>>>>>> 389c9c4bc08 (Prevend DBuniqueConstraintException when updating invoice candidates (#18192))
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -79,18 +88,14 @@ public final class InvoiceCandidateWithInOutLine
 	}
 
 	/** @return shipment/receipt line; could be <code>null</code> */
+	@Nullable
 	public I_M_InOutLine getM_InOutLine()
 	{
 		if (iciol == null)
 		{
 			return null;
 		}
-		final I_M_InOutLine inOutLine = iciol.getM_InOutLine();
-		if (inOutLine == null)
-		{
-			return null;
-		}
-		return inOutLine;
+		return iciol.getM_InOutLine();
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
