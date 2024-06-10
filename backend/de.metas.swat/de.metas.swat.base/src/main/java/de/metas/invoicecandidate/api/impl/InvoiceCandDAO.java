@@ -1230,6 +1230,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
+		if(invoiceCandidateIdsSelection.isEmpty())
+		{
+			return false;
+		}
+		
 		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
 		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
