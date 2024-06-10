@@ -1,15 +1,7 @@
 package de.metas.cache;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-
-import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.event.Event;
@@ -23,8 +15,13 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.cache.CacheInvalidateMultiRequestSerializer;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -51,7 +48,7 @@ import javax.annotation.Nullable;
 /** Bidirectional binding between local cache system and remote cache systems */
 final class CacheInvalidationRemoteHandler implements IEventListener
 {
-	public static final transient CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
+	public static final CacheInvalidationRemoteHandler instance = new CacheInvalidationRemoteHandler();
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
