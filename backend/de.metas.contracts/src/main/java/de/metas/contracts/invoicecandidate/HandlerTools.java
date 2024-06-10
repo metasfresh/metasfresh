@@ -12,6 +12,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -188,9 +189,19 @@ public class HandlerTools
 								   I_C_Flatrate_Term.class.getSimpleName(), ic);
 	}
 
+	/**
+	 * <ul>
+	 * <li>QtyDelivered := QtyOrdered
+	 * <li>DeliveryDate := DateOrdered
+	 * <li>M_InOut_ID: untouched
+	 * </ul>
+	 *
+	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
+	 */
 	public static void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		// note: we can assume that #setQtyOrdered() was already called
+		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
 		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
 
 		ic.setDeliveryDate(ic.getDateOrdered());

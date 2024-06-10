@@ -45,7 +45,7 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_07212023_1 | componentProduct        | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | modCntr_settings_1             | testSettings_07212023_1 | componentProduct            | harvesting_calendar      | year                 | moduleLogPricingSystem            |
 
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                          | Value                         | ModularContractHandlerType |
@@ -67,8 +67,8 @@ Feature: After a quantity of a product is issued/received for the manufacturing 
       | invoicingGroup_p1                            | invoicingGroup                       | coProduct               |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_MO              | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_MO | moduleLogConditions_MO_07212023_1 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier          | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |

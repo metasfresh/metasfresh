@@ -41,12 +41,12 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class C_Invoice_Candidate_StefDef
+public class C_Invoice_Candidate_API_StefDef
 {
 	private final TestContext testContext;
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-	public C_Invoice_Candidate_StefDef(@NonNull final TestContext testContext)
+	public C_Invoice_Candidate_API_StefDef(@NonNull final TestContext testContext)
 	{
 		this.testContext = testContext;
 	}

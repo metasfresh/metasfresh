@@ -78,8 +78,8 @@ Feature: Shipping Notifications
 
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                      | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier | OPT.IsSOTrx |
-      | modCntr_settings_2023          | testSettings_04102023_3   | modularContract_prod    | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | false       |
-      | modCntr_settings_2023_2        | testSettings_04102023_3_2 | modularContract_prod    | harvesting_calendar      | year_2022            | moduleLogPricingSystem            | true        |
+      | modCntr_settings_2023          | testSettings_04102023_3   | modularContract_prod        | harvesting_calendar      | year_2023            | moduleLogPricingSystem            | false       |
+      | modCntr_settings_2023_2        | testSettings_04102023_3_2 | modularContract_prod        | harvesting_calendar      | year_2022            | moduleLogPricingSystem            | true        |
 
     And metasfresh contains ModCntr_Modules:
       | ModCntr_Module_ID.Identifier | SeqNo | Name               | M_Product_ID.Identifier | InvoicingGroup | ModCntr_Settings_ID.Identifier | ModCntr_Type_ID.Identifier |
@@ -92,9 +92,9 @@ Feature: Shipping Notifications
       | modCntr_module_MC_SN_SO      | 30    | name_04102023_3_30 | modularContract_prod    | Kosten         | modCntr_settings_2023_2        | modCntr_type_MC_SN_SO      |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                        | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularContractTerms_2023           | modularContractTerms_2023   | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
-      | modularContractTerms_2023_2         | modularContractTerms_2023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023_2            |
+      | Identifier                  | Name                        | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularContractTerms_2023   | modularContractTerms_2023   | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023              |
+      | modularContractTerms_2023_2 | modularContractTerms_2023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_2023_2            |
 
     And metasfresh contains ModCntr_InvoicingGroup:
       | ModCntr_InvoicingGroup_ID.Identifier | Name                      | Group_Product_ID.Identifier | ValidFrom  | ValidTo    |
@@ -187,7 +187,6 @@ Feature: Shipping Notifications
     Then after not more than 30s, no ModCntr_Logs are found:
       | Record_ID.Identifier                  | TableName                   |
       | shippingNotificationLine_04102023_3_1 | M_Shipping_NotificationLine |
-
 
 
   @from:cucumber

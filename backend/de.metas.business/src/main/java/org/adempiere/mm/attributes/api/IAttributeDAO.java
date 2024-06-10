@@ -68,6 +68,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
 
+	List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull AttributeSetId attributeSetId);
+
 	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
 
 	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);

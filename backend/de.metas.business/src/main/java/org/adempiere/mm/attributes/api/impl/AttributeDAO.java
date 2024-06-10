@@ -340,6 +340,24 @@ public class AttributeDAO implements IAttributeDAO
 		return retrieveAttributeValues(attribute);
 	}
 
+	public List<AttributeListValue> retrieveAttributeValuesByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
+	{
+		if (attributeSetId.isNone())
+		{
+			return ImmutableList.of();
+		}
+		
+		final List<I_M_Attribute> attributeRecords = getAttributesByAttributeSetId(attributeSetId);
+		final ImmutableList.Builder<AttributeListValue> result = ImmutableList.builder();
+
+		for (final I_M_Attribute attributeRecord : attributeRecords)
+		{
+			final List<AttributeListValue> listValues = retrieveAttributeValues(attributeRecord);
+			result.addAll(listValues);
+		}
+		return result.build();
+	}
+
 	@Override
 	public List<AttributeListValue> retrieveAttributeValuesByIds(@NonNull final Collection<AttributeValueId> attributeValueIds)
 	{
@@ -607,7 +625,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 
 		final List<AttributeListValue> list = queryBuilder
-				.orderBy(I_M_AttributeValue.COLUMNNAME_Name) // task 06897: order attributes by name
+				.orderBy(I_M_AttributeValue.COLUMNNAME_Value) // order attributes by value, so we can have names like breakfast, lunch, dinner in their "temporal" order
 				.create()
 				.stream()
 				.map(AttributeDAO::toAttributeListValue)

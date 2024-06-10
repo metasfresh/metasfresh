@@ -43,8 +43,8 @@ Feature: Clone Modular Contract Term
       | modCntr_module_1             | 10    | moduleTest_17072023_1 | contract_module_product | Kosten         | modCntr_settings_toclone       | modCntr_Types_1            |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_17072023_1 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022 | modularContractTerm_17072023_1 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
 
     When clone C_Flatrate_Conditions:
       | C_Flatrate_Conditions_ID.Identifier | C_Year_ID.Identifier | CLONE.C_Flatrate_Conditions_ID.Identifier |
@@ -82,8 +82,8 @@ Feature: Clone Modular Contract Term
       | modCntr_module_1             | 10    | moduleTest_17072023_2 | contract_module_product | Kosten         | modCntr_settings_toclone       | modCntr_Types_1            |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
-      | modularContractTerm_2022            | modularContractTerm_17072023_2 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
+      | Identifier               | Name                           | Type_Conditions | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier | OPT.DocStatus |
+      | modularContractTerm_2022 | modularContractTerm_17072023_2 | ModularContract | Ex                       | modCntr_settings_toclone           | CO            |
 
     When load AD_Message:
       | Identifier              | Value                                      |

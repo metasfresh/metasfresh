@@ -56,7 +56,7 @@ Feature: Import Modular Contract Logs via DataImportRestController
       | pp_bonus1        | moduleLogPLV                      | bonus1                  | 15.0     | PCE               | Normal                        |
     And metasfresh contains ModCntr_Settings:
       | ModCntr_Settings_ID.Identifier | Name                    | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | testSettings_06292023_2 | importProduct           | harvesting_calendar      | year                 | moduleLogPricingSystem            |
+      | modCntr_settings_1             | testSettings_06292023_2 | importProduct               | harvesting_calendar      | year                 | moduleLogPricingSystem            |
     And metasfresh contains ModCntr_Types:
       | ModCntr_Type_ID.Identifier | Name                | Value               | ModularContractHandlerType |
       | modCntr_type_PO            | modCntr_type_PO     | modCntr_type_PO     | Receipt                    |
@@ -67,8 +67,8 @@ Feature: Import Modular Contract Logs via DataImportRestController
       | modCntr_module_fee1          | 20    | moduleTest_06292023_2 | fee1                    | Kosten         | modCntr_settings_1             | modCntr_type_Import        |
       | modCntr_module_bonus1        | 30    | name_09072023_20      | bonus1                  | Leistung       | modCntr_settings_1             | modCntr_type_Import        |
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO              | moduleLogConditions_po_06292023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
+      | Identifier             | Name                              | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO | moduleLogConditions_po_06292023_2 | ModularContract | moduleLogPricingSystem            | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.POReference                    |

@@ -58,7 +58,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -76,19 +75,19 @@ public interface IFlatrateDAO extends ISingletonService
 {
 	I_C_Flatrate_Term getById(final int flatrateTermId);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_DataEntry dataEntry);
 
 	/**
 	 * Retrieves I_C_Invoice_Clearing_Alloc records that have the given invoiceCand as their <code>C_Invoice_Candidate_ID</code> OR <code>C_Invoice_Cand_ToClear_ID</code>.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
 	/**
 	 * Like {@link #retrieveClearingAllocs(I_C_Invoice_Candidate)}, but also returns inactive records.
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Clearing_Alloc> retrieveAllClearingAllocs(@NonNull I_C_Invoice_Candidate invoiceCand);
 
-	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_Term term);
+	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(@NonNull I_C_Flatrate_Term term);
 
 	List<I_C_Flatrate_Matching> retrieveFlatrateMatchings(I_C_Flatrate_Conditions conditions);
 
@@ -109,7 +108,7 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves the dataEntry that matches the given params and has IsSimulation=N.
 	 */
-	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, I_C_UOM uom);
+	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Flatrate_Term flatrateTerm, I_C_Period period, String dataEntryType, @NonNull UomId uomId);
 
 	I_C_Flatrate_DataEntry retrieveDataEntryOrNull(I_C_Invoice_Candidate ic);
 
@@ -151,8 +150,14 @@ public interface IFlatrateDAO extends ISingletonService
 	 */
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, @NonNull OrgId orgId, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
+	/**
+	 * Note: Terms that have the Type_Conditions FlatFee, HoldingFee or Subscription are *not* returned.
+	 */
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
 	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
@@ -207,8 +212,6 @@ public interface IFlatrateDAO extends ISingletonService
 	}
 
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
-
-	List<I_C_UOM> retrieveUOMs(Properties ctx, I_C_Flatrate_Term flatrateTerm, String trxName);
 
 	/**
 	 * For the given <bold>simulated</bold> dataEntry, this method updates the ActualQty values of all other data Entries that have the same C_Flatrate_Term_ID, C_Period_ID and Type.

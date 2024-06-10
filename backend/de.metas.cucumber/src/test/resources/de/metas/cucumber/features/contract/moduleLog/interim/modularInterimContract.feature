@@ -112,11 +112,11 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_module_10            | 50    | moduleTest_08022023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_1            | moduleLogConditions_po_08022023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08022023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_PO_2            | moduleLogConditions_po_08022023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
-      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08022023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | Identifier                    | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1      | moduleLogConditions_po_08022023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1 | moduleLogConditions_interim_08022023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2      | moduleLogConditions_po_08022023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2 | moduleLogConditions_interim_08022023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
 
     And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
@@ -382,11 +382,11 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_module_10            | 50    | moduleTest_08032023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_1            | moduleLogConditions_po_08032023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08032023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_PO_2            | moduleLogConditions_po_08032023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
-      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08032023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | Identifier                    | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1      | moduleLogConditions_po_08032023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1 | moduleLogConditions_interim_08032023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2      | moduleLogConditions_po_08032023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2 | moduleLogConditions_interim_08032023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
 
     And set sys config boolean value false for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
@@ -580,11 +580,11 @@ Feature: Interim contract and interim invoice for bpartner
       | modCntr_module_10            | 50    | moduleTest_08042023_10 | module_log_product_PO_2 | Kosten         | modCntr_settings_2             | modCntr_type_5             |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | moduleLogConditions_PO_1            | moduleLogConditions_po_08042023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_interim_1       | moduleLogConditions_interim_08042023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
-      | moduleLogConditions_PO_2            | moduleLogConditions_po_08042023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
-      | moduleLogConditions_interim_2       | moduleLogConditions_interim_08042023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | Identifier                    | Name                                   | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | moduleLogConditions_PO_1      | moduleLogConditions_po_08042023_1      | ModularContract | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_interim_1 | moduleLogConditions_interim_08042023_1 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_1                 |
+      | moduleLogConditions_PO_2      | moduleLogConditions_po_08042023_2      | ModularContract | interimPS                         | Ex                       | modCntr_settings_2                 |
+      | moduleLogConditions_interim_2 | moduleLogConditions_interim_08042023_2 | InterimInvoice  | interimPS                         | Ex                       | modCntr_settings_2                 |
 
   # Set the date at the start of ModCntr_InvoicingGroup interval
     And metasfresh has date and time 2022-02-10T13:30:13+01:00[Europe/Berlin]
