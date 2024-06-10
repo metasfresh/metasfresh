@@ -58,6 +58,7 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -1130,18 +1131,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public CopyHUsResponse copyAsPlannedHUs(@NonNull final Collection<HuId> huIdsToCopy)
 	{
-		return CopyHUsCommand.builder()
+		return copyAsPlannedHUs()
 				.huIdsToCopy(huIdsToCopy)
 				.build()
 				.execute();
 	}
 
 	@Override
+	public CopyHUsCommandBuilder copyAsPlannedHUs()
+	{
+		return CopyHUsCommand.builder();
+	}
+
+	@Override
 	public I_M_HU copyAsPlannedHU(@NonNull final HuId huId)
 	{
-		return copyAsPlannedHUs(ImmutableList.of(huId))
-				.getSingleItem()
-				.getNewHU();
+		return copyAsPlannedHUs(ImmutableList.of(huId)).getSingleNewHU();
 	}
 
 	@Override
