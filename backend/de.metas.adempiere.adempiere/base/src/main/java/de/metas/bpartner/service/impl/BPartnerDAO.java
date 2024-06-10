@@ -1042,6 +1042,11 @@ public class BPartnerDAO implements IBPartnerDAO
 			final boolean alsoTryBilltoRelation,
 			final String trxName)
 	{
+		if (bPartnerId <= 0) // can happen when called by unit tests
+		{
+			return null;
+		}
+
 		final ImmutablePair<BPartnerId, Boolean> key = ImmutablePair.of(BPartnerId.ofRepoId(bPartnerId), alsoTryBilltoRelation);
 		return billToLocationCache.getOrLoad(key, k -> retrieveBillToLocation0(k.getLeft(), k.getRight()));
 	}
