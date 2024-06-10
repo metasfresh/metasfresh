@@ -32,8 +32,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -195,7 +193,7 @@ public class ShipmentScheduleWithHUService
 						ADReferenceService.newMocked()),
 				new PickingConfigRepositoryV2(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService()),
-				new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()))
+				new ModularContractProvider()
 		);
 	}
 
