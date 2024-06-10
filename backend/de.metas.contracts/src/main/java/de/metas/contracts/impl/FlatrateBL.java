@@ -2667,4 +2667,10 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
 	}
+
+	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.reverseDefinitiveInvoice(contractIds);
+	}
 }

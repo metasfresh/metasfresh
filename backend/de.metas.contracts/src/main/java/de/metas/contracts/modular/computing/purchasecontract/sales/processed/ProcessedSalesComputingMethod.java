@@ -109,6 +109,7 @@ public class ProcessedSalesComputingMethod implements IComputingMethodHandler
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
 				.build();

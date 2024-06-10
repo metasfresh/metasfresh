@@ -1320,6 +1320,17 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, contractIds)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, true)
+				.create()
+				.update(queryBL.createCompositeQueryUpdater(I_C_Flatrate_Term.class)
+						.addSetColumnValue(I_C_Flatrate_Term.COLUMNNAME_IsReadyForDefinitiveInvoice, true));
+	}
+
+	@Override
 	public boolean isInvoiceableModularContractExists(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
 		return createModularContractQuery(getFlatrateTermQueryBuilder(filter)

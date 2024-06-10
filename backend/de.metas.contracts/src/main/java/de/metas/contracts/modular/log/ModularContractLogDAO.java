@@ -74,6 +74,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -212,6 +213,7 @@ public class ModularContractLogDAO
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
+				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();
 	}
 
@@ -495,16 +497,36 @@ public class ModularContractLogDAO
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
-		sqlQuery.updateDirectly()
+
+		final int updatedCount = sqlQuery.updateDirectly()
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
 				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
 				.setExecuteDirectly(true)
 				.execute();
-		if (sqlQuery.anyMatch())
+		if (updatedCount > 0)
 		{
 			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
 					I_ModCntr_Log.Table_Name,
 					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+		}
+	}
+
+	public void unprocessLogsForICs(@NonNull final ModularContractLogQuery query, @NonNull final Collection<InvoiceCandidateId> candidateIds)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
+				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, candidateIds)
+				.create();
+		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIDs.isEmpty())
+		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, false)
+					.setExecuteDirectly(true)
+					.execute();
+
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					logEntryIDs));
 		}
 	}
 

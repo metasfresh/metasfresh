@@ -468,6 +468,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setHarvestingDetails(invoice, invoiceHeader);
 
+			invoice.setIsCreditedInvoiceReinvoicable(invoiceHeader.isCreditInvoiceReinvoiceable());
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

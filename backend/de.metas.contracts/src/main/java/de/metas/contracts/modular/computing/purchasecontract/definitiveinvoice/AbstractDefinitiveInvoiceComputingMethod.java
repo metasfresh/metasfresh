@@ -138,10 +138,12 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		final Quantity shippedQty = shipmentLogs.getQtySum(uomId, uomConversionBL);
 
 		final Quantity qtyDifference = shippedQty.subtract(producedQty);
+		final ComputingResponse.ComputingResponseBuilder responseBuilder = ComputingResponse.builder()
+				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull());
 		if (qtyDifference.isZero())
 		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice.toZero())
 					.qty(qtyDifference.toOne())
 					.build();
@@ -150,16 +152,14 @@ public abstract class AbstractDefinitiveInvoiceComputingMethod implements ICompu
 		{
 			// always ensure the qty is positive and unit price is negative
 			// because the price and amt will later be negated in de.metas.invoicecandidate.api.impl.InvoiceLineImpl.negateAmounts
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice.negate())
 					.qty(qtyDifference.negate())
 					.build();
 		}
 		else
 		{
-			return ComputingResponse.builder()
-					.ids(logs.getIds())
+			return responseBuilder
 					.price(productPrice)
 					.qty(qtyDifference)
 					.build();

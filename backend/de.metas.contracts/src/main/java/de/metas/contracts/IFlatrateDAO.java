@@ -291,6 +291,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	void prepareForDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
 
+	void reverseDefinitiveInvoice(@NonNull Collection<FlatrateTermId> contractIds);
+
 	boolean isInvoiceableModularContractExists(@NonNull IQueryFilter<I_C_Flatrate_Term> filter);
 
 	@NonNull

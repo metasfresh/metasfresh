@@ -1,4 +1,4 @@
-/*
+ /*
  * #%L
  * de.metas.contracts
  * %%
@@ -57,6 +57,7 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -124,6 +125,16 @@ public class ModularContractLogService
 			@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		modularContractLogDAO.setICProcessed(query, invoiceCandidateId);
+	}
+
+	public void unprocessLogsForICs(@NonNull final Collection<InvoiceCandidateId> candidateIds)
+	{
+		final ModularContractLogQuery query = ModularContractLogQuery.builder()
+				.isComputingMethodTypeActive(false)
+				.processed(true)
+				.billable(true)
+				.build();
+		modularContractLogDAO.unprocessLogsForICs(query, candidateIds);
 	}
 
 	@NonNull
@@ -248,5 +259,4 @@ public class ModularContractLogService
 
 		setICProcessed(modularContractLogQuery, invoiceCandidateId);
 	}
-
 }

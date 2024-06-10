@@ -43,7 +43,6 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -124,6 +123,7 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(money)

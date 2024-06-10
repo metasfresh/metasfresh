@@ -112,6 +112,7 @@ public class AVProcessedComputingMethod implements IComputingMethodHandler
 				.ids(logs.getIds())
 				.price(computingMethodService.productPriceToUOM(price, stockUOMId))
 				.qty(computingMethodService.getQtySumInStockUOM(logs))
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.build();
 	}
 }
