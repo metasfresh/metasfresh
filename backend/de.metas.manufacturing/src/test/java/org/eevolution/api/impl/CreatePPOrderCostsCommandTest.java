@@ -28,6 +28,7 @@ import de.metas.costing.CostAmount;
 import de.metas.costing.CostPrice;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.eevolution.api.PPOrderCost;
@@ -40,7 +41,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class CreatePPOrderCostsCommandTest
@@ -174,7 +175,60 @@ public class CreatePPOrderCostsCommandTest
 							.uomId(helper.uomEachId)
 							.build());
 		}
-
 	}
 
+	@Test
+	public void bom_with_OneRawProduct_and_OneCoProduct()
+	{
+		helper.uomKg.setStdPrecision(2);
+		helper.uomKg.setStdPrecision(4);
+		InterfaceWrapperHelper.save(helper.uomKg);
+
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomKg);
+		final ProductId rawProductId = BusinessTestHelper.createProductId("raw-product", helper.uomKg);
+		final ProductId coProductId = BusinessTestHelper.createProductId("co-product", helper.uomKg);
+
+		helper.currentCost().productId(rawProductId).currentCostPrice("0.70").uom(helper.uomKg).build();
+
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("75").finishedGoodsUOM(helper.uomKg)
+				.componentId(rawProductId).componentQtyRequired("100.005").componentUOM(helper.uomKg)
+				.coProductId(coProductId).coProductQtyRequired("-25.005").coProductUOM(helper.uomKg)
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+		ppOrderCosts.toCollection().stream().map(CreatePPOrderCostsCommandTest::toString).forEach(System.out::println);
+
+		//
+		// Finished good
+		{
+			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(finishedGoodsProductId, ImmutableSet.of(helper.costElement.getId()));
+			assertThat(finishedGoodCostsList).hasSize(1);
+			assertThat(finishedGoodCostsList).element(0).extracting(PPOrderCost::getPrice).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(helper.currencyId))
+							.componentsCostPrice(CostAmount.of("0.6222", helper.currencyId))
+							.uomId(helper.uomKgId)
+							.build());
+		}
+
+		//
+		// Co-Product
+		{
+			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(coProductId, ImmutableSet.of(helper.costElement.getId()));
+			assertThat(finishedGoodCostsList).hasSize(1);
+			assertThat(finishedGoodCostsList).element(0).extracting(PPOrderCost::getPrice).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+							.ownCostPrice(CostAmount.zero(helper.currencyId))
+							.componentsCostPrice(CostAmount.of("0.3112", helper.currencyId))
+							.uomId(helper.uomKgId)
+							.build());
+		}
+	}
+
+	private static String toString(PPOrderCost ppOrderCost)
+	{
+		return ppOrderCost.getTrxType()
+				+ " " + ppOrderCost.getPrice();
+	}
 }
