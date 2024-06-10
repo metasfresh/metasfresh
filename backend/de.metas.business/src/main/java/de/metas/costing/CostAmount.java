@@ -113,6 +113,19 @@ public final class CostAmount
 		this.sourceValue = sourceValue;
 	}
 
+	@Override
+	public String toString()
+	{
+		if (sourceValue == null)
+		{
+			return value.toString();
+		}
+		else
+		{
+			return value + "/" + sourceValue;
+		}
+	}
+
 	public CurrencyId getCurrencyId() {return value.getCurrencyId();}
 
 	private void assertCurrencyMatching(@NonNull final CostAmount amt)
