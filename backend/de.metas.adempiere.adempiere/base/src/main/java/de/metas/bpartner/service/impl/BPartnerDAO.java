@@ -826,7 +826,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			bpPricingSysId = bPartner.getPO_PricingSystem_ID();
 		}
 
-		if (bpPricingSysId != null && bpPricingSysId > 0)
+		if (bpPricingSysId > 0)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
 			return PricingSystemId.ofRepoId(bpPricingSysId);
@@ -849,7 +849,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				bpGroupPricingSysId = bpGroup.getPO_PricingSystem_ID();
 			}
 			// metas: end
-			if (bpGroupPricingSysId != null && bpGroupPricingSysId > 0)
+			if (bpGroupPricingSysId > 0)
 			{
 				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
 				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
@@ -1320,13 +1320,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				.findFirst()
 				.map(BPRelation::getTargetBPLocationId);
 
-		if (relBPLocationId.isPresent())
-		{
-			return BPartnerLocationId.ofRepoId(query.getBpartnerId(), relBPLocationId.get().getRepoId());
-		}
-
 		// if no location was found based on relation, return own location, null or non-null
-		return createLocationIdOrNull(bpartnerId, ownToLocation);
+		return relBPLocationId.orElseGet(() -> createLocationIdOrNull(bpartnerId, ownToLocation));
 	}
 
 	private void appendLocationChecks(@NonNull final BPartnerLocationQuery query, @NonNull final IQueryBuilder<I_C_BPartner_Location> bpLocationQueryBuilder)
@@ -1373,7 +1368,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.bpartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartner_ID()))
 				.bpLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartner_ID(), bpRelationRecord.getC_BPartner_Location_ID()))
 				.targetBPartnerId(BPartnerId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID()))
-				.targetBPLocationId(BPartnerLocationId.ofRepoIdOrNull(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
+				.targetBPLocationId(BPartnerLocationId.ofRepoId(bpRelationRecord.getC_BPartnerRelation_ID(), bpRelationRecord.getC_BPartnerRelation_Location_ID()))
 				.name(bpRelationRecord.getName())
 				.build();
 	}
