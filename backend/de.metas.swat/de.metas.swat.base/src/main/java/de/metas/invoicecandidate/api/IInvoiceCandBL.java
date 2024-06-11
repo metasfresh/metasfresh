@@ -41,8 +41,8 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -326,7 +326,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">...</a>).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -426,6 +426,12 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isCreatedByInvoicingJustNow(org.compiere.model.I_C_Invoice invoiceRecord);
 
 	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
+
+	/**
+	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
+	 *
+	 */
+	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);

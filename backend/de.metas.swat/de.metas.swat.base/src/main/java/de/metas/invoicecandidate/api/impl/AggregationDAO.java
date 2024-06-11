@@ -22,14 +22,6 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Query;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -37,18 +29,30 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.I_M_ProductGroup_Product;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Query;
+import org.slf4j.Logger;
+
+import java.util.Properties;
 
 public class AggregationDAO implements IAggregationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final Logger logger = LogManager.getLogger(InvoiceCandBL.class);
+
 	@Override
-	public I_C_Invoice_Candidate_Agg retrieveAggregate(final I_C_Invoice_Candidate ic)
+	public I_C_Invoice_Candidate_Agg retrieveAggregate(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -99,10 +103,28 @@ public class AggregationDAO implements IAggregationDAO
 	}
 
 	@Override
-	public int findC_Invoice_Candidate_HeaderAggregationKey_ID(I_C_Invoice_Candidate ic)
+	public int findC_Invoice_Candidate_HeaderAggregationKey_ID(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		try
+		{
+			return findC_Invoice_Candidate_HeaderAggregationKey_ID0(ic);
+		}
+		catch (final DBUniqueConstraintException e)
+		{
+			final String msg = "Caught DBUniqueConstraintException while trying to get or create C_Invoice_Candidate_HeaderAggregationKey for C_Invoice_Candidate_ID=" + ic.getC_Invoice_Candidate_ID() + ". => Retrying";
+			logger.info(msg, e);
+			Loggables.get().addLog(msg);
+
+			// retrying is not super-cool and we minimized the possibility for concurrent invocations, 
+			// but I couldn't figure out how to get rid of them at de.metas.invoicecandidate.api.impl.InvoiceCandBL.handleCompleteForInvoice
+			return findC_Invoice_Candidate_HeaderAggregationKey_ID0(ic);
+		}
+	}
+
+	private int findC_Invoice_Candidate_HeaderAggregationKey_ID0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final String headerAggregationKeyCalc = ic.getHeaderAggregationKey_Calc();
-		if (Check.isEmpty(headerAggregationKeyCalc, true))
+		if (Check.isBlank(headerAggregationKeyCalc))
 		{
 			return -1;
 		}
