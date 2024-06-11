@@ -22,6 +22,7 @@ package org.adempiere.mmovement.api;
  * #L%
  */
 
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -64,7 +65,7 @@ public interface IMovementDAO extends ISingletonService
 
 	List<I_M_Movement> retrieveMovementsForDDOrder(int ddOrderId);
 
-	BigDecimal retrieveMovementQtyForDDOrderLine(int ddOrderLineId);
+	BigDecimal retrieveMovementQtyForDDOrderLine(DDOrderLineId ddOrderLineId);
 
 	@NonNull
 	I_M_Movement getById(@NonNull MovementId movementId);

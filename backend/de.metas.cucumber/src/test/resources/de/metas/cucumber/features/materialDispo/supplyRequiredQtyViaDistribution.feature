@@ -402,8 +402,8 @@ Feature: Stock shortage solved via distribution
     When the dd_order identified by dd_o_1 is completed
 
     Then DD_OrderLines are validated:
-      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved |
-      | dd_ol_1                    | 16             | 10       | ddNetworkLine_1                              | p_1                         | 16             | 0                | 16              |
+      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsDelivered |
+      | dd_ol_1                    | 16             | 10       | ddNetworkLine_1                              | p_1                         | 16             | 16               | 16              | Y               |
 
     And DD_Orders are validated:
       | DD_Order_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Warehouse_From_ID.Identifier | OPT.M_Warehouse_To_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.DocStatus |
@@ -593,8 +593,8 @@ Feature: Stock shortage solved via distribution
     When the dd_order identified by dd_o_1 is completed
 
     Then DD_OrderLines are validated:
-      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved |
-      | dd_ol_1                    | 8              | 10       | ddNetworkLine_1                              | p_1                         | 8              | 0                | 8               |
+      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsDelivered |
+      | dd_ol_1                    | 8              | 10       | ddNetworkLine_1                              | p_1                         | 8              | 8                | 8               | Y               |
 
     And DD_Orders are validated:
       | DD_Order_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Warehouse_From_ID.Identifier | OPT.M_Warehouse_To_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.DocStatus |
@@ -874,8 +874,8 @@ Feature: Stock shortage solved via distribution
     When the dd_order identified by dd_o_1 is completed
 
     Then DD_OrderLines are validated:
-      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved |
-      | dd_ol_1                    | 14             | 10       | ddNetworkLine_1                              | p_1                         | 14             | 0                | 14              |
+      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsDelivered |
+      | dd_ol_1                    | 14             | 10       | ddNetworkLine_1                              | p_1                         | 14             | 14               | 14              | Y               |
 
     And DD_Orders are validated:
       | DD_Order_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Warehouse_From_ID.Identifier | OPT.M_Warehouse_To_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.DocStatus |
@@ -1067,8 +1067,8 @@ Feature: Stock shortage solved via distribution
     When the dd_order identified by dd_o_1 is completed
 
     Then DD_OrderLines are validated:
-      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved |
-      | dd_ol_1                    | 14             | 10       | ddNetworkLine_1                              | p_1                         | 14             | 0                | 14              |
+      | DD_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.Line | OPT.DD_NetworkDistributionLine_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyEntered | OPT.QtyDelivered | OPT.QtyReserved | OPT.IsDelivered |
+      | dd_ol_1                    | 14             | 10       | ddNetworkLine_1                              | p_1                         | 14             | 14               | 14              | Y               |
 
     And DD_Orders are validated:
       | DD_Order_ID.Identifier | OPT.M_Warehouse_ID.Identifier | OPT.M_Warehouse_From_ID.Identifier | OPT.M_Warehouse_To_ID.Identifier | OPT.M_Shipper_ID.Identifier | OPT.DocStatus |

@@ -1,5 +1,6 @@
 package org.adempiere.mmovement.api.impl;
 
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,15 +69,14 @@ public class MovementDAO implements IMovementDAO
 	}
 
 	@Override
-	public BigDecimal retrieveMovementQtyForDDOrderLine(final int ddOrderLineId)
+	public BigDecimal retrieveMovementQtyForDDOrderLine(@NonNull final DDOrderLineId ddOrderLineId)
 	{
 		return queryBL.createQueryBuilder(I_M_MovementLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
 				.stream()
 				.map(I_M_MovementLine::getMovementQty)
-				.reduce(BigDecimal::add)
-				.orElse(BigDecimal.ZERO);
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 	
 	@Override

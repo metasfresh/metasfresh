@@ -47,10 +47,10 @@ public class M_MovementLine
 {
 	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	
+
 	private final DDOrderLowLevelDAO ddOrderDAO;
-	
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW, ifColumnsChanged = I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID)
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID)
 	public void setDDOrderLineQtyDelivered(@NonNull final I_M_MovementLine movementLineRecord)
 	{
 		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoIdOrNull(movementLineRecord.getDD_OrderLine_ID());
@@ -60,7 +60,7 @@ public class M_MovementLine
 		}
 
 		trxManager.runAfterCommit(() -> {
-			final BigDecimal movementQty = movementDAO.retrieveMovementQtyForDDOrderLine(ddOrderLineId.getRepoId());
+			final BigDecimal movementQty = movementDAO.retrieveMovementQtyForDDOrderLine(ddOrderLineId);
 			final I_DD_OrderLine ddOrderLineRecord = ddOrderDAO.getLineById(ddOrderLineId);
 			ddOrderLineRecord.setQtyDelivered(movementQty);
 
