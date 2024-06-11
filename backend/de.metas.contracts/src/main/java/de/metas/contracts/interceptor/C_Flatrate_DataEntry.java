@@ -91,7 +91,7 @@ public class C_Flatrate_DataEntry
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void setDataEntry(final I_C_Flatrate_DataEntry dataEntry)
+	public void setDataEntry(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final I_C_Flatrate_Term term = dataEntry.getC_Flatrate_Term();
 

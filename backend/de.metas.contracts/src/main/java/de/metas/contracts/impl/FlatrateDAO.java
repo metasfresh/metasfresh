@@ -553,7 +553,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Clearing_Alloc> retrieveOpenClearingAllocs(final I_C_Flatrate_DataEntry dataEntry)
+	public List<I_C_Invoice_Clearing_Alloc> retrieveOpenClearingAllocs(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final Properties ctx = getCtx(dataEntry);
 		final String trxName = getTrxName(dataEntry);
@@ -965,7 +965,7 @@ public class FlatrateDAO implements IFlatrateDAO
 				.stream()
 				.flatMap(ic -> invoiceCandDAO.retrieveIlForIc(ic).stream())
 				.filter(StreamUtils.distinctByKey(I_C_InvoiceLine::getC_Invoice_ID))
-				.map(il -> il.getC_Invoice())
+				.map(I_C_InvoiceLine::getC_Invoice)
 				.collect(ImmutableList.toImmutableList());
 
 		return currentFlatRateTermInvoices;
@@ -985,7 +985,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
+	public void save(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
 		InterfaceWrapperHelper.save(flatrateTerm);
 	}
@@ -1048,7 +1048,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		{
 			return true; // if this term has no C_Order_Term_ID, then it *is* one of those running terms
 		}
-		final Instant instant = TimeUtil.asInstant(flatrateTerm.getC_Order_Term().getDateOrdered());
+		final Instant instant = TimeUtil.asInstantNonNull(flatrateTerm.getC_Order_Term().getDateOrdered());
 
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
 				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),

@@ -84,11 +84,11 @@ public interface IFlatrateDAO extends ISingletonService
 	 * Retrieves the C_Invoice_Clearing_Alloc records with these properties
 	 * <ul>
 	 * <li>it references the given matching</li>
-	 * <li>it's {@link I_C_Invoice_Clearing_Alloc#COLUMNNAME_C_Flatrate_DataEntry_ID} is not yet set</li>
+	 * <li>its {@link I_C_Invoice_Clearing_Alloc#COLUMNNAME_C_Flatrate_DataEntry_ID} is not yet set</li>
 	 * <li><code>C_Invoice_Clearing_Alloc.C_Invoice_Cand_ToClear_ID</code> references an invoice candidate whose <code>C_Invoice_Candidate_ID.DateOrdered</code> value is within the given period</li>
 	 * </ul>
 	 */
-	List<I_C_Invoice_Clearing_Alloc> retrieveOpenClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
+	List<I_C_Invoice_Clearing_Alloc> retrieveOpenClearingAllocs(@NonNull I_C_Flatrate_DataEntry dataEntry);
 
 	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term flatrateTerm, Timestamp date, String dataEntryType, boolean onlyNonSim);
 

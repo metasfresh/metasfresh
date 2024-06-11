@@ -37,6 +37,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -80,7 +81,7 @@ public class C_Invoice_Candidate
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateIsToClear(final I_C_Invoice_Candidate invoiceCand)
+	public void updateIsToClear(@NonNull final I_C_Invoice_Candidate invoiceCand, @NonNull final ModelChangeType timing)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 		if (invoiceCandBL.extractProcessedOverride(invoiceCand).isTrue())
@@ -97,6 +98,11 @@ public class C_Invoice_Candidate
 		{
 			invoiceCand.setIsToClear(newIsToClear);
 			invoiceCandDAO.invalidateCand(invoiceCand);
+		}
+
+		if (newIsToClear && timing.isNew() && timing.isBefore())
+		{
+			createIca(invoiceCand, term);
 		}
 
 		final boolean dateOrdereChanged = InterfaceWrapperHelper.isValueChanged(invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_DateOrdered) && !InterfaceWrapperHelper.isNew(invoiceCand);
@@ -145,28 +151,20 @@ public class C_Invoice_Candidate
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
-	public void createIca(final I_C_Invoice_Candidate invoiceCand)
+	private void createIca(
+			@NonNull final I_C_Invoice_Candidate icToClear,
+			@NonNull final I_C_Flatrate_Term term)
 	{
-		if (!invoiceCand.isToClear())
-		{
-			return; // nothing to do
-		}
+		// create an invoice candidate allocation record for 'icToClear'
+		final I_C_Invoice_Clearing_Alloc ica = InterfaceWrapperHelper.newInstance(I_C_Invoice_Clearing_Alloc.class, icToClear);
 
-		// create an invoice candidate allocation record for 'invoiceCand'
-		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+		ica.setAD_Org_ID(icToClear.getAD_Org_ID());
+		Check.assume(ica.getAD_Client_ID() == icToClear.getAD_Client_ID(), "po.getCtx() contains the correct AD_Client_ID");
 
-		final I_C_Flatrate_Term term = Check.assumeNotNull(flatrateDAO.retrieveNonSimTermOrNull(invoiceCand), "There is a term for " + invoiceCand);
-
-		final I_C_Invoice_Clearing_Alloc ica = InterfaceWrapperHelper.newInstance(I_C_Invoice_Clearing_Alloc.class, invoiceCand);
-
-		ica.setAD_Org_ID(invoiceCand.getAD_Org_ID());
-		Check.assume(ica.getAD_Client_ID() == invoiceCand.getAD_Client_ID(), "po.getCtx() contains the correct AD_Client_ID");
-
-		ica.setC_Invoice_Cand_ToClear(invoiceCand);
+		ica.setC_Invoice_Cand_ToClear(icToClear);
 		ica.setC_Flatrate_Term_ID(term.getC_Flatrate_Term_ID());
 
-		// task 07371: the code to retrieve and link the C_FlatrateDataEntry for 'invoiceCand' and 'term' was moved to a dedicated MV 'C_Invoice_Clearing_Alloc'.
+		// task 07371: the code to retrieve and link the C_FlatrateDataEntry for 'icToClear' and 'term' was moved to a dedicated MV 'C_Invoice_Clearing_Alloc'.
 
 		InterfaceWrapperHelper.save(ica);
 	}

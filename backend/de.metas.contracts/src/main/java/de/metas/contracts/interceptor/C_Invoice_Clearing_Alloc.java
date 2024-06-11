@@ -27,12 +27,17 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
 import java.util.List;
@@ -40,11 +45,15 @@ import java.util.List;
 @Interceptor(I_C_Invoice_Clearing_Alloc.class)
 public class C_Invoice_Clearing_Alloc
 {
+
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	/**
 	 * If there is a <code>C_Flatrate_DataEntry </code> record for the given <code>ica</code>'s candidate and term, then retrieve and reference it.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
-	public void linkToFlatrateDataEntryIfExists(final I_C_Invoice_Clearing_Alloc ica)
+	public void linkToFlatrateDataEntryIfExists(@NonNull final I_C_Invoice_Clearing_Alloc ica)
 	{
 		final I_C_Flatrate_DataEntry dataEntry = retrieveDataEntry(ica.getC_Invoice_Cand_ToClear(), ica.getC_Flatrate_Term());
 		if (dataEntry != null)
@@ -57,11 +66,11 @@ public class C_Invoice_Clearing_Alloc
 	{
 		final List<I_C_Flatrate_DataEntry> entries =
 				Services.get(IFlatrateDAO.class).retrieveEntries(null, // I_C_Flatrate_Conditions
-						term,
-						invoiceCand.getDateOrdered(),
-						X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,
-						UomId.ofRepoIdOrNull(term.getC_UOM_ID()),
-						true); // onlyNonSim
+																 term,
+																 invoiceCand.getDateOrdered(),
+																 X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,
+																 UomId.ofRepoIdOrNull(term.getC_UOM_ID()),
+																 true); // onlyNonSim
 
 		final I_C_Flatrate_DataEntry dataEntry;
 		if (entries.isEmpty())
@@ -74,5 +83,48 @@ public class C_Invoice_Clearing_Alloc
 			Check.assume(entries.size() == 1, "There is only one non-sim entry");
 		}
 		return dataEntry;
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setCandidateToClearToProcessedIfNeccesary(@NonNull final I_C_Invoice_Clearing_Alloc ica)
+	{
+		if (ica.getC_Invoice_Candidate_ID() > 0)
+		{
+			final I_C_Invoice_Candidate contractCandidate = invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(ica.getC_Invoice_Candidate_ID()));
+			if (contractCandidate.isProcessed())
+			{
+				invoiceCandBL.closeInvoiceCandidate(ica.getC_Invoice_Cand_ToClear());
+			}
+		}
+
+		final TableRecordReference reference;
+		final I_C_Flatrate_DataEntry dataEntry = retrieveDataEntry(ica.getC_Invoice_Cand_ToClear(), ica.getC_Flatrate_Term());
+		if (dataEntry != null)
+		{
+			ica.setC_Flatrate_DataEntry(dataEntry);
+			reference = TableRecordReference.of(dataEntry);
+		}
+		else
+		{
+			reference = TableRecordReference.of(ica.getC_Flatrate_Term());
+		}
+
+		closeIfReferencingICsAreClosed(ica.getC_Invoice_Cand_ToClear(), reference);
+	}
+
+	private void closeIfReferencingICsAreClosed(
+			@NonNull final I_C_Invoice_Candidate icToClear,
+			@NonNull final TableRecordReference reference)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveReferencing(reference);
+		boolean allprocessed = true;
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			allprocessed = allprocessed && invoiceCandidate.isProcessed();
+		}
+		if (allprocessed)
+		{
+			invoiceCandBL.closeInvoiceCandidate(icToClear);
+		}
 	}
 }
