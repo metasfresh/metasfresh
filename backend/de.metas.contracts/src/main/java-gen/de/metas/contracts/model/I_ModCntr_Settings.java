@@ -17,6 +17,7 @@ public interface I_ModCntr_Settings
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
+	// TODO Add new column
 	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
