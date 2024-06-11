@@ -34,6 +34,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -49,13 +50,13 @@ import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
@@ -64,22 +65,25 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
+import static de.metas.contracts.modular.ComputingMethodType.DefinitiveInvoiceRawProduct;
+import static de.metas.contracts.modular.ComputingMethodType.INTERIM_CONTRACT;
+import static de.metas.contracts.modular.ComputingMethodType.Receipt;
+import static de.metas.contracts.modular.ComputingMethodType.SalesOnRawProduct;
+
 @Service
 @RequiredArgsConstructor
 public class ModularContractPriceService
 {
+	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
 	private final ModularContractPriceRepository modularContractPriceRepository;
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final ProductScalePriceService productScalePriceService;
-
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-
-	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
 
 	public ModCntrSpecificPrice getById(@NonNull final ModCntrSpecificPriceId id)
 	{
@@ -110,7 +114,13 @@ public class ModularContractPriceService
 			handler.streamContractSpecificPricedProductIds(config.getId().getModularContractModuleId())
 					.forEach(productId -> {
 						setProductDataOnPricingContext(productId, pricingContextTemplate);
-						createModCntrSpecificPrices(flatrateTermRecord, productId, config, pricingContextTemplate);
+						createModCntrSpecificPrices(ModCntrSpecificPricesCreateRequest
+															.builder()
+															.flatrateTermRecord(flatrateTermRecord)
+															.productId(productId)
+															.moduleConfig(config)
+															.pricingContextTemplate(pricingContextTemplate)
+															.build());
 					});
 		}
 	}
@@ -134,7 +144,14 @@ public class ModularContractPriceService
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 		final ProductId productId = settings.getRawProductId();
 		setProductDataOnPricingContext(productId, pricingContextTemplate);
-		createModCntrSpecificPrices(flatrateTermRecord, productId, interimContractModule, pricingContextTemplate);
+		createModCntrSpecificPrices(ModCntrSpecificPricesCreateRequest
+											.builder()
+											.flatrateTermRecord(flatrateTermRecord)
+											.productId(productId)
+											.moduleConfig(interimContractModule)
+											.pricingContextTemplate(pricingContextTemplate)
+											.interimPricePercent(settings.getInterimPricePercent())
+											.build());
 
 	}
 
@@ -145,23 +162,27 @@ public class ModularContractPriceService
 				.setQty(Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(product.getC_UOM_ID()))));
 	}
 
-	private void createModCntrSpecificPrices(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ProductId productId, @NonNull final ModuleConfig moduleConfig, final @NonNull IEditablePricingContext pricingContextTemplate)
+	private void createModCntrSpecificPrices(@NonNull final ModCntrSpecificPricesCreateRequest modCntrSpecificPricesCreateRequest)
 	{
-		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContextTemplate);
+		final IPricingResult pricingResult = pricingBL.calculatePrice(modCntrSpecificPricesCreateRequest.getPricingContextTemplate());
 
+		final ImmutableList<ComputingMethodType> initialRawPriceComputingMethods = ImmutableList.of(Receipt,
+																									SalesOnRawProduct,
+																									DefinitiveInvoiceRawProduct,
+																									INTERIM_CONTRACT);
 
 		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
-				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
+				.flatrateTermId(FlatrateTermId.ofRepoId(modCntrSpecificPricesCreateRequest.getFlatrateTermRecord().getC_Flatrate_Term_ID()))
+				.modularContractModuleId(modCntrSpecificPricesCreateRequest.getModuleConfig().getId().getModularContractModuleId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.uomId(pricingResult.getPriceUomId())
 				.amount(pricingResult.getPriceStdAsMoney())
-				.productId(productId)
-				.seqNo(moduleConfig.getSeqNo());
+				.productId(modCntrSpecificPricesCreateRequest.getProductId())
+				.seqNo(modCntrSpecificPricesCreateRequest.getModuleConfig().getSeqNo());
 
-		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
+		if (modCntrSpecificPricesCreateRequest.getModuleConfig().isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
 		{
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), modCntrSpecificPricesCreateRequest.getProductId());
 			if (productPrice == null)
 			{
 				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE);
@@ -189,12 +210,28 @@ public class ModularContractPriceService
 				final ImmutableList<ModCntrSpecificPrice> specificPrices = productScalePriceService.getScalePrices(productPriceId)
 						.stream()
 						.map(scale -> specificPriceTemplate.isScalePrice(true).minValue(scale.getQuantityMin())
-								.amount(Money.of(scale.getPriceStd(),pricingResult.getCurrencyId()))
+								.amount(Money.of(scale.getPriceStd(), pricingResult.getCurrencyId()))
 								.build())
 						.collect(ImmutableList.toImmutableList());
 
 				modularContractPriceRepository.saveAll(specificPrices);
 			}
+		}
+		else if (modCntrSpecificPricesCreateRequest.getModuleConfig().isMatchingAnyOf(initialRawPriceComputingMethods))
+		{
+			final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder initialPriceBuilder = specificPriceTemplate.amount(Money.of(modCntrSpecificPricesCreateRequest.flatrateTermRecord().getPriceActual(), CurrencyId.ofRepoId((modCntrSpecificPricesCreateRequest.flatrateTermRecord().getC_Currency_ID()))))
+					.isScalePrice(false).minValue(null)
+					.uomId(UomId.ofRepoId(modCntrSpecificPricesCreateRequest.getFlatrateTermRecord().getC_UOM_ID()))
+					.taxCategoryId(TaxCategoryId.ofRepoId(modCntrSpecificPricesCreateRequest.getFlatrateTermRecord().getC_TaxCategory_ID()));
+
+			if(modCntrSpecificPricesCreateRequest.getModuleConfig().isMatching(INTERIM_CONTRACT))
+			{
+				// TODO changes around here
+				//initialPriceBuilder.amount()
+			}
+			final ModCntrSpecificPrice initialPrice = initialPriceBuilder
+					.build();
+			modularContractPriceRepository.save(initialPrice);
 		}
 		else
 		{

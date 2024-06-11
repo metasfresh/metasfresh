@@ -229,6 +229,7 @@ public class ModularContractSettingsDAO
 				.soTrx(SOTrx.ofBooleanNotNull(settingsRecord.isSOTrx()))
 				.additionalInterestDays(settingsRecord.getAddInterestDays())
 				.interestPercent(Percent.of(settingsRecord.getInterestRate()))
+				.interimPricePercent(Percent.of(settingsRecord.getInterimPricePercent()))
 				.storageCostStartDate(LocalDateAndOrgId.ofTimestamp(settingsRecord.getStorageCostStartDate(),
 						OrgId.ofRepoId(settingsRecord.getAD_Org_ID()),
 						orgDAO::getTimeZone))
