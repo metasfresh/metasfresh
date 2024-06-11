@@ -1255,6 +1255,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
 	{
