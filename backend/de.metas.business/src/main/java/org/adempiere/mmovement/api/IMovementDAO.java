@@ -22,6 +22,8 @@ package org.adempiere.mmovement.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
@@ -32,8 +34,8 @@ import org.adempiere.mmovement.MovementLineId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface IMovementDAO extends ISingletonService
 {
@@ -65,8 +67,12 @@ public interface IMovementDAO extends ISingletonService
 
 	List<I_M_Movement> retrieveMovementsForDDOrder(int ddOrderId);
 
-	BigDecimal retrieveMovementQtyForDDOrderLine(DDOrderLineId ddOrderLineId);
-
 	@NonNull
 	I_M_Movement getById(@NonNull MovementId movementId);
+
+	@NonNull
+	ImmutableList<I_M_MovementLine> retrieveLines(@NonNull MovementId movementId);
+
+	@NonNull
+	Map<DDOrderLineId, List<I_M_MovementLine>> retrieveCompletedMovementLinesForDDOrderLines(@NonNull ImmutableSet<DDOrderLineId> ddOrderLineIds);
 }

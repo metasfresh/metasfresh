@@ -22,49 +22,30 @@
 
 package de.metas.distribution.movement.interceptor;
 
-import de.metas.distribution.ddorder.DDOrderLineId;
-import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.mmovement.api.IMovementDAO;
-import org.compiere.model.I_M_MovementLine;
+import org.adempiere.mmovement.MovementId;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.ModelValidator;
-import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-@Interceptor(I_M_MovementLine.class)
+@Interceptor(I_M_Movement.class)
 @Component
 @RequiredArgsConstructor
-public class M_MovementLine
+public class M_Movement
 {
-	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final DDOrderLowLevelDAO ddOrderDAO;
+	private final DDOrderLowLevelService ddOrderDAO;
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_MovementLine.COLUMNNAME_DD_OrderLine_ID)
-	public void setDDOrderLineQtyDelivered(@NonNull final I_M_MovementLine movementLineRecord)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Movement.COLUMNNAME_DocStatus)
+	public void setDDOrderLineQtyDelivered(@NonNull final I_M_Movement movementRecord)
 	{
-		final DDOrderLineId ddOrderLineId = DDOrderLineId.ofRepoIdOrNull(movementLineRecord.getDD_OrderLine_ID());
-		if (ddOrderLineId == null)
-		{
-			return;
-		}
-
-		trxManager.runAfterCommit(() -> {
-			final BigDecimal movementQty = movementDAO.retrieveMovementQtyForDDOrderLine(ddOrderLineId);
-			final I_DD_OrderLine ddOrderLineRecord = ddOrderDAO.getLineById(ddOrderLineId);
-			ddOrderLineRecord.setQtyDelivered(movementQty);
-
-			saveRecord(ddOrderLineRecord);
-		});
+		trxManager.runAfterCommit(() -> ddOrderDAO.updateQtyDeliveredFromMovement(MovementId.ofRepoId(movementRecord.getM_Movement_ID())));
 	}
 }
