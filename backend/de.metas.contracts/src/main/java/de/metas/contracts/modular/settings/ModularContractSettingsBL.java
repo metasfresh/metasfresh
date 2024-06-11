@@ -34,6 +34,7 @@ import de.metas.contracts.modular.ModularContract_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -55,6 +56,7 @@ public class ModularContractSettingsBL
 	public static final String AD_ELEMENT_DEFINITIVE_INVOICE = "DefinitiveInvoice";
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private ModularContractSettingsDAO modularContractSettingsDAO;
 
 	private static final AdMessageKey ERROR_MSG_NO_FLATRATE_TERM_CONDITIONS = AdMessageKey.of("de.metas.contracts.modular.settings.missingFlatrateTermCondition");
@@ -196,6 +198,7 @@ public class ModularContractSettingsBL
 			modularContractSettingsDAO.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
 					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct)
 					.productId(processedProductId)
+					.moduleName(productBL.getProductName(processedProductId))
 					.build());
 		}
 		else
@@ -203,6 +206,7 @@ public class ModularContractSettingsBL
 			modularContractSettingsDAO.updateModule(existingModuleConfig, ModularContractModuleUpdateRequest.builder()
 					.modularContractTypeId(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct)
 					.productId(rawProductId)
+					.moduleName(productBL.getProductName(rawProductId))
 					.build());
 		}
 	}
