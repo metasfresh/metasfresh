@@ -229,10 +229,11 @@ public class EDIDocumentBL implements IEDIDocumentBL
 			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Invalid_Invoice_Aggregation_Error)));
 		}
 
-		if (Check.isEmpty(ediPartner.getVATaxID(), true))
-		{
-			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
-		}
+		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
+//		if (Check.isEmpty(ediPartner.getVATaxID(), true))
+//		{
+//			missingFields.add(de.metas.interfaces.I_C_BPartner.COLUMNNAME_VATaxID);
+//		}
 
 		if (!missingFields.isEmpty())
 		{
@@ -251,14 +252,9 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		final Aggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
 
 		// Make sure that aggregation includes C_Order_ID or POReference
-		if (!soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
-				&& !soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference))
-		{
-			return false;
-		}
-
-		return true;
-	}
+        return soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
+                || soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference);
+    }
 
 	private List<Exception> isValidBPLocation(@NonNull final org.compiere.model.I_C_BPartner_Location bpLocation)
 	{
