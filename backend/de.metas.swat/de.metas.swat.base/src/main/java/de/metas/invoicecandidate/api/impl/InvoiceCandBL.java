@@ -1192,7 +1192,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setFrom(ic);
 
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
-		aggregationBL.setHeaderAggregationKey(splitCand);
+		// this shall be done later by IInvoiceCandInvalidUpdater. // Otherwise we might have concurrent access to I_C_Invoice_Candidate_HeaderAggregation and DBUniqueConstraintExceptions
+		//aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
 		splitCand.setDescription(ic.getDescription());
@@ -2580,7 +2581,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ImmutableSet.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		// void invoice

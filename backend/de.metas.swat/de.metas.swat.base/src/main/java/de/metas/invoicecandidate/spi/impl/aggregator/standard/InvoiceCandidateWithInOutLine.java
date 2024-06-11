@@ -100,12 +100,7 @@ public final class InvoiceCandidateWithInOutLine
 		{
 			return null;
 		}
-		final I_M_InOutLine inOutLine = iciol.getM_InOutLine();
-		if (inOutLine == null)
-		{
-			return null;
-		}
-		return inOutLine;
+		return iciol.getM_InOutLine();
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
