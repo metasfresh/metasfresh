@@ -29,6 +29,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -183,6 +184,8 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO;
+import static de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.disableReadOnlyColumnCheck;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
@@ -1723,17 +1726,6 @@ public class FlatrateBL implements IFlatrateBL
 			notCreatedReason.append(" is neither customer nor vendor;");
 			dontCreateTerm = true;
 		}
-
-		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBillToLocation(ctx, bPartner.getC_BPartner_ID(),
-				true,            // alsoTryBPartnerRelation
-				trxName);
-
-		if (billPartnerLocation == null)
-		{
-			notCreatedReason.append(" has no billTo location;");
-			dontCreateTerm = true;
-		}
-
 		if (productAndCategoryId == null)
 		{
 			if (!flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
@@ -1758,9 +1750,37 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
+		final BPartnerId shipToPartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
+		final IBPartnerDAO.BPartnerLocationQuery shipToLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(shipToPartnerId)
+				.type(SHIP_TO)
+				.applyTypeStrictly(false)
+				.build();
+		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(shipToLocationQuery);
+		if (shipToLocationRecord == null)
+		{
+			notCreatedReason.append(" has no location;");
+			throwNoTermCreatedException(bPartner, notCreatedReason);
+		}
+
+		final BPartnerLocationId shipToLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToPartnerId, shipToLocationRecord.getC_BPartner_Location_ID());
+
+		final IBPartnerDAO.BPartnerLocationQuery billToLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
+				.bpartnerId(shipToPartnerId)
+				.relationBPartnerLocationId(shipToLocationId)
+				.type(BILL_TO)
+				.applyTypeStrictly(false)
+				.build();
+		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(billToLocationQuery);
+		if (billPartnerLocation == null)
+		{
+			notCreatedReason.append(" has no billTo location;");
+			dontCreateTerm = true;
+		}
+
 		if (dontCreateTerm)
 		{
-			throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason).markAsUserValidationError();
+			throwNoTermCreatedException(bPartner, notCreatedReason);
 		}
 
 		final I_C_Flatrate_Term newTerm = newInstance(I_C_Flatrate_Term.class, bPartner);
@@ -1772,33 +1792,19 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(endDate != null ? endDate : startDate);
 
-		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+		final BPartnerLocationAndCaptureId billToLocationId = BPartnerLocationAndCaptureId.ofRepoId(billPartnerLocation.getC_BPartner_ID(),// note that in case of bPartner relations, this might be a different partner than 'bPartner'.
 				billPartnerLocation.getC_BPartner_Location_ID(),
 				billPartnerLocation.getC_Location_ID());
 		ContractDocumentLocationAdapterFactory.billLocationAdapter(newTerm)
 				.setFrom(billToLocationId);
 
-		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bPartner.getC_BPartner_ID()))
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-				.applyTypeStrictly(true)
-				.build();
-
-		final I_C_BPartner_Location shipToLocationRecord = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
-
-		if (shipToLocationRecord != null)
-		{
-			final BPartnerLocationAndCaptureId shipToLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(shipToLocationRecord.getC_BPartner_ID(),
+		final BPartnerLocationAndCaptureId shipToLocationAndCaptureId = BPartnerLocationAndCaptureId.ofRepoId(shipToLocationRecord.getC_BPartner_ID(),
 					shipToLocationRecord.getC_BPartner_Location_ID(),
 					shipToLocationRecord.getC_Location_ID());
 
-			ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
-					.setFrom(shipToLocationId);
-		}
-		else
-		{
-			newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID()); // keep the previous behavior
-		}
+		ContractDocumentLocationAdapterFactory.dropShipLocationAdapter(newTerm)
+				.setFrom(shipToLocationAndCaptureId);
+
 		if (userInCharge == null)
 		{
 			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
@@ -1832,6 +1838,11 @@ public class FlatrateBL implements IFlatrateBL
 		CacheMgt.get().reset(cacheInvalidateMultiRequest);
 
 		return newTerm;
+	}
+
+	private static void throwNoTermCreatedException(final I_C_BPartner bPartner, final StringBuilder notCreatedReason)
+	{
+		throw new AdempiereException("@NotCreated@ @C_Flatrate_Term_ID@ (@C_BPartner_ID@: " + bPartner.getValue() + "): " + notCreatedReason).markAsUserValidationError();
 	}
 
 	@Override
