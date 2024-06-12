@@ -31,9 +31,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 @Builder
 @Value
 public class ModCntrSpecificPricesCreateRequest
@@ -42,5 +39,5 @@ public class ModCntrSpecificPricesCreateRequest
 	@NonNull ProductId productId;
 	@NonNull ModuleConfig moduleConfig;
 	@NonNull IEditablePricingContext pricingContextTemplate;
-	@Nullable Percent interimPricePercent;
+	@NonNull Percent interimPricePercent;
 }

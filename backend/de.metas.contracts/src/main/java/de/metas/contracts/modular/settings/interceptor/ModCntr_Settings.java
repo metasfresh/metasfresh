@@ -55,17 +55,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ModCntr_Settings
 {
-	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
-
 	private static final AdMessageKey ERROR_CO_PRODUCT_SET_WITHOUT_PROCESSED_PRODUCT_SET = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.CoProductSetWithoutProcessedProductSet");
 	private static final AdMessageKey ERROR_NO_BOM_FOUND_FOR_PROCESSED_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.NoBOMFoundForProcessedProduct");
 	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_RAW_COMPONENT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyRawComponent");
 	private static final AdMessageKey ERROR_FOUND_BOM_DOESNT_HAVE_ONLY_CO_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMDoesntHaveOnlyCoProduct");
 	private static final AdMessageKey ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.FoundBOMCoProductDoesntMatch");
 	private static final AdMessageKey ERROR_SETTING_LINES_DEPEND_ON_PRODUCT = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.SettingLineDependOnProduct");
-
+	private static final AdMessageKey ERROR_InterimPricePercentage_Positive = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimPricePercent_Positive");
+	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
+	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateSettings(@NonNull final I_ModCntr_Settings record)
@@ -145,7 +144,7 @@ public class ModCntr_Settings
 		final List<ModuleConfig> moduleConfigs = modularContractSettingsBL.getById(modularContractSettingsId)
 				.getModuleConfigs(list);
 
-		if(productId == null && !moduleConfigs.isEmpty())
+		if (productId == null && !moduleConfigs.isEmpty())
 		{
 			throw new AdempiereException(ERROR_SETTING_LINES_DEPEND_ON_PRODUCT);
 		}
@@ -160,7 +159,7 @@ public class ModCntr_Settings
 		final ProductId rawProductId = ProductId.ofRepoId(record.getM_Raw_Product_ID());
 		final ProductId coProductId = ProductId.ofRepoIdOrNull(record.getM_Co_Product_ID());
 		final ProductId processedProductId = ProductId.ofRepoIdOrNull(record.getM_Processed_Product_ID());
-		if(coProductId == null && processedProductId == null)
+		if (coProductId == null && processedProductId == null)
 		{
 			return;
 		}
@@ -208,6 +207,16 @@ public class ModCntr_Settings
 		if (coProductId != null && !ProductId.equals(bomCoProductId, coProductId))
 		{
 			throw new AdempiereException(ERROR_FOUND_BOM_CO_PRODUCT_DOESNT_MATCH_SETTINGS);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ModCntr_Settings.COLUMNNAME_InterimPricePercent })
+	public void validateInterimPricePercent(@NonNull final I_ModCntr_Settings record)
+	{
+		if (record.getInterimPricePercent().signum() < 0)
+		{
+			throw new AdempiereException(ERROR_InterimPricePercentage_Positive);
 		}
 	}
 }
