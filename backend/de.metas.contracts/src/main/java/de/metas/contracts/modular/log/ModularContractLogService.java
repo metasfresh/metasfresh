@@ -130,7 +130,7 @@ public class ModularContractLogService
 	public void unprocessLogsForICs(@NonNull final Collection<InvoiceCandidateId> candidateIds)
 	{
 		final ModularContractLogQuery query = ModularContractLogQuery.builder()
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.processed(true)
 				.billable(true)
 				.build();

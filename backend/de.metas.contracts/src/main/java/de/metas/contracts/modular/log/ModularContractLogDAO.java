@@ -361,7 +361,7 @@ public class ModularContractLogDAO
 		{
 			final IQueryBuilder<I_ModCntr_Type> modCntrTypeBuilder = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes());
-			if (query.isComputingMethodTypeActive())
+			if (query.isOnlyActiveComputingMethodTypes())
 			{
 				modCntrTypeBuilder.addOnlyActiveRecordsFilter();
 			}

@@ -2445,7 +2445,7 @@ public class FlatrateBL implements IFlatrateBL
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
 				.build());
