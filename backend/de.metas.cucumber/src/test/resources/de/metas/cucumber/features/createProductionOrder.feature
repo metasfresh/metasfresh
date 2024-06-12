@@ -998,7 +998,7 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_111                   | 2021-04-12  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
-      | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+      | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | -100                           | -100                       | 0                             | 0                             |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
@@ -1949,9 +1949,9 @@ Feature: create production order
   @from:cucumber
   Scenario:  The manufacturing order is created with Lot for Lot
     Given metasfresh contains M_Products:
-      | Identifier | Name                                  | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_27042023_4             | standard_category                    |
-      | p_2        | trackedProduct__component 27042023_4  | standard_category                    |
+      | Identifier | Name                                 | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | trackedProduct_27042023_4            | standard_category                    |
+      | p_2        | trackedProduct__component 27042023_4 | standard_category                    |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name            |
