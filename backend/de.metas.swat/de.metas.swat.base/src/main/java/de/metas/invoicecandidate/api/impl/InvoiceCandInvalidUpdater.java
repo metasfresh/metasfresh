@@ -368,7 +368,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = icRecord.getC_OrderLine();
@@ -451,7 +451,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 			Loggables.withLogger(logger, Level.DEBUG)
 					.addLog(MessageFormat.format("Populate icIols_IDs={0} for C_Invoice_Candidate_ID={1}",
-												 iciol.getC_InvoiceCandidate_InOutLine_ID()), ic.getC_Invoice_Candidate_ID());
+												 iciol.getC_InvoiceCandidate_InOutLine_ID(), ic.getC_Invoice_Candidate_ID()));
 
 			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
@@ -544,7 +544,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	@Override
-	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
+	public IInvoiceCandInvalidUpdater setOnlyInvoiceCandidateIds(@NonNull final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds)
 	{
 		assertNotExecuted();
 		icTagger.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds);
