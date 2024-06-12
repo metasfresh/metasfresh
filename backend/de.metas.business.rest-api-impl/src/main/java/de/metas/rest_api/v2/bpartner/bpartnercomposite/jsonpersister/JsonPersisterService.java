@@ -1692,7 +1692,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
 			@NonNull final BPartnerBankAccount bankAccount)
 	{
-		bankAccount.setIban(bankAccount.getIban());
+		bankAccount.setIban(jsonBankAccount.getIban());
 
 		// active
 		if (jsonBankAccount.isActiveSet())
