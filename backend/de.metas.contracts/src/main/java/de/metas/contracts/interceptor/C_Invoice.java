@@ -72,7 +72,9 @@ public class C_Invoice
 	public void unprocessModularContractLogs(final I_C_Invoice invoice)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoId(invoice.getC_DocType_ID());
-		if ((!docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId) && !docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId)))
+		if ((!docTypeBL.isFinalInvoiceOrFinalCreditMemo(docTypeId)
+				&& !docTypeBL.isDefinitiveInvoiceOrDefinitiveCreditMemo(docTypeId))
+				&& !docTypeBL.isDownPayment(docTypeId))
 		{
 			return;
 		}
