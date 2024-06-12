@@ -33,8 +33,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -227,7 +225,7 @@ public class ShipmentScheduleWithHUService
 				pickingCandidateServiceTest,
 				new PickingConfigRepositoryV2(),
 				inventoryServiceTest,
-				new ModularContractProvider(new ModularContractSettingsBL(new ModularContractSettingsDAO()))
+				new ModularContractProvider()
 		);
 	}
 
