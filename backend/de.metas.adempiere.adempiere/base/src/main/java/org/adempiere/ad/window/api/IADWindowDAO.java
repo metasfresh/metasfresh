@@ -140,4 +140,7 @@ public interface IADWindowDAO extends ISingletonService
 	ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds();
 
 	Optional<QuickInputConfigLayout> getQuickInputConfigLayout(AdTabId adTabId);
+
+	@NonNull
+	AdWindowId retrieveOverrideWindowIdOrWindowId(@NonNull final AdWindowId windowId);
 }

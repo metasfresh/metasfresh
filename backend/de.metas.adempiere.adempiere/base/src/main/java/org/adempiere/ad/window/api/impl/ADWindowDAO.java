@@ -1312,4 +1312,18 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Tab adTab = load(adTabId, I_AD_Tab.class);
 		return QuickInputConfigLayout.parse(adTab.getQuickInputLayout());
 	}
+
+	@Override
+	@NonNull
+	public AdWindowId retrieveOverrideWindowIdOrWindowId(@NonNull final AdWindowId windowId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Window.COLUMNNAME_Overrides_Window_ID, windowId)
+				.create()
+				.firstOnlyOptional()
+				.map(I_AD_Window::getAD_Window_ID)
+				.map(AdWindowId::ofRepoId)
+				.orElse(windowId);
+	}
 }

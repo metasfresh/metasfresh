@@ -47,6 +47,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.TimeUtil;
@@ -61,6 +62,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -557,7 +559,7 @@ public class InventoryRepository
 	}
 
 	private static void updateInventoryLineHURecord(
-			@NonNull I_M_InventoryLine_HU record,
+			@NonNull final I_M_InventoryLine_HU record,
 			@NonNull final InventoryLineHU fromLineHU)
 	{
 		// record.setAD_Org_ID(orgId.getRepoId());
@@ -717,5 +719,26 @@ public class InventoryRepository
 		}
 
 		return toInventory(inventory);
+	}
+
+	public Set<InventoryId> getIdsByHUIdsAndDocTypeId(@NonNull final Set<HuId> huIds, @NonNull final DocTypeId docTypeId)
+	{
+		final IQuery<I_M_InventoryLine> huFilter = queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_InventoryLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(de.metas.handlingunits.model.I_M_InventoryLine.COLUMNNAME_M_HU_ID, huIds)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Inventory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, DocStatus.Completed)
+				.addEqualsFilter(I_M_Inventory.COLUMNNAME_C_DocType_ID, docTypeId)
+				.addInSubQueryFilter(I_M_Inventory.COLUMNNAME_M_Inventory_ID,
+									 I_M_InventoryLine.COLUMNNAME_M_Inventory_ID,
+									 huFilter)
+				.create()
+				.stream()
+				.map(I_M_Inventory::getM_Inventory_ID)
+				.map(InventoryId::ofRepoId)
+				.collect(Collectors.toSet());
 	}
 }
