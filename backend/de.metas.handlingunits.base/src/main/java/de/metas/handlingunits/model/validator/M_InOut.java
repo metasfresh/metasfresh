@@ -65,6 +65,7 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -101,11 +102,14 @@ public class M_InOut
 	@NonNull private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
 	@NonNull private final InventoryService inventoryService;
 
 	private static final AdMessageKey MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY = AdMessageKey.of("de.metas.handlingunits.model.validator.M_InOut.notifyIfVirtualHUAssignedToShipment");
+	private static final AdMessageKey MSG_ERROR_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU = AdMessageKey.of("de.metas.handlingunits.model.validator.M_InOut.reactivateReceiptNotAllowedIfHUAssigned");
+	private static final String SYS_CFG_ALLOW_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU = "de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned";
 
 	@Init
 	public void init()
@@ -274,7 +278,7 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void assertReActivationAllowed(final I_M_InOut inout)
 	{
-		if(inout.isSOTrx())
+		if(inout.isSOTrx() || sysConfigBL.getBooleanValue(SYS_CFG_ALLOW_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU, false))
 		{
 			return;
 		}
@@ -284,9 +288,7 @@ public class M_InOut
 		{
 			if (huAssignmentDAO.hasHUAssignmentsForModel(inOutLine))
 			{
-
-				//TODO Clarify if we want prevent reactivate in this case
-				//throw new HUException("Reactivate not allowed, if HUs are assigned");
+				throw new HUException(MSG_ERROR_RECEIPT_REACTIVATE_WITH_ASSIGNED_HU);
 			}
 		}
 	}
