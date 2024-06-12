@@ -1435,7 +1435,11 @@ public class JsonPersisterService
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
 			@NonNull final BPartnerBankAccount bankAccount)
 	{
+<<<<<<< HEAD
 		// ignoring syncAdvise.isUpdateRemove because both active and currencyId can't be NULLed
+=======
+		bankAccount.setIban(jsonBankAccount.getIban());
+>>>>>>> e6a3b50d6b6 (JsonPersisterService: Fix bug when IBAN is updated (#18213))
 
 		// active
 		if (jsonBankAccount.getActive() != null)
