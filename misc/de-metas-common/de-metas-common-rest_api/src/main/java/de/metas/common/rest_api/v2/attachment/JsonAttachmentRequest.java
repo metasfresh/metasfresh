@@ -46,4 +46,30 @@ public class JsonAttachmentRequest
 	@NonNull
 	@JsonProperty("attachment")
 	JsonAttachment attachment;
+<<<<<<< HEAD
+=======
+
+	@NonNull
+	@JsonProperty("references")
+	List<JsonTableRecordReference> references;
+
+	@Builder
+	public JsonAttachmentRequest(
+			@NonNull @JsonProperty("orgCode") final String orgCode,
+			@NonNull @JsonProperty("attachment") final JsonAttachment attachment,
+			@Nullable @JsonProperty("targets") final List<JsonExternalReferenceTarget> targets,
+			@Nullable @JsonProperty("references") @Singular final List<JsonTableRecordReference> references)
+	{
+		if (targets == null && references == null)
+		{
+			throw new RuntimeException("targets and references cannot be null at the same time. At least one must be provided!");
+		}
+
+		this.orgCode = orgCode;
+		this.attachment = attachment;
+
+		this.targets = CoalesceUtil.coalesceNotNull(targets, ImmutableList.of());
+		this.references = CoalesceUtil.coalesceNotNull(references, ImmutableList.of());
+	}
+>>>>>>> e6a3b50d6b6 (JsonPersisterService: Fix bug when IBAN is updated (#18213))
 }
