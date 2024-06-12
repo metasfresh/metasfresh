@@ -395,9 +395,9 @@ public class DDOrderLowLevelService
 
 					final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 					final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
-					final UomId stockingUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+					final UomId ddOrderLineUOMId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 
-					final Quantity qtyDeliveredInStockUOM = uomConversionBL.convertQuantityTo(qtyDelivered, uomConversionCtx, stockingUomId);
+					final Quantity qtyDeliveredInStockUOM = uomConversionBL.convertQuantityTo(qtyDelivered, uomConversionCtx, ddOrderLineUOMId);
 
 					orderLine.setQtyDelivered(qtyDeliveredInStockUOM.toBigDecimal());
 
