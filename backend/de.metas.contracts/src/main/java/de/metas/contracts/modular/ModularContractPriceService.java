@@ -176,18 +176,21 @@ public class ModularContractPriceService
 																									INTERIM_CONTRACT);
 
 		final I_C_Flatrate_Term flatrateTermRecord = modCntrSpecificPricesCreateRequest.getFlatrateTermRecord();
+		final ModuleConfig moduleConfig = modCntrSpecificPricesCreateRequest.getModuleConfig();
+		final ProductId productId = modCntrSpecificPricesCreateRequest.getProductId();
+
 		final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder specificPriceTemplate = ModCntrSpecificPrice.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID()))
-				.modularContractModuleId(modCntrSpecificPricesCreateRequest.getModuleConfig().getId().getModularContractModuleId())
+				.modularContractModuleId(moduleConfig.getId().getModularContractModuleId())
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.uomId(pricingResult.getPriceUomId())
 				.amount(pricingResult.getPriceStdAsMoney())
-				.productId(modCntrSpecificPricesCreateRequest.getProductId())
-				.seqNo(modCntrSpecificPricesCreateRequest.getModuleConfig().getSeqNo());
+				.productId(productId)
+				.seqNo(moduleConfig.getSeqNo());
 
-		if (modCntrSpecificPricesCreateRequest.getModuleConfig().isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
+		if (moduleConfig.isMatching(ComputingMethodType.AverageAddedValueOnShippedQuantity))
 		{
-			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), modCntrSpecificPricesCreateRequest.getProductId());
+			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(pricingResult.getPriceListVersionId(), productId);
 			if (productPrice == null)
 			{
 				throw new AdempiereException(MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE);
@@ -222,7 +225,7 @@ public class ModularContractPriceService
 				modularContractPriceRepository.saveAll(specificPrices);
 			}
 		}
-		else if (modCntrSpecificPricesCreateRequest.getModuleConfig().isMatchingAnyOf(initialRawPriceComputingMethods))
+		else if (moduleConfig.isMatchingAnyOf(initialRawPriceComputingMethods))
 		{
 			final Money priceFromContract = Money.of(flatrateTermRecord.getPriceActual(), CurrencyId.ofRepoId((flatrateTermRecord.getC_Currency_ID())));
 			final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder initialPriceBuilder = specificPriceTemplate.amount(priceFromContract)
@@ -230,7 +233,7 @@ public class ModularContractPriceService
 					.uomId(UomId.ofRepoId(flatrateTermRecord.getC_UOM_ID()))
 					.taxCategoryId(TaxCategoryId.ofRepoId(flatrateTermRecord.getC_TaxCategory_ID()));
 
-			if(modCntrSpecificPricesCreateRequest.getModuleConfig().isMatching(INTERIM_CONTRACT))
+			if (moduleConfig.isMatching(INTERIM_CONTRACT))
 			{
 				final Percent interimPricePercent = modCntrSpecificPricesCreateRequest.getInterimPricePercent();
 				final Money interimPrice = moneyService.percentage(interimPricePercent, priceFromContract);
