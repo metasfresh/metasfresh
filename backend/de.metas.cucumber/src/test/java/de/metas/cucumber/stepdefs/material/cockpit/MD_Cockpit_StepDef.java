@@ -212,105 +212,105 @@ public class MD_Cockpit_StepDef
 		if (qtyDemandSumAtDate != null && !cockpitRecord.getQtyDemandSum_AtDate().equals(qtyDemandSumAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyDemandSumAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyDemandSumAtDate, cockpitRecord.getQtyDemandSum_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyDemandSumAtDate, cockpitRecord.getQtyDemandSum_AtDate()));
 		}
 
 		final BigDecimal qtyDemandSalesOrderAtDate = expectedResults.getQtyDemandSalesOrderAtDate();
 		if (qtyDemandSalesOrderAtDate != null && !cockpitRecord.getQtyDemand_SalesOrder_AtDate().equals(qtyDemandSalesOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyDemandSalesOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyDemandSalesOrderAtDate, cockpitRecord.getQtyDemand_SalesOrder_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyDemandSalesOrderAtDate, cockpitRecord.getQtyDemand_SalesOrder_AtDate()));
 		}
 
 		final BigDecimal qtyStockCurrentAtDate = expectedResults.getQtyStockCurrentAtDate();
 		if (qtyStockCurrentAtDate != null && !cockpitRecord.getQtyStockCurrent_AtDate().equals(qtyStockCurrentAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyStockCurrentAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate()));
 		}
 
 		final BigDecimal qtyExpectedSurplusAtDate = expectedResults.getQtyExpectedSurplusAtDate();
 		if (qtyExpectedSurplusAtDate != null && !cockpitRecord.getQtyExpectedSurplus_AtDate().equals(qtyExpectedSurplusAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyExpectedSurplusAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate()));
 		}
 
 		final BigDecimal qtyInventoryCountAtDate = expectedResults.getQtyInventoryCountAtDate();
 		if (qtyInventoryCountAtDate != null && !cockpitRecord.getQtyInventoryCount_AtDate().equals(qtyInventoryCountAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyInventoryCountAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate()));
 		}
 
 		final BigDecimal qtySupplyPurchaseOrderAtDate = expectedResults.getQtySupplyPurchaseOrderAtDate();
 		if (qtySupplyPurchaseOrderAtDate != null && !cockpitRecord.getQtySupply_PurchaseOrder_AtDate().equals(qtySupplyPurchaseOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyPurchaseOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate()));
 		}
 
 		final BigDecimal qtySupplySumAtDate = expectedResults.getQtySupplySumAtDate();
 		if (qtySupplySumAtDate != null && !cockpitRecord.getQtySupplySum_AtDate().equals(qtySupplySumAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplySumAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate()));
 		}
 
 		final BigDecimal qtySupplyRequiredAtDate = expectedResults.getQtySupplyRequiredAtDate();
 		if (qtySupplyRequiredAtDate != null && !cockpitRecord.getQtySupplyRequired_AtDate().equals(qtySupplyRequiredAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyRequiredAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate()));
 		}
 
 		final BigDecimal qtySupplyToScheduleAtDate = expectedResults.getQtySupplyToScheduleAtDate();
 		if (qtySupplyToScheduleAtDate != null && !cockpitRecord.getQtySupplyToSchedule_AtDate().equals(qtySupplyToScheduleAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyToScheduleAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate()));
 		}
 
 		final BigDecimal mdCandidateQtyStockAtDate = expectedResults.getMdCandidateQtyStockAtDate();
 		if (mdCandidateQtyStockAtDate != null && !cockpitRecord.getMDCandidateQtyStock_AtDate().equals(mdCandidateQtyStockAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting MDCandidateQtyStockAtDate={0} but actual is {1}",
-													cockpitIdentifier, mdCandidateQtyStockAtDate, cockpitRecord.getMDCandidateQtyStock_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													mdCandidateQtyStockAtDate, cockpitRecord.getMDCandidateQtyStock_AtDate()));
 		}
 
 		final BigDecimal qtyStockChange = expectedResults.getQtyStockChange();
 		if (qtyStockChange != null && !cockpitRecord.getQtyStockChange().equals(qtyStockChange))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyStockChange={0} but actual is {1}",
-													cockpitIdentifier, qtyStockChange, cockpitRecord.getQtyStockChange(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyStockChange, cockpitRecord.getQtyStockChange()));
 		}
 
 		final BigDecimal qtyDemandPPOrderAtDate = expectedResults.getQtyDemandPPOrderAtDate();
 		if (qtyDemandPPOrderAtDate != null && !cockpitRecord.getQtyDemand_PP_Order_AtDate().equals(qtyDemandPPOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyDemandPPOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyDemandPPOrderAtDate, cockpitRecord.getQtyDemand_PP_Order_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyDemandPPOrderAtDate, cockpitRecord.getQtyDemand_PP_Order_AtDate()));
 		}
 
 		final BigDecimal qtySupplyPPOrderAtDate = expectedResults.getQtySupplyPPOrderAtDate();
 		if (qtySupplyPPOrderAtDate != null && !cockpitRecord.getQtySupply_PP_Order_AtDate().equals(qtySupplyPPOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyPPOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplyPPOrderAtDate, cockpitRecord.getQtySupply_PP_Order_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplyPPOrderAtDate, cockpitRecord.getQtySupply_PP_Order_AtDate()));
 		}
 
 		final BigDecimal qtyDemandDDOrderAtDate = expectedResults.getQtyDemandDDOrderAtDate();
 		if (qtyDemandDDOrderAtDate != null && !cockpitRecord.getQtyDemand_DD_Order_AtDate().equals(qtyDemandDDOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtyDemandDDOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtyDemandDDOrderAtDate, cockpitRecord.getQtyDemand_DD_Order_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtyDemandDDOrderAtDate, cockpitRecord.getQtyDemand_DD_Order_AtDate()));
 		}
 
 		final BigDecimal qtySupplyDDOrderAtDate = expectedResults.getQtySupplyDDOrderAtDate();
 		if (qtySupplyDDOrderAtDate != null && !cockpitRecord.getQtySupply_DD_Order_AtDate().equals(qtySupplyDDOrderAtDate))
 		{
 			errorCollector.add(MessageFormat.format("Expecting QtySupplyDDOrderAtDate={0} but actual is {1}",
-													cockpitIdentifier, qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate(), cockpitRecord.getMD_Cockpit_ID()));
+													qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate()));
 		}
 
 		if (errorCollector.size() > 0)
