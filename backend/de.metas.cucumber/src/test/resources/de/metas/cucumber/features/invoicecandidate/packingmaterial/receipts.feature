@@ -3384,5 +3384,3 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
-
-    And set sys config boolean value false for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned
