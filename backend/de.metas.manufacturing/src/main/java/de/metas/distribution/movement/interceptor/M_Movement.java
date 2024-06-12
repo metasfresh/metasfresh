@@ -41,11 +41,11 @@ public class M_Movement
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final DDOrderLowLevelService ddOrderDAO;
+	private final DDOrderLowLevelService ddOrderLowLevelService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_M_Movement.COLUMNNAME_DocStatus)
 	public void setDDOrderLineQtyDelivered(@NonNull final I_M_Movement movementRecord)
 	{
-		trxManager.runAfterCommit(() -> ddOrderDAO.updateQtyDeliveredFromMovement(MovementId.ofRepoId(movementRecord.getM_Movement_ID())));
+		trxManager.runAfterCommit(() -> ddOrderLowLevelService.updateQtyDeliveredFromMovement(MovementId.ofRepoId(movementRecord.getM_Movement_ID())));
 	}
 }
