@@ -53,7 +53,7 @@ public class InvoiceHeaderImplBuilder
 
 	private boolean isTakeDocTypeFromPool = false;
 	@Getter @Setter
-	private boolean isCreditInvoiceReinvoiceable = false;
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	private DocTypeId docTypeInvoiceId = null;
 
@@ -192,7 +192,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setYearId(YearId.ofRepoIdOrNull(getHarvesting_Year_ID()));
 		invoiceHeader.setWarehouseId(WarehouseId.ofRepoIdOrNull(getM_Warehouse_ID()));
 		invoiceHeader.setAuctionId(AuctionId.ofRepoIdOrNull(auctionId));
-		invoiceHeader.setCreditInvoiceReinvoiceable(isCreditInvoiceReinvoiceable());
+		invoiceHeader.setCreditedInvoiceReinvoicable(isCreditedInvoiceReinvoicable());
 
 		return invoiceHeader;
 	}

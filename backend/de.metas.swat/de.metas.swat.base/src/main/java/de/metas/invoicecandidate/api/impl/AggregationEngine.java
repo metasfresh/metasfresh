@@ -506,7 +506,7 @@ public final class AggregationEngine
 				{
 					final DocTypeInvoicingPool invoicingPool = docTypeInvoicingPool.get();
 					invoiceHeader.setDocTypeInvoicingPoolId(invoicingPool.getId());
-					invoiceHeader.setCreditInvoiceReinvoiceable(invoicingPool.isCreditMemoReinvoiceable());
+					invoiceHeader.setCreditedInvoiceReinvoicable(invoicingPool.isCreditedInvoiceReinvoicable());
 
 					final boolean onDistinctICTypes = invoicingPool.isOnDistinctICTypes();
 
@@ -828,7 +828,7 @@ public final class AggregationEngine
 		if (totalAmt.signum() < 0)
 		{
 			invoiceHeader.negateAllLineAmounts();
-			invoiceHeader.setCreditInvoiceReinvoiceable(true);
+			invoiceHeader.setCreditedInvoiceReinvoicable(true);
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);

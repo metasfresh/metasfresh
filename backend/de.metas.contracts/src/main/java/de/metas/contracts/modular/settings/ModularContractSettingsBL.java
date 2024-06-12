@@ -46,7 +46,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -145,7 +144,7 @@ public class ModularContractSettingsBL
 		final ProductId moduleProductId;
 		final ModularContractType moduleContractType;
 		final ProductId processedProductId = modularContractSettings.getProcessedProductId();
-		if(processedProductId != null)
+		if (processedProductId != null)
 		{
 			moduleProductId = processedProductId;
 			moduleContractType = modularContractSettingsDAO.getContractTypeById(ModularContract_Constants.CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct);
@@ -169,6 +168,7 @@ public class ModularContractSettingsBL
 						.build()
 		);
 	}
+
 	public void upsertInformativeLogsModule(@NonNull final ModularContractSettingsId modularContractSettingsId, @NonNull final ProductId rawProductId)
 	{
 		final I_ModCntr_Module existingModuleConfig = modularContractSettingsDAO.retrieveInformativeLogModuleRecordOrNull(modularContractSettingsId);
@@ -219,8 +219,4 @@ public class ModularContractSettingsBL
 				.build());
 	}
 
-	public List<ModularContractSettings> getSettingsByQuery(final @NonNull ModularContractSettingsQuery query)
-	{
-		return modularContractSettingsDAO.getSettingsByQuery(query);
-	}
 }

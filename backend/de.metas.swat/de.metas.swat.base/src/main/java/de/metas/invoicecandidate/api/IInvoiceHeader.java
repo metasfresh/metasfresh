@@ -140,5 +140,5 @@ public interface IInvoiceHeader
 	@Nullable
 	AuctionId getAuctionId();
 
-	boolean isCreditInvoiceReinvoiceable();
+	boolean isCreditedInvoiceReinvoicable();
 }

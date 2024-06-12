@@ -95,7 +95,7 @@ import java.util.Optional;
 
 	private boolean isTakeDocTypeFromPool;
 	@Getter @Setter
-	private boolean isCreditInvoiceReinvoiceable = false;
+	private boolean isCreditedInvoiceReinvoicable = false;
 
 	// 06630
 	private int M_InOut_ID = -1;
