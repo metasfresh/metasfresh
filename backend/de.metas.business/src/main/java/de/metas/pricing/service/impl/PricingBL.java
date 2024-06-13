@@ -305,6 +305,7 @@ public class PricingBL implements IPricingBL
 		{
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
+					pricingCtx.getPriceListId(),
 					pricingCtx.getCountryId(),
 					TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), timeZone),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
