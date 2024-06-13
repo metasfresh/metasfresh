@@ -56,7 +56,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -446,9 +445,7 @@ public class M_InOut
 												.recipientUserId(Env.getLoggedUserId())
 												.contentADMessage(MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY)
 												.contentADMessageParam(shipment.getM_InOut_ID())
-												.targetAction(UserNotificationRequest.TargetRecordAction.ofRecordAndWindow(
-														TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId),
-														adWindowDAO.retrieveOverrideWindowIdOrWindowId(AdWindowId.ofRepoId(168))))
+												.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
 												.build());
 		}
 		notificationBL.sendAfterCommit(notificationRequestList);
