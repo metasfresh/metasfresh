@@ -129,7 +129,7 @@ public class AggregationDAO implements IAggregationDAO
 		}
 	}
 
-	private static int findC_Invoice_Candidate_HeaderAggregationKey_ID0(@NonNull final I_C_Invoice_Candidate ic)
+	private int findC_Invoice_Candidate_HeaderAggregationKey_ID0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final String headerAggregationKeyCalc = ic.getHeaderAggregationKey_Calc();
 		if (Check.isBlank(headerAggregationKeyCalc))
