@@ -3,6 +3,7 @@ package de.metas;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.CommandLineParser.CommandLineOptions;
+import de.metas.common.util.Check;
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
