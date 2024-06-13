@@ -107,7 +107,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PriceListDAO implements IPriceListDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
+	private static final Logger logger = LogManager.getLogger(PriceListDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -288,6 +288,13 @@ public class PriceListDAO implements IPriceListDAO
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
+	}
+
+	@NonNull
+	public I_M_PriceList retrievePriceListbyId(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = load(priceListId, I_M_PriceList.class);
+		return Check.assumeNotNull(priceList, "Missing M_PriceList record for ID={}", priceListId.getRepoId());
 	}
 
 	@Override
@@ -780,7 +787,6 @@ public class PriceListDAO implements IPriceListDAO
 
 	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, final UserId userId)
 	{
-
 		final I_M_PriceList_Version newCustomerPLV = copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(oldCustomerPLV)
