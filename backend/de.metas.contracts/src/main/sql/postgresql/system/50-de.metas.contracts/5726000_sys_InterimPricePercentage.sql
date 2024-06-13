@@ -124,3 +124,15 @@ UPDATE AD_Message SET Value='de.metas.contracts.modular.settings.interceptor.Int
 
 
 
+-- Column: ModCntr_Settings.InterimPricePercent
+-- 2024-06-12T14:49:19.918Z
+UPDATE AD_Column SET ValueMin='',Updated=TO_TIMESTAMP('2024-06-12 17:49:19.918','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=588337
+;
+
+-- 2024-06-12T14:49:22.485Z
+INSERT INTO t_alter_column values('modcntr_settings','InterimPricePercent','NUMERIC',null,'75')
+;
+
+-- 2024-06-12T14:49:22.493Z
+UPDATE ModCntr_Settings SET InterimPricePercent=75 WHERE InterimPricePercent IS NULL
+;
