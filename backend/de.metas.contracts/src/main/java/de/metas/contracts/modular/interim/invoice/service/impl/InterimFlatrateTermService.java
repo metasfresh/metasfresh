@@ -31,11 +31,12 @@ import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrate
 import de.metas.contracts.modular.settings.ModularContractSettings;
 import de.metas.contracts.modular.settings.ModularContractSettingsBL;
 import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.money.MoneyService;
 import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.SpringContextHolder;
@@ -51,8 +52,8 @@ public class InterimFlatrateTermService
 {
 	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
 	private final ModularContractSettingsBL modularContractSettingsBL = SpringContextHolder.instance.getBean(ModularContractSettingsBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-	private final MoneyService moneyService;
 	private static final Logger logger = LogManager.getLogger(InterimFlatrateTermService.class);
 
 	public void create(
@@ -72,8 +73,7 @@ public class InterimFlatrateTermService
 		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
 		final ConditionsId interimConditionsId = modularContractSettingsBL.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
 
-		final Money modularContractPrice = Money.of(modularFlatrateTermRecord.getPriceActual(), CurrencyId.ofRepoId(modularFlatrateTermRecord.getC_Currency_ID()));
-
+		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(modularFlatrateTermRecord.getC_Currency_ID()));
 
 		InterimInvoiceFlatrateTermCreateCommand.builder()
 				.modulareFlatrateTermId(flatrateTermId)
@@ -82,7 +82,8 @@ public class InterimFlatrateTermService
 				.dateFrom(TimeUtil.asInstantNonNull(startDate))
 				.dateTo(TimeUtil.asInstantNonNull(endDate))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(modularFlatrateTermRecord.getHarvesting_Year_ID(), modularFlatrateTermRecord.getC_Harvesting_Calendar_ID()))
-				.price(moneyService.percentage(modularContractSettings.getInterimPricePercent(),modularContractPrice))
+				.interimPricePercent(modularContractSettings.getInterimPricePercent())
+				.currencyPrecision(currencyPrecision)
 				.build()
 				.execute();
 	}
