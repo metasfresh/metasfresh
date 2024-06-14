@@ -26,7 +26,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.product.ProductId;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,5 +38,4 @@ public class ModCntrSpecificPricesCreateRequest
 	@NonNull ProductId productId;
 	@NonNull ModuleConfig moduleConfig;
 	@NonNull IEditablePricingContext pricingContextTemplate;
-	@NonNull Percent interimPricePercent;
 }

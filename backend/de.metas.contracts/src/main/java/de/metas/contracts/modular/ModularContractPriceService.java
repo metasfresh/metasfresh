@@ -36,7 +36,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -55,7 +54,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -81,7 +79,6 @@ public class ModularContractPriceService
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
 	private final ModularContractSettingsDAO modularContractSettingsDAO;
 	private final ProductScalePriceService productScalePriceService;
-	private final MoneyService moneyService;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -123,7 +120,6 @@ public class ModularContractPriceService
 															.productId(productId)
 															.moduleConfig(config)
 															.pricingContextTemplate(pricingContextTemplate)
-															.interimPricePercent(settings.getInterimPricePercent())
 															.build());
 					});
 		}
@@ -154,7 +150,6 @@ public class ModularContractPriceService
 											.productId(productId)
 											.moduleConfig(interimContractModule)
 											.pricingContextTemplate(pricingContextTemplate)
-											.interimPricePercent(settings.getInterimPricePercent())
 											.build());
 
 	}
@@ -228,19 +223,13 @@ public class ModularContractPriceService
 		else if (moduleConfig.isMatchingAnyOf(initialRawPriceComputingMethods))
 		{
 			final Money priceFromContract = Money.of(flatrateTermRecord.getPriceActual(), CurrencyId.ofRepoId((flatrateTermRecord.getC_Currency_ID())));
-			final ModCntrSpecificPrice.ModCntrSpecificPriceBuilder initialPriceBuilder = specificPriceTemplate.amount(priceFromContract)
+
+			final ModCntrSpecificPrice initialPrice = specificPriceTemplate.amount(priceFromContract)
 					.isScalePrice(false).minValue(null)
 					.uomId(UomId.ofRepoId(flatrateTermRecord.getC_UOM_ID()))
-					.taxCategoryId(TaxCategoryId.ofRepoId(flatrateTermRecord.getC_TaxCategory_ID()));
-
-			if (moduleConfig.isMatching(INTERIM_CONTRACT))
-			{
-				final Percent interimPricePercent = modCntrSpecificPricesCreateRequest.getInterimPricePercent();
-				final Money interimPrice = moneyService.percentage(interimPricePercent, priceFromContract);
-				initialPriceBuilder.amount(interimPrice);
-			}
-			final ModCntrSpecificPrice initialPrice = initialPriceBuilder
+					.taxCategoryId(TaxCategoryId.ofRepoId(flatrateTermRecord.getC_TaxCategory_ID()))
 					.build();
+
 			modularContractPriceRepository.save(initialPrice);
 		}
 		else
