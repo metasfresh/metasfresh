@@ -268,7 +268,7 @@ public class ModularContractPriceService
 
 	@Builder
 	@Value
-	public static class ModCntrSpecificPricesCreateRequest
+	private static class ModCntrSpecificPricesCreateRequest
 	{
 		@NonNull I_C_Flatrate_Term flatrateTermRecord;
 		@NonNull ProductId productId;
