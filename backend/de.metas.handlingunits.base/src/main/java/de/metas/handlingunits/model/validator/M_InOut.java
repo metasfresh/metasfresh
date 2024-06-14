@@ -442,7 +442,7 @@ public class M_InOut
 			notificationRequestList.add(UserNotificationRequest.builder()
 												.recipientUserId(Env.getLoggedUserId())
 												.contentADMessage(MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY)
-												.contentADMessageParam(shipment.getM_InOut_ID())
+												.contentADMessageParam(shipment.getDocumentNo())
 												.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
 												.build());
 		}
