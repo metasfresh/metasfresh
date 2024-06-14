@@ -41,8 +41,8 @@ import java.util.stream.Stream;
 
 public abstract class AbstractComputingMethodHandler implements IComputingMethodHandler
 {
-	ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
 	 * This is the default implementation, used by yet-unimplemented methods. Its result ensures the IC is not created.
