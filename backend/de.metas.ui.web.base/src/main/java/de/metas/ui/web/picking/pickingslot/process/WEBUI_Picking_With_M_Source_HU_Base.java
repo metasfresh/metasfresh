@@ -36,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.springframework.lang.Nullable;
@@ -243,6 +244,7 @@ import java.util.List;
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.modularContractId(contractId)
+				.forRecordRef(TableRecordReference.of(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.Table_Name, shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build();
 
 		return inventoryService.createInventoryForMissingQty(req);
