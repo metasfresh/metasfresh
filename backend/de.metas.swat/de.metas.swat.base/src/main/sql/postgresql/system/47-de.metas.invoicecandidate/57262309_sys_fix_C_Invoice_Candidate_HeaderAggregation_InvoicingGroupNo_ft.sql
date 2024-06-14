@@ -30,7 +30,7 @@ END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
                      COST 100;
-ALTER FUNCTION C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_ft() OWNER TO adempiere;
+
 COMMENT ON FUNCTION C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_ft() IS 'Sets C_Invoice_Candidate_HeaderAggregation.InvoicingGroupNo; TODO: come up with a more efficient way.';
 
 drop trigger if exists C_Invoice_Candidate_HeaderAggregation_InvoicingGroupNo_trigger on C_Invoice_Candidate_HeaderAggregation;
