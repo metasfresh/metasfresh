@@ -128,10 +128,4 @@ public class SOLineForPOModularContractHandler extends AbstractComputingMethodHa
 		}
 		return Stream.empty();
 	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
 }

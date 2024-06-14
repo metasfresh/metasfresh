@@ -132,12 +132,6 @@ public class SalesInvoiceLineModularContractHandler extends AbstractComputingMet
 						.build());
 	}
 
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
-
 	private BPartnerId extractWarehousePartnerId(final I_C_Invoice invoice)
 	{
 		final WarehouseId warehouseId = WarehouseId.optionalOfRepoId(invoice.getM_Warehouse_ID())

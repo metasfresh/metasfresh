@@ -37,7 +37,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
@@ -118,7 +117,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
-		final Money money = computeAverageAmount(logs, request.getCurrencyId())
+		final Money money = computeAverageAmount(logs)
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
@@ -138,8 +137,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
 	}
 
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs,
-												@NonNull final CurrencyId currencyId)
+	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
 	{
 		final Optional<Money> totalMoney = logs.stream()
 				.map(ModularContractLogEntry::getAmount)

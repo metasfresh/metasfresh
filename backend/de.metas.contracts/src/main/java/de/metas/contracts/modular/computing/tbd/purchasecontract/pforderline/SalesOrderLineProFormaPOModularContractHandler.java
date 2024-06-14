@@ -135,12 +135,6 @@ public class SalesOrderLineProFormaPOModularContractHandler extends AbstractComp
 	}
 
 	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
-
-	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SALES_ORDER_LINE_PRO_FORMA_PO_MODULAR_DEPRECATED;

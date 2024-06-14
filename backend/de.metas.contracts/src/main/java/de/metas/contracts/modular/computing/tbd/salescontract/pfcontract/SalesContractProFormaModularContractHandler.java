@@ -95,12 +95,6 @@ public class SalesContractProFormaModularContractHandler extends AbstractComputi
 	}
 
 	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
-
-	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SALES_CONTRACT_PRO_FORMA_MODULAR_DEPRECATED;

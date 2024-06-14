@@ -83,10 +83,4 @@ public class PPCostCollectorModularContractHandler extends AbstractComputingMeth
 	{
 		return PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
 	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
 }

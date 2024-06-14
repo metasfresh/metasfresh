@@ -98,10 +98,4 @@ public class SalesModularContractHandler extends AbstractComputingMethodHandler
 		}
 		return Stream.empty();
 	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
 }
