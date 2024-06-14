@@ -60,7 +60,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -100,7 +99,6 @@ public class M_InOut
 	@NonNull private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	@NonNull private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final ReturnsServiceFacade returnsServiceFacade;
@@ -444,7 +442,7 @@ public class M_InOut
 			notificationRequestList.add(UserNotificationRequest.builder()
 												.recipientUserId(Env.getLoggedUserId())
 												.contentADMessage(MSG_SHIPMENT_WITH_VIRTUAL_HU_INVENTORY)
-												.contentADMessageParam(shipment.getM_InOut_ID())
+												.contentADMessageParam(shipment.getDocumentNo())
 												.targetAction(UserNotificationRequest.TargetRecordAction.of(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId)))
 												.build());
 		}
