@@ -79,10 +79,4 @@ public class InventoryLineModularContractHandler extends AbstractComputingMethod
 	{
 		return INVENTORY_LINE_MODULAR_DEPRECATED;
 	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
 }

@@ -73,12 +73,6 @@ public class ShippingNotificationForSalesModularContractHandler extends Abstract
 	}
 
 	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
-	}
-
-	@Override
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return SHIPPING_NOTIFICATION_FOR_SALES_MODULAR_DEPRECATED;
