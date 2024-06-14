@@ -41,7 +41,7 @@ import java.util.stream.Stream;
 
 public abstract class AbstractComputingMethodHandler implements IComputingMethodHandler
 {
-	@NonNull ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
