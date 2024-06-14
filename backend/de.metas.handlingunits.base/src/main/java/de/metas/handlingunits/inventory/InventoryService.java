@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -299,6 +300,12 @@ public class InventoryService
 		{
 			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
 		}
+	}
+
+	@NonNull
+	public Set<InventoryId> getVirtualInventoryIdsByHUIds(@NonNull final Set<HuId> huIds, @NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return inventoryRepository.getIdsByHUIdsAndDocTypeId(huIds, getVirtualInventoryDocTypeId(clientId, orgId));
 	}
 
 }
