@@ -59,7 +59,7 @@ SELECT iol.line,
        (CASE
             WHEN qtydeliveredcatch IS NOT NULL
                 THEN COALESCE(uomct.UOMSymbol, uomc.UOMSymbol)
-            ELSE COALESCE(uomt.UOMSymbol, uom.UOMSymbol, uom_iolt.uomsymbol, uom_iol.uomsymbol)
+                ELSE COALESCE(uomt.UOMSymbol, uom.UOMSymbol, uom_iolt.uomsymbol, uom_iol.uomsymbol)
         END)                                                                                           AS UOMSymbol,
        uom.stdPrecision,
        COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE(multiplyrate, 1) AS linenetamt,
@@ -157,7 +157,7 @@ FROM M_InOutLine iol
     AND conv.isActive = 'Y'
 
          LEFT OUTER JOIN C_UOM uom_iol ON uom_iol.C_UOM_ID = iol.c_uom_id
-         LEFT OUTER JOIN C_UOM_Trl uom_iolt ON uom_iolt.c_UOM_ID = uom_iolt.C_UOM_ID AND uom_iolt.AD_Language = p_AD_Language
+         LEFT OUTER JOIN C_UOM_Trl uom_iolt ON uom_iolt.c_UOM_ID = uom_iol.C_UOM_ID AND uom_iolt.AD_Language = p_AD_Language
 
     -- Unit of measurement and its translation for catch weight
          LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id

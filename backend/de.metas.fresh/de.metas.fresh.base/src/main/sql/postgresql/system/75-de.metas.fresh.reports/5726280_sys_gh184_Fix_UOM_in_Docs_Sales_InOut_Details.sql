@@ -157,7 +157,7 @@ FROM M_InOutLine iol
     AND conv.isActive = 'Y'
 
          LEFT OUTER JOIN C_UOM uom_iol ON uom_iol.C_UOM_ID = iol.c_uom_id
-         LEFT OUTER JOIN C_UOM_Trl uom_iolt ON uom_iolt.c_UOM_ID = uom_iolt.C_UOM_ID AND uom_iolt.AD_Language = p_AD_Language
+         LEFT OUTER JOIN C_UOM_Trl uom_iolt ON uom_iolt.c_UOM_ID = uom_iol.C_UOM_ID AND uom_iolt.AD_Language = p_AD_Language
 
     -- Unit of measurement and its translation for catch weight
          LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
