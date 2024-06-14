@@ -39,7 +39,6 @@ import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -50,8 +49,8 @@ import java.sql.Timestamp;
 @RequiredArgsConstructor
 public class InterimFlatrateTermService
 {
-	private final ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
-	private final ModularContractSettingsBL modularContractSettingsBL = SpringContextHolder.instance.getBean(ModularContractSettingsBL.class);
+	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsBL modularContractSettingsBL;
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private static final Logger logger = LogManager.getLogger(InterimFlatrateTermService.class);
