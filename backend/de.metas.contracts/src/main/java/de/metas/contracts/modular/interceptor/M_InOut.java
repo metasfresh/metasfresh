@@ -28,7 +28,7 @@ import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -61,16 +61,16 @@ import static de.metas.contracts.modular.ModelAction.VOIDED;
 public class M_InOut
 {
 	private final ModularContractService contractService;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	public M_InOut(@NonNull final ModularContractService contractService, @NonNull final ModularContractSettingsDAO modularContractSettingsDAO)
+	public M_InOut(@NonNull final ModularContractService contractService, @NonNull final ModularContractSettingsRepository modularContractSettingsRepository)
 	{
 		this.contractService = contractService;
-		this.modularContractSettingsDAO = modularContractSettingsDAO;
+		this.modularContractSettingsRepository = modularContractSettingsRepository;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -135,7 +135,7 @@ public class M_InOut
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoIdOrNull(inOutLineRecord.getC_Flatrate_Term_ID());
 		if (flatrateTermId != null)
 		{
-			final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
+			final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateTermIdOrNull(flatrateTermId);
 			if (modularContractSettings != null)
 			{
 				final YearAndCalendarId harvestingYearAndCalendarId = modularContractSettings.getYearAndCalendarId();

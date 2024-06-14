@@ -75,7 +75,7 @@ import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModularContractSettingsQuery;
 import de.metas.copy_with_details.CopyRecordFactory;
@@ -244,6 +244,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 
 	public static final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
@@ -485,7 +486,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else if (fc.getType_Flatrate().equals(X_C_Flatrate_Conditions.TYPE_FLATRATE_ReportedQuantity))
 		{
-			// these ICs are not created here, but by FlatrateDataEntryHandler 
+			// these ICs are not created here, but by FlatrateDataEntryHandler
 		}
 		else
 		{
@@ -2532,7 +2533,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final YearAndCalendarId yearAndCalendarId = YearAndCalendarId.ofRepoId(year.getC_Year_ID(), year.getC_Calendar_ID());
 		final ProductId productId = ProductId.ofRepoId(settings.getM_Raw_Product_ID());
-		if (modularContractSettingsDAO.isSettingsExist(ModularContractSettingsQuery.builder()
+		if (modularContractSettingsRepository.isSettingsExist(ModularContractSettingsQuery.builder()
 				.yearAndCalendarId(yearAndCalendarId)
 				.rawProductId(productId)
 				.soTrx(SOTrx.ofBooleanNotNull(settings.isSOTrx()))
