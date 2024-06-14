@@ -30,7 +30,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
 import de.metas.location.CountryId;
@@ -79,7 +79,7 @@ public class ModularContractPriceService
 	public static final AdMessageKey MSG_ERROR_MODULARCONTRACTPRICE_NO_SCALE_PRICE = AdMessageKey.of("MSG_ModularContractPrice_NoScalePrice");
 	private final ModularContractPriceRepository modularContractPriceRepository;
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethodHandlerRegistry;
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
 	private final ProductScalePriceService productScalePriceService;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -105,7 +105,7 @@ public class ModularContractPriceService
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 		final IEditablePricingContext pricingContextTemplate = createPricingContextTemplate(flatrateTermRecord, settings);
 
 		final List<ModuleConfig> moduleConfigs = settings.getModuleConfigsWithout(ComputingMethodType.INTERIM_CONTRACT);
@@ -135,7 +135,7 @@ public class ModularContractPriceService
 			return;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 		final ModuleConfig interimContractModule = settings.getSingleModuleConfig(ComputingMethodType.INTERIM_CONTRACT).orElse(null);
 		if (interimContractModule == null)
 		{

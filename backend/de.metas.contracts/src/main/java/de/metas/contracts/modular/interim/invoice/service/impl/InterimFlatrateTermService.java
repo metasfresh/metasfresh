@@ -29,8 +29,8 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
@@ -49,8 +49,8 @@ import java.sql.Timestamp;
 @RequiredArgsConstructor
 public class InterimFlatrateTermService
 {
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	private final ModularContractSettingsBL modularContractSettingsBL;
+	private final ModularContractSettingsRepository modularContractSettingsRepository;
+	private final ModularContractSettingsService modularContractSettingsService;
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private static final Logger logger = LogManager.getLogger(InterimFlatrateTermService.class);
@@ -69,8 +69,8 @@ public class InterimFlatrateTermService
 			return;
 		}
 
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
-		final ConditionsId interimConditionsId = modularContractSettingsBL.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
+		final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
+		final ConditionsId interimConditionsId = modularContractSettingsService.retrieveFlatrateConditionId(modularContractSettings, TypeConditions.INTERIM_INVOICE);
 
 		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(modularFlatrateTermRecord.getC_Currency_ID()));
 

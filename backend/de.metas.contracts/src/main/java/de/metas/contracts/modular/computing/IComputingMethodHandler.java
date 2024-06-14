@@ -29,7 +29,7 @@ import de.metas.contracts.modular.ModularContractComputingMethodHandlerRegistry;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  */
 public interface IComputingMethodHandler
 {
-	ModularContractSettingsDAO modularContractSettingsDAO = SpringContextHolder.instance.getBean(ModularContractSettingsDAO.class);
+	ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
 	IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull
@@ -99,7 +99,7 @@ public interface IComputingMethodHandler
 
 	default @NonNull Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
 	{
-		return Stream.of(modularContractSettingsDAO.getByModuleId(moduleId)
+		return Stream.of(modularContractSettingsRepository.getByModuleId(moduleId)
 				.getProductId());
 	}
 }

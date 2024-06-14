@@ -27,7 +27,7 @@ import de.metas.calendar.standard.ICalendarBL;
 import de.metas.calendar.standard.YearId;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsId;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.i18n.AdMessageKey;
@@ -64,12 +64,12 @@ public class ModCntr_Settings
 	private static final AdMessageKey ERROR_InterimPricePercentage_Positive = AdMessageKey.of("de.metas.contracts.modular.settings.interceptor.InterimPricePercent_Positive");
 	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
-	@NonNull private final ModularContractSettingsBL modularContractSettingsBL;
+	@NonNull private final ModularContractSettingsService modularContractSettingsService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void validateSettings(@NonNull final I_ModCntr_Settings record)
 	{
-		modularContractSettingsBL.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
+		modularContractSettingsService.validateModularContractSettingsNotUsed(ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
@@ -87,7 +87,7 @@ public class ModCntr_Settings
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
-		modularContractSettingsBL.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
+		modularContractSettingsService.upsertInformativeLogsModule(modularContractSettingsId, rawProductId);
 
 	}
 
@@ -108,7 +108,7 @@ public class ModCntr_Settings
 
 		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoId(record.getModCntr_Settings_ID());
 
-		modularContractSettingsBL.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
+		modularContractSettingsService.upsertDefinitiveInvoiceModule(modularContractSettingsId, rawProductId, processedProductId);
 
 	}
 
@@ -141,7 +141,7 @@ public class ModCntr_Settings
 			@NonNull final ImmutableList<ComputingMethodType> list,
 			@Nullable final ProductId productId)
 	{
-		final List<ModuleConfig> moduleConfigs = modularContractSettingsBL.getById(modularContractSettingsId)
+		final List<ModuleConfig> moduleConfigs = modularContractSettingsService.getById(modularContractSettingsId)
 				.getModuleConfigs(list);
 
 		if (productId == null && !moduleConfigs.isEmpty())
@@ -149,7 +149,7 @@ public class ModCntr_Settings
 			throw new AdempiereException(ERROR_SETTING_LINES_DEPEND_ON_PRODUCT);
 		}
 
-		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsBL.updateModule(moduleConfig, null, productId));
+		moduleConfigs.forEach((moduleConfig) -> modularContractSettingsService.updateModule(moduleConfig, null, productId));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
