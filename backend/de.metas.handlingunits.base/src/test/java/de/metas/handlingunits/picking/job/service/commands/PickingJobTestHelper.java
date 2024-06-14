@@ -9,7 +9,7 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
@@ -139,7 +139,7 @@ public class PickingJobTestHelper
 
 		pickingCandidateRepository = new PickingCandidateRepository();
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO()); // needed for HUPickingSlotBL
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository()); // needed for HUPickingSlotBL
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO()); // needed for HUPickingSlotBL
 
 		pickingConfigRepo = new PickingConfigRepositoryV2();
