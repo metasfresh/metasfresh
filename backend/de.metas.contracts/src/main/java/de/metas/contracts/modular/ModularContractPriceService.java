@@ -54,8 +54,10 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
@@ -264,4 +266,13 @@ public class ModularContractPriceService
 		return modularContractPriceRepository.cloneById(id, mapper);
 	}
 
+	@Builder
+	@Value
+	public static class ModCntrSpecificPricesCreateRequest
+	{
+		@NonNull I_C_Flatrate_Term flatrateTermRecord;
+		@NonNull ProductId productId;
+		@NonNull ModuleConfig moduleConfig;
+		@NonNull IEditablePricingContext pricingContextTemplate;
+	}
 }
