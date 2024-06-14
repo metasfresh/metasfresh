@@ -124,6 +124,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_UOM;
@@ -1093,6 +1094,7 @@ public class ShipmentScheduleWithHUService
 				.movementDate(SystemTime.asZonedDateTime())
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(schedule.getM_AttributeSetInstance_ID()))
 				.modularContractId(contractId)
+				.forRecordRef(TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, schedule.getM_ShipmentSchedule_ID()))
 				.build();
 
 		final HuId createdHuId = inventoryService.createInventoryForMissingQty(req);
