@@ -59,7 +59,7 @@ SELECT iol.line,
        (CASE
             WHEN qtydeliveredcatch IS NOT NULL
                 THEN COALESCE(uomct.UOMSymbol, uomc.UOMSymbol)
-                ELSE COALESCE(uomt.UOMSymbol, uom.UOMSymbol, uom_iolt.uomsymbol, uom_iol.uomsymbol)
+            ELSE COALESCE(uomt.UOMSymbol, uom.UOMSymbol, uom_iolt.uomsymbol, uom_iol.uomsymbol)
         END)                                                                                           AS UOMSymbol,
        uom.stdPrecision,
        COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE(multiplyrate, 1) AS linenetamt,
