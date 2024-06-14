@@ -25,8 +25,6 @@ package de.metas.contracts.modular.computing.tbd.inventory;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryLineId;
