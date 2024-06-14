@@ -142,6 +142,7 @@ public class FlatrateDataEntryToICService
 	{
 		final I_M_PriceList_Version priceListVersion = Check.assumeNotNull(priceListBL.getCurrentPriceListVersionOrNull(
 				context.getPricingSystemId(),
+				null,
 				context.getCountryId(),
 				entry.getPeriod().getEndDate(),
 				SOTrx.SALES,
