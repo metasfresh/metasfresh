@@ -42,7 +42,7 @@ import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
-import de.metas.contracts.modular.settings.ModularContractSettingsBL;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractType;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.document.DocTypeId;
@@ -101,7 +101,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-	private final ModularContractSettingsBL modularContractSettingsBL = SpringContextHolder.instance.getBean(ModularContractSettingsBL.class);
+	private final ModularContractSettingsService modularContractSettingsService = SpringContextHolder.instance.getBean(ModularContractSettingsService.class);
 	private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
 	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
 	private final ModularContractComputingMethodHandlerRegistry modularContractComputingMethods = SpringContextHolder.instance.getBean(ModularContractComputingMethodHandlerRegistry.class);
@@ -126,7 +126,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final LockOwner lockOwner)
 	{
-		final var modularContractSettings = modularContractSettingsBL.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
+		final var modularContractSettings = modularContractSettingsService.getByFlatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()));
 		final var requestTemplate = CreateInvoiceCandidateRequest.builder()
 				.modularContract(term)
 				.yearAndCalendarId(modularContractSettings.getYearAndCalendarId())
@@ -321,7 +321,7 @@ public class FlatrateTermModular_FinalHandler implements ConditionTypeSpecificIn
 						.appendParametersToMessage()
 						.setParameter("C_Flatrate_Term_ID", flatrateTermId.getRepoId()));
 
-		final ModularContractType moduleContractType = modularContractSettingsBL.getModuleContractType(modularContractModuleId);
+		final ModularContractType moduleContractType = modularContractSettingsService.getModuleContractType(modularContractModuleId);
 
 		final TaxCategoryId taxCategoryId;
 

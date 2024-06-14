@@ -19,7 +19,7 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.document.location.IDocumentLocationBL;
@@ -66,14 +66,14 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
 		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
 		final ModularContractLogService contractLogService = new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository());
 		SpringContextHolder.registerJUnitBean(new ComputingMethodService(contractLogService));
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()),
-				new ModularContractSettingsDAO(),
+				new ModularContractSettingsRepository(),
 				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
 				new ComputingMethodService(contractLogService),
 				new ModularContractPriceRepository()));

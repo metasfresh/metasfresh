@@ -30,9 +30,7 @@ import de.metas.contracts.FlatrateTermRequest.ModularFlatrateTermQuery;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -61,7 +59,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_INVOICE_LINE_
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class SalesInvoiceLineModularContractHandler implements IComputingMethodHandler
+public class SalesInvoiceLineModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -130,12 +128,6 @@ public class SalesInvoiceLineModularContractHandler implements IComputingMethodH
 						.typeConditions(TypeConditions.MODULAR_CONTRACT)
 						.soTrx(SOTrx.PURCHASE)
 						.build());
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 
 	private BPartnerId extractWarehousePartnerId(final I_C_Invoice invoice)

@@ -25,10 +25,10 @@ package de.metas.contracts.modular.computing.purchasecontract.averageonshippedqt
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogEntry;
@@ -37,13 +37,12 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -59,14 +58,13 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
-public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHandler
+public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMethodHandler
 {
-	@NonNull
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	@NonNull
-	private final ModularContractProvider contractProvider;
-	@NonNull
-	private final ComputingMethodService computingMethodService;
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+
+	@NonNull private final ModularContractProvider contractProvider;
+	@NonNull private final ComputingMethodService computingMethodService;
 
 	private final CurrencyPrecision precision = CurrencyPrecision.ofInt(4);
 
@@ -119,7 +117,7 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
 
-		final Money money = computeAverageAmount(logs, request.getCurrencyId())
+		final Money money = computeAverageAmount(logs)
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
 
 		return ComputingResponse.builder()
@@ -139,8 +137,7 @@ public class AverageAVOnShippedQtyComputingMethod implements IComputingMethodHan
 		return ComputingMethodType.AverageAddedValueOnShippedQuantity;
 	}
 
-	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs,
-												@NonNull final CurrencyId currencyId)
+	public Optional<Money> computeAverageAmount(@NonNull final ModularContractLogEntriesList logs)
 	{
 		final Optional<Money> totalMoney = logs.stream()
 				.map(ModularContractLogEntry::getAmount)

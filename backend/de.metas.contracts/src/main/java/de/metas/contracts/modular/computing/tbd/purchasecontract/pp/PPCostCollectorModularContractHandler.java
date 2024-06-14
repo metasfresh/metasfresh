@@ -25,9 +25,7 @@ package de.metas.contracts.modular.computing.tbd.purchasecontract.pp;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,7 +48,7 @@ import static de.metas.contracts.modular.ComputingMethodType.PPCOSTCOLLECTOR_MOD
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class PPCostCollectorModularContractHandler implements IComputingMethodHandler
+public class PPCostCollectorModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
@@ -82,11 +80,5 @@ public class PPCostCollectorModularContractHandler implements IComputingMethodHa
 	public @NonNull ComputingMethodType getComputingMethodType()
 	{
 		return PPCOSTCOLLECTOR_MODULAR_DEPRECATED;
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 }
