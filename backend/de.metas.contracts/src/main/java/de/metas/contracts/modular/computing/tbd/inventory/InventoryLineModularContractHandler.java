@@ -24,9 +24,9 @@ package de.metas.contracts.modular.computing.tbd.inventory;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ComputingMethodType;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryLineId;
@@ -47,7 +47,7 @@ import static de.metas.contracts.modular.ComputingMethodType.INVENTORY_LINE_MODU
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class InventoryLineModularContractHandler implements IComputingMethodHandler
+public class InventoryLineModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 

@@ -31,7 +31,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.LogEntryContractType;
@@ -62,7 +62,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SO_LINE_FOR_PO_MODU
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class SOLineForPOModularContractHandler implements IComputingMethodHandler
+public class SOLineForPOModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);

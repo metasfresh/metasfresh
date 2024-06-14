@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.interest.log.ModularLogInterest;
 import de.metas.contracts.modular.interest.log.ModularLogInterestRepository;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
@@ -45,6 +45,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shippingnotification.ShippingNotificationLineId;
@@ -67,7 +68,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractInterestComputingMethod implements IComputingMethodHandler
+public abstract class AbstractInterestComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final ShippingNotificationRepository shippingNotificationRepository;
 	@NonNull private final ModularContractProvider contractProvider;
@@ -77,6 +78,8 @@ public abstract class AbstractInterestComputingMethod implements IComputingMetho
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 
 	@Override
 	public boolean applies(final @NonNull TableRecordReference recordRef, @NonNull final LogEntryContractType logEntryContractType)
