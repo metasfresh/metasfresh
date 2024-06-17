@@ -26,9 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -55,7 +53,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SHIPMENT_LINE_FOR_S
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ShipmentLineForSOModularContractHandler implements IComputingMethodHandler
+public class ShipmentLineForSOModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IInOutDAO inOutDao = Services.get(IInOutDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
@@ -102,11 +100,5 @@ public class ShipmentLineForSOModularContractHandler implements IComputingMethod
 					.stream();
 		}
 		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 }

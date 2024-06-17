@@ -42,7 +42,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
-class ModularContractSettingsDAOTest
+class ModularContractSettingsRepositoryTest
 {
 
 	@BeforeEach
@@ -92,7 +92,7 @@ class ModularContractSettingsDAOTest
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsRecord.getC_Flatrate_Conditions_ID());
 		saveRecord(contractRecord);
 
-		final ModularContractSettings settings = new ModularContractSettingsDAO().getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
+		final ModularContractSettings settings = new ModularContractSettingsRepository().getByFlatrateTermIdOrNull(FlatrateTermId.ofRepoId(contractRecord.getC_Flatrate_Term_ID()));
 
 		assertThat(settings).isNotNull();
 		assertThat(settings.getYearAndCalendarId()).isEqualTo(YearAndCalendarId.ofRepoId(yearRecord.getC_Year_ID(), calendarRecord.getC_Calendar_ID()));

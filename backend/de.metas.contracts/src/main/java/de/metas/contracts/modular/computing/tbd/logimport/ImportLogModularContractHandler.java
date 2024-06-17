@@ -28,7 +28,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_I_ModCntr_Log;
 import de.metas.contracts.model.X_I_ModCntr_Log;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.util.Check;
@@ -49,7 +49,7 @@ import static de.metas.contracts.modular.ComputingMethodType.IMPORT_LOG_DEPRECAT
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class ImportLogModularContractHandler implements IComputingMethodHandler
+public class ImportLogModularContractHandler extends AbstractComputingMethodHandler
 {
 	@NonNull final ModularContractLogService modularContractLogService;
 

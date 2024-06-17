@@ -32,7 +32,7 @@ import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusRepository;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
@@ -87,14 +87,14 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	protected void afterInit()
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		SpringContextHolder.registerJUnitBean(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()));
 		SpringContextHolder.registerJUnitBean(new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())));
 		SpringContextHolder.registerJUnitBean(new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())));
 		SpringContextHolder.registerJUnitBean(new ModularContractPriceRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractService(new ModularContractComputingMethodHandlerRegistry(ImmutableList.of()),
-				new ModularContractSettingsDAO(),
+				new ModularContractSettingsRepository(),
 				new ProcessModularLogsEnqueuer(new ModularLogCreateStatusService(new ModularLogCreateStatusRepository())),
 				new ComputingMethodService(new ModularContractLogService(new ModularContractLogDAO(), new InvoiceCandidateWithDetailsRepository())),
 				new ModularContractPriceRepository()));
