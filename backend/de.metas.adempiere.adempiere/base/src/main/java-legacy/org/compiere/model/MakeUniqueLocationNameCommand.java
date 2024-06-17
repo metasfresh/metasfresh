@@ -30,13 +30,14 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
 public final class MakeUniqueLocationNameCommand
 {
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+
 	private final String nameInitial;
 	private final String companyName;
 	private final I_C_Location address;
@@ -131,7 +132,7 @@ public final class MakeUniqueLocationNameCommand
 		if (defaultName.isEmpty())
 		{
 			final CountryId countryId = CountryId.ofRepoId(address.getC_Country_ID());
-			final String countryName = Services.get(ICountryDAO.class).getCountryNameById(countryId).getDefaultValue();
+			final String countryName = countriesRepo.getCountryNameById(countryId).getDefaultValue();
 			defaultName = appendToName(defaultName, countryName);
 		}
 
@@ -175,17 +176,5 @@ public final class MakeUniqueLocationNameCommand
 		}
 
 		return nameUnique;
-	}
-
-	public static List<String> getOtherLocationNames(
-			final int bpartnerId,
-			final int bpartnerLocationIdToExclude)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addNotEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationIdToExclude)
-				.create()
-				.listDistinct(I_C_BPartner_Location.COLUMNNAME_Name, String.class);
 	}
 }

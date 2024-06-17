@@ -23,6 +23,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Predicate;
@@ -172,7 +173,9 @@ public interface IBPartnerBL extends ISingletonService
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
-	@Value
+    @NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerLocationId bPartnerLocationId);
+
+    @Value
 	@Builder
 	class RetrieveContactRequest
 	{

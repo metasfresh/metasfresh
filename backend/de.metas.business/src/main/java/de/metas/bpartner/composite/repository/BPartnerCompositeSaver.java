@@ -409,7 +409,7 @@ final class BPartnerCompositeSaver
 										   .name(bpartnerLocationRecord.getName())
 										   .address(bpartnerLocationRecord.getC_Location())
 										   .companyName(bpartnerBL.getBPartnerName(request.getBpartnerId()))
-										   .existingNames(MakeUniqueLocationNameCommand.getOtherLocationNames(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()))
+										   .existingNames(bpartnerBL.getOtherLocationNamesOfBPartner(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID())))
 										   .build()
 										   .execute());
 			}

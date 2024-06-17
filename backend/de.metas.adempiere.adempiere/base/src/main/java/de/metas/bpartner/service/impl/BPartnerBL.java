@@ -820,4 +820,11 @@ public class BPartnerBL implements IBPartnerBL
 
 		return Optional.empty();
 	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerLocationId bPartnerLocationId)
+	{
+		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerLocationId);
+	}
 }
