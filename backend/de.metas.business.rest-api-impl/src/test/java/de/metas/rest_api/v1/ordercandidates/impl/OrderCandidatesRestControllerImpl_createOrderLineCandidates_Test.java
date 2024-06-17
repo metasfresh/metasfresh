@@ -419,7 +419,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		@Test
 		public void notSpecified()
 		{
-			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", Optional.empty());
+			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", null);
 			final JsonResponseBPartner bpartner = olCand.getBpartner().getBpartner();
 			assertThat(bpartner.getVatId()).isEqualTo("currentVatId");
 		}
@@ -442,8 +442,8 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@SuppressWarnings({ "SameParameterValue", "OptionalUsedAsFieldOrParameterType" })
 		private JsonOLCand importOLCandWithVatId(
-				@NonNull final String currentVatId,
-				@NonNull final Optional<String> newVatId)
+				final String currentVatId,
+				@Nullable final Optional<String> newVatId)
 		{
 			testMasterdata.prepareBPartnerAndLocation()
 					.orgId(defaultOrgId)
@@ -457,7 +457,10 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 			bpartner.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			bpartner.setCode("bpCode");
-            newVatId.ifPresent(bpartner::setVatId);
+			if (newVatId != null)
+			{
+				bpartner.setVatId(newVatId.orElse(null));
+			}
 
 			final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 					.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
