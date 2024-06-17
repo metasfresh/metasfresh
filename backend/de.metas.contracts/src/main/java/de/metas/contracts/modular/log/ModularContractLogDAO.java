@@ -498,16 +498,17 @@ public class ModularContractLogDAO
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
 
-		final int updatedCount = sqlQuery.updateDirectly()
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
-				.setExecuteDirectly(true)
-				.execute();
-		if (updatedCount > 0)
+		final ImmutableSet<ModularContractLogEntryId> logEntryIds = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIds.isEmpty())
 		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
+					.setExecuteDirectly(true)
+					.execute();
 			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
 					I_ModCntr_Log.Table_Name,
-					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+					logEntryIds));
 		}
 	}
 

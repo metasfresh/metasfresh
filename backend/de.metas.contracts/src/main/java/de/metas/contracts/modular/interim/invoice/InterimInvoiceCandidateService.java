@@ -47,7 +47,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.ContractSpecificPrice;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.NewInvoiceCandidate;
+import de.metas.invoicecandidate.InvoiceCandidateUpsertRequest;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
@@ -116,6 +116,18 @@ public class InterimInvoiceCandidateService
 			return ImmutableSet.of();
 		}
 
+		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
+		final InvoiceCandidateId invoiceCandidateId = upsertInterimInvoiceCandidate(flatrateTermRecord, interimLogsToInvoice);
+		invoiceCandidateSet.add(invoiceCandidateId);
+		modularContractLogService.setICProcessed(
+				queryLogsToInvoice,
+				invoiceCandidateId);
+
+		return invoiceCandidateSet.build();
+	}
+
+	private InvoiceCandidateId upsertInterimInvoiceCandidate(final @NonNull I_C_Flatrate_Term flatrateTermRecord, final ModularContractLogEntriesList interimLogsToInvoice)
+	{
 		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(flatrateTermRecord.getC_Order_Term_ID(), flatrateTermRecord.getC_OrderLine_Term_ID());
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 		final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
@@ -128,7 +140,8 @@ public class InterimInvoiceCandidateService
 
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(flatrateTermRecord.getC_Flatrate_Term_ID());
 
-		final NewInvoiceCandidate.NewInvoiceCandidateBuilder newInvoiceCandidateTemplate = NewInvoiceCandidate.builder()
+		final InvoiceCandidateUpsertRequest.InvoiceCandidateUpsertRequestBuilder newInvoiceCandidateTemplate = InvoiceCandidateUpsertRequest.builder()
+				.invoiceCandidateId(interimLogsToInvoice.getSingleInvoiceCandidateIdOrNull())
 				.orgId(orgId)
 				.soTrx(SOTrx.PURCHASE)
 				.invoiceDocTypeId(getInterimInvoiceDocType(ClientId.ofRepoId(flatrateTermRecord.getAD_Client_ID())))
@@ -151,8 +164,6 @@ public class InterimInvoiceCandidateService
 				.isManual(false)
 				.handlerId(invoiceCandidateHandlerDAO.retrieveIdForClassOneOnly(FlatrateTerm_Handler.class))
 				.flatrateTermId(flatrateTermId);
-
-		final ImmutableSet.Builder<InvoiceCandidateId> invoiceCandidateSet = ImmutableSet.builder();
 
 		final StockQtyAndUOMQty qtyTotal = modularContractLogService.getStockQtyAndQtyInUOM(interimLogsToInvoice, stockUOM);
 
@@ -179,18 +190,12 @@ public class InterimInvoiceCandidateService
 
 		newInvoiceCandidateTemplate.contractSpecificPrice(contractSpecificPrice);
 
-		final NewInvoiceCandidate newInvoiceCandidate = newInvoiceCandidateTemplate
+		final InvoiceCandidateUpsertRequest invoiceCandidateUpsertRequest = newInvoiceCandidateTemplate
 				.qtyOrdered(qtyTotal)
 				.qtyDelivered(qtyTotal)
 				.build();
 
-		final InvoiceCandidateId invoiceCandidateId = invoiceCandidateRepository.save(manualCandidateService.createInvoiceCandidate(newInvoiceCandidate));
-		invoiceCandidateSet.add(invoiceCandidateId);
-		modularContractLogService.setICProcessed(
-				queryLogsToInvoice,
-				invoiceCandidateId);
-
-		return invoiceCandidateSet.build();
+		return invoiceCandidateRepository.save(manualCandidateService.upsertInvoiceCandidate(invoiceCandidateUpsertRequest));
 	}
 
 	@NonNull
