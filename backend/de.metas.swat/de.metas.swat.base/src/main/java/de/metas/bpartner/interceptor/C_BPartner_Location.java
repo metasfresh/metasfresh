@@ -36,12 +36,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
 import java.sql.Timestamp;
 
-import static de.metas.bpartner.interceptor.MakeUniqueNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
 @Validator(I_C_BPartner_Location.class)
 public class C_BPartner_Location
@@ -116,11 +117,11 @@ public class C_BPartner_Location
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		bpLocation.setName(MakeUniqueNameCommand.builder()
+		bpLocation.setName(MakeUniqueLocationNameCommand.builder()
 								   .name(bpLocation.getName())
 								   .address(bpLocation.getC_Location())
 								   .companyName(bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(cBPartnerId)))
-								   .existingNames(MakeUniqueNameCommand.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
+								   .existingNames(MakeUniqueLocationNameCommand.getOtherLocationNames(cBPartnerId, bpLocation.getC_BPartner_Location_ID()))
 								   .build()
 								   .execute());
 	}

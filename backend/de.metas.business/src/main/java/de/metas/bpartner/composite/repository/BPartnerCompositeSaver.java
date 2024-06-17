@@ -61,6 +61,7 @@ import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.compiere.model.MakeUniqueLocationNameCommand;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
@@ -74,6 +75,7 @@ import static de.metas.util.Check.isBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_No;
 import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
@@ -353,7 +355,12 @@ final class BPartnerCompositeSaver
 
 			bpartnerLocationRecord.setIsActive(partnerLocation.isActive());
 			bpartnerLocationRecord.setC_BPartner_ID(request.getBpartnerId().getRepoId());
-			bpartnerLocationRecord.setName(partnerLocation.getName());
+
+			if(partnerLocation.getName() != null)
+			{
+				bpartnerLocationRecord.setName(partnerLocation.getName());
+			}
+
 			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
 			bpartnerLocationRecord.setPhone(partnerLocation.getPhone());
@@ -393,6 +400,19 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatTaxId());
 			bpartnerLocationRecord.setSAP_PaymentMethod(partnerLocation.getSapPaymentMethod());
 			bpartnerLocationRecord.setSAP_BPartnerCode(partnerLocation.getSapBPartnerCode());
+
+			// needs to be last, and we generate here to avoid update logs in de.metas.audit.apirequest.ApiAuditLoggable#addTableRecordReferenceLog, if same name is generated
+			final String name = bpartnerLocationRecord.getName();
+			if(name == null || BPARTNER_LOCATION_NAME_DEFAULT.equals(name))
+			{
+				bpartnerLocationRecord.setName(MakeUniqueLocationNameCommand.builder()
+										   .name(bpartnerLocationRecord.getName())
+										   .address(bpartnerLocationRecord.getC_Location())
+										   .companyName(bpartnerBL.getBPartnerName(request.getBpartnerId()))
+										   .existingNames(MakeUniqueLocationNameCommand.getOtherLocationNames(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()))
+										   .build()
+										   .execute());
+			}
 
 			saveRecord(bpartnerLocationRecord);
 
