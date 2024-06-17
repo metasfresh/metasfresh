@@ -122,8 +122,7 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Locat
 import static de.metas.rest_api.v1.ordercandidates.impl.TestMasterdata.RESOURCE_PATH;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
@@ -149,8 +148,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
  */
 
 @ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
-public class
-OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
+public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
 					.atTime(LocalTime.parse("23:07:16.193"))
@@ -421,7 +419,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		@Test
 		public void notSpecified()
 		{
-			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", null);
+			final JsonOLCand olCand = importOLCandWithVatId("currentVatId", Optional.empty());
 			final JsonResponseBPartner bpartner = olCand.getBpartner().getBpartner();
 			assertThat(bpartner.getVatId()).isEqualTo("currentVatId");
 		}
@@ -444,8 +442,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		@SuppressWarnings({ "SameParameterValue", "OptionalUsedAsFieldOrParameterType" })
 		private JsonOLCand importOLCandWithVatId(
-				final String currentVatId,
-				@Nullable final Optional<String> newVatId)
+				@NonNull final String currentVatId,
+				@NonNull final Optional<String> newVatId)
 		{
 			testMasterdata.prepareBPartnerAndLocation()
 					.orgId(defaultOrgId)
@@ -459,10 +457,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 			bpartner.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			bpartner.setCode("bpCode");
-			if (newVatId != null)
-			{
-				bpartner.setVatId(newVatId.orElse(null));
-			}
+            newVatId.ifPresent(bpartner::setVatId);
 
 			final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
 					.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
@@ -498,8 +493,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			final List<JsonOLCand> olCands = response.getResult();
 			assertThat(olCands).hasSize(1);
 
-			final JsonOLCand olCand = olCands.get(0);
-			return olCand;
+            return olCands.get(0);
 		}
 	}
 
