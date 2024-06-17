@@ -1183,6 +1183,7 @@ public class FlatrateBL implements IFlatrateBL
 			// avoid ad_issue if extension is simply not allowed in scheduled process
 			// throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED, request.getContract());
 			logger.info("Skipping contract No" + request.getContract().getDocumentNo() + ", because of extension not allowed transition");
+			return;
 		}
 
 		final Map<Integer, String> seenFlatrateCondition = new LinkedHashMap<>();
