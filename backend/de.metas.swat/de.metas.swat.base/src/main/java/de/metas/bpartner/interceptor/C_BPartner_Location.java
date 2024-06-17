@@ -121,7 +121,7 @@ public class C_BPartner_Location
 								   .name(bpLocation.getName())
 								   .address(bpLocation.getC_Location())
 								   .companyName(bpartnerDAO.getBPartnerNameById(bPartnerLocationId.getBpartnerId()))
-								   .existingNames(bpartnerDAO.getOtherLocationNamesOfBPartner(bPartnerLocationId))
+								   .existingNames(bpartnerDAO.getOtherLocationNamesOfBPartner(bPartnerLocationId.getBpartnerId(), bPartnerLocationId))
 								   .build()
 								   .execute());
 	}

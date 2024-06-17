@@ -823,8 +823,8 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	@NonNull
-	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerLocationId bPartnerLocationId)
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
 	{
-		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerLocationId);
+		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId);
 	}
 }

@@ -173,7 +173,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
-    @NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerLocationId bPartnerLocationId);
+    @NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
 
     @Value
 	@Builder

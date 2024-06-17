@@ -336,7 +336,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
 
-	@NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerLocationId bPartnerLocationId);
+	@NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
 
 	@Value
 	@Builder
