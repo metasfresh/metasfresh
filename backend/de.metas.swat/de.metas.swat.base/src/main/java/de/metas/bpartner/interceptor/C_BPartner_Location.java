@@ -22,6 +22,7 @@ package de.metas.bpartner.interceptor;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -113,15 +114,16 @@ public class C_BPartner_Location
 
 	private void updateBPLocationName(final @NonNull I_C_BPartner_Location bpLocation)
 	{
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpLocation.getC_BPartner_Location_ID());
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		bpLocation.setName(MakeUniqueLocationNameCommand.builder()
 								   .name(bpLocation.getName())
 								   .address(bpLocation.getC_Location())
-								   .companyName(bpartnerDAO.getBPartnerNameById(bPartnerLocationId.getBpartnerId()))
-								   .existingNames(bpartnerDAO.getOtherLocationNamesOfBPartner(bPartnerLocationId.getBpartnerId(), bPartnerLocationId))
+								   .companyName(bpartnerDAO.getBPartnerNameById(bPartnerId))
+								   .existingNames(bpartnerDAO.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId))
 								   .build()
 								   .execute());
 	}
