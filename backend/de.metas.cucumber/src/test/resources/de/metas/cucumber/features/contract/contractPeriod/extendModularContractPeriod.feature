@@ -67,10 +67,6 @@ Feature: Extend Modular Contract Period
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | modularCntrTerm_1 | modularCntrConditions_1             | bp_modularCntrPeriod        | 2021-10-31 | 2022-10-30 | module_log_product          |
 
-    And load AD_Message:
-      | Identifier            | Value                                         |
-      | extension_not_allowed | MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED |
-
     And add I_AD_PInstance with id 240720231
 
     Then extend C_Flatrate_Term:
