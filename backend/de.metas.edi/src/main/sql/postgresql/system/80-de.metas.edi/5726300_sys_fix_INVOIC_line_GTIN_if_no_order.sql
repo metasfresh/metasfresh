@@ -1,3 +1,4 @@
+
 -- View: public.edi_cctop_invoic_500_v
 
 DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
@@ -7,7 +8,7 @@ CREATE OR REPLACE VIEW public.edi_cctop_invoic_500_v AS
 SELECT SUM(il.qtyEntered)                                                                                                            AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                              ELSE u.x12de355
+                                  ELSE u.x12de355
        END                                                                                                                           AS eancom_uom, /* C_InvoiceLine's UOM */
        CASE
            WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
@@ -31,7 +32,7 @@ SELECT SUM(il.qtyEntered)                                                       
        t.rate,
        CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
            WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                                          ELSE COALESCE(u_price.x12de355, u.x12de355)
+                                                              ELSE COALESCE(u_price.x12de355, u.x12de355)
        END                                                                                                                           AS eancom_price_uom /* C_InvoiceLine's Price-UOM */,
        CASE
            WHEN t.rate = 0 THEN 'Y'
@@ -74,7 +75,8 @@ FROM c_invoiceline il
          LEFT JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
          LEFT JOIN c_invoice i ON i.c_invoice_id = il.c_invoice_id
          LEFT JOIN c_currency c ON c.c_currency_id = i.c_currency_id
-         LEFT JOIN c_bpartner_product pp ON pp.c_bpartner_id = i.c_bpartner_id AND pp.m_product_id = il.m_product_id AND pp.isactive = 'Y'
+         LEFT JOIN c_bpartner_product pp
+                   ON pp.c_bpartner_id = i.c_bpartner_id AND pp.m_product_id = il.m_product_id AND pp.isactive = 'Y'
          LEFT JOIN c_tax t ON t.c_tax_id = il.c_tax_id
          LEFT JOIN c_uom u ON u.c_uom_id = il.c_uom_id
          LEFT JOIN c_uom u_price ON u_price.c_uom_id = il.price_uom_id
@@ -95,17 +97,17 @@ GROUP BY il.c_invoice_id,
          t.rate,
          (CASE
               WHEN u.x12de355 = 'TU' THEN 'PCE'
-                                                    ELSE u.x12de355
-             END),
+                                     ELSE u.x12de355
+          END),
          (CASE /* be lenient if il.price_uom_id is not set; see https://github.com/metasfresh/metasfresh/issues/6458 */
               WHEN COALESCE(u_price.x12de355, u.x12de355) = 'TU' THEN 'PCE'
-                                                                                ELSE COALESCE(u_price.x12de355, u.x12de355)
-             END),
+                                                                 ELSE COALESCE(u_price.x12de355, u.x12de355)
+          END),
          (
              CASE
-              WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
-                                                        ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
-          END),
+                 WHEN u_ordered.x12de355 IN ('TU', 'COLI') THEN CEIL(il.QtyInvoiced / GREATEST(ol.QtyItemCapacity, 1))
+                                                           ELSE uomconvert(il.M_Product_ID, p.C_UOM_ID, u_ordered.C_UOM_ID, il.QtyInvoiced)
+             END),
          u_ordered.x12de355,
          (CASE
               WHEN t.rate = 0 THEN 'Y'
@@ -131,5 +133,4 @@ COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
 task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
 task 09182: in OrderPOReference and OrderLine we show reference and line for the original order, but fall back to the invoice''s own reference and line if there is no order(line).
-'
-;
+';
