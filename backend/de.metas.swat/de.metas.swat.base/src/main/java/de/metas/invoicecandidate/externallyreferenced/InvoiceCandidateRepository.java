@@ -232,12 +232,6 @@ public class InvoiceCandidateRepository
 		icRecord.setQtyDeliveredInUOM(ic.getQtyDelivered().getUOMQtyNotNull().toBigDecimal());
 	}
 
-	public InvoiceCandidate getById(
-			@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		return forRecord(invoiceCandDAO.getById(invoiceCandidateId));
-	}
-
 	public ImmutableList<InvoiceCandidate> getAllBy(
 			@NonNull final Collection<InvoiceCandidateLookupKey> lookupKeys)
 	{
