@@ -381,6 +381,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.addBPartnerId(null)
 				.addBPartnerId(bpartnerId)
 				.addWarehouseIds(warehouseIds)
 				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
