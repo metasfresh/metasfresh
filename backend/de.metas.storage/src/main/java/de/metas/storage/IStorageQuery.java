@@ -6,7 +6,6 @@ import de.metas.product.ProductId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
 
 import java.util.Collection;
 
@@ -45,8 +44,8 @@ public interface IStorageQuery
 	boolean matches(IStorageRecord storageRecord);
 
 	/**
-	 * Set if we shall exclude the after picking locators (i.e. where {@link I_M_Locator#isAfterPickingLocator()} returns <code>true</code>).<br>
-	 * By default, after picking locators are excluded
+	 * Set if we shall exclude the after picking locators.
+	 * By default, after picking locators are excluded.
 	 */
 	IStorageQuery setExcludeAfterPickingLocator(boolean excludeAfterPickingLocator);
 
@@ -56,8 +55,6 @@ public interface IStorageQuery
 	IStorageQuery setExcludeReservedToOtherThan(OrderLineId orderLineId);
 
 	IStorageQuery setExcludeReserved();
-
-	IStorageQuery setOnlyStockedProducts(boolean excludeAfterPickingLocator);
 
 	IStorageQuery setOnlyActiveHUs(boolean onlyActiveHUs);
 }

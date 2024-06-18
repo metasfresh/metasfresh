@@ -66,7 +66,7 @@ import java.util.Set;
  * A HU-based IStorageQuery implementation.
  * <p>
  * <b>IMPORTANT</b> this implementation will ignore HUs that are located in a <code>M_Locator</code> with {@link I_M_Locator#COLUMNNAME_IsAfterPickingLocator IsAfterPickingLocator} <code>='Y'</code>,
- * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
+ * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff anymore.
  */
 @EqualsAndHashCode
 @ToString
@@ -263,7 +263,7 @@ public class HUStorageQuery implements IStorageQuery
 
 		//
 		// Make sure given attribute available to be used by our HU Storage implementations.
-		// If we would filter by other attributes we would get NO result.
+		// If we filtered by other attributes we would get NO result.
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		final Set<AttributeId> availableAttributeIds = getAvailableAttributeIds();
 		if (!availableAttributeIds.contains(attributeId))
@@ -341,13 +341,6 @@ public class HUStorageQuery implements IStorageQuery
 	public IStorageQuery setExcludeReserved()
 	{
 		huQueryBuilder.setExcludeReserved();
-		return this;
-	}
-
-	@Override
-	public IStorageQuery setOnlyStockedProducts(final boolean onlyStockedProducts)
-	{
-		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
 		return this;
 	}
 

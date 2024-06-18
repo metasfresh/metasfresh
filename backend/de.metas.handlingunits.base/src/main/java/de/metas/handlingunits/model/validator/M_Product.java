@@ -82,7 +82,6 @@ public class M_Product
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery()
 				.addProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.setExcludeAfterPickingLocator(false)
-				.setOnlyStockedProducts(true)
 				.setOnlyActiveHUs(true);
 
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
