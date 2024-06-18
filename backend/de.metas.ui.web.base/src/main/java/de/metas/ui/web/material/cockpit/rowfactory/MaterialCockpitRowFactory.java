@@ -33,7 +33,6 @@ import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
-import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceService;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
@@ -47,7 +46,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
@@ -62,9 +60,7 @@ import java.util.Set;
 public class MaterialCockpitRowFactory
 {
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
-	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final ResourceService resourceService;
-	@NonNull private final ProductRepository productRepository;
 
 	@VisibleForTesting
 	public static MaterialCockpitRowFactory newInstanceForUnitTesting(final MaterialCockpitRowLookups rowLookups)
@@ -72,9 +68,7 @@ public class MaterialCockpitRowFactory
 		Adempiere.assertUnitTestMode();
 		return new MaterialCockpitRowFactory(
 				rowLookups,
-				WarehouseRepository.newInstanceForUnitTesting(),
-				ResourceService.newInstanceForJUnitTesting(),
-				ProductRepository.newInstanceForUnitTesting()
+				ResourceService.newInstanceForJUnitTesting()
 		);
 	}
 
@@ -100,9 +94,7 @@ public class MaterialCockpitRowFactory
 	{
 		return CreateRowsCommand.builder()
 				.rowLookups(rowLookups)
-				.warehouseRepository(warehouseRepository)
 				.resourceService(resourceService)
-				.productRepository(productRepository)
 				//
 				.request(request)
 				//
@@ -114,8 +106,6 @@ public class MaterialCockpitRowFactory
 	static class CreateRowsCommand
 	{
 		@NonNull private final MaterialCockpitRowLookups rowLookups;
-		@NonNull private final WarehouseRepository warehouseRepository;
-		@NonNull private final ProductRepository productRepository;
 		@NonNull private final ResourceService resourceService;
 
 		@NonNull private final CreateRowsRequest request;
@@ -157,7 +147,7 @@ public class MaterialCockpitRowFactory
 
 			final Set<ResourceId> plantIds = retrieveCountingPlants();
 
-			final ImmutableSet<WarehouseId> warehouseIds = retrieveWarehouses();
+			final ImmutableSet<WarehouseId> warehouseIds = cache.getAllActiveWarehouseIds();
 
 			final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 			for (final ProductId productId : productIds)
@@ -203,11 +193,6 @@ public class MaterialCockpitRowFactory
 			return resourceService.getActivePlantIds();
 		}
 
-		private ImmutableSet<WarehouseId> retrieveWarehouses()
-		{
-			return warehouseRepository.retrieveAllActiveIds();
-		}
-
 		private void addCockpitRowsToResult(
 				@NonNull final DimensionSpec dimensionSpec,
 				@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
@@ -250,8 +235,7 @@ public class MaterialCockpitRowFactory
 		private MainRowWithSubRows newMainRowWithSubRows(@NonNull final MainRowBucketId mainRowBucketId)
 		{
 			return MainRowWithSubRows.builder()
-					.warehouseRepository(warehouseRepository)
-					.productRepository(productRepository)
+					.cache(cache)
 					.rowLookups(rowLookups)
 					.productIdAndDate(mainRowBucketId)
 					.build();

@@ -23,22 +23,28 @@
 package org.adempiere.warehouse;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import java.util.List;
 
 @Repository
 public class WarehouseRepository
 {
-    IQueryBL queryBL = Services.get(IQueryBL.class);
+    @NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
     @VisibleForTesting
     public static WarehouseRepository newInstanceForUnitTesting()
     {
@@ -46,35 +52,76 @@ public class WarehouseRepository
         return new WarehouseRepository();
     }
 
-    private final CCache<WarehouseId, Warehouse> cache = CCache.<WarehouseId, Warehouse>builder()
+    private final CCache<Integer, WarehouseMap> cache = CCache.<Integer, WarehouseMap>builder()
             .tableName(I_M_Warehouse.Table_Name)
             .build();
 
     @NonNull
     public Warehouse getById (@NonNull final WarehouseId warehouseId)
     {
-        return cache.getOrLoad(warehouseId, this::retrieveById);
+        return getWarehouseMap().getById(warehouseId);
     }
 
-    private Warehouse retrieveById(@NonNull final WarehouseId warehouseId)
+    private WarehouseMap getWarehouseMap()
     {
-        return fromRecord(loadOutOfTrx(warehouseId, I_M_Warehouse.class));
+        return cache.getOrLoad(0, this::retrieveWarehouseMap);
     }
 
-    private Warehouse fromRecord(@NonNull final I_M_Warehouse warehouse)
+    private WarehouseMap retrieveWarehouseMap()
+    {
+        final ImmutableList<Warehouse> warehouses = queryBL.createQueryBuilder(I_M_Warehouse.class)
+                //.addOnlyActiveRecordsFilter()
+                .create()
+                .stream()
+                .map(WarehouseRepository::fromRecord)
+                .collect(ImmutableList.toImmutableList());
+
+        return new WarehouseMap(warehouses);
+    }
+
+    private static Warehouse fromRecord(@NonNull final I_M_Warehouse warehouse)
     {
         return Warehouse.builder()
                 .warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
                 .name(warehouse.getName())
                 .resourceId(ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID()))
+                .active(warehouse.isActive())
                 .build();
     }
-
-    public ImmutableSet<WarehouseId> retrieveAllActiveIds()
+    @NonNull
+    public ImmutableSet<WarehouseId> getAllActiveIds()
     {
-        return queryBL.createQueryBuilder(I_M_Warehouse.class)
-                .addOnlyActiveRecordsFilter()
-                .create()
-                .listIds(WarehouseId::ofRepoId);
+        return getWarehouseMap().allActive.stream()
+                .map(Warehouse::getWarehouseId)
+                .collect(ImmutableSet.toImmutableSet());
+    }
+
+    //
+    //
+    //
+    //
+    //
+
+    private static final class WarehouseMap
+    {
+        @Getter private final ImmutableList<Warehouse> allActive;
+        private final ImmutableMap<WarehouseId, Warehouse> byId;
+
+        WarehouseMap(final List<Warehouse> list)
+        {
+            this.allActive = list.stream().filter(Warehouse::isActive).collect(ImmutableList.toImmutableList());
+            this.byId = Maps.uniqueIndex(list, Warehouse::getWarehouseId);
+        }
+
+        @NonNull
+        public Warehouse getById(@NonNull final WarehouseId id)
+        {
+            final Warehouse warehouse = byId.get(id);
+            if (warehouse == null)
+            {
+                throw new AdempiereException("Warehouse not found by ID: " + id);
+            }
+            return warehouse;
+        }
     }
 }

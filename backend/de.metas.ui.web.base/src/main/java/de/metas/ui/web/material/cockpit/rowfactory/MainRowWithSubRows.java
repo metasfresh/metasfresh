@@ -8,19 +8,18 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow.MainRowBuilder;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehouseRepository;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,8 +51,7 @@ import java.util.Map;
 @EqualsAndHashCode(of = "productIdAndDate")
 public class MainRowWithSubRows
 {
-	@NonNull private final WarehouseRepository warehouseRepository;
-	@NonNull private final ProductRepository productRepository;
+	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 
 	@NonNull private final MainRowBucketId productIdAndDate;
@@ -63,13 +61,11 @@ public class MainRowWithSubRows
 
 	@Builder
 	private MainRowWithSubRows(
-			@NonNull final WarehouseRepository warehouseRepository,
-			@NonNull final ProductRepository productRepository,
+			@NonNull final MaterialCockpitRowCache cache,
 			@NonNull final MaterialCockpitRowLookups rowLookups,
 			@NonNull final MainRowBucketId productIdAndDate)
 	{
-		this.warehouseRepository = warehouseRepository;
-		this.productRepository = productRepository;
+		this.cache = cache;
 		this.rowLookups = rowLookups;
 
 		this.productIdAndDate = productIdAndDate;
@@ -82,7 +78,7 @@ public class MainRowWithSubRows
 
 	private DimensionGroupSubRowBucket newSubRowBucket(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
-		return new DimensionGroupSubRowBucket(rowLookups, dimensionSpecGroup, productRepository);
+		return new DimensionGroupSubRowBucket(rowLookups, dimensionSpecGroup, cache);
 	}
 
 	public void addEmptyCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
@@ -92,7 +88,7 @@ public class MainRowWithSubRows
 
 	private CountingSubRowBucket newCountingSubRowBucket(final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier)
 	{
-		return new CountingSubRowBucket(rowLookups, detailsRowAggregationIdentifier, warehouseRepository, productRepository);
+		return new CountingSubRowBucket(cache, rowLookups, detailsRowAggregationIdentifier);
 	}
 
 	public void addCockpitRecord(
@@ -338,7 +334,7 @@ public class MainRowWithSubRows
 
 	private int getPlantId(final WarehouseId warehouseId)
 	{
-		return ResourceId.toRepoId(warehouseRepository.getById(warehouseId).getResourceId());
+		return ResourceId.toRepoId(cache.getWarehouseById(warehouseId).getResourceId());
 	}
 
 	/**
@@ -358,6 +354,7 @@ public class MainRowWithSubRows
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
+				.cache(cache)
 				.lookups(rowLookups)
 				.productId(productIdAndDate.getProductId())
 				.date(productIdAndDate.getDate())

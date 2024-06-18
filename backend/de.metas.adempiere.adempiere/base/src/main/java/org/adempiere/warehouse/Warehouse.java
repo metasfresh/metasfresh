@@ -36,4 +36,5 @@ public class Warehouse
     @NonNull WarehouseId warehouseId;
     @NonNull String name;
     @Nullable ResourceId resourceId;
+    boolean active;
 }

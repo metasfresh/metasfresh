@@ -8,9 +8,14 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.Warehouse;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.util.Collection;
@@ -22,8 +27,9 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class MaterialCockpitRowCache
 {
-	private final ProductRepository productRepository;
-	private final IUOMDAO uomDAO;
+	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+	@NonNull private final WarehouseRepository warehouseRepository = SpringContextHolder.instance.getBean(WarehouseRepository.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final HashMap<ProductId, Product> productsCache = new HashMap<>();
 	private final HashMap<UomId, I_C_UOM> uomsCache = new HashMap<>();
@@ -78,6 +84,16 @@ public class MaterialCockpitRowCache
 	{
 		final List<I_C_UOM> uoms = uomDAO.getByIds(uomIds);
 		return Maps.uniqueIndex(uoms, uom -> UomId.ofRepoId(uom.getC_UOM_ID()));
+	}
+
+	public ImmutableSet<WarehouseId> getAllActiveWarehouseIds()
+	{
+		return warehouseRepository.getAllActiveIds();
+	}
+
+	public Warehouse getWarehouseById(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseRepository.getById(warehouseId);
 	}
 
 }

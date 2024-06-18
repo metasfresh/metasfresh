@@ -4,7 +4,6 @@ import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.ProductId;
-import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -17,7 +16,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 
@@ -133,9 +131,8 @@ public class CountingSubRowBucket
 				"productIdAndDate may not be null; mainRowBucket={}", mainRowBucket);
 
 		return MaterialCockpitRow.countingSubRowBuilder()
-				.warehouseRepository(warehouseRepository)
-				.productRepository(productRepository)
 				.lookups(rowLookups)
+				.cache(cache)
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.detailsRowAggregationIdentifier(detailsRowAggregationIdentifier)
