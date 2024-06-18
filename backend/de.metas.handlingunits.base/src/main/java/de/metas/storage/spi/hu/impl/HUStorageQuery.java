@@ -91,7 +91,6 @@ public class HUStorageQuery implements IStorageQuery
 		//
 		// BPartner: we will accept without BP or with the BPs which is specified in query
 		huQueryBuilder.setOnlyIfAssignedToBPartner(false);
-		huQueryBuilder.addOnlyInBPartnerId(null); // accept no BPartner
 
 		// consider only VHUs
 		huQueryBuilder.setOnlyTopLevelHUs(false);
@@ -349,13 +348,6 @@ public class HUStorageQuery implements IStorageQuery
 	public IStorageQuery setOnlyStockedProducts(final boolean onlyStockedProducts)
 	{
 		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
-		return this;
-	}
-
-	@Override
-	public IStorageQuery setIgnoreBPartnerColumn()
-	{
-		huQueryBuilder.setIgnoreBPartnerColumn();
 		return this;
 	}
 

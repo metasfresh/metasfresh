@@ -33,13 +33,12 @@ public interface IStorageQuery
 
 	/**
 	 * Add all attributes (that are allowed to be used in storage querying) from given attribute set.
-	 *
+	 * <p>
 	 * NOTE: depends on implementation, it could be that not all attributes will be added but only the considered ones.
 	 */
 	IStorageQuery addAttributes(IAttributeSet attributeSet);
 
 	/**
-	 *
 	 * @param storageRecord
 	 * @return true if given record was matched by this query
 	 */
@@ -59,8 +58,6 @@ public interface IStorageQuery
 	IStorageQuery setExcludeReserved();
 
 	IStorageQuery setOnlyStockedProducts(boolean excludeAfterPickingLocator);
-
-	IStorageQuery setIgnoreBPartnerColumn();
 
 	IStorageQuery setOnlyActiveHUs(boolean onlyActiveHUs);
 }

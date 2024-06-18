@@ -68,8 +68,7 @@ public class HUStorageEngine implements IStorageEngine
 	@Override
 	public IStorageQuery newStorageQuery()
 	{
-		final HUStorageQuery huStorageQuery = new HUStorageQuery();
-		return huStorageQuery;
+		return new HUStorageQuery();
 	}
 
 	@Override

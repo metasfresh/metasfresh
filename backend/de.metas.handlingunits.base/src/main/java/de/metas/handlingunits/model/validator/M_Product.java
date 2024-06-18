@@ -79,13 +79,11 @@ public class M_Product
 
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
-		final IStorageQuery storageQuery = storageEngine
-				.newStorageQuery()
+		final IStorageQuery storageQuery = storageEngine.newStorageQuery()
 				.addProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 				.setExcludeAfterPickingLocator(false)
 				.setOnlyStockedProducts(true)
-				.setOnlyActiveHUs(true)
-				.setIgnoreBPartnerColumn();
+				.setOnlyActiveHUs(true);
 
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
 		final boolean isAvailableStock = storageEngine.anyMatch(context, storageQuery);
