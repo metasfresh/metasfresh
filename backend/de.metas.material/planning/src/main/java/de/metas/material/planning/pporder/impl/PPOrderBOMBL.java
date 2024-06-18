@@ -586,8 +586,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
 		final Quantity qtyRequiredPositive = getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
-		
+
+		// here we compute the percent out of the main(processed) product
 		return Percent.of(qtyRequiredPositive.toBigDecimal(), mainProductQty.toBigDecimal(), 4);
+
 	}
 
 	@Override

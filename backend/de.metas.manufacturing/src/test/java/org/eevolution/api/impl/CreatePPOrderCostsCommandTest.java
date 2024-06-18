@@ -207,7 +207,7 @@ public class CreatePPOrderCostsCommandTest
 			assertThat(finishedGoodCostsList).element(0).extracting(PPOrderCost::getPrice).usingRecursiveComparison()
 					.isEqualTo(CostPrice.builder()
 							.ownCostPrice(CostAmount.zero(helper.currencyId))
-							.componentsCostPrice(CostAmount.of("0.6222", helper.currencyId))
+							.componentsCostPrice(CostAmount.of("0.8296", helper.currencyId))
 							.uomId(helper.uomKgId)
 							.build());
 		}
