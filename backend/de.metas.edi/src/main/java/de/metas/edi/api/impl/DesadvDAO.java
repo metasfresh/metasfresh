@@ -33,6 +33,9 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
+import de.metas.esb.edi.model.X_EDI_Desadv;
+import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -73,7 +76,7 @@ public class DesadvDAO implements IDesadvDAO
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processed, false)
 				.addEqualsFilter(I_EDI_Desadv.COLUMN_Processing, false);
 
-		if(isMatchUsingBPartnerId())
+		if (isMatchUsingBPartnerId())
 		{
 			query.addEqualsFilter(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId());
 		}
@@ -330,5 +333,28 @@ public class DesadvDAO implements IDesadvDAO
 				.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
 				.create()
 				.firstId(BPartnerId::ofRepoId);
+	}
+
+	@Override
+	@NonNull
+	public List<I_M_InOut> retrieveShipmentsPendingExport(@NonNull final I_EDI_Desadv desadv)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut.class, desadv)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, desadv.getEDI_Desadv_ID())
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_EDI_ExportStatus, I_M_InOut.EDI_EXPORTSTATUS_Pending, X_EDI_Desadv.EDI_EXPORTSTATUS_Error)
+				.create()
+				.list(I_M_InOut.class);
+	}
+
+	@Override
+	@NonNull
+	public I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull final InOutId shipmentId)
+	{
+		return queryBL.createQueryBuilder(I_M_InOut_Desadv_V.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID, shipmentId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_M_InOut_Desadv_V.class);
 	}
 }
