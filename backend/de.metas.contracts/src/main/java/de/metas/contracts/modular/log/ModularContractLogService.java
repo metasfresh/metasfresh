@@ -259,4 +259,9 @@ public class ModularContractLogService
 
 		setICProcessed(modularContractLogQuery, invoiceCandidateId);
 	}
+
+	public void reverse(@NonNull final LogEntryReverseRequest logEntryReverseRequest)
+	{
+		modularContractLogDAO.reverse(logEntryReverseRequest);
+	}
 }
