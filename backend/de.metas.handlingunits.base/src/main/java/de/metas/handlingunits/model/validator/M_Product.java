@@ -88,9 +88,9 @@ public class M_Product
 				.setIgnoreBPartnerColumn();
 
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
-		final boolean isEmptyStock = storageEngine.retrieveStorageRecords(context, storageQuery).isEmpty();
+		final boolean isAvailableStock = storageEngine.anyMatch(context, storageQuery);
 
-		if (!isEmptyStock)
+		if (isAvailableStock)
 		{
 			throw new AdempiereException(INACTIVE_PRODUCTS_WITH_STOCK);
 		}

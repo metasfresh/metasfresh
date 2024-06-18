@@ -84,6 +84,16 @@ public class HUStorageEngine implements IStorageEngine
 		return createHUStorageRecords(context, huStorages);
 	}
 
+	public boolean anyMatch(
+			@NonNull final IContextAware context,
+			@NonNull final IStorageQuery storageQuery)
+	{
+		return HUStorageQuery.cast(storageQuery)
+				.createQueryBuilder_for_M_HU_Storages(context)
+				.create()
+				.anyMatch();
+	}
+
 	@Override
 	public List<IStorageRecord> retrieveStorageRecords(
 			@NonNull final IContextAware context,

@@ -54,55 +54,57 @@ public class ProductFilterUtil
 {
 	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Product");
 
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(ProductFilterVO.PARAM_ProductName)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
+				.setDisplayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductName))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productValueParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_MD_Cockpit.COLUMNNAME_ProductValue)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
+				.setDisplayName(msgBL.translatable(I_MD_Cockpit.COLUMNNAME_ProductValue))
 				.setWidgetType(DocumentFieldWidgetType.Text)
 				.setOperator(Operator.LIKE_I);
 
 		final DocumentFilterParamDescriptor.Builder productCategoryParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_M_Product.COLUMNNAME_IsPurchased)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsPurchased))
+				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsPurchased))
 				.setWidgetType(DocumentFieldWidgetType.YesNo)
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isSoldParameter = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_M_Product.COLUMNNAME_IsSold)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsSold))
+				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsSold))
 				.setWidgetType(DocumentFieldWidgetType.YesNo)
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isActive = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_M_Product.COLUMNNAME_IsActive)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_IsActive))
+				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_IsActive))
 				.setWidgetType(DocumentFieldWidgetType.YesNo)
 				.setOperator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isDiscontinued = DocumentFilterParamDescriptor.builder()
 				.setFieldName(I_M_Product.COLUMNNAME_Discontinued)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(I_M_Product.COLUMNNAME_Discontinued))
+				.setDisplayName(msgBL.translatable(I_M_Product.COLUMNNAME_Discontinued))
 				.setWidgetType(DocumentFieldWidgetType.YesNo)
 				.setOperator(Operator.EQUAL);
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(ProductFilterVO.FILTER_ID)
-				.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_FILTER_CAPTION))
+				.setDisplayName(msgBL.getTranslatableMsgText(MSG_FILTER_CAPTION))
 				.addParameter(productNameParameter)
 				.addParameter(productValueParameter)
 				.addParameter(productCategoryParameter)
@@ -125,7 +127,7 @@ public class ProductFilterUtil
 	{
 		return DocumentFilter.builder()
 				.setFilterId(ProductFilterVO.FILTER_ID)
-				.setCaption(Services.get(IMsgBL.class).translatable(ProductFilterVO.PARAM_IsActive))
+				.setCaption(msgBL.translatable(ProductFilterVO.PARAM_IsActive))
 				.addParameter(DocumentFilterParam.ofNameOperatorValue(ProductFilterVO.PARAM_IsActive, Operator.EQUAL, true))
 				.build();
 	}
