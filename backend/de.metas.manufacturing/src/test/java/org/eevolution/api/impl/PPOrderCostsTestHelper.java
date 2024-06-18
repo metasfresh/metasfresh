@@ -28,6 +28,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
@@ -192,7 +193,12 @@ public class PPOrderCostsTestHelper
 			//
 			@Nullable final ProductId componentId2,
 			@Nullable final String componentQtyRequired2,
-			@Nullable final I_C_UOM componentUOM2)
+			@Nullable final I_C_UOM componentUOM2,
+			//
+			@Nullable final ProductId coProductId,
+			@Nullable final String coProductQtyRequired,
+			@Nullable final I_C_UOM coProductUOM
+	)
 	{
 		final @NonNull I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(finishedGoodsProductId.getRepoId());
@@ -210,19 +216,25 @@ public class PPOrderCostsTestHelper
 			orderBOMLine().ppOrderId(ppOrderId).productId(componentId2).qtyRequired(componentQtyRequired2).uom(componentUOM2).build();
 		}
 
+		if (coProductId != null)
+		{
+			orderBOMLine().ppOrderId(ppOrderId).componentType(BOMComponentType.CoProduct).productId(coProductId).qtyRequired(coProductQtyRequired).uom(coProductUOM).build();
+		}
+
 		return ppOrder;
 	}
 
 	@Builder(builderMethodName = "orderBOMLine", builderClassName = "$OrderBOMLineBuilder")
 	private void createOrderBOMLine(
 			@NonNull final PPOrderId ppOrderId,
+			@Nullable BOMComponentType componentType,
 			@NonNull final ProductId productId,
 			@NonNull final String qtyRequired,
 			@NonNull final I_C_UOM uom)
 	{
 		final I_PP_Order_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		bomLine.setPP_Order_ID(ppOrderId.getRepoId());
-		bomLine.setComponentType(BOMComponentType.Component.getCode());
+		bomLine.setComponentType(CoalesceUtil.coalesceNotNull(componentType, BOMComponentType.Component).getCode());
 		bomLine.setM_Product_ID(productId.getRepoId());
 		bomLine.setC_UOM_ID(uom.getC_UOM_ID());
 		bomLine.setQtyRequiered(new BigDecimal(qtyRequired));

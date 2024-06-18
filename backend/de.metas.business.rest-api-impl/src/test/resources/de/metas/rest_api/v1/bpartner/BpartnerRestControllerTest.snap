@@ -308,7 +308,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -511,7 +511,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -676,7 +676,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -841,7 +841,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {

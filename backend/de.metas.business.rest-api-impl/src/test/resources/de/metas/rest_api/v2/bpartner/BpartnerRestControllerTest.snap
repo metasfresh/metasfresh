@@ -202,7 +202,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       {
         "active": true,
         "amount": {
-          "currencyId": 1000001,
+          "currencyId": 318,
           "value": 10
         },
         "bPartnerId": 1000000,
@@ -348,7 +348,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -487,7 +487,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       {
         "active": true,
         "amount": {
-          "currencyId": 1000001,
+          "currencyId": 318,
           "value": 25.5
         },
         "bPartnerId": 20,
@@ -588,7 +588,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -724,7 +724,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       {
         "active": true,
         "amount": {
-          "currencyId": 1000001,
+          "currencyId": 318,
           "value": 25.5
         },
         "bPartnerId": 20,
@@ -825,7 +825,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -926,7 +926,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       {
         "active": true,
         "amount": {
-          "currencyId": 1000001,
+          "currencyId": 318,
           "value": 25.5
         },
         "bPartnerId": 20,
@@ -1027,7 +1027,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "tableName": "C_BP_BankAccount"
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "default": false,
         "iban": "INITIAL-IBAN-1",
         "id": {
@@ -1128,7 +1128,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       {
         "active": true,
         "amount": {
-          "currencyId": 1000001,
+          "currencyId": 318,
           "value": 25.5
         },
         "bPartnerId": 20,
@@ -1430,7 +1430,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -1548,7 +1548,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -1666,7 +1666,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
           "lastUpdatedMillis": 1561133544,
           "changeLogs": [ ]
         },
-        "currencyId": 1000000,
+        "currencyId": 102,
         "iban": "INITIAL-IBAN-1",
         "isDefault": false,
         "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -1805,7 +1805,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "isDefault": false,
             "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -1919,7 +1919,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "isDefault": false,
             "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -2046,7 +2046,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "isDefault": false,
             "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -2160,7 +2160,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "isDefault": false,
             "swiftCode": "INITIAL-SWIFTCODE-1",
@@ -2287,7 +2287,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
               "lastUpdatedMillis": 1561133544,
               "changeLogs": [ ]
             },
-            "currencyId": 1000000,
+            "currencyId": 102,
             "iban": "INITIAL-IBAN-1",
             "isDefault": false,
             "swiftCode": "INITIAL-SWIFTCODE-1",

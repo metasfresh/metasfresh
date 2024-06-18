@@ -1,17 +1,16 @@
 package de.metas.currency.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,17 +23,16 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -62,7 +60,6 @@ import lombok.NonNull;
  * Plain {@link ICurrencyDAO} implementation, exclusively to be used for testing.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PlainCurrencyDAO extends CurrencyDAO
 {
@@ -221,6 +218,18 @@ public class PlainCurrencyDAO extends CurrencyDAO
 		if (currencyId != null)
 		{
 			record.setC_Currency_ID(currencyId.getRepoId());
+		}
+		else if (currencyCode == CurrencyCode.EUR)
+		{
+			record.setC_Currency_ID(CurrencyId.EUR.getRepoId());
+		}
+		else if (currencyCode == CurrencyCode.USD)
+		{
+			record.setC_Currency_ID(CurrencyId.USD.getRepoId());
+		}
+		else if (currencyCode == CurrencyCode.CHF)
+		{
+			record.setC_Currency_ID(CurrencyId.CHF.getRepoId());
 		}
 
 		saveRecord(record);

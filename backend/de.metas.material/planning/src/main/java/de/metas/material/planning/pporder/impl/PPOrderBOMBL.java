@@ -580,13 +580,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public Percent getCoProductCostDistributionPercent(final I_PP_Order_BOMLine orderBOMLine)
+	public Percent getCoProductCostDistributionPercent(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull Quantity mainProductQty)
 	{
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(orderBOMLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, orderBOMLine);
 
 		final Quantity qtyRequiredPositive = getQuantities(orderBOMLine).getQtyRequired_NegateBecauseIsCOProduct();
-		return Percent.of(BigDecimal.ONE, qtyRequiredPositive.toBigDecimal(), 4);
+		
+		return Percent.of(qtyRequiredPositive.toBigDecimal(), mainProductQty.toBigDecimal(), 4);
 	}
 
 	@Override
