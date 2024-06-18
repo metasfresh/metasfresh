@@ -476,5 +476,9 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
 
-
+	/**
+	 * Do not consider {@link I_M_HU#COLUMNNAME_C_BPartner_ID} in the query, so we do not filter based on this column at all
+	 * Otherwise, if {@link #addOnlyInBPartnerId(BPartnerId)} gets <code>null</code> we will search only for those records with {@link I_M_HU#COLUMNNAME_C_BPartner_ID} <code>null</code>.
+	 */
+	IHUQueryBuilder setIgnoreBPartnerColumn();
 }

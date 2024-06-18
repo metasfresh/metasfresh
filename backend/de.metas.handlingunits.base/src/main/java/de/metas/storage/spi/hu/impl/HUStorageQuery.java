@@ -344,4 +344,25 @@ public class HUStorageQuery implements IStorageQuery
 		huQueryBuilder.setExcludeReserved();
 		return this;
 	}
+
+	@Override
+	public IStorageQuery setOnlyStockedProducts(final boolean onlyStockedProducts)
+	{
+		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setIgnoreBPartnerColumn()
+	{
+		huQueryBuilder.setIgnoreBPartnerColumn();
+		return this;
+	}
+
+	@Override
+	public IStorageQuery setOnlyActiveHUs(final boolean onlyActiveHUs)
+	{
+		huQueryBuilder.setOnlyActiveHUs(onlyActiveHUs);
+		return this;
+	}
 }

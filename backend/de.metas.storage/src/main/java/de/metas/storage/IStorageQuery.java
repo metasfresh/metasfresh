@@ -1,37 +1,14 @@
 package de.metas.storage;
 
-import java.util.Collection;
-
-/*
- * #%L
- * de.metas.storage
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
+import java.util.Collection;
 
 /**
  * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageEngine#newStorageQuery()} to get an instance.
@@ -80,4 +57,10 @@ public interface IStorageQuery
 	IStorageQuery setExcludeReservedToOtherThan(OrderLineId orderLineId);
 
 	IStorageQuery setExcludeReserved();
+
+	IStorageQuery setOnlyStockedProducts(boolean excludeAfterPickingLocator);
+
+	IStorageQuery setIgnoreBPartnerColumn();
+
+	IStorageQuery setOnlyActiveHUs(boolean onlyActiveHUs);
 }

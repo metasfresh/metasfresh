@@ -159,6 +159,7 @@ import java.util.Set;
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
 	@Nullable private Boolean onlyStockedProducts;
+	private boolean _ignoreBPartnerColumn = false;
 
 	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository, @NonNull final AgeAttributesService ageAttributesService)
 	{
@@ -193,6 +194,7 @@ import java.util.Set;
 		this._huStatusesToExclude.addAll(from._huStatusesToExclude);
 		this.onlyActiveHUs = from.onlyActiveHUs;
 		this.onlyStockedProducts = from.onlyStockedProducts;
+		this._ignoreBPartnerColumn = from._ignoreBPartnerColumn;
 
 		this._onlyHUIds = from._onlyHUIds == null ? null : new HashSet<>(from._onlyHUIds);
 
@@ -239,6 +241,7 @@ import java.util.Set;
 				.append(_huStatusesToExclude)
 				.append(onlyActiveHUs)
 				.append(onlyStockedProducts)
+				.append(_ignoreBPartnerColumn)
 				.append(_onlyHUIds)
 				.append(_huIdsToExclude)
 				.append(_huIdsToAlwaysInclude)
@@ -284,6 +287,7 @@ import java.util.Set;
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
 				.append(onlyActiveHUs, other.onlyActiveHUs)
 				.append(onlyStockedProducts, other.onlyStockedProducts)
+				.append(_ignoreBPartnerColumn, other._ignoreBPartnerColumn)
 				.append(_onlyHUIds, other._onlyHUIds)
 				.append(_huIdsToExclude, other._huIdsToExclude)
 				.append(_huIdsToAlwaysInclude, other._huIdsToAlwaysInclude)
@@ -358,14 +362,14 @@ import java.util.Set;
 
 		//
 		// Enforce M_HU.C_BPartner_ID to be set
-		if (onlyIfAssignedToBPartner)
+		if (onlyIfAssignedToBPartner && !_ignoreBPartnerColumn)
 		{
 			andFilters.addNotEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, null);
 		}
 		//
 		// Filter by C_BPartner_ID
 		final Set<BPartnerId> onlyWithBPartnerIds = getOnlyInBPartnerIds();
-		if (!onlyWithBPartnerIds.isEmpty())
+		if (!onlyWithBPartnerIds.isEmpty() && !_ignoreBPartnerColumn)
 		{
 			andFilters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, onlyWithBPartnerIds);
 		}
@@ -1208,6 +1212,13 @@ import java.util.Set;
 	public IHUQueryBuilder setExcludeReserved()
 	{
 		_excludeReserved = true;
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setIgnoreBPartnerColumn()
+	{
+		_ignoreBPartnerColumn = true;
 		return this;
 	}
 }
