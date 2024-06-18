@@ -231,4 +231,40 @@ public class CreatePPOrderCostsCommandTest
 		return ppOrderCost.getTrxType()
 				+ " " + ppOrderCost.getPrice();
 	}
+
+	@Test
+	public void bom_with_OneRawProduct()
+	{
+		helper.uomKg.setStdPrecision(2);
+		helper.uomKg.setStdPrecision(4);
+		InterfaceWrapperHelper.save(helper.uomKg);
+
+		final ProductId finishedGoodsProductId = BusinessTestHelper.createProductId("finished goods", helper.uomKg);
+		final ProductId rawProductId = BusinessTestHelper.createProductId("raw-product", helper.uomKg);
+
+		helper.currentCost().productId(rawProductId).currentCostPrice("100").uom(helper.uomKg).build();
+
+		final I_PP_Order ppOrder = helper.order()
+				.finishedGoodsProductId(finishedGoodsProductId).finishedGoodsQty("533.09").finishedGoodsUOM(helper.uomKg)
+				.componentId(rawProductId).componentQtyRequired("716.55").componentUOM(helper.uomKg)
+				.build();
+
+		final PPOrderCosts ppOrderCosts = new CreatePPOrderCostsCommand(ppOrder).execute();
+		ppOrderCosts.toCollection().stream().map(CreatePPOrderCostsCommandTest::toString).forEach(System.out::println);
+
+		//
+		// Finished good
+		{
+			final List<PPOrderCost> finishedGoodCostsList = ppOrderCosts.getByProductAndCostElements(finishedGoodsProductId, ImmutableSet.of(helper.costElement.getId()));
+			assertThat(finishedGoodCostsList).hasSize(1);
+			assertThat(finishedGoodCostsList).element(0).extracting(PPOrderCost::getPrice).usingRecursiveComparison()
+					.isEqualTo(CostPrice.builder()
+									   .ownCostPrice(CostAmount.zero(helper.currencyId))
+									   .componentsCostPrice(CostAmount.of("134.4145", helper.currencyId))
+									   .uomId(helper.uomKgId)
+									   .build());
+		}
+
+
+	}
 }
