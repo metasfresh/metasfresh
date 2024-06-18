@@ -122,6 +122,7 @@ public class AverageAVOnShippedQtyComputingMethod extends AbstractComputingMetho
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(money)

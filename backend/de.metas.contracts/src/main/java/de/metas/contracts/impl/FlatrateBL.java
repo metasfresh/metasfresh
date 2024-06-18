@@ -2446,7 +2446,7 @@ public class FlatrateBL implements IFlatrateBL
 				.builder()
 				.flatrateTermId(flatrateTermId)
 				.computingMethodTypes(ComputingMethodType.DEFINITIVE_INVOICE_SPECIFIC_METHODS)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.billable(true)
 				.processed(false)
 				.build());
@@ -2667,5 +2667,11 @@ public class FlatrateBL implements IFlatrateBL
 	public void prepareForDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
 	{
 		flatrateDAO.prepareForDefinitiveInvoice(contractIds);
+	}
+
+	@Override
+	public void reverseDefinitiveInvoice(@NonNull final Collection<FlatrateTermId> contractIds)
+	{
+		flatrateDAO.reverseDefinitiveInvoice(contractIds);
 	}
 }

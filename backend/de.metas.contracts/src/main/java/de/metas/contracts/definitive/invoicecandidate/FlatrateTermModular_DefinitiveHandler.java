@@ -75,7 +75,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
 				.processed(false)
 				.billable(true)
-				.isComputingMethodTypeActive(false)
+				.isOnlyActiveComputingMethodTypes(false)
 				.build());
 
 		return definitiveInvoiceBillableLogsExist ? CREATE_CANDIDATES_AND_INVOICES
@@ -101,7 +101,7 @@ public class FlatrateTermModular_DefinitiveHandler extends FlatrateTermModular_F
 				.addAll(modularContractLogDAO.list(ModularContractLogQuery.builder()
 						.flatrateTermId(FlatrateTermId.ofRepoId(term.getC_Flatrate_Term_ID()))
 						.computingMethodTypes(getModCntrInvoiceType().getComputingMethodTypes())
-						.isComputingMethodTypeActive(false)
+						.isOnlyActiveComputingMethodTypes(false)
 						.processed(false)
 						.billable(true)
 						.build()))

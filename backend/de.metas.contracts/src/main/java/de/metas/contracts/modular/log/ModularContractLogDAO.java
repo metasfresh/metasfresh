@@ -39,6 +39,7 @@ import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -59,6 +60,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -74,6 +76,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Function;
@@ -212,18 +215,55 @@ public class ModularContractLogDAO
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
+				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();
 	}
 
 	@NonNull
 	public ModularContractLogEntryId reverse(@NonNull final LogEntryReverseRequest request)
 	{
+		final I_ModCntr_Log oldLog = reverseOldLog(request);
+
+		final I_ModCntr_Log reversedLog = createReverseLog( oldLog, request.description());
+
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoIdOrNull(oldLog.getC_Invoice_Candidate_ID());
+		if (invoiceCandidateId != null)
+		{
+			inactivateICIfNoBillableLogsExist(invoiceCandidateId);
+		}
+
+
+		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
+	}
+
+	private void inactivateICIfNoBillableLogsExist(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final IQuery<I_C_Invoice_Candidate> billableLogsReferencingICQuery = queryBL.createQueryBuilder(I_ModCntr_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addEqualsFilter(I_ModCntr_Log.COLUMNNAME_IsBillable, true)
+				.andCollect(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class)
+				.create();
+
+		final ICompositeQueryUpdater<I_C_Invoice_Candidate> inactivateICUpdater = queryBL.createCompositeQueryUpdater(I_C_Invoice_Candidate.class)
+				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_IsActive, false)
+				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing, false);
+
+		queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addNotInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID, I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, billableLogsReferencingICQuery)
+				.create()
+				.update(inactivateICUpdater);
+	}
+
+	private @NonNull I_ModCntr_Log reverseOldLog(final @NonNull LogEntryReverseRequest request)
+	{
 		final ModularContractLogQuery.ModularContractLogQueryBuilder queryBuilder = ModularContractLogQuery.builder()
 				.flatrateTermId(request.flatrateTermId())
 				.referenceSet(TableRecordReferenceSet.of(request.referencedModel()))
 				.contractType(request.logEntryContractType())
 				.contractModuleId(request.contractModuleId());
-
 		if (request.id() != null)
 		{
 			queryBuilder.entryId(request.id());
@@ -239,7 +279,11 @@ public class ModularContractLogDAO
 
 		oldLog.setIsBillable(false);
 		saveRecord(oldLog);
+		return oldLog;
+	}
 
+	private static @NonNull I_ModCntr_Log createReverseLog(@NonNull final I_ModCntr_Log oldLog, final @Nullable String description)
+	{
 		final I_ModCntr_Log reversedLog = newInstance(I_ModCntr_Log.class);
 		copyValues(oldLog, reversedLog);
 
@@ -253,15 +297,14 @@ public class ModularContractLogDAO
 			reversedLog.setAmount(reversedLog.getAmount().negate());
 		}
 
-		if (request.description() != null)
+		if (description != null)
 		{
-			reversedLog.setDescription(request.description());
+			reversedLog.setDescription(description);
 		}
 
 		reversedLog.setIsBillable(false);
 		saveRecord(reversedLog);
-
-		return ModularContractLogEntryId.ofRepoId(reversedLog.getModCntr_Log_ID());
+		return reversedLog;
 	}
 
 	public boolean hasAnyModularLogs(@NonNull final TableRecordReference recordRef)
@@ -359,7 +402,7 @@ public class ModularContractLogDAO
 		{
 			final IQueryBuilder<I_ModCntr_Type> modCntrTypeBuilder = queryBL.createQueryBuilder(I_ModCntr_Type.class)
 					.addInArrayFilter(I_ModCntr_Type.COLUMNNAME_ModularContractHandlerType, query.getComputingMethodTypes());
-			if (query.isComputingMethodTypeActive())
+			if (query.isOnlyActiveComputingMethodTypes())
 			{
 				modCntrTypeBuilder.addOnlyActiveRecordsFilter();
 			}
@@ -495,16 +538,37 @@ public class ModularContractLogDAO
 	public void setICProcessed(@NonNull final ModularContractLogQuery query, @NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query).create();
-		sqlQuery.updateDirectly()
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
-				.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
-				.setExecuteDirectly(true)
-				.execute();
-		if (sqlQuery.anyMatch())
+
+		final ImmutableSet<ModularContractLogEntryId> logEntryIds = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIds.isEmpty())
 		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, true)
+					.setExecuteDirectly(true)
+					.execute();
 			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
 					I_ModCntr_Log.Table_Name,
-					sqlQuery.listIds(ModularContractLogEntryId::ofRepoId)));
+					logEntryIds));
+		}
+	}
+
+	public void unprocessLogsForICs(@NonNull final ModularContractLogQuery query, @NonNull final Collection<InvoiceCandidateId> candidateIds)
+	{
+		final IQuery<I_ModCntr_Log> sqlQuery = toSqlQuery(query)
+				.addInArrayFilter(I_ModCntr_Log.COLUMNNAME_C_Invoice_Candidate_ID, candidateIds)
+				.create();
+		final ImmutableSet<ModularContractLogEntryId> logEntryIDs = sqlQuery.listIds(ModularContractLogEntryId::ofRepoId);
+		if (!logEntryIDs.isEmpty())
+		{
+			sqlQuery.updateDirectly()
+					.addSetColumnValue(I_ModCntr_Log.COLUMNNAME_Processed, false)
+					.setExecuteDirectly(true)
+					.execute();
+
+			CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
+					I_ModCntr_Log.Table_Name,
+					logEntryIDs));
 		}
 	}
 

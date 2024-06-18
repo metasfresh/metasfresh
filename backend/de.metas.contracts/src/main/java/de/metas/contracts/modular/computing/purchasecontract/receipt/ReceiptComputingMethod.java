@@ -152,6 +152,7 @@ public class ReceiptComputingMethod extends AbstractComputingMethodHandler
 
 		return ComputingResponse.builder()
 				.ids(logs.getIds())
+				.invoiceCandidateId(logs.getSingleInvoiceCandidateIdOrNull())
 				.price(ProductPrice.builder()
 						.productId(request.getProductId())
 						.money(Money.zero(request.getCurrencyId()))
