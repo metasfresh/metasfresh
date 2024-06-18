@@ -254,9 +254,9 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 		final LocalDate priceDate = TimeUtil.asLocalDate(shipDate, tz);
 
 		return pricingBL.createInitialContext(orgId, productId, bPartnerId, quantity, soTrx)
+				.setReferencedObject(icRecord)
 				.setPriceListVersionId(priceListVersionId)
 				.setPriceDate(priceDate)
 				.setFailIfNotCalculated();
 	}
-
 }
