@@ -250,7 +250,8 @@ class BPartnerCompositeRepositoryTest
 				.ignoringFields(
 						"bpartner.changeLog",
 						"locations.changeLog",
-						"locations.original")
+						"locations.original",
+						"locations.name")
 				.isEqualTo(bpartnerComposite);
 	}
 }

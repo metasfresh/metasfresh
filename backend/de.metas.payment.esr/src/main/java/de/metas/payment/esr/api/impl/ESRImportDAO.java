@@ -397,7 +397,7 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(final Set<ESRImportId> esrImportIds)
+	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull final Set<ESRImportId> esrImportIds)
 	{
 		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_ESR_ImportLine.class)
@@ -425,6 +425,11 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .payAmt(trxAmt)
 																					  .build())
 				.stream().iterator();
+
+		if(!paymentIdIterator.hasNext())
+		{
+			return Optional.empty(); // no point searching ESR_ImportLines
+		}
 
 		final List<I_ESR_ImportLine> lines = fetchSimilarESRLine(esrLine);
 

@@ -24,10 +24,10 @@ package de.metas.contracts.modular.computing.purchasecontract.definitiveinvoice;
 
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.modular.ModularContractProvider;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
@@ -55,7 +55,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
-public abstract class AbstractDefinitiveInvoiceComputingMethod implements IComputingMethodHandler
+public abstract class AbstractDefinitiveInvoiceComputingMethod extends AbstractComputingMethodHandler
 {
 
 	@NonNull private final ModularContractProvider contractProvider;
