@@ -28,7 +28,7 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
 import de.metas.contracts.modular.ModularContractProvider;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.invoice.InvoiceLineId;
@@ -55,8 +55,7 @@ import static de.metas.contracts.modular.ComputingMethodType.InformativeLogs;
 
 @Component
 @RequiredArgsConstructor
-public class InformativeLogComputingMethod
-		implements IComputingMethodHandler
+public class InformativeLogComputingMethod extends AbstractComputingMethodHandler
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);

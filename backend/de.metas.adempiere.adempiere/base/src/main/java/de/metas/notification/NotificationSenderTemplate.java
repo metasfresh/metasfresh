@@ -283,13 +283,10 @@ public class NotificationSenderTemplate
 		{
 			return targetRecordAction.getAdWindowId();
 		}
-		if (targetRecordAction.getRecord() == null)
-		{
-			return Optional.empty();
-		}
 
-		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAdWindowId();
+		return RecordWindowFinder.newInstance(targetRecordAction.getRecord())
+				.checkRecordPresentInWindow()
+				.findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)

@@ -69,7 +69,7 @@ public class JsonAttachmentRequest
 		this.orgCode = orgCode;
 		this.attachment = attachment;
 
-		this.targets = CoalesceUtil.coalesce(targets, ImmutableList.of());
-		this.references = CoalesceUtil.coalesce(references, ImmutableList.of());
+		this.targets = CoalesceUtil.coalesceNotNull(targets, ImmutableList.of());
+		this.references = CoalesceUtil.coalesceNotNull(references, ImmutableList.of());
 	}
 }

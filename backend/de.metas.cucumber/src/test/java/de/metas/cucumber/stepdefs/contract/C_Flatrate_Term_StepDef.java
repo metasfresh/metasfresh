@@ -416,11 +416,10 @@ public class C_Flatrate_Term_StepDef
 
 		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
 
-		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
-		assertThat(ad_PInstance_ID).isNotNull();
+        assertThat(pInstanceID).isNotNull();
 
 		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
-				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
+				.AD_PInstance_ID(PInstanceId.ofRepoId(pInstanceID))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(false)
@@ -458,5 +457,17 @@ public class C_Flatrate_Term_StepDef
 
 		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
 		assertThat(nextContract).isNotNull(); // next term created & contract extended
+	}
+
+	@Then("^C_Flatrate_Term identified by (.*) is not extended$")
+	public void c_flatrate_termIsNotExtended(@NonNull final String contractIdentifier)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
+		assertThat(nextContract).isNull(); // next term not created & contract not extended
 	}
 }

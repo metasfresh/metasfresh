@@ -35,7 +35,7 @@ import de.metas.contracts.modular.computing.purchasecontract.averageonshippedqty
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.contracts.modular.settings.ModuleConfig;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
 import de.metas.pricing.PricingSystemId;
@@ -57,7 +57,7 @@ public class ModularContractService
 {
 	@NonNull private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
-	@NonNull private final ModularContractSettingsDAO modularContractSettingsDAO;
+	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
 	@NonNull private final ComputingMethodService computingMethodService;
 	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
@@ -114,7 +114,7 @@ public class ModularContractService
 			return false;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(contractId);
+		final ModularContractSettings settings = modularContractSettingsRepository.getByFlatrateTermIdOrNull(contractId);
 		if (settings == null || !settings.isMatching(handler.getComputingMethodType()))
 		{
 			return false;
@@ -132,7 +132,7 @@ public class ModularContractService
 
 	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final ModularContractSettings modularContractSettings = modularContractSettingsDAO.getByFlatrateTermId(flatrateTermId);
+		final ModularContractSettings modularContractSettings = modularContractSettingsRepository.getByFlatrateTermId(flatrateTermId);
 
 		return modularContractSettings.getPricingSystemId();
 	}
@@ -176,7 +176,7 @@ public class ModularContractService
 	@NonNull
 	public ImmutableMap<FlatrateTermId, ModularContractSettings> getSettingsByContractIds(@NonNull final ImmutableSet<FlatrateTermId> contractIds)
 	{
-		return modularContractSettingsDAO.getOrLoadBy(contractIds);
+		return modularContractSettingsRepository.getOrLoadBy(contractIds);
 	}
 
 	@NonNull
@@ -196,6 +196,6 @@ public class ModularContractService
 	@NonNull
 	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
 	{
-		return modularContractSettingsDAO.getByModuleId(modularContractModuleId);
+		return modularContractSettingsRepository.getByModuleId(modularContractModuleId);
 	}
 }

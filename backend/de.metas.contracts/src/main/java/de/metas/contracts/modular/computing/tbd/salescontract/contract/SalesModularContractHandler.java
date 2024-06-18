@@ -27,9 +27,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.ComputingMethodType;
-import de.metas.contracts.modular.computing.IComputingMethodHandler;
-import de.metas.contracts.modular.computing.ComputingRequest;
-import de.metas.contracts.modular.computing.ComputingResponse;
+import de.metas.contracts.modular.computing.AbstractComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -52,7 +50,7 @@ import static de.metas.contracts.modular.ComputingMethodType.SALES_MODULAR_CONTR
 @Deprecated
 @Component
 @RequiredArgsConstructor
-public class SalesModularContractHandler implements IComputingMethodHandler
+public class SalesModularContractHandler extends AbstractComputingMethodHandler
 {
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -97,11 +95,5 @@ public class SalesModularContractHandler implements IComputingMethodHandler
 			return Stream.ofNullable(FlatrateTermId.ofRepoIdOrNull(flatrateTermRecord.getC_Flatrate_Term_ID()));
 		}
 		return Stream.empty();
-	}
-
-	@Override
-	public @NonNull ComputingResponse compute(final @NonNull ComputingRequest request)
-	{
-		return null;
 	}
 }

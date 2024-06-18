@@ -3,7 +3,7 @@ package de.metas.handlingunits.weighting;
 import de.metas.acct.GLCategoryId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.DocBaseType;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -99,7 +99,7 @@ public class WeightHUCommandTest
 	public void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
-		SpringContextHolder.registerJUnitBean(new ModularContractSettingsDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		final InventoryRepository inventoryRepo = new InventoryRepository();
 		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
