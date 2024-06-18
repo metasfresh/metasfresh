@@ -2,6 +2,8 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
@@ -27,7 +29,9 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -50,7 +54,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -78,7 +82,6 @@ public class MaterialCockpitRowFactoryTest
 {
 	private static final BigDecimal TWELVE = new BigDecimal("12");
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
-	private AttributesTestHelper attributesTestHelper;
 	private MaterialCockpitRowFactory materialCockpitRowFactory;
 	private I_M_Product product;
 	private I_M_Attribute attr1;
@@ -95,7 +98,6 @@ public class MaterialCockpitRowFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		attributesTestHelper = new AttributesTestHelper();
 
 		final I_M_Product_Category productCategory = newInstance(I_M_Product_Category.class);
 		productCategory.setName("productCategoryName");
@@ -103,6 +105,11 @@ public class MaterialCockpitRowFactoryTest
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
+
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
+		save(acctSchema);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
 
 		product = newInstance(I_M_Product.class);
 		product.setValue("productValue");
@@ -112,6 +119,7 @@ public class MaterialCockpitRowFactoryTest
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
+		final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
 		attr1 = attributesTestHelper.createM_Attribute("test1", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
 		attr1_value1 = attributesTestHelper.createM_AttributeValue(attr1, "test1_value1");
 
@@ -119,7 +127,7 @@ public class MaterialCockpitRowFactoryTest
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
 		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		materialCockpitRowFactory = new MaterialCockpitRowFactory(
+		materialCockpitRowFactory = MaterialCockpitRowFactory.newInstanceForUnitTesting(
 				MaterialCockpitRowLookups.builder()
 						.uomLookup(MockedLookupDataSource.withNamePrefix("UOM"))
 						.bpartnerLookup(MockedLookupDataSource.withNamePrefix("BP"))
@@ -278,7 +286,9 @@ public class MaterialCockpitRowFactoryTest
 	private I_M_Warehouse createWarehousewithPlant(@NonNull final String plantName)
 	{
 		final I_S_Resource plant = newInstance(I_S_Resource.class);
+		plant.setValue(plantName);
 		plant.setName(plantName);
+		plant.setS_ResourceType_ID(1234);
 		save(plant);
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
@@ -304,12 +314,10 @@ public class MaterialCockpitRowFactoryTest
 	private static MaterialCockpitRow extractSingleCountingRow(
 			@NonNull final List<MaterialCockpitRow> rows)
 	{
-		final MaterialCockpitRow emptyGroupRow = rows.stream()
-				.filter(row -> row.getId().toString().startsWith("countingRow")
-
-				)
-				.findFirst().get();
-		return emptyGroupRow;
+		return rows.stream()
+				.filter(row -> row.getId().toString().startsWith("countingRow"))
+				.findFirst()
+				.get();
 	}
 
 	@Test
@@ -317,13 +325,16 @@ public class MaterialCockpitRowFactoryTest
 	{
 		initDimensionSpec_notEmpty();
 
-		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
+		final LocalDate today = SystemTime.asLocalDate();
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// invoke method under test
-		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.createEmptyRowBuckets(
-				ImmutableSet.of(productId),
-				today,
+		final Map<MainRowBucketId, MainRowWithSubRows> result = materialCockpitRowFactory.newCreateRowsCommand(
+						CreateRowsRequest.builder().date(today).detailsRowAggregation(MaterialCockpitDetailsRowAggregation.NONE).build()
+				)
+				.createEmptyRowBuckets(
+						ImmutableSet.of(productId),
+						today,
 				MaterialCockpitDetailsRowAggregation.PLANT);
 
 		assertThat(result).hasSize(1);
@@ -333,7 +344,7 @@ public class MaterialCockpitRowFactoryTest
 		assertThat(mainRowBucket.getProductIdAndDate()).isEqualTo(productIdAndDate);
 
 		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
-		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
+		assertThat(subRowBuckets).hasSameSizeAs(dimensionSpec.retrieveGroups());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
 	}
 

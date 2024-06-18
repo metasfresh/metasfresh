@@ -10,9 +10,11 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.CockpitProduct;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.resource.ResourceService;
@@ -43,7 +45,7 @@ import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -592,6 +594,8 @@ public class MaterialCockpitRow implements IViewRow
 
 	@Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final WarehouseRepository warehouseRepository,
+			@NonNull final ProductRepository productRepository,
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
 			@NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier,
@@ -637,9 +641,7 @@ public class MaterialCockpitRow implements IViewRow
 			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
 			if(warehouseId != null)
 			{
-				final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
-
-				aggregatorName = warehousesDAO.getWarehouseName(warehouseId);
+				aggregatorName = warehouseRepository.getById(warehouseId).getName();
 			}
 			else
 			{
@@ -663,20 +665,20 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.productId = ProductId.ofRepoId(productId);
 
-		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
-		this.productValue = productRecord.getValue();
-		this.productName = productRecord.getName();
+		final CockpitProduct cockpitProduct = productRepository.getCockpitProductById(this.productId);
+		this.productValue = cockpitProduct.getValue();
+		this.productName = cockpitProduct.getName();
 		this.productCategoryOrSubRowName = aggregatorName;
 
-		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
+		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
 		this.uom = lookups.lookupUOMById(uomId);
 
-		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		final BPartnerId manufacturerId = (cockpitProduct.getManufactureId());
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
 
-		this.packageSize = productRecord.getPackageSize();
+		this.packageSize = cockpitProduct.getPackageSize();
 
 		this.date = date;
 		this.includedRows = ImmutableList.of();

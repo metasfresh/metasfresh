@@ -1,14 +1,17 @@
 package de.metas.product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
+import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -16,7 +19,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -60,6 +65,44 @@ public class ProductRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private final CCache<ProductId, CockpitProduct> cache = CCache.<ProductId, CockpitProduct>builder()
+			.tableName(I_M_Product.Table_Name)
+			.additionalTableNameToResetFor((I_C_UOM.Table_Name))
+			.maximumSize(10000)
+			.build();
+
+	@VisibleForTesting
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
+
+	public CockpitProduct getCockpitProductById(@NonNull final ProductId productId)
+	{
+		return cache.getOrLoad(productId, this::retrieveCockpitProductById);
+	}
+
+	private CockpitProduct retrieveCockpitProductById(@NonNull final ProductId productId)
+	{
+		return cockpitProductFromRecord(loadOutOfTrx(productId, I_M_Product.class));
+	}
+
+	private CockpitProduct cockpitProductFromRecord(@NonNull final I_M_Product productRecord)
+	{
+		return CockpitProduct.builder()
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.name(productRecord.getName())
+				.value(productRecord.getValue())
+				.uomRecord(uomDAO.getById(productRecord.getC_UOM_ID()))
+				.packingUomId(UomId.ofRepoIdOrNull(productRecord.getPackage_UOM_ID()))
+				.manufactureId(BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID()))
+				.packageSize(productRecord.getPackageSize())
+				.build();
+	}
+
 
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)

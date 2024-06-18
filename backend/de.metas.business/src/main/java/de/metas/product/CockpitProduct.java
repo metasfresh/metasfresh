@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,35 +20,31 @@
  * #L%
  */
 
-package de.metas.resource;
+package de.metas.product;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import de.metas.product.ResourceId;
-import de.metas.user.UserId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class Resource
+public class CockpitProduct
 {
-	@NonNull OrgId orgId;
-	@NonNull ResourceId resourceId;
-	boolean isActive;
-	@NonNull String value;
-	@NonNull ITranslatableString name;
-	@Nullable String description;
-	@Nullable ResourceGroupId resourceGroupId;
-	@NonNull ResourceTypeId resourceTypeId;
-	@Nullable ManufacturingResourceType manufacturingResourceType;
+    @NonNull ProductId productId;
+    @NonNull String name;
+    @NonNull String value;
+    @NonNull I_C_UOM uomRecord;
+    @Nullable UomId packingUomId;
+    @Nullable BPartnerId manufactureId;
+    @Nullable String packageSize;
 
-	@Nullable UserId responsibleId;
-
-	@Nullable String internalName;
-
-	public boolean isPlant() {return manufacturingResourceType != null && manufacturingResourceType.isPlant();}
+    public UomId getUomId()
+    {
+        return UomId.ofRepoId(uomRecord.getC_UOM_ID());
+    }
 }
