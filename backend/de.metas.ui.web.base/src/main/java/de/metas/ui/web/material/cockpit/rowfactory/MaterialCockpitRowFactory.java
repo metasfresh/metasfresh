@@ -39,6 +39,7 @@ import de.metas.resource.ResourceService;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import lombok.NonNull;
@@ -118,9 +119,13 @@ public class MaterialCockpitRowFactory
 		@NonNull private final ResourceService resourceService;
 
 		@NonNull private final CreateRowsRequest request;
+		
+		@NonNull private final MaterialCockpitRowCache cache = new MaterialCockpitRowCache();
 
 		public List<MaterialCockpitRow> execute()
 		{
+			cache.warmUpProducts(request.getProductIdsToListEvenIfEmpty());
+			
 			final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 					request.getProductIdsToListEvenIfEmpty(),
 					request.getDate(),

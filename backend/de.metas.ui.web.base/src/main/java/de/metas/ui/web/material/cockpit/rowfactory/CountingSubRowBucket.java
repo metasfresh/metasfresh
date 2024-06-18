@@ -8,6 +8,7 @@ import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -63,10 +64,9 @@ public class CountingSubRowBucket
 {
 	@Getter(AccessLevel.NONE) private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
+	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
 	@NonNull private final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier;
-	@NonNull private final WarehouseRepository warehouseRepository;
-	@NonNull private final ProductRepository productRepository;
 
 	// Zaehlbestand
 	private Quantity qtyStockEstimateCountAtDate;
@@ -93,7 +93,8 @@ public class CountingSubRowBucket
 
 	public void addCockpitRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final I_C_UOM uom = productRepository.getCockpitProductById(ProductId.ofRepoId(cockpitRecord.getM_Product_ID())).getUomRecord();
+		final ProductId productId = ProductId.ofRepoId(cockpitRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(productId);
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
@@ -108,7 +109,8 @@ public class CountingSubRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final I_C_UOM uom = productRepository.getCockpitProductById(ProductId.ofRepoId(stockRecord.getM_Product_ID())).getUomRecord();
+		final ProductId productId = ProductId.ofRepoId(stockRecord.getM_Product_ID());
+		final I_C_UOM uom = cache.getUomByProductId(productId);
 
 		qtyOnHandStock = addToNullable(qtyOnHandStock, stockRecord.getQtyOnHand(), uom);
 

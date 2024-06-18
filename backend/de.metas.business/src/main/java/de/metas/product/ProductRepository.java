@@ -103,11 +103,9 @@ public class ProductRepository
 				.build();
 	}
 
-
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
 	{
-
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
@@ -156,18 +154,17 @@ public class ProductRepository
 
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
 	{
-		final List<I_M_Product> productRecords = queryBL
-				.createQueryBuilder(I_M_Product.class)
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_Product.class)
 				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, ids)
 				.create()
-				.list();
-
-		final ImmutableList.Builder<Product> products = ImmutableList.builder();
-		for (final I_M_Product productRecord : productRecords)
-		{
-			products.add(ofProductRecord(productRecord));
-		}
-		return products.build();
+				.stream()
+				.map(this::ofProductRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -197,8 +194,8 @@ public class ProductRepository
 		{
 			final ZoneId zoneId = orgDAO.getTimeZone(request.getOrgId());
 			product.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(request.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -439,8 +436,8 @@ public class ProductRepository
 			final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 			record.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -477,7 +474,7 @@ public class ProductRepository
 	{
 		final I_C_BPartner_Product record = getRecordById(bPartnerProduct.getProductId(), bPartnerProduct.getBPartnerId())
 				.orElseThrow(() -> new AdempiereException("No BPartner product record found for "
-																  + bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
+						+ bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
 
 		record.setC_BPartner_ID(bPartnerProduct.getBPartnerId().getRepoId());
 		record.setIsActive(bPartnerProduct.getActive() != null ? bPartnerProduct.getActive() : record.isActive());
