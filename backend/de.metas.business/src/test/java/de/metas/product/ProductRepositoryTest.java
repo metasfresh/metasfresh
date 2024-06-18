@@ -54,7 +54,7 @@ class ProductRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		productRepository = new ProductRepository();
+		productRepository = ProductRepository.newInstanceForUnitTesting();
 		createOrg();
 	}
 

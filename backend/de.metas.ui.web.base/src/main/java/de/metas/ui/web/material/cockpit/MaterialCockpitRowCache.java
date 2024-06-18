@@ -11,7 +11,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@RequiredArgsConstructor
 public class MaterialCockpitRowCache
 {
 	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
